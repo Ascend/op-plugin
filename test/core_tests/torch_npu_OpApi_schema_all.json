@@ -5020,5 +5020,17 @@
   },
   "op_api: torch_npu.npu_moe_gating_top_k_backward(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
+  },
+  "func: _scaled_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b, Tensor? bias=None, Tensor? scale_result=None, ScalarType? out_dtype=None, bool use_fast_accum=False) -> Tensor": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: _scaled_mm_v2(Tensor mat_a, Tensor mat_b, Tensor[] scale_a, int[] recipe_a, int[] swizzle_a, Tensor[] scale_b, int[] recipe_b, int[] swizzle_b, Tensor? bias, ScalarType? out_dtype, int[] contraction_dim=[], bool use_fast_accum=False) -> Tensor": {
+    "version": ["v2.10", "newest"]
+  },
+  "func: _scaled_grouped_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b, Tensor? offs=None, Tensor? bias=None, Tensor? scale_result=None, ScalarType? out_dtype=None, bool use_fast_accum=False) -> Tensor": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: _scaled_grouped_mm_v2(Tensor mat_a, Tensor mat_b, Tensor[] scale_a, int[] recipe_a, int[] swizzle_a, Tensor[] scale_b, int[] recipe_b, int[] swizzle_b, Tensor? offs=None, Tensor? bias=None, ScalarType? out_dtype=None, int[] contraction_dim=[], bool use_fast_accum=False) -> Tensor": {
+    "version": ["v2.10", "newest"]
   }
 }

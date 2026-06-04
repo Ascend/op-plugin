@@ -780,4 +780,40 @@ inline TensorListWrapper make_wrapper(const c10::optional<at::TensorList> &opt_t
 {
     return make_wrapper(opt_tensorlist.value_or(at::TensorList()), tensor_dtype);
 }
+
+// Scaled GEMM implementation types
+enum class ScaledGemmImplementation {
+    NONE = 0,
+    TENSORWISE_TENSORWISE = 1,
+    ROWWISE_ROWWISE = 2,
+    BLOCK_128x128_1x128 = 3,
+    BLOCK_1x128_128x128 = 4,
+    BLOCK_1x128_1x128 = 5,
+    MXFP8_MXFP8 = 6,
+    NVFP4_NVFP4 = 7,
+    NVFP4_NVFP4_SINGLE_SCALE = 8,
+    MXFP4_MXFP4 = 9,
+};
+
+// Scaling type for quantized matmul
+enum class ScalingType : std::uint8_t {
+    TensorWise, // fp32 scales
+    RowWise, // fp32 scales
+    BlockWise1x16, // fp8_e4m3fn scales
+    BlockWise1x32, // fp8_e8m0fnu scales
+    BlockWise1x128, // fp32 scales
+    BlockWise128x128, // fp32 scales
+};
+
+// Helper function to convert integer array to enum vector
+template <class EnumType, class ArrayType>
+std::vector<EnumType> convert_int_to_enum(ArrayType& v) {
+    std::vector<EnumType> converted;
+    converted.reserve(v.size());
+
+    for (auto vi : v) {
+        converted.push_back(static_cast<EnumType>(vi));
+    }
+    return converted;
+}
 #endif //  TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_

@@ -5547,6 +5547,18 @@ official:
   - func: linalg_cholesky(Tensor self, *, bool upper=False) -> Tensor
     op_api: all_version
 
+  - func: _scaled_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b, Tensor? bias=None, Tensor? scale_result=None, ScalarType? out_dtype=None, bool use_fast_accum=False) -> Tensor
+    op_api: [ v2.7, newest ]
+
+  - func: _scaled_mm_v2(Tensor mat_a, Tensor mat_b, Tensor[] scale_a, int[] recipe_a, int[] swizzle_a, Tensor[] scale_b, int[] recipe_b, int[] swizzle_b, Tensor? bias, ScalarType? out_dtype, int[] contraction_dim=[], bool use_fast_accum=False) -> Tensor
+    op_api: [ v2.10, newest ]
+
+  - func: _scaled_grouped_mm(Tensor mat_a, Tensor mat_b, Tensor scale_a, Tensor scale_b, Tensor? offs=None, Tensor? bias=None, Tensor? scale_result=None, ScalarType? out_dtype=None, bool use_fast_accum=False) -> Tensor
+    op_api: [v2.7, newest]
+
+  - func: _scaled_grouped_mm_v2(Tensor mat_a, Tensor mat_b, Tensor[] scale_a, int[] recipe_a, int[] swizzle_a, Tensor[] scale_b, int[] recipe_b, int[] swizzle_b, Tensor? offs=None, Tensor? bias=None, ScalarType? out_dtype=None, int[] contraction_dim=[], bool use_fast_accum=False) -> Tensor
+    op_api: [v2.10, newest]
+
 autograd:
   - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
     op_api: [v2.5, newest]
