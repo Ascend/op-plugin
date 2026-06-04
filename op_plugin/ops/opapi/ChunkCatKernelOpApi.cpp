@@ -14,6 +14,7 @@
 // limitations under the License.
 
 #include <ATen/NamedTensorUtils.h>
+#include <ATen/native/TensorShape.h>
 #include <ATen/native/TypeProperties.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
@@ -36,10 +37,10 @@ namespace op_api {
     bool isSupportedDtype(at::ScalarType dtype)
     {
         return dtype == at::ScalarType::Float ||
-            dtype == at::ScalarType::Half ||  
+            dtype == at::ScalarType::Half ||
             dtype == at::ScalarType::BFloat16;
     }
-    
+
     bool isSupportedDtypeCombination(at::ScalarType inputDtype, at::ScalarType outputDtype)
     {
         if (!isSupportedDtype(inputDtype) || !isSupportedDtype(outputDtype)) {
@@ -61,7 +62,7 @@ namespace op_api {
         int64_t input_dim_num = first_sizes.size();
         c10::SmallVector<int64_t, op_infer::SIZE> out_shape;
         out_shape.resize((dim + 1) + 1);
-        
+
         for (int64_t j = 0; j < dim; j++) {
             out_shape[j] = first_sizes[j];
         }
@@ -79,7 +80,7 @@ namespace op_api {
                     dim1Size *= sizes[j];
                 }
                 outputCol += dim1Size;
-            }     
+            }
         }
         out_shape[dim + 1] = outputCol;
         return out_shape;
@@ -92,14 +93,15 @@ namespace op_api {
         if (!npu_support_aclnn) {
             return at::native::_chunk_cat(tensors, dim, num_chunks);
         }
-        auto view_sizes = get_chunk_cat_out_sizes(tensors, dim, num_chunks);
+        auto wrapped_dim = at::native::preprocess_chunk_cat_inputs(tensors, dim, num_chunks);
+        auto view_sizes = get_chunk_cat_out_sizes(tensors, wrapped_dim, num_chunks);
         at::Tensor result = npu_preparation::apply_tensor_without_format(view_sizes, tensors[0].scalar_type());
         if (all_contiguous(tensors) &&
             isSupportedDtype(tensors[0].scalar_type()) &&
-            dim == 0) {
-            EXEC_NPU_CMD(aclnnChunkCat, tensors, dim, num_chunks, result);
+            wrapped_dim == 0) {
+            EXEC_NPU_CMD(aclnnChunkCat, tensors, wrapped_dim, num_chunks, result);
         } else {
-            at::native::_chunk_cat_out(tensors, dim, num_chunks, result);
+            at::native::_chunk_cat_out(tensors, wrapped_dim, num_chunks, result);
         }
         return result;
     }
@@ -111,18 +113,19 @@ namespace op_api {
         if (!npu_support_aclnn) {
             return at::native::_chunk_cat_out(tensors, dim, num_chunks, out);
         }
+        auto wrapped_dim = at::native::preprocess_chunk_cat_inputs(tensors, dim, num_chunks);
         TORCH_CHECK(
             tensors[0].device() == out.device(),
             "_chunk_cat_out: mismatch between input and out tensor devices");
         bool both_input_output_contiguous = all_contiguous(tensors) && out.is_contiguous();
-        auto view_sizes = get_chunk_cat_out_sizes(tensors, dim, num_chunks);
+        auto view_sizes = get_chunk_cat_out_sizes(tensors, wrapped_dim, num_chunks);
         npu_preparation::check_tensor({tensors[0]}, out, at::IntArrayRef(view_sizes));
         if (both_input_output_contiguous &&
             isSupportedDtypeCombination(tensors[0].scalar_type(), out.scalar_type()) &&
-            dim == 0) {
-            EXEC_NPU_CMD(aclnnChunkCat, tensors, dim, num_chunks, out);
+            wrapped_dim == 0) {
+            EXEC_NPU_CMD(aclnnChunkCat, tensors, wrapped_dim, num_chunks, out);
         } else {
-            at::native::_chunk_cat_out(tensors, dim, num_chunks, out);
+            at::native::_chunk_cat_out(tensors, wrapped_dim, num_chunks, out);
         }
         return out;
     }
