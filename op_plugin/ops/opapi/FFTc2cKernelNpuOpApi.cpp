@@ -173,7 +173,7 @@ static at::Tensor& _exec_fft(at::Tensor& out_, const at::Tensor& self_, at::IntA
         out_.copy_(self_);
         return out_;
     }
-    
+
     // Permute dimensions so [signal_dims | batch_dims], and in each stride order
     at::DimVector dim_permute(ndim);
     std::iota(dim_permute.begin(), dim_permute.end(), int64_t{0});
@@ -263,7 +263,7 @@ static at::Tensor& _exec_fft(at::Tensor& out_, const at::Tensor& self_, at::IntA
                 collapsed_sizes[0] = 2;
                 collapsed_sizes[1] = -1;
                 collapsed_sizes[2] = batch_total;
-                tmp_pingpong[ping].reshape(collapsed_sizes);
+                tmp_pingpong[ping] = tmp_pingpong[ping].reshape(collapsed_sizes);
             }
             continue;
         }
