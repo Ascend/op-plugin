@@ -49,6 +49,10 @@ class TestLayerNorm(TestCase):
             [np.float32, 29, (3, 4, 5, 6)]
         ]
         for item in shape_format:
+            # Ascend950 does not support FORMAT_NC1HWC0 (3) and FORMAT_FRACTAL_NZ (29)
+            device_name = torch_npu.npu.get_device_name()
+            if "Ascend950" in device_name and item[1] in (3, 29):
+                continue
             cpu_input, npu_input = create_common_tensor(item, 1, 100)
             cpu_output = self.cpu_op_exec(cpu_input)
             npu_output = self.npu_op_exec(npu_input)
@@ -66,6 +70,10 @@ class TestLayerNorm(TestCase):
             [np.float16, 29, (3, 4, 5, 6)]
         ]
         for item in shape_format:
+            # Ascend950 does not support FORMAT_NC1HWC0 (3) and FORMAT_FRACTAL_NZ (29)
+            device_name = torch_npu.npu.get_device_name()
+            if "Ascend950" in device_name and item[1] in (3, 29):
+                continue
             cpu_input, npu_input = create_common_tensor(item, 1, 10)
             cpu_input = cpu_input.to(torch.float32)
             cpu_output = self.cpu_op_exec(cpu_input)
