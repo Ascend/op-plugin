@@ -56,6 +56,7 @@
   - 注册自定义算子converter
 
     ```python
+    from typing import Any
     from torchair import register_fx_node_ge_converter
     from torchair.ge import Tensor
     @register_fx_node_ge_converter(torch.ops.myops.add_custom.default)
@@ -69,7 +70,7 @@
 
 ## 运行样例算子
 
-该样例脚本基于Pytorch2.1、python3.9 运行
+该样例脚本基于PyTorch2.1、Python3.9运行。
 
 ### 1.编译算子工程
 

@@ -50,7 +50,7 @@
 
 - 算子功能：
 
-  该算子入参为x, out_sin ,out_cos, 算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，返回值tan(x)计算结果。对应的算子原型为：
+  该算子入参为x、out_sin和out_cos。算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，并返回tan(x)计算结果。对应的算子原型为：
   
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
@@ -100,7 +100,7 @@
   ```
 
 - 注册Meta函数：
-  注册Meta函数使faketensor流程正常工作，在使用fx, compile等功能涉及，本示例在add_aclgraph_test.py开头注册代码如下：
+  注册Meta函数使faketensor流程正常工作，在使用fx、compile等功能时，本示例在add_aclgraph_test.py开头注册代码如下：
 
   ```python
   @library.impl(ascendc_ops, "ascendc_add", "Meta")
@@ -124,7 +124,7 @@
 1. 请参考与您当前使用的版本配套的[《Ascend Extension for PyTorch
    软件安装指南》](https://www.hiascend.com/document/detail/zh/Pytorch/720/configandinstg/instg/insg_0001.html)，获取PyTorch和torch_npu详细的安装步骤。
    
-   本样例需torch2.6.0及以上版本，支持`backend="npugraph_ex"`需7.3.0及以上版本。
+   本样例需torch2.6.0及以上版本，支持`backend="npugraph_ex"`需torch_npu 7.3.0及以上版本。
 2. 根据实际环境安装CANN toolkit包，本样例需8.5.0及以上版本，安装指导详见《[CANN 软件安装指南](https://www.hiascend.com/document/redirect/CannCommunityInstSoftware)》。
 3. 根据实际环境安装CANN ops包。根据产品型号和环境架构，下载对应安装包，可参考[下载链接](https://ascend.devcloud.huaweicloud.com/cann/run/software/8.5.0-beta.1)并执行如下命令安装：
    

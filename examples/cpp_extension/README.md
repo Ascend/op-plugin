@@ -27,9 +27,9 @@
 
   本小节主要介绍如何实现Kernel算子，本样例基于Ascend C进行开发算子。如何使用Ascend C实现算子kernel，可以参考昇腾社区文档[昇腾Ascend C](https://www.hiascend.com/ascend-c)。
 
-  在./csrc/ 目录下创建一个名为`add_custom.asc`的文件，这是我们自定义加法Kernel的实现文件。样例中实现了一个`run_ascendc_add`的核函数。
+  在`./csrc/`目录下创建一个名为`add_custom.asc`的文件，这是我们自定义加法Kernel的实现文件。样例中实现了一个`run_ascendc_add`的核函数。
 
-### 将Kernel实现与集成
+### 将Kernel实现与Python接口集成
 
   本小节主要介绍如何封装实现的kernel算子，以及绑定为Python的接口。
   代码实现在./csrc/ 目录下。
@@ -80,11 +80,11 @@ at::Tensor run_ascendc_add(const at::Tensor &x, const at::Tensor &y)
 }  // namespace ascendc_ops
   ```
 
-上述主要介绍了一个自定义算子kernel如何集成必备流程。
+上述主要介绍了自定义算子kernel集成的必备流程。
 
 最后，通过创建ops路径，定义python接口，通过`module_name.ops.custom_add`可以调用自定义算子。测试样例如下：
 
-  ```c++
+```python
 import torch
 x = torch.randint(low=1, high=100, size=length, device='cpu', dtype=torch.int)
 y = torch.randint(low=1, high=100, size=length, device='cpu', dtype=torch.int)
@@ -92,7 +92,7 @@ y = torch.randint(low=1, high=100, size=length, device='cpu', dtype=torch.int)
 x_npu = x.npu()
 y_npu = y.npu()
 output = op_extension.ops.custom_add(x_npu, y_npu)
-  ```
+```
 
 ## 运行自定义的算子
 
@@ -105,7 +105,7 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
       python setup.py bdist_wheel
       ```
 
-     我们的编译工程通过setuptools已为用户封装好如何编译算子kernel和集成到pytorch。
+     我们的编译工程通过setuptools已为用户封装好如何编译算子kernel和集成到PyTorch。
 
   2. 安装whl包
 

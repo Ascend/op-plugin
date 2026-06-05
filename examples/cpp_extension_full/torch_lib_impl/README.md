@@ -15,7 +15,7 @@
 
 ```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
-├── csrc                            // 算子适配层c++代码目录
+├── csrc                            // 算子适配层C++代码目录
 │   └── add_custom.cpp              // 自定义算子正反向适配代码、ATen IR注册以及绑定
 ├── cpp_extension_full              // 自定义算子包python侧代码
 │   ├── ops.py                      // 定义ops调用
@@ -27,7 +27,7 @@
 
 ### 操作步骤
 
-1. 在算子适配层c++代码目录（csrc）中的`add_custom.cpp`完成C++侧算子代码适配、注册自定义算子schema、meta及绑定具体实现。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
+1. 在算子适配层C++代码目录（csrc）中的`add_custom.cpp`完成C++侧算子代码适配、注册自定义算子schema、meta及绑定具体实现。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
 
     > [!NOTE]
     > 
@@ -103,7 +103,7 @@
 
     ```
 
-2. 在`cpp_extension_full`目录下的`__init__.py`及`_load.py`文件中，添加ops调用及读取so文件，具体示例如下：
+2. 在`cpp_extension_full`目录下的`__init__.py`及`ops.py`文件中，添加ops调用及读取so文件，具体示例如下：
 
     ```Python
     # __init__.py
@@ -131,7 +131,7 @@
 
 ## 调用样例
 
-完成了算子适配开发后，即可实现C++ extensions的方式调用自定义算子。
+完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
 1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。
 2. 下载示例代码。

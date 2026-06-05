@@ -51,7 +51,7 @@
 
 - 算子功能：
 
-  该算子入参为x, out_sin ,out_cos, 算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，返回值tan(x)计算结果。对应的算子原型为：
+  该算子入参为x、out_sin和out_cos。算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，并返回tan(x)计算结果。对应的算子原型为：
   
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
@@ -83,7 +83,7 @@
     ```c++
     TORCH_LIBRARY_FRAGMENT(ascendc_ops, m)
     {
-        m.def(ascendc_add"(Tensor x, Tensor y) -> Tensor");
+        m.def("ascendc_add(Tensor x, Tensor y) -> Tensor");
     }
     ```
   
@@ -98,7 +98,7 @@
 
   - 注册Meta函数：
   
-    注册Meta函数使faketensor流程正常工作，在使用fx, compile等功能涉及，注册代码如下：
+    注册Meta函数使faketensor流程正常工作，在使用fx、compile等功能时，注册代码如下：
 
     ```c++
     TORCH_LIBRARY_IMPL(ascendc_ops, Meta, m)

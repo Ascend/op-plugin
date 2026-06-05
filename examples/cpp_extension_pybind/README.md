@@ -1,4 +1,4 @@
-# 适配开发及调用（pybing）
+# 适配开发及调用（pybind）
 
 本文档基于C++ extensions方式，使用torch_npu单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。区别于常见的TORCH_LIBRARY方式，本用例采用PYBIND进行绑定注册，以获得更灵活的输入类型支持。
 
@@ -15,7 +15,7 @@
 
 ```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
-├── csrc                            // 算子适配层c++代码目录
+├── csrc                            // 算子适配层C++代码目录
 │   └── add_custom.cpp              // 自定义算子正反向适配代码、aten ir注册以及绑定
 ├── cpp_extension_pybind            // 自定义算子包python侧代码
 │   ├── __init__.py                 // python初始化文件
@@ -28,7 +28,7 @@
 
 ### 操作步骤
 
-1. 在算子适配层c++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。具体示例如下：
+1. 在算子适配层C++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。具体示例如下：
 
     > [!NOTE]
     > 
@@ -55,7 +55,7 @@
     }
     ```
 
-2. 在`cpp_extension_base`目录下的`__init__.py`及`ops.py`文件中，添加ops调用及so读取。
+2. 在`cpp_extension_base`目录下的`__init__.py`及`ops/__init__.py`文件中，添加ops调用及so读取。
 
     ```Python
     # __init__.py
@@ -69,7 +69,7 @@
 
 ## 调用样例
 
-完成了算子适配开发后，即可实现C++ extensions的方式调用自定义算子。
+完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
 1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。
 
