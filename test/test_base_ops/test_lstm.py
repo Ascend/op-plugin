@@ -83,6 +83,27 @@ class TestLstm(TestCase):
         self.assertEqual(c.shape, (2, 3, 6))
         self.assertTrue(y.dim() >= 2)
 
+    def test_lstm_params_size_fallback(self):
+        model = torch.nn.LSTM(
+            input_size=2,
+            hidden_size=3,
+            num_layers=3,
+            bias=False,
+            batch_first=False,
+            dropout=0.0,
+            bidirectional=False,
+        ).to(self.device)
+        model.eval()
+        x = torch.randn(4, 1, 2, device=self.device)
+        h0 = torch.randn(3, 1, 3, device=self.device)
+        c0 = torch.randn(3, 1, 3, device=self.device)
+        y, h, c = self._run_raw_lstm(model, x, (h0, c0))
+
+        self.assertEqual(len(tuple(model._flat_weights)), 6)
+        self.assertEqual(y.shape, (4, 1, 3))
+        self.assertEqual(h.shape, (3, 1, 3))
+        self.assertEqual(c.shape, (3, 1, 3))
+
     def test_lstm_single_direction(self):
         # shape_format:[[dtype, (num_step, batch_size, input_size)],
         # num_layers, input_size, hidden_size, is_training, batch_first]

@@ -200,6 +200,13 @@ inline bool HasMixedFloatDtype(const at::Tensor& input, const at::TensorList hx,
 
 inline bool ShouldFallbackToAclOp(const at::Tensor& input, const at::TensorList hx, const at::TensorList params)
 {
+    // weight_ih, weight_hh, bias_ih, bias_hh for a single layer with biases
+    constexpr size_t kSingleLayerBiasParamCount = 4;
+    if (params.size() != kSingleLayerBiasParamCount) {
+        TORCH_WARN_ONCE("LSTM fallback to acl_op because params size does not meet aclnn requirements. Expected ",
+            kSingleLayerBiasParamCount, " tensors for a single layer with biases, but got ", params.size(), ".");
+        return true;
+    }
     return HasBf16Tensor(input, hx, params) || HasMixedFloatDtype(input, hx, params);
 }
 
