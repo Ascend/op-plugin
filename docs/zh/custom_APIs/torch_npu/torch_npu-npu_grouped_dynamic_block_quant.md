@@ -20,7 +20,7 @@ $$
 ## 函数原型
 
 ```python
-torch_npu.npu_npu_grouped_dynamic_block_quant(input, group_list, *, min_scale=0.0, round_mode="rint", dst_type=291, row_block_size=1, col_block_size=128, group_list_type=0) -> (Tensor, Tensor)
+torch_npu.npu_grouped_dynamic_block_quant(input, group_list, *, min_scale=0.0, round_mode="rint", dst_type=291, row_block_size=1, col_block_size=128, group_list_type=0) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
