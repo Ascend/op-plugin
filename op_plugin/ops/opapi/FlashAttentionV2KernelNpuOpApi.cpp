@@ -477,6 +477,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         "The keep_prob value must be in range of (0, 1], but got ", keep_prob,
         OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    TORCH_CHECK(!input_layout_str.empty(),
+        "The input_layout is empty", OPS_ERROR(ErrCode::PARAM));
     if (input_layout_str == "TND") {
         TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
@@ -682,6 +684,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     TORCH_CHECK(keep_prob > 0 && keep_prob <= 1,
         "The keep_prob value must be in range of (0, 1], but got ", keep_prob, OPS_ERROR(ErrCode::PARAM));
     std::string input_layout_str = std::string(input_layout);
+    TORCH_CHECK(!input_layout_str.empty(),
+        "The input_layout is empty", OPS_ERROR(ErrCode::PARAM));
     if (input_layout_str == "TND") {
         TORCH_CHECK((sparse_mode >= static_cast<int64_t>(SparseMode::NO_MASK) &&
                     sparse_mode < static_cast<int64_t>(SparseMode::PREFIX)) ||
