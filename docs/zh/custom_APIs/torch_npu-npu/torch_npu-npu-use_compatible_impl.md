@@ -35,7 +35,9 @@ torch_npu.npu.use_compatible_impl(is_enable)
 
 ## 约束说明
 
-目前支持`torch.nn.functional.gelu`、`torch.nn.LayerNorm`、`torch.distributed.all_to_all`、`torch.distributed.scatter`、`torch.distributed.gather`、`torch.nn.MaxPool2d`、`torch.nn.functional.max_pool2d`。
+目前支持`torch.nn.functional.gelu`、`torch.nn.LayerNorm`、`torch.distributed.all_to_all`、`torch.distributed.scatter`、`torch.distributed.gather`、`torch.nn.MaxPool2d`、`torch.nn.functional.max_pool2d`、`torch.nn.functional.scaled_dot_product_attention`。
+
+对于`torch.nn.functional.scaled_dot_product_attention`，开启该功能后，支持按SDPA后端选择上下文指定MATH后端。
 
 ## 调用示例
 
