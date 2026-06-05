@@ -4399,7 +4399,7 @@ def quant_matmul_scale_offset_out_check(scale, offset, pertoken_scale, output_dt
             lambda: "When output_dtype is int32, scale's dtype must be bfloat16 or float32, but scale's dtype is " +
                     str(scale.dtype) + ops_error(ErrCode.TYPE),
         )
-    if is_a4w4:
+    if is_a4w4 and pertoken_scale is None:
         torch._check(
             output_dtype == TORCH_DTYPE_MAP[torch.float16],
             lambda: "When input's dtype is int32, output_dtype must be float16, but output_dtype is " +
