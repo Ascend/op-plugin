@@ -119,9 +119,9 @@ bash gen.sh npu_custom.yaml
 
 脚本会根据当前环境的 PyTorch 版本生成各类适配代码，用户无需关注。
 
-### 4. 构建 whl 包并运行测试
+### 3. 构建 whl 包并运行测试
 
-在步骤 3 完成（gen.sh 已执行）后，再执行 `setup.py` 构建，在 `./dist/`下得到 **`aclnn_extension*.whl`**：
+在步骤2完成（gen.sh 已执行）后，再执行 `setup.py` 构建，在 `./dist/`下得到 **`aclnn_extension*.whl`**：
 
 ```bash
 python setup.py bdist_wheel
@@ -132,6 +132,7 @@ pip install aclnn_extension*.whl
 安装完成后即可在代码中调用接入的自定义算子（如 `torch_npu.npu_fast_gelu_custom`）。例如用样例自带的测试用例验证：
 
 ```bash
+cd ..
 cd test
 python test_npu_fast_gelu_custom.py
 ```
@@ -145,7 +146,7 @@ python test_npu_fast_gelu_custom.py
 改成接入自己的算子时，**核心是把 YAML 里的内容换成自己算子的定义**：
 
 - **算子 YAML**（如 `npu_custom.yaml` 或自建 `my_op.yaml`）：在 `custom` 段中写上自己的 `func`、`gen_opapi.out`、`exec`（aclnn 接口名）等，格式参考本样例。
-- **gen.sh 参数**：若使用新文件名（如 `my_op.yaml`），则执行 `bash gen.sh my_op.yaml` 或 `bash gen.sh my_op.yaml`。
+- **gen.sh 参数**：若使用新文件名（如 `my_op.yaml`），则执行 `bash gen.sh my_op.yaml`。
 - **测试脚本**：在 `test/` 下修改或新增测试，调用你暴露的算子名做数值验证。
 
 流程不变：先执行 `gen.sh`（传入你的 YAML），再执行 `setup.py` 构建得到 `aclnn_extension*.whl`，`pip install` 后即可调用。

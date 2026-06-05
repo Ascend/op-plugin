@@ -15,7 +15,7 @@
 
 ```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
-├── csrc                            // 算子适配层c++代码目录
+├── csrc                            // 算子适配层C++代码目录
 │   ├── add_custom.asc              // 自定义add算子适配代码、ATen IR注册以及绑定
 │   └── trig_inplace_custom.asc     // 自定义trig算子适配代码、ATen IR注册以及绑定
 ├── cpp_extension_acs               // 自定义算子包python侧代码
@@ -35,7 +35,7 @@
 
 以下步骤均以add算子为例。
 
-1. 在算子适配层C++代码目录（csrc）中的*.asc文件（如add_custom.asc）完成C++侧算子代码、适配代码、注册自定义算子schema及绑定具体实现。在add_custom.asc中定义了一个名为cpp_extension_acs的命名空间，并在其中注册了ascendc_add函数。在ascendc_add函数中通过`c10_npu::getCurrentNPUStream()`函数获取当前NPU上的流，并通过内核调用符<<<>>>调用自定义的Kernel函数add_custom，在NPU上执行算子。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
+1. 在算子适配层C++代码目录（csrc）中的`*.asc`文件（如add_custom.asc）中编写C++侧算子代码与适配代码，并完成自定义算子schema的注册及具体实现的绑定。在add_custom.asc中定义了一个名为cpp_extension_acs的命名空间，并在其中注册了ascendc_add函数。在ascendc_add函数中通过`c10_npu::getCurrentNPUStream()`函数获取当前NPU上的流，并通过内核调用符<<<>>>调用自定义的Kernel函数add_custom，在NPU上执行算子。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
 <!-- 代码中没有const c10::OptionalDeviceGuard device_guard(device_of(Tensor))，是否需要增加 -->
     > [!NOTE]
     > 
@@ -181,7 +181,7 @@
         
 ## 调用样例
 
-完成了算子适配开发后，即可实现C++ extensions的方式调用自定义算子。
+完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
 1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。
 2. 下载示例代码。
@@ -233,7 +233,7 @@
 
 - 算子功能：
 
-  该算子入参为x, out_sin ,out_cos, 算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，返回值tan(x)计算结果。对应的算子原型为：
+  该算子入参为x、out_sin和out_cos。算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，并返回tan(x)计算结果。对应的算子原型为：
   
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor

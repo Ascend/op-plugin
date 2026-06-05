@@ -15,7 +15,7 @@
 
 ```text
 ├── build_and_run.sh                // 自定义算子wheel包编译安装并执行用例的脚本
-├── csrc                            // 算子适配层c++代码目录
+├── csrc                            // 算子适配层C++代码目录
 │   └── add_custom.cpp              // 自定义算子正反向适配代码、aten ir注册以及绑定
 ├── cpp_extension_base              // 自定义算子包python侧代码
 │   ├── ops.py                      // 定义ops调用
@@ -27,7 +27,7 @@
 
 ### 操作步骤
 
-1. 在算子适配层c++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。PyTorch提供的TORCH_LIBRARY宏用于定义唯一命名空间（该命名空间的名称必须保证全局唯一性），并在该命名空间中注册算子schema。具体示例如下：
+1. 在算子适配层C++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。PyTorch提供的TORCH_LIBRARY宏用于定义唯一命名空间（该命名空间的名称必须保证全局唯一性），并在该命名空间中注册算子schema。具体示例如下：
 
     > [!NOTE]
     > 
