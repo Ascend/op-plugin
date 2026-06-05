@@ -282,9 +282,9 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
         if (is_comm_mode) {
             TORCH_CHECK(check_aclnn_kernel_available("aclnnQuantMatmulAllReduceV5"),
                 "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.", OPS_ERROR(ErrCode::PARAM));
-            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV5, x1, x2, bias_real, x3_real, dequant_scale_real,
-                        pertoken_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
-                        reduce_op_ptr, comm_mode_ptr, comm_turn, stream_mode, group_size, comm_quant_mode, result);
+            EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV5, x1, x2, bias_real, x3_real, pertoken_scale_real,
+                         dequant_scale_real, comm_quant_scale_1_real, comm_quant_scale_2_real, hcom_ptr,
+                         reduce_op_ptr, comm_mode_ptr, comm_turn, stream_mode, group_size, comm_quant_mode, result);
         } else {
             if (comm_quant_scale_1.has_value() && comm_quant_scale_2.has_value()) {
                 EXEC_NPU_CMD(aclnnQuantMatmulAllReduceV3, x1, x2, bias_real, x3_real, dequant_scale_real,
