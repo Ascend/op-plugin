@@ -21,6 +21,19 @@ namespace lazy_fusion {
 namespace {
 using ShapeVector = std::vector<int64_t>;
 
+// aclnn rounds the scalar argument of add_scalar/sub_scalar to the input dtype
+// (bf16/fp16) before the op; for mul/div the scalar stays fp32. Mirror that
+// op-by-op so DVM ON matches DVM OFF (aclnn) bit-exactly on each path.
+inline float RoundScalarToInputDtype(float scalar, at::ScalarType self_dtype) {
+  if (self_dtype == at::ScalarType::BFloat16) {
+    return static_cast<float>(static_cast<at::BFloat16>(scalar));
+  }
+  if (self_dtype == at::ScalarType::Half) {
+    return static_cast<float>(static_cast<at::Half>(scalar));
+  }
+  return scalar;
+}
+
 bool IsFloat16_32(const at::ScalarType &type) {
   return type == at::ScalarType::Half || type == at::ScalarType::Float;
 }
@@ -225,19 +238,12 @@ bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
       !InputCheck(other, IsFloatIntType, /*allow_non_contig=*/true)) {
     return false;
   }
-  auto input_type = self.scalar_type();
-  auto other_type = other.scalar_type();
   float scalar = 1.0f;
-  bool cast_bf16 = false;
   auto alpha_type = alpha.type();
   if (alpha_type == at::ScalarType::Long) {
     scalar = static_cast<float>(alpha.toLong());
   } else if (alpha_type == at::ScalarType::Double) {
     scalar = static_cast<float>(alpha.toDouble());
-    if (input_type == at::ScalarType::BFloat16 && (other_type == at::ScalarType::BFloat16 || other_type == at::ScalarType::Int)) {
-      scalar = static_cast<float>(at::BFloat16(scalar));
-      cast_bf16 = true;
-    }
   } else {
     return false;
   }
@@ -255,9 +261,6 @@ bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
   other_obj = k->Cast(other_obj, compute_type);
   if (scalar != 1.0f) {
     other_obj = k->Binary<dvm::BinaryType::kMul>(other_obj, scalar);
-    if (cast_bf16) {
-      other_obj = k->Cast(k->Cast(other_obj, dvm::DType::kBFloat16), dvm::DType::kFloat32);
-    }
   }
   auto out_obj = k->Binary<dvm::BinaryType::kAdd>(self_obj, other_obj);
   if (out == nullptr) {
@@ -325,11 +328,6 @@ bool BinaryScalar(const at::Tensor &self, const at::Scalar &other, dvm::BinaryOp
     scalar = static_cast<float>(other.toLong());
   } else if (other_type == at::ScalarType::Double) {
     scalar = static_cast<float>(other.toDouble());
-    if (self.scalar_type() == at::ScalarType::BFloat16) {
-      scalar = static_cast<float>(at::BFloat16(scalar));
-    } else if (self.scalar_type() == at::ScalarType::Half) {
-      scalar = static_cast<float>(at::Half(scalar));
-    }
   } else {
     return false;
   }
@@ -342,6 +340,11 @@ bool BinaryScalar(const at::Tensor &self, const at::Scalar &other, dvm::BinaryOp
   auto compute_type = result_type == at::ScalarType::BFloat16 ? dvm::DType::kFloat32 : k->TransType(result_type);
   auto self_obj = k->Input(self);
   self_obj = k->Cast(self_obj, compute_type);
+  if (op_type == dvm::BinaryOpType::kAdd || op_type == dvm::BinaryOpType::kSub) {
+    // aclnn add_scalar/sub_scalar round the scalar to the input dtype before
+    // the op. Mul/Div keep fp32. Match aclnn here so DVM ON == DVM OFF.
+    scalar = RoundScalarToInputDtype(scalar, result_type);
+  }
   auto out_obj = k->Binary(op_type, self_obj, scalar);
   if (out == nullptr) {
     k->Output(self, out_obj, true);
@@ -889,11 +892,6 @@ bool FloorDivideScalar(const at::Tensor &self, const at::Scalar &other, at::Tens
     scalar = static_cast<float>(other.toLong());
   } else if (other_type == at::ScalarType::Double) {
     scalar = static_cast<float>(other.toDouble());
-    if (self.scalar_type() == at::ScalarType::BFloat16) {
-      scalar = static_cast<float>(at::BFloat16(scalar));
-    } else if (self.scalar_type() == at::ScalarType::Half) {
-      scalar = static_cast<float>(at::Half(scalar));
-    }
   } else {
     return false;
   }
@@ -1985,7 +1983,7 @@ at::Tensor addmm(const at::Tensor & self, const at::Tensor & mat1, const at::Ten
   auto out_obj = k->MatMul(input_obj, weight_obj, info.trans_a, info.trans_b, bias_obj);
   if (!use_bias_fast_path) {
     auto compute_type = dvm::Kernel::GetDType(out_obj);
-    if (compute_type == dvm::DType::kBFloat16) {
+    if (compute_type == dvm::DType::kBFloat16 || compute_type == dvm::DType::kFloat16) {
       compute_type = dvm::DType::kFloat32;
       out_obj = k->Cast(out_obj, compute_type);
     }
