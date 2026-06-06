@@ -22,7 +22,6 @@ not_support_in_910b = [
     "test_custom_ops/test_incre_flash_attention",
     "test_custom_ops/test_npu_ffn",
     "test_base_ops/test_adaptive_max_pool2d_backward",
-    "test_base_ops/test_random",
     "test_base_ops/test_im2col_backward",
     "test_base_ops/test_conv_transpose2d_backward",
     "test_base_ops/test_gru_true",
@@ -54,7 +53,7 @@ class AccurateTest(metaclass=ABCMeta):
         test_custom_path = os.path.join(TEST_DIR, 'test_custom_ops')
         check_dir_path_readable(test_custom_path)
         ut_files = self.find_ut_by_regex(regex, test_custom_path)
-        
+
         version_path = get_test_torch_version_path()
         test_version_path = os.path.join(TEST_DIR, version_path)
         check_dir_path_readable(test_version_path)
@@ -86,7 +85,7 @@ class OpStrategy(AccurateTest):
             the test file names that contain all of these keywords.
         """
         filename = Path(modify_file).name
-        if filename.find('KernelNpu') >= 0: 
+        if filename.find('KernelNpu') >= 0:
             feature_line = filename.split('KernelNpu')[0]
             features = re.findall('[A-Z][^A-Z]*', feature_line)
             regex = '*_' + '*'.join([f"{feature.lower()}" for feature in features]) + '.py'
@@ -155,7 +154,7 @@ class TestMgr():
             for changed_file in unique_files
             if Path(changed_file).exists()
         ]
-        
+
         if "Ascend910B" in torch_npu.npu.get_device_name():
             supported_ut_files = []
             for ut_file in exist_ut_file:
@@ -179,7 +178,7 @@ class TestMgr():
         print("ut files:")
         for ut_file in self.test_files['ut_files']:
             print(ut_file)
-    
+
     def print_op_ut_files(self):
         print("op ut files:")
         for op_ut_file in self.test_files['op_ut_files']:
@@ -193,7 +192,7 @@ def exec_ut(files):
     """
     def get_op_name(ut_file):
         return ut_file.split('/')[-1].split('.')[0].lstrip('test_')
-    
+
     def get_ut_name(ut_file):
         return str(Path(ut_file).relative_to(TEST_DIR))[:-3]
 
