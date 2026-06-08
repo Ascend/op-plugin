@@ -169,7 +169,7 @@ static at::Tensor& _exec_fft(at::Tensor& out_, const at::Tensor& self_, at::IntA
     const auto signal_ndim = dim.size();
     const auto batch_dims = ndim - signal_ndim;
 
-    if (mode == fft_mode::c2c && signal_ndim == 1 && self_.sizes().back() == 1) {
+    if (mode == fft_mode::c2c && signal_ndim == 1 && self_.size(dim.back()) == 1) {
         out_.copy_(self_);
         return out_;
     }
