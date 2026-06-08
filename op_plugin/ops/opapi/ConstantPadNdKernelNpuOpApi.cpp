@@ -34,13 +34,22 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
                 l_inp, "dimensions.", OPS_ERROR(ErrCode::PARAM));
 
     std::vector<int64_t> new_shape;
+    aclDataType self_dtype = c10_npu::GetAclDataType(static_cast<int64_t>(self.scalar_type()));
+    bool is_fp4 = (self_dtype == aclDataType::ACL_FLOAT4_E2M1 || self_dtype == aclDataType::ACL_FLOAT4_E1M2);
+    if (is_fp4) {
+        TORCH_CHECK(pad[0] % 2 == 0 && pad[1] % 2 == 0, "The elements of pad the first 2 dim must be divided"
+                    "by 2 when input dtype is fp4, but got ", pad[0], pad[1], OPS_ERROR(ErrCode::PARAM));
+    }
+
     for (size_t i = 0; i < static_cast<size_t>(l_diff); i++) {
         new_shape.emplace_back(input_sizes[i]);
     }
 
     for (size_t i = 0; i < static_cast<size_t>(l_pad); i++) {
         auto pad_idx = pad.size() - ((i + 1) * 2);
-        auto new_dim = input_sizes[l_diff + i] + pad[pad_idx] + pad[pad_idx + 1];
+        auto pad_add = pad[pad_idx] + pad[pad_idx + 1];
+        if (is_fp4 && (int)i == l_pad - 1) {pad_add = pad_add / 2;}
+        auto new_dim = input_sizes[l_diff + i] + pad_add;
         TORCH_CHECK(new_dim >= 0, "The input size ", input_sizes[l_diff + i], ", plus negative padding ",
                     pad[pad_idx], " and ", pad[pad_idx + 1], "resulted in a negative output size, "
                                                              "which is invalid. Check dimension ",
