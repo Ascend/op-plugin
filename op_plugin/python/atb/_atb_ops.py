@@ -20,6 +20,7 @@ API_LIST = [
     '_npu_reshape_and_cache_siso',
     '_npu_rotary_embedding',
     '_npu_flash_attention',
+    '_npu_flash_attention_v3',
     '_npu_flash_attention_unpad',
     '_npu_flash_attention_unpad_v2',
     '_npu_paged_attention_splitfuse',
