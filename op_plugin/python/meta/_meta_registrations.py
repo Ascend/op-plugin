@@ -4971,6 +4971,8 @@ def npu_anti_quant_meta(x, scale, *, offset=None, dst_dtype=None, src_dtype=None
 def npu_kronecker_quant_meta(x, kronecker_p1, kronecker_p2, clip_ratio=1.0, dst_dtype=None):
     if dst_dtype is None:
         dst_dtype = torch.int32
+    elif dst_dtype == 3:#3 -> torch.int32
+        dst_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype)
     if dst_dtype != torch.int32 and dst_dtype != torch_npu.float4_e2m1fn_x2:
         raise RuntimeError("the dtype of dst_dtype must be int32, or mxfp4" + ops_error(ErrCode.NOT_SUPPORT))
     dim_num = x.dim()
