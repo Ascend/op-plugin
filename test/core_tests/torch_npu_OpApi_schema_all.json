@@ -2161,8 +2161,14 @@
   "func: baddbmm(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: baddbmm.dtype(Tensor self, Tensor batch1, Tensor batch2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1) -> Tensor": {
+    "version": ["v2.9", "newest"]
+  },
   "func: baddbmm.out(Tensor self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
+  },
+  "func: baddbmm.dtype_out(Tensor self, Tensor batch1, Tensor batch2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.9", "newest"]
   },
   "func: baddbmm_(Tensor(a!) self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)": {
     "version": ["all_version"]

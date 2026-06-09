@@ -1305,6 +1305,14 @@ official:
     acl_op: all_version
     op_api: all_version
 
+  - func: baddbmm.dtype(Tensor self, Tensor batch1, Tensor batch2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1) -> Tensor
+    op_api: [v2.9, newest]
+    internal_format_opapi: [v2.9, newest]
+
+  - func: baddbmm.dtype_out(Tensor self, Tensor batch1, Tensor batch2, ScalarType output_dtype, *, Scalar beta=1, Scalar alpha=1, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.9, newest]
+    internal_format_opapi: [v2.9, newest]
+
   - func: baddbmm_(Tensor(a!) self, Tensor batch1, Tensor batch2, *, Scalar beta=1, Scalar alpha=1) -> Tensor(a!)
     acl_op: all_version
     op_api: all_version
