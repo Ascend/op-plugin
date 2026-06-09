@@ -2767,6 +2767,17 @@ def npu_add_rms_norm_meta(x1, x2, gamma, epsilon=1e-6):
     rstd = torch.empty(ret, dtype=torch.float32, device='meta')
     return (torch.empty_like(x1, dtype=x1.dtype), torch.empty_like(rstd), torch.empty_like(x1, dtype=x1.dtype))
 
+@impl(m, "_npu_rms_norm_backward_quant")
+def _npu_rms_norm_backward_quant_meta(
+    dy, x, rstd, gamma, scale_x, *, offset_x=None,
+    div_mode=True, quant_mode="static", dst_type=1
+):
+    # dxOut: shape = dy.shape, dtype depends on dst_type
+    dst_torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type)
+    dx_out = torch.empty(dy.shape, dtype=dst_torch_dtype, device=dy.device)
+    # dgammaOut: shape = gamma.shape, dtype = float32
+    dgamma_out = torch.empty(gamma.shape, dtype=torch.float32, device=gamma.device)
+    return (dx_out, dgamma_out)
 
 @impl(m, "npu_add_rms_norm_v2")
 def npu_add_rms_norm_v2_meta(x1, x2, gamma, epsilon=1e-6):
@@ -7163,4 +7174,3 @@ def npu_ciou_meta(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_fl
     else:
         output_size = [1, self.size(1)]
     return torch.empty(output_size, dtype=self.dtype, device=self.device)
-
