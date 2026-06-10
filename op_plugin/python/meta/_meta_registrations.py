@@ -6446,7 +6446,7 @@ def npu_recurrent_gated_delta_rule_functional_meta(query, key, value, state, *, 
     state_shape = (state.size(0), state.size(1), state.size(2), state.size(3))
     out_shape = (value.size(0), value.size(1), value.size(2))
 
-    finalState = torch.empty(state_shape, dtype=torch.bfloat16, device=state.device)
+    finalState = torch.empty(state_shape, dtype=state.dtype, device=state.device)
     out = torch.empty(out_shape, dtype=torch.bfloat16, device=value.device)
 
     return out, finalState
