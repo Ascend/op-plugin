@@ -272,6 +272,10 @@ void add_param_to_buf(const at::Tensor &at_tensor)
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
+    auto *old_impl = at_tensor.storage().unsafeGetStorageImpl();
+    auto *old_storage = static_cast<torch_npu::NPUStorageImpl *>(old_impl);
+    auto npu_format_ = old_storage->get_npu_desc().npu_format_;
+    MEMCPY_TO_BUF(&npu_format_, sizeof(npu_format_));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
@@ -453,6 +457,10 @@ void add_param_to_buf(const TensorWrapper &tensor_r)
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
+    auto *old_impl_tw = at_tensor.storage().unsafeGetStorageImpl();
+    auto *old_storage_tw = static_cast<torch_npu::NPUStorageImpl *>(old_impl_tw);
+    auto npu_format_tw = old_storage_tw->get_npu_desc().npu_format_;
+    MEMCPY_TO_BUF(&npu_format_tw, sizeof(npu_format_tw));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
@@ -500,6 +508,8 @@ void add_param_to_buf_v2(TensorStructPtr at_tensor)
         storageDims.push_back((*at_tensor).nbytes / (*at_tensor).itemsize);
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
+    auto npu_format_v2 = (*at_tensor).acl_format;
+    MEMCPY_TO_BUF(&npu_format_v2, sizeof(npu_format_v2));
 
     addTensorAddrToCachedListFunc((*at_tensor).data_ptr);
 }
