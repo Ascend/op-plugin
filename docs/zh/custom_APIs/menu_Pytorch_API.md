@@ -150,6 +150,7 @@
         -   [torch_npu.matmul_checksum](./torch_npu/torch_npu-matmul_checksum.md)
         -   [torch_npu.npu_alltoallv_gmm](./torch_npu/torch_npu-npu_alltoallv_gmm.md)
         -   [torch_npu.npu_gmm_alltoallv](./torch_npu/torch_npu-npu_gmm_alltoallv.md)
+        -   [torch_npu.npu_alltoallv_quant_gmm](./torch_npu/torch_npu-npu_alltoallv_quant_gmm.md)
         -   [torch_npu.npu_moe_distribute_combine_add_rms_norm](./torch_npu/torch_npu-npu_moe_distribute_combine_add_rms_norm.md)
         -   [torch_npu.npu_transpose_batchmatmul](./torch_npu/torch_npu-npu_transpose_batchmatmul.md)
         -   [torch_npu.npu_moe_update_expert](./torch_npu/torch_npu-npu_moe_update_expert.md)
