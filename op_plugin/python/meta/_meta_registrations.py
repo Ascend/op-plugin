@@ -1455,8 +1455,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
-        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12],
-        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12]"
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12, 13],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12, 13]"
     )
     torch._check(
         row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
@@ -1467,7 +1467,12 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     MXFPX_SCALE_THIRD_DIM_SIZE = 2
     INT4_IN_UINT8 = 2
     is_float4_case = (hasattr(torch, 'float4_e2m1fn_x2') and x.dtype == torch.float4_e2m1fn_x2) or x_dtype == torch_npu.float4_e2m1fn_x2
-    is_dynamic_int4_output = quant_mode == 1 and x_dtype == torch_npu.int4
+    is_legacy_dynamic_int4_output = quant_mode == 1 and x_dtype == torch_npu.int4
+    is_dynamic_int4_output = quant_mode == 13
+    torch._check(
+        not is_legacy_dynamic_int4_output,
+        lambda: "INT4 dynamic quantization uses quant_mode=13. quant_mode=1 only supports INT8 dynamic quantization" + ops_error(ErrCode.VALUE),
+    )
     if is_dynamic_int4_output:
         torch._check(
             drop_pad_mode == 0,
@@ -1484,6 +1489,10 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         torch._check(
             x.size(1) % INT4_IN_UINT8 == 0,
             lambda: "INT4 dynamic quantization requires x.size(1) to be even" + ops_error(ErrCode.VALUE),
+        )
+        torch._check(
+            x_dtype is None or x_dtype == torch_npu.int4,
+            lambda: "x_dtype must be torch_npu.int4 or None when quant_mode=13" + ops_error(ErrCode.VALUE),
         )
     if scale is not None:
         scale_dim = scale.dim()
@@ -1541,36 +1550,35 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
                     lambda: "the 1st dim of offset and the 1st dim of scale should be the same" + ops_error(ErrCode.VALUE),
                 )
         elif quant_mode == 1:
-            if is_dynamic_int4_output:
-                torch._check(
-                    scale_dim == 2,
-                    lambda: "the scale shape support only 2D in INT4 dynamic quant mode" + ops_error(ErrCode.VALUE),
-                )
-                torch._check(
-                    scale.size(0) == 1,
-                    lambda: "the first dim of scale must be 1 in INT4 dynamic quant mode" + ops_error(ErrCode.VALUE),
-                )
-                torch._check(
-                    scale.dtype == torch.float32,
-                    lambda: "the scale dtype must be float32 in INT4 dynamic quant mode" + ops_error(ErrCode.TYPE),
-                )
-                torch._check(
-                    x.size(1) == scale.size(1),
-                    lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
-                )
-            else:
-                torch._check(
-                    scale_dim == 2,
-                    lambda: "the scale shape support only 2D in dynamic quant mode" + ops_error(ErrCode.VALUE),
-                )
-                torch._check(
-                    scale.size(0) in [expert_range_length, 1],
-                    lambda: "the first dim of scale must be in [expert_range_length, 1]" + ops_error(ErrCode.VALUE),
-                )
-                torch._check(
-                    x.size(1) == scale.size(1),
-                    lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
-                )
+            torch._check(
+                scale_dim == 2,
+                lambda: "the scale shape support only 2D in dynamic quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                scale.size(0) in [expert_range_length, 1],
+                lambda: "the first dim of scale must be in [expert_range_length, 1]" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                x.size(1) == scale.size(1),
+                lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
+            )
+        elif quant_mode == 13:
+            torch._check(
+                scale_dim == 2,
+                lambda: "the scale shape support only 2D in INT4 dynamic quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                scale.size(0) == 1,
+                lambda: "the first dim of scale must be 1 in INT4 dynamic quant mode" + ops_error(ErrCode.VALUE),
+            )
+            torch._check(
+                scale.dtype == torch.float32,
+                lambda: "the scale dtype must be float32 in INT4 dynamic quant mode" + ops_error(ErrCode.TYPE),
+            )
+            torch._check(
+                x.size(1) == scale.size(1),
+                lambda: "the 2nd dim of scale should be the same with the 2nd dim of x" + ops_error(ErrCode.VALUE),
+            )
         if quant_mode == 7:
             torch._check(
                 scale_dim == 1,

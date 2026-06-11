@@ -35,6 +35,7 @@ constexpr int64_t QUANT_MODE_HIF8_PER_TOKEN_DIM = 8;
 constexpr int64_t QUANT_MODE_MXFP4_E2M1 = 9;
 constexpr int64_t QUANT_MODE_FP8_PERBLOCK_E5M2 =11;
 constexpr int64_t QUANT_MODE_FP8_PERBLOCK_E4M3FN = 12;
+constexpr int64_t QUANT_MODE_INT4_DYNAMIC = 13;
 constexpr int64_t MXQUANT_BLOCK_SIZE = 32;
 constexpr int64_t FP8_QUANT_BLOCK_SIZE = 128;
 constexpr int64_t PAD_TO_EVEN_FACTOR = 2;
@@ -62,10 +63,12 @@ inline bool IsQuantModeHIF8(int64_t quantMode) {
     return quantMode == QUANT_MODE_HIF8_CAST || quantMode == QUANT_MODE_HIF8_PERTENSOR || quantMode == QUANT_MODE_HIF8_PER_TOKEN_DIM;
 }
 
+inline bool IsInt4OutputDType(c10::optional<int64_t> xDtype) {
+    return xDtype.has_value() && xDtype.value() == static_cast<int64_t>(c10_npu::DType::INT4);
+}
+
 inline bool IsDynamicQuantInt4Output(int64_t quantMode, c10::optional<int64_t> xDtype) {
-    // when quantMode = 1, xDtype is type of expanded_x
-    return quantMode == QUANT_MODE_DYNAMIC && xDtype.has_value() &&
-           xDtype.value() == static_cast<int64_t>(c10_npu::DType::INT4);
+    return quantMode == QUANT_MODE_INT4_DYNAMIC && (!xDtype.has_value() || IsInt4OutputDType(xDtype));
 }
 
 namespace op_api {
@@ -151,6 +154,41 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
     // more suitable cases for v2
     bool using_v2 = CheckV2Case(h, expert_num, active_expert_range, expert_tokens_num_type, quant_mode);
 
+    TORCH_CHECK(!(quant_mode == QUANT_MODE_DYNAMIC && IsInt4OutputDType(x_dtype)),
+        "INT4 dynamic quantization uses quant_mode=13. quant_mode=1 only supports INT8 dynamic quantization.",
+        OPS_ERROR(ErrCode::PARAM));
+    if (quant_mode == QUANT_MODE_INT4_DYNAMIC) {
+        TORCH_CHECK(drop_pad_mode == 0,
+            "INT4 dynamic quantization only supports drop_pad_mode=0.",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x.scalar_type() == at::kFloat || x.scalar_type() == at::kBFloat16,
+            "INT4 dynamic quantization only supports float32 or bfloat16 x.",
+            OPS_ERROR(ErrCode::TYPE));
+        TORCH_CHECK(!p_offset.defined(),
+            "INT4 dynamic quantization does not support offset.",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(h % INT4_NUMS_IN_INT8 == 0,
+            "INT4 dynamic quantization requires the hidden size of x to be even.",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(!x_dtype.has_value() || IsInt4OutputDType(x_dtype),
+            "The optional parameter x_dtype must be torch_npu.int4 or None when quant_mode=13.",
+            OPS_ERROR(ErrCode::PARAM));
+        if (p_scale.defined()) {
+            TORCH_CHECK(p_scale.scalar_type() == at::kFloat,
+                "The scale dtype must be float32 in INT4 dynamic quantization.",
+                OPS_ERROR(ErrCode::TYPE));
+            TORCH_CHECK(p_scale.dim() == DIM_X,
+                "The scale shape supports only 2D in INT4 dynamic quantization.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(p_scale.size(0) == 1,
+                "The first dim of scale must be 1 in INT4 dynamic quantization.",
+                OPS_ERROR(ErrCode::PARAM));
+            TORCH_CHECK(p_scale.size(1) == x_size[1],
+                "The second dim of scale should be the same as the second dim of x in INT4 dynamic quantization.",
+                OPS_ERROR(ErrCode::PARAM));
+        }
+    }
+
     int64_t expanded_scale_len = 0;
     at::Tensor expanded_x;
     if (drop_pad_mode == 1) {  // Drop/Pad
@@ -180,13 +218,12 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
 #endif
             case QUANT_MODE_STATIC:
             case QUANT_MODE_DYNAMIC:
-                if (IsDynamicQuantInt4Output(quant_mode, x_dtype)) {
-                    expanded_x = npu_preparation::apply_tensor_without_format(
-                        {expanded_scale_len, h / INT4_NUMS_IN_INT8}, x.options().dtype(at::kByte));
-                } else {
-                    expanded_x = npu_preparation::apply_tensor_without_format(
-                        {expanded_scale_len, h}, x.options().dtype(at::kChar));
-                }
+                expanded_x = npu_preparation::apply_tensor_without_format(
+                    {expanded_scale_len, h}, x.options().dtype(at::kChar));
+                break;
+            case QUANT_MODE_INT4_DYNAMIC:
+                expanded_x = npu_preparation::apply_tensor_without_format(
+                    {expanded_scale_len, h / INT4_NUMS_IN_INT8}, x.options().dtype(at::kByte));
                 break;
             case QUANT_MODE_HIF8_CAST:
             case QUANT_MODE_HIF8_PERTENSOR:
