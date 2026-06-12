@@ -5,6 +5,7 @@ import re
 import sys
 import subprocess
 import threading
+import argparse
 import queue
 import glob
 from abc import ABCMeta, abstractmethod
@@ -166,6 +167,17 @@ class TestMgr():
         else:
             self.test_files['ut_files'] = exist_ut_file
 
+    def split_test_files(self, rank, world_size):
+        if rank > world_size:
+            raise Exception(f'rank {rank} is greater than world_size {world_size}')
+
+        def ordered_split(files, start, step):
+            return sorted(files)[start::step] if files else []
+
+        # node rank starts from 1
+        self.test_files['ut_files'] = ordered_split(self.test_files['ut_files'], rank - 1, world_size)
+        self.test_files['op_ut_files'] = ordered_split(self.test_files['op_ut_files'], rank - 1, world_size)
+
     def get_test_files(self):
         return self.test_files
 
@@ -291,10 +303,17 @@ def get_test_torch_version_path():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Control needed ut cases')
+    parser.add_argument('--rank', default=0, type=int, help='Index of current ut nodes')
+    parser.add_argument('--world_size', default=0, type=int, help='Number of ut nodes')
+    options = parser.parse_args()
+    print(f"options: {options}")
     cur_modify_files = os.path.join(BASE_DIR, 'modify_files.txt')
     test_mgr = TestMgr()
     test_mgr.load(cur_modify_files)
     test_mgr.analyze()
+    if options.rank > 0 and options.world_size > 0:
+        test_mgr.split_test_files(options.rank, options.world_size)
     cur_test_files = test_mgr.get_test_files()
 
     test_mgr.print_modify_files()
