@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-根据地址偏移及内存大小，从经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor中获取局部Tensor。
+根据地址偏移及内存大小，从经过`torch_npu.utils.npu_combine_tensors`融合后的融合tensor中获取局部tensor。
 
 ## 函数原型
 

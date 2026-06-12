@@ -45,7 +45,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
 - **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。
-- **eps** (`float`)：可选参数，数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
+- **eps** (`float`)：可选参数，为保持数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
 
 ## 返回值说明
 

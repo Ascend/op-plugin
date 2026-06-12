@@ -16,7 +16,7 @@ NPU设备设置，返回值类型aclError，与PyTorch的1.11.0版本中cudaErro
 
 ## 参数说明
 
-device：DeviceIndex类型，待设置的NPU设备id。
+device：DeviceIndex类型，待设置的NPU设备ID。
 
 ## 支持的型号
 

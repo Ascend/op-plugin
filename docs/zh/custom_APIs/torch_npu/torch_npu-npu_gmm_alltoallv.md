@@ -23,7 +23,7 @@
     - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。当`trans_gmm_weight`取值为true时，GroupedMatMul使用转置后的`gmm_weight`。
     - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
     - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
-    - y指对unpermute\_out进行AlltoAllv通信输出。
+    - y为unpermute\_out经过AlltoAllv通信后的输出结果。
     - send_counts表示本卡在AlltoAllv中向EP通信域内各专家分片发送的token数分布。
     - recv_counts表示本卡在AlltoAllv中从EP通信域内各专家分片接收的token数分布，用于确定输出y的第一维大小。
 

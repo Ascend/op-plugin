@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-申请一个device信息为NPU且实际内存在host侧的`Tensor`。
+申请一个device信息为NPU且实际内存在host侧的`tensor`。
 
 ## 函数原型
 

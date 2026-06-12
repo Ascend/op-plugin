@@ -15,7 +15,7 @@
 
   **MRoPE模式**：
   
-  positions的shape输入是[m, num_tokens], m为mropeSection的元素数，支持3或4：
+  positions的shape输入是[m, num_tokens]，m为mropeSection的元素数，支持3或4：
     
   $$
   cosSin[i] = cosSinCache[positions[i]]

@@ -38,13 +38,13 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 - 参数说明里shape格式说明：
     - Y：表示本卡需要分发的最大token数量。
 
-    - BS：示各Attention节点上的发送token数，取值范围为0 < `BS` ≤ 512。
+    - BS：表示各Attention节点上的发送token数，取值范围为0 < `BS` ≤ 512。
 
     - H：表示hidden size隐藏层大小，取值范围为1152 ≤ `H` ≤ 8320
 
     - HS：表示hidden与scale 隐藏层大小，取值范围为1024 ≤ `HS` ≤ 8192。
 
-    - MicroBatchNum：表示microBatch的大小，前仅支持MciroBatchNum = 1。
+    - MicroBatchNum：表示microBatch的大小，目前仅支持MciroBatchNum = 1。
 
     - ExpertNumPerToken：表示每个Token对应的发送的Expert数量，`ExpertNumPerToken` = `K` + `sharedExpertNum`。
 

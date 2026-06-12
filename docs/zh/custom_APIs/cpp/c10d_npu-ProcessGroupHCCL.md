@@ -23,7 +23,7 @@ class c10d_npu::ProcessGroupHCCL
 
 ## 约束说明
 
-- 为了更好的并发和性能，该类提供的所有HCCL通信都是异步函数，用户需要确保通过WorkHCCL::wait()或WorkHCCL::synchronize()来保证任务完成。
+- 为了更好的并发和性能，该类提供的所有HCCL通信操作均为异步函数，用户需要确保通过WorkHCCL::wait()或WorkHCCL::synchronize()来保证任务完成。
 - 该类继承自原生`c10d::Backend`，实现的基本通信算子相关接口资料可参考[原生文档](https://docs.pytorch.org/docs/stable/distributed.html)，不在本文档额外补充。基本通信算子列表如下：<br>
 broadcast<br>
 allreduce<br>
