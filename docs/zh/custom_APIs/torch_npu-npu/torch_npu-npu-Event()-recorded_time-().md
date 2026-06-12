@@ -25,7 +25,7 @@ torch_npu.npu.Event().recorded_time() -> int
 
 - **int**：输出被记录的时间，是一个无符号的整数（uint64），单位为微秒。
 
-- 若返回“INTERNALError”，则表示Event对象必须在获取记录时间戳之前被记录。
+- 若返回“InternalError”，则表示Event对象必须在获取记录时间戳之前被记录。
 
 ## 约束说明
 

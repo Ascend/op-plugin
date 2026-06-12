@@ -380,7 +380,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：kv左padding场景不支持Q为`bfloat16`/`float16`、KV为`int4`（`int32`）的场景。
     
     - kv伪量化参数分离：
-        - 除了`keyantiquant_mode`为0并且`value_antiquant_mode`为1的场景外，`key_antiquant_mode`和`value_antiquant_mode`取值需要保持一致。   
+        - 除了`key_antiquant_mode`为0并且`value_antiquant_mode`为1的场景外，`key_antiquant_mode`和`value_antiquant_mode`取值需要保持一致。   
         - `key_antiquant_scale`和`value_antiquant_scale`要么都为空，要么都不为空；`key_antiquant_offset`和`value_antiquant_offset`要么都为空，要么都不为空。
         - `key_antiquant_scale`和`value_antiquant_scale`都不为空时，除了`key_antiquant_mode`为0并且`value_antiquant_mode`为1的场景外，其shape需要保持一致；`key_antiquant_offset`和`value_antiquant_offset`都不为空时，除了`key_antiquant_mode`为0并且`value_antiquant_mode`为1的场景外，其shape需要保持一致。
         - `int4`（`int32`）伪量化场景不支持后量化。

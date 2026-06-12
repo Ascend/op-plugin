@@ -24,7 +24,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p143412710527"><a name="p143412710527"></a><a name="p143412710527"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1549443765519"><a name="p1549443765519"></a><a name="p1549443765519"></a>bert自注意力的融合实现。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1549443765519"><a name="p1549443765519"></a><a name="p1549443765519"></a>BERT自注意力的融合实现。</p>
 </td>
 </tr>
 <tr id="row52986599558"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p19298185917556"><a name="p19298185917556"></a><a name="p19298185917556"></a><a href="（beta）torch_npu-contrib-Prefetcher.md">（beta）torch_npu.contrib.Prefetcher</a></p>
@@ -52,7 +52,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1543482795211"><a name="p1543482795211"></a><a name="p1543482795211"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p182983598556"><a name="p182983598556"></a><a name="p182983598556"></a>应用基于NPU的Sigmoid线性单元（SiLU）函数，按元素方向。SiLU函数也称为swish函数。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p182983598556"><a name="p182983598556"></a><a name="p182983598556"></a>在NPU上按元素方向应用Sigmoid线性单元(SiLU)函数。SiLU函数也称为Swish函数。</p>
 </td>
 </tr>
 <tr id="row152981459165519"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p729815915510"><a name="p729815915510"></a><a name="p729815915510"></a><a href="（beta）torch_npu-contrib-NpuFairseqDropout.md">（beta）torch_npu.contrib.NpuFairseqDropout</a></p>
@@ -171,7 +171,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p107710352010"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p107710352010"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p107710352010"></a><a href="https://gitee.com/link?target=https://github.com/digantamisra98/Mish/blob/master/Mish/Torch/mish.py" target="_blank" rel="noopener noreferrer">class Mish()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p581212365619"><a name="p581212365619"></a><a name="p581212365619"></a>应用基于NPU的Mish操作。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p581212365619"><a name="p581212365619"></a><a name="p581212365619"></a>该接口用于在NPU上执行Mish操作。</p>
 </td>
 </tr>
 <tr id="row16812163115611"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1281210314562"><a name="p1281210314562"></a><a name="p1281210314562"></a><a href="（beta）torch_npu-contrib-module-SiLU.md">（beta）torch_npu.contrib.module.SiLU</a></p>
@@ -192,7 +192,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p2435152716524"><a name="p2435152716524"></a><a name="p2435152716524"></a><a href="https://gitee.com/link?target=https://arxiv.org/pdf/1512.00567.pdf" target="_blank" rel="noopener noreferrer">class LabelSmoothingCrossEntropy()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1481373195615"><a name="p1481373195615"></a><a name="p1481373195615"></a>使用NPU API进行LabelSmoothing Cross Entropy。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1481373195615"><a name="p1481373195615"></a><a name="p1481373195615"></a>使用NPU API进行Label Smoothing Cross Entropy。</p>
 </td>
 </tr>
 <tr id="row1681363165615"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p15813735564"><a name="p15813735564"></a><a name="p15813735564"></a><a href="（beta）torch_npu-contrib-module-ModulatedDeformConv.md">（beta）torch_npu.contrib.module.ModulatedDeformConv</a></p>

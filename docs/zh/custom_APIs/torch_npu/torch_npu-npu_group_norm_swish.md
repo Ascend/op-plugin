@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- API功能：计算输入`input`的组归一化结果`y`，均值`mean`，标准差的倒数`rstd`，以及swish的输出。
+- API功能：计算输入`input`的组归一化结果`y`、均值`mean`、标准差的倒数`rstd`，以及swish的输出。
 - 计算公式：
   - GroupNorm: 公式中的$x$代表`input`， $E[x] = \bar{x}$ 代表$x$的均值，$Var[x] = \frac{1}{n} * \sum_{i=1}^{n} (x_i - E[x])^2$ 代表$x$的方差，$\gamma$代表`weight`，$\beta$代表`bias`，则公式如下：
   $$

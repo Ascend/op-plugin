@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：推理场景下Multi-Head Latent Attention前处理的计算操作。该算子实现四条并行的计算路径：
+- API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算操作。该算子实现四条并行的计算路径：
     1. 标准Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{UQ}$上采样 → $W^{UK}$上采样 → $q^N$
     2. 位置编码Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{QR}$ → ROPE旋转位置编码 → $q^R$
     3. 标准Key路径：输入$x$ → $W^{DKV}$下采样 → RmsNorm → Cache存储 → $k^C$
@@ -189,7 +189,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     | Nkv          | kv 的 head 数                  | 取值固定为：1                                                               |
     | BlockNum     | PagedAttention 场景下per-tile量的块数    | 取值为计算 `B*Skv/BlockSize` 的结果后向上取整（Skv 表示 kv 的序列长度，允许取 0） |
     | BlockSize    | PagedAttention 场景下的块大小  | 取值范围：16-1024，且为16的倍数                                                           |
-    | T            | BS 合轴后的大小                | 取值范围：不限制；注：若采用 BS 合轴，此时 token_x、rope_sin、rope_cos、query_norm 均为 2 维，query_out、query_rope_out 为 3维，cache_index 为 1 维 |                                                    |
+    | T            | BS 合轴后的大小                | 取值范围：不限制；注：若采用 BS 合轴，此时 token_x、rope_sin、rope_cos、query_norm 均为 2 维，query_out、query_rope_out 为 3维，cache_index 为 1 维 |
 
 - 支持场景：
   <table style="table-layout: auto;" border="1">

@@ -12,7 +12,7 @@
 
 ## 功能说明
 
-- API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算。主要计算过程分为五路；
+- API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算操作。主要计算过程分为五路：
     - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路，第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>；
     - 第二路乘以W<sup>QR</sup>后经过旋转位置编码（ROPE）得到q<sup>R</sup>。
     - 第三路是输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>。

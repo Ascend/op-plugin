@@ -1,4 +1,3 @@
-
 # （beta）torch_npu.npu.obfuscation_initialize
 
 ## 产品支持情况

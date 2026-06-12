@@ -28,7 +28,7 @@
 
     4. 根据`offset`取值进行后续计算：
 
-        - 若`offset`不存在，不再后续计算。
+        - 若`offset`不存在，不再进行后续计算。
         - 若`offset`存在：
             1. 将`offset`值处理为int，范围为[-256, 255]。
                 $$
@@ -48,8 +48,8 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 ## 参数说明
 
-- **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](##约束说明)。不支持非连续的Tensor，不支持空Tensor。
-- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](##约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
 - **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认值为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
 
 ## 返回值说明

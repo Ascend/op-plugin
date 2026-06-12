@@ -25,7 +25,7 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 - **query_layer**（`Tensor`）：必选参数，仅支持`float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, head_dim]`。
 - **key_layer**（`Tensor`）：必选参数，仅支持`float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, k_seq_len, head_dim]`。
 - **value_layer**（`Tensor`）：必选参数，仅支持`float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, v_seq_len, head_dim]`。
-- **attention_mask**（`Tensor`）：必选参数，仅支持`float16`不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, k_seq_len]`。
+- **attention_mask**（`Tensor`）：必选参数，仅支持`float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, k_seq_len]`。
 - **scale**（`Scalar`）：必选参数，缩放系数，浮点数标量。
 - **keep_prob**（`float`）：必选参数，不做dropout的概率，0-1之间，浮点数。
 - **query_transpose**（`bool`）：可选参数，query是否做转置，默认值为False。

@@ -52,7 +52,7 @@
 </tr>
 <tr id="row124831534202119"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p15593155612361"><a name="p15593155612361"></a><a name="p15593155612361"></a><a href="（beta）at_npu-detail-createNPUGenerator.md">（beta）at_npu::detail::createNPUGenerator</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1059375683612"><a name="p1059375683612"></a><a name="p1059375683612"></a>NPU设备默认生成器创建，返回值类型at::Generator，与at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex <em id="i5642556194214"><a name="i5642556194214"></a><a name="i5642556194214"></a>device_index</em> = -1)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1059375683612"><a name="p1059375683612"></a><a name="p1059375683612"></a>用于创建NPU设备默认生成器，返回值类型Generator，与at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex <em>device_index</em> = -1)相同。</p>
 </td>
 </tr>
 <tr id="row1582212372214"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1145460103719"><a name="p1145460103719"></a><a name="p1145460103719"></a><a href="（beta）class-c10_npu-NPUStream.md">（beta）class c10_npu::NPUStream</a></p>
@@ -72,7 +72,7 @@
 </tr>
 <tr id="row6822103772114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2455402378"><a name="p2455402378"></a><a name="p2455402378"></a><a href="（beta）c10_npu-getCurrentNPUStream.md">（beta）c10_npu::getCurrentNPUStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>获取当前NPU流，返回值类型NPUStream，与c10::CUDA::CUDAStream c10::CUDA::getCurrentCUDAStream(c10::DeviceIndex <em id="i1444171610436"><a name="i1444171610436"></a><a name="i1444171610436"></a>device_index</em> = -1)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>通过设备ID获取当前NPU流，返回值类型NPUStream，与c10::CUDA::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex <em>device_index</em> = -1)相同。</p>
 </td>
 </tr>
 <tr id="row1324644442114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p10455150143713"><a name="p10455150143713"></a><a name="p10455150143713"></a><a href="（beta）c10_npu-setCurrentNPUStream.md">（beta）c10_npu::setCurrentNPUStream</a></p>
@@ -112,7 +112,7 @@
 </tr>
 <tr id="row166762910245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p186712293248"><a name="p186712293248"></a><a name="p186712293248"></a><a href="（beta）c10_npu-current_device.md">（beta）c10_npu::current_device</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p06702919248"><a name="p06702919248"></a><a name="p06702919248"></a>NPU设备id获取，返回值类型DeviceIndex，为获取到的设备id，与c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p06702919248"><a name="p06702919248"></a><a name="p06702919248"></a>NPU设备id获取，返回值类型DeviceIndex，表示获取到的设备id，与PyTorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。</p>
 </td>
 </tr>
 <tr id="row193943155249"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p93941215142414"><a name="p93941215142414"></a><a name="p93941215142414"></a><a href="（beta）c10_npu-set_device.md">（beta）c10_npu::set_device</a></p>
@@ -161,12 +161,12 @@
 </td>
 </tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu.native-empty_with_swapped_memory</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>申请一个device信息为NPU且实际内存在host侧的特殊Tensor。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>申请一个device信息为NPU且实际内存在host侧的特殊tensor。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard.md">c10_npu::NPUStreamGuard</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流guard，保障作用域内的设备流，与`c10::cuda::CUDAStreamGuard`相同。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流guard，保障作用域内的设备流，与c10::cuda::CUDAStreamGuard相同。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-current_device.md">c10_npu::NPUStreamGuard::current_device</a></p>
@@ -191,7 +191,7 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-original_stream.md">c10_npu::NPUStreamGuard::original_stream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时设置的流。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>返回guard构造时设置的NPU流。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-reset_stream.md">c10_npu::NPUStreamGuard::reset_stream</a></p>
@@ -201,12 +201,12 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-stream_synchronize.md">c10_npu::stream_synchronize</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流同步，与`c10::cuda::stream_synchronize`相同。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>NPU设备流同步，与c10::cuda::stream_synchronize相同。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL.md">c10d_npu::ProcessGroupHCCL</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>ProcessGroupHCCL继承自`c10d::Backend`，实现`HCCL`后端的相关接口，用于通信算子调用。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>ProcessGroupHCCL继承自c10d::Backend，实现HCCL后端的相关接口，用于通信算子调用。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10d_npu-ProcessGroupHCCL-batch_isend_irecv.md">c10d_npu::ProcessGroupHCCL::batch_isend_irecv</a></p>

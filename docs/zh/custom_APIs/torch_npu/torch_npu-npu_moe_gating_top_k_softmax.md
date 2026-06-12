@@ -11,6 +11,7 @@
 
 - API功能：MoE计算中，对输入`x`做Softmax计算，再做topk操作。
 - 计算公式：
+
 $$
 softmaxOut = softmax(x, axis = -1) \\
 yOut, expertIdxOut = topK(softmaxOut, k = k) \\

@@ -18,17 +18,17 @@
 </tr>
 <tr id="row848935494011"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p64891454164016"><a name="p64891454164016"></a><a name="p64891454164016"></a><a href="（beta）torch_npu-utils-npu_combine_tensors.md">（beta）torch_npu.utils.npu_combine_tensors</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p2049005414407"><a name="p2049005414407"></a><a name="p2049005414407"></a>应用基于NPU的Tensor融合操作，将NPU上的多个Tensor融合为内存连续的一个新Tensor，访问原Tensor时实际访问新融合Tensor的对应偏移地址。</p>
+<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p2049005414407"><a name="p2049005414407"></a><a name="p2049005414407"></a>应用基于NPU的tensor融合操作，将NPU上的多个tensor融合为内存连续的一个新tensor，访问原tensor时实际访问新融合tensor的对应偏移地址。</p>
 </td>
 </tr>
 <tr id="row14789258164020"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p3790558174012"><a name="p3790558174012"></a><a name="p3790558174012"></a><a href="（beta）torch_npu-utils-get_part_combined_tensor.md">（beta）torch_npu.utils.get_part_combined_tensor</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p299109481"><a name="p299109481"></a><a name="p299109481"></a>根据地址偏移及内存大小，从经过torch_npu.utils.npu_combine_tensors融合后的融合Tensor中获取局部Tensor。</p>
+<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p299109481"><a name="p299109481"></a><a name="p299109481"></a>根据地址偏移及内存大小，从经过torch_npu.utils.npu_combine_tensors融合后的融合tensor中获取局部tensor。</p>
 </td>
 </tr>
 <tr id="row54301722410"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p443019224112"><a name="p443019224112"></a><a name="p443019224112"></a><a href="（beta）torch_npu-utils-is_combined_tensor_valid.md">（beta）torch_npu.utils.is_combined_tensor_valid</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p731884115495"><a name="p731884115495"></a><a name="p731884115495"></a>校验Tensor列表中的Tensor是否全部属于一个经过torch_npu.utils.npu_combine_tensors融合后的新融合Tensor。</p>
+<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p731884115495"><a name="p731884115495"></a><a name="p731884115495"></a>校验tensor列表中的tensor是否全部属于一个经过torch_npu.utils.npu_combine_tensors融合后的新融合tensor。</p>
 </td>
 </tr>
 <tr id="row13911539133113"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p491133910317"><a name="p491133910317"></a><a name="p491133910317"></a><a href="（beta）torch_npu-utils-FlopsCounter.md">（beta）torch_npu.utils.FlopsCounter</a></p>

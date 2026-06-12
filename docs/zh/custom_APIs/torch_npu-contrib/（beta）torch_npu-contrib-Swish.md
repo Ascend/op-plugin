@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-应用基于NPU的Sigmoid线性单元（SiLU）函数，按元素方向。SiLU函数也称为Swish函数。
+在NPU上按元素方向应用Sigmoid线性单元(SiLU)函数。SiLU函数也称为Swish函数。
 
 ## 函数原型
 

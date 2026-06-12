@@ -66,7 +66,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 ## 返回值说明
 
-- **sparse\_indices**（`Tensor`）：公式中的Indices输出，数据类型支持`int32`,数据格式支持$ND$，当`layout_query`为"BSND"时输出shape为[B, S1, N2, sparse\_count]，当layout\_query为"TND"时输出shape为[T1, N2, sparse\_count]。
+- **sparse\_indices**（`Tensor`）：公式中的Indices输出，数据类型支持`int32`，数据格式支持$ND$，当`layout_query`为"BSND"时输出shape为[B, S1, N2, sparse\_count]，当layout\_query为"TND"时输出shape为[T1, N2, sparse\_count]。
 
 - **sparse\_values**（`Tensor`）：公式中的Indices输出对应的value值，数据类型支持`bfloat16`、`float16`，数据格式支持$ND$，输出shape与`sparse_indices`保持一致。
 

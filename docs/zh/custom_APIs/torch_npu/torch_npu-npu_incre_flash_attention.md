@@ -106,7 +106,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - page attention使能场景下，输入kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$或$（blocknum, blocksize, H）$，$blocknum$不应小于每个batch所需block个数的总和。通常情况下，kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$时，性能比kv cache排布格式为$（blocknum, blocksize, H）$时更好。
     - page attention使能场景下，支持kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$，但此时`query layout`仅支持$BNSD$。
     - page attention使能场景下，当输入kv cache排布格式为$（blocknum, blocksize, H）$，且$H（H=numKvHeads * headDims）$超过64k时，受硬件指令约束，会被拦截报错。
-    - page attention场景下，必须传入输入`actual_seq_lengths`，每个batch的`actualSeqLength`表示每个batch对`sequence`真实长度，该值除以属性输入`blocksize`即表示每个batch所需block数量。
+    - page attention场景下，必须传入输入`actual_seq_lengths`，每个batch的`actualSeqLength`表示每个batch的`sequence`真实长度，该值除以属性输入`blocksize`即表示每个batch所需block数量。
     - page attention场景下，`block_table`必须为二维`Tensor`，第一维长度需等于batch数，第二维长度不能小于`maxBlockNumPerSeq`（`maxBlockNumPerSeq`为每个batch中最大`actual_seq_lengths`对应的block数量）。例如，batch数为2，属性`blocksize=128`，当每个batch的`actualSeqLength`为512时，表明每个batch至少需要4个block，因此`block_table`的排布可以为(2, 4)。
     - page attention使能场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
 

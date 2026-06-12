@@ -38,7 +38,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
     > [!NOTE]  
     > $M$表示token个数，对应transform中的BS（$B$：Batch，表示输入样本批量大小，$S$：Seq-Length，表示输入样本序列长度）；$K1$表示第一个matmul的输入通道数，对应transform中的$H$（Head-Size，表示隐藏层的大小）；$N1$表示第一个matmul的输出通道数；$K2$表示第二个matmul的输入通道数；$N2$表示第二个matmul的输出通道数，对应transform中的$H$；$E$表示有专家场景的专家数。
 
-- **activation** (`str`)：必选参数，代表使用的激活函数。当前仅支持`fastgelu、gelu、relu、silu、geglu、swiglu、reglu`。
+- **activation** (`str`)：必选参数，代表使用的激活函数。当前仅支持`fastgelu`、`gelu`、`relu`、`silu`、`geglu`、`swiglu`或`reglu`。
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **expert_tokens** (`list`)：可选参数，代表各专家的token数，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
 - **expert_tokens_index** (`list`)：可选参数，代表各专家计算token的索引值，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。

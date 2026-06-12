@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- `Tensor`通过record_stream在内存池上添加的已被stream使用的标记后，可以通过该接口移除该标记。
+- `tensor`通过record_stream在内存池上添加标记后，该标记已被stream使用，可以通过该接口移除该标记。
 
 - 多流之间的内存可以复用，默认通过record_stream标记内存池，防止复用的内存被提前还给内存池而出现踩踏行为。内存池在每次内存申请时，通过query device上的event来确定是否算子已经被执行完，可以安全释放了。但是这种host和device结合的机制会出现副作用：当host下发比device执行快很多时，可能导致峰值内存被推高，原因是host在query时device还没执行完。
 

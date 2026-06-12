@@ -81,7 +81,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：必选参数，要求为1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，要求为1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。`comm_alg`设置为""时，暂不支持该参数，使用默认值即可。
 
-- **shared\_expert\_x** (`Tensor`)：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token，在combine\_v2后需要做add的值。
+- **shared\_expert\_x** (`Tensor`)：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token在combine\_v2后需要做add的值。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求为一个2维或3维的张量，当张量为2D时，shape为\(BS, H\)；当张量为3D时，前两位的乘积需等于BS，第三维需等于H。
 
@@ -144,7 +144,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本支持""，"hierarchy"两种输入方式。
         - "": 默认值，token数据直接通过MTE方式发回目标卡。
-        - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。模板仅支持`tp_world_size`为1、共享专家为0的场景，且不支持二维mask、特殊专家、动态缩容、性能打点场景。
+        - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。该模板仅支持`tp_world_size`为1、共享专家为0的场景，且不支持二维mask、特殊专家、动态缩容、性能打点场景。
 
 - **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：

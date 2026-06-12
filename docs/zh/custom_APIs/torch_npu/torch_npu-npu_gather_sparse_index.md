@@ -9,7 +9,7 @@
 
 ## 功能说明 
 
-- API功能：从输入Tensor的指定维度，按照`index`中的下标序号提取元素，保存到输出Tensor中。
+- API功能：从输入tensor的指定维度，按照`index`中的下标序号提取元素，保存到输出tensor中。
 
 - 计算公式：假设$x$是输入`input`，$idx$是输入`index`。
   $$

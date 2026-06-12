@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-检测梯度是否溢出。在INF_NAN模式下，检测输入`Tensor`是否溢出；在饱和模式下，通过检查硬件溢出标志位判断是否溢出。
+检测梯度是否溢出。在INF_NAN模式下，检测输入`tensor`是否溢出；在饱和模式下，通过检查硬件溢出标志位判断是否溢出。
 
 ## 函数原型
 
@@ -27,7 +27,7 @@ torch_npu.npu.utils.npu_check_overflow(grad) -> bool
 
 `bool`
 
-True溢出，False未溢出。
+True表示溢出，False表示未溢出。
 
 ## 调用示例
 

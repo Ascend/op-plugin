@@ -18,7 +18,7 @@
 核心机制：
 
 1. Capture预处理：定义算子捕获时的输入数据预处理逻辑。
-2. Update动态更新：在Graph Replay（回放）阶段，无需重新Capture图结构，即可动态修改算子输入参数（如序列长度、Batch Size等）的机制。具体流程如下：
+2. Update动态更新：在Graph Replay（回放）阶段，无需重新Capture图结构，即可动态修改算子输入参数（如序列长度、Batch Size等）。具体流程如下：
     1. 用户在Replay前调用`g.update(cpu_update_input=[...])`传入新参数。
     2. 框架遍历Graph中的算子，查找注册的`NpuGraphOpHandler`。
     3. 框架调用Handler的`update_args`方法，传入`dispatch_record` 和`update_input`。

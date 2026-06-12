@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-查询当前支持的torch_npu.profiler.ExportType的性能数据结果文件类型。
+查询当前`torch_npu.profiler.ExportType`支持的性能数据结果文件类型。
 
 ## 函数原型
 
