@@ -219,7 +219,7 @@
 
   * 此阶段输入为前序对前序topK-topP-minP采样的联合结果logitsSortMasked。
 
-  * 此处输入须要确保logitsSortMasked∈(0,1)，根据输入logits的实际情况，配置入参约束属性Attr.optional.Bool.input_is_logits，即：
+  * 此处输入需要确保logitsSortMasked∈(0,1)，根据输入logits的实际情况，配置入参约束属性Attr.optional.Bool.input_is_logits，即：
 
     $$
     \text{inputIsLogits} =

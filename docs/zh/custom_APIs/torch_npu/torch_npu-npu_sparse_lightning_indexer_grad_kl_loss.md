@@ -48,7 +48,7 @@
         dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
         $$
 
-        利用链式法则可以进行weights，query和key矩阵的梯度计算：
+        利用链式法则可以进行weights、query和key矩阵的梯度计算：
         $$
         dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
         $$
@@ -101,9 +101,9 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`int32`，默认值为`3`。
 
-**pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值2^63-1。
+**pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
-**next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
+**next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
 ## 返回值说明
 

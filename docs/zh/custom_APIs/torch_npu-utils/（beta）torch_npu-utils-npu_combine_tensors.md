@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-应用基于NPU的Tensor融合操作，将NPU上的多个Tensor融合为内存连续的一个新Tensor，访问原Tensor时实际访问新融合Tensor的对应偏移地址。
+应用基于NPU的tensor融合操作，将NPU上的多个tensor融合为内存连续的一个新tensor，访问原tensor时实际访问新融合tensor的对应偏移地址。
 
 ## 函数原型
 

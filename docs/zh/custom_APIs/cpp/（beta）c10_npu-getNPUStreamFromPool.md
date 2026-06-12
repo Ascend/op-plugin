@@ -16,7 +16,7 @@ c10_npu::NPUStream c10_npu::getNPUStreamFromPool(c10::DeviceIndex device = -1)
 
 ## 参数说明
 
-device：DeviceIndex类型，获取流的NPU设备id。
+device：DeviceIndex类型，获取流的NPU设备ID。
 
 ## 支持的型号
 

@@ -142,7 +142,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     - BS：表示待发送的token数量。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为0<BS≤512。
 
-    - K：表示选取topK个专家，取值范围为0<K≤8同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
+    - K：表示选取topK个专家，取值范围为0<K≤8，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
     - local\_expert\_num：表示本卡专家数量。
         - 对于共享专家卡，local\_expert\_num=1
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。

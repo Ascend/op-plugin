@@ -21,10 +21,10 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 
 - **output** (`Tensor`)：必选参数，输出Tensor，用于接收计算数据。
 - **input** (`Tensor`)：必选参数，输入Tensor，用于提供计算数据，`input`的shape为所有卡上`output`的shape拼接大小。
-- **input_split_sizes** (`List[int]`)：可选参数，输入tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
+- **input_split_sizes** (`List[int]`)：可选参数，输入Tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
     - `input_split_sizes`元素之和与`input`的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
     - `input_split_sizes`元素个数与`group`的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
-- **op** (`torch._C._distributed_c10d.ReduceOp.ReduceOpType`)：可选参数，reduce算子，用于控制计算逻辑，默认值dist.ReduceOp.SUM。
+- **op** (`torch._C._distributed_c10d.ReduceOp.ReduceOpType`)：可选参数，Reduce算子，用于控制计算逻辑，默认值dist.ReduceOp.SUM。
 - **group** (`torch.distributed.distributed_c10d.ProcessGroup`)：可选参数，分布式进程组，默认值None。
 - **async_op** (`bool`)：可选参数，是否异步调用，默认值False。
 

@@ -1,7 +1,7 @@
 # torch_npu.npu_gelu
 
 > [!NOTICE]  
-> 在NPU环境下使用Torch原生接口gelu时，approximate参数不起作用且默认为tanh，如果需要approximate的默认值设定为None或者区分不同的approximate方法需要使用此接口。
+> 在NPU环境下使用Torch原生接口gelu时，approximate参数不起作用且默认为tanh，如果需要将approximate的默认值设定为None，或者需要区分不同的approximate方法，则需使用此接口。
 
 ## 产品支持情况
 
@@ -25,7 +25,7 @@
     $$
     \Phi(x) = P(X \leq x) = \frac{1}{2} \left[ 1 + \text{erf}\left(\frac{x}{\sqrt{2}}\right) \right]
     $$
-    此时对应`approximate="none"`，若采用`approximate="tanh"`，则将 $\text{erf}(\cdot)$ 替换为 $\tanh(\cdot)$ 的近似形式。
+    当`approximate="none"`时，使用上述公式；若采用`approximate="tanh"`，则将 $\text{erf}(\cdot)$ 替换为 $\tanh(\cdot)$ 的近似形式。
 
 ## 函数原型
 

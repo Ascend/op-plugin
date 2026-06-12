@@ -34,7 +34,7 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 ## 返回值说明
 
 - **selected_indices** (`Tensor`)：shape为[M]的1维整数张量，表示从boxes张量中选定的index，其中M <= max_output_size。
-- **valid_outputs**(`Tensor`)：0维整数张量，表示selected_indices中有效元素的数量，有效元素首先出现。
+- **valid_outputs**(`Tensor`)：0维整数张量，表示selected_indices中有效元素的数量，有效元素按顺序排序在前面。
 
 ## 调用示例
 

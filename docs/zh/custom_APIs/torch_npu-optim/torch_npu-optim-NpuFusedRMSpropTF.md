@@ -42,7 +42,7 @@ class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, w
 - 将模型参数对象指向新的对象
 - 将模型参数对象置为None
 
-对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedRMSpropTF`可正常工作。
+对模型参数对象进行inplace计算或读取参数的值时，`NpuFusedRMSpropTF`可正常工作。
 
 ## 调用示例
 

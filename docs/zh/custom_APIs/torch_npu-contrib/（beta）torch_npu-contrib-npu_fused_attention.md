@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-bert自注意力的融合实现。
+BERT自注意力的融合实现。
 
 ## 函数原型
 
@@ -23,7 +23,7 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 
 - **hidden_states** (`Tensor`)：最后一层的hidden_states。
 - **attention_mask** (`Tensor`)：attention mask。
-- **query_kernel** (`Tensor`): query的权重。
+- **query_kernel** (`Tensor`)：query的权重。
 - **key_kernel** (`Tensor`)：key的权重。
 - **value_kernel** (`Tensor`)：value的权重。
 - **query_bias** (`Tensor`)：query的偏差值。

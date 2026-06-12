@@ -18,7 +18,7 @@ void torch_npu::init_npu(const at::Device& device)
 
 ## 参数说明
 
-- device_index：DeviceIndex类型，指定初始化的NPU设备id，默认0。
+- device_index：DeviceIndex类型，指定初始化的NPU设备ID，默认0。
 - device_str：string类型，指定初始化的设备名称。
 - device：Device类型，指定初始化的NPU设备。
 

@@ -10,6 +10,7 @@
 
 - API功能：基于一系列计算得到mHC\(Manifold-Constrained Hyper-Connections\)架构中hidden层的H<sup>res</sup>和H<sup>post</sup>投影矩阵，以及Atten层或MLP层的输入矩阵h<sup>in</sup>。
 - 计算公式：
+
 $$
 \begin{aligned}
 \vec{x^{'}_{l}} &=\operatorname{RmsNorm}(\vec{x_{l}})\\

@@ -21,7 +21,7 @@ torch_npu.npu.aclnn.allow_hf32:bool
 
 ## 参数说明
 
-**bool**：开启和关闭hf32属性的支持。
+**bool**：用于开启或关闭hf32属性的支持。
 
 ## 返回值说明
 

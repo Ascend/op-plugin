@@ -70,7 +70,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
 - **quant\_mode**(`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当`quant_mode`为2，`dynamic_scales`不为None；当`quant_mode`为0，`dynamic_scales`为None。
 - **global\_bs**(`int`)：可选参数，表示EP域全局的BS大小。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入，固定按256\*ep\_world\_size传入，在后续版本BS大于256的场景下会无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入；若固定按256\*ep\_world\_size传入，在后续版本BS大于256的场景下可能无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
 - **expert\_token\_nums\_type**(`int`)：可选参数，表示输出`expert_token_nums`的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
@@ -87,7 +87,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
 
 - **tp\_recv\_counts**(`Tensor`)：表示TP通信域各卡收到的token数量。对应[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)的`tp_send_counts`输入。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP通信域，暂无该输出，
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP通信域，暂无该输出。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
 
 - **expand\_scales**(`Tensor`)：表示`expert_scales`与`x`一起进行alltoallv之后的输出。
@@ -152,7 +152,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
 - 版本配套约束：
 
-     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[Ascend Extension for PyTorch 版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md)》中“相关产品版本配套说明””。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[Ascend Extension for PyTorch 版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md)》中“相关产品版本配套说明”。
 
 ## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 

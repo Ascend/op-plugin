@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-校验Tensor列表中的Tensor是否全部属于一个经过`torch_npu.utils.npu_combine_tensors`融合后的新融合Tensor。
+校验tensor列表中的tensor是否全部属于一个经过`torch_npu.utils.npu_combine_tensors`融合后的新融合tensor。
 
 ## 函数原型
 

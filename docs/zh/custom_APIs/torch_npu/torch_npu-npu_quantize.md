@@ -58,7 +58,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         - <term>Atlas 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
 
-    - `div_mode`为`False`时，类型支持`qint8`、`quint4x2`。如果`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
+    - `div_mode`为`False`时，类型支持`qint8`、`quint4x2`。当`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
 
 - **axis** (`int`)：可选参数，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
 

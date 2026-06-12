@@ -23,7 +23,7 @@ torch_npu.npu.matmul.allow_hf32 = bool
 
 ## 参数说明
 
-输入bool值，默认值False。
+输入为bool值，默认值为False。
 
 ## 返回值说明
 
