@@ -63,6 +63,18 @@ class TestFFT1d(TestCase):
         npu_output_real = torch.view_as_real(npu_output)
 
         self.assertRtolEqual(cpu_output_real, npu_output_real)
+    
+    def test_fft_2d_float(self):
+        real = torch.randn(32, 1, dtype=torch.float32)
+        imag = torch.randn(32, 1, dtype=torch.float32)
+        complex_tensor = torch.complex(real, imag)
+        complex_tensor_npu = complex_tensor.npu()
+
+        cpu_output = torch.fft.fft(complex_tensor, dim=0)
+        npu_output = torch.fft.fft(complex_tensor_npu, dim=0)
+
+        self.assertTrue(torch.allclose(cpu_output, npu_output.cpu(), rtol=1e-3, atol=1e-3))
+
 
 if __name__ == "__main__":
     run_tests()
