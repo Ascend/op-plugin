@@ -72,7 +72,6 @@ class TestForeachAddcmulScalarList(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
-    @unittest.skip("Temporarily skipping")
     def test_foreach_addcmul_scalar_list_out_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -85,7 +84,7 @@ class TestForeachAddcmulScalarList(TestCase):
 
             npu_output = torch._foreach_addcmul(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
-            self.assertRtolEqual(cpu_output, npu_output)
+            self.assert_equal_bfloat16(cpu_output, npu_output)
 
     @SupportedDevices(['Ascend910B'])
     def test_foreach_addcmul_scalar_list_out_bfloat16_shpae_tensor_num(self):
@@ -108,7 +107,6 @@ class TestForeachAddcmulScalarList(TestCase):
 
             self.assertRtolEqual(cpu_tensors[0], npu_tensors[0])
 
-    @unittest.skip("Temporarily skipping")
     def test_foreach_addcmul_scalar_list_inplace_float16_shpae_tensor_num(self):
         tensor_num_list = [20, 50]
         for tensor_num in tensor_num_list :
@@ -121,7 +119,7 @@ class TestForeachAddcmulScalarList(TestCase):
 
             torch._foreach_addcmul_(npu_tensors[0], npu_tensors[1], npu_tensors[2], scalars)
 
-            self.assertRtolEqual(cpu_output, npu_tensors[0])
+            self.assert_equal_bfloat16(cpu_output, npu_tensors[0])
 
     @SupportedDevices(['Ascend910B'])
     def test_foreach_addcmul_scalar_list_inplace_bfloat16_shpae_tensor_num(self):
