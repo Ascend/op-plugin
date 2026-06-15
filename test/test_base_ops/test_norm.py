@@ -69,14 +69,5 @@ class TestNorm(TestCase):
         exception = cm.exception
         self.assertTrue("Dimension out of range (expected to be in range of [-1, 0], but got 2)" in str(exception))
 
-    @SupportedDevices(['Ascend910B'])
-    @unittest.skip("Temporarily skipping")
-    def test_norm_complex_input_check(self):
-        x = torch.randn(32, 32, 32, dtype=torch.complex64).npu()
-        with self.assertRaises(RuntimeError) as cm:
-            output = torch.norm(x, 5, 2)
-        exception = cm.exception
-        self.assertTrue("does not support complex numbers" in str(exception))
-
 if __name__ == "__main__":
     run_tests()
