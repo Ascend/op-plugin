@@ -6325,5 +6325,127 @@ class TestNpuRmsNormBackwardQuant(TestCase):
         self.assertEqual(actual_dgamma.shape, fake_dgamma.shape)
 
 
+class FakeTensorFormatCastTest(TestCase):
+    """FakeTensor tests for _npu_format_cast meta registrations."""
+
+    ACL_FORMAT_ND = 2
+    ACL_FORMAT_NC1HWC0 = 4
+    ACL_FORMAT_FRACTAL_NZ = 29
+    ACL_FORMAT_NCDHW = 30
+    ACL_FORMAT_NDC1HWC0 = 32
+    ACL_FORMAT_FRACTAL_Z_3D = 33
+
+    # ---- _npu_format_cast (base overload) ---- #
+
+    def test_format_cast_2d_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(16, 32, device='npu')
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [16, 32])
+            self.assertEqual(out.dtype, torch.float32)
+
+    def test_format_cast_4d_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(2, 32, 4, 4, device='npu', dtype=torch.float16)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_NC1HWC0)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [2, 32, 4, 4])
+            self.assertEqual(out.dtype, torch.float16)
+
+    def test_format_cast_5d_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(1, 16, 2, 4, 4, device='npu')
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_NDC1HWC0)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [1, 16, 2, 4, 4])
+
+    def test_format_cast_nd_to_nd(self):
+        with FakeTensorMode():
+            x = torch.randn(8, 16, device='npu')
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_ND)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [8, 16])
+
+    def test_format_cast_non_aligned_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(15, 17, device='npu', dtype=torch.float16)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(list(out.shape), [15, 17])
+            self.assertEqual(out.dtype, torch.float16)
+
+    def test_format_cast_int8_shape(self):
+        with FakeTensorMode():
+            x = torch.randint(-128, 127, (32, 64), device='npu', dtype=torch.int8)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(list(out.shape), [32, 64])
+            self.assertEqual(out.dtype, torch.int8)
+
+    def test_format_cast_preserves_device(self):
+        with FakeTensorMode():
+            x = torch.randn(4, 8, device='npu')
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(out.device.type, 'npu')
+
+    # ---- _npu_format_cast.aclnn (with customize_dtype) ---- #
+
+    def test_format_cast_aclnn_overload_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(16, 32, device='npu', dtype=torch.float16)
+            # customize_dtype=5 is float16
+            out = torch.ops.npu._npu_format_cast.aclnn(x, self.ACL_FORMAT_FRACTAL_NZ, 5)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [16, 32])
+            self.assertEqual(out.dtype, torch.float16)
+
+    def test_format_cast_aclnn_int8(self):
+        with FakeTensorMode():
+            x = torch.randint(-128, 127, (32, 64), device='npu', dtype=torch.int8)
+            # customize_dtype=1 is int8
+            out = torch.ops.npu._npu_format_cast.aclnn(x, self.ACL_FORMAT_FRACTAL_NZ, 1)
+            self.assertEqual(list(out.shape), [32, 64])
+            self.assertEqual(out.dtype, torch.int8)
+
+    # ---- _npu_format_cast.input_dtype (with customize_dtype + input_dtype) ---- #
+
+    def test_format_cast_input_dtype_overload_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(16, 32, device='npu', dtype=torch.float16)
+            # customize_dtype=5 (fp16), input_dtype=5 (fp16)
+            out = torch.ops.npu._npu_format_cast.input_dtype(x, self.ACL_FORMAT_FRACTAL_NZ, 5, 5)
+            self.assertTrue(isinstance(out, FakeTensor))
+            self.assertEqual(list(out.shape), [16, 32])
+
+    def test_format_cast_input_dtype_int8(self):
+        with FakeTensorMode():
+            x = torch.randint(-128, 127, (32, 64), device='npu', dtype=torch.int8)
+            # customize_dtype=1 (int8), input_dtype=1 (int8)
+            out = torch.ops.npu._npu_format_cast.input_dtype(x, self.ACL_FORMAT_FRACTAL_NZ, 1, 1)
+            self.assertEqual(list(out.shape), [32, 64])
+            self.assertEqual(out.dtype, torch.int8)
+
+    # ---- Multiple dtypes ---- #
+
+    def test_format_cast_bfloat16(self):
+        with FakeTensorMode():
+            x = torch.randn(8, 16, device='npu', dtype=torch.bfloat16)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(out.dtype, torch.bfloat16)
+            self.assertEqual(list(out.shape), [8, 16])
+
+    def test_format_cast_float32(self):
+        with FakeTensorMode():
+            x = torch.randn(8, 16, device='npu', dtype=torch.float32)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(out.dtype, torch.float32)
+            self.assertEqual(list(out.shape), [8, 16])
+
+    def test_format_cast_3d_shape(self):
+        with FakeTensorMode():
+            x = torch.randn(4, 15, 17, device='npu', dtype=torch.float16)
+            out = torch.ops.npu._npu_format_cast(x, self.ACL_FORMAT_FRACTAL_NZ)
+            self.assertEqual(list(out.shape), [4, 15, 17])
+
+
 if __name__ == "__main__":
     run_tests()

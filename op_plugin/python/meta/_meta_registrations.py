@@ -2631,6 +2631,21 @@ def _npu_dtype_cast_backward_meta(self, dtype):
     return self.new_empty(self.shape, dtype=dtype)
 
 
+@impl(m, "_npu_format_cast")
+def _npu_format_cast_meta(self, acl_format):
+    return self.new_empty(self.shape)
+
+
+@impl(m, "_npu_format_cast.aclnn")
+def _npu_format_cast_aclnn_meta(self, acl_format, customize_dtype):
+    return self.new_empty(self.shape)
+
+
+@impl(m, "_npu_format_cast.input_dtype")
+def _npu_format_cast_input_dtype_meta(self, acl_format, customize_dtype, input_dtype):
+    return self.new_empty(self.shape)
+
+
 @impl(m, "npu_dtype_cast_backward")
 def npu_dtype_cast_backward_meta(self, dtype, grad_dtype=None, input_dtype=None):
     dim_num = self.dim()
