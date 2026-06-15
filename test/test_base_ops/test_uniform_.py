@@ -2,6 +2,7 @@ import torch
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestUniform(TestCase):
@@ -17,6 +18,7 @@ class TestUniform(TestCase):
             self.assertTrue(item[1] <= input1.min())
             self.assertTrue(item[2] >= input1.max())
 
+    @SupportedDevices(['Ascend910A', 'Ascend910B', 'Ascend910_93'])
     def test_uniform_trans(self):
         shape_format = [
             [(20, 300), -100, 100, torch.float32],
