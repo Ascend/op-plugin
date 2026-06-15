@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>   |  √  |
+|<term>Atlas 350 加速卡</term>        | √  |
 |<term>Atlas A3 推理系列产品</term>   | √  |
 |<term>Atlas A2 推理系列产品</term>   | √  |
 
@@ -85,12 +85,12 @@ query_dtype=None, key_dtype=None) -> Tensor
 - Atlas A3 推理系列产品：
     - query和key的数据类型支持`int8`。
     - 仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
-- Ascend 950PR/Ascend 950DT：
+- Atlas 350 加速卡：
     - query N1仅支持8、16、24、32、64。
     - query和key的数据类型支持`float8_e4m3fn、hifloat8、int8`。
     - 当query和key的数据类型为`float8_e4m3fn`时，支持weights、query_dequant_scale、key_dequant_scale的数据类型为`bfloat16、float、float`或`float16、float16、float16`；
     - 当query和key的数据类型为`hifloat8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`bfloat16、float、float`；
-    - 当query和key的数据类型为`int88`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
+    - 当query和key的数据类型为`int8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
 
 ## 调用示例
 
