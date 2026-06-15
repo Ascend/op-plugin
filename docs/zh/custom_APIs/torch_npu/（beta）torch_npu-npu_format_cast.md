@@ -16,7 +16,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
+torch_npu.npu_format_cast(input, acl_format) -> Tensor
 ```
 
 ## 参数说明
@@ -42,16 +42,8 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
     |torch_npu.Format.NC|35|2维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NC。|
     |torch_npu.Format.NCL|47|3维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NCL。|
     
-    > [!NOTE]
-    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的”[数据排布格式](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html)”章节。
-
-- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`。
-  - 不传参时默认值为`None`，float32和int32数据类型的默认C0值为16，int8数据类型的默认C0值为32；
-  - 传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
-
-## 约束说明
-
-`customize_dtype`参数仅在Atlas A2 训练系列产品/Atlas A3 训练系列产品且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
+    > [!NOTE]  
+    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html">数据排布格式</a>”章节。
 
 ## 返回值说明
 
@@ -82,16 +74,4 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
     >>> x2 = torch_npu.npu_format_cast(x, torch_npu.Format.NHWC)
     >>> torch_npu.get_npu_format(x2)
     1
-    ```
-
-- 使用customize_dtype指定C0=8（仅<term>Atlas A2 训练系列产品</term>及<term>Atlas A3 训练系列产品</term>且CANN >= 9.1.0）：
-
-    ```python
-    >>> import torch
-    >>> import torch_npu
-    >>> t = torch.randint(0, 100, (32, 32), dtype=torch.int32).npu()
-    >>> # customize_dtype=3 即 ACL_INT32，此时 C0=8
-    >>> out = torch_npu.npu_format_cast(t, 29, customize_dtype=3)
-    >>> torch_npu.get_npu_format(out)
-    29
     ```
