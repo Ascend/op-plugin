@@ -457,7 +457,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         def __init__(self):
             super().__init__()
         def forward(self, x, weight, weightscale, xscale, group_list, quant_dtype):
-            output = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weightscale, xscale, group_list, quant_dtype=quant_dtype)
+            output = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weightscale, xscale, group_list, quant_dtype=quant_dtype, dequant_dtype=5)
             return output    
      
     def gen_input_data(E, M, K, N):
@@ -471,7 +471,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     M = 512
     K = 7168
     N = 4096
-    quant_dtype = 2
+    quant_dtype = 1
     x, weight, weightScale, xScale, groupList = gen_input_data(E, M, K, N)
     weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
      
