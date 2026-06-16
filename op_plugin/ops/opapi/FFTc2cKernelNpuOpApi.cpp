@@ -186,7 +186,6 @@ static at::Tensor& _exec_fft(at::Tensor& out_, const at::Tensor& self_, at::IntA
         [&](int64_t d) {return is_transformed_dim[d]; });
     auto self_strides = self.strides();
     at::DimVector sorted_dims = _sort_dims(self, dim, mode_code);
-    sorted_dims = _sort_dims(self, dim, mode_code);
     std::copy(sorted_dims.begin(), sorted_dims.end(), dim_permute.begin());
     std::sort(batch_end, dim_permute.end(),
         [&](int64_t a, int64_t b) { return self_strides[a] > self_strides[b]; });
