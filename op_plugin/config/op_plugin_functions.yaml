@@ -7022,6 +7022,9 @@ custom:
   - func: npu_swiglu_quant(Tensor x, *, Tensor? smooth_scales=None, Tensor? offsets=None, Tensor? group_index=None, bool activate_left=False, int quant_mode=0, int group_list_type=0, ScalarType? dst_type=None) -> (Tensor, Tensor)
     op_api: all_version
 
+  - func: npu_swiglu_group_quant_backward(Tensor grad_y, Tensor x, *, Tensor? weight=None, Tensor? y_origin=None, int[]? group_index=None, float clamp_limit=0.0) -> (Tensor, Tensor)
+    op_api: all_version
+
   - func: npu_clipped_swiglu(Tensor x, *, Tensor? group_index=None, int dim=-1, float alpha=1.702, float limit=7.0, float bias=1.0, bool interleaved=True) -> Tensor
     op_api: [v2.6, newest]
     exposed: [v2.6, newest]

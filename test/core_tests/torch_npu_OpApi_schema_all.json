@@ -371,6 +371,9 @@
   "op_api: torch_npu.npu_convert_weight_to_int4pack(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },
+  "func: npu_swiglu_group_quant_backward(Tensor grad_y, Tensor x, *, Tensor? weight=None, Tensor? y_origin=None, int[]? group_index=None, float clamp_limit=0.0) -> (Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "op_api: torch_npu.npu_swiglu(*args, **kwargs)": {
     "version": ["v2.1", "v2.5", "v2.6", "v2.7"]
   },

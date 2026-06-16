@@ -5848,6 +5848,18 @@ def npu_swiglu_quant_meta(x, smooth_scales=None, offsets=None, group_index=None,
             torch.empty(scale_size, dtype=torch.float32, device=x.device))
 
 
+@impl(m, "npu_swiglu_group_quant_backward")
+def npu_swiglu_group_quant_backward_meta(grad_y, x, *, weight=None, y_origin=None, group_index=None, clamp_limit=0.0):
+    grad_x = torch.empty_like(x, dtype=x.dtype)
+
+    if weight is not None and weight.numel() > 0:
+        grad_weight = torch.empty_like(weight, dtype=weight.dtype)
+    else:
+        grad_weight = x.new_empty([0], dtype=torch.float32)
+
+    return (grad_x, grad_weight)
+
+
 @impl(m, "npu_dequant_swiglu_quant")
 def npu_dequant_swiglu_quant_meta(x, weight_scale=None, activation_scale=None, bias=None, quant_scale=None,
                                   quant_offset=None, group_index=None, activate_left=False, quant_mode=0,
