@@ -25,7 +25,7 @@ c10::intrusive_ptr<c10d::Work> batch_isend_irecv(std::vector<std::string>& op_ty
 
 - **op_type** (`std::vector<std::string>&`)：必选参数，表示操作序列，isend或irecv。
 - **tensors** (`std::vector<at::Tensor>&`)：必选参数，表示用于发送或接收的tensor本身，数量与op_type保持一致。
-- **remote_rank_list** (`std::vector<uint32_t>`)：必选参数，表示对端的rank id, 这里指全局的rank id，数量与op_type保持一致。
+- **remote_rank_list** (`std::vector<uint32_t>`)：必选参数，表示对端的rank ID，这里指全局的rank ID，数量与op_type保持一致。
 
 ## 返回值说明
 

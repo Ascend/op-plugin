@@ -41,7 +41,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - <term>Atlas 推理系列加速卡产品</term>：仅支持`None`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 - **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
-- **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List int`；数据类型为`int64`，数据格式支持$ND$。
+- **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List[int]`；数据类型为`int64`，数据格式支持$ND$。
 - **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM1后反量化场景，通常在BMM1输出为量化结果、后续计算需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
 - **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持pertensor（scalar）。该参数用于BMM2前量化场景，通常在进入BMM2前需要将输入转换为量化表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
 - **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM2后反量化场景，通常在BMM2输出为量化结果、后续需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
@@ -58,7 +58,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
 - **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
-- **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`int64`，数据格式支持$ND$，表示KV左`padding`场景使能时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
+- **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`int64`，数据格式支持$ND$，表示KV左`padding`场景开启时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
 - **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；数据类型为`int64`。
 - **scale_value** (`float`)：可选参数。代表缩放系数，用来约束梯度，默认值为`1.0`，典型值为$\frac{1}{\sqrt{D}}$；数据类型为`float32`。
 - **input_layout** (`str`)：可选参数。代表`query`、`key`、`value`的布局，根据输入的`query`、`key`、`value`的`shape`确定，三维`Tensor`是$BSH$，四维`Tensor`是$BNSD$或$BSND$，默认值为$BSH$，不支持其他值；数据类型为`str`。
@@ -102,21 +102,21 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - 仅支持$D$轴对齐，即$D$轴可以被16整除。
 
 - page attention使用限制：
-    - page attention使能必要条件是`block_table`存在且有效，且传入每个batch对应的`actual_seq_lengths`。page attention使能场景下，`key`、`value`按照`block_table`中的索引映射到一片连续内存中的kv cache，支持`key`、`value`数据类型为`float16`、`bfloat16`、`int8`。
-    - page attention使能场景下，输入kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$或$（blocknum, blocksize, H）$，其中$blocknum$表示kv cache中物理block总数，不应小于每个batch所需block个数的总和。通常情况下，kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$时，性能比kv cache排布格式为$（blocknum, blocksize, H）$时更好。
-    - page attention使能场景下，支持kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$，但此时`query layout`仅支持$BNSD$。
-    - page attention使能场景下，当输入kv cache排布格式为$（blocknum, blocksize, H）$，且$H（H=numKvHeads * headDims）$超过64k时，受硬件指令约束，会被拦截报错。
+    - page attention开启必要条件是`block_table`存在且有效，且传入每个batch对应的`actual_seq_lengths`。page attention场景下，`key`、`value`按照`block_table`中的索引映射到一片连续内存中的kv cache，支持`key`、`value`数据类型为`float16`、`bfloat16`、`int8`。
+    - page attention场景下，输入kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$或$（blocknum, blocksize, H）$，其中$blocknum$表示kv cache中物理block总数，不应小于每个batch所需block个数的总和。通常情况下，kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$时，性能比kv cache排布格式为$（blocknum, blocksize, H）$时更好。
+    - page attention场景下，支持kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$，但此时`query layout`仅支持$BNSD$。
+    - page attention场景下，当输入kv cache排布格式为$（blocknum, blocksize, H）$，且$H（H=numKvHeads * headDims）$超过64k时，受硬件指令约束，会被拦截报错。
     - page attention场景下，必须传入输入`actual_seq_lengths`，每个batch的`actual_seq_length`表示每个batch的`sequence`真实长度，该值除以属性输入`block_size`即表示每个batch所需block数量。
     - page attention场景下，`block_table`必须为二维`Tensor`，shape为`(B, maxBlockNumPerSeq)`，其中`B`表示batch数，`maxBlockNumPerSeq`表示各batch中所需block数量的最大值。`block_table[i][j]`表示第`i`个batch的第`j`个逻辑block映射到kv cache中的物理block索引。
     - page attention场景下，`block_table`第一维长度需等于batch数，第二维长度不能小于`maxBlockNumPerSeq`（`maxBlockNumPerSeq`为每个batch中最大`actual_seq_lengths`对应的block数量）。例如，batch数为2，属性`block_size=128`，当每个batch的`actual_seq_length`为512时，表明每个batch至少需要4个block，因此`block_table`的排布可以为`(2, 4)`。
     - page attention场景下，`block_table`中的有效值表示物理block编号，取值范围应在`[0, blocknum - 1]`内。
-    - page attention使能场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
+    - page attention场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
 
 - `quant_scale2`、`quant_offset2`为一组参数，其中`quant_offset2`可选，传入该组参数后算子输出数据类型会推导为`int8`，若不期望`int8`输出，请勿传入该组参数。
 - KV左`padding`场景使用限制：
     - `kvCache`的搬运起点计算公式为：`Smax-kv_padding_size-actual_seq_lengths`。`kvCache`的搬运终点计算公式为：`Smax-kv_padding_size`。其中`kvCache`的搬运起点或终点小于0时，返回数据结果为全0。
     - KV左`padding`场景`kv_padding_size`小于0时将被置为0。
-    - KV左`padding`场景使能需要同时存在`kv_padding_size`和`actual_seq_lengths`参数，否则默认为KV右`padding`场景。
+    - KV左`padding`场景需要同时存在`kv_padding_size`和`actual_seq_lengths`参数，否则默认为KV右`padding`场景。
 
 ## 调用示例
 

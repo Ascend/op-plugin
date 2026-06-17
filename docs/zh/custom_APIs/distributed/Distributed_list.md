@@ -18,7 +18,7 @@
 </tr>
 <tr id="row186961833171719"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p1669719330179"><a name="p1669719330179"></a><a name="p1669719330179"></a><a href="torch-distributed-distributed_c10d.md">torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("npu")).get_hccl_comm_name</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p5697183351712"><a name="p5697183351712"></a><a name="p5697183351712"></a>从初始化完成的集合通信域中获取集合通信域名字。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p5697183351712"><a name="p5697183351712"></a><a name="p5697183351712"></a>从初始化完成的集合通信域中获取集合通信域名称。</p>
 </td>
 </tr>
 <tr id="row174513178290"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p204514170294"><a name="p204514170294"></a><a name="p204514170294"></a><a href="（beta）torch-distributed-ProcessGroupHCCL.md">（beta）torch.distributed.ProcessGroupHCCL</a></p>

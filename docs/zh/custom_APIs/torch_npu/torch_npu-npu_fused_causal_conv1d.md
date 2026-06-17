@@ -172,7 +172,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
 - **activation**（`str`）：可选参数，表示激活函数类型，该参数在当前接口内无作用。默认值为"None"。
 - **pad\_slot\_id**（`int`）：可选参数，用于跳过不需要参与计算的batch，默认值为-1。
 - **run\_mode**（`int`）：可选参数，该参数在当前接口内无作用。默认值为0。
-- **residual\_connection**（`int`）：可选参数，用于判断是否输出结果是否要做残差连接。0：不做残差连接；1：输出为卷积结果与输入x之和（残差连接），默认值为0。
+- **residual\_connection**（`int`）：可选参数，用于判断输出结果是否要做残差连接。0：不做残差连接；1：输出为卷积结果与输入x之和（残差连接），默认值为0。
 - **max\_query\_len**（`int`）：可选参数，表示所有batch中最大的seq_len，默认值为-1。
 - **num\_computed\_tokens**（`Tensor`）：可选参数，当前batch已经处理的token总数，用于判断初始状态。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。conv_mode为“pangu”或者APC开启时，不可省略，默认值为None。
 - **block\_idx\_first\_scheduled\_token**（`Tensor`）：可选参数，表示当前batch的第一个token对应的block索引。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。

@@ -29,7 +29,7 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
 - **out_features**（`int`）：matmul计算中n轴的值。
 - **bias**（`bool`）：代表是否需要bias计算参数。如果设置成False，则bias不会加入量化matmul的计算。
 - **offset**（`bool`）：代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
-- **pertoken_scale**（`bool`）：代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+- **pertoken_scale**（`bool`）：代表是否需要`pertoken_scale`计算参数。如果设置成False，则`pertoken_scale`不会加入量化matmul的计算。<term>Atlas 推理系列产品</term>当前不支持`pertoken_scale`。
 - **output_dtype**（`ScalarType`）：表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
     - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`。
@@ -275,7 +275,7 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
     model.scale.data = scale
     model.offset.data = offset
     if output_dtype != torch.bfloat16:
-        # 包含npu_trans_quant_param功能，<term>Atlas 推理系列产品</term>还包含使能高带宽的x2数据排布功能
+        # 包含npu_trans_quant_param功能，<term>Atlas 推理系列产品</term>还包含开启高带宽的x2数据排布功能
         tng.experimental.inference.use_internal_format_weight(model)
     model.bias.data = bias
     model = torch.compile(model, backend=npu_backend, dynamic=False)

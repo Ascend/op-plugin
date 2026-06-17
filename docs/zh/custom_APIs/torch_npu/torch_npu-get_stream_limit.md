@@ -21,13 +21,13 @@ torch.npu.get_stream_limit(stream) ->Dict
 
 ## 参数说明
 
-**stream** (`torch_npu.npu.Stream`)：必选参数，设置控核的流。
+**stream** (`torch_npu.npu.Stream`)：必选参数，目标流对象。
 
 ## 返回值说明
 
 `Dict`
 
-代表`stream`的Cube和Vector核数。
+返回`stream`的Cube和Vector核数。
 
 ## 约束说明
 

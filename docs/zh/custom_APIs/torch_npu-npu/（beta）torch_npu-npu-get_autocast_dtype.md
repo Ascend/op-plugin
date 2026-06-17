@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-在amp场景获取设备支持的数据类型，该dtype由torch_npu.npu.set_autocast_dtype设置，若未设置则默认为torch.float16。
+在amp场景获取设备支持的数据类型，该`dtype`由torch_npu.npu.set_autocast_dtype设置，若未设置则使用默认数据类型`float16`。
 
 ## 函数原型
 

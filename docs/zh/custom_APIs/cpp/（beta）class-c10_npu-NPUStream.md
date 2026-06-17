@@ -52,7 +52,7 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **c10::DeviceIndex c10_npu::NPUStream::device_index()**
 
-    NPUStream设备id获取，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::CUDAStream::device_index()相同。
+    NPUStream设备ID获取，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::CUDAStream::device_index()相同。
 
 - **c10::Device c10_npu::NPUStream::device()**
 
@@ -60,7 +60,7 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **c10::StreamId c10_npu::NPUStream::id()**
 
-    NPUStream流id获取，返回值类型StreamId，与c10::StreamId c10::cuda::CUDAStream::id()相同。
+    NPUStream流ID获取，返回值类型StreamId，与c10::StreamId c10::cuda::CUDAStream::id()相同。
 
 - **bool c10_npu::NPUStream::query()**
 
@@ -86,9 +86,9 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
     NPUStream流解压，从struct StreamData3中解压出流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::CUDAStream::unpack3(c10::StreamId  _stream_id_, c10::DeviceIndex  _device_index_, c10::DeviceType  _device_type_)相同。
 
-    stream_id：StreamId类型，struct StreamData3中的流id。
+    stream_id：StreamId类型，struct StreamData3中的流ID。
 
-    device_index：DeviceIndex类型，struct StreamData3中的设备id。
+    device_index：DeviceIndex类型，struct StreamData3中的设备ID。
 
     device_type：DeviceType类型，struct StreamData3中的设备类型。
 

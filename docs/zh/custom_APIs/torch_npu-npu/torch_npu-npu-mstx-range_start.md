@@ -41,7 +41,7 @@ range_id：用于标识该range；如果接口执行失败，返回0。
 
 ## 调用示例
 
-以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+以下是关键步骤的代码示例，不可直接拷贝运行，仅供参考。
 
 ```python
 id = torch_npu.npu.mstx.range_start("dataloader", None)

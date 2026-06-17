@@ -35,7 +35,7 @@ torch_npu.contrib.module.ROIAlign(output_size, spatial_scale, sampling_ratio, al
 **计算输入**
 
 - **input_tensor**(`Tensor`): 输入张量，格式为NCHW。
-- **rois**(`Tensor`): roi框，2D张量，第二个维度size为5，第一列表示roi框的索引，其余4列为roi框的坐标。
+- **rois**(`Tensor`): ROI框，2D张量，第二个维度size为5，第一列表示ROI框的索引，其余4列为ROI框的坐标。
 
 ## 返回值说明
 

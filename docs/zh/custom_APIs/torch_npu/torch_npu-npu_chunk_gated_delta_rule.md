@@ -33,25 +33,26 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 ## 参数说明
 
-$T=\sum_i^B L_i$ 表示累积序列长度，$B$ 表示batch size。$L_i$ 表示第i个序列的长度。
-$N_k$ 表示key的头数，$N_v$ 表示value的头数。
-$D_k$ 表示key的hidden size，$D_v$ 表示value的hidden size。
+> [!NOTE]  
+> $T=\sum_i^B L_i$ 表示累积序列长度，$B$ 表示batch size。$L_i$ 表示第i个序列的长度。<br>
+> $N_k$ 表示key的头数，$N_v$ 表示value的头数。<br>
+> $D_k$ 表示key的hidden size，$D_v$ 表示value的hidden size。
 
-- **query** (`Tensor`)：必选输入，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
 
-- **key** (`Tensor`)：必选输入，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
 
-- **value** (`Tensor`)：必选输入，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。
+- **value** (`Tensor`)：必选参数，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。
 
-- **beta** (`Tensor`)：必选输入。对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。
+- **beta** (`Tensor`)：可选参数，对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。
 
-- **initial_state** (`Tensor`)：必选输入，对应公式中的状态矩阵$S_0$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
+- **initial_state** (`Tensor`)：可选参数，对应公式中的状态矩阵$S_0$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
 
-- **actual_seq_lengths** (`Tensor`)：必选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
+- **actual_seq_lengths** (`Tensor`)：可选参数，表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
 
-- **scale** (`float`)：必选输入。表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$
+- **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$
 
-- **g** (`Tensor`)：必选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。
+- **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。
 
 ## 返回值说明
 

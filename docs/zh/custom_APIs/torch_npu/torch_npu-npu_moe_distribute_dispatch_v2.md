@@ -120,7 +120,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - **elastic\_info** (`Tensor`)：预留参数，当前版本不支持，传默认值None即可。
 
-- **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不使能记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
+- **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
 
 - **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值""即可。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
@@ -157,9 +157,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - "fullmesh": token数据直接通过RDMA方式发往topk个目标专家所在的卡。
         - "hierarchy": token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前版本支持""，"fullmesh_v1"，"fullmesh_v2"，"hierarchy"四种输入方式。
-        - ""：默认值，使能fullmesh_v1模板；
-        - "fullmesh_v1"：使能fullmesh_v1模板；
-        - "fullmesh_v2"：使能fullmesh_v2模板，其中fullmesh_v2模板仅在tp\_world\_size取值为1时生效。
+        - ""：默认值，启用fullmesh_v1模板；
+        - "fullmesh_v1"：启用fullmesh_v1模板；
+        - "fullmesh_v2"：启用fullmesh_v2模板，其中fullmesh_v2模板仅在tp\_world\_size取值为1时生效。
         - "hierarchy": token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。模板仅支持`tp_world_size`为1、共享专家为0的场景，且不支持二维mask、特殊专家、动态缩容、性能打点场景。
 
 - **zero\_expert\_num** (`int`)：可选参数，表示零专家的数量。

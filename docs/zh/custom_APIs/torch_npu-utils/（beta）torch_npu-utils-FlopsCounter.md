@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采用单例模式。当前支持可统计Flops的算子：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
+Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采用单例模式。当前可统计Flops的算子包括：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
 
 ## 定义文件
 

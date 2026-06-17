@@ -343,7 +343,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     model.scale.data = scale
     model.offset.data = offset
     if output_dtype != torch.bfloat16:
-        # 使能高带宽x2的数据排布功能
+        # 开启高带宽x2的数据排布功能
         tng.experimental.inference.use_internal_format_weight(model)
     model.bias.data = bias
     model = torch.compile(model, backend=npu_backend, dynamic=False)

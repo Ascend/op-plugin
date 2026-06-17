@@ -41,7 +41,7 @@ torch_npu.npu.mstx.range_push(message: str, stream=None, domain: str='default') 
 
 ## 调用示例
 
-以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+以下是关键步骤的代码示例，不可直接拷贝运行，仅供参考。
 
 - 无嵌套调用
 

@@ -21,7 +21,7 @@ torch.distributed.is_hccl_available()
 
 ## 返回值说明
 
-`Bool`：True为可用，False为不可用。
+`bool`：True为可用，False为不可用。
 
 ## 调用示例
 

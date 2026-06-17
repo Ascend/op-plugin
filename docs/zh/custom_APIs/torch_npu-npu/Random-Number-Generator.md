@@ -3,7 +3,7 @@
 **表1** Random Number Generator API
 
 <a name="table859713546477"></a>
-<table><thead align="left"><tr id="row835974815375"><th class="cellrowborder" valign="top" width="38.76%" id="mcps1.2.3.1.1"><p id="p435984813370"><a name="p435984813370"></a><a name="p435984813370"></a>API接口</p>
+<table><thead align="left"><tr id="row835974815375"><th class="cellrowborder" valign="top" width="38.76%" id="mcps1.2.3.1.1"><p id="p435984813370"><a name="p435984813370"></a><a name="p435984813370"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="61.24000000000001%" id="mcps1.2.3.1.2"><p id="p113431258183712"><a name="p113431258183712"></a><a name="p113431258183712"></a>说明</p>
 </th>

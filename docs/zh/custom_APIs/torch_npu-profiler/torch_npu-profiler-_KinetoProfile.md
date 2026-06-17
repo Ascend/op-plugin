@@ -69,7 +69,7 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
 ## 调用示例
 
-以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+以下是关键步骤的代码示例，不可直接拷贝运行，仅供参考。
 
 ```python
 import torch

@@ -16,13 +16,13 @@
 
     mx量化场景公式如下，更多关于量化技术的介绍参见[《CANN 算子库》](https://hiascend.com/document/redirect/CannCommunityOplist)中“基本概念 > 量化介绍”。
 
-    ![](figures/zh-cn_formulaimage_0000002521244910.png)
+    ![](../../figures/zh-cn_formulaimage_0000002521244910.png)
 
     其中gsk代表K轴的mx量化的block size即32，x1\_slice<sub>i</sub>代表x1<sub>i</sub>第m行长度为gsk的向量，x2\_slice<sub>i</sub>代表x2<sub>i</sub>第n列长度为gsk的向量，K轴均从j\*gsk起始切片，j的取值范围\[0, k\_loops\)，k\_loops=ceil\(K<sub>i</sub>/gsk\)，支持最后的切片长度不足gsk。
 
     T-T量化场景计算公式如下。
 
-    ![](figures/zh-cn_formulaimage_0000002594063675.png)
+    ![](../../figures/zh-cn_formulaimage_0000002594063675.png)
 
 ## 函数原型
 
@@ -41,7 +41,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 - **group\_sizes**（`List[int]`）：可选参数。默认值为None。
   - 非None时，仅支持三维列表，形如\[group\_m, group\_n, group\_k\]，分别表示在m、n、k维度上的量化分组情况。以group\_m为例，表示在m维度上group\_m个数对应一个量化参数。
   - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与x1 shape中的m一致，scale\_m与x1\_scale shape中的m一致。
-  - 目前\[group\_m, group\_n, group\_k\]mx量化支持的取值仅支持\[1,1,32\]，TT量化仅支持取值\[0,0,0\]。
+  - 目前\[group\_m, group\_n, group\_k\]mx量化支持的取值仅为\[1,1,32\]，T-T量化仅支持取值\[0,0,0\]。
 
 - **x1\_scale\_dtype**（`int`）：可选参数，用于在`x1_scale`无法用torch原生数据类型表示时显式指定`x1_scale`的数据类型。None：默认值，表示输入真实数据类型与输入`x1_scale`的dtype相同。当前仅支持`float8_e8m0fnu`。
 

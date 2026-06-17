@@ -12,7 +12,7 @@ int64_t at_npu::native::get_npu_format(const at::Tensor& self)
 
 ## 功能说明
 
-获取NPU tensor格式信息，返回值类型int64_t，表示获取的NPU tensor格式信息。
+获取NPU tensor格式信息，返回值类型int64_t。
 
 > [!NOTICE]  
 > 该接口通常配合申请NPU私有格式内存empty_with_format使用。

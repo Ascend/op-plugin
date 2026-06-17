@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-获取adam优化器的计算结果。
+获取Adam优化器的计算结果。
 
 ## 函数原型
 
@@ -32,7 +32,7 @@ torch_npu.npu_apply_adam(beta1_power, beta2_power, lr, beta1, beta2, epsilon, gr
 - **epsilon**（`Scalar`）：添加到分母中以提高数值稳定性的项数。
 - **grad**（`Tensor`）：梯度。
 - **use_locking**（`bool`）：可选参数，设置为True时使用lock进行更新操作。
-- **use_nesterov**（`bool`）：可选参数，设置为True时采用nesterov更新。
+- **use_nesterov**（`bool`）：可选参数，设置为True时采用Nesterov更新。
 - **var**（`Tensor`）：待优化变量。
 - **m**（`Tensor`）：变量平均值。
 - **v**（`Tensor`）：变量方差。

@@ -52,7 +52,7 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 
 建议处理方式：用户可在内存申请、释放等内存相关操作函数中，增加日志记录内存行为，方便后续定位问题。
 
-**c++安全代码示例**：
+**C++安全代码示例**：
 
 ```cpp
 #include <sys/types.h>

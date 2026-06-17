@@ -30,7 +30,7 @@ torch_npu.npu_all_to_all_matmul(x1, x2, hcom, world_size, bias=None, all2all_axe
 - **x2**（`Tensor`）：必选输入，表示融合算子的右矩阵输入，也是Matmul计算的右矩阵，对应公式中的x2。数据类型与x1一致，维度只能为2D，shape为(H*rankSize, N)，数据格式支持ND，支持转置非连续Tensor。
 - **hcom**（`str`）：必选输入，Host侧标识列组的字符串，即通信域名称，通过get_hccl_comm_name接口获取。
 - **world_size**（`int`）：必选输入，通信域内的rank总数，对应公式中的rankSize，支持范围[2, 4, 8, 16]。
-- **bias**（`Tensor`）：可选输入，矩阵乘运算后累加的偏置，对应公式中的bias。数据类型由输入x1和x2决定，当x1和x2为float16时，bias的数据类型为float16；当x1和x2为bfloat16时，bias的数据类型为float32。维度只能为1D，shape为(N)，数据类型支持ND。
+- **bias**（`Tensor`）：可选输入，矩阵乘运算后累加的偏置，对应公式中的bias。数据类型由输入x1和x2决定，当x1和x2为float16时，bias的数据类型为float16；当x1和x2为bfloat16时，bias的数据类型为float32。维度只能为1D，shape为(N)，数据格式支持ND。
 - **all2all_axes**（`List[int]`）：可选输入，AlltoAll和Permute数据交换的方向，支持为空或者[-2, -1]，表示将Matmul结果由(BS, H)转为(BS/rankSize, H*rankSize)。
 - **all2all_out_flag**（`bool`）：可选输入，表示是否输出AlltoAll和Permute后的结果，默认为True。
 

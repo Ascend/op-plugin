@@ -31,7 +31,7 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 
 ## 约束说明
 
-该算子实现与numpy实现一致，相较于cuda反向存在精度问题。
+该算子实现与Numpy实现一致，相较于CUDA反向存在精度问题。
 
 ## 调用示例
 

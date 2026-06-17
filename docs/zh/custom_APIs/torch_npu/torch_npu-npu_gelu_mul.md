@@ -70,7 +70,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 >>> output_high_precision = torch_npu.npu_gelu_mul(input, approximate="none")
 
 # 高效率模式（approximate="tanh"）：使用双曲正切（tanh）近似模式，计算效率高，
-# 适用于大规模训练或推理加速场景，如大规模训练或推理加速场景。
+# 适用于大规模训练或推理加速场景。
 >>> output_high_efficiency = torch_npu.npu_gelu_mul(input, approximate="tanh")
 
 ```

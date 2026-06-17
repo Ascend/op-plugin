@@ -12,7 +12,7 @@
 - API功能：
   根据输入词频`logits`、`top_k`/`top_p`/`min_ps`采样参数、随机采样权重分布`q`，进行topK-topP-minP-Sample采样计算，输出每个batch的最大词频`logits_select_idx`，以及topK-topP采样后的词频分布`logits_top_kp_select`。
 
-  算子包含4个可单独使能，但上下游处理关系保持不变的采样算法（从原始输入到最终输出）：topK采样、topP采样、minP显著性采样、不采样 / 指数采样 / 多项式随机采样 。目前支持以下12种计算场景。如下表所示：
+  算子包含4个可单独开启，但上下游处理关系保持不变的采样算法（从原始输入到最终输出）：topK采样、topP采样、minP显著性采样、不采样 / 指数采样 / 多项式随机采样 。目前支持以下12种计算场景。如下表所示：
 
   | 计算场景 | topK采样 | topP采样 | minP采样 | 后继处理 |备注|
   | :-------:| :------:|:-------:|:-------:|:-------:|:-------:|
@@ -287,7 +287,7 @@
     \end{cases}
     $$
 
-  * 该采样过程以aclnn.Multinomial为基准，可参看：<https://gitcode.com/cann/ops-math-dev/blob/master/random/dsa_random_uniform/docs/aclnnMultinomial.md>。
+  * 该采样过程以aclnn.Multinomial为基准，可参看：<https://gitcode.com/cann/ops-math/blob/master/random/dsa_random_uniform/docs/aclnnMultinomial.md>。
 
   * Ascend Extension for PyTorch调用时，采样种子和偏移默认使用内建值，可参看：<https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
 
@@ -315,7 +315,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
         - 如果qrow \< batch，则默认使用最后一个batch的采样参数作为后续batch的multiNomial采样参数。
 - **eps**（`float`）：可选参数，在softmax和权重采样中防止除零，默认值为1e-8。
 - **is_need_logits**（`bool`）：可选参数，控制`logits_top_kp_select`的输出条件，默认值为False。
-- **top_k_guess**（`int`）：可选参数，仅在当前batch的top_k为无效值时使能，适用于跳过topK的top_k_guess-TopP加速采样。有效值范围top_k_guess>0，默认为32，用于TopP加速采样中基于top_k_guess的直接索引过滤。如果传入非正数，视为跳过top_k_guess环节，直接使用基于cumsum的标准topP实现，对当前batch做topP全排序采样，保持基准性能。
+- **top_k_guess**（`int`）：可选参数，仅在当前batch的top_k为无效值时开启，适用于跳过topK的top_k_guess-TopP加速采样。有效值范围top_k_guess>0，默认为32，用于TopP加速采样中基于top_k_guess的直接索引过滤。如果传入非正数，视为跳过top_k_guess环节，直接使用基于cumsum的标准topP实现，对当前batch做topP全排序采样，保持基准性能。
 - **ks_max**（`int`）：可选参数，约束topK采样中允许的topk[batch]合法值上限，影响跳过topK采样的条件，允许传入任意非零正整数。有效值范围[1,1024]之间的整数，传入超过1024的值会自动设为1024。
 - **input_is_logits**（`bool`）：可选参数，该参数控制输入logits在topP及后续步骤之前，是否进行归一化处理，并决定可选输出logits_top_kp_select中的无效logits默认值类型。logits表示“未经归一化的原始值”，而相对地已经过归一化的则定义为“probs”。该参数的取值影响如下：
     - 若该参数取值为True，输入的logits中的数值不能确保在[0,1]区间内。由于logits未进行归一化，在进行top_p采样等后续步骤之前，先对输入进行softmax处理。logits_top_kp_select中的无效logits默认值defLogit=-inf。
@@ -329,7 +329,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 ## 返回值说明
 
 - **logits_select_idx**（`Tensor`）：表示经过topK-topP-sample计算流程后，每个batch中词频最大元素max(probs_opt[batch, :])在输入`logits`中的位置索引。数据类型支持`int64`，数据格式支持$ND$。
-- **logits_top_kp_select**（`Tensor`）：表示经过topK-topP-minP采样获得mask，对原输入`logits`中高频token的过滤结果。仅在`is_need_logits=true`时使能输出计算和搬运，否则直接输出相应尺寸的空tensor。数据类型支持`float32`，数据格式支持$ND$。
+- **logits_top_kp_select**（`Tensor`）：表示经过topK-topP-minP采样获得mask，对原输入`logits`中高频token的过滤结果。仅在`is_need_logits=true`时输出计算和搬运，否则直接输出相应尺寸的空tensor。数据类型支持`float32`，数据格式支持$ND$。
 
 ## 约束说明
 

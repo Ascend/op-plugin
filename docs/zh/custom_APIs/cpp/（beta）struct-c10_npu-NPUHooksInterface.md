@@ -16,7 +16,7 @@ NPUHooksInterface是一个Hook接口类，提供了NPU Hook的相关接口。
 
 NPUHooksInterface获取默认随机数生成器，与const at::Generator& at::CUDAHooksInterface::getDefaultCUDAGenerator(c10::DeviceIndex  _device_index_  = -1)相同。
 
-device_index：DeviceIndex类型，指定NPU设备id。
+device_index：DeviceIndex类型，指定NPU设备ID。
 
 ## 支持的型号
 

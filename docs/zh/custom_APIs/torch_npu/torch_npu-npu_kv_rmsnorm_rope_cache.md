@@ -43,7 +43,7 @@
             ![](../../figures/zh-cn_formulaimage_0000002239721042.png)
 
             - cos⁡和sin⁡为预计算的旋转角度参数。
-            - RotateHalf\(k\)将k的后半部分元素移至前半部分并取反，后半部分用前半部分的值。具体来说，对于维度d=64：
+            - RotateHalf\(k\)将k的后半部分元素移至前半部分并取反，后半部分用前半部分的值填充。具体来说，对于维度d=64：
 
             ![](../../figures/zh-cn_formulaimage_0000002242091560.png)
 

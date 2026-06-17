@@ -39,8 +39,8 @@ torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, T
 ## 返回值说明
 
 - **mask** (`Tensor`)：输出张量。shape为(N, C, H, W)。记录 Dropout 操作中元素的保留 / 丢弃状态，是dropout_genmask根据丢弃概率p随机生成的二进制掩码：掩码值为1：对应位置的self张量元素保留，参与后续加权加法计算；掩码值为0：对应位置的self张量元素被丢弃，后续计算中该位置值为 0。
-- **result_softmax** (`Tensor`)：输出张量shape为(N, C, H, W)。融合计算的最终 Softmax 结果。指定维度dim上的所有元素求和结果为 1。
-- **result_dropout** (`Tensor`)：输出张量。输出张量shape为(N, C, H, W)。输入self张量经过 Dropout 掩码后的结果。
+- **result_softmax** (`Tensor`)：输出张量，shape为(N, C, H, W)。融合计算的最终 Softmax 结果。指定维度dim上的所有元素求和结果为 1。
+- **result_dropout** (`Tensor`)：输出张量，shape为(N, C, H, W)。输入self张量经过 Dropout 掩码后的结果。
 
 ## 约束说明
 

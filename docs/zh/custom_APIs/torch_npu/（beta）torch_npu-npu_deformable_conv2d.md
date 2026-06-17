@@ -15,7 +15,7 @@
 
 - 计算公式：
   
-  假定输入（self）的shape是[N, inC, inH, inW]，输出的（out）的shape为[N, outC, outH, outW]，根据已有参数计算outH、outW:
+  假定输入（self）的shape是[N, inC, inH, inW]，输出（out）的shape为[N, outC, outH, outW]，根据已有参数计算outH、outW:
   
   $$
   outH = (inH + padding[0] + padding[1] - ((K_H - 1) * dilation[2] + 1)) // stride[2] + 1
@@ -76,7 +76,7 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias=None, kernel_size, st
 - **self** (`Tensor`): 必选参数，表示输入图像的4D张量，对应公式中的`self`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据按以下顺序存储：`[batch, in_channels, in_height, in_width]`。其中in_height * in_width不能超过2147483647。
 - **weight** (`Tensor`): 必选参数，可学习过滤器的4D张量，对应公式中的`weight`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。数据按以下顺序存储：`[out_channels, in_channels / groups, filter_height, filter_width]`。其中，`filter_height`表示卷积核的高度，`filter_width`表示卷积核的宽度。
 - **offset** (`Tensor`): 必选参数，x-y坐标偏移和掩码的4D张量，对应公式中的`offset`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。当`modulated`为True时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 3, out_height, out_width]`；当`modulated`为False时，数据按以下顺序存储为`[batch, deformable_groups * filter_height * filter_width * 2, out_height, out_width]`。
-- **bias** (`Tensor`): 可选参数，过滤器输出附加偏置（additive bias）的1D张量，对应公式中的`bias`。不支持空Tensor，支持非连续的Tensor。数据格式为$ND$。默认值为None，如果不为None时数据按`[out_channels]`的顺序存储。
+- **bias** (`Tensor`): 可选参数，过滤器输出附加偏置（additive bias）的1D张量，对应公式中的`bias`。不支持空Tensor，支持非连续的Tensor。数据格式为$ND$。默认值为None，若不为None，数据按`[out_channels]`的顺序存储。
 - **kernel_size** (`List[int]`): 必选参数，内核大小，对应公式中的`K_H`、`K_W`。2个整数的元组/列表(K_H, K_W)，各元素均大于零，K_H \* K_W不能超过2048，K_H \* K_W \* in_channels/groups不能超过65535。
 - **stride** (`List[int]`): 必选参数，4个整数的列表，表示每个输入维度的滑动窗口步长，对应公式中的`stride`。维度顺序根据`self`的数据格式解释。各元素均大于零，N维和C维必须设置为1。
 - **padding** (`List[int]`): 必选参数，4个整数的列表，表示要添加到输入每侧（顶部、底部、左侧、右侧）的像素数，对应公式中的`padding`。
