@@ -118,6 +118,9 @@ inline int64_t calc_final_counter_offset(at::Tensor& self, int64_t from = 0, int
     iter_info.ndim = self.dim();
     iter_info.numel = self.numel();
     iter_info.element_size = self.itemsize();
+    if (iter_info.numel == 0) {
+        return 0;
+    }
     if (use_from_to) {
         iter_info.unroll = ((to - from) >= RAND_INT64_THRESHOLD) ? UNROLL_2 : UNROLL_4;
     } else {
