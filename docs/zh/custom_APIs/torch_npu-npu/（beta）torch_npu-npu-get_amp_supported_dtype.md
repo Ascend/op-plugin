@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-获取NPU设备支持的数据类型，可能设备支持不止一种数据类型。
+获取NPU设备支持的数据类型，该设备可能支持不止一种数据类型。
 
 ## 函数原型
 
@@ -30,6 +30,6 @@ import torch
 import torch_npu
 
 supported_dtypes = torch_npu.npu.get_amp_supported_dtype()
-print(f"NPU支持的AMP数据类型：{supported_dtypes}")
+print(f"NPU支持的AMP数据类型:{supported_dtypes}")
 
 ```

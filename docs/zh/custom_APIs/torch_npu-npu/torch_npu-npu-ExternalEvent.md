@@ -13,7 +13,7 @@
 
 ## 功能说明
 
-ExternalEvent是AscendCL Event的封装。NPUGraph场景在执行图捕获时，ExternalEvent会被作为图外部节点被捕获，用于控制非图内时序控制场景。
+ExternalEvent是AscendCL Event的封装。NPUGraph场景在执行图捕获时，ExternalEvent会被作为图外部节点被捕获，用于非图内时序控制场景。
 
 ## 函数原型
 

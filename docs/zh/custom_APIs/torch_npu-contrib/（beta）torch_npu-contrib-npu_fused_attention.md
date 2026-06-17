@@ -30,7 +30,7 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 - **key_bias** (`Tensor`)：key的偏差值。
 - **value_bias** (`Tensor`)：value的偏差值。
 - **scale** (`double`)：计算score的缩放系数。
-- **keep_prob**：计算中保留数据的概率，值等于1 - drop rate。
+- **keep_prob** (`float`)：计算中保留数据的概率，值等于1 - drop rate。
 
 ## 返回值说明
 

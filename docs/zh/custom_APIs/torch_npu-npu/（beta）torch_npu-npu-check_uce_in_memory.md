@@ -25,7 +25,7 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 
 ## 参数说明
 
-**device_id** (`int`)：需要处理的device id。
+**device_id** (`int`)：需要处理的device ID。
 
 ## 返回值说明
 
@@ -36,7 +36,7 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 
 ## 约束说明
 
-要确保是一个有效的device。
+要确保传入的device ID为有效值。
 
 ## 调用示例
 

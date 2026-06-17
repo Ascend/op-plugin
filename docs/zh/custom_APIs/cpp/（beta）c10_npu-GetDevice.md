@@ -12,11 +12,11 @@ aclError c10_npu::GetDevice(c10::DeviceIndex* device)
 
 ## 功能说明
 
-NPU设备id获取，返回值类型aclError，与PyTorch的1.11.0版本中cudaError_t c10::cuda::GetDevice(int\*  _device_)相同。
+NPU设备ID获取，返回值类型aclError，与PyTorch的1.11.0版本中cudaError_t c10::cuda::GetDevice(int\*  _device_)相同。
 
 ## 参数说明
 
-device：DeviceIndex类型，存储获取的设备id。
+device：DeviceIndex类型，存储获取的设备ID。
 
 ## 支持的型号
 

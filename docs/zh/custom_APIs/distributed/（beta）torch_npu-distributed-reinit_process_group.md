@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-重新构建processgroup集合通信域。
+重新构建ProcessGroup集合通信域。
 
 ## 函数原型
 
@@ -20,7 +20,7 @@ torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None,
 ## 参数说明
 
 - **group** (`Optional[ProcessGroup]`)：可选参数，默认值为None。
-- **rebuild_link** (`bool`)：可选参数，当传入参数为True时，会销毁当前的process group hccl建立的通信链接，然后进行重建；如果传入参数为False，则表示继续使用原有的通信链接，默认值为True。
+- **rebuild_link** (`bool`)：可选参数，当传入参数为True时，会销毁当前的ProcessGroup中由HCCL建立的通信链接，然后进行重建；如果传入参数为False，则表示继续使用原有的通信链接，默认值为True。
 
 ## 返回值说明
 
@@ -45,7 +45,7 @@ def _do_allreduce(rank, world_size):
     dist.init_process_group(backend='hccl',
                             world_size=world_size,
                             rank=rank)
-# 重建group
+    # 重建group
     torch_npu.distributed.reinit_process_group()
     a = torch.ones(2,2,device=f"npu:{rank}")
     dist.all_reduce(a)

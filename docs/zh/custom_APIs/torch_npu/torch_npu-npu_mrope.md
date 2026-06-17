@@ -342,7 +342,7 @@ query_out, key_out = torch_npu.npu_mrope(
 
 - RoPE示例：
 
-  使用一维`positions`，shape为`(num_tokens,)`；`mrope_section`置为`[0, 0, 0]`表示不使能MRoPE（与当前`torch_npu`默认行为一致）。
+  使用一维`positions`，shape为`(num_tokens,)`；`mrope_section`置为`[0, 0, 0]`表示不开启MRoPE（与当前`torch_npu`默认行为一致）。
 
 ```python
 import torch

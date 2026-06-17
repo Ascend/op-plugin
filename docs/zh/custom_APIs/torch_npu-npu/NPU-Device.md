@@ -3,7 +3,7 @@
 **表1** NPU device API
 
 <a name="table13377193418547"></a>
-<table><thead align="left"><tr id="row1888615477417"><th class="cellrowborder" valign="top" width="54.559999999999995%" id="mcps1.2.3.1.1"><p id="p188634764114"><a name="p188634764114"></a><a name="p188634764114"></a>API接口</p>
+<table><thead align="left"><tr id="row1888615477417"><th class="cellrowborder" valign="top" width="54.559999999999995%" id="mcps1.2.3.1.1"><p id="p188634764114"><a name="p188634764114"></a><a name="p188634764114"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="45.440000000000005%" id="mcps1.2.3.1.2"><p id="p188862474415"><a name="p188862474415"></a><a name="p188862474415"></a>说明</p>
 </th>

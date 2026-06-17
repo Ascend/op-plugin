@@ -30,7 +30,7 @@ set_custom_trace_id_callback(self, callback)
 
 ## 调用示例
 
-以下是关键步骤的代码示例，不可直接拷贝编译运行，仅供参考。
+以下是关键步骤的代码示例，不可直接拷贝运行，仅供参考。
 
 性能数据采集完成后，trace_id输出在profiler_metadata.json文件中。
 

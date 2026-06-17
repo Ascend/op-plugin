@@ -32,9 +32,9 @@ torch_npu.npu.stop_device(device_id: int) -> int
 
 ## 调用示例
 
- ```python
+```python
 >>> import torch
 >>> import torch_npu  
 >>> torch.npu.set_device(0) 
 >>> torch_npu.npu.stop_device(0)
- ```
+```

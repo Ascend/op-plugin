@@ -12,41 +12,41 @@
 - 计算公式：
     1. 将输入张量x在尾轴上按k<sub>0</sub>= 512个数分组，一组k<sub>0</sub>个数$x_{i=1}^{k_0}$，对每个数据块进行一级动态量化，每个分组量化尺度和一级量化结果如下，最终合并输出得到量化尺度level0\_scale以及一级量化结果temp。
 
-    $$
-    input\_max_i = max_i(abs(x_i))
-    $$
+        $$
+        input\_max_i = max_i(abs(x_i))
+        $$
 
-    $$
-    level0\_scale_i = input\_max_i / (FP4\_E2M1\_MAX)
-    $$
+        $$
+        level0\_scale_i = input\_max_i / (FP4\_E2M1\_MAX)
+        $$
 
-    $$
-    temp_i = cast\_to\_x\_type(x_i / level0\_scale_i), \space i\space from\space 1\space to\space 512
-    $$
+        $$
+        temp_i = cast\_to\_x\_type(x_i / level0\_scale_i), \space i\space from\space 1\space to\space 512
+        $$
 
     2. 然后将temp在尾轴上按k<sub>1</sub>  =32个数分组，一组k<sub>1</sub>个数$temp_{i=1}^{k_1}$，对每个数据块进行二级动态量化，每个分组量化尺度如下，最终合并输出得到量化尺度level1\_scale。
 
-    $$
-    shared\_exp_i = floor(log_2(max_i(|temp_i|))) - emax
-    $$
+        $$
+        shared\_exp_i = floor(log_2(max_i(|temp_i|))) - emax
+        $$
 
-    $$
-    level1\_scale_i = 2^{shared\_exp_i}
-    $$
+        $$
+        level1\_scale_i = 2^{shared\_exp_i}
+        $$
 
     3. 最后根据round\_mode进行数据类型的转换，得到每个分组量化结果$y_i$。
 
-    $$
-    y_i = cast\_to\_FP4\_E2M1(temp_i/level1\_scale_i, round\_mode), \space i\space from\space 1\space to\space 32
-    $$
+        $$
+        y_i = cast\_to\_FP4\_E2M1(temp_i/level1\_scale_i, round\_mode), \space i\space from\space 1\space to\space 32
+        $$
 
-    量化后的 $y_i$ 按对应的 $x_i$ 的位置组成输出 $y$，$level0\_scale_i$ 按尾轴对应的分组组成输出 $level0\_scale$，$level1\_scale_i$ 按尾轴对应的分组组成输出 $level1\_scale$。
+        量化后的 $y_i$ 按对应的 $x_i$ 的位置组成输出 $y$，$level0\_scale_i$ 按尾轴对应的分组组成输出 $level0\_scale$，$level1\_scale_i$ 按尾轴对应的分组组成输出 $level1\_scale$。
 
-    其中 $max_i$ 代表求第 $i$ 个分组中的最大值，$emax$ 表示对应数据类型的最大正则数的指数位，对应关系如下：
+        其中 $max_i$ 代表求第 $i$ 个分组中的最大值，$emax$ 表示对应数据类型的最大正则数的指数位，对应关系如下：
 
-    | dst_type | emax |
-    | --- | --- |
-    | float4_e2m1fn_x2 | 2 |
+        | dst_type | emax |
+        | --- | --- |
+        | float4_e2m1fn_x2 | 2 |
 
 ## 函数原型
 
@@ -72,7 +72,7 @@ torch_npu.npu_dynamic_dual_level_mx_quant(input, *, smooth_scale=None, round_mod
 
 - 该接口支持训练、推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
-- 输入`input`和输出`y`、`leve0_scale`、`level1_scale`的shape约束关系：
+- 输入`input`和输出`y`、`level0_scale`、`level1_scale`的shape约束关系：
   - rank\(level1\_scale\) = rank\(input\) + 1
   - level0\_scale.shape\[-1\] = ceil\(input.shape\[-1\] / 512\)
   - level1\_scale.shape\[-2\] = \(ceil\(input.shape\[-1\] / 32\) + 2 - 1\) / 2

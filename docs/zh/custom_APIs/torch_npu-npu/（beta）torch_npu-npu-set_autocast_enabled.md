@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-在设备上使能AMP。
+在设备上开启或关闭AMP。
 
 ## 函数原型
 
@@ -21,7 +21,7 @@ torch_npu.npu.set_autocast_enabled(bool)
 
 ## 参数说明
 
-**bool** ：入参为True时，在设备上使能AMP，否则，不使能AMP。
+**bool** ：入参为True时，在设备上开启AMP，否则，不开启AMP。
 
 ## 调用示例
 

@@ -32,7 +32,7 @@ torch_npu.contrib.DCNv2(in_channels, out_channels, kernel_size, stride=1, paddin
 - **dilation**（`int` or `tuple`）：卷积核元素间距，默认值为1。
 - **groups**（`int`）：输入通道和输出通道的组数量，默认值为1。
 - **deformable_groups**（`int`）：可变形分区数量。
-- **bias**（`bool`）：设置为True将对output添加bias，默认值为False。
+- **bias**（`bool`）：设置为True将对output添加bias，默认值为True。
 - **pack**（`bool`）：设置为True则将在模型中添加conv_offset和mask，默认值为True。
 
 ## 约束说明

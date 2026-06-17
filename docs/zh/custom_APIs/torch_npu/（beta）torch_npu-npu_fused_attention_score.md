@@ -43,7 +43,7 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 ## 约束说明
 
-输入tensor的格式编号必须均为29，数据类型为`float16`。query_layer、key_layer以及value_layer的num_heads维度必须相同，query_layer和key_layer的head_dim维度必须相同，用于计算注意力分数，value_layer的head_dim可以不同，决定了输出特征维度。
+输入tensor的格式编号必须均为29，数据类型为`float16`。query_layer、key_layer以及value_layer的num_heads维度必须相同，query_layer和key_layer的head_dim维度必须相同，用于计算注意力分数。value_layer的head_dim可以不同，决定了输出特征维度。
 
 ## 调用示例
 

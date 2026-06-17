@@ -26,35 +26,35 @@
 
 - **计算公式**：
 
-    K是卷积核宽度，L是原始序列长度，dim是特征维度。
+   K是卷积核宽度，L是原始序列长度，dim是特征维度。
 
     1. 缓存拼接
 
-    $$
-    x'[i, dim] =
-    \begin{cases}
-    conv\_states[i, dim], & 0 \leq i < K-1 \\
-    x[i - (K-1), dim], & K-1 \leq i < L + K - 1
-    \end{cases}
-    $$
+        $$
+        x'[i, dim] =
+        \begin{cases}
+        conv\_states[i, dim], & 0 \leq i < K-1 \\
+        x[i - (K-1), dim], & K-1 \leq i < L + K - 1
+        \end{cases}
+        $$
 
     2. 因果1维卷积
 
-    $$
-    y[i, dim] = \sum_{k=0}^{K-1} w[k, dim] \cdot x'[i + k, dim]
-    $$
+        $$
+        y[i, dim] = \sum_{k=0}^{K-1} w[k, dim] \cdot x'[i + k, dim]
+        $$
 
     3. 缓存更新
 
-    $$
-    conv\_states[i, dim] = x'[L + i, dim], \quad i = 0, 1, \dots, K-2
-    $$
+        $$
+        conv\_states[i, dim] = x'[L + i, dim], \quad i = 0, 1, \dots, K-2
+        $$
 
     4. 残差连接（可选）
 
-    $$
-    y[i, dim] += x[i, dim]
-    $$
+        $$
+        y[i, dim] += x[i, dim]
+        $$
 
 ## 函数原型
 
@@ -76,7 +76,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
 - **activation\_mode**（`str`）：可选参数，表示激活函数类型。支持"None"、"silu"、"swish"，默认值为"None"。
 - **pad\_slot\_id**（`int`）：可选参数，用于跳过不需要参与计算的batch，默认值为-1。
 - **run\_mode**（`int`）：可选参数，表示运行模式。0：prefill场景；1：decode场景，默认值为0。
-- **residual\_connection**（`int`）：可选参数，用于判断是否输出结果是否要做残差连接。0：不做残差连接；1：输出为卷积结果与输入x之和（残差连接），默认值为0。
+- **residual\_connection**（`int`）：可选参数，用于判断输出结果是否要做残差连接。0：不做残差连接；1：输出为卷积结果与输入x之和（残差连接），默认值为0。
 
 ## 返回值说明
 

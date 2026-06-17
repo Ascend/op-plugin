@@ -63,9 +63,9 @@ torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, T
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，MOE的输入即token特征输入，要求为一个2维张量，shape为(NUM_ROWS, H)。数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape大小需要小于2^24。
+- **x** (`Tensor`)：必选参数，MOE的输入（即token特征输入），要求为一个2维张量，shape为(NUM_ROWS, H)。数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。shape大小需要小于2^24。
 - **row_idx** (`Tensor`)：必选参数，指示每个位置对应的原始行位置，shape要求与`expert_idx`一致。数据类型支持`int32`，数据格式要求为$ND$。
-- **expert_idx** (`Tensor`)：必选参数，[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的输出每一行特征对应的K个处理专家，要求是2维，shape为(NUM_ROWS, K)，数据类型支持`int32`，数据格式为$ND$。
+- **expert_idx** (`Tensor`)：必选参数，[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的输出，即每一行特征对应的K个处理专家，要求是2维，shape为(NUM_ROWS, K)，数据类型支持`int32`，数据格式为$ND$。
 - **active_num** (`int`)：必选参数，表示总的最大处理row数，输出`expanded_x`仅支持此处设置的最大处理行数。
 
 ## 返回值说明

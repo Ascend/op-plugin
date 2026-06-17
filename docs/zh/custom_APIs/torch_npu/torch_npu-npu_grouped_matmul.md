@@ -46,7 +46,7 @@ $y_i[m_i, n_i] =  x_i[m_i, k_i] \times weight_i[k_i, n_i], i = 1 \ldots g$ , 其
         - `x`为`int8`输入，`bias`为`bfloat16`，`float16`，`float32`输入（公式3-2）：
 
             $y_i = (x_i @ weight_i) \times scale_i \times pertokenscale_i + bias_i$
-        - `x`为`int4`输入, `weight`的数据类型为`int4`，数据排布格式为`NZ`的输入（公式3-3）:
+        - `x`为`int4`输入，`weight`的数据类型为`int4`，数据排布格式为`NZ`的输入（公式3-3）:
 
             $y_i=x_i@ (weight_i \times scale_i) \times pertokenscale_i$
         
@@ -110,7 +110,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     - 列表长度与weight列表长度相同。
     - 每个张量支持输入维度如下（其中$g$为matmul组数，$G$为pergroup数，$G_i$为第i个tensor的pergroup数）：
         - 伪量化perchannel场景，`weight`为单tensor时，shape限制为$[g, n]$；`weight`为多tensor时，shape限制为$[n_i]$。
-        - 伪量化pergroup场景，weight为单tensor时，shape限制为$[g, G, n]$; weight为多tensor时，shape限制为$[G_i, n_i]$。
+        - 伪量化pergroup场景，weight为单tensor时，shape限制为$[g, G, n]$；weight为多tensor时，shape限制为$[G_i, n_i]$。
 
 - **antiquant_offset** (`List[Tensor]`)：可选参数。用于调整伪量化后的数值偏移量，从而更准确地表示原始浮点数值，对应公式（4）。
     - 支持的数据类型如下：

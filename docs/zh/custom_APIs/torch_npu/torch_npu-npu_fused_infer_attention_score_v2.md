@@ -186,7 +186,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - inner\_precise为3时，代表高性能模式，且做行无效修正。
 
     > [!NOTE]   
-    > bfloat16和int8不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来使能行无效功能以提升精度，但是该配置会导致性能下降。
+    > bfloat16和int8不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来开启行无效功能以提升精度，但是该配置会导致性能下降。
 
 - **return\_softmax\_lse**（`bool`）：可选参数，表示是否输出`softmax_lse`，支持S轴外切（增加输出）。true表示输出，false表示不输出；默认值为false。
 - **query_dtype**（`int`）：可选参数，表示`query`的数据类型，**预留参数，暂未使用，使用默认值即可。**
@@ -286,7 +286,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - 仅支持page_attention场景，blockSize仅支持128或512；
     - key&value仅支持NZ输入，输入格式为[blockNum, KV\_N, D/32, blockSize, 32]；
     - dequant\_scale\_key和dequant\_scale\_value的dtype：perchannel模式下，仅支持bfloat16类型；pertoken模式下，仅支持float32类型；
-    - dequant\_scale\_key和dequant\_scale\_value的shape：perchannel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV\_N,1,D]；输出为BSND时，必须传入[KV\_N, D]；pertoken模式下，必须传入[B,KV\_S]，S需要大于等于blockTable的第二维*blockSize；
+    - dequant\_scale\_key和dequant\_scale\_value的shape：perchannel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV\_N,1,D]；输出为BSND时，必须传入[KV\_N, D]；pertoken模式下，必须传入[B,KV\_S]，S需要大于等于`block_table`的第二维*blockSize；
     - 仅支持KV分离；
     - 仅支持高性能模式；
     - 当MTP等于0时，支持sparse\_mode=0且不传mask；当MTP大于0、小于16时，支持sparse\_mode=3（传入优化后的atten\_mask矩阵，shape必须为2048\*2048）或sparse\_mode=9（传入tree mask，input\_layout为BSH/BSND/BNSD时shape为\(B, Q\_S, Q\_S\)，input\_layout为TND时shape为\(∑Q\_Si²,\)）；
@@ -335,15 +335,15 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - sparse\_mode=9时，仅MLA场景（query\_rope和key\_rope不为空）支持。atten\_mask不能为None。input\_layout为BSH/BSND/BNSD时shape为\(B, Q\_S, Q\_S\)；input\_layout为TND时shape为\(∑Q\_Si², \)。不支持左padding、pse\_shift、sharedPrefix。
 
     - page attention场景：
-        - page attention的使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，支持key、value数据类型为`float16`、`bfloat16`。在该场景下key、value的input\_layout参数无效。block\_table中填充的是blockid，当前不会对blockid的合法性进行校验，需用户自行保证。
-        - block\_size是用户自定义的参数，该参数的取值会影响page attention的性能，在使能page attention场景下，block\_size最小为128，最大为512，且要求是128的倍数。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
+        - page attention的开启必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，支持key、value数据类型为`float16`、`bfloat16`。在该场景下key、value的input\_layout参数无效。block\_table中填充的是blockid，当前不会对blockid的合法性进行校验，需用户自行保证。
+        - block\_size是用户自定义的参数，该参数的取值会影响page attention的性能，在开启page attention场景下，block\_size最小为128，最大为512，且要求是128的倍数。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
     
-        - page attention场景下，当输入kv cache排布格式为（blocknum, blocksize, H），且KV\_N\*D超过65535时，受硬件指令约束，会被拦截报错。可通过使能GQA（减小KV\_N）或调整kv cache排布格式为（blocknum, KV\_N, blocksize, D）解决。当query的input\_layout为BNSD、TND时，kv cache排布支持（blocknum, blocksize, H）和（blocknum, KV\_N, blocksize, D）两种格式，当query的input\_layout为BSH、BSND时，kv cache排布只支持（blocknum, blocksize, H）一种格式。blocknum不能小于根据actual\_seq\_kvlen和blockSize计算的每个batch的block数量之和。且key和value的shape需保证一致。
+        - page attention场景下，当输入kv cache排布格式为（blocknum, blocksize, H），且KV\_N\*D超过65535时，受硬件指令约束，会被拦截报错。可通过开启GQA（减小KV\_N）或调整kv cache排布格式为（blocknum, KV\_N, blocksize, D）解决。当query的input\_layout为BNSD、TND时，kv cache排布支持（blocknum, blocksize, H）和（blocknum, KV\_N, blocksize, D）两种格式，当query的input\_layout为BSH、BSND时，kv cache排布只支持（blocknum, blocksize, H）一种格式。blocknum不能小于根据actual\_seq\_kvlen和blockSize计算的每个batch的block数量之和。且key和value的shape需保证一致。
         - page attention不支持伪量化场景，不支持tensorlist场景。
         - page attention场景下，必须传入actual\_seq\_kvlen。
         - page attention场景下，block\_table必须为二维，第一维长度需等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为不同batch中最大actual\_seq\_kvlen对应的block数量）。
         - page attention场景下，支持两种格式和float32/bfloat16，不支持输入query为int8的场景。
-        - page attention使能场景下，以下场景输入需满足KV\_S\>=maxBlockNumPerSeq\*blockSize：
+        - page attention开启场景下，以下场景输入需满足KV\_S\>=maxBlockNumPerSeq\*blockSize：
             - 传入atten\_mask时，如mask shape为（B, 1, Q\_S, KV\_S）。
             - 传入pse\_shift时，如pse\_shift shape为（B, Q\_N, Q\_S, KV\_S）。
 
@@ -424,17 +424,17 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该入参中每个batch的有效Sequence Length应该不大于key/value中对应batch的Sequence Length。seqlenKv的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当key/value的input\_layout为TND/TND\_NTD时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
         
     - page attention场景：
-        - 使能必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，在该场景下key、value的input\_layout参数无效。
+        - 开启必要条件是block\_table存在且有效，同时key、value是按照block\_table中的索引在一片连续内存中排布，在该场景下key、value的input\_layout参数无效。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
             - 支持key、value数据类型为float16、bfloat16、int8。
             - 不支持Q为`bfloat16`、float16、key、value为int4（int32）的场景。
     
         - 该场景下，block\_size是用户自定义的参数，该参数的取值会影响page attention的性能。key、value输入类型为float16、bfloat16时需要16对齐，key、value输入类型为int8时需要32对齐，推荐使用128。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
         - 参数key、value各自对应tensor的shape所有维度相乘不能超过int32的表示范围。
-        - page attention场景下，blockTable必须为二维，第一维长度需等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为不同batch中最大actual\_seq\_kvlen对应的block数量）。
+        - page attention场景下，`block_table`必须为二维，第一维长度需等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为不同batch中最大actual\_seq\_kvlen对应的block数量）。
         - page attention场景下，当query的input\_layout为BNSD、TND时，kv cache排布支持（blocknum, blocksize, H）和（blocknum, KV\_N, blocksize, D）两种格式，当query的input\_layout为BSH、BSND时，kv cache排布只支持（blocknum, blocksize, H）一种格式。blocknum不能小于根据actual\_seq\_kvlen和blockSize计算的每个batch的block数量之和。且key和value的shape需保证一致。
         - page attention场景下，kv cache排布为（blocknum, KV\_N, blocksize, D）时性能通常优于kv cache排布为（blocknum, blocksize, H）时的性能，建议优先选择（blocknum, KV\_N, blocksize, D）格式。
-        - page attention使能场景下，当输入kv cache排布格式为（blocknum, blocksize, H），且numKvHeads \* headDim 超过64k时，受硬件指令约束，会被拦截报错。可通过使能GQA（减小 numKvHeads）或调整kv cache排布格式为（blocknum, numKvHeads, blocksize, D）解决。
+        - page attention开启场景下，当输入kv cache排布格式为（blocknum, blocksize, H），且numKvHeads \* headDim 超过64k时，受硬件指令约束，会被拦截报错。可通过开启GQA（减小 numKvHeads）或调整kv cache排布格式为（blocknum, numKvHeads, blocksize, D）解决。
         - page attention场景的参数key、value各自对应tensor的shape所有维度相乘不能超过int32的表示范围。
 
     - kv伪量化参数分离：

@@ -25,25 +25,25 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
 ## 参数说明
 
-- **x1** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持$ND$，shape支持3维，形状为（batch, m, k）。
+- **x1** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式支持$ND$，shape支持3维，形状为$(batch, m, k)$。
 
-- **x2** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式仅支持$NZ$，shape支持3维，形状为（batch, k, n）。如果输入数据是$ND$格式，可通过`x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`将$ND$格式的`x2`转换为$NZ$格式，其中29为NZ格式的枚举值。
+- **x2** (`Tensor`)：必选参数，数据类型支持`int8`，数据格式仅支持$NZ$，shape支持3维，形状为$(batch, k, n)$。如果输入数据是$ND$格式，可通过`x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`将$ND$格式的`x2`转换为$NZ$格式，其中29为NZ格式的枚举值。
 
-- **x1_scale** (`Tensor`)：必选关键字参数，对应公式中的$x1Scale$。数据类型支持`float32`，数据格式支持$ND$，shape支持2维，形状为（batch, m）。在实际计算时，`x1_scale`会被广播到(batch，m，n)。
+- **x1_scale** (`Tensor`)：必选关键字参数，对应公式中的$x1Scale$。数据类型支持`float32`，数据格式支持$ND$，shape支持2维，形状为$(batch, m)$。在实际计算时，`x1_scale`会被广播到$(batch，m，n)$。
 
-- **x2_scale** (`Tensor`)：必选关键字参数，对应公式中的$x2Scale$。数据类型支持`bfloat16`，数据格式支持$ND$，shape支持1维，形状为（n,）。在实际计算时，`x2_scale`会被广播到(batch，m，n)。
+- **x2_scale** (`Tensor`)：必选关键字参数，对应公式中的$x2Scale$。数据类型支持`bfloat16`，数据格式支持$ND$，shape支持1维，形状为$(n,)$。在实际计算时，`x2_scale`会被广播到$(batch，m，n)$。
 
 ## 返回值说明
 
 `Tensor`
 
-公式中的$out$，算子的计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为2维，形状为(m, n)。
+公式中的$out$，算子的计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为2维，形状为$(m, n)$。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
 - 该接口支持静态图模式。
-- 传入的`x1`、`x2`、`x1_scale`、`x2_scale`不能是空。
+- 传入的`x1`、`x2`、`x1_scale`、`x2_scale`不能为空。
 - 输入和输出支持以下数据类型组合：
 
   | x1   | x2   | x1_scale | x2_scale  | out      |
@@ -82,7 +82,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
   import os
   import numpy as np
 
-  # "ENABLE_ACLNN"是否使能走aclnn, true: 回调走aclnn, false: 在线编译
+  # "ENABLE_ACLNN"是否走aclnn, true: 回调走aclnn, false: 在线编译
   os.environ["ENABLE_ACLNN"] = "false"
   config = CompilerConfig()
   npu_backend = tng.get_npu_backend(compiler_config=config)

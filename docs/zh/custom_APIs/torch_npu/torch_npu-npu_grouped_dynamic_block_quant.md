@@ -26,7 +26,7 @@ torch_npu.npu_grouped_dynamic_block_quant(input, group_list, *, min_scale=0.0, r
 ## 参数说明
 
 - **input**（`Tensor`）：必选参数，表示算子输入的Tensor，公式中的$input$。维度为2-3维（形状为\[M, N\]或\[B, M, N\]），数据格式支持ND，数据类型支持`bfloat16`、`float16`。支持非连续Tensor，支持空Tensor。
-- **group\_list**（`Tensor`）：必选参数，表示量化分组的起始索引，要求大于等于0，且非递减，并且最后一个数需要与`x`的-2轴大小相等。维度仅支持1维，数据格式支持ND，数据类型支持`int32`，支持非连续Tensor，支持空Tensor。
+- **group\_list**（`Tensor`）：必选参数，表示量化分组的起始索引，要求大于等于0，且非递减，并且最后一个数需要与`input`的-2轴大小相等。维度仅支持1维，数据格式支持ND，数据类型支持`int32`，支持非连续Tensor，支持空Tensor。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **min\_scale**（`float`）：可选参数，表示参与scale计算的最小值，对应公式中的$min\_scale$。取值要求大于等于0，默认值为0.0。数据类型为`float32`。
 - **round\_mode**（`str`）：可选参数，表示最后由高bit数据cast到目标数据类型的近似模式。默认采用"rint"。

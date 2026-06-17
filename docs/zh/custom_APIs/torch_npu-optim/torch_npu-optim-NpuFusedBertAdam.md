@@ -39,7 +39,7 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 
 `NpuFusedBertAdam`的实现机制要求`params`中的每一个模型参数对象在使用过程中不能被重新申请，否则将导致无法预料的结果。引起模型参数对象被重新申请的操作包括但不限于：
 
-- 将模型或其子Module进行.cpu操作
+- 将模型或其子Module执行.cpu()操作
 - 将模型参数对象指向新的对象
 - 将模型参数对象置为None
 

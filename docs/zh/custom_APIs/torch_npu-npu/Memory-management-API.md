@@ -3,7 +3,7 @@
 **表1** Memory management API
 
 <a name="table683971665519"></a>
-<table><thead align="left"><tr id="row1357083844218"><th class="cellrowborder" valign="top" width="63.61%" id="mcps1.2.3.1.1"><p id="p1757053818424"><a name="p1757053818424"></a><a name="p1757053818424"></a>API接口</p>
+<table><thead align="left"><tr id="row1357083844218"><th class="cellrowborder" valign="top" width="63.61%" id="mcps1.2.3.1.1"><p id="p1757053818424"><a name="p1757053818424"></a><a name="p1757053818424"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="36.39%" id="mcps1.2.3.1.2"><p id="p2057018381424"><a name="p2057018381424"></a><a name="p2057018381424"></a>说明</p>
 </th>

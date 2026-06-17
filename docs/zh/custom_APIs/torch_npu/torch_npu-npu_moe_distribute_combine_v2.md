@@ -120,7 +120,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2D的Tensor，shape为(const_expert_num,H)，数据类型需跟expand_x保持一致；数据格式要求为ND，支持非连续的Tensor。
 
-- **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不使能记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
+- **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
 
 - **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
@@ -150,7 +150,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 - **comm\_quant\_mode** (`int`)：可选参数，表示通信量化类型。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当`comm_alg`配置为"hierarchy"或HCCL\_INTRA\_PCIE\_ENABLE=1且HCCL\_INTRA\_ROCE\_ENABLE=0且驱动版本不低于25.0.RC1.1时才支持取2。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以使能`int8`量化。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以开启`int8`量化。
 
 - **comm\_alg** (`str`)：可选参数，表示通信亲和内存布局算法。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本支持""，"fullmesh"，"hierarchy"三种输入方式。推荐配置"hierarchy"并搭配25.0.RC1.1及以上版本驱动使用。

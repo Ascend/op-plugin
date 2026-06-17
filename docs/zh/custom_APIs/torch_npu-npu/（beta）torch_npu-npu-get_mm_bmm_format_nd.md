@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-确认线性module里面的mm和bmm算子是否已使能ND格式，如果使能了ND，返回True，否则，返回False。
+确认线性module里面的mm和bmm算子是否已启用ND格式，如果启用了ND，返回True，否则返回False。
 
 ## 函数原型
 

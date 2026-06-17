@@ -23,9 +23,9 @@ torch_npu.npu.utils.is_support_inf_nan() -> bool
 
 `bool`
 
-返回值为True时，代表是INF_NAN模式。
+返回值为True时，代表INF_NAN模式。
 
-返回值为False时，代表为饱和模式。
+返回值为False时，代表饱和模式。
 
 ## 调用示例
 

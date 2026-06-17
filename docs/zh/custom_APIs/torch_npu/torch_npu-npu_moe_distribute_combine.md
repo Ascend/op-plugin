@@ -95,7 +95,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
 - **out\_dtype** (`int`)：预留参数，暂未使用，使用默认值即可。
 - **comm\_quant\_mode** (`int`)：表示通信量化类型。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当HCCL\_INTRA\_PCIE\_ENABLE=1且HCCL\_INTRA\_ROCE\_ENABLE=0且驱动版本不低于25.0.RC1.1时才支持取2。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以使能`int8`量化。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以开启`int8`量化。
 
 - **group\_list\_type** (`int`)：预留参数，暂未使用，使用默认值即可。
 

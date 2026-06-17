@@ -3,7 +3,7 @@
 **表1** torch_npu Storage API
 
 <a name="table13485145255617"></a>
-<table><thead align="left"><tr id="row12327105314411"><th class="cellrowborder" valign="top" width="55.25%" id="mcps1.2.3.1.1"><p id="p43277535444"><a name="p43277535444"></a><a name="p43277535444"></a>API接口</p>
+<table><thead align="left"><tr id="row12327105314411"><th class="cellrowborder" valign="top" width="55.25%" id="mcps1.2.3.1.1"><p id="p43277535444"><a name="p43277535444"></a><a name="p43277535444"></a>API名称</p>
 </th>
 <th class="cellrowborder" valign="top" width="44.75%" id="mcps1.2.3.1.2"><p id="p11327125394418"><a name="p11327125394418"></a><a name="p11327125394418"></a>说明</p>
 </th>

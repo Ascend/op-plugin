@@ -63,7 +63,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。仅支持默认值2^63-1。
 
-- **return\_value**（`bool`）：可选参数，表示是否输出`sparse_values`。True表示输出，False表示不输出；默认值为False。该参数仅在训练且`layout_key`不为PA_BSND场景支持。
+- **return\_value**（`bool`）：可选参数，表示是否输出`sparse_values`。True表示输出，False表示不输出；默认值为False。该参数仅在训练且`layout_key`不为PA_BSND场景下支持。
 
 ## 返回值说明
 
@@ -78,7 +78,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - 参数query中的D和参数key中的D值相等为128。
 - 参数query、key的数据类型应保持一致。
 - 参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
-- return_value仅在Atlas 350 加速卡支持图模式。
+- return_value仅在Atlas 350 加速卡上支持图模式。
 - Atlas 350 加速卡：
     - query中的N仅支持8、16、24、32、64。
     - 参数weights不支持`float32`类型。

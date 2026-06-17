@@ -16,7 +16,7 @@
 
     交叉熵损失`loss`的计算公式：
     $$
-    loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = ‘mean’} \\\sum_{n=1}^Nl_n,&\text {if reduction = ‘sum’ }\\\{l_0,l_1,...,l_n\},&\text{if reduction = ‘None’ }\end{cases}
+    loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = ‘mean’} \\\sum_{n=1}^Nl_n,&\text {if reduction = ‘sum’ }\\\{l_0,l_1,...,l_n\},&\text{if reduction = ‘none’ }\end{cases}
     $$
     
     其中$l_n$的计算公式为：
@@ -53,7 +53,7 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 ## 返回值说明
 
 - **loss**（`Tensor`）：表示输出损失；数据类型与`input`相同；`reduction`为`none`时shape为[N]，与`input`第零维一致，否则shape为[1]。
-- **log_prob**（`Tensor`）: 表示给反向计算的输出；数据类型与`input`相同；shape为[N, C]，与`input`一致。
+- **log_prob**（`Tensor`）: 用于反向计算的输出；数据类型与`input`相同；shape为[N, C]，与`input`一致。
 - **zloss**（`Tensor`）: 表示辅助损失；数据类型与`input`相同；shape与`loss`一致；当`return_zloss`为`True`时输出zloss，否则将返回空tensor；当前暂不支持。
 - **lse_for_zloss**（`Tensor`）:在zloss场景下给反向计算的输出；数据类型与`input`相同；shape为[N]，与`input`第零维一致；`lse_square_scale_for_zloss`不为`0.0`时将返回该输出，否则将返回空tensor；当前暂不支持。
 
@@ -61,8 +61,8 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
 - 输入shape中N取值范围(0, 200000]。
 - 当input.requires_grad=True时，`sum`/`none`模式下不支持修改`label_smoothing`的默认值；`mean`模式下只支持传入可选参数的默认值，包括`weight`，`ignore_index`和`label_smoothing`。
-- 输入`lse_square_scale_for_zloss`与`return_zloss`暂未使能。
-- 输出`zloss`与`lse_for_zloss`暂未使能。
+- 输入`lse_square_scale_for_zloss`与`return_zloss`暂不支持。
+- 输出`zloss`与`lse_for_zloss`暂不支持。
 - 输出中仅`loss`支持梯度计算。
 
 ## 调用示例

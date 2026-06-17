@@ -52,7 +52,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **offset** (`Tensor`)：仅当`scale`为2维时为必选参数，并且数据类型仅支持`float16`，shape需要是2维且与`scale`相同；其他场景下为可选参数，用于调整量化后的数值偏移量。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
 - **pertoken_scale** (`Tensor`)：可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致，表示`x1`的倒数第二维。<term>Atlas 推理系列加速卡产品</term>当前不支持`pertoken_scale`。
-- **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，shape支持1维$(n,)$或3维$（batch, 1, n）$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
+- **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，shape支持1维$(n,)$或3维$(batch, 1, n)$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是2、4、5、6维情况下，`bias`的shape必须为1维。当输出是3维情况下，`bias`的shape可以为1维或3维。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
@@ -196,7 +196,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         import os
         import numpy as np
 
-        # "ENABLE_ACLNN"是否使能走aclnn, true: 回调走aclnn, false: 在线编译
+        # "ENABLE_ACLNN"是否走aclnn, true: 回调走aclnn, false: 在线编译
         os.environ["ENABLE_ACLNN"] = "true"
         config = CompilerConfig()
         npu_backend = tng.get_npu_backend(compiler_config=config)
