@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas 350 加速卡</term>     | √  |
+|<term>Ascend 950DT</term>     | √  |
 
 ## 功能说明
 
@@ -60,7 +60,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **gmm\_x\_scale** (`Tensor`)：必选参数，表示路由专家左矩阵`gmm_x`的量化系数。数据类型支持`float32`、`float8_e8m0fnu`。pertensor量化场景下支持1维，shape为$(1，)$。mx量化场景下支持3维，shape为$(BSK, ceil(H1/64), 2)$。数据格式支持$ND$。
 - **gmm\_weight\_scale** (`Tensor`)：必选参数，表示路由专家右矩阵`gmm_weight`的量化系数。数据类型支持`float32`、`float8_e8m0fnu`。pertensor量化场景下支持1维，shape为$(1，)$。mx量化场景下支持4维，shape为$(e, ceil(H1/64), N1, 2)$。数据格式支持$ND$。
 - **hcom** (`str`)：必选参数，Host侧标识列组的字符串，即通信域名称，通过get\_hccl\_comm\_name接口获取。
-- **ep\_world\_size** (`int`)：必选参数，通信域内的rank总数。支持范围为2、4、8、16、32、64、128、256。
+- **ep\_world\_size** (`int`)：必选参数，通信域内的rank总数。支持范围为2、4、8、16、32、64、128、256, CCU仅支持单机UB域内互联，AICPU可支持跨机UB域内互联。
 - **send\_counts** (`List[int]`)：必选参数，长度为`e * ep_world_size`的整数列表，表示本卡发送给每个目标卡的token数。假设目标卡号为$i$（$0 \le i < ep\_world\_size$），发送专家号为$j$（$0 \le j < e$），`send_counts[i][j]`表示本卡发送给第$i$张卡第$j$个专家的token数。约束：长度必须等于`e * ep_world_size`，且元素均为非负整数。
 - **recv\_counts** (`List[int]`)：必选参数，长度为`e * ep_world_size`的整数列表，表示本卡从每个目标卡接收的token数。假设目标卡号为$i$（$0 \le i < ep\_world\_size$），接收专家号为$j$（$0 \le j < e$），`recv_counts[i][j]`表示本卡接收第$i$张卡第$j$个专家的token数。约束：长度必须等于`e * ep_world_size`，且元素均为非负整数。
 - **gmm\_y\_dtype** (`int`)：必选参数，表示路由专家GroupedMatmul计算输出张量`gmm_y`的数据类型。数据类型支持`float16`、`bfloat16`。
