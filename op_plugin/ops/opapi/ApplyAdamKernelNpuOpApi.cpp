@@ -65,7 +65,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(
             beta1_tensor, beta2_tensor, epsilon_tensor, grad, use_locking_value, use_nesterov_value);
         return std::tie(var, m, v);
     } else {
-        TORCH_NPU_WARN("current soc not support aclnn");
         return acl_op::npu_apply_adam_out(beta1_power, beta2_power, lr,
             beta1, beta2, epsilon, grad, use_locking, use_nesterov, var, m, v);
     }
