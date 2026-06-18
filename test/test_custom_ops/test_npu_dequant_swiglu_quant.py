@@ -312,6 +312,61 @@ class TestNPUDequantSwigluQuant(TestCase):
 
     @unittest.skip("Skip until CANN is updated to 8.3.RC1 to support aclnnDequantSwigluQuantV2")
     @SupportedDevices(["Ascend910B"])
+    def test_npu_dequant_swiglu_quant_swiglu_mode2(self, device="npu"):
+        swiglu_mode = 2
+        bias = None
+        quant_offset = None
+        x_shape = [4608, 2048]
+        x = torch.randint(-10, 10, x_shape, dtype=torch.int32)
+        weight_scale = torch.randn(x_shape[1], dtype=torch.float32)
+        activate_scale = torch.randn((x_shape[0], 1), dtype=torch.float32)
+        quant_scale = torch.randn((1, x_shape[1] // 2), dtype=torch.float32)
+        group_index = torch.tensor([x.shape[0]])
+        quant_mode = 1
+        if quant_mode == 0:
+            quant_offset = torch.randn((1, x_shape[1] // 2), dtype=torch.float32)
+
+        y_cpu, scale_cpu = self.golden_dequant_swiglu_quant_torch(
+            x,
+            weight_scale,
+            activate_scale,
+            bias,
+            quant_scale,
+            quant_offset,
+            group_index,
+            activate_left=True,
+            quant_mode=quant_mode,
+            swiglu_mode=swiglu_mode,
+            clamp_limit=7.0,
+            glu_alpha=1.702,
+            glu_bias=1.0,
+        )
+
+        group_index_npu = group_index.npu() if group_index is not None else None
+        bias_npu = bias.npu() if bias is not None else None
+        if quant_offset is not None:
+            quant_offset = quant_offset.npu()
+        y_npu, scale_npu = torch_npu.npu_dequant_swiglu_quant(
+            x.npu(),
+            weight_scale=weight_scale.npu(),
+            activation_scale=activate_scale.npu(),
+            bias=bias_npu,
+            quant_scale=quant_scale.npu(),
+            quant_offset=quant_offset,
+            group_index=group_index_npu,
+            activate_left=True,
+            quant_mode=quant_mode,
+            swiglu_mode=swiglu_mode,
+            clamp_limit=7.0,
+            glu_alpha=1.702,
+            glu_bias=1.0,
+        )
+
+        self.assertRtolEqual(y_cpu.numpy(), y_npu.cpu().numpy())
+        self.assertRtolEqual(scale_cpu.numpy(), scale_npu.cpu().numpy())
+
+    @unittest.skip("Skip until CANN is updated to 8.3.RC1 to support aclnnDequantSwigluQuantV2")
+    @SupportedDevices(["Ascend910B"])
     def test_npu_dequant_swiglu_quant_3(self, device="npu"):
         swiglu_mode = 0
         bias = None
@@ -416,6 +471,8 @@ class TestNPUDequantSwigluQuant(TestCase):
             glu_alpha=1.702,
             glu_bias=1.0)
         self.assertRtolEqual(y_cpu.astype(numpy.float32), y_npu.to(torch.float32).cpu().numpy())
+
+
 
 if __name__ == "__main__":
     run_tests()

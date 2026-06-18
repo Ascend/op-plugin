@@ -34,8 +34,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dequant_swiglu_quant(
     TORCH_CHECK(x.dim() > 1, "x dim should larger than 1", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(quant_mode == 0 || quant_mode == 1, "quant_mode only support 0 or 1, but got", quant_mode,
                 OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(swiglu_mode == 0 || swiglu_mode == 1, "swiglu_mode only support 0 or 1, but got ", swiglu_mode,
-                OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(swiglu_mode == 0 || swiglu_mode == 1 || swiglu_mode == 2,
+                "swiglu_mode only support 0, 1 or 2, but got ", swiglu_mode, OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(std::isfinite(clamp_limit) && clamp_limit > 0.0, "clamp_limit should be positive finite",
                 OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(std::isfinite(glu_alpha), "glu_alpha should be finite", OPS_ERROR(ErrCode::PARAM));
@@ -112,7 +112,6 @@ std::tuple<at::Tensor, at::Tensor> npu_dequant_swiglu_quant(
         } else {
             TORCH_CHECK(round_mode_value >= ROUND_MODE_RINT && round_mode_value <= ROUND_MODE_TRUNC,
                         "round_mode only support [0, 1, 2, 3, 4], but got", round_mode_value, OPS_ERROR(ErrCode::PARAM));
-    
             // transform activate_dim
             if (activate_dim_value < 0) {
                 activate_dim_value = activate_dim_value + x.dim();
@@ -148,7 +147,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dequant_swiglu_quant(
 
             at::Tensor y;
             aclDataType y_acltype;
-        
+
             if (special_output_type) {
                 y = npu_preparation::apply_tensor_without_format(y_size, c10::ScalarType::Byte);
                 y_acltype = c10_npu::GetAclDataType(dst_type_value);

@@ -48,6 +48,16 @@
             $$
             swish(z,\alpha)=z*sigmoid(\alpha*z)
             $$
+        - 当swiglu_mode=2（标准Swiglu的拆分方式+变种Swiglu的计算方式），以左激活为例：
+            $$
+            x\_{glu}=clamp(x[:,0:H],\ max=clamp\_limit)\\
+            x\_{linear}=clamp(x[:,H:2H],-clamp\_limit,clamp\_limit)\\
+            swiglu(x)=swish(x\_{glu},\alpha)*(x\_{linear}+bias)
+            $$
+            其中：
+            $$
+            swish(z,\alpha)=z*sigmoid(\alpha*z)
+            $$
 
     - quant量化：
         1. （可选）先进行smooth量化。
@@ -84,12 +94,12 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
   > **注意：**静态量化下，quant\_scale仅支持float32类型。
 - **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。`group_index`场景下（非None），该参数不生效，需为None。
 - **group\_index** (`Tensor`)：可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求为1维张量，数据类型支持`int64`，数据格式$ND$。
-- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做 swish 激活，仅在 swiglu_mode=0 时生效，默认值为 False。
+- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做 swish 激活，仅在 swiglu_mode=0/2 时生效，默认值为 False。
     - 取True时，out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
     - 取False时，out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
 - **quant\_mode** (`int`)：可选参数，表示量化类型，默认值为0。0表示静态量化，1表示动态量化。
-- **swiglu\_mode**（`int`）：可选参数，swiglu计算模式，0表示传统 swiglu，1表示变种swiglu（支持clamp、alpha、bias）。
+- **swiglu\_mode**（`int`）：可选参数，swiglu计算模式，0表示传统 swiglu，1表示变种swiglu（支持clamp、alpha、bias），2表示传统swiglu的拆分方式+变种swiglu的计算方式。
 - **clamp\_limit**（`float`）：可选参数，swiglu输入门限，默认7.0。
 - **glu\_alpha**（`float`）：可选参数，glu激活函数系数，默认1.702。
 - **glu\_bias**（`float`）：可选参数，swiglu计算中的偏差，默认1.0。
@@ -112,7 +122,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - x的最后一维长度必须为偶数。
 - 当激活维度不是x的最后一维时，group_index必须为None。
 - 当`group_index`非None，且为动态量化（即`quant_mode`为1）时，bias、quant_offset不生效。
-- clamp_limit、glu_alpha、glu_bias仅在swiglu_mode=1时生效。
+- clamp_limit、glu_alpha、glu_bias仅在swiglu_mode=1/2时生效。
 
 ## 调用示例
 
