@@ -41,7 +41,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **pse_shift** (`Tensor`)：可选参数。不支持非连续的`Tensor`，数据格式支持$ND$。输入shape类型需为$(B, N, Q\_S, KV\_S)$或$(1, N, Q\_S, KV\_S)$，其中$Q\_S$为`query`的shape中的$S$，$KV\_S$为`key`和`value`的shape中的$S$。对于`pse_shift`的$KV\_S$为非32字节对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。如不使用该功能时可传入`None`。综合约束请见[约束说明](#section12345537164214)。
     - <term>Atlas 推理系列加速卡产品</term>：暂不支持该参数。

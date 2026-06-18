@@ -34,7 +34,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 ## 参数说明
 
 - **x** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据类型支持`float16`、`bfloat16`，数据格式支持ND，支持非连续的Tensor。输入`x`的维度必须大于1。进行int4量化时，要求x形状的最后一维是8的整数倍。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth_scales** (`Tensor`)：可选参数，用于提供缩放系数(scales)的张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。
     - 在非MoE场景shape必须是1维，和`x`的最后一维相等。
     - 在MoE场景shape是2维[E, H]。其中E是专家数，取值范围在[1, 1024]且与group_index的第一维相同；H是x的最后一维。

@@ -54,7 +54,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
     - <term>Atlas A2 训练系列产品</term>支持2、4、8卡，支持HCCS链路all mesh组网（每张卡和其它卡两两相连）。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持2、4、8、16、32卡，支持HCCS链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
 
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce\_op** (`str`)：可选参数。reduce操作类型，当前仅支持'sum'，默认值为'sum'。
 - **bias** (`Tensor`)：可选参数。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$格式。数据类型需要和`input`保持一致。`bias`仅支持一维，且维度大小与output的第1维大小相同。当前版本暂不支持`bias`输入为非0的场景。
 - **x1\_scale** (`Tensor`)：可选参数。mm左矩阵反量化参数。数据类型支持`float32`，数据格式支持$ND$格式。数据维度为\(m, 1\), 支持pertoken量化。

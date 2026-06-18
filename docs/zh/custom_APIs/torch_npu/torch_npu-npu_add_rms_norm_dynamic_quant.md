@@ -76,7 +76,7 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 - **x1**(`Tensor`)：必选参数，表示用于Add计算的第一个输入，对应公式中的$x1$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float16`、`bfloat16`。支持2-8维张量。
 - **x2**(`Tensor`)：必选参数，表示用于Add计算的第二个输入，对应公式中的$x2$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float16`、`bfloat16`。shape与`x1`保持一致。
 - **gamma**(`Tensor`)：必选参数，表示RMSNorm的缩放因子（权重），对应公式中的$gamma$。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth_scale1**(`Tensor`)：可选参数，第一路量化的smooth缩放因子，对应公式中的$smoothScale1$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时量化分支不进行smooth操作。
 - **smooth_scale2**(`Tensor`)：可选参数，第二路量化的smooth缩放因子，对应公式中的$smoothScale2$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时量化分支不进行smooth操作。
 - **beta**(`Tensor`)：可选参数，RMSNorm的偏置项，对应公式中的$beta$。数据类型与`x1`保持一致。shape为一维，元素数量与`x1`最后一维大小一致。默认值为`None`，为`None`时不添加偏置。

@@ -37,7 +37,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     - A8W4量化场景下数据格式支持$ND$，维度为\(e, k, n\)，k支持2048，n只支持7168。
 
 - **group\_list** (`Tensor`)：必选参数。GroupedMatMul的各分组大小。不支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，e与`w`的e一致。`group_list`的值总和要求≤m。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **scale** (`Tensor`)：可选参数。矩阵计算反量化参数，对应weight矩阵。A8W8场景下支持perchannel量化方式，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(e, n\)，这里的n=n1\*n0，A8W4量化场景下，数据类型支持`int64`，维度为\(e, 1, n\)。
 - **bias** (`Tensor`)：可选参数。矩阵计算的bias参数，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度为\(e, n\)，只支持A8W4量化场景。
 - **offset** (`Tensor`)：可选参数。矩阵计算量化参数的偏移量，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，输入维度只支持3维。只支持A8W4量化场景。

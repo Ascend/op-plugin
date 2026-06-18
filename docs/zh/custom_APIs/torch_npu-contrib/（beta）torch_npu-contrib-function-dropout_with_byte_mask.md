@@ -31,7 +31,7 @@ torch_npu.contrib.function.dropout_with_byte_mask(input1, p=0.5, training=True, 
 
 ## 约束说明
 
-仅在设备32核场景下性能提升。
+仅在32核设备场景下性能提升。
 
 ## 使用示例
 

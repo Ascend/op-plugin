@@ -90,7 +90,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
      
 - **value**（`Tensor`）：必选参数，表示attention结构的Value输入，对应公式中的`V`。不支持非连续的Tensor，数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`），数据格式支持ND。    
     
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **query\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中`query`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。
 - **key\_rope**（`Tensor`）：可选参数，表示MLA（Multi-head Latent Attention）结构中的`key`的rope信息，数据类型支持`float16`、`bfloat16`，不支持非连续的Tensor，数据格式支持ND。
 - **pse\_shift**（`Tensor`）：可选参数，表示attention结构内部的位置编码参数，数据类型支持`float16`、`bfloat16`，数据类型与`query`数据类型需满足类型推导规则。不支持非连续的Tensor，数据格式支持ND。如不使用该功能可传入None。

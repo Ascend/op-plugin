@@ -34,7 +34,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 - **input**（`Tensor`）：必选参数，表示矩阵乘的第一个矩阵。数据类型支持`float16`、`bfloat16`、`float32`。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, M, K）或者（M, B, K），B的取值范围为\[1, 65536\)。支持非连续的Tensor。
 - **weight**（`Tensor`）：必选参数，表示矩阵乘的第二个矩阵。数据类型支持`float16`、`bfloat16`、`float32`。同时-1轴（末轴）<=65535。数据格式支持ND，shape维度支持3维（B, K, N），N的取值范围为\[1, 65536\)。支持非连续的Tensor。`weight`的Reduce维度需要与`input`的Reduce维度大小相等。
 - **bias**（`Tensor`）：可选参数，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
-- **scale**（`Tensor`）：可选参数，表示量化输入，数据类型支持`int64`、`uint64`。数据格式支持ND，shape维度支持1维\(B \* N\)，B\*N的取值范围为\[1, 65536\)。支持非连续的Tensor。
+- **scale**（`Tensor`）：可选参数，表示量化缩放因子，数据类型支持`int64`、`uint64`。数据格式支持ND，shape维度支持1维\(B \* N\)，B\*N的取值范围为\[1, 65536\)。支持非连续的Tensor。
 - **perm\_x1**（`List[int]`）：可选参数，表示矩阵乘的第一个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，支持\[0, 1, 2\]、\[1, 0, 2\]。
 - **perm\_x2**（`List[int]`）：可选参数，表示矩阵乘的第二个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[0, 1, 2\]。
 - **perm\_y**（`List[int]`）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[1, 0, 2\]。

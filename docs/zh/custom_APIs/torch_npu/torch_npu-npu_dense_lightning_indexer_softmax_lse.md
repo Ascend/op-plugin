@@ -59,8 +59,7 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 ## 返回值说明
 
 - **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`float32`。
-- **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex
-$，数据格式支持$ND$，数据类型支持`float32`。
+- **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex$，数据格式支持$ND$，数据类型支持`float32`。
 
 ## 约束说明
 

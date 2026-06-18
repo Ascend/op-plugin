@@ -26,7 +26,7 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
 - **x** (`Tensor`)：必选参数，需要做量化的源数据张量，对应公式中的`x`。数据类型支持`float32`、`float16`、`bfloat16`。支持空Tensor，支持非连续的Tensor。数据格式支持$ND$。shape为2维，如果`dst_dtype`为`quint4x2`，则输入`x`的shape的最后一维需要能被8整除。
 - **scale** (`Tensor`)：必选参数，量化中的缩放因子，对应公式中的`scale`。数据类型支持`float32`、`float16`、`bfloat16`。支持空Tensor，支持非连续的Tensor。数据格式支持$ND$。shape为2维，第0维大小不支持为0，并且`scale`的第1维与`x`的第1维相等。
 - **group_index** (`Tensor`)：必选参数，分组量化中的group编号值。数据类型支持`int32`、`int64`。支持空Tensor，支持非连续的Tensor。数据格式支持$ND$。`group_index`为1维张量，并且`group_index`的第0维与`scale`的第0维相等。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **offset** (`Tensor`)：可选参数，量化中的偏移值，对应公式中的`offsetOptional`。数据类型支持`float32`、`float16`、`bfloat16`，且数据类型与`scale`的数据类型一致。支持空Tensor，支持非连续的Tensor。数据格式支持$ND$。shape为1维，且只包含1个元素。
 - **dst_dtype** (`ScalarType`)：可选参数，输入值允许为`int8`或`quint4x2`，默认值为`int8`。
 

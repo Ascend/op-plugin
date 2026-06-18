@@ -45,7 +45,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **value\_quant\_mode**（`int`）：必选参数，代表value的量化模式，数据类型支持`int64`，仅支持传入2，代表per_tile量化模式。
 
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **key\_dequant\_scale**（`Tensor`）：可选参数，预留参数，仅支持默认值。
 

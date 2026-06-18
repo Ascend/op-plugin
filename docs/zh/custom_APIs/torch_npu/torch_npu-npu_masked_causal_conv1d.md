@@ -42,7 +42,7 @@ torch_npu.npu_masked_causal_conv1d(input, weight, *, mask=None) -> Tensor
 
 - **input** (`Tensor`)：必选参数，表示卷积输入张量。支持非连续Tensor，数据格式支持$ND$，数据类型支持`float16`、`bfloat16`，shape为[S, B, H]。
 - **weight** (`Tensor`)：必选参数，表示卷积权重张量。支持非连续Tensor，数据格式支持$ND$，数据类型与`input`一致，shape为[W, H]，W目前只支持3。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **mask** (`Tensor`)：可选参数，表示卷积输出的掩码。不支持非连续的Tensor，数据格式支持$ND$，数据类型支持`bool`，shape为[B, S]，true表示有效位置，false表示需要置零的位置。默认值为None，表示不进行掩码操作。
 
 ## 返回值说明

@@ -24,7 +24,7 @@ torch.distributed.ProcessGroupHCCL(store, rank, size, timeout) -> ProcessGroup
 - **store**：`torch.distributed.distributed_c10d.PrefixStore`对象，可以通过构造函数构造。
 - **rank**：当前节点的rank序号。
 - **size**：全部通讯节点的数量。
-- **timeout**：通讯中断时间，判断节点断连，默认值为1800s。
+- **timeout**：通信中断时间，判断节点断连，默认值为1800s。
 
 ## 返回值说明
 
