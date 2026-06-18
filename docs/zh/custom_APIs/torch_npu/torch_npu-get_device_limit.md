@@ -20,7 +20,7 @@ torch.npu.get_device_limit(device) ->Dict
 
 ## 参数说明
 
-**device** (`Device`)：必选参数，设置控核的卡号。
+**device** (`Device`)：必选参数，指定要查询资源限制的设备ID。
 
 ## 返回值说明
 

@@ -113,7 +113,7 @@
 </tr>
 <tr id="row1629143112919"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1936712431249"><a name="p1936712431249"></a><a name="p1936712431249"></a><a href="（beta）torch_npu-npu-set_compile_mode.md">（beta）torch_npu.npu.set_compile_mode</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1236764317242"><a name="p1236764317242"></a><a name="p1236764317242"></a>设置是否开启二进制模式。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1236764317242"><a name="p1236764317242"></a><a name="p1236764317242"></a>设置是否开启二进制编译。</p>
 </td>
 </tr>
 <tr id="row2027910351793"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p16367343112416"><a name="p16367343112416"></a><a name="p16367343112416"></a><a href="（beta）torch_npu-npu-is_jit_compile_false.md">（beta）torch_npu.npu.is_jit_compile_false</a></p>

@@ -33,7 +33,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 - **ffn\_token\_data\_shape** (`List[int]`)：必选参数，表示FFN卡上token数据表格shape大小，长度为5，包括Attention节点的数量、microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）、单个token的长度。
 - **attn\_token\_info\_table\_shape** (`List[int]`)：必选参数，表示Attention卡上token信息表格shape大小，长度为3，包括microBatchSize的大小、batchSize大小、每个token需发送的专家数量（包括共享专家）。
 - **moe\_expert\_num** (`int`)：必选参数，MoE专家数量，取值范围\[1, 1024\]。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, H\)，数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。当`quant_mode`为2，`scales`可不为None；当`quant_mode`为0，`scales`必须为None。
 - **active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。要求是一个2维张量，shape为\(X, BS\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入。默认所有token都会参与通信。
 - **quant\_mode** (`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。

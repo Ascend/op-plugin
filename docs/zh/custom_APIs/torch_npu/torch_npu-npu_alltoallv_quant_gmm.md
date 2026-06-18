@@ -64,7 +64,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **send\_counts** (`List[int]`)：必选参数，长度为`e * ep_world_size`的整数列表，表示本卡发送给每个目标卡的token数。假设目标卡号为$i$（$0 \le i < ep\_world\_size$），发送专家号为$j$（$0 \le j < e$），`send_counts[i][j]`表示本卡发送给第$i$张卡第$j$个专家的token数。约束：长度必须等于`e * ep_world_size`，且元素均为非负整数。
 - **recv\_counts** (`List[int]`)：必选参数，长度为`e * ep_world_size`的整数列表，表示本卡从每个目标卡接收的token数。假设目标卡号为$i$（$0 \le i < ep\_world\_size$），接收专家号为$j$（$0 \le j < e$），`recv_counts[i][j]`表示本卡接收第$i$张卡第$j$个专家的token数。约束：长度必须等于`e * ep_world_size`，且元素均为非负整数。
 - **gmm\_y\_dtype** (`int`)：必选参数，表示路由专家GroupedMatmul计算输出张量`gmm_y`的数据类型。数据类型支持`float16`、`bfloat16`。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **send\_counts\_tensor** (`Tensor`)：可选参数，当前仅支持输入None。
 - **recv\_counts\_tensor** (`Tensor`)：可选参数，当前仅支持输入None。
 - **mm\_x** (`Tensor`)：可选参数，默认None。表示共享专家Matmul的左矩阵输入，仅在启用共享专家时输入。数据类型支持`hifloat8`、`float8_e4m3fn`、`float8_e5m2`、`float4_e2m1fn_x2`，且和`gmm_x`类型一致。支持2维，shape为$(BS，H2)$。数据格式支持$ND$，其中数据类型为`float4_e2m1fn_x2`时内轴$H2$需为偶数，$H2$不能为2，以保证8bits可以转换为2个`float4_e2m1fn_x2`。

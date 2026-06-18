@@ -36,7 +36,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 ## 参数说明
 
 - **x** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。输入`x`的维度必须大于1。进行`int4`量化时，要求`x`形状的最后一维是8的整数倍。
-- <strong>*</strong>：必选参数，代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth_scales** (`Tensor`)：可选参数，用于对x进行缩放的张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。shape见约束说明。
 - **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组的下标，仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 
