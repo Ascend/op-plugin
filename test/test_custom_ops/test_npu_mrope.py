@@ -295,4 +295,3 @@ class TestNPUMrope(TestCase):
 
 if __name__ == "__main__":
     run_tests()
-

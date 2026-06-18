@@ -33,7 +33,7 @@ class TestDynamicQuant(TestCase):
             input_tensor = input_tensor * smooth_scales
         input_max = input_tensor.max(dim=-1, keepdim=True)[0]
         input_min = input_tensor.min(dim=-1, keepdim=True)[0]
-        if dst_type == torch.int8:    
+        if dst_type == torch.int8:
             scale = (input_max - input_min) / 255
             offset = 127 - input_max / scale
         else:
@@ -62,9 +62,9 @@ class TestDynamicQuant(TestCase):
         offset = scale_max - (input_max / scale)
         input_scaled_tensor = input_scaled_tensor / scale + offset
         round_data = torch.round(input_scaled_tensor, decimals=0).to(torch.int8)
-        
+
         return [round_data, scale.squeeze(-2), offset.squeeze(-2)]
-    
+
     def dynamic_quant_perchannel_asymmetric_impl(self, input_tensor, smooth_scales=None, group_index=None, dst_type=torch.int8, quant_mode="perchannel"):
         return torch_npu.npu_dynamic_quant_asymmetric(input_tensor, smooth_scales=smooth_scales, group_index=group_index, dst_type=dst_type, quant_mode=quant_mode)
 
@@ -85,7 +85,7 @@ class TestDynamicQuant(TestCase):
         else:
             smooth_scales = torch.randn(input_shape[-1], dtype=date_type)
         return input_tensor, smooth_scales, group_index
-    
+
     def generate_input_perchannel(self, input_shape, dtype="float16"):
         date_type = torch.float16 if dtype == "float16" else torch.bfloat16
         input_tensor = torch.randn(input_shape, dtype=date_type)
@@ -98,7 +98,7 @@ class TestDynamicQuant(TestCase):
         x_uint8_right = ((x_uint8 & 0x0F) << 4).view(torch.int8) >> 4
         x_int4 = torch.cat([x_uint8_right, x_uint8_left], dim=-1).contiguous()
         return x_int4
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_dynamic_quant_asymmetric_fp16_input(self, device="npu"):
         input_tensor, _, _ = self.generate_input(input_shape=[2, 32, 256],
@@ -148,8 +148,8 @@ class TestDynamicQuant(TestCase):
         supported_output = self.supported_op_exec(input_tensor.clone(), smooth_scales.clone(), group_index.clone())
         custom_output = self.custom_op_exec(input_tensor.clone(), smooth_scales.clone(), group_index.clone(), torch.int8)
         assert_close(supported_output[0], custom_output[0], atol=1.0, rtol=0.0)
-        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)  
-        assert_close(supported_output[2], custom_output[2], atol=0.0, rtol=0.0001) 
+        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
+        assert_close(supported_output[2], custom_output[2], atol=0.0, rtol=0.0001)
 
     @SupportedDevices(['Ascend910B'])
     def test_npu_dynamic_quant_asymmetric_int4_fp16_input(self, device="npu"):
@@ -157,7 +157,7 @@ class TestDynamicQuant(TestCase):
                                                                 dtype="float16",
                                                                 use_smooth=False,
                                                                 group_num=1)
-                                                                
+
         input_tensor = input_tensor.to(device)
         supported_output = self.supported_op_exec(input_tensor.clone(), dst_type=torch.quint4x2)
         custom_output = self.custom_op_exec(input_tensor.clone(), dst_type=torch.quint4x2)
@@ -177,7 +177,7 @@ class TestDynamicQuant(TestCase):
         custom_output = self.custom_op_exec(input_tensor.clone(), dst_type=torch.quint4x2)
         y = self.convert_int4_to_int8(custom_output[0]).view([2, 32, 256])
         assert_close(supported_output[0], y, atol=1.0, rtol=0.0)
-        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001) 
+        assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
         assert_close(supported_output[2], custom_output[2], atol=0.0, rtol=0.0001)
 
     @SupportedDevices(['Ascend910B'])
@@ -207,7 +207,7 @@ class TestDynamicQuant(TestCase):
         assert_close(supported_output[0], y, atol=1.0, rtol=0.0)
         assert_close(supported_output[1], custom_output[1], atol=0.0, rtol=0.0001)
         assert_close(supported_output[2], custom_output[2], atol=0.0, rtol=0.0001)
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_dynamic_quant_asymmetric_int8_bf16_input_smooth_perchannel(self, device="npu"):
         input_tensor, smooth_scales = self.generate_input_perchannel(input_shape=[2, 32, 256], dtype="bfloat16")
@@ -219,6 +219,6 @@ class TestDynamicQuant(TestCase):
         assert_close(supported_output[0], y, atol=0.01, rtol=0.001)
         assert_close(supported_output[1], custom_output[1], atol=0.01, rtol=0.001)
         assert_close(supported_output[2], custom_output[2], atol=0.01, rtol=0.001)
-        
+
 if __name__ == "__main__":
     run_tests()

@@ -100,4 +100,3 @@ class TestForeachExpm1(TestCase):
 
 if __name__ == "__main__":
     run_tests()
-

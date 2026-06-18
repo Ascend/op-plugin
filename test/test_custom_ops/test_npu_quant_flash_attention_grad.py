@@ -383,4 +383,3 @@ class TestNPUQuantFlashAttentionV2(TestCase):
         self.assertRtolEqual(dq_cpu, dq.to(torch.float32), prec=0.01, prec16=0.01)
 if __name__ == "__main__":
     run_tests()
-

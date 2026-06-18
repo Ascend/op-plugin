@@ -34,7 +34,7 @@ class TestAntiMxQuant(TestCase):
         mxscale_data_type = torch.float8_e8m0fnu
         mxscale_tensor = torch.zeros((1, 1, 2), dtype=torch.float32).to(dtype=mxscale_data_type)
         return input_tensor, mxscale_tensor
-    
+
     @SupportedDevices(['Ascend950'])
     def test_npu_anti_mx_quant_(self, device="npu"):
         input_tensor, mxscale_tensor = self.generate_input(dtype="float8_e4m3fn")
@@ -45,6 +45,6 @@ class TestAntiMxQuant(TestCase):
         y = custom_output[0].view([1, 2]).view(torch.bfloat16)
 
         assert torch.all(y == supported_output[0].view(torch.bfloat16))
-        
+
 if __name__ == "__main__":
     run_tests()
