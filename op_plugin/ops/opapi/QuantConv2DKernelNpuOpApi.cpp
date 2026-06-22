@@ -147,7 +147,6 @@ at::Tensor npu_quant_conv2d(const at::Tensor& input, const at::Tensor& weight, c
                                     round_mode, input_dtype, weight_dtype, output_dtype, bias, offset);
     } else {
         // aclnn only support 950 currently
-        TORCH_NPU_WARN("current soc not support aclnn");
         return acl_op::npu_quant_conv2d(input, weight, scale, strides, pads, dilations, groups, offset_x,
                                         round_mode, output_dtype, bias, offset, input_dtype, weight_dtype);
     }

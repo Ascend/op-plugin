@@ -78,7 +78,6 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_w_out(
             max_grad_norm, amsgrad_value, maximize_value);
         return std::tie(var, m, v);
     } else {
-        TORCH_NPU_WARN("current soc not support aclnn");
         return acl_op::npu_apply_adam_w_out(beta1_power, beta2_power, lr,
             weight_decay, beta1, beta2, epsilon, grad, max_grad_norm, amsgrad, maximize, var, m, v);
     }
