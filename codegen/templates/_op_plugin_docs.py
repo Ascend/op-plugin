@@ -15780,3 +15780,97 @@ if __name__ == "__main__":
     test_npu_apply_rotary_pos_emb()
 """
 )
+
+_add_torch_npu_docstr(
+    "npu_fused_linear_online_max_sum",
+    """
+torch_npu.npu_fused_linear_online_max_sum(Tensor input, Tensor weight, Tensor target, int vocab_start_index, int vocab_end_index, bool return_logits=False) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+功能描述
+词汇表并行场景下融合矩阵乘与交叉熵前处理算子。支持vocabulary_size维度切卡融合MatMul与CELoss，需与npu_fused_cross_entropy_loss_with_max_sum配合使用。
+
+参数说明
+input (Tensor) - MatMul计算的左矩阵，2维，数据类型支持bfloat16、float16。
+weight (Tensor) - MatMul计算的右矩阵，2维，数据类型与input一致。
+target (Tensor) - 目标索引，1维，数据类型支持int32、int64。
+vocab_start_index (int) - 本卡分配的词汇表起始索引。
+vocab_end_index (int) - 本卡分配的词汇表结束索引。
+return_logits (bool，默认值为False) - 是否返回MatMul结果。True走高性能分支，False走省显存分支。
+输出说明
+返回6个Tensor: logits_max(float32), sum_exp_logits(float32), predicted_logits(float32), target_mask(uint8), masked_target(与target类型一致), vocab_parallel_logits(与input类型一致，return_logits为False时返回None)。
+
+约束说明
+input与weight数据类型必须一致。vocabStartIndex不可小于0。vocabEndIndex不可小于vocabStartIndex。默认确定性实现。
+
+示例
+    >>> input_tensor = torch.randn(128, 64, dtype=torch.float16).npu()
+    >>> weight_tensor = torch.randn(256, 64, dtype=torch.float16).npu()
+    >>> target_tensor = torch.randint(0, 256, (128,), dtype=torch.int32).npu()
+    >>> logits_max, sum_exp_logits, predicted_logits, target_mask, masked_target, vocab_parallel_logits = \\
+    ...     torch_npu.npu_fused_linear_online_max_sum(input_tensor, weight_tensor, target_tensor, 0, 64, return_logits=True)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_fused_cross_entropy_loss_with_max_sum",
+    """
+torch_npu.npu_fused_cross_entropy_loss_with_max_sum(Tensor logits_max, Tensor sum_exp_logits, Tensor predicted_logits, *, float? label_smoothing=0.0, Tensor? input=None, Tensor? weight=None, Tensor? vocab_parallel_logits=None) -> (Tensor, Tensor)
+功能描述
+词汇表并行场景下交叉熵计算模块的一部分，计算Loss与Softmax结果。需配合npu_fused_linear_online_max_sum使用，多卡场景下需先对logits_max和sum_exp_logits执行全局通信。
+
+参数说明
+logits_max (Tensor) - 全局通信后的MatMul结果各行最大值，1维，数据类型float32。
+sum_exp_logits (Tensor) - 全局通信后的exp累加结果，1维，数据类型float32，shape与logits_max一致。
+predicted_logits (Tensor) - 全局通信后的预测logits，1维，数据类型float32，shape与logits_max一致。
+label_smoothing (float，默认值为0.0) - 标签平滑系数，当前仅支持0。
+input (Tensor，可选，默认值为None) - 当前仅支持None。
+weight (Tensor，可选，默认值为None) - 当前仅支持None。
+vocab_parallel_logits (Tensor，可选，默认值为None) - MatMul计算结果，传入时计算Softmax输出，不传入时返回None。
+输出说明
+返回2个Tensor: loss(float32)和softmax(float32，vocab_parallel_logits为None时返回None)。
+
+约束说明
+logits_max、sum_exp_logits、predicted_logits的shape需一致。label_smoothing当前仅支持0。默认确定性实现。
+
+示例
+    >>> logits_max = torch.randn(128, dtype=torch.float32).npu()
+    >>> sum_exp_logits = torch.randn(128, dtype=torch.float32).npu()
+    >>> predicted_logits = torch.randn(128, dtype=torch.float32).npu()
+    >>> vocab_parallel_logits = torch.randn(128, 256, dtype=torch.float16).npu()
+    >>> loss, softmax = torch_npu.npu_fused_cross_entropy_loss_with_max_sum(logits_max, sum_exp_logits, predicted_logits, vocab_parallel_logits=vocab_parallel_logits)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_fused_linear_cross_entropy_loss_with_max_sum_backward",
+    """
+torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward(Tensor grad, Tensor input, Tensor weight, Tensor target_mask, Tensor masked_target, float label_smoothing=0.0, Tensor? logits_max=None, Tensor? sum_exp_logits=None, Tensor? softmax=None) -> (Tensor, Tensor)
+功能描述
+词汇表并行场景下交叉熵损失计算的梯度算子，计算叶子节点input和weight的梯度。支持高性能模式（传入Softmax）和省显存模式（传入logits_max和sum_exp_logits）。
+
+参数说明
+grad (Tensor) - 当前节点的梯度，1维，数据类型float32。
+input (Tensor) - 矩阵乘的输入矩阵，2维，数据类型支持float16、bfloat16。
+weight (Tensor) - 矩阵乘的权重矩阵，2维，数据类型与input一致，第0维长度不支持小于128。
+target_mask (Tensor) - 目标词ID是否在范围内的位掩码，1维，数据类型uint8。
+masked_target (Tensor) - 目标词ID映射到当前设备的局部索引，1维，数据类型支持int32、int64。
+label_smoothing (float，默认值为0.0) - 标签平滑系数，当前仅支持0。
+logits_max (Tensor，可选) - 全局logits最大值，softmax为None时必须提供。
+sum_exp_logits (Tensor，可选) - 处理后的logits，softmax为None时必须提供。
+softmax (Tensor，可选) - Softmax计算结果，传入时走高性能模式。
+输出说明
+返回2个Tensor: input_grad(与input类型一致)和weight_grad(与input类型一致)。
+
+约束说明
+input与weight数据类型必须一致。softmax为None时logits_max和sum_exp_logits必须同时提供。默认确定性实现。
+
+示例
+    >>> grad = torch.randn(128, dtype=torch.float32).npu()
+    >>> input_tensor = torch.randn(128, 64, dtype=torch.float16).npu()
+    >>> weight_tensor = torch.randn(256, 64, dtype=torch.float16).npu()
+    >>> target_mask = torch.zeros((128 + 7) // 8, dtype=torch.uint8).npu()
+    >>> masked_target = torch.randint(0, 256, (128,), dtype=torch.int32).npu()
+    >>> softmax = torch.randn(128, 256, dtype=torch.float32).npu()
+    >>> input_grad, weight_grad = torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward(
+    ...     grad, input_tensor, weight_tensor, target_mask, masked_target, softmax=softmax)
+"""
+)

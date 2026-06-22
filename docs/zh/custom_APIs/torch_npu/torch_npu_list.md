@@ -874,5 +874,17 @@
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_transpose_quant_batchmatmul_desc"><a name="p_npu_transpose_quant_batchmatmul_desc"></a><a name="p_npu_transpose_quant_batchmatmul_desc"></a><span>完成张量x1与张量x2量化的矩阵乘计算。仅支持三维的Tensor传入。Tensor支持转置，转置序列根据传入的数列进行变更。perm_x1代表张量x1的转置序列，perm_x2代表张量x2的转置序列，序列值为0的是batch维度，其余两个维度做矩阵乘法。</span></p></td>
 </tr>
+<tr id="npu_fused_linear_online_max_sum"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_linear_online_max_sum"><a name="p_npu_fused_linear_online_max_sum"></a><a name="p_npu_fused_linear_online_max_sum"></a><a href="torch_npu-npu_fused_linear_online_max_sum.md">torch_npu.npu_fused_linear_online_max_sum</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_linear_online_max_sum_desc"><a name="p_npu_fused_linear_online_max_sum_desc"></a><a name="p_npu_fused_linear_online_max_sum_desc"></a><span>词汇表并行场景下融合矩阵乘与交叉熵前处理算子。功能等价于Megatron的MatMul与fused_vocab_parallel_cross_entropy的实现，支持vocabulary_size维度切分融合MatMul与CELoss。本接口为通信前部分，需与npu_fused_cross_entropy_loss_with_max_sum配合使用。</span></p></td>
+</tr>
+<tr id="npu_fused_cross_entropy_loss_with_max_sum"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_cross_entropy_loss_with_max_sum"><a name="p_npu_fused_cross_entropy_loss_with_max_sum"></a><a name="p_npu_fused_cross_entropy_loss_with_max_sum"></a><a href="torch_npu-npu_fused_cross_entropy_loss_with_max_sum.md">torch_npu.npu_fused_cross_entropy_loss_with_max_sum</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_cross_entropy_loss_with_max_sum_desc"><a name="p_npu_fused_cross_entropy_loss_with_max_sum_desc"></a><a name="p_npu_fused_cross_entropy_loss_with_max_sum_desc"></a><span>词汇表并行场景下交叉熵计算模块的一部分，解决超大规模词汇表下的显存和计算效率问题。本接口为计算Loss与Softmax结果的部分，需配合npu_fused_linear_online_max_sum使用。在多卡场景下，需先对logits_max和sum_exp_logits执行全局通信（all-reduce），再调用本接口。</span></p></td>
+</tr>
+<tr id="npu_fused_linear_cross_entropy_loss_with_max_sum_backward"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"></a><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"></a><a href="torch_npu-npu_fused_linear_cross_entropy_loss_with_max_sum_backward.md">torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"></a><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"></a><span>词汇表并行场景下交叉熵损失计算的梯度算子。用于计算叶子节点input和weight的梯度。需要获得npu_fused_linear_online_max_sum和npu_fused_cross_entropy_loss_with_max_sum的相关输出作为本接口输入。支持高性能模式（传入Softmax）和省显存模式（传入logits_max和sum_exp_logits）。</span></p></td>
+</tr>
 </tbody>
 </table>

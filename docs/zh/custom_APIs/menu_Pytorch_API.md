@@ -179,6 +179,9 @@
         -   [torch_npu.npu_mhc_pre](torch_npu/torch_npu-npu_mhc_pre.md)
         -   [torch_npu.npu_mhc_sinkhorn](torch_npu/torch_npu-npu_mhc_sinkhorn.md)
         -   [torch_npu.npu_transpose_quant_batchmatmul](torch_npu/torch_npu-npu_transpose_quant_batchmatmul.md)
+        -   [torch_npu.npu_fused_linear_online_max_sum](./torch_npu/torch_npu-npu_fused_linear_online_max_sum.md)
+        -   [torch_npu.npu_fused_cross_entropy_loss_with_max_sum](./torch_npu/torch_npu-npu_fused_cross_entropy_loss_with_max_sum.md)
+        -   [torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward](./torch_npu/torch_npu-npu_fused_linear_cross_entropy_loss_with_max_sum_backward.md)
         
     -   [torch_npu.contrib](./torch_npu-contrib/torch_npu-contrib.md)
         -   [torch_npu.contrib接口列表](./torch_npu-contrib/torch_npu-contrib_list.md)
