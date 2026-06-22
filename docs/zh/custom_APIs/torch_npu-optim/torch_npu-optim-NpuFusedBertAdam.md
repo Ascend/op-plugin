@@ -25,8 +25,8 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 - **warmup** (`float`)：`t_total`的warmup比例，默认值为-1，表示不进行warmup。`warmup`的值小于0且`warmup`不等于-1，或者`warmup`大于等于1，打印“ValueError”异常信息。
 - **t_total** (`float`)：学习率调整的步数，默认值为-1，表示固定学习率。
 - **schedule** (`str`)：学习率warmup策略，默认值为warmup_linear。`schedule`为字符串，其值必须为warmup_cosine、warmup_constant、warmup_linear、warmup_poly中的一个。
-- **b1** (`float`)：Adam b1，默认值为0.9。`b1`的值小于0或大于1时，打印“ValueError”异常信息。
-- **b2** (`float`)：Adam b2，默认值为0.999。`b2`的值小于0或大于1时，打印“ValueError”异常信息。
+- **b1** (`float`)：Adam b1，默认值为0.9。`b1`的值小于0或大于等于1时，打印“ValueError”异常信息。
+- **b2** (`float`)：Adam b2，默认值为0.999。`b2`的值小于0或大于等于1时，打印“ValueError”异常信息。
 - **e** (`float`)：Adam epsilon，默认值为1e-6。`e`的值小于0时，打印“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0.01。
 - **max_grad_norm** (`float`)：最大梯度范围，默认值为1.0，-1表示不做裁剪。
