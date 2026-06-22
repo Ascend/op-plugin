@@ -27,7 +27,7 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 - **momentum** (`float`)：可选参数，动量系数，默认值为0。`momentum`小于0时，系统会抛出“ValueError”异常信息。
 - **dampening** (`float`)：可选参数，动量的抑制系数，默认值为0。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
-- **nesterov** (`bool`)：可选参数，是否使用Nesterov动量，默认值为False。`nesterov`为True，同时`momentum`小于0或者`dampening`不等于0，系统会抛出“TypeError”异常信息。
+- **nesterov** (`bool`)：可选参数，是否使用Nesterov动量，默认值为False。`nesterov`为True，同时`momentum`小于0或者`dampening`不等于0，系统会抛出“ValueError”异常信息。
 
 ## 返回值说明
 
