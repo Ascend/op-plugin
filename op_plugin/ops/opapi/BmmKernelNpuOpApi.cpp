@@ -28,13 +28,34 @@ static bool is_normal_broadcast_expanded(const at::Tensor &t)
 
 static at::Tensor restore_broadcast_tensor(const at::Tensor &t)
 {
-    return t[0].unsqueeze(0);
+    // Restore a broadcast-expanded [B, M, K] (stride(0)==0) back to [1, M, K].
+    // stride(0) is set to size(1)*size(2) so that CANN recognizes standard
+    // transpose patterns (e.g. strides [M*K, 1, K]) and handles them natively
+    // via a flag instead of inserting an extra Transpose op.
+    auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
+    auto strides = std::array<int64_t, 3>{t.size(1) * t.size(2), t.stride(1), t.stride(2)};
+    return t.as_strided(sizes, strides);
 }
 
 static bool is_compatible_impl_enabled()
 {
     static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
     return compatible_env != nullptr && std::string(compatible_env) == "1";
+}
+
+// A dim-1 slice (e.g. t[:, start:end, :]) of a 3D tensor leaves stride(0) untouched
+// while shape(1) shrinks, breaking the contiguity between dim 0 and dim 1:
+//   stride(0) == orig_M * K  !=  M' * K  == stride(1) * shape(1)
+// Stride-based slices (t[:, ::step, :]) scale stride(1) so the product still matches.
+static bool is_dim1_slice_non_contiguous(const at::Tensor &t)
+{
+    if (t.dim() != 3) return false;
+    if (t.stride(0) == 0) return false;  // broadcast-expanded
+    if (t.stride(2) != 1) return false;
+    if (t.stride(1) != t.size(2)) return false;
+    if (t.stride(0) == t.stride(1) * t.size(1)) return false;
+    if (16 % t.size(1) != 0 || t.size(1) == 1) return false;
+    return true;
 }
 
 // TODO: Remove this preprocess when CANN aclnnBatchMatMul supports non-contiguous input.
@@ -45,6 +66,9 @@ static bool is_compatible_impl_enabled()
 // (e.g., [64,m,n] -> [1,m,n]) to avoid the redundant op.
 // Skip restore when both inputs are broadcast-expanded, as restoring both to batch=1
 // would make aclnnBatchMatMul produce a batch=1 output that mismatches expected batch=b.
+// When a broadcast-expanded tensor also has a non-contiguous matrix layout (e.g. transposed),
+// aclnnBatchMatMul would additionally insert an extra Transpose op; restoring to batch=1
+// lets it handle the transpose natively via a flag.
 static std::pair<at::Tensor, at::Tensor> maybe_restore_broadcast(
     const at::Tensor &self, const at::Tensor &mat2)
 {
@@ -79,6 +103,12 @@ at::Tensor &bmm_out(
 
     if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
         EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
+               is_normal_broadcast_expanded(mat2)) {
+        // aclnnMatmul internally optimizes away the dim-1 slice on self,
+        // avoiding the extra copy that aclnnBatchMatMul would require.
+        auto mat2_input = mat2[0];
+        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
         auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
         EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
@@ -107,6 +137,12 @@ at::Tensor &bmm_out(
 
     if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
         EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
+               is_normal_broadcast_expanded(mat2)) {
+        // aclnnMatmul internally optimizes away the dim-1 slice on self,
+        // avoiding the extra copy that aclnnBatchMatMul would require.
+        auto mat2_input = mat2[0];
+        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
         auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
         EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
@@ -133,6 +169,12 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2, const at::ScalarT
     int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
         EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
+               is_normal_broadcast_expanded(mat2)) {
+        // aclnnMatmul internally optimizes away the dim-1 slice on self,
+        // avoiding the extra copy that aclnnBatchMatMul would require.
+        auto mat2_input = mat2[0];
+        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
         auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
         EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
@@ -160,6 +202,12 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2)
     int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
         EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
+               is_normal_broadcast_expanded(mat2)) {
+        // aclnnMatmul internally optimizes away the dim-1 slice on self,
+        // avoiding the extra copy that aclnnBatchMatMul would require.
+        auto mat2_input = mat2[0];
+        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
         auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
         EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
