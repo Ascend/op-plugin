@@ -17,6 +17,7 @@
 #include <ATen/Tensor.h>
 #include <cstdint>
 #include <vector>
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
 
 namespace op_plugin {
 namespace utils {
@@ -114,6 +115,9 @@ inline int64_t calc_split_counter_offset(const TensorIterInfo& iter) {
 
 inline int64_t calc_final_counter_offset(at::Tensor& self, int64_t from = 0, int64_t to = 0, bool use_from_to = false)
 {
+    if (!c10_npu::IsAclnnOnly()) {
+        return 10; // only for A2/A3
+    }
     TensorIterInfo iter_info;
     iter_info.ndim = self.dim();
     iter_info.numel = self.numel();
