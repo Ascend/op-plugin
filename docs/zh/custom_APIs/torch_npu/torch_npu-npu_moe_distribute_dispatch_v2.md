@@ -244,7 +244,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - `comm_alg`配置为"hierarchy": 设置大小要求 \>= \(moe\_expert\_num + ep\_world\_size / 4\) \* Align512\(max_bs \* \(H \* sizeof\(dtype_x\) + 4 \* Align8\(K\) \* sizeof\(uint32\)\)\) \* 1B + 8MB，其中Align512\(x\) = \(\(x+512-1\)/512\)\*512，Align8\(x\) = \(\(x+8-1\)/8\)\*8。
 
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
-        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl_buffer_size配置（参考《[PyTorch训练模型迁移调优](https://hiascend.com/document/redirect/canncommercial-ptmigr)》中“性能调优>性能调优方法>通信优化>优化方法>hccl_buffer_size”章节）。
+        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过[hccl_buffer_size](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size)配置。
         - ep通信域内，comm\_alg配置为"fullmesh_v1"或"": 设置大小要求 \>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)。
         - ep通信域内，comm\_alg配置为"fullmesh_v2": 设置大小要求 \>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* 480Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)。
         - `comm_alg`配置为"hierarchy": 设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+400MB。
@@ -267,7 +267,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - 版本配套约束：
 
-     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch\_v2算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[Ascend Extension for PyTorch 版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md)》中“相关产品版本配套说明”。
+     静态图模式下，从Ascend Extension for PyTorch 8.0.0版本开始，Ascend Extension for PyTorch框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch\_v2算子，若CANN版本落后于Ascend Extension for PyTorch版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[Ascend Extension for PyTorch 版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/release_notes/release_notes.md)》中“相关产品版本配套说明”。
 
 ## 调用示例<a name="zh-cn_topic_0000002203575833_section14459801435"></a>
 
