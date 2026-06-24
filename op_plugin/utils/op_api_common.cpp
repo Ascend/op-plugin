@@ -272,9 +272,11 @@ void add_param_to_buf(const at::Tensor &at_tensor)
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
-    auto *old_impl = at_tensor.storage().unsafeGetStorageImpl();
-    auto *old_storage = static_cast<torch_npu::NPUStorageImpl *>(old_impl);
-    auto npu_format_ = old_storage->get_npu_desc().npu_format_;
+    aclFormat npu_format_ = ACL_FORMAT_ND;
+    auto *storage_impl = at_tensor.storage().unsafeGetStorageImpl();
+    if (typeid(*storage_impl) == typeid(torch_npu::NPUStorageImpl)) {
+        npu_format_ = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_;
+    }
     MEMCPY_TO_BUF(&npu_format_, sizeof(npu_format_));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
@@ -457,10 +459,12 @@ void add_param_to_buf(const TensorWrapper &tensor_r)
         storageDims.push_back(at_tensor.storage().nbytes() / at_tensor.itemsize());
     }
     MEMCPY_TO_BUF(storageDims.data(), static_cast<int64_t>(storageDims.size() * sizeof(int64_t)));
-    auto *old_impl_tw = at_tensor.storage().unsafeGetStorageImpl();
-    auto *old_storage_tw = static_cast<torch_npu::NPUStorageImpl *>(old_impl_tw);
-    auto npu_format_tw = old_storage_tw->get_npu_desc().npu_format_;
-    MEMCPY_TO_BUF(&npu_format_tw, sizeof(npu_format_tw));
+    aclFormat npu_format_ = ACL_FORMAT_ND;
+    auto *storage_impl = at_tensor.storage().unsafeGetStorageImpl();
+    if (typeid(*storage_impl) == typeid(torch_npu::NPUStorageImpl)) {
+        npu_format_ = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_;
+    }
+    MEMCPY_TO_BUF(&npu_format_, sizeof(npu_format_));
 
     addTensorAddrToCachedListFunc(const_cast<void*>(at_tensor.storage().data()));
 }
@@ -1335,17 +1339,25 @@ TensorStructPtr CopyTypeV2(const at::Tensor &at_tensor)
         return nullptr;
     }
     CheckNpuTensorValid(at_tensor);
+    aclFormat npu_fmt = ACL_FORMAT_ND;
+    c10::SmallVector<int64_t, 5> storage_sizes;
+    auto *storage_impl = at_tensor.storage().unsafeGetStorageImpl();
+    if (typeid(*storage_impl) == typeid(torch_npu::NPUStorageImpl)) {
+        auto &npu_desc = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_;
+        npu_fmt = npu_desc.npu_format_;
+        storage_sizes = npu_desc.storage_sizes_;
+    }
     aclDataType acl_data_type = at_npu::native::OpPreparation::convert_to_acl_data_type(at_tensor.scalar_type());
     return std::make_shared<TensorStruct>(
         const_cast<void *>(at_tensor.storage().data()),
         acl_data_type,
-        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_,
+        npu_fmt,
         at_tensor.storage().nbytes(),
         at_tensor.itemsize(),
         at_tensor.storage_offset(),
         at_tensor.sizes(),
         at_tensor.strides(),
-        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_);
+        at::IntArrayRef(storage_sizes));
 }
 
 TensorStructPtr CopyTypeV2(const TensorWrapper &tensor_r)
@@ -1355,16 +1367,24 @@ TensorStructPtr CopyTypeV2(const TensorWrapper &tensor_r)
         return nullptr;
     }
     CheckNpuTensorValid(at_tensor);
+    aclFormat npu_fmt = ACL_FORMAT_ND;
+    c10::SmallVector<int64_t, 5> storage_sizes;
+    auto *storage_impl = at_tensor.storage().unsafeGetStorageImpl();
+    if (typeid(*storage_impl) == typeid(torch_npu::NPUStorageImpl)) {
+        auto &npu_desc = torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_;
+        npu_fmt = npu_desc.npu_format_;
+        storage_sizes = npu_desc.storage_sizes_;
+    }
     return std::make_shared<TensorStruct>(
         const_cast<void *>(at_tensor.storage().data()),
         tensor_r.dtype,
-        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.npu_format_,
+        npu_fmt,
         at_tensor.storage().nbytes(),
         at_tensor.itemsize(),
         at_tensor.storage_offset(),
         at_tensor.sizes(),
         at_tensor.strides(),
-        torch_npu::NPUBridge::GetNpuStorageImpl(at_tensor)->npu_desc_.storage_sizes_);
+        at::IntArrayRef(storage_sizes));
 }
 
 aclScalar *ConvertTypeV2(const at::Scalar &at_scalar)
