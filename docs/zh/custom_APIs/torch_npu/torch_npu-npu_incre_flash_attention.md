@@ -35,7 +35,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`、`int8`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
 
-- <strong>*</strong>：代表其之前的变量是位置相关，需要按照顺序输入，必选；之后的变量是键值对赋值的，位置无关，可选（不输入会使用默认值）。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **padding_mask** (`Tensor`)：预留参数，暂未使用，默认值为`None`。
 - **pse_shift** (`Tensor`)：可选参数。表示在attention结构内部的位置编码参数，数据格式支持$ND$。如不使用该功能时可不传或传入`None`。
     - <term>Atlas 推理系列加速卡产品</term>：仅支持`None`。

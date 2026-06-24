@@ -42,7 +42,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **block_shape** (`list[int]`)：必选参数，稀疏块shape。至少需要包含两个元素，如`[blockShapeX, blockShapeY]`，且均大于0。blockShapeX：Q方向块大小；blockShapeY：KV方向块大小。**blockShapeY 必须为128的倍数**。
 
-- <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **q_input_layout** (`str`)：可选参数，`query`的排布，默认值为`"TND"`。当前仅支持`"TND"`、`"BNSD"`。
 
