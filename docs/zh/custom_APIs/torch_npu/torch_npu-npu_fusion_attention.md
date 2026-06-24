@@ -1,8 +1,5 @@
 # torch\_npu.npu\_fusion\_attention<a name="ZH-CN_TOPIC_0000002266361349"></a>
 
-> [!NOTICE]  
-> 此接口在本版本中有变更，具体变更内容请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。
-
 ## 产品支持情况
 
 | 产品                                                         | 是否支持 |
