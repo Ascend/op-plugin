@@ -214,8 +214,8 @@ class TestMatMulCompatible(TestCase):
     def _check_forward_backward(self, mat1_npu, mat2_npu, prec=0.001):
         mat1_cpu = mat1_npu.detach().cpu().float().requires_grad_(True)
         mat2_cpu = mat2_npu.detach().cpu().float().requires_grad_(True)
-        mat1_npu = mat1_npu.detach().clone().requires_grad_(True)
-        mat2_npu = mat2_npu.detach().clone().requires_grad_(True)
+        mat1_npu = mat1_npu.detach().requires_grad_(True)
+        mat2_npu = mat2_npu.detach().requires_grad_(True)
 
         cpu_out = torch.matmul(mat1_cpu, mat2_cpu)
         cpu_out.backward(torch.ones_like(cpu_out))

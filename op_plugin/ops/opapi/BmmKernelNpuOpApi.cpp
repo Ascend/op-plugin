@@ -54,7 +54,8 @@ static bool is_dim1_slice_non_contiguous(const at::Tensor &t)
     if (t.stride(2) != 1) return false;
     if (t.stride(1) != t.size(2)) return false;
     if (t.stride(0) == t.stride(1) * t.size(1)) return false;
-    if (16 % t.size(1) != 0 || t.size(1) == 1) return false;
+    // CANN aclnnMatMul optimization requires shape(1) to be a divisor of 16.
+    if (t.size(1) <= 1 || 16 % t.size(1) != 0) return false;
     return true;
 }
 
