@@ -136,7 +136,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **kr_cache**（`Tensor`）：必选参数，用于key位置编码的cache，计算结果原地更新（对应公式中的$k^R$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dr]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dr]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dr]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
-- <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内; 当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
 
