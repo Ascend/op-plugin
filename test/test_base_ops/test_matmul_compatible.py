@@ -211,6 +211,81 @@ class TestMatMulCompatible(TestCase):
         self.matmul_backward_result(shape_format)
         torch.npu.matmul.allow_hf32 = False
 
+    def _check_forward_backward(self, mat1_npu, mat2_npu, prec=0.001):
+        mat1_cpu = mat1_npu.detach().cpu().float().requires_grad_(True)
+        mat2_cpu = mat2_npu.detach().cpu().float().requires_grad_(True)
+        mat1_npu = mat1_npu.detach().requires_grad_(True)
+        mat2_npu = mat2_npu.detach().requires_grad_(True)
+
+        cpu_out = torch.matmul(mat1_cpu, mat2_cpu)
+        cpu_out.backward(torch.ones_like(cpu_out))
+
+        npu_out = torch.matmul(mat1_npu, mat2_npu)
+        npu_out.backward(torch.ones_like(npu_out))
+
+        self.assertRtolEqual(
+            cpu_out.detach().numpy(), npu_out.detach().cpu().float().numpy(), prec=prec)
+        self.assertRtolEqual(
+            mat1_cpu.grad.numpy(), mat1_npu.grad.cpu().float().numpy(), prec=prec)
+        self.assertRtolEqual(
+            mat2_cpu.grad.numpy(), mat2_npu.grad.cpu().float().numpy(), prec=prec)
+
+    def test_matmul_broadcast_transpose_fp32(self):
+        a = torch.randn(16, 857, 664, dtype=torch.float32).npu()
+        b_ori = torch.randn(1, 857, 664, dtype=torch.float32).npu()
+        b = b_ori.permute(0, 2, 1)
+        self._check_forward_backward(a, b)
+
+    def test_matmul_broadcast_transpose_fp16(self):
+        a = torch.randn(16, 857, 664, dtype=torch.float16).npu()
+        b_ori = torch.randn(1, 857, 664, dtype=torch.float16).npu()
+        b = b_ori.permute(0, 2, 1)
+        self._check_forward_backward(a, b, prec=0.01)
+
+    def test_matmul_broadcast_transpose_bf16(self):
+        a = torch.randn(16, 857, 664, dtype=torch.bfloat16).npu()
+        b_ori = torch.randn(1, 857, 664, dtype=torch.bfloat16).npu()
+        b = b_ori.permute(0, 2, 1)
+        self._check_forward_backward(a, b, prec=0.01)
+
+    def test_matmul_broadcast_transpose_x1_fp32(self):
+        a_ori = torch.randn(1, 664, 857, dtype=torch.float32).npu()
+        a = a_ori.permute(0, 2, 1)
+        b = torch.randn(16, 664, 857, dtype=torch.float32).npu()
+        self._check_forward_backward(a, b)
+
+    def test_matmul_broadcast_transpose_both_noncontiguous_fp32(self):
+        a_ori = torch.randn(1, 664, 857, dtype=torch.float32).npu()
+        a = a_ori.permute(0, 2, 1)
+        b_ori = torch.randn(16, 857, 664, dtype=torch.float32).npu()
+        b = b_ori.permute(0, 2, 1)
+        self._check_forward_backward(a, b)
+
+    def test_matmul_dim1_slice_fp32(self):
+        a_ori = torch.randn(16, 32, 1024, dtype=torch.float32).npu()
+        a = a_ori[:, 16:32, :]
+        b = torch.randn(1024, 2048, dtype=torch.float32).npu()
+        self._check_forward_backward(a, b)
+
+    def test_matmul_dim1_slice_fp16(self):
+        a_ori = torch.randn(16, 32, 1024, dtype=torch.float16).npu()
+        a = a_ori[:, 16:32, :]
+        b = torch.randn(1024, 2048, dtype=torch.float16).npu()
+        self._check_forward_backward(a, b, prec=0.01)
+
+    def test_matmul_dim1_slice_bf16(self):
+        a_ori = torch.randn(16, 32, 1024, dtype=torch.bfloat16).npu()
+        a = a_ori[:, 16:32, :]
+        b = torch.randn(1024, 2048, dtype=torch.bfloat16).npu()
+        self._check_forward_backward(a, b, prec=0.01)
+
+    def test_matmul_dim1_slice_broadcast_transpose_fp32(self):
+        a_ori = torch.randn(16, 32, 1024, dtype=torch.float32).npu()
+        a = a_ori[:, 16:32, :]
+        b_ori = torch.randn(1, 2048, 1024, dtype=torch.float32).npu()
+        b = b_ori.permute(0, 2, 1)
+        self._check_forward_backward(a, b)
+
 if __name__ == "__main__":
     np.random.seed(1234)
     run_tests()
