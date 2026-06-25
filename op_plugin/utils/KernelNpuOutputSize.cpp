@@ -286,7 +286,7 @@ c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(const at::Tensor &sel
                                    ((self_h + 2 * padding[1] - kernel_size[1]) / stride[1] + 1);
     int64_t kernel_w = ceil_mode ? (CeilDiv(self_w + 2 * padding[2] - kernel_size[2], stride[2]) + 1) :
                                    ((self_w + 2 * padding[2] - kernel_size[2]) / stride[2] + 1);
-    
+
     if (ceil_mode) {
         if ((kernel_d - 1) * stride[0] >= self_d + padding[0]) {
             --kernel_d;
@@ -788,9 +788,13 @@ c10::SmallVector<int64_t, SIZE> isclose_output_size(const at::Tensor& self, cons
         rtol >= 0, "rtol must be greater than or equal to zero, but got ", rtol);
     TORCH_CHECK(
         atol >= 0, "atol must be greater than or equal to zero, but got ", atol);
+#if VERSION_BETWEEN(V2R12, VERSION_NEWEST)
+    return broadcast_ops_npu_output_size(self, other);
+#else
     return at::isFloatingType(self.scalar_type()) && equal_nan
         ? c10::SmallVector<int64_t, SIZE>(self.sizes())
         : broadcast_ops_npu_output_size(self, other);
+#endif
 }
 
 c10::SmallVector<int64_t, SIZE> nnpack_spatial_convolution_npu_output_size(const at::Tensor &input,
@@ -2380,7 +2384,7 @@ std::vector<c10::SmallVector<int64_t, SIZE>> npu_moe_distribute_dispatch_teardow
     }
     std::vector<c10::SmallVector<int64_t, SIZE>> output_size;
     c10::SmallVector<int64_t, SIZE> expand_x_shape = {a, h};
-    
+
     constexpr int64_t PERTOKEN_DYNAMIC_QUANT = 2;
     constexpr int64_t PERGROUP_DYNAMIC_QUANT = 3;
     constexpr int64_t MX_QUANT = 4;
