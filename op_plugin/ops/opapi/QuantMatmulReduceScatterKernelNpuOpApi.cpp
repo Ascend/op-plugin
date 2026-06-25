@@ -77,22 +77,12 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     if (amax_output) {
         amax_output_result = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kFloat));
     }
-    TensorWrapper x1_wrapper = {self, (x1_dtype.has_value())
-                                          ? c10_npu::GetAclDataType(x1_dtype.value())
-                                          : npu_preparation::convert_to_acl_data_type(self.scalar_type())};
-    TensorWrapper x2_wrapper = {x2, (x2_dtype.has_value())
-                                        ? c10_npu::GetAclDataType(x2_dtype.value())
-                                        : npu_preparation::convert_to_acl_data_type(x2.scalar_type())};
-    auto x1_scale_scalar_dtype = x1_scale.has_value() ? x1_scale.value().scalar_type() : at::kFloat;
-    auto x2_scale_scalar_dtype = x2_scale.has_value() ? x2_scale.value().scalar_type() : at::kFloat;
-    TensorWrapper x1_scale_wrapper = {x1_scale.value_or(at::Tensor()),
-                                      (x1_scale_dtype.has_value())
-                                          ? c10_npu::GetAclDataType(x1_scale_dtype.value())
-                                          : npu_preparation::convert_to_acl_data_type(x1_scale_scalar_dtype)};
-    TensorWrapper x2_scale_wrapper = {x2_scale.value_or(at::Tensor()),
-                                      (x2_scale_dtype.has_value())
-                                          ? c10_npu::GetAclDataType(x2_scale_dtype.value())
-                                          : npu_preparation::convert_to_acl_data_type(x2_scale_scalar_dtype)};
+    TensorWrapper x1_wrapper = make_wrapper(self, x1_dtype);
+    TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
+    const at::Tensor &x1_scale_real = x1_scale.value_or(at::Tensor());
+    const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
+    TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
+    TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
     EXEC_NPU_CMD(aclnnMatmulReduceScatterV2, x1_wrapper, x2_wrapper, bias_real, x1_scale_wrapper, x2_scale_wrapper,
                  quant_scale_real, block_size, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, group_size, comm_mode_ptr,
                  result, amax_output_result);
