@@ -9,9 +9,10 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002259406069_section14441124184110"></a>
 
-- **API功能**: GroupedMatMul和MoeFinalizeRouting的融合算子，其中，GroupedMatMul负责分专家计算，MoeFinalizeRouting负责按路由关系回填并聚合GroupedMatMul结果，两者串联形成完整的MoE输出路径。
-  - **MoE**: Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
-  - **MoeFinalizeRouting**: MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。  
+GroupedMatMul和MoeFinalizeRouting的融合算子，其中，GroupedMatMul负责分专家计算，MoeFinalizeRouting负责按路由关系回填并聚合GroupedMatMul结果，两者串联形成完整的MoE输出路径。
+
+- **MoE**: Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
+- **MoeFinalizeRouting**: MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。  
 
 其中，GroupedMatMul是一种针对批量稀疏矩阵乘法的优化计算模式。在MoE（Mixture of Experts，混合专家模型）结构中，每个token被分配给某个专家，不同专家处理的token数量不同。GroupedMatMul将同一专家负责的所有token聚合为一个组，然后一次性执行该专家的矩阵乘法，从而避免为每个token单独调用矩阵乘法带来的调度开销，提升计算效率。
 
