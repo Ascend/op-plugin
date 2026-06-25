@@ -5164,7 +5164,7 @@ def npu_dynamic_quant_asymmetric(input_dummy, *, smooth_scales=None, group_index
 
 @impl(m, "npu_dynamic_mx_quant")
 def npu_dynamic_mx_quant(input_dummy, *, axis=-1, round_mode="rint", dst_type=296, block_size=32,
-                         scale_alg=0, dst_type_max=0.0):
+                         scale_alg=0, dst_type_max=0.0, max_low_bound=0.0):
     dim_num = input_dummy.dim()
     mxscale_shape = []
     if axis < -dim_num or axis >= dim_num:
