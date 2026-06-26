@@ -816,4 +816,37 @@ std::vector<EnumType> convert_int_to_enum(ArrayType& v) {
     }
     return converted;
 }
+
+/**
+ * @brief Prepare binary op tensors by ensuring both are on NPU device.
+ * @param self First input tensor (NPU or CPU).
+ * @param other Second input tensor (NPU or CPU).
+ * @return Tuple of tensors both on NPU device.
+ * @note If self is NPU: other can be CPU or NPU (CPU tensors are converted to NPU).
+ *       If self is CPU: other must be NPU, and self is converted to NPU.
+ */
+inline std::tuple<at::Tensor, at::Tensor> prepare_binary_tensors(
+    const at::Tensor &self, const at::Tensor &other)
+{
+    at::Tensor self_device = self;
+    at::Tensor other_device = other;
+    if (torch_npu::utils::is_npu(self)) {
+        if (!torch_npu::utils::is_npu(other)) {
+            other_device = other.to(self.device());
+        }
+    } else {
+        TORCH_CHECK(torch_npu::utils::is_npu(other),
+            "when self is a CPU tensor, other must be an NPU tensor", OPS_ERROR(ErrCode::PARAM));
+        self_device = self.to(other.device());
+    }
+    return std::make_tuple(self_device, other_device);
+}
+
+// Check if current platform is Ascend950 with CANN >= 9.1.0.
+inline bool is_ascend950_path()
+{
+    return c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
+           op_plugin::utils::is_gte_cann_version_910();
+}
+
 #endif //  TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_

@@ -17,11 +17,20 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
+using npu_preparation = at_npu::native::OpPreparation;
+
 namespace op_api {
 
 at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &result)
 {
     DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum_out(self, other, result));
+    if (is_ascend950_path()) {
+        auto [self_device, other_device] = prepare_binary_tensors(self, other);
+        auto output_size = op_infer::broadcast_ops_npu_output_size(self_device, other_device);
+        npu_preparation::check_tensor({self_device, other_device}, result, output_size);
+        EXEC_NPU_CMD(aclnnMaximum, self_device, other_device, result);
+        return result;
+    }
     at::Tensor cp_self = self;
     if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
         at::Scalar scalar = self.item();
@@ -41,6 +50,15 @@ at::Tensor &maximum_out(const at::Tensor &self, const at::Tensor &other, at::Ten
 at::Tensor maximum(const at::Tensor &self, const at::Tensor &other)
 {
     DO_COMPATIBILITY(aclnnMaximum, acl_op::maximum(self, other));
+    if (is_ascend950_path()) {
+        auto [self_device, other_device] = prepare_binary_tensors(self, other);
+        at::ScalarType result_dtype = at::native::result_type(self_device, other_device);
+        auto output_size = op_infer::broadcast_ops_npu_output_size(self_device, other_device);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(
+            output_size, self_device.options().dtype(result_dtype));
+        EXEC_NPU_CMD(aclnnMaximum, self_device, other_device, result);
+        return result;
+    }
     at::Tensor cp_self = self;
     if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
         at::Scalar scalar = self.item();
