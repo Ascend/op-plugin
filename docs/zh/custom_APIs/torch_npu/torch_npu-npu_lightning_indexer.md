@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Atlas 350 加速卡</term>              | √ |
 |<term>Atlas A2 推理系列产品</term>         | √  |
 |<term>Atlas A3 推理系列产品</term>         | √  |
 
@@ -77,6 +78,10 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - 参数query中的D和参数key中的D值相等为128。
 - 参数query、key的数据类型应保持一致。
 - 参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
+- return_value仅在Atlas 350 加速卡上支持图模式。
+- Atlas 350 加速卡：
+    - query中的N仅支持8、16、24、32、64。
+    - 参数weights不支持`float32`类型。
 
 ## 调用示例
 
