@@ -340,6 +340,10 @@ at::Tensor scaled_dot_product_attention(
             return std::get<0>(outputv3);
         }
         c10::OptionalIntArrayRef nulllen = c10::nullopt;
+        TORCH_NPU_WARN_ONCE("CAUTION: On Ascend950, aten::scaled_dot_product_attention currently calls "
+            "npu_fusion_attention. In graph mode, the seed, offset and numels int parameters may be optimized, "
+            "which can cause results to differ from eager mode when the random seed is set. "
+            "This issue will be fixed in later version.");
         auto output =
             at_npu::native::custom_ops::npu_fusion_attention(query, key, value, head_num, input_layout, nulltensor,
                                                              nulltensor, atten_mask, input_scale.as_float_unchecked(),
