@@ -1455,8 +1455,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
-        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12, 13],
-        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 6, 7, 8, 9, 11, 12, 13]"
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15]"
     )
     torch._check(
         row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
@@ -1466,6 +1466,7 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     THREE_DIM_NUM = 3
     MXFPX_SCALE_THIRD_DIM_SIZE = 2
     INT4_IN_UINT8 = 2
+    FP8_QUANT_BLOCK_SIZE = 128
     is_float4_case = (hasattr(torch, 'float4_e2m1fn_x2') and x.dtype == torch.float4_e2m1fn_x2) or x_dtype == torch_npu.float4_e2m1fn_x2
     is_legacy_dynamic_int4_output = quant_mode == 1 and x_dtype == torch_npu.int4
     is_dynamic_int4_output = quant_mode == 13
@@ -1613,9 +1614,9 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     elif quant_mode == 9:
         expanded_x_dtype = torch.uint8
         expanded_scale_dtype = torch.float8_e8m0fnu
-    elif quant_mode == 11:
+    elif quant_mode in [4, 11, 14]:
         expanded_x_dtype = torch.float8_e5m2
-    elif quant_mode == 12:
+    elif quant_mode in [5, 12, 15]:
         expanded_x_dtype = torch.float8_e4m3fn
 
     if drop_pad_mode == 1:
@@ -1643,11 +1644,12 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
             scale_cols = math.ceil(h / ALIGN_BASE)
             expanded_scale_dim_list = [num_expanded_rows, scale_cols, 2]
         elif quant_mode in [11, 12]:
-            FP8_QUANT_BLOCK_SIZE = 128
             PAD_TO_EVEN_FACTOR = 2
             block_size = FP8_QUANT_BLOCK_SIZE * PAD_TO_EVEN_FACTOR
             scale_cols = math.ceil(h / block_size)
             expanded_scale_dim_list = [num_expanded_rows, scale_cols, PAD_TO_EVEN_FACTOR]
+        elif quant_mode in [4, 5, 14, 15]:
+            expanded_scale_dim_list = [num_expanded_rows, math.ceil(h / FP8_QUANT_BLOCK_SIZE)]
     if quant_mode in [0, 6, 7]:
         expanded_scale_dim_list = []
 
