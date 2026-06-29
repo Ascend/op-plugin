@@ -25,13 +25,8 @@ constexpr int64_t AMAX_SHAPE_SIZE = 1;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_quant_max(
-    const at::Tensor &x, const at::Tensor &scale, c10::string_view round_mode, int64_t dst_dtype) {
+    const at::Tensor &x, const at::Tensor &scale, c10::string_view round_mode, int64_t dst_dtype, const c10::optional<at::Tensor> &group_list) {
 
-    static const bool is_available = check_aclnn_kernel_available("aclnnQuantMax");
-    TORCH_CHECK(is_available,
-        "Current CANN version do not support this api: npu_quant_max. Please try to update the "
-        "version of CANN." +
-            OPS_ERROR(ErrCode::PARAM));
     // 1. 推导 aclDataType（将 torch_npu DType 枚举值 -256 得到 ACL 枚举值）
     aclDataType y_acltype = c10_npu::GetAclDataType(dst_dtype);
     int64_t acl_dst_type = static_cast<int64_t>(y_acltype);
@@ -42,16 +37,38 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_max(
     at::Tensor y = npu_preparation::apply_tensor_without_format(y_shape, c10::dtype(scalar_dtype));
     TensorWrapper y_wrapper = {y, y_acltype};
 
-    // 3. 分配输出 amax（shape=[1]，dtype 与 x 一致）
-    at::Tensor amax = npu_preparation::apply_tensor_without_format({AMAX_SHAPE_SIZE}, x.options());
-
-    // 4. 字符串参数转 char*
+    // 3. 字符串参数转 char*
     char *round_mode_ptr = const_cast<char *>(round_mode.data());
+    at::Tensor out_amax;
 
-    // 5. 调用 aclnn
-    EXEC_NPU_CMD(aclnnQuantMax, x, scale, round_mode_ptr, acl_dst_type, y_wrapper, amax);
+    if (!group_list.has_value() || group_list->sizes()[0] == 1) {
+        static const bool is_available = check_aclnn_kernel_available("aclnnQuantMax");
+        TORCH_CHECK(is_available,
+            "Current CANN version do not support this api: npu_quant_max. Please try to update the "
+            "version of CANN." +
+                OPS_ERROR(ErrCode::PARAM));
 
-    return std::make_tuple(y, amax);
+        // 4. 分配输出 amax（shape=[1]，dtype 与 x 一致）
+        out_amax = npu_preparation::apply_tensor_without_format({AMAX_SHAPE_SIZE}, x.options());
+
+        // 5. 调用 aclnn
+        EXEC_NPU_CMD(aclnnQuantMax, x, scale, round_mode_ptr, acl_dst_type, y_wrapper, out_amax);
+    } else {
+        static const bool is_available = check_aclnn_kernel_available("aclnnGroupedQuantMax");
+        TORCH_CHECK(is_available,
+            "Current CANN version do not support this api: npu_grouped_quant_max. Please try to update the "
+            "version of CANN." +
+                OPS_ERROR(ErrCode::PARAM));
+
+        int64_t group_amax_shape_size = group_list->sizes()[0];
+        // 4. 分配输出 amax（shape=[group_count]，dtype 与 x 一致）
+        out_amax = npu_preparation::apply_tensor_without_format({group_amax_shape_size}, x.options());
+
+        // 5. 调用 aclnn
+        EXEC_NPU_CMD(aclnnGroupedQuantMax, x, scale, group_list.value(), round_mode_ptr, acl_dst_type, y_wrapper, out_amax);
+    }
+
+    return std::make_tuple(y, out_amax);
 }
 
 } // namespace op_api

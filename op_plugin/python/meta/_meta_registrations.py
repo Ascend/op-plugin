@@ -7175,7 +7175,7 @@ def npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, round_
 
 
 @impl(m, "npu_quant_max")
-def npu_quant_max(x, scale, *, round_mode="rint", dst_dtype=291):
+def npu_quant_max(x, scale, *, round_mode="rint", dst_dtype=291, group_list=None):
     torch_dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_dtype, torch.int8)
     if torch_dtype == torch.float8_e5m2 or dst_dtype == 291:
         y = torch.empty_like(x, dtype=torch.float8_e5m2)
@@ -7184,7 +7184,10 @@ def npu_quant_max(x, scale, *, round_mode="rint", dst_dtype=291):
     else:
         # hifloat8 等 PyTorch 无原生 dtype 对应，存储用 uint8 承载
         y = torch.empty_like(x, dtype=torch.uint8)
-    amax = x.new_empty([1], dtype=x.dtype)
+    if group_list is not None and group_list.shape[0] != 1:
+        amax = x.new_empty([group_list.shape[0]], dtype=x.dtype)
+    else:
+        amax = x.new_empty([1], dtype=x.dtype)
     return (y, amax)
 
 

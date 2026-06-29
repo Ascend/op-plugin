@@ -7610,7 +7610,7 @@ custom:
     exposed: all_version
     internal_format_opapi: all_version
 
-  - func: npu_quant_max(Tensor x, Tensor scale, *, str round_mode="rint", int dst_dtype=291) -> (Tensor, Tensor)
+  - func: npu_quant_max(Tensor x, Tensor scale, *, str round_mode="rint", int dst_dtype=291, Tensor? group_list=None) -> (Tensor, Tensor)
     op_api: all_version
 
 symint:
