@@ -813,12 +813,12 @@ inline void CollectB4ShapeInfo(int64_t nDim,
         wrapperShape[0] = wrapperShape[0] * FP4_IN_INT8;
     } else if (nDim > 1) {
         if (wrapperStride[nDim - 1] == 1 && wrapperStride[nDim - PENULTIMATE_DIM] == 1) {
-            if (wrapperShape[nDim - PENULTIMATE_DIM] == 1) {
-                wrapperStride[nDim - 1] = wrapperStride[nDim - 1] * FP4_IN_INT8;
-                wrapperShape[nDim - PENULTIMATE_DIM] = wrapperShape[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
-            } else if (wrapperShape[nDim - 1] == 1) {
+            if (wrapperShape[nDim - 1] == 1) {
                 wrapperStride[nDim - PENULTIMATE_DIM] = wrapperStride[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
                 wrapperShape[nDim - 1] = wrapperShape[nDim - 1] * FP4_IN_INT8;
+            } else if (wrapperShape[nDim - PENULTIMATE_DIM] == 1) {
+                wrapperStride[nDim - 1] = wrapperStride[nDim - 1] * FP4_IN_INT8;
+                wrapperShape[nDim - PENULTIMATE_DIM] = wrapperShape[nDim - PENULTIMATE_DIM] * FP4_IN_INT8;
             }
         } else if (wrapperStride[nDim - 1] == 1) {
             wrapperStride[nDim - PENULTIMATE_DIM] =
