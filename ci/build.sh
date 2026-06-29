@@ -113,7 +113,7 @@ function main()
 
     # download third_party of torch_npu
     cd ${PYTORCH_PATH}
-    git submodule update --init --depth=1 --recursive
+    git submodule update --init --recursive
 
     # copy op_plugin to torch_adapter/third_party
     PYTORCH_THIRD_PATH=${PYTORCH_PATH}/third_party/op-plugin
