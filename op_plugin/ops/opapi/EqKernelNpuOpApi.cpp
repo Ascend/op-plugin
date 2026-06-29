@@ -22,6 +22,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
     DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq_out(self, other, result));
+    if (is_ascend950_path()) {
+        auto [self_device, other_device] = prepare_binary_tensors(self, other);
+        auto maybe_names = op_plugin::utils::compute_names_npu({self, other});
+        auto output_size = op_infer::broadcast_ops_npu_output_size(self_device, other_device);
+        npu_preparation::check_tensor({self_device, other_device}, result, output_size);
+        EXEC_NPU_CMD(aclnnEqTensor, self_device, other_device, result);
+        at::namedinference::propagate_names_if_nonempty(result, maybe_names);
+        return result;
+    }
     std::vector<at::Tensor> tensor_list = {self, other};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 
@@ -40,6 +49,16 @@ at::Tensor& eq_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& 
 
 at::Tensor eq(const at::Tensor& self, const at::Tensor& other) {
     DO_COMPATIBILITY(aclnnEqTensor, acl_op::eq(self, other));
+    if (is_ascend950_path()) {
+        auto [self_device, other_device] = prepare_binary_tensors(self, other);
+        auto maybe_names = op_plugin::utils::compute_names_npu({self, other});
+        auto output_size = op_infer::broadcast_ops_npu_output_size(self_device, other_device);
+        at::Tensor result = npu_preparation::apply_tensor_without_format(
+            output_size, self_device.options().dtype(at::kBool));
+        EXEC_NPU_CMD(aclnnEqTensor, self_device, other_device, result);
+        at::namedinference::propagate_names_if_nonempty(result, maybe_names);
+        return result;
+    }
     std::vector<at::Tensor> tensor_list = {self, other};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
 
@@ -94,6 +113,17 @@ at::Tensor& eq_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& 
 
 at::Tensor& eq_(at::Tensor &self, const at::Tensor &other) {
   DO_COMPATIBILITY(aclnnInplaceEqTensor, acl_op::eq_(self, other));
+    if (is_ascend950_path()) {
+        TORCH_CHECK(torch_npu::utils::is_npu(self),
+            "inplace eq_ requires self to be NPU tensor", OPS_ERROR(ErrCode::PARAM));
+        at::Tensor other_device = other;
+        if (!torch_npu::utils::is_npu(other)) {
+            other_device = other.to(self.device());
+        }
+        npu_preparation::CheckMemory({self, other_device}, {self});
+        EXEC_NPU_CMD(aclnnInplaceEqTensor, self, other_device);
+        return self;
+    }
 
   const std::initializer_list<at::Tensor> inputs = {self, other};
   const std::initializer_list<at::Tensor> outputs = {self};
