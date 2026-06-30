@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950 系列产品</term>           |    √     |
 |<term>Atlas A3 训练系列产品</term>           |    √     |
 |<term>Atlas A2 训练系列产品</term> | √   |
 |<term>Atlas 训练系列产品</term> | √   |
@@ -44,6 +45,14 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
     
     > [!NOTE]  
     > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html">数据排布格式</a>”章节。
+
+## 约束说明
+
+<term>Ascend 950 系列产品</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
+
+- 当`input`的dtype为float16、bfloat16时，若`input`维度表示为[k, n]，则k为1场景暂不支持。
+- 调用本接口转为FRACTAL_NZ格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
+- `input`的shape后两维任意一维度shape等于1场景，不允许转FRACTAL_NZ后进行transpose。
 
 ## 返回值说明
 
