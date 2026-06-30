@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-计算DynamicRNN。
+计算LSTM（长短期记忆网络）前向传播。
 
 ## 函数原型
 
@@ -27,7 +27,7 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **seqMask** (`Tensor`)：张量。仅支持FRACTAL_NZ格式的`float16`和ND格式的`int32`类型。
 - **h** (`Tensor`)： 4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
 - **c** (`Tensor`)： 4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **has_biases** (`bool`)：如果值为True，则存在偏差。
+- **has_biases** (`bool`)：如果值为True，则存在偏置。
 - **num_layers** (`int`)：循环层数，目前只支持单层。
 - **dropout** (`float`)：如果值为非零，则在除去最后一层以外的每个LSTM层的输出上引入一个dropout层，丢弃概率等于dropout参数值。目前不支持。
 - **train** (`bool`)：标识是否在op进行训练的bool参数，默认值为True。

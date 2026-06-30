@@ -20,7 +20,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int
+torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> None
 ```
 
 ## 参数说明

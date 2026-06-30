@@ -99,7 +99,7 @@
 </tr>
 <tr id="row42991659205514"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p229916594553"><a name="p229916594553"></a><a name="p229916594553"></a><a href="（beta）torch_npu-contrib-function-npu_ciou.md">（beta）torch_npu.contrib.function.npu_ciou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a href="https://gitee.com/link?target=https://arxiv.org/abs/1902.09630" target="_blank" rel="noopener noreferrer">def bboxes_giou()</a></p>
+<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p67513316205"></a><a href="https://gitee.com/link?target=https://arxiv.org/abs/1902.09630" target="_blank" rel="noopener noreferrer">def bboxes_ciou()</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1929945945518"><a name="p1929945945518"></a><a name="p1929945945518"></a>应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。</p>
 </td>
@@ -241,7 +241,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001606524122_p13353211123217"><a name="zh-cn_topic_0000001606524122_p13353211123217"></a><a name="zh-cn_topic_0000001606524122_p13353211123217"></a><a href="https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/coder/delta_xywh_bbox_coder.py#L164" target="_blank" rel="noopener noreferrer">def npu_bbox_coder_decode_xywh2xyxy()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p829965916557"><a name="p829965916557"></a><a name="p829965916557"></a>应用基于NPU的bbox格式编码操作，将格式从xywh编码为xyxy。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p829965916557"><a name="p829965916557"></a><a name="p829965916557"></a>应用基于NPU的bbox格式解码操作，将格式从xywh解码为xyxy。</p>
 </td>
 </tr>
 <tr id="row182991559155515"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p182991959195516"><a name="p182991959195516"></a><a name="p182991959195516"></a><a href="（beta）torch_npu-contrib-function-npu_bbox_coder_encode_yolo.md">（beta）torch_npu.contrib.function.npu_bbox_coder_encode_yolo</a></p>

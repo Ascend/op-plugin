@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-应用基于NPU的bbox格式编码操作，将格式从xywh编码为xyxy。
+应用基于NPU的bbox格式解码操作，将格式从xywh解码为xyxy。
 
 ## 函数原型
 
