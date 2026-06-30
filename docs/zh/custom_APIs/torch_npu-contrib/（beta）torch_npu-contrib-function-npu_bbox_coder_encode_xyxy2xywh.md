@@ -44,8 +44,8 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 >>> import torch, torch_npu
 >>> from torch_npu.contrib.function import npu_bbox_coder_encode_xyxy2xywh
 >>> A = 1024
->>> bboxes = torch.randint(0, 512, size=(A, 4)).npu()
->>> gt_bboxes = torch.randint(0, 512, size=(A, 4)).npu()
+>>> bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
+>>> gt_bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
 >>> out = npu_bbox_coder_encode_xyxy2xywh(bboxes, gt_bboxes)
 >>> torch.npu.synchronize()
 >>> print('npu_bbox_coder_encode_xyxy2xywh done. output shape is ', out.shape)

@@ -12,7 +12,7 @@
 - API功能：增量FA实现。
 - 计算公式：
     $$
-    atten\_out = \text{softmax}(scale\_value * (query * key) + atten\_mask) * value
+    atten\_out = \text{softmax}(scale\_value * (query \mathbin{@} key^\top) + atten\_mask) \mathbin{@} value
     $$
 
 ## 函数原型
