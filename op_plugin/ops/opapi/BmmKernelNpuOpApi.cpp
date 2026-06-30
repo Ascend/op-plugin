@@ -32,6 +32,9 @@ static at::Tensor restore_broadcast_tensor(const at::Tensor &t)
     // stride(0) is set to size(1)*size(2) so that CANN recognizes standard
     // transpose patterns (e.g. strides [M*K, 1, K]) and handles them natively
     // via a flag instead of inserting an extra Transpose op.
+    ASCEND_LOGI("[bmm_compatible] restore_broadcast_tensor: "
+                "[%ld,%ld,%ld](stride(0)=0) -> [1,%ld,%ld](stride(0)=%ld) (avoid extra Broadcast)",
+                t.size(0), t.size(1), t.size(2), t.size(1), t.size(2), t.size(1) * t.size(2));
     auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
     auto strides = std::array<int64_t, 3>{t.size(1) * t.size(2), t.stride(1), t.stride(2)};
     return t.as_strided(sizes, strides);
@@ -41,6 +44,30 @@ static bool is_compatible_impl_enabled()
 {
     static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
     return compatible_env != nullptr && std::string(compatible_env) == "1";
+}
+
+// When size(0)==1, stride(0) is semantically irrelevant (batch index is always 0).
+// _matmul_impl's reshape may normalize stride(0) to stride(1)*size(1) instead of
+// size(1)*size(2) (e.g. [16,1,16] instead of [256,1,16] for a [1,16,16] transposed
+// tensor), which prevents CANN's aclnnBatchMatMul from recognizing the transpose
+// layout via a flag and forces a redundant physical Transpose op.
+// Here we reset stride(0) to size(1)*size(2) so CANN can handle the layout natively.
+static at::Tensor normalize_batch1_stride(const at::Tensor &t)
+{
+    if (t.dim() != 3 || t.size(0) != 1) {
+        return t;
+    }
+    int64_t expected = t.size(1) * t.size(2);
+    if (t.stride(0) == expected) {
+        return t;
+    }
+    ASCEND_LOGI("[bmm_compatible] normalize_batch1_stride: "
+                "[1,%ld,%ld] stride(0) %ld -> %ld (avoid extra Transpose)",
+                t.size(1), t.size(2), t.stride(0), expected);
+    auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
+    auto strides = std::array<int64_t, 3>{expected, t.stride(1), t.stride(2)};
+    auto ret = t.as_strided(sizes, strides);
+    return ret;
 }
 
 // A dim-1 slice (e.g. t[:, start:end, :]) of a 3D tensor leaves stride(0) untouched
@@ -82,6 +109,10 @@ static std::pair<at::Tensor, at::Tensor> maybe_restore_broadcast(
     }
     at::Tensor self_in = is_normal_broadcast_expanded(self) ? restore_broadcast_tensor(self) : self;
     at::Tensor mat2_in = is_normal_broadcast_expanded(mat2) ? restore_broadcast_tensor(mat2) : mat2;
+    // For batch=1 tensors whose stride(0) was mangled by _matmul_impl's reshape,
+    // normalize stride(0) so CANN recognizes the layout without a Transpose op.
+    self_in = normalize_batch1_stride(self_in);
+    mat2_in = normalize_batch1_stride(mat2_in);
     return {self_in, mat2_in};
 }
 
@@ -108,6 +139,9 @@ at::Tensor &bmm_out(
                is_normal_broadcast_expanded(mat2)) {
         // aclnnMatmul internally optimizes away the dim-1 slice on self,
         // avoiding the extra copy that aclnnBatchMatMul would require.
+        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+                    self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
         auto mat2_input = mat2[0];
         EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
@@ -142,6 +176,9 @@ at::Tensor &bmm_out(
                is_normal_broadcast_expanded(mat2)) {
         // aclnnMatmul internally optimizes away the dim-1 slice on self,
         // avoiding the extra copy that aclnnBatchMatMul would require.
+        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+                    self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
         auto mat2_input = mat2[0];
         EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
@@ -174,6 +211,9 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2, const at::ScalarT
                is_normal_broadcast_expanded(mat2)) {
         // aclnnMatmul internally optimizes away the dim-1 slice on self,
         // avoiding the extra copy that aclnnBatchMatMul would require.
+        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+                    self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
         auto mat2_input = mat2[0];
         EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
@@ -207,6 +247,9 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2)
                is_normal_broadcast_expanded(mat2)) {
         // aclnnMatmul internally optimizes away the dim-1 slice on self,
         // avoiding the extra copy that aclnnBatchMatMul would require.
+        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+                    self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
         auto mat2_input = mat2[0];
         EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
     } else {
