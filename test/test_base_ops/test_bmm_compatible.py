@@ -165,6 +165,37 @@ class TestBmmCompatible(TestCase):
             self.assertRtolEqual(cpu_self_grad.numpy(), npu_self.grad.cpu().numpy(), prec16=0.005)
             self.assertRtolEqual(cpu_mat2_grad.numpy(), npu_mat2.grad.cpu().numpy(), prec16=0.005)
 
+    def test_bmm_batch1_non_standard_stride(self):
+        """batch=1 with non-standard stride(0) is normalized to avoid Transpose.
+
+        _matmul_impl's reshape may set stride(0) to stride(1)*size(1) instead of
+        size(1)*size(2) for batch=1 tensors, which makes CANN insert a redundant
+        Transpose. This simulates that via as_strided and verifies correctness.
+        """
+        for dtype in [torch.float32, torch.float16]:
+            m, k, n = 16, 16, 64
+            # Transpose to get matrix-dim transposed layout, then override only
+            # stride(0) to stride(1)*size(1) (simulating _matmul_impl's reshape).
+            # stride(1)/stride(2) must be preserved from the transposed tensor.
+            a_std = torch.randn(1, k, m, dtype=dtype).transpose(1, 2)  # [1,m,k] stride [m*k,1,m]
+            a = a_std.as_strided([1, m, k],
+                                 [a_std.stride(1) * m, a_std.stride(1), a_std.stride(2)])
+            b_std = torch.randn(1, n, k, dtype=dtype).transpose(1, 2)  # [1,k,n] stride [k*n,1,k]
+            b = b_std.as_strided([1, k, n],
+                                 [b_std.stride(1) * k, b_std.stride(1), b_std.stride(2)])
+
+            npu_a = a.npu()
+            npu_b = b.npu()
+
+            if dtype == torch.float16:
+                cpu_out = torch.bmm(a.float(), b.float())
+            else:
+                cpu_out = torch.bmm(a, b)
+            npu_out = torch.bmm(npu_a, npu_b).cpu()
+            cpu_out = cpu_out.to(npu_out.dtype)
+
+            self.assertRtolEqual(cpu_out.numpy(), npu_out.numpy(), prec=0.01)
+
 
 if __name__ == "__main__":
     np.random.seed(1234)

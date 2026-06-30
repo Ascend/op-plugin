@@ -286,6 +286,20 @@ class TestMatMulCompatible(TestCase):
         b = b_ori.permute(0, 2, 1)
         self._check_forward_backward(a, b)
 
+    def test_matmul_batch1_transpose_fp32(self):
+        a_ori = torch.randn(1, 16, 16, dtype=torch.float32).npu()
+        a = a_ori.permute(0, 2, 1)
+        b_ori = torch.randn(14384, 16, dtype=torch.float32).npu()
+        b = b_ori.permute(1, 0)
+        self._check_forward_backward(a, b)
+
+    def test_matmul_batch1_transpose_fp16(self):
+        a_ori = torch.randn(1, 16, 16, dtype=torch.float16).npu()
+        a = a_ori.permute(0, 2, 1)
+        b_ori = torch.randn(14384, 16, dtype=torch.float16).npu()
+        b = b_ori.permute(1, 0)
+        self._check_forward_backward(a, b, prec=0.01)
+
 if __name__ == "__main__":
     np.random.seed(1234)
     run_tests()
