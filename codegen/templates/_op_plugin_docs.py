@@ -10554,7 +10554,7 @@ _add_torch_npu_docstr(
     "npu_moe_finalize_routing",
     """
 接口原型：
-torch_npu.npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? skip2, Tensor? bias, Tensor? scales, Tensor expanded_src_to_dst_row, Tensor? export_for_source_row, int? drop_pad_mode=0) -> Tensor
+torch_npu.npu_moe_finalize_routing(Tensor expanded_permuted_rows, Tensor? skip1, Tensor? skip2, Tensor? bias, Tensor? scales, Tensor expanded_src_to_dst_row, Tensor? export_for_source_row, int? drop_pad_mode=0, int? k=1) -> Tensor
 
 功能描述
 算子功能: MoE计算中, 最后处理合并MoE FFN的输出结果.
@@ -10571,6 +10571,7 @@ scales: Tensor类型, 可选参数, 专家的权重, 要求是一个2D的Tensor,
 expanded_src_to_dst_row: Tensor类型, 必选参数, 保存每个专家处理结果的索引, 要求是一个1D的Tensor, 数据类型支持int32. shape支持(NUM_ROWS * K), NUM_ROWS为行数, K为从总的专家E中选出K个专家, drop_pad_mode参数为0时, Tensor中的值取值范围是[0, NUM_ROWS * K-1].
 export_for_source_row: Tensor类型, 可选参数, 每行处理的专家号, 要求是一个2D的Tensor, 数据类型支持int32. shape支持(NUM_ROWS, K), NUM_ROWS为行数, K为从总的专家E中选出K个专家.
 drop_pad_mode: int类型, 可选参数, 表示是否支持丢弃模式, 取值范围为0, 默认值为0.
+k: int类型, 可选参数, 表示每个token选出的top-K专家个数, 默认值为1. 当scales为None时，则需要指定k.
 
 输出说明
 out: Tensor类型, 最后处理合并MoE FFN的输出结果.
@@ -10607,7 +10608,8 @@ scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
 expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
 expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
 drop_pad_mode = 0
-output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+k = 4
+output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode, k)
 图模式调用
 import torch
 import torch.nn as nn
@@ -10620,8 +10622,8 @@ class GMMModel(nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode):
-        return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+    def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode, k):
+        return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode, k)
 def main():
     expert_num = 16
     token_len = 10
@@ -10637,9 +10639,10 @@ def main():
     expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
     expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
     drop_pad_mode = 0
+    k = 4
     model = GMMModel().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
-    custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+    custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode, k)
 if __name__ == '__main__':
     main()
 """
