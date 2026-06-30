@@ -16,12 +16,33 @@
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/utils/OpUtils.h"
 
+#include <cstdlib>
+
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 constexpr size_t X_DIM = 2;
 constexpr size_t FUSED_TYPE_ARRAY_SIZE = 100;
+constexpr int8_t USE_FP32_ADD = 4;
+
+bool need_fused_add_mul_high_precision(
+    const at::Tensor &x, const at::Tensor &x2, const c10::optional<at::Tensor> &x3,
+    c10::string_view fused_op_type)
+{
+    static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
+    bool compatible_impl_enabled = compatible_env != nullptr && std::string(compatible_env) == "1";
+    bool is_add_or_mul = fused_op_type == "add" || fused_op_type == "mul";
+    bool is_low_precision = x.scalar_type() == at::kHalf || x.scalar_type() == at::kBFloat16;
+    if (!compatible_impl_enabled || !is_add_or_mul || !is_low_precision || x.scalar_type() != x2.scalar_type()) {
+        return false;
+    }
+    if (!x3.has_value() || !x3.value().defined()) {
+        return false;
+    }
+    return x3.value().scalar_type() == x.scalar_type();
+}
+
 void infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vector<uint64_t> &batch_record)
 {
     auto x1_dim_num = x1.dim();
@@ -81,6 +102,9 @@ at::Tensor npu_fused_matmul(
     const at::Tensor &bias_real = bias.value_or(at::Tensor());
 
     int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+    if (need_fused_add_mul_high_precision(x, x2, x3, fused_op_type)) {
+        cube_math_type = USE_FP32_ADD;
+    }
     char fused_type[FUSED_TYPE_ARRAY_SIZE] = {0};
     TORCH_CHECK(std::string(fused_op_type).size() <= FUSED_TYPE_ARRAY_SIZE,
                 "the len of fused_op_type is bigger than the default");
