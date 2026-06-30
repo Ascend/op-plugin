@@ -41,7 +41,7 @@ torch_npu.npu.obfuscation_finalize(fd_to_close) -> Tensor
 
 `Tensor`
 
-代表关闭socket连接符内存数据，1D，shape为(1)，数据类型为`int32`。
+代表关闭socket连接后的结果，1D，shape为(1)，数据类型为`int32`。
 
 ## 调用示例
 
