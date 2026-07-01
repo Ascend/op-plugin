@@ -29,7 +29,7 @@
 
     <a id="table1"></a>
 
-   | PyTorch | Ascend Extension for PyTorch | OpPlugin | Python                      | GCC  |
+   | PyTorch | TorchNPU | OpPlugin | Python                      | GCC  |
    |---------|------------------------------|----------|-----------------------------|------|
    | 2.7.1   | v2.7.1                       | master   | 3.9, 3.10, 3.11, 3.12, 3.13 | 11.2 |
    | 2.8.0   | v2.8.0                       | master   | 3.9, 3.10, 3.11, 3.12, 3.13 | 13.3 |
@@ -41,7 +41,7 @@
 
 ## 安装依赖
 
- 安装时需要安装系统依赖及官方PyTorch框架，建议使用torch_npu提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[Ascend Extension for Pytorch](https://gitcode.com/Ascend/pytorch/tree/v2.7.1-7.3.0#%E4%BD%BF%E7%94%A8%E6%BA%90%E4%BB%A3%E7%A0%81%E8%BF%9B%E8%A1%8C%E5%AE%89%E8%A3%85)。
+ 安装时需要安装系统依赖及官方PyTorch框架，建议使用TorchNPU提供的docker镜像进行编译，依赖安装和镜像使用指导可参考[TorchNPU](https://gitcode.com/Ascend/pytorch/tree/v2.7.1-7.3.0#%E4%BD%BF%E7%94%A8%E6%BA%90%E4%BB%A3%E7%A0%81%E8%BF%9B%E8%A1%8C%E5%AE%89%E8%A3%85)。
  
 ## 操作步骤
  
@@ -70,13 +70,13 @@
 
     > [!NOTICE] 
     > 编译时GCC和Python版本请参考[软件配套表](#table1)中约束。
-    > 编译过程中，会在插件根目录新建build文件夹，并下载torch_npu对应版本的源码，协同编译。 若build/pytorch目录存在，则编译op-plugin时，不再重复下载torch_npu源码。如需下载所依赖的最新torch_npu源码，删除build/pytorch目录即可。
+    > 编译过程中，会在插件根目录新建build文件夹，并下载TorchNPU对应版本的源码，协同编译。 若build/pytorch目录存在，则编译OpPlugin时，不再重复下载TorchNPU源码。如需下载所依赖的最新TorchNPU源码，删除build/pytorch目录即可。
  
-3. 完成编译后，安装dist目录下生成的插件torch\_npu包，如果使用非root用户安装，需要在命令后加`--user`。
+3. 完成编译后，安装dist目录下生成的插件TorchNPU包，如果使用非root用户安装，需要在命令后加`--user`。
  
    ```bash
    pip3 install --upgrade dist/torch_npu-{torch_npu_version}-{Python_version}-{arch}.whl
-   # 实际执行时需要根据生成的whl包名称进行替换，其中{torch_npu_version}表示编译的torch_npu版本，{Python_version} 为所使用的 Python 版本，{arch} 则代表目标架构。
+   # 实际执行时需要根据生成的whl包名称进行替换，其中{torch_npu_version}表示编译的TorchNPU版本，{Python_version} 为所使用的 Python 版本，{arch} 则代表目标架构。
    # 典型的whl包名类似：torch_npu-2.7.1.post13-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl
    ```
 

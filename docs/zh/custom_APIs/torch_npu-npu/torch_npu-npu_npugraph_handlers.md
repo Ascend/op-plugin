@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-本接口用于注册自定义算子处理器，使自定义算子支持NPU Graph的动态Shape更新与重放功能。在NPU Graph模式下，用户调用 `g.update()` 传入新的参数时，Ascend Extension for PyTorch框架通过注册的处理器将数据映射到算子输入位置。
+本接口用于注册自定义算子处理器，使自定义算子支持NPU Graph的动态Shape更新与重放功能。在NPU Graph模式下，用户调用 `g.update()` 传入新的参数时，TorchNPU框架通过注册的处理器将数据映射到算子输入位置。
 
 核心机制：
 

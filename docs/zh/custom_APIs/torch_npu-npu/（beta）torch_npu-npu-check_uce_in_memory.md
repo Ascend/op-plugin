@@ -30,9 +30,9 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 ## 返回值说明
 
 - 0：无UCE故障地址。
-- 1：UCE故障地址为非Ascend Extension for PyTorch使用的内存地址。
-- 2：UCE故障地址为Ascend Extension for PyTorch使用的临时内存地址。
-- 3：UCE故障地址为Ascend Extension for PyTorch使用的常驻内存地址。
+- 1：UCE故障地址为非TorchNPU使用的内存地址。
+- 2：UCE故障地址为TorchNPU使用的临时内存地址。
+- 3：UCE故障地址为TorchNPU使用的常驻内存地址。
 
 ## 约束说明
 
