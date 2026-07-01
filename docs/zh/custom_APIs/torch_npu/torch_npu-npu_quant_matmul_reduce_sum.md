@@ -58,6 +58,8 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
   import torch
   import torch_npu
 
+  torch_npu.npu.config.allow_internal_format = True
+
   b,m,k,n = (2,3,4,5)
   x1 = torch.ones((b, m, k), dtype=torch.int8).npu()
   x2_nd = torch.ones((b, k, n), dtype=torch.int8).npu()

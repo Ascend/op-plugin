@@ -87,7 +87,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
     server_index = 0
     port = 50001
     master_ip = '127.0.0.1'
-    dev_num = 16
+    dev_num = 4
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)  # 每个host有几个die
     micro_batch_num = 1
@@ -101,8 +101,8 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
     shared_expert_num = 1  # 共享专家数
     rank_num_per_shared_expert = 1
     shared_ffn_rank_num = shared_expert_num * rank_num_per_shared_expert
-    moe_expert_per_rank = 2  # 各ffn卡moe专家数
-    moe_ffn_rank_num = 4    #FFN卡数
+    moe_expert_per_rank = 2  # 各FFN卡上的MoE专家数
+    moe_ffn_rank_num = 2  # MoE FFN卡数
     moe_expert_num = moe_ffn_rank_num * moe_expert_per_rank
     ffn_worker_num = moe_ffn_rank_num + shared_ffn_rank_num
     attention_worker_num = world_size - ffn_worker_num
@@ -129,12 +129,12 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
             # 当前 rank 属于前半部分，需与后面 rank 通信
             target_ranks = list(range(ffn_worker_num, world_size))
         window_size = 120 * 1024 * 200
-        comm_group._get_backend(torch.device('npu')._window_register_and_exchange(window_size, target_ranks))
+        comm_group._get_backend(torch.device('npu'))._window_register_and_exchange(window_size, target_ranks)
 
 
     def run_npu_process(rank):
         torch_npu.npu.set_device(rank)
-        rank = rank + 16 * server_index
+        rank = rank + dev_num * server_index
         dist.init_process_group(backend='hccl', rank=rank, world_size=world_size, init_method=f'tcp://{master_ip}:{port}')
         rank_list = list(range(world_size))
         comm_group = dist.new_group(backend="hccl", ranks=rank_list)
@@ -146,23 +146,19 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
         session_id = torch.tensor([rank - ffn_worker_num], dtype=torch.int32).npu()
         micro_batch_id = torch.tensor([0], dtype=torch.int32).npu()
         layer_id = torch.tensor([0], dtype=torch.int32).npu()
-        expert_ids = torch.tensor([[[5, 7, 1, 4],
-                                [0, 2, 3, 5],
-                                [6, 3, 1, 7],
-                                [4, 0, 5, 7],
-                                [0, 6, 1, 3],
-                                [2, 5, 7, 6],
-                                [1, 6, 2, 4],
-                                [6, 4, 5, 0]]], dtype=torch.int32).npu()
-        expert_rank_table = torch.tensor([[[4, 2, 4, 3, 7, 1, 3, 2, 5],
-                                        [2, 2, 5, 1, 2, 0, 0, 0, 0],
-                                        [3, 2, 5, 0, 0, 3, 7, 0, 0],
-                                        [4, 1, 3, 0, 1, 2, 4, 3, 7],
-                                        [4, 0, 0, 3, 6, 1, 3, 2, 5],
-                                        [3, 3, 7, 2, 4, 1, 2, 0, 0],
-                                        [2, 2, 5, 0, 0, 0, 0, 0, 0],
-                                        [3, 3, 6, 2, 5, 3, 7, 0, 0],
-                                        [1, 4, 8, 0, 0, 0, 0, 0, 0]]], dtype=torch.int32).npu()
+        expert_ids = torch.tensor([[[0, 1, 2, 3],
+                                [1, 2, 3, 0],
+                                [2, 3, 0, 1],
+                                [3, 0, 1, 2],
+                                [0, 2, 1, 3],
+                                [1, 3, 2, 0],
+                                [2, 0, 3, 1],
+                                [3, 1, 0, 2]]], dtype=torch.int32).npu()
+        expert_rank_table = torch.tensor([[[1, 0, 0],
+                                        [1, 0, 1],
+                                        [1, 1, 2],
+                                        [1, 1, 3],
+                                        [1, 2, 4]]], dtype=torch.int32).npu()
 
         scales_shape = (L, shared_expert_num + moe_expert_num, h)
         if is_attn2ffn_scales:
@@ -217,6 +213,10 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
         for p in p_list:
             p.join()
 
+        for p in p_list:
+            if p.exitcode != 0:
+                raise RuntimeError(f"subprocess {p.pid} failed with exitcode {p.exitcode}")
+
         print("run npu success.")
     ```
 
@@ -246,7 +246,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
     server_index = 0
     port = 50001
     master_ip = '127.0.0.1'
-    dev_num = 16
+    dev_num = 4
     world_size = server_num * dev_num
     rank_per_dev = int(world_size / server_num)  # 每个host有几个die
     micro_batch_num = 1
@@ -255,13 +255,13 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
     bs = 8  # token数量
     h = 7168  # 每个token的长度
     k = 4
-    hs = h +128
+    hs = h + 128
     random_seed = 0
     shared_expert_num = 1  # 共享专家数
     rank_num_per_shared_expert = 1
     shared_ffn_rank_num = shared_expert_num * rank_num_per_shared_expert
-    moe_expert_per_rank = 2  # 各ffn卡moe专家数
-    moe_ffn_rank_num = 4    #FFN卡数
+    moe_expert_per_rank = 2  # 各FFN卡上的MoE专家数
+    moe_ffn_rank_num = 2  # MoE FFN卡数
     moe_expert_num = moe_ffn_rank_num * moe_expert_per_rank
     ffn_worker_num = moe_ffn_rank_num + shared_ffn_rank_num
     attention_worker_num = world_size - ffn_worker_num
@@ -318,12 +318,12 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
             # 当前 rank 属于前半部分，需与后面 rank 通信
             target_ranks = list(range(ffn_worker_num, world_size))
         window_size = 120 * 1024 * 200
-        comm_group._get_backend(torch.device('npu')._window_register_and_exchange(window_size, target_ranks))
+        comm_group._get_backend(torch.device('npu'))._window_register_and_exchange(window_size, target_ranks)
 
 
     def run_npu_process(rank):
         torch_npu.npu.set_device(rank)
-        rank = rank + 16 * server_index
+        rank = rank + dev_num * server_index
         dist.init_process_group(
             backend='hccl',
             rank=rank,
@@ -340,23 +340,19 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
         session_id = torch.tensor([rank - ffn_worker_num], dtype=torch.int32).npu()
         micro_batch_id = torch.tensor([0], dtype=torch.int32).npu()
         layer_id = torch.tensor([0], dtype=torch.int32).npu()
-        expert_ids = torch.tensor([[[5, 7, 1, 4],
-                                [0, 2, 3, 5],
-                                [6, 3, 1, 7],
-                                [4, 0, 5, 7],
-                                [0, 6, 1, 3],
-                                [2, 5, 7, 6],
-                                [1, 6, 2, 4],
-                                [6, 4, 5, 0]]], dtype=torch.int32).npu()
-        expert_rank_table = torch.tensor([[[4, 2, 4, 3, 7, 1, 3, 2, 5],
-                                        [2, 2, 5, 1, 2, 0, 0, 0, 0],
-                                        [3, 2, 5, 0, 0, 3, 7, 0, 0],
-                                        [4, 1, 3, 0, 1, 2, 4, 3, 7],
-                                        [4, 0, 0, 3, 6, 1, 3, 2, 5],
-                                        [3, 3, 7, 2, 4, 1, 2, 0, 0],
-                                        [2, 2, 5, 0, 0, 0, 0, 0, 0],
-                                        [3, 3, 6, 2, 5, 3, 7, 0, 0],
-                                        [1, 4, 8, 0, 0, 0, 0, 0, 0]]], dtype=torch.int32).npu()
+        expert_ids = torch.tensor([[[0, 1, 2, 3],
+                                [1, 2, 3, 0],
+                                [2, 3, 0, 1],
+                                [3, 0, 1, 2],
+                                [0, 2, 1, 3],
+                                [1, 3, 2, 0],
+                                [2, 0, 3, 1],
+                                [3, 1, 0, 2]]], dtype=torch.int32).npu()
+        expert_rank_table = torch.tensor([[[1, 0, 0],
+                                        [1, 0, 1],
+                                        [1, 1, 2],
+                                        [1, 1, 3],
+                                        [1, 2, 4]]], dtype=torch.int32).npu()
 
         scales_shape = (L, shared_expert_num + moe_expert_num, h)
         if is_attn2ffn_scales:
@@ -402,6 +398,10 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
             p.start()
         for p in p_list:
             p.join()
+
+        for p in p_list:
+            if p.exitcode != 0:
+                raise RuntimeError(f"subprocess {p.pid} failed with exitcode {p.exitcode}")
 
         print("run npu success.")
     ```
