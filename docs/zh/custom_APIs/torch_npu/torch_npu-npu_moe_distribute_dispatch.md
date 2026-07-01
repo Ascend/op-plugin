@@ -49,9 +49,9 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[0, 128\)，不能和`group_ep`相同，仅在无TP域时支持传空。
 
-- **tp\_world\_size**(`int`)：可选参数，TP通信域size。有TP域通信才需要传参。
+- **tp\_world\_size**(`int`)：可选参数，TP通信域size。无TP域通信时使用默认值0即可。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值0即可。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, 2\]，其中0和1表示无TP域通信，2表示有TP域通信。
 
 - **tp\_rank\_id**(`int`)：可选参数，TP通信域本卡ID。有TP域通信才需要传参。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值即可。
@@ -118,7 +118,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：保证取值范围为0<K≤16。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：保证取值范围为0<K≤8。
 
-    - server\_num：表示服务器的节点数，取值只支持2、4、8。
+    - server\_num：表示服务器的节点数。单机场景可取1，多机场景取值只支持2、4、8。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
 
     - local\_expert\_num：表示本卡专家数量。
@@ -172,7 +172,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     quant_mode = 2                       # 2为动态量化
     is_dispatch_scales = True            # 动态量化可选择是否传scales
     input_dtype = torch.bfloat16         # 输出dtype
-    server_num = 1
+    server_num = 1                       # 单机场景
     server_index = 0
     port = 50001
     master_ip = '127.0.0.1'
@@ -258,6 +258,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
             shared_expert_rank_num=sharedExpertRankNum,
             moe_expert_num=moeExpertNum,
             scales=scales,
+            expert_scales=expert_scales,
             quant_mode=quant_mode,
             global_bs=globalBS)
         if is_quant:
@@ -337,7 +338,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     quant_mode = 2                         # 2为动态量化
     is_dispatch_scales = True              # 动态量化可选择是否传scales
     input_dtype = torch.bfloat16           # 输出dtype
-    server_num = 1
+    server_num = 1                         # 单机场景
     server_index = 0
     port = 50001
     master_ip = '127.0.0.1'
@@ -377,6 +378,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
                                                                         shared_expert_rank_num=shared_expert_rank_num,
                                                                         moe_expert_num=moe_expert_num,
                                                                         scales=scales,
+                                                                        expert_scales=expert_scales,
                                                                         quant_mode=quant_mode,
                                                                         global_bs=global_bs)
 

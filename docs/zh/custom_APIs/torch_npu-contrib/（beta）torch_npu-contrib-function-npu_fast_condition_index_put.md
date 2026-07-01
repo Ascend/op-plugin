@@ -40,7 +40,8 @@ torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 >>> x = torch.randn(128, 8192).npu()
 >>> condition = x < 0.5
 >>> value = 0.
->>> x1 = copy.deepcopy(x)[condition] = value
+>>> x1 = copy.deepcopy(x)
+>>> x1[condition] = value
 >>> x1_opt = npu_fast_condition_index_put(x, condition, value)
 >>> print(x1_opt)
 tensor([[0.9661, 1.6750, 0.0000,  ..., 0.0000, 0.0000, 0.0000],

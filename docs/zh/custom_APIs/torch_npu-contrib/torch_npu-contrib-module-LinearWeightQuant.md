@@ -67,7 +67,6 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **quant_offset**（`Tensor`）：量化的offset，用于输出矩阵的量化。仅在weight格式为$ND$时支持，数据格式支持$ND$，数据类型支持`float32`，支持输入维度为两维(1, N)或一维(N,)、(1, )。当`antiquant_scale`的数据类型为`int64`时，此参数必须为空。<term>Atlas 推理系列产品</term> ：暂不支持此参数。
 
 - **bias**（`Tensor`）：即矩阵乘中的bias，数据格式支持$ND$，数据类型支持`float16`、`float32`，支持非连续的Tensor，支持输入维度为两维(1, N)或一维(N,)、(1,)。
-- **antiquant_group_size**（`int`）：用于控制pergroup场景下的group大小，默认为0。传入值的范围为[32, K-1]且值要求是32的倍数。<term>Atlas 推理系列产品</term> ：暂不支持此参数。
 
 ## 返回值说明
 
@@ -96,7 +95,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
     import torch_npu
     from torch_npu.contrib.module import LinearWeightQuant
     x = torch.randn((8192, 320),device='npu',dtype=torch.float16)
-    weight = torch.randn((320, 256),device='npu',dtype=torch.int8)
+    weight = torch.randint(-128, 128, (320, 256), device='npu', dtype=torch.int8)
     antiquantscale = torch.randn((1, 256),device='npu',dtype=torch.float16)
     antiquantoffset = torch.randn((1, 256),device='npu',dtype=torch.float16)
     quantscale = torch.randn((1, 256),device='npu',dtype=torch.float)
@@ -132,7 +131,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
     config.debug.graph_dump.type = "pbtxt"
     npu_backend = tng.get_npu_backend(compiler_config=config)
     x = torch.randn((8192, 320),device='npu',dtype=torch.bfloat16)
-    weight = torch.randn((320, 256),device='npu',dtype=torch.int8)
+    weight = torch.randint(-128, 128, (320, 256), device='npu', dtype=torch.int8)
     antiquantscale = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
     antiquantoffset = torch.randn((1, 256),device='npu',dtype=torch.bfloat16)
     quantscale = torch.randn((1, 256),device='npu',dtype=torch.float)
