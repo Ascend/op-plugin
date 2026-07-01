@@ -16,17 +16,17 @@
 
     - 非量化场景：
         $$
-        y=activation(x * W1 + b1) * W2 + b2
+        y=activation(x * W_1 + b_1) * W_2 + b_2
         $$
 
     - 量化场景：
         $$
-        y=((activation((x * W1 + b1) * deq\_scale1) * scale + offset) * W2 + b2) * deq\_scale2
+        y=((activation((x * W_1 + b_1) * deq\_scale1) * scale + offset) * W_2 + b_2) * deq\_scale2
         $$
 
     - 伪量化场景：
         $$
-        y=activation(x * ((W1 + antiquant\_offset1) * antiquant\_scale1) + b1) * ((W2 + antiquant\_offset2) * antiquant\_scale2) + b2
+        y=activation(x * ((W_1 + antiquant\_offset1) * antiquant\_scale1) + b_1) * ((W_2 + antiquant\_offset2) * antiquant\_scale2) + b_2
         $$
 
 > [!NOTE]  
@@ -42,9 +42,9 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 - **x** (`Tensor`)：必选参数，输入张量，对应公式中的$x$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，支持输入的维度最少是2维$[M, K1]$，最多是8维。
 
-- **weight1** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W1$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K1, N1]$/$[K1, N1]$。
+- **weight1** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W_1$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K1, N1]$/$[K1, N1]$。
 
-- **weight2** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W2$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K2, N2]$/$[K2, N2]$。
+- **weight2** (`Tensor`)：必选参数，专家的权重数据，对应公式中的$W_2$，数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入在有/无专家时分别为$[E, K2, N2]$/$[K2, N2]$。
 
     > [!NOTE]  
     > $M$表示token个数，对应Transformer中的BS（$B$：Batch，表示输入样本批量大小，$S$：Seq-Length，表示输入样本序列长度）；$K1$表示第一个matmul的输入通道数，对应Transformer中的$H$（Head-Size，表示隐藏层的大小）；$N1$表示第一个matmul的输出通道数；$K2$表示第二个matmul的输入通道数；$N2$表示第二个matmul的输出通道数，对应Transformer中的$H$；$E$表示有专家场景的专家数。
@@ -54,8 +54,8 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - **expert_tokens** (`list`)：可选参数，代表各专家的token数，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
 - **expert_tokens_index** (`list`)：可选参数，代表各专家计算token的索引值，数据类型支持`int32`，数据格式支持$ND$，若不为空时可支持的最大长度为256个。
 
-- **bias1** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b1$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
-- **bias2** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b2$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
+- **bias1** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b_1$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N1]$/$[N1]$。
+- **bias2** (`Tensor`)：可选参数，权重数据修正值，对应公式中的$b_2$，数据类型支持`float16`、`float32`、`int32`，数据格式支持$ND$，输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
 - **scale** (`Tensor`)：可选参数，量化参数，量化缩放系数，数据类型支持`float32`，数据格式支持$ND$。pertensor下输入在有/无专家时均为一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$；perchannel下输入在有/无专家时为二维向量/一维向量，输入元素个数在有/无专家时分别为$[E, N1]$/$[N1]$。
 - **offset** (`Tensor`)：可选参数，量化参数，量化偏移量，数据类型支持`float32`，数据格式支持$ND$，一维向量，输入元素个数在有/无专家时分别为$[E]$/$[1]$。

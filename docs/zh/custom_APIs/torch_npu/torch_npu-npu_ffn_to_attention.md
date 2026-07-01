@@ -27,7 +27,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 - **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
 - **world\_size**(`int64`)：必选参数，通信域size。取值支持\[2, 768\]。
 - **token\_info\_table\_shape**(`List[int]`)：必选参数，Token信息列表大小。包含microBatch的大小（MicroBatchNum）、BatchSize大小（BS）、以及每个Token对应的Expert数量（ExpertNumPerToken）。
-- **token\_data\_shape**(`List[int]`)：必选参数，Token信息列表大小。包含microBatch的大小（MicroBatchNum）、BatchSize大小（BS）、每个Token对应的Expert数量(ExpertNumPerToken)、以及token和scale长度(HS)。
+- **token\_data\_shape**(`List[int]`)：必选参数，Token数据列表大小。包含microBatch的大小（MicroBatchNum）、BatchSize大小（BS）、每个Token对应的Expert数量(ExpertNumPerToken)、以及token和scale长度(HS)。
 - **attn\_rank\_table** (`Tensor`)：可选参数，映射每一个Attention Worker对应的卡Id，要求为1维张量，shape为\(Y, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, attnRankNum-1]。
 
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>

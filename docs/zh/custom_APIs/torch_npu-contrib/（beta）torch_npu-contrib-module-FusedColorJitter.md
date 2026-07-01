@@ -19,7 +19,7 @@
 ## 函数原型
 
 ```python
-torch_npu.contrib.module.FusedColorJitter(torch.nn.Module)
+torch_npu.contrib.module.FusedColorJitter(brightness=0, contrast=0, saturation=0, hue=0)
 ```
 
 ## 参数说明

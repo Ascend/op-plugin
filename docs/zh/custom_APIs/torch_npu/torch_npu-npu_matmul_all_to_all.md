@@ -57,6 +57,7 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
     import torch_npu
     import torch.distributed as dist
     import torch.multiprocessing as mp
+    from packaging import version
 
     def run_npu_matmul_all_to_all(rank, world_size, master_ip, master_port, x1_shape, x2_shape):
         torch_npu.npu.set_device(rank)
@@ -64,7 +65,7 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
         dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
         from torch.distributed.distributed_c10d import _get_default_group
         default_pg = _get_default_group()
-        if torch.__version__ > '2.0.1':
+        if version.parse(torch.__version__) > version.parse('2.0.1'):
             hcom_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcom_info = default_pg.get_hccl_comm_name(rank)
