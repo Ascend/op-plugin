@@ -44,14 +44,54 @@ at::Tensor _cdist_backward(
     if (p_in_range && (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950)) {
         return acl_op::_cdist_backward(grad, x1, x2, p, cdist);
     }
-    auto output_size = x1.sizes();
-    auto output_dtype = grad.scalar_type();
 
+    int64_t c1 = x1.size(-1);
+    int64_t c2 = x2.size(-1);
+    int64_t r1 = x1.size(-2);
+    int64_t r2 = x2.size(-2);
+    int64_t dim1 = static_cast<int64_t>(x1.dim());
+    int64_t dim2 = static_cast<int64_t>(x2.dim());
+    TORCH_CHECK(c1 == c2, "X1 and X2 must have the same number of columns. X1: ", c1, " X2: ", c2,
+        OPS_ERROR(ErrCode::PARAM));
+
+    at::IntArrayRef batch_tensor1(x1.sizes().data(), dim1 - 2);
+    at::IntArrayRef batch_tensor2(x2.sizes().data(), dim2 - 2);
+    std::vector<int64_t> expand_batch_portion = at::infer_size(batch_tensor1, batch_tensor2);
+    std::vector<int64_t> tensor1_expand_size(expand_batch_portion);
+    tensor1_expand_size.insert(tensor1_expand_size.end(), {r1, c1});
+    std::vector<int64_t> tensor2_expand_size(expand_batch_portion);
+    tensor2_expand_size.insert(tensor2_expand_size.end(), {r2, c2});
+
+    bool empty_batch = false;
+    for (const auto size : expand_batch_portion) {
+        empty_batch = empty_batch || (size == 0);
+    }
+    if (r1 == 0 || r2 == 0 || c1 == 0 || empty_batch) {
+        return at::zeros_like(x1, x1.options());
+    }
+
+    at::Tensor x1_broadcast = x1;
+    if (x1.sizes().vec() != tensor1_expand_size) {
+        x1_broadcast = x1.expand(tensor1_expand_size);
+    }
+    x1_broadcast = x1_broadcast.contiguous();
+
+    at::Tensor x2_broadcast = x2;
+    if (x2.sizes().vec() != tensor2_expand_size) {
+        x2_broadcast = x2.expand(tensor2_expand_size);
+    }
+    x2_broadcast = x2_broadcast.contiguous();
+
+    auto grad_contiguous = grad.contiguous();
+    auto cdist_contiguous = cdist.contiguous();
+    auto output_size = x1_broadcast.sizes();
+    auto output_dtype = x1_broadcast.scalar_type();
     at::Tensor out = at_npu::native::OpPreparation::apply_tensor_without_format(
         output_size,
-        grad.options().dtype(output_dtype));
+        x1_broadcast.options().dtype(output_dtype));
 
-    EXEC_NPU_CMD(aclnnCdistBackward, grad, x1, x2, cdist, p_cast, out);
+
+    EXEC_NPU_CMD(aclnnCdistBackward, grad_contiguous, x1_broadcast, x2_broadcast, cdist_contiguous, p_cast, out);
 
     return out;
 }
