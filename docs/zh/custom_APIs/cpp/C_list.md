@@ -1,6 +1,6 @@
 # C++接口列表
 
-本章节包含Ascend Extension for PyTorch中提供的C++拓展接口，供深度优化使用。
+本章节包含TorchNPU中提供的C++拓展接口，供深度优化使用。
 
 ## 常规C++接口
 
@@ -36,7 +36,7 @@
 </tr>
 <tr id="row7285114101517"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p12850416158"><a name="p12850416158"></a><a name="p12850416158"></a><a href="（beta）at-Device.md">（beta）at::Device</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p6285046154"><a name="p6285046154"></a><a name="p6285046154"></a>在安装torch_npu后，Device类型新增支持NPU字段，可以从字符串描述中指示设备。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p6285046154"><a name="p6285046154"></a><a name="p6285046154"></a>在安装TorchNPU后，Device类型新增支持NPU字段，可以从字符串描述中指示设备。</p>
 </td>
 </tr>
 <tr id="row1482153472113"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p197043314361"><a name="p197043314361"></a><a name="p197043314361"></a><a href="（beta）struct-c10_npu-NPUEvent.md">（beta）struct c10_npu::NPUEvent</a></p>
@@ -223,7 +223,7 @@
 
 ## LibTorch Stable ABI接口
 
-PyTorch原生社区已提供LibTorch Stable ABI能力，提供一组稳定的二进制接口，让自定义算子和C++扩展无需绑定特定PyTorch版本也能跨版本兼容。Ascend Extension for PyTorch在此基础上补充NPU侧能力，对外提供以下接口：
+PyTorch原生社区已提供LibTorch Stable ABI能力，提供一组稳定的二进制接口，让自定义算子和C++扩展无需绑定特定PyTorch版本也能跨版本兼容。TorchNPU在此基础上补充NPU侧能力，对外提供以下接口：
 
 - [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/c/shim.h)：补充NPU设备类型及NPU相关Stable ABI接口。
 - [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h)：提供NPU算子的Stable ABI声明，接口名形如`aoti_torch_npu_*`。
@@ -231,7 +231,7 @@ PyTorch原生社区已提供LibTorch Stable ABI能力，提供一组稳定的二
 
 ## ATB C++接口说明
 
-Ascend Extension for PyTorch提供了一组ATB C++接口，用于在C++侧调用已暴露的ATB能力。这组接口通过统一入口头文件对外提供。
+TorchNPU提供了一组ATB C++接口，用于在C++侧调用已暴露的ATB能力。这组接口通过统一入口头文件对外提供。
 
 - [`op_plugin/include/atb_ops.h`](../../../../op_plugin/include/atb_ops.h)：ATB C++接口统一入口头文件。
 - [`op_plugin/config/atb_ops.yaml`](../../../../op_plugin/config/atb_ops.yaml)：当前对外暴露接口列表。

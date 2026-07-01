@@ -64,7 +64,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
      >>>    with_stack=False,                # 采集算子的函数调用栈开关，默认关闭
      >>>    record_shapes=False,             # 采集算子的input shape和input type开关，默认关闭
      >>>    profile_memory=False,            # 采集memory相关数据开关，默认关闭
-     >>>    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1),           # warmup默认为0，老版本torch_npu包该参数为必填项
+     >>>    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1),           # warmup默认为0，老版本TorchNPU包该参数为必填项
      >>>    experimental_config=experimental_config,                                   
      >>>    on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result_dir") # 导出tensorboard可视化数据
      >>>    ) as prof:

@@ -1,6 +1,6 @@
 # （beta）NPU Tensor
 
-Torch_npu提供NPU tensor相关的部分接口，使用方式与CUDA类似。
+TorchNPU提供NPU tensor相关的部分接口，使用方式与CUDA类似。
 
 **表1** NPU Tensor API (beta)
 

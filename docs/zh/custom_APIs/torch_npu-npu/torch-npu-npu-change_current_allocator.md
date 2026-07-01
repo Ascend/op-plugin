@@ -80,7 +80,7 @@ void my_free(void* ptr, ssize_t size, int device, aclrtStream stream)
  
 ```
 
-**日志记录示例**：可使用Ascend Extension for PyTorch自带的debug级别日志打印。日志需注意存放至安全路径。
+**日志记录示例**：可使用TorchNPU自带的debug级别日志打印。日志需注意存放至安全路径。
 
 ```cpp
 #include "torch_npu/csrc/core/npu/npu_log.h"
