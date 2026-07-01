@@ -28,7 +28,7 @@ at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self
                                                                          grad_output.options().dtype(output_dtype_0));
     auto approximate_str = op_infer::npu_gelu_approximate_str(approximate);
     auto approximate_ptr = const_cast<char *>(approximate_str.c_str());
-    if (!gelu_sc) {
+    if (!c10_npu::IsAclnnOnly() && !gelu_sc) {
         DO_COMPATIBILITY(aclnnGeluBackward, acl_op::gelu_backward(grad_output, self, approximate));
         EXEC_NPU_CMD(aclnnGeluBackward, grad_output, self, grad_input);
     } else {
