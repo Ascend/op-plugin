@@ -1,5 +1,6 @@
 import math
 import os
+import warnings
 import torch
 import torch_npu
 from torch.library import Library, impl
@@ -2224,11 +2225,33 @@ def npu_kv_quant_sparse_flash_attention_forward(query, key, value, sparse_indice
     return out
 
 
+# Keep in sync with torch_npu/csrc/core/npu/NpuVariables.h: SocVersion::Ascend950.
+_ASCEND950_SOC_VERSION = 260
+_npu_fusion_attention_warning_printed = False
+
+
+def _warn_npu_fusion_attention_compile_once():
+    # Remove this warning helper after torch.compile correctly preserves seed, offset and numels
+    # for npu_fusion_attention on supported Ascend950 versions.
+    global _npu_fusion_attention_warning_printed
+    if _npu_fusion_attention_warning_printed or get_soc_version() < _ASCEND950_SOC_VERSION:
+        return
+    warnings.warn(
+        "CAUTION: On Ascend950, when npu_fusion_attention is compiled by torch.compile, the seed, "
+        "offset, and numels may be optimized, which can cause results to differ from eager mode "
+        "when the random seed is set. This issue will be fixed in later version.",
+        UserWarning,
+        stacklevel=2,
+    )
+    _npu_fusion_attention_warning_printed = True
+
+
 @impl(m, "npu_fusion_attention")
 def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=None, padding_mask=None,
                                  atten_mask=None, scale=1.0, keep_prob=1.0, pre_tockens=2147483647, next_tockens=2147483647,
                                  inner_precise=0, prefix=None, actual_seq_qlen=None, actual_seq_kvlen=None, sparse_mode=0,
                                  gen_mask_parallel=True, sync=False, softmax_layout="", sink=None, dropout_mask=None, seed=0, offset=0):
+    _warn_npu_fusion_attention_compile_once()
     B = query.size(0)
     N = head_num
     S1 = query.size(2)
