@@ -57,8 +57,8 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 - **weight\_uq\_qr**（`Tensor`）：必选参数，表示计算Query的上采样权重矩阵和Query的位置编码权重矩阵，即公式中W<sup>UQ</sup>和W<sup>QR</sup>。shape支持2维，格式为\(Hcq, N\*\(D+Dr\)\)，dtype支持`bfloat16`和`int8`，数据格式支持FRACTAL\_NZ。
 - **weight\_uk**（`Tensor`）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
 - **weight\_dkv\_kr**（`Tensor`）：必选参数，表示计算Key的下采样权重矩阵和Key的位置编码权重矩阵，即公式中W<sup>DKV</sup>和W<sup>KR</sup>。shape支持2维，格式为\(He, Hckv+Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持FRACTAL\_NZ。
-- **rmsnorm\_gamma\_cq**（`Tensor`）：必选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hcq,\)，dtype支持`bfloat16`，数据格式支持ND。
-- **rmsnorm\_gamma\_ckv**（`Tensor`）：必选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hckv,\)，dtype支持`bfloat16`，数据格式支持ND。
+- **rmsnorm\_gamma\_cq**（`Tensor`）：必选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hcq\)，dtype支持`bfloat16`，数据格式支持ND。
+- **rmsnorm\_gamma\_ckv**（`Tensor`）：必选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的_γ_参数。shape支持1维，格式为\(Hckv\)，dtype支持`bfloat16`，数据格式支持ND。
 - **rope\_sin**（`Tensor`）：必选参数，表示用于计算旋转位置编码的正弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
 - **rope\_cos**（`Tensor`）：必选参数，表示用于计算旋转位置编码的余弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`bfloat16`，数据格式支持ND。
 - **cache\_index**（`Tensor`）：必选参数，表示写入`kv_cache`、`kr_cache`的页式线性槽位索引。shape支持1维和2维，格式为\(T\)和\(B, S\)，dtype支持`int64`，数据格式支持ND。每个元素取值范围为[0, L)，其中 **L** 为`kv_cache`第0维与第1维长度之积（须与`kr_cache`前两维之积一致）。
@@ -66,15 +66,15 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 - **kr\_cache**（`Tensor`）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **dequant\_scale\_x**（`Tensor`）：可选参数，输入`token_x`为int8类型时下采样后进行反量化操作时的参数，`token_x`量化方式为pertoken。其shape支持2维，格式为\(T, 1\)和\(BS, 1\)，dtype支持`float`，数据格式支持ND。
-- **dequant\_scale\_w\_dq**（`Tensor`）：可选参数，输入`token_x`为int8类型时下采样后进行反量化操作时的参数，`token_x`量化方式为perchannel。其shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
+- **dequant\_scale\_w\_dq**（`Tensor`）：可选参数，输入`weight_dq`为int8类型时下采样后进行反量化操作时的参数，`weight_dq`量化方式为perchannel。其shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
 - **dequant\_scale\_w\_uq\_qr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为perchannel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持`float`，数据格式支持ND。
-- **dequant\_scale\_w\_dkv\_kr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为perchannel。其shape支持2维，格式为\(1, Hckv+Dr\)，dtype支持`float`，数据格式支持ND。
+- **dequant\_scale\_w\_dkv\_kr**（`Tensor`）：可选参数，输入`weight_dkv_kr`为int8类型时矩阵乘后进行反量化操作时的参数，`weight_dkv_kr`量化方式为perchannel。其shape支持2维，格式为\(1, Hckv+Dr\)，dtype支持`float`，数据格式支持ND。
 - **quant\_scale\_ckv**（`Tensor`）：可选参数，用于对输出到`kv_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持`float`，数据格式支持ND。
 - **quant\_scale\_ckr**（`Tensor`）：可选参数，用于对输出到`kr_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Dr\)，dtype支持`float`，数据格式支持ND。
 - **smooth\_scales\_cq**（`Tensor`）：可选参数，用于对RmsNormCq输出做动态量化操作时的参数。shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
 - **rmsnorm\_epsilon\_cq**（`float`）：可选参数，表示计算c<sup>Q</sup>的RmsNorm公式中的ε参数，默认值为1e-05。
 - **rmsnorm\_epsilon\_ckv**（`float`）：可选参数，表示计算c<sup>KV</sup>的RmsNorm公式中的ε参数，默认值为1e-05。
-- **cache\_mode**（`str`）：可选参数，表示`kv_cache`的模式，支持"PA\_BSND"、"PA\_NZ"，默认值为“PA\_BSND”。
+- **cache\_mode**（`str`）：可选参数，表示`kv_cache`的模式，支持“PA\_BSND”、“PA\_NZ”，默认值为“PA\_BSND”。
 
 ## 返回值说明
 
@@ -512,11 +512,11 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     </td>
     <td class="cellrowborder" valign="top" width="9.09090909090909%"><p id="zh-cn_topic_0000002313328922_p9112111473120"><a name="zh-cn_topic_0000002313328922_p9112111473120"></a><a name="zh-cn_topic_0000002313328922_p9112111473120"></a>float</p>
     </td>
-    <td class="cellrowborder" valign="top" width="9.100910091009101%"><p id="zh-cn_topic_0000002313328922_p12112121423118"><a name="zh-cn_topic_0000002313328922_p12112121423118"></a><a name="zh-cn_topic_0000002313328922_p12112121423118"></a>1,Hcq</p>
+    <td class="cellrowborder" valign="top" width="9.100910091009101%"><p id="zh-cn_topic_0000002313328922_p12112121423118"><a name="zh-cn_topic_0000002313328922_p12112121423118"></a><a name="zh-cn_topic_0000002313328922_p12112121423118"></a>(1,Hcq)</p>
     </td>
     <td class="cellrowborder" valign="top" width="8.04080408040804%"><p id="zh-cn_topic_0000002313328922_p011241416315"><a name="zh-cn_topic_0000002313328922_p011241416315"></a><a name="zh-cn_topic_0000002313328922_p011241416315"></a>float</p>
     </td>
-    <td class="cellrowborder" valign="top" width="10.141014101410141%"><p id="zh-cn_topic_0000002313328922_p1611251453115"><a name="zh-cn_topic_0000002313328922_p1611251453115"></a><a name="zh-cn_topic_0000002313328922_p1611251453115"></a>1,Hcq</p>
+    <td class="cellrowborder" valign="top" width="10.141014101410141%"><p id="zh-cn_topic_0000002313328922_p1611251453115"><a name="zh-cn_topic_0000002313328922_p1611251453115"></a><a name="zh-cn_topic_0000002313328922_p1611251453115"></a>(1,Hcq)</p>
     </td>
     </tr>
     <tr id="zh-cn_topic_0000002313328922_row411310144314"><td class="cellrowborder" valign="top" width="9.09090909090909%"><p id="zh-cn_topic_0000002313328922_p61124144317"><a name="zh-cn_topic_0000002313328922_p61124144317"></a><a name="zh-cn_topic_0000002313328922_p61124144317"></a>dequant_scale_w_uq_qr</p>
