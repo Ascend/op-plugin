@@ -2080,6 +2080,11 @@ def npu_fused_infer_attention_score_v2_forward(query, key, value, *, query_rope=
         lambda: "numHeads should be greater than 0, but got " + str(num_query_heads) +
             ops_error(ErrCode.VALUE),
     )
+    torch._check(
+        query_quant_mode != 3 and key_quant_mode != 3 and value_quant_mode != 2,
+        lambda: "GQA FP8 Fullquant(Query/Key Per-Token-Head, Value PerHead) only supports path 0." + ops_error(ErrCode.VALUE),
+    )
+
     num_key_value_heads = num_query_heads if num_key_value_heads == 0 else num_key_value_heads
 
     # get query_layout, attention_out_layout
