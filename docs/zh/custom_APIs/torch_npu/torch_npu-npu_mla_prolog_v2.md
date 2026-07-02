@@ -66,7 +66,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 - **kr\_cache**（`Tensor`）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`bfloat16`和`int8`，数据格式支持ND。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **dequant\_scale\_x**（`Tensor`）：可选参数，输入`token_x`为int8类型时下采样后进行反量化操作时的参数，`token_x`量化方式为pertoken。其shape支持2维，格式为\(T, 1\)和\(BS, 1\)，dtype支持`float`，数据格式支持ND。
-- **dequant\_scale\_w\_dq**（`Tensor`）：可选参数，输入`token_x`为int8类型时下采样后进行反量化操作时的参数，`token_x`量化方式为perchannel。其shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
+- **dequant\_scale\_w\_dq**（`Tensor`）：可选参数，输入`weight_dq`为int8类型时下采样后进行反量化操作时的参数，`weight_dq`量化方式为perchannel。其shape支持2维，格式为\(1, Hcq\)，dtype支持`float`，数据格式支持ND。
 - **dequant\_scale\_w\_uq\_qr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为perchannel。shape支持2维，格式为\(1, N\*\(D+Dr\)\)，dtype支持`float`，数据格式支持ND。
 - **dequant\_scale\_w\_dkv\_kr**（`Tensor`）：可选参数，用于对MatmulQcQr矩阵乘后进行反量化操作时的参数，量化方式为perchannel。其shape支持2维，格式为\(1, Hckv+Dr\)，dtype支持`float`，数据格式支持ND。
 - **quant\_scale\_ckv**（`Tensor`）：可选参数，用于对输出到`kv_cache_out`中的数据做量化操作时的参数。shape支持2维，格式为\(1, Hckv\)，dtype支持`float`，数据格式支持ND。

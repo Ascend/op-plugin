@@ -14,7 +14,7 @@
 - 计算公式：
 
 $$
-out = \sum_{i=0}^{batch}(x1_i @ x2_i) * x1Scale_i * x2Scale
+out = \sum_{i=0}^{batch - 1}(x1_i @ x2_i) * x1Scale_i * x2Scale
 $$
 
 ## 函数原型

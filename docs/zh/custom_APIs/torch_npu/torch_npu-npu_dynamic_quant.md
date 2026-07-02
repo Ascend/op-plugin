@@ -47,7 +47,7 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 ## 返回值说明
 
 - **y** (`Tensor`)：量化后的输出Tensor，数据类型由`dst_type`指定。当`dst_type`是`quint4x2`时，`y`的数据类型为`int32`，形状最后一维为`x`最后一维除以8，其余维度与`x`一致，每个`int32`元素包含8个`int4`结果。其他场景下`y`形状与输入`x`一致，数据类型由`dst_type`指定。
-- **scale** (`Tensor`)：非对称动态量化过程中计算出的缩放系数，数据类型为`float32`，形状为`x`的形状剔除最后一维。
+- **scale** (`Tensor`)：对称动态量化过程中计算出的缩放系数，数据类型为`float32`，形状为`x`的形状剔除最后一维。
 
 ## 约束说明
 

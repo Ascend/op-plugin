@@ -172,8 +172,9 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
     
     from torchair.configs.compiler_config import CompilerConfig
     import torch._dynamo
-    TORCHDYNAMO_VERBOSE=1
-    TORCH_LOGS="+dynamo"
+    import os
+    os.environ["TORCHDYNAMO_VERBOSE"]="1"
+    os.environ["TORCH_LOGS"]="+dynamo"
     
     # 支持入图的打印宏
     import logging

@@ -27,11 +27,9 @@
         feat_h, feat_w = featmap_size
         gt_bboxes_cx = (self[:, 0] + self[:, 2]) * 0.5
         gt_bboxes_cy = (self[:, 1] + self[:, 3]) * 0.5
-        try:
-            gt_bboxes_grid_x = torch.floor(gt_bboxes_cx / strides[0]).int()
-            gt_bboxes_grid_y = torch.floor(gt_bboxes_cy / strides[1]).int()
-        except ZeroDivisionError:
-            print("There is 0 in strides.")
+        
+        gt_bboxes_grid_x = torch.floor(gt_bboxes_cx / strides[0]).int().clamp(0, feat_w - 1)
+        gt_bboxes_grid_y = torch.floor(gt_bboxes_cy / strides[1]).int().clamp(0, feat_h - 1)       
         gt_bboxes_grid_idx = gt_bboxes_grid_y * feat_w + gt_bboxes_grid_x
         responsible_grid = torch.zeros(feat_h * feat_w, dtype=torch.uint8)
         gt_bboxes_grid_idx = gt_bboxes_grid_idx.long()
