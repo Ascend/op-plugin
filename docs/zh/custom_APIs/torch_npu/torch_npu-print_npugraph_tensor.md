@@ -37,7 +37,9 @@ torch_npu.print_npugraph_tensor(input, tensor_name=None) -> None
 
 ## 约束说明
 
-该接口支持在Eager模式和aclgraph模式下使用。
+- 该接口支持在Eager模式和aclgraph模式下使用。
+
+- 不支持私有格式tensor输入。
 
 ## 调用示例
 
