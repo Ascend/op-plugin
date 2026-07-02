@@ -38,7 +38,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 - **yOut**(`Tensor`)：对应公式中的$RMSNorm(x)$，表示最后的输出。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
 
-- **rstdOut**(`Tensor`)：对应公式中$RMS(x)$的倒数，表示归一化后标准差的倒数。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`。shape与`x1`前几维保持一致，前几维表示不需要归一化处理的维度。`rstdOut`shape与`x1`shape，`gamma`shape关系举例：
+- **rstdOut**(`Tensor`)：对应公式中$RMS(x)$的倒数，表示归一化后均方根的倒数。数据格式支持$ND$，不支持空Tensor，支持非连续Tensor。数据类型支持`float32`。shape与`x1`前几维保持一致，前几维表示不需要归一化处理的维度。`rstdOut`shape与`x1`shape，`gamma`shape关系举例：
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstdOut`shape:(2,3,4,1)；
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(4,8)，`rstdOut`shape:(2,3,1,1)。
 
@@ -50,7 +50,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
   - 当输入是Inf时，输出为Inf。
   - 当输入是NaN时，输出为NaN。
 - Atlas 推理系列产品：
-  - 参数`x1`、`x2`、`gamma`、`yOut`、`xOut`的数据类型不支持bfloat16。
+  - 输入参数`x1`、`x2`、`gamma`的数据类型不支持bfloat16。   
   - 参数`rstdOut`在当前产品使用场景下无效。
 
 ## 调用示例

@@ -29,7 +29,7 @@ torch_npu.npu_apply_adam(beta1_power, beta2_power, lr, beta1, beta2, epsilon, gr
 - **lr**（`Scalar`）：学习率。
 - **beta1**（`Scalar`）：一阶矩估计值的指数衰减率。
 - **beta2**（`Scalar`）：二阶矩估计值的指数衰减率。
-- **epsilon**（`Scalar`）：添加到分母中以提高数值稳定性的项数。
+- **epsilon**（`Scalar`）：添加到分母中以提高数值稳定性的项。
 - **grad**（`Tensor`）：梯度。
 - **use_locking**（`bool`）：可选参数，设置为True时使用lock进行更新操作。
 - **use_nesterov**（`bool`）：可选参数，设置为True时采用Nesterov更新。
