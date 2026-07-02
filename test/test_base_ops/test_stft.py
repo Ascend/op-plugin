@@ -23,5 +23,22 @@ class TestSTFT(TestCase):
 
         self.assertRtolEqual(cpu_output, npu_output)
 
+    @SupportedDevices(['Ascend910B'])
+    def test_stft_empty_input(self):
+        input_tensor = torch.zeros(0, 19, dtype=torch.float32)
+        window = torch.ones(14, dtype=torch.float32)
+        res = torch.stft(input_tensor, 18, 8, 14, window=window, center=False,
+                         normalized=True, onesided=False, return_complex=False)
+
+        input_tensor_npu = input_tensor.npu()
+        window_npu = window.npu()
+        res_npu = torch.stft(input_tensor_npu, 18, 8, 14, window=window_npu, center=False,
+                             normalized=True, onesided=False, return_complex=False)
+
+        self.assertEqual(res.shape, res_npu.shape)
+        self.assertEqual(res.shape, torch.Size([0, 18, 1, 2]))
+        self.assertEqual(res.numel(), 0)
+        self.assertEqual(res_npu.numel(), 0)
+
 if __name__ == "__main__":
     run_tests()
