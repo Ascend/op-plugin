@@ -6908,8 +6908,8 @@ def convolution_meta(input_tensor, weight, bias, stride, padding, dilation, tran
 
 @impl(m, "batch_norm_reduce")
 def batch_norm_reduce_meta(self, eps):
-    out_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
-    out_square_sum = torch.empty(self.size(1), dtype=self.dtype, device='meta')
+    out_sum = torch.empty(self.size(1), dtype=torch.float32, device='meta')
+    out_square_sum = torch.empty(self.size(1), dtype=torch.float32, device='meta')
     return (out_sum, out_square_sum)
 
 

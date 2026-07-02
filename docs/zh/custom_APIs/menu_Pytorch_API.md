@@ -162,6 +162,7 @@
         -   [torch_npu.npu_sim_exponential_](./torch_npu/torch_npu-npu_sim_exponential_.md)
         -   [torch_npu.npu_dense_lightning_indexer_softmax_lse](./torch_npu/torch_npu-npu_dense_lightning_indexer_softmax_lse.md)
         -   [torch_npu.npu_dense_lightning_indexer_grad_kl_loss](./torch_npu/torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md)
+        -   [torch_npu.batch_norm_reduce](./torch_npu/torch_npu-batch_norm_reduce.md)
         -   [torch_npu.npu_add_rms_norm](./torch_npu/torch_npu-npu_add_rms_norm.md)
         -   [torch_npu.npu_add_rms_norm_dynamic_quant](./torch_npu/torch_npu-npu_add_rms_norm_dynamic_quant.md)
         -   [torch_npu.npu_fused_floyd_attention](./torch_npu/torch_npu-npu_fused_floyd_attention.md)

@@ -5605,13 +5605,13 @@ class TestNpuConvolutionTranspose(TestCase):
 class TestBatchNormReduce(TestCase):
     def test_batch_norm_reduce(self):
         with FakeTensorMode():
-            input_fake_tensor = torch.randn(2, 3, 12, 12, device="npu", requires_grad=True)
+            input_fake_tensor = torch.randn(2, 3, 12, 12, dtype=torch.float16, device="npu", requires_grad=True)
             eps = 1e-5
             output_fake_tensor1, output_fake_tensor2 = torch_npu.batch_norm_reduce(input_fake_tensor, eps)
             self.assertEqual(input_fake_tensor.shape[1], output_fake_tensor1.shape[0])
-            self.assertEqual(input_fake_tensor.dtype, output_fake_tensor1.dtype)
+            self.assertEqual(torch.float32, output_fake_tensor1.dtype)
             self.assertEqual(input_fake_tensor.shape[1], output_fake_tensor2.shape[0])
-            self.assertEqual(input_fake_tensor.dtype, output_fake_tensor2.dtype)
+            self.assertEqual(torch.float32, output_fake_tensor2.dtype)
 
 
 class TestMatmul(TestCase):
