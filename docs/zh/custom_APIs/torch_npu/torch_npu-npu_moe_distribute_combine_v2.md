@@ -21,7 +21,7 @@
 
       $ata\_out = AlltoAllv(rs\_out)$
 
-      $x = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)$
+      $x = Sum(expert\_scales * ata\_out + shared\_expert\_x)$
 
     - 特殊专家场景：
 
@@ -96,7 +96,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：必选参数，要求为1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，要求为1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式为$ND$，支持非连续的Tensor。`comm_alg`设置为""时，暂不支持该参数，使用默认值即可。
 
-- **shared\_expert\_x** (`Tensor`)：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token在combine\_v2后需要相加的值。
+- **shared\_expert\_x** (`Tensor`)：可选参数，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`不为0的场景下使用，表示共享专家token在combine\_v2后需要相加的值。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求为一个2维或3维的张量，当张量为2D时，shape为\(BS, H\)；当张量为3D时，前两位的乘积需等于BS，第三维需等于H。
 

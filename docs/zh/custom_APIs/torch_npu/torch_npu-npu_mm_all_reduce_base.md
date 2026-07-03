@@ -305,11 +305,11 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         weight = torch.tensor(np_weight).npu()
         weight_nz = torch_npu.npu_format_cast(weight.contiguous(), 29)
         antiquant_scale = (
-            torch.randn(x2_shape[0], dtype=torch.float16)
+            torch.randn(x2_shape[-1], dtype=torch.float16)
             .uniform_(float(-1), float(1))
             .npu()
         )
-        antiquant_offset = torch.ones(x2_shape[0], dtype=torch.float16).npu()
+        antiquant_offset = torch.ones(x2_shape[-1], dtype=torch.float16).npu()
         output_a16w8 = get_graph(
             input, weight_nz, hcom_info, None, None, antiquant_scale, antiquant_offset, None
         )
