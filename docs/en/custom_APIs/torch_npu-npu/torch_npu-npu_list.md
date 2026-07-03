@@ -1,0 +1,615 @@
+# torch_npu.npu APIs
+
+This section describes the APIs of various submodules, such as random numbers and memory management. The `npu` module supports two calling methods: `torch.npu` and `torch_npu.npu`. They are functionally equivalent.
+
+**Table 1** torch_npu.npu APIs
+
+<a name="table0664117101518"></a>
+<table><thead align="left"><tr id="row466412731514"><th class="cellrowborder" valign="top" width="37.4%" id="mcps1.2.3.1.1"><p id="p11664187201510"><a name="p11664187201510"></a><a name="p11664187201510"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="62.6%" id="mcps1.2.3.1.2"><p id="p10664197111510"><a name="p10664197111510"></a><a name="p10664197111510"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row96642716156"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p8664172152"><a name="p8664172152"></a><a name="p8664172152"></a><a href="(beta)torch_npu-npu-get_npu_overflow_flag.md">(beta) torch_npu.npu.get_npu_overflow_flag</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p10664117181519"><a name="p10664117181519"></a><a name="p10664117181519"></a>Checks whether value overflow occurs during NPU computation.</p>
+</td>
+</tr>
+<tr id="row1066418791520"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p166411751513"><a name="p166411751513"></a><a name="p166411751513"></a><a href="(beta)torch_npu-npu-clear_npu_overflow_flag.md">(beta) torch_npu.npu.clear_npu_overflow_flag</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p466412710151"><a name="p466412710151"></a><a name="p466412710151"></a>Clears the NPU overflow detection flag.</p>
+</td>
+</tr>
+<tr id="row2074316127585"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7858135417578"><a name="p7858135417578"></a><a name="p7858135417578"></a><a href="torch_npu-npu-enable_deterministic_with_backward.md">torch_npu.npu.enable_deterministic_with_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1285825435710"><a name="p1285825435710"></a><a name="p1285825435710"></a>Enables deterministic computation. A deterministic algorithm ensures that the model produces identical outputs for identical inputs during each forward propagation. Deterministic algorithms can avoid the accumulation of small random errors during each forward propagation. They are very useful in scenarios where repeated testing or model performance comparison is required.</p>
+</td>
+</tr>
+<tr id="row16743712125815"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16134251175720"><a name="p16134251175720"></a><a name="p16134251175720"></a><a href="torch_npu-npu-disable_deterministic_with_backward.md">torch_npu.npu.disable_deterministic_with_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p7134205145719"><a name="p7134205145719"></a><a name="p7134205145719"></a>Disables deterministic computation. A deterministic algorithm ensures that the model produces identical outputs for identical inputs during each forward propagation. Deterministic algorithms can avoid the accumulation of small random errors during each forward propagation. They are very useful in scenarios where repeated testing or model performance comparison is required.</p>
+</td>
+</tr>
+<tr id="row11664117121512"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p116643710154"><a name="p116643710154"></a><a name="p116643710154"></a><a href="torch_npu-npu-matmul-allow_hf32.md">torch_npu.npu.matmul.allow_hf32</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>The functionality and calling method are identical to those of <code>torch.backends.cuda.matmul.allow_tf32</code>.</p>
+</td>
+</tr>
+<tr id="row5664107121515"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36648714151"><a name="p36648714151"></a><a name="p36648714151"></a><a href="torch_npu-npu-conv-allow_hf32.md">torch_npu.npu.conv.allow_hf32</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1366417191513"><a name="p1366417191513"></a><a name="p1366417191513"></a>The functionality and calling method are identical to those of <code>torch.backends.cudnn.allow_tf32</code>.</p>
+</td>
+</tr>
+<tr id="row11664117121511"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p116643710154"><a name="p116643710154"></a><a name="p116643710154"></a><a href="torch_npu-npu-matmul-cubeMathType.md">torch_npu.npu.matmul.cube_math_type</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>Sets or queries the computation precision type of matmul operators. Setting different <code>CubeMathType</code> enumeration values controls the mathematical computation mode of the operators.</p>
+</td>
+</tr>
+<tr id="row196641378158"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36640731519"><a name="p36640731519"></a><a name="p36640731519"></a><a href="(beta)torch_npu-npu-set_option.md">(beta) torch_npu.npu.set_option</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>For details about the usage, see <a href="https://gitcode.com/Ascend/docs/blob/master/FrameworkPTAdapter/26.0.0/en/pytorch_model_migration_fine_tuning/config_op_comp_opts.md">Configuring Operator Compilation Options</a> in <span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a><i>PyTorch Training Model Porting and Tuning Guide</i></span>.</p>
+</td>
+</tr>
+<tr id="row14664573152"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1366415716151"><a name="p1366415716151"></a><a name="p1366415716151"></a><a href="(beta)torch_npu-npu-config-allow_internal_format.md">(beta) torch_npu.npu.config.allow_internal_format</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p136645713159"><a name="p136645713159"></a><a name="p136645713159"></a>Controls whether to use private formats. When set to <code>True</code>, private formats are allowed. When set to <code>False</code>, allocation of tensors in any private format is not allowed, preventing private formats from being propagated in the adaptation layer.</p>
+</td>
+</tr>
+<tr id="row103074675219"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p73114695216"><a name="p73114695216"></a><a name="p73114695216"></a><a href="(beta)torch_npu-npu-stress_detect.md">(beta) torch_npu.npu.stress_detect</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p14952120183714"><a name="p14952120183714"></a><a name="p14952120183714"></a>Provides online hardware precision detection APIs for use by models.</p>
+</td>
+</tr>
+<tr id="row67928114188"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p67934119181"><a name="p67934119181"></a><a name="p67934119181"></a><a href="(beta)torch_npu-npu-stop_device.md">(beta) torch_npu.npu.stop_device</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p141360364332"><a name="p141360364332"></a><a name="p141360364332"></a>Stops computation on the corresponding device and clears any unexecuted operations. Any subsequent computation on this device will raise an error.</p>
+</td>
+</tr>
+<tr id="row1050720144182"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p850721410186"><a name="p850721410186"></a><a name="p850721410186"></a><a href="(beta)torch_npu-npu-restart_device.md">(beta) torch_npu.npu.restart_device</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p750791411180"><a name="p750791411180"></a><a name="p750791411180"></a>Restores the state of the corresponding device so that subsequent computations on the device can continue normally.</p>
+</td>
+</tr>
+<tr id="row20250175212437"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1525165254318"><a name="p1525165254318"></a><a name="p1525165254318"></a><a href="(beta)torch_npu-npu-check_uce_in_memory.md">(beta) torch_npu.npu.check_uce_in_memory</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p188835611457"><a name="p188835611457"></a><a name="p188835611457"></a>Provides a faulty memory address type detection interface for <span id="ph19255162231216"><a name="ph19255162231216"></a><a name="ph19255162231216"></a>MindCluster</span> to determine fault recovery strategies. It is used to determine the type of a faulty memory address when a UCE on-chip memory fault occurs.</p>
+</td>
+</tr>
+<tr id="row1154664011216"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p11546040142118"><a name="p11546040142118"></a><a name="p11546040142118"></a><a href="torch_npu-npu-SyncLaunchStream.md">torch_npu.npu.SyncLaunchStream</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p12548340152110"><a name="p12548340152110"></a><a name="p12548340152110"></a>Creates a synchronous delivery <code>NPUStream</code>. Tasks delivered on this stream no longer use the <code>taskqueue</code> for asynchronous delivery.</p>
+</td>
+</tr>
+<tr id="row41388371065"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p3139203712613"><a name="p3139203712613"></a><a name="p3139203712613"></a><a href="(beta)torch_npu-npu-utils-is_support_inf_nan.md">(beta) torch_npu.npu.utils.is_support_inf_nan</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p278034820716"><a name="p278034820716"></a><a name="p278034820716"></a>Determines the current overflow detection mode. <code>True</code> indicates <code>INF_NAN</code> mode, and <code>False</code> indicates saturation mode.</p>
+</td>
+</tr>
+<tr id="row10736640964"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p107361340869"><a name="p107361340869"></a><a name="p107361340869"></a><a href="(beta)torch_npu-npu-utils-npu_check_overflow.md">(beta) torch_npu.npu.utils.npu_check_overflow</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p47368401662"><a name="p47368401662"></a><a name="p47368401662"></a>Checks whether the gradient overflows. In <code>INF_NAN</code> mode, this function checks whether the input <code>Tensor</code> has overflowed. In saturation mode, it determines whether overflow has occurred by checking the hardware overflow flag.</p>
+</td>
+</tr>
+<tr id="row7615177121914"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p961514711913"><a name="p961514711913"></a><a name="p961514711913"></a><a href="torch_npu-npu-Event()-recorded_time-().md">(beta) torch_npu.npu.Event().recorded_time()</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1619614018512"><a name="p1619614018512"></a><a name="p1619614018512"></a>Obtains the time when an NPU Event object is recorded on the device.</p>
+</td>
+</tr>
+<tr id="row1153442018911"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1636717430248"><a name="p1636717430248"></a><a name="p1636717430248"></a><a href="(beta)torch_npu-npu-set_dump.md">(beta) torch_npu.npu.set_dump</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1036714436247"><a name="p1036714436247"></a><a name="p1036714436247"></a>Configures <code>dump</code> parameters using a configuration file.</p>
+</td>
+</tr>
+<tr id="row18488172715910"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1036734319241"><a name="p1036734319241"></a><a name="p1036734319241"></a><a href="(beta)torch_npu-npu-init_dump.md">(beta) torch_npu.npu.init_dump</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p428393116322"><a name="p428393116322"></a><a name="p428393116322"></a>Initializes the <code>dump</code> configuration.</p>
+</td>
+</tr>
+<tr id="row262919311295"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p13367154312418"><a name="p13367154312418"></a><a name="p13367154312418"></a><a href="(beta)torch_npu-npu-finalize_dump.md">(beta) torch_npu.npu.finalize_dump</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p8367104315247"><a name="p8367104315247"></a><a name="p8367104315247"></a>Ends dumping.</p>
+</td>
+</tr>
+<tr id="row1629143112919"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1936712431249"><a name="p1936712431249"></a><a name="p1936712431249"></a><a href="(beta)torch_npu-npu-set_compile_mode.md">(beta) torch_npu.npu.set_compile_mode</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1236764317242"><a name="p1236764317242"></a><a name="p1236764317242"></a>Controls whether to enable binary mode.</p>
+</td>
+</tr>
+<tr id="row2027910351793"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p16367343112416"><a name="p16367343112416"></a><a name="p16367343112416"></a><a href="(beta)torch_npu-npu-is_jit_compile_false.md">(beta) torch_npu.npu.is_jit_compile_false</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1934652175911"><a name="p1934652175911"></a><a name="p1934652175911"></a>Determines whether operator computations use binary mode, returning <code>True</code> if binary mode is used and <code>False</code> otherwise.</p>
+</td>
+</tr>
+<tr id="row102805356916"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p163671443142413"><a name="p163671443142413"></a><a name="p163671443142413"></a><a href="(beta)torch_npu-npu-set_mm_bmm_format_nd.md">(beta) torch_npu.npu.set_mm_bmm_format_nd</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1436714436245"><a name="p1436714436245"></a><a name="p1436714436245"></a>Controls whether the <code>mm</code> and <code>bmm</code> operators in the <code>linear</code> module use the ND layout.</p>
+</td>
+</tr>
+<tr id="row628019359916"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p736894362414"><a name="p736894362414"></a><a name="p736894362414"></a><a href="(beta)torch_npu-npu-get_mm_bmm_format_nd.md">(beta) torch_npu.npu.get_mm_bmm_format_nd</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p183681243112415"><a name="p183681243112415"></a><a name="p183681243112415"></a>Determines whether the <code>mm</code> and <code>bmm</code> operators in the <code>linear</code> module have the ND layout enabled, returning <code>True</code> if ND is enabled and <code>False</code> otherwise.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent.md">torch_npu.npu.ExternalEvent</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Encapsulates the AscendCL Event. During graph capture in <code>NPUGraph</code> scenarios, an <code>ExternalEvent</code> is captured as an external graph node and is used for timing control outside the graph.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().record().md">torch_npu.npu.ExternalEvent().record()</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Records an event on a specified stream. This API captures all tasks delivered on the current stream and records them in the event. As a result, a subsequent call to the <code>wait</code> API will wait until all tasks captured by the event have completed.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().reset().md">torch_npu.npu.ExternalEvent().reset()</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Resets an event. In event reuse scenarios, this API resets the flag bit set after the <code>record</code> operation completes.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().wait().md">torch_npu.npu.ExternalEvent().wait()</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Blocks execution of a specified stream until the specified event completes. This API supports scenarios where multiple streams wait for the same event.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-graph_task_group_begin.md">torch_npu.npu.graph_task_group_begin</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Marks the beginning of a task group in <code>NPUGraph</code> scenarios.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-graph_task_group_end.md">torch_npu.npu.graph_task_group_end</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Marks the end of a task group in <code>NPUGraph</code> scenarios.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-graph_task_update_begin.md">torch_npu.npu.graph_task_update_begin</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Marks the beginning of the task to be updated in <code>NPUGraph</code> scenarios.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-graph_task_update_end.md">torch_npu.npu.graph_task_update_end</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Marks the end of the task to be updated in <code>NPUGraph</code> scenarios.</p>
+</td>
+</tr>
+<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="(beta)torch_npu-npu-obfuscation_initialize.md">(beta) torch_npu.npu.obfuscation_initialize</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>Initializes resources for the PMCC model obfuscation engine.</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="(beta)torch_npu-npu-obfuscation_finalize.md">(beta) torch_npu.npu.obfuscation_finalize</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Releases resources for the PMCC model obfuscation engine.</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="(beta)torch_npu-npu-obfuscation_calculate.md">(beta) torch_npu.npu.obfuscation_calculate</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Sends the input tensor <code>x</code> and configuration parameters (such as <code>param</code>) to the Privacy and Model Confidential Computing (PMCC) obfuscation engine.</p>
+</td>
+</tr>
+<tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="(beta)torch_npu-npu-aclnn-version.md">(beta) torch_npu.npu.aclnn.version</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>Queries the ACLNN operator version information.</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-aclnn-allow_hf32.md">torch_npu.npu.aclnn.allow_hf32</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Controls whether <code>conv</code> operators support <code>hf32</code>, and sets or queries the <code>allow_hf32</code> attribute of ACLNN operators.</p>
+</td>
+</tr>
+<tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-set_op_timeout_ms.md">torch_npu.npu.set_op_timeout_ms</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Sets the execution timeout for operators on the NPU, in milliseconds (ms).</p>
+</td>
+</tr>
+<tr id="row285193313384"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193821"><a name="p2851433193821"></a><a name="p2851433193821"></a><a href="torch_npu-npu-set_deterministic_level.md">torch_npu.npu.set_deterministic_level</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Controls the strong consistency feature on the CANN side.</p>
+</td>
+</tr>
+<tr id="row285193313385"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193822"><a name="p2851433193821"></a><a name="p2851433193821"></a><a href="torch_npu-npu-use_compatible_impl.md">torch_npu.npu.use_compatible_impl</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Controls whether operator APIs are fully aligned with the PyTorch community implementations.</p>
+</td>
+</tr>
+<tr id="row285193313386"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193823"><a name="p2851433193821"></a><a name="p2851433193821"></a><a href="torch_npu-npu-are_compatible_impl_enabled.md">torch_npu.npu.are_compatible_impl_enabled</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Queries the configuration of <code>torch_npu.npu.use_compatible_impl</code>.</p>
+</td>
+</tr>
+
+</tbody>
+</table>
+
+**Table 2** amp APIs
+
+<a name="table746424818186"></a>
+<table><thead align="left"><tr id="row946484816186"><th class="cellrowborder" valign="top" width="37.669999999999995%" id="mcps1.2.3.1.1"><p id="p34041727199"><a name="p34041727199"></a><a name="p34041727199"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="62.33%" id="mcps1.2.3.1.2"><p id="p240416261919"><a name="p240416261919"></a><a name="p240416261919"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row1146411483186"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p946414851817"><a name="p946414851817"></a><a name="p946414851817"></a><a href="(beta)torch_npu-npu-get_amp_supported_dtype.md">(beta) torch_npu.npu.get_amp_supported_dtype</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p1831912712373"><a name="p1831912712373"></a><a name="p1831912712373"></a>Obtains the data types supported by the NPU device. A device may support multiple data types.</p>
+</td>
+</tr>
+<tr id="row1746504816188"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p10465648191813"><a name="p10465648191813"></a><a name="p10465648191813"></a><a href="(beta)torch_npu-npu-is_autocast_enabled.md">(beta) torch_npu.npu.is_autocast_enabled</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p16465144810182"><a name="p16465144810182"></a><a name="p16465144810182"></a>Checks whether autocast is available.</p>
+</td>
+</tr>
+<tr id="row646514813186"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p04651248181813"><a name="p04651248181813"></a><a name="p04651248181813"></a><a href="(beta)torch_npu-npu-set_autocast_enabled.md">(beta) torch_npu.npu.set_autocast_enabled</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p4465194871813"><a name="p4465194871813"></a><a name="p4465194871813"></a>Controls whether to enable AMP on the device.</p>
+</td>
+</tr>
+<tr id="row174651448111817"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p946574881819"><a name="p946574881819"></a><a name="p946574881819"></a><a href="(beta)torch_npu-npu-get_autocast_dtype.md">(beta) torch_npu.npu.get_autocast_dtype</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p19465848131818"><a name="p19465848131818"></a><a name="p19465848131818"></a>Obtains the data types supported by the device in the <code>AMP</code> scenario. This <code>dtype</code> is specified by <code>torch_npu.npu.set_autocast_dtype</code>. The default value is <code>torch.float16</code>.</p>
+</td>
+</tr>
+<tr id="row1846564819185"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p146584811184"><a name="p146584811184"></a><a name="p146584811184"></a><a href="(beta)torch_npu-npu-set_autocast_dtype.md">(beta) torch_npu.npu.set_autocast_dtype</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p1646519482184"><a name="p1646519482184"></a><a name="p1646519482184"></a>Controls the data types supported by the device in the AMP scenario.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 3** Random number generator APIs
+
+<a name="table7835196103611"></a>
+<table><thead align="left"><tr id="en-us_topic_0000001788617484_row835974815375"><th class="cellrowborder" valign="top" width="38.76%" id="mcps1.2.3.1.1"><p id="en-us_topic_0000001788617484_p435984813370"><a name="en-us_topic_0000001788617484_p435984813370"></a><a name="en-us_topic_0000001788617484_p435984813370"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="61.24000000000001%" id="mcps1.2.3.1.2"><p id="en-us_topic_0000001788617484_p113431258183712"><a name="en-us_topic_0000001788617484_p113431258183712"></a><a name="en-us_topic_0000001788617484_p113431258183712"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000001788617484_row1616454104711"><td class="cellrowborder" valign="top" width="38.76%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p16616105411477"><a name="en-us_topic_0000001788617484_p16616105411477"></a><a name="en-us_topic_0000001788617484_p16616105411477"></a>(<span id="en-us_topic_0000001788617484_ph168289415199"><a name="en-us_topic_0000001788617484_ph168289415199"></a><a name="en-us_topic_0000001788617484_ph168289415199"></a>beta</span>) torch_npu.npu.get_rng_state</p>
+</td>
+<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001788617484_p45278137545"><a name="en-us_topic_0000001788617484_p45278137545"></a><a name="en-us_topic_0000001788617484_p45278137545"></a>Random number generator-related APIs provided by <code>torch_npu</code>. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row1661655484720"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p116160540479"><a name="en-us_topic_0000001788617484_p116160540479"></a><a name="en-us_topic_0000001788617484_p116160540479"></a>(<span id="en-us_topic_0000001788617484_ph81516268336"><a name="en-us_topic_0000001788617484_ph81516268336"></a><a name="en-us_topic_0000001788617484_ph81516268336"></a>beta</span>) torch_npu.npu.set_rng_state</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row126167543473"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p11616195434714"><a name="en-us_topic_0000001788617484_p11616195434714"></a><a name="en-us_topic_0000001788617484_p11616195434714"></a>(<span id="en-us_topic_0000001788617484_ph4272112818331"><a name="en-us_topic_0000001788617484_ph4272112818331"></a><a name="en-us_topic_0000001788617484_ph4272112818331"></a>beta</span>) torch_npu.npu.get_rng_state_all</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row10616185434716"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p261675474716"><a name="en-us_topic_0000001788617484_p261675474716"></a><a name="en-us_topic_0000001788617484_p261675474716"></a>(<span id="en-us_topic_0000001788617484_ph166121030133313"><a name="en-us_topic_0000001788617484_ph166121030133313"></a><a name="en-us_topic_0000001788617484_ph166121030133313"></a>beta</span>) torch_npu.npu.set_rng_state_all</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row3616135494714"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p19616105410475"><a name="en-us_topic_0000001788617484_p19616105410475"></a><a name="en-us_topic_0000001788617484_p19616105410475"></a>(<span id="en-us_topic_0000001788617484_ph10518103217339"><a name="en-us_topic_0000001788617484_ph10518103217339"></a><a name="en-us_topic_0000001788617484_ph10518103217339"></a>beta</span>) torch_npu.npu.manual_seed</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row15616155411472"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p13616254184720"><a name="en-us_topic_0000001788617484_p13616254184720"></a><a name="en-us_topic_0000001788617484_p13616254184720"></a>(<span id="en-us_topic_0000001788617484_ph151451035113319"><a name="en-us_topic_0000001788617484_ph151451035113319"></a><a name="en-us_topic_0000001788617484_ph151451035113319"></a>beta</span>) torch_npu.npu.manual_seed_all</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row12616854134712"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p461635474710"><a name="en-us_topic_0000001788617484_p461635474710"></a><a name="en-us_topic_0000001788617484_p461635474710"></a>(<span id="en-us_topic_0000001788617484_ph1734073763311"><a name="en-us_topic_0000001788617484_ph1734073763311"></a><a name="en-us_topic_0000001788617484_ph1734073763311"></a>beta</span>) torch_npu.npu.seed</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row18616135418478"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p166169540471"><a name="en-us_topic_0000001788617484_p166169540471"></a><a name="en-us_topic_0000001788617484_p166169540471"></a>(<span id="en-us_topic_0000001788617484_ph19137173903319"><a name="en-us_topic_0000001788617484_ph19137173903319"></a><a name="en-us_topic_0000001788617484_ph19137173903319"></a>beta</span>) torch_npu.npu.seed_all</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001788617484_row661675419475"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p96165545476"><a name="en-us_topic_0000001788617484_p96165545476"></a><a name="en-us_topic_0000001788617484_p96165545476"></a>(<span id="en-us_topic_0000001788617484_ph1394313404331"><a name="en-us_topic_0000001788617484_ph1394313404331"></a><a name="en-us_topic_0000001788617484_ph1394313404331"></a>beta</span>) torch_npu.npu.initial_seed</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 4** NPU device APIs
+
+<a name="table14367204362414"></a>
+<table><thead align="left"><tr id="en-us_topic_0000001835217389_row1888615477417"><th class="cellrowborder" valign="top" width="54.559999999999995%" id="mcps1.2.3.1.1"><p id="en-us_topic_0000001835217389_p188634764114"><a name="en-us_topic_0000001835217389_p188634764114"></a><a name="en-us_topic_0000001835217389_p188634764114"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="45.440000000000005%" id="mcps1.2.3.1.2"><p id="en-us_topic_0000001835217389_p188862474415"><a name="en-us_topic_0000001835217389_p188862474415"></a><a name="en-us_topic_0000001835217389_p188862474415"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000001835217389_row939163412547"><td class="cellrowborder" valign="top" width="54.559999999999995%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p13919348541"><a name="en-us_topic_0000001835217389_p13919348541"></a><a name="en-us_topic_0000001835217389_p13919348541"></a>(<span id="en-us_topic_0000001835217389_ph168289415199"><a name="en-us_topic_0000001835217389_ph168289415199"></a><a name="en-us_topic_0000001835217389_ph168289415199"></a>beta</span>) torch_npu.npu.is_initialized</p>
+</td>
+<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p20972816174218"><a name="en-us_topic_0000001835217389_p20972816174218"></a><a name="en-us_topic_0000001835217389_p20972816174218"></a>Device-related APIs provided by <code>torch_npu</code>. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row13391173465410"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p173915341547"><a name="en-us_topic_0000001835217389_p173915341547"></a><a name="en-us_topic_0000001835217389_p173915341547"></a>(<span id="en-us_topic_0000001835217389_ph1943317523417"><a name="en-us_topic_0000001835217389_ph1943317523417"></a><a name="en-us_topic_0000001835217389_ph1943317523417"></a>beta</span>) torch_npu.npu.init</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row17391173465415"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p0391173495420"><a name="en-us_topic_0000001835217389_p0391173495420"></a><a name="en-us_topic_0000001835217389_p0391173495420"></a>(<span id="en-us_topic_0000001835217389_ph351513733413"><a name="en-us_topic_0000001835217389_ph351513733413"></a><a name="en-us_topic_0000001835217389_ph351513733413"></a>beta</span>) torch_npu.npu.get_device_name</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row939118343543"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p15391534165418"><a name="en-us_topic_0000001835217389_p15391534165418"></a><a name="en-us_topic_0000001835217389_p15391534165418"></a>(<span id="en-us_topic_0000001835217389_ph718317101345"><a name="en-us_topic_0000001835217389_ph718317101345"></a><a name="en-us_topic_0000001835217389_ph718317101345"></a>beta</span>) torch_npu.npu.can_device_access_peer</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row539173445416"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p23911634165410"><a name="en-us_topic_0000001835217389_p23911634165410"></a><a name="en-us_topic_0000001835217389_p23911634165410"></a>(<span id="en-us_topic_0000001835217389_ph9238212103412"><a name="en-us_topic_0000001835217389_ph9238212103412"></a><a name="en-us_topic_0000001835217389_ph9238212103412"></a>beta</span>) torch_npu.npu.get_device_properties</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row1139193417545"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p133913348548"><a name="en-us_topic_0000001835217389_p133913348548"></a><a name="en-us_topic_0000001835217389_p133913348548"></a>(<span id="en-us_topic_0000001835217389_ph310411493415"><a name="en-us_topic_0000001835217389_ph310411493415"></a><a name="en-us_topic_0000001835217389_ph310411493415"></a>beta</span>) torch_npu.npu.device_of</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row19391103416545"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p20391153411547"><a name="en-us_topic_0000001835217389_p20391153411547"></a><a name="en-us_topic_0000001835217389_p20391153411547"></a>(<span id="en-us_topic_0000001835217389_ph171181816173418"><a name="en-us_topic_0000001835217389_ph171181816173418"></a><a name="en-us_topic_0000001835217389_ph171181816173418"></a>beta</span>) torch_npu.npu.current_blas_handle</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row1739173414545"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p239173495417"><a name="en-us_topic_0000001835217389_p239173495417"></a><a name="en-us_topic_0000001835217389_p239173495417"></a>(<span id="en-us_topic_0000001835217389_ph1024311813418"><a name="en-us_topic_0000001835217389_ph1024311813418"></a><a name="en-us_topic_0000001835217389_ph1024311813418"></a>beta</span>) torch_npu.npu.set_stream</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row13391163465411"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p33911343541"><a name="en-us_topic_0000001835217389_p33911343541"></a><a name="en-us_topic_0000001835217389_p33911343541"></a>(<span id="en-us_topic_0000001835217389_ph43843205344"><a name="en-us_topic_0000001835217389_ph43843205344"></a><a name="en-us_topic_0000001835217389_ph43843205344"></a>beta</span>) torch_npu.npu.set_sync_debug_mode</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row73912034125411"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p173918344543"><a name="en-us_topic_0000001835217389_p173918344543"></a><a name="en-us_topic_0000001835217389_p173918344543"></a>(<span id="en-us_topic_0000001835217389_ph15373102263415"><a name="en-us_topic_0000001835217389_ph15373102263415"></a><a name="en-us_topic_0000001835217389_ph15373102263415"></a>beta</span>) torch_npu.npu.get_sync_debug_mode</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row19886154310548"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p1688617434546"><a name="en-us_topic_0000001835217389_p1688617434546"></a><a name="en-us_topic_0000001835217389_p1688617434546"></a>(<span id="en-us_topic_0000001835217389_ph94981924173410"><a name="en-us_topic_0000001835217389_ph94981924173410"></a><a name="en-us_topic_0000001835217389_ph94981924173410"></a>beta</span>) torch_npu.npu.utilization</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835217389_row16363129161417"><td class="cellrowborder" valign="top" width="54.559999999999995%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p83919341546"><a name="en-us_topic_0000001835217389_p83919341546"></a><a name="en-us_topic_0000001835217389_p83919341546"></a>(<span id="en-us_topic_0000001835217389_ph871092653413"><a name="en-us_topic_0000001835217389_ph871092653413"></a><a name="en-us_topic_0000001835217389_ph871092653413"></a>beta</span>) torch_npu.npu.get_device_capability</p>
+</td>
+<td class="cellrowborder" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p1036412951413"><a name="en-us_topic_0000001835217389_p1036412951413"></a><a name="en-us_topic_0000001835217389_p1036412951413"></a>Reserved API, not supported currently. The API returns <code>None</code> by default.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 5** Memory management APIs
+
+<a name="table1766013612371"></a>
+<table><thead align="left"><tr id="en-us_topic_0000001863035964_row1357083844218"><th class="cellrowborder" valign="top" width="63.61%" id="mcps1.2.3.1.1"><p id="en-us_topic_0000001863035964_p1757053818424"><a name="en-us_topic_0000001863035964_p1757053818424"></a><a name="en-us_topic_0000001863035964_p1757053818424"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="36.39%" id="mcps1.2.3.1.2"><p id="en-us_topic_0000001863035964_p2057018381424"><a name="en-us_topic_0000001863035964_p2057018381424"></a><a name="en-us_topic_0000001863035964_p2057018381424"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000001863035964_row12860101605513"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p486019163553"><a name="en-us_topic_0000001863035964_p486019163553"></a><a name="en-us_topic_0000001863035964_p486019163553"></a>(<span id="en-us_topic_0000001863035964_ph168289415199"><a name="en-us_topic_0000001863035964_ph168289415199"></a><a name="en-us_topic_0000001863035964_ph168289415199"></a>beta</span>) torch_npu.npu.caching_allocator_alloc</p>
+</td>
+<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p6146131084320"><a name="en-us_topic_0000001863035964_p6146131084320"></a><a name="en-us_topic_0000001863035964_p6146131084320"></a>Memory management-related APIs provided by <code>torch_npu</code>. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row0860131635519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p19860111610554"><a name="en-us_topic_0000001863035964_p19860111610554"></a><a name="en-us_topic_0000001863035964_p19860111610554"></a>(<span id="en-us_topic_0000001863035964_ph1545853943420"><a name="en-us_topic_0000001863035964_ph1545853943420"></a><a name="en-us_topic_0000001863035964_ph1545853943420"></a>beta</span>) torch_npu.npu.caching_allocator_delete</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row1486071645519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1886031615519"><a name="en-us_topic_0000001863035964_p1886031615519"></a><a name="en-us_topic_0000001863035964_p1886031615519"></a>(<span id="en-us_topic_0000001863035964_ph62311441113420"><a name="en-us_topic_0000001863035964_ph62311441113420"></a><a name="en-us_topic_0000001863035964_ph62311441113420"></a>beta</span>) torch_npu.npu.set_per_process_memory_fraction</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row12860161610554"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p4860151635519"><a name="en-us_topic_0000001863035964_p4860151635519"></a><a name="en-us_topic_0000001863035964_p4860151635519"></a>(<span id="en-us_topic_0000001863035964_ph78914314341"><a name="en-us_topic_0000001863035964_ph78914314341"></a><a name="en-us_topic_0000001863035964_ph78914314341"></a>beta</span>) torch_npu.npu.empty_cache</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row38601116185513"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p9860516115513"><a name="en-us_topic_0000001863035964_p9860516115513"></a><a name="en-us_topic_0000001863035964_p9860516115513"></a>(<span id="en-us_topic_0000001863035964_ph11300154553410"><a name="en-us_topic_0000001863035964_ph11300154553410"></a><a name="en-us_topic_0000001863035964_ph11300154553410"></a>beta</span>) torch_npu.npu.memory_stats</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row1186031665513"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p10860316205512"><a name="en-us_topic_0000001863035964_p10860316205512"></a><a name="en-us_topic_0000001863035964_p10860316205512"></a>(<span id="en-us_topic_0000001863035964_ph111981047103411"><a name="en-us_topic_0000001863035964_ph111981047103411"></a><a name="en-us_topic_0000001863035964_ph111981047103411"></a>beta</span>) torch_npu.npu.memory_stats_as_nested_dict</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row16860116135518"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p88601416155512"><a name="en-us_topic_0000001863035964_p88601416155512"></a><a name="en-us_topic_0000001863035964_p88601416155512"></a>(<span id="en-us_topic_0000001863035964_ph12169174953412"><a name="en-us_topic_0000001863035964_ph12169174953412"></a><a name="en-us_topic_0000001863035964_ph12169174953412"></a>beta</span>) torch_npu.npu.reset_accumulated_memory_stats</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row68601916145518"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p4860141675510"><a name="en-us_topic_0000001863035964_p4860141675510"></a><a name="en-us_topic_0000001863035964_p4860141675510"></a>(<span id="en-us_topic_0000001863035964_ph678145115340"><a name="en-us_topic_0000001863035964_ph678145115340"></a><a name="en-us_topic_0000001863035964_ph678145115340"></a>beta</span>) torch_npu.npu.reset_peak_memory_stats</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row3860716175511"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p178604162559"><a name="en-us_topic_0000001863035964_p178604162559"></a><a name="en-us_topic_0000001863035964_p178604162559"></a>(<span id="en-us_topic_0000001863035964_ph59721052153419"><a name="en-us_topic_0000001863035964_ph59721052153419"></a><a name="en-us_topic_0000001863035964_ph59721052153419"></a>beta</span>) torch_npu.npu.reset_max_memory_allocated</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row886012165551"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1786031612559"><a name="en-us_topic_0000001863035964_p1786031612559"></a><a name="en-us_topic_0000001863035964_p1786031612559"></a>(<span id="en-us_topic_0000001863035964_ph1373115517349"><a name="en-us_topic_0000001863035964_ph1373115517349"></a><a name="en-us_topic_0000001863035964_ph1373115517349"></a>beta</span>) torch_npu.npu.reset_max_memory_cached</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row286091645515"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p9860111655513"><a name="en-us_topic_0000001863035964_p9860111655513"></a><a name="en-us_topic_0000001863035964_p9860111655513"></a>(<span id="en-us_topic_0000001863035964_ph0844859143419"><a name="en-us_topic_0000001863035964_ph0844859143419"></a><a name="en-us_topic_0000001863035964_ph0844859143419"></a>beta</span>) torch_npu.npu.memory_allocated</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row286071611551"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p10860101655517"><a name="en-us_topic_0000001863035964_p10860101655517"></a><a name="en-us_topic_0000001863035964_p10860101655517"></a>(<span id="en-us_topic_0000001863035964_ph128776112351"><a name="en-us_topic_0000001863035964_ph128776112351"></a><a name="en-us_topic_0000001863035964_ph128776112351"></a>beta</span>) torch_npu.npu.max_memory_allocated</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row78608164553"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p18603168555"><a name="en-us_topic_0000001863035964_p18603168555"></a><a name="en-us_topic_0000001863035964_p18603168555"></a>(<span id="en-us_topic_0000001863035964_ph2032720410358"><a name="en-us_topic_0000001863035964_ph2032720410358"></a><a name="en-us_topic_0000001863035964_ph2032720410358"></a>beta</span>) torch_npu.npu.memory_reserved</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row1686071675513"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p5860121613559"><a name="en-us_topic_0000001863035964_p5860121613559"></a><a name="en-us_topic_0000001863035964_p5860121613559"></a>(<span id="en-us_topic_0000001863035964_ph3247476355"><a name="en-us_topic_0000001863035964_ph3247476355"></a><a name="en-us_topic_0000001863035964_ph3247476355"></a>beta</span>) torch_npu.npu.max_memory_reserved</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row1486051675515"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p48601516195510"><a name="en-us_topic_0000001863035964_p48601516195510"></a><a name="en-us_topic_0000001863035964_p48601516195510"></a>(<span id="en-us_topic_0000001863035964_ph6190189103516"><a name="en-us_topic_0000001863035964_ph6190189103516"></a><a name="en-us_topic_0000001863035964_ph6190189103516"></a>beta</span>) torch_npu.npu.memory_cached</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row0860416105516"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p15860151685516"><a name="en-us_topic_0000001863035964_p15860151685516"></a><a name="en-us_topic_0000001863035964_p15860151685516"></a>(<span id="en-us_topic_0000001863035964_ph188631121350"><a name="en-us_topic_0000001863035964_ph188631121350"></a><a name="en-us_topic_0000001863035964_ph188631121350"></a>beta</span>) torch_npu.npu.max_memory_cached</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row186031675517"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p486041618550"><a name="en-us_topic_0000001863035964_p486041618550"></a><a name="en-us_topic_0000001863035964_p486041618550"></a>(<span id="en-us_topic_0000001863035964_ph844815154352"><a name="en-us_topic_0000001863035964_ph844815154352"></a><a name="en-us_topic_0000001863035964_ph844815154352"></a>beta</span>) torch_npu.npu.memory_snapshot</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row10860101635512"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165555"><a name="en-us_topic_0000001863035964_p1486012165555"></a><a name="en-us_topic_0000001863035964_p1486012165555"></a>(<span id="en-us_topic_0000001863035964_ph34464179352"><a name="en-us_topic_0000001863035964_ph34464179352"></a><a name="en-us_topic_0000001863035964_ph34464179352"></a>beta</span>) torch_npu.npu.memory_summary</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row10860101635518"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165556"><a name="en-us_topic_0000001863035964_p1486012165556"></a><a name="en-us_topic_0000001863035964_p1486012165556"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>Provides a lightweight version of <code>empty_cache</code> that releases only virtual memory. This API is called the same way as <code>torch_npu.npu.empty_cache</code>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p7819165411224"><a name="en-us_topic_0000001863035964_p7819165411224"></a><a name="en-us_topic_0000001863035964_p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p172891387259"><a name="en-us_topic_0000001863035964_p172891387259"></a><a name="en-us_topic_0000001863035964_p172891387259"></a>This API involves high-risk operations. For details, see <a href="torch-npu-npu-NPUPluggableAllocator.md">torch.npu.npu.NPUPluggableAllocator</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p681913541224"><a name="en-us_topic_0000001863035964_p681913541224"></a><a name="en-us_topic_0000001863035964_p681913541224"></a>torch_npu.npu.change_current_allocator</p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p75031810165517"><a name="en-us_topic_0000001863035964_p75031810165517"></a><a name="en-us_topic_0000001863035964_p75031810165517"></a>This API involves high-risk operations. For details, see <a href="torch-npu-npu-change_current_allocator.md">torch.npu.npu.change_current_allocator</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001863035964_row10860101635520"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165527"><a name="en-us_topic_0000001863035964_p1486012165527"></a><a name="en-us_topic_0000001863035964_p1486012165527"></a><a href="torch_npu-npu-host_empty_cache.md">torch_npu.npu.host_empty_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>Releases all unused host physical memory currently held by the cache.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 6** AOE APIs
+
+<a name="table225713163012"></a>
+<table><thead align="left"><tr id="row192578383010"><th class="cellrowborder" valign="top" width="37.730000000000004%" id="mcps1.2.3.1.1"><p id="p141019192305"><a name="p141019192305"></a><a name="p141019192305"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="62.27%" id="mcps1.2.3.1.2"><p id="p17101121913019"><a name="p17101121913019"></a><a name="p17101121913019"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row22571533307"><td class="cellrowborder" valign="top" width="37.730000000000004%" headers="mcps1.2.3.1.1 "><p id="p0257163143012"><a name="p0257163143012"></a><a name="p0257163143012"></a><a href="(beta)torch_npu-npu-set_aoe.md">(beta) torch_npu.npu.set_aoe</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.27%" headers="mcps1.2.3.1.2 "><p id="p172571338306"><a name="p172571338306"></a><a name="p172571338306"></a>Enables AOE optimization.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 7** Profiler APIs
+
+<a name="table17382716193111"></a>
+<table><thead align="left"><tr id="row1238261612314"><th class="cellrowborder" valign="top" width="37.97%" id="mcps1.2.3.1.1"><p id="p18285834183113"><a name="p18285834183113"></a><a name="p18285834183113"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="62.029999999999994%" id="mcps1.2.3.1.2"><p id="p14285193423110"><a name="p14285193423110"></a><a name="p14285193423110"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="row1261071265817"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p2611712185812"><a name="p2611712185812"></a><a name="p2611712185812"></a><a href="torch_npu-npu-mstx.md">torch_npu.npu.mstx</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p5611012105820"><a name="p5611012105820"></a><a name="p5611012105820"></a>Provides event instrumentation interfaces.</p>
+</td>
+</tr>
+<tr id="row35671815125310"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p756718158538"><a name="p756718158538"></a><a name="p756718158538"></a><a href="torch_npu-npu-mstx-mark.md">torch_npu.npu.mstx.mark</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001983773542_p2038911486504"><a name="en-us_topic_0000001983773542_p2038911486504"></a><a name="en-us_topic_0000001983773542_p2038911486504"></a>Marks an instantaneous event.</p>
+</td>
+</tr>
+<tr id="row2068217208539"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p568362035310"><a name="p568362035310"></a><a name="p568362035310"></a><a href="torch_npu-npu-mstx-range_start.md">torch_npu.npu.mstx.range_start</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>Marks the beginning of instrumentation.</p>
+</td>
+</tr>
+<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-range_end.md">torch_npu.npu.mstx.range_end</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1995741111568"><a name="p1995741111568"></a><a name="p1995741111568"></a>Marks the end of instrumentation.</p>
+</td>
+</tr>
+<tr id="row1159973155314"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p115992314539"><a name="p115992314539"></a><a name="p115992314539"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx.mstx_range</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1059918319532"><a name="p1059918319532"></a><a name="p1059918319532"></a>Provides a range decorator to collect the range execution duration of the decorated function.</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 8** torch_npu storage APIs
+
+<a name="table15668753173210"></a>
+<table><thead align="left"><tr id="en-us_topic_0000001835257369_row12327105314411"><th class="cellrowborder" valign="top" width="55.25%" id="mcps1.2.3.1.1"><p id="en-us_topic_0000001835257369_p43277535444"><a name="en-us_topic_0000001835257369_p43277535444"></a><a name="en-us_topic_0000001835257369_p43277535444"></a>API</p>
+</th>
+<th class="cellrowborder" valign="top" width="44.75%" id="mcps1.2.3.1.2"><p id="en-us_topic_0000001835257369_p11327125394418"><a name="en-us_topic_0000001835257369_p11327125394418"></a><a name="en-us_topic_0000001835257369_p11327125394418"></a>Description</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000001835257369_row16495752115611"><td class="cellrowborder" valign="top" width="55.25%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p7524101655810"><a name="en-us_topic_0000001835257369_p7524101655810"></a><a name="en-us_topic_0000001835257369_p7524101655810"></a>torch_npu.npu.BoolStorage</p>
+</td>
+<td class="cellrowborder" rowspan="9" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835257369_p8060118"><a name="en-us_topic_0000001835257369_p8060118"></a><a name="en-us_topic_0000001835257369_p8060118"></a>The functionality and calling method are identical to those of <code>torch.Storage</code>. For details, see<a href="https://pytorch.org/docs/stable/storage.html#" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/storage.html#</a>.</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row134951052155613"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p16191172114583"><a name="en-us_topic_0000001835257369_p16191172114583"></a><a name="en-us_topic_0000001835257369_p16191172114583"></a>torch_npu.npu.ByteStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row10495145210565"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p9495175211563"><a name="en-us_topic_0000001835257369_p9495175211563"></a><a name="en-us_topic_0000001835257369_p9495175211563"></a>torch_npu.npu.ShortStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row17495195275616"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p8495252135612"><a name="en-us_topic_0000001835257369_p8495252135612"></a><a name="en-us_topic_0000001835257369_p8495252135612"></a>torch_npu.npu.LongStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row18006055911"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p07506945914"><a name="en-us_topic_0000001835257369_p07506945914"></a><a name="en-us_topic_0000001835257369_p07506945914"></a>torch_npu.npu.IntStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row14341175718581"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p03411057145811"><a name="en-us_topic_0000001835257369_p03411057145811"></a><a name="en-us_topic_0000001835257369_p03411057145811"></a>torch_npu.npu.HalfStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row14341115716584"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p734119575584"><a name="en-us_topic_0000001835257369_p734119575584"></a><a name="en-us_topic_0000001835257369_p734119575584"></a>torch_npu.npu.CharStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row149709474586"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p69703478581"><a name="en-us_topic_0000001835257369_p69703478581"></a><a name="en-us_topic_0000001835257369_p69703478581"></a>torch_npu.npu.DoubleStorage</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257369_row5813195115817"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p9813125165810"><a name="en-us_topic_0000001835257369_p9813125165810"></a><a name="en-us_topic_0000001835257369_p9813125165810"></a>torch_npu.npu.FloatStorage</p>
+</td>
+</tr>
+</tbody>
+</table>
+
+**Table 9** NPU Tensor APIs (beta)
+
+<a name="table1576442216332"></a>
+<table><thead align="left"><tr id="en-us_topic_0000001835257345_row74720376177"><th class="cellrowborder" valign="top" width="26.75%" id="mcps1.2.5.1.1"><p id="en-us_topic_0000001835257345_p18161141918211"><a name="en-us_topic_0000001835257345_p18161141918211"></a><a name="en-us_topic_0000001835257345_p18161141918211"></a>PyTorch Native API</p>
+</th>
+<th class="cellrowborder" valign="top" width="30.349999999999998%" id="mcps1.2.5.1.2"><p id="en-us_topic_0000001835257345_p3164023235"><a name="en-us_topic_0000001835257345_p3164023235"></a><a name="en-us_topic_0000001835257345_p3164023235"></a>NPU Counterpart</p>
+</th>
+<th class="cellrowborder" valign="top" width="6.22%" id="mcps1.2.5.1.3"><p id="en-us_topic_0000001835257345_p216112194214"><a name="en-us_topic_0000001835257345_p216112194214"></a><a name="en-us_topic_0000001835257345_p216112194214"></a>Supported</p>
+</th>
+<th class="cellrowborder" valign="top" width="36.68%" id="mcps1.2.5.1.4"><p id="en-us_topic_0000001835257345_p151413620217"><a name="en-us_topic_0000001835257345_p151413620217"></a><a name="en-us_topic_0000001835257345_p151413620217"></a>Reference Link</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000001835257345_row16728461210"><td class="cellrowborder" valign="top" width="26.75%" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p137218461814"><a name="en-us_topic_0000001835257345_p137218461814"></a><a name="en-us_topic_0000001835257345_p137218461814"></a>torch.cuda.DoubleTensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="30.349999999999998%" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1996044910114"><a name="en-us_topic_0000001835257345_p1996044910114"></a><a name="en-us_topic_0000001835257345_p1996044910114"></a>torch_npu.npu.DoubleTensor</p>
+</td>
+<td class="cellrowborder" valign="top" width="6.22%" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p27215465118"><a name="en-us_topic_0000001835257345_p27215465118"></a><a name="en-us_topic_0000001835257345_p27215465118"></a>Yes</p>
+</td>
+<td class="cellrowborder" rowspan="9" valign="top" width="36.68%" headers="mcps1.2.5.1.4 "><p id="en-us_topic_0000001835257345_p225252418262"><a name="en-us_topic_0000001835257345_p225252418262"></a><a name="en-us_topic_0000001835257345_p225252418262"></a><a href="https://pytorch.org/docs/stable/tensors.html#data-types" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/tensors.html#data-types</a></p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row47210461517"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p4725461314"><a name="en-us_topic_0000001835257345_p4725461314"></a><a name="en-us_topic_0000001835257345_p4725461314"></a>torch.cuda.ShortTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p49600493114"><a name="en-us_topic_0000001835257345_p49600493114"></a><a name="en-us_topic_0000001835257345_p49600493114"></a>torch_npu.npu.ShortTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p772146719"><a name="en-us_topic_0000001835257345_p772146719"></a><a name="en-us_topic_0000001835257345_p772146719"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row19728461116"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p19728461012"><a name="en-us_topic_0000001835257345_p19728461012"></a><a name="en-us_topic_0000001835257345_p19728461012"></a>torch.cuda.CharTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p109609491714"><a name="en-us_topic_0000001835257345_p109609491714"></a><a name="en-us_topic_0000001835257345_p109609491714"></a>torch_npu.npu.CharTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p8724460120"><a name="en-us_topic_0000001835257345_p8724460120"></a><a name="en-us_topic_0000001835257345_p8724460120"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row47317466110"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p1873154618118"><a name="en-us_topic_0000001835257345_p1873154618118"></a><a name="en-us_topic_0000001835257345_p1873154618118"></a>torch.cuda.ByteTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1896013491711"><a name="en-us_topic_0000001835257345_p1896013491711"></a><a name="en-us_topic_0000001835257345_p1896013491711"></a>torch_npu.npu.ByteTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p11739461719"><a name="en-us_topic_0000001835257345_p11739461719"></a><a name="en-us_topic_0000001835257345_p11739461719"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row1509152312215"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p5471124912115"><a name="en-us_topic_0000001835257345_p5471124912115"></a><a name="en-us_topic_0000001835257345_p5471124912115"></a>torch.cuda.FloatTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p195091923112118"><a name="en-us_topic_0000001835257345_p195091923112118"></a><a name="en-us_topic_0000001835257345_p195091923112118"></a>torch_npu.npu.FloatTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p155091223162115"><a name="en-us_topic_0000001835257345_p155091223162115"></a><a name="en-us_topic_0000001835257345_p155091223162115"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row16510192372120"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p8471144914219"><a name="en-us_topic_0000001835257345_p8471144914219"></a><a name="en-us_topic_0000001835257345_p8471144914219"></a>torch.cuda.HalfTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p155102231215"><a name="en-us_topic_0000001835257345_p155102231215"></a><a name="en-us_topic_0000001835257345_p155102231215"></a>torch_npu.npu.HalfTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p951012235213"><a name="en-us_topic_0000001835257345_p951012235213"></a><a name="en-us_topic_0000001835257345_p951012235213"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row17861230162113"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p9584195616219"><a name="en-us_topic_0000001835257345_p9584195616219"></a><a name="en-us_topic_0000001835257345_p9584195616219"></a>torch.cuda.IntTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p158615305219"><a name="en-us_topic_0000001835257345_p158615305219"></a><a name="en-us_topic_0000001835257345_p158615305219"></a>torch_npu.npu.IntTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p5861530152110"><a name="en-us_topic_0000001835257345_p5861530152110"></a><a name="en-us_topic_0000001835257345_p5861530152110"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row8752162662111"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p95841156132111"><a name="en-us_topic_0000001835257345_p95841156132111"></a><a name="en-us_topic_0000001835257345_p95841156132111"></a>torch.cuda.BoolTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1575212662118"><a name="en-us_topic_0000001835257345_p1575212662118"></a><a name="en-us_topic_0000001835257345_p1575212662118"></a>torch_npu.npu.BoolTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p13752162642116"><a name="en-us_topic_0000001835257345_p13752162642116"></a><a name="en-us_topic_0000001835257345_p13752162642116"></a>Yes</p>
+</td>
+</tr>
+<tr id="en-us_topic_0000001835257345_row97533261212"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p6753182613210"><a name="en-us_topic_0000001835257345_p6753182613210"></a><a name="en-us_topic_0000001835257345_p6753182613210"></a>torch.cuda.LongTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p775314269219"><a name="en-us_topic_0000001835257345_p775314269219"></a><a name="en-us_topic_0000001835257345_p775314269219"></a>torch_npu.npu.LongTensor</p>
+</td>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p975372632115"><a name="en-us_topic_0000001835257345_p975372632115"></a><a name="en-us_topic_0000001835257345_p975372632115"></a>Yes</p>
+</td>
+</tr>
+</tbody>
+</table>
