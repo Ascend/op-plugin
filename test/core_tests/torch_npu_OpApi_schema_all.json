@@ -652,6 +652,12 @@
   "op_api: torch_npu.npu_apply_rotary_pos_emb(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
     "version": ["v2.8", "newest"]
   },
+  "op_api: torch_npu.npu_renorm_backward(*args, **kwargs)": {
+ 	    "version": ["v2.7"]
+ 	},
+ 	"op_api: torch_npu.npu_renorm_backward(*args: _P.args, **kwargs: _P.kwargs) -> ~_T": {
+ 	  "version": ["v2.8", "newest"]
+ 	},
   "func: npu_masked_causal_conv1d(Tensor input, Tensor weight, *, Tensor? mask=None) -> Tensor": {
     "version": ["v2.6", "newest"]
   },
@@ -5035,5 +5041,8 @@
   },
   "func: _scaled_grouped_mm_v2(Tensor mat_a, Tensor mat_b, Tensor[] scale_a, int[] recipe_a, int[] swizzle_a, Tensor[] scale_b, int[] recipe_b, int[] swizzle_b, Tensor? offs=None, Tensor? bias=None, ScalarType? out_dtype=None, int[] contraction_dim=[], bool use_fast_accum=False) -> Tensor": {
     "version": ["v2.10", "newest"]
-  }
+  },
+ 	"func: npu_renorm_backward(Tensor grad, Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor": {
+ 	  "version": ["v2.7", "newest"]
+ 	}
 }

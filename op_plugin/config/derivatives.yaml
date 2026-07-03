@@ -364,3 +364,7 @@ backward:
   output_differentiability: [true, false, false]
   x: npu_moe_gating_top_k_backward(result2, grad, result1, renorm, norm_type, routed_scaling_factor, eps)
   version: all_version
+
+- name: renorm(Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
+  self: npu_renorm_backward(grad, self, p, dim, maxnorm)
+  version: [v2.7, newest]

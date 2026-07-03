@@ -5566,6 +5566,9 @@ autograd:
     op_api: [v2.5, newest]
 
 custom:
+  - func: npu_renorm_backward(Tensor grad, Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
+    op_api: [v2.7, newest]
+
   - func: ffn_worker_scheduler_(Tensor(a!) self, *, int sync_group_size=1, int execute_mode=0) -> Tensor(a!)
     op_api: [v2.1, newest]
     gen_opapi:
