@@ -34,7 +34,7 @@ torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 
 `Tensor`
 
-mask操作的结果。
+DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时，shape为(gtboxes.shape[1], self.shape[1])。
 
 ## 约束说明
 

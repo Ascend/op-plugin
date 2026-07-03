@@ -170,7 +170,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - **copy\_expert\_num** (`int`)：可选参数，表示拷贝专家的数量。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
-         - `comm_alg`设置为"fullmesh"时，取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num+zero\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。参数为非0时属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
+         - `comm_alg`设置为"fullmesh"时，取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num+zero\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。参数为非0时属于拷贝专家特性，此特性尚在实验阶段，请谨慎使用。
          - `comm_alg`设置为"hierarchy"时，当前版本不支持，传默认值0即可。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围[0, MAX_INT32)，MAX_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num+zero\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
 

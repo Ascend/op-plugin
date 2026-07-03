@@ -939,7 +939,7 @@ trans (Bool，默认值为False) - 是否有偏移。
 is_cross (Bool，默认值为False) - box1和box2之间是否有交叉操作。
 mode (Int，默认值为0) - 选择DIoU的计算方式。0表示IoU，1表示IoF。
 输出说明
-torch.Tensor (Tensor) - mask操作的结果。
+torch.Tensor (Tensor) - DIoU计算结果。is_cross为False时，shape为(1, n)；is_cross为True时，shape为(gtboxes.shape[1], self.shape[1])。
 
 约束说明
 到目前为止，DIoU向后只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。

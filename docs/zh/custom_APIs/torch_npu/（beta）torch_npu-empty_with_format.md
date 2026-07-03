@@ -35,6 +35,7 @@ torch_npu.empty_with_format(size, dtype, layout, device, pin_memory, acl_format)
 
 ```python
 >>> torch_npu.empty_with_format((2, 3), dtype=torch.float32, device="npu")
-tensor([[1., 1., 1.],
-        [1., 1., 1.]], device='npu:0')
+tensor([[3.1415e-45, 0.0000e+00, 1.2345e+20],
+        [9.8765e-10, 0.0000e+00, 1.1111e+30]], device='npu:0')
+# 注：empty_with_format返回未初始化张量，示例中的数值仅用于说明，实际值不固定。
 ```
