@@ -23,7 +23,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.8": [
       "npu_gelu_mul",
@@ -35,7 +36,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.9": [
       "npu_gelu_mul",
@@ -47,7 +49,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.10": [
       "npu_gelu_mul",
@@ -59,7 +62,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.11": [
       "npu_gelu_mul",
@@ -71,7 +75,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.12": [
       "npu_gelu_mul",
@@ -83,7 +88,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
     ],
     "v2.13": [
  	    "npu_gelu_mul",
@@ -95,7 +101,8 @@
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
-      "npu_ring_attention_update"
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
  	  ],
     "all_version": [
       "_npu_dropout",
