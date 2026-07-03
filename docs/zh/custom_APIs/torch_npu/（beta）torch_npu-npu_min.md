@@ -25,7 +25,7 @@ torch_npu.npu_min(self, dim, keepdim=False) -> (Tensor, Tensor)
 ## 参数说明
 
 - **self**（`Tensor`）：输入张量。
-- **dim**（`int`）：待降低维度。
+- **dim**（`int`）：指定计算最小值的维度。
 - **keepdim**（`bool`）：输出张量是否保留`dim`。
 
 ## 返回值说明

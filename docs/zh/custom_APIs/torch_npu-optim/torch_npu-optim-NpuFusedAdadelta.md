@@ -24,7 +24,7 @@ class torch_npu.optim.NpuFusedAdadelta(params, lr=1.0, rho=0.9, eps=1e-6, weight
 
 - **params** (`iterable`)：必选参数，模型参数或模型参数组。
 - **lr** (`float`)：可选参数，学习率，默认值为1.0。`lr`的值小于0时，系统会抛出“ValueError”异常信息。
-- **rho** (`float`)：可选参数，梯度的均方差系数，默认值为0.9。`rho`小于0或者`rho`大于1时，系统会抛出“ValueError”异常信息。
+- **rho** (`float`)：可选参数，梯度平方滑动平均的衰减系数，默认值为0.9。`rho`小于0或者`rho`大于1时，系统会抛出“ValueError”异常信息。
 - **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-6。`eps`小于0时，系统会抛出“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
 

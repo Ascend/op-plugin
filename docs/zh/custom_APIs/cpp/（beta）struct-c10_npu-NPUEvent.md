@@ -78,7 +78,7 @@ NPUEvent是一个事件类，实现了NPU设备事件管理的相关功能，可
 
 - **float c10_npu::NPUEvent::elapsed_time(const c10_npu::NPUEvent& other)**
 
-    NPUEvent事件阻塞，返回值类型float，返回记录事件到当前事件经过的时间，单位为ms，与float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent&  _other_)相同。
+    NPUEvent事件耗时查询，返回值类型float，返回记录事件到当前事件经过的时间，单位为ms，与float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent&  _other_)相同。
 
     other：NPUEvent类型，指定计算时间的终点事件。
 
