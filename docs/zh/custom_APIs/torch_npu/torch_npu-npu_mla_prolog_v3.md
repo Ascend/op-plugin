@@ -906,7 +906,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
     rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
     rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
-    cache_index = torch.rand(B, S).to(torch.int64).npu()
+    cache_index = torch.randint(0, BlockNum * BlockSize, (B, S), dtype=torch.int64).npu()
     kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
     kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
     rmsnorm_epsilon_cq = 1.0e-5
@@ -976,7 +976,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
     rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
     rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
-    cache_index = torch.rand(B, S).to(torch.int64).npu()
+    cache_index = torch.randint(0, BlockNum * BlockSize, (B, S), dtype=torch.int64).npu()
     kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
     kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
     rmsnorm_epsilon_cq = 1.0e-5
