@@ -1456,8 +1456,8 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         lambda: "expert_tokens_num_flag is None or invalid. must be in [True, False]"
     )
     torch._check(
-        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15],
-        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15]"
+        quant_mode is not None and isinstance(quant_mode, int) and quant_mode in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16, 17, 14, 15],
+        lambda: "quant_mode is None or invalid. must be in [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 16, 17, 14, 15]"
     )
     torch._check(
         row_idx_type is not None and isinstance(row_idx_type, int) and row_idx_type in [0, 1],
@@ -1602,10 +1602,10 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
         expanded_x_dtype = torch.uint8
     elif quant_mode in [0, 1]:
         expanded_x_dtype = torch.int8
-    elif quant_mode == 2:
+    elif quant_mode in [2, 16]:
         expanded_x_dtype = torch.float8_e5m2
         expanded_scale_dtype = torch.float8_e8m0fnu
-    elif quant_mode == 3:
+    elif quant_mode in [3, 17]:
         expanded_x_dtype = torch.float8_e4m3fn
         expanded_scale_dtype = torch.float8_e8m0fnu
     elif quant_mode in [6, 7, 8]:
@@ -1626,7 +1626,7 @@ def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, acti
     else:
         num_expanded_rows = bs * k if active_num <= 0 else min(active_num, bs * k)
         expanded_x_dim_list = [num_expanded_rows, x.size(1)]
-        if quant_mode in [2, 3]:
+        if quant_mode in [2, 3, 16, 17]:
             MXQUANT_BLOCK_SIZE = 32
             PAD_TO_EVEN_FACTOR = 2
             scale_cols = (h + MXQUANT_BLOCK_SIZE - 1) // MXQUANT_BLOCK_SIZE

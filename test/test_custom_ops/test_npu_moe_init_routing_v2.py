@@ -9,6 +9,12 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
+MXFP8_BLOCK_SIZE = 32
+MXFP8_E4M3_MAX_VALUE = 448.0
+MXFP8_E5M2_MAX_VALUE = 57344.0
+MXFP8_AMAX_CLAMP_VALUE = 0.0001
+MIN_ROUNDED_EXP = -126
+
 def numpy_hifloat8():
     try:
         from en_dtypes import hifloat8
@@ -40,6 +46,74 @@ def numpy_to_torch(np_arr):
     if str(np_arr.dtype) in list(FP8_DTYPE_MAP_NUMPY_TO_TORCH.keys()):
         return _bitcast_float8_to_torch(np_arr)
     return torch.from_numpy(np_arr)
+
+
+def _ceil_align(value: int, align: int) -> int:
+    return ((value + align - 1) // align) * align
+
+
+def _get_float8_dtype(dtype_name: str):
+    if dtype_name == "float8_e8m0":
+        from en_dtypes import float8_e8m0
+        return float8_e8m0
+    if dtype_name == "float8_e5m2":
+        from ml_dtypes import float8_e5m2
+        return float8_e5m2
+    if dtype_name == "float8_e4m3fn":
+        from ml_dtypes import float8_e4m3fn
+        return float8_e4m3fn
+    raise ValueError(f"Unsupported float8 dtype: {dtype_name}")
+
+
+def _bf16_trunc_float32(x: np.ndarray) -> np.ndarray:
+    x_fp32 = np.ascontiguousarray(x.astype(np.float32, copy=False))
+    return (x_fp32.view(np.uint32) & np.uint32(0xFFFF0000)).view(np.float32)
+
+
+def mxfp8_roundscale_quantize(x: np.ndarray, mx_ele_dtype: str, clamp_amax: bool = False) -> tuple:
+    cols = x.shape[-1]
+    padded_cols = _ceil_align(cols, MXFP8_BLOCK_SIZE)
+    pad_width = [(0, 0) for _ in range(x.ndim)]
+    pad_width[-1] = (0, padded_cols - cols)
+    x_padded = np.pad(x, pad_width, mode="constant") if padded_cols != cols else x
+    block_shape = x_padded.shape[:-1] + (padded_cols // MXFP8_BLOCK_SIZE, MXFP8_BLOCK_SIZE)
+    x_blocks = x_padded.reshape(block_shape)
+
+    amax_input = _bf16_trunc_float32(x_blocks) if x.dtype.name == "float16" else x_blocks.astype(np.float32, copy=False)
+    abs_x = np.abs(amax_input)
+    abs_x = np.where(np.isfinite(abs_x), abs_x, np.inf)
+    amax = np.max(abs_x, axis=-1).astype(np.float32, copy=False)
+    if clamp_amax:
+        amax = np.maximum(amax, MXFP8_AMAX_CLAMP_VALUE)
+
+    fp8_max = MXFP8_E4M3_MAX_VALUE if mx_ele_dtype == "float8_e4m3fn" else MXFP8_E5M2_MAX_VALUE
+    raw_scale = (amax / np.float32(fp8_max)).astype(np.float32, copy=False)
+    raw_scale_bits = np.ascontiguousarray(raw_scale).view(np.uint32)
+    exp_bits = ((raw_scale_bits & np.uint32(0x7F800000)) >> 23).astype(np.int32)
+    mant_bits = raw_scale_bits & np.uint32(0x007FFFFF)
+    rounded_exp = exp_bits - 127 + (mant_bits != 0).astype(np.int32)
+    rounded_exp = np.maximum(rounded_exp, MIN_ROUNDED_EXP)
+
+    zero_mask = amax == 0
+    inf_mask = np.isinf(amax)
+    scale_values = np.exp2(rounded_exp.astype(np.float32))
+    scale_values = np.where(zero_mask, 0.0, scale_values)
+    scale_values = np.where(inf_mask, np.nan, scale_values).astype(np.float32, copy=False)
+    valid_scale_cols = scale_values.shape[-1]
+    aligned_scale_cols = _ceil_align(valid_scale_cols, 2)
+    if aligned_scale_cols != valid_scale_cols:
+        scale_values = np.pad(scale_values, [(0, 0) for _ in range(scale_values.ndim - 1)] + [(0, 1)],
+                              mode="constant", constant_values=0.0)
+    expanded_scale = np.ascontiguousarray(scale_values.astype(_get_float8_dtype("float8_e8m0"), copy=False))
+
+    inv_scale = np.exp2((-rounded_exp).astype(np.float32))
+    inv_scale = np.where(zero_mask, 0.0, inv_scale)
+    inv_scale = np.where(inf_mask, -np.inf, inv_scale)
+    scaled_blocks = x_blocks.astype(np.float32, copy=False) * inv_scale[..., np.newaxis]
+    scaled_x = scaled_blocks.reshape(x_padded.shape)[..., :cols]
+    expanded_x = scaled_x.astype(_get_float8_dtype(mx_ele_dtype), copy=False)
+
+    return expanded_scale, expanded_x
 
 
 def assert_tensors_close(x: torch.Tensor, y: torch.Tensor, rtol=1e-3, atol=1e-5, label="Tensor"):
@@ -429,13 +503,15 @@ class TestNpuMoeInitRoutingV2(TestCase):
             if x.dtype == np.int8:
                 expanded_scale = None
 
-        if quant_mode == 2 or quant_mode == 3:
-            quant_mode_dtype_str_map = {2: "float8_e5m2", 3: "float8_e4m3fn"}
-            expanded_scale, expanded_x = simplified_mx_quantize(
-                expanded_x, mx_ele_dtype=quant_mode_dtype_str_map[quant_mode])
-            ess = expanded_scale.shape
-            expanded_scale = expanded_scale.reshape(
-                *ess[:-2], ess[-2] * ess[-1])
+        if quant_mode in (2, 3, 16, 17):
+            quant_mode_dtype_str_map = {
+                2: "float8_e5m2",
+                3: "float8_e4m3fn",
+                16: "float8_e5m2",
+                17: "float8_e4m3fn",
+            }
+            expanded_scale, expanded_x = mxfp8_roundscale_quantize(
+                expanded_x, quant_mode_dtype_str_map[quant_mode], clamp_amax=quant_mode in (16, 17))
 
         elif quant_mode == 6:
             expanded_x = expanded_x.astype(numpy_hifloat8())
@@ -466,6 +542,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
             expanded_x = expanded_x.astype(numpy_hifloat8(), copy=False)
 
         elif quant_mode == 9:
+            quant_mode_dtype_str_map = {9: "float4_e2m1"}
             expanded_scale, expanded_x = simplified_mx_quantize(
                 expanded_x, mx_ele_dtype=quant_mode_dtype_str_map[quant_mode])
 
@@ -1046,7 +1123,7 @@ class TestNpuMoeInitRoutingV2(TestCase):
         h_list = [7168, 7184]
         k_list = [8]
         expert_range_list = [[0, 32]]
-        quant_mode_list = [2, 3, 9]
+        quant_mode_list = [2, 3, 9, 16, 17]
         drop_pad_mode_list = [0]
         row_idx_type_list = [0, 1]
         expert_tokens_num_type = 1

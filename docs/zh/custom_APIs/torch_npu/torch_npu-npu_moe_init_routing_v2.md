@@ -10,7 +10,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002271534921_section1650913464367"></a>
 
-- API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化和静态量化模式。
+- API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化、静态量化、MXFP8、HIF8、MXFP4、FP8 PerBlock和INT4动态量化模式。
 - 计算公式：  
 
     1. 对输入expertIdx做排序，得出排序后的结果sortedExpertIdx和对应的序号sortedRowIdx：
@@ -622,13 +622,13 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **drop_pad_mode** (`int`)：可选参数，默认值为0，表示是否为drop_pad场景。0表示dropless场景，该场景下不校验`expert_capacity`。1表示drop_pad场景。
 - **expert_tokens_num_type** (`int`)：可选参数，默认值为0，表示直方图的不同模式。取值为0、1和2。0表示cumsum模式；1表示count模式，即输出的值为各个专家处理的token数量；2表示key_value模式，即输出的值为专家和对应专家处理token数量的键值对。
 - **expert_tokens_num_flag** (`bool`)：可选参数，默认值为False，取值为False和True，表示是否输出`expert_token_cumsum_or_count`。
-- **quant_mode** (`int`)：可选参数，默认值为-1，表示量化模式，支持取值为0、1、-1。0表示静态量化，-1表示不量化场景；1表示动态量化场景。
+- **quant_mode** (`int`)：可选参数，默认值为-1，表示量化模式。支持取值：-1表示不量化；0表示静态量化；1表示INT8动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`float8_e5m2`/`float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示INT4动态量化；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`float8_e5m2`/`float8_e4m3fn`。
 - **active_expert_range** (`List[int]`)：可选参数，默认为空, 表示活跃expert的范围。数组内值的范围为[expert_start, expert_end]，左闭右开，表示活跃的expert范围在expert_start到expert_end之间。要求值大于等于0，并且expert_end不大于`expert_num`。drop_pad场景下，expert_start等于0, expert_end等于`expert_num`。传入默认值时，视为活跃的expert范围在0到`expert_num`之间。
 - **row_idx_type** (`int`)：可选参数，默认为0，表示输出`expanded_row_idx`使用的索引类型，支持取值0和1。0表示gather类型的索引；1表示scatter类型的索引。
 
 ## 返回值说明<a name="zh-cn_topic_0000002271534921_section18510124618368"></a>
 
-- **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，Dropless场景shape为[NUM_ROWS \* K, H]。Active场景shape为[min(activeNum, NUM_ROWS * K), H]。Drop/Pad场景下要求是一个3D的Tensor，shape为[expertNum, expertCapacity, H]。非量化场景下数据类型同`x`；量化场景下数据类型为`int8`。数据格式要求为$ND$。量化场景下，当`x`的数据类型为`int8`时，输出值无意义。
+- **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，Dropless场景shape为[NUM_ROWS \* K, H]。Active场景shape为[min(activeNum, NUM_ROWS * K), H]。Drop/Pad场景下要求是一个3D的Tensor，shape为[expertNum, expertCapacity, H]。非量化场景下数据类型同`x`；`quant_mode`为0/1时数据类型为`int8`；为2/16时数据类型为`float8_e5m2`；为3/17时数据类型为`float8_e4m3fn`；为6/7/8时数据类型为`hifloat8`；为9时数据类型为`float4_e2m1`；为11/12时数据类型分别为`float8_e5m2`/`float8_e4m3fn`；为13时数据类型为`int4`。数据格式要求为$ND$。量化场景下，当`x`的数据类型为`int8`时，输出值无意义。
 - **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS \* K, )，数据类型支持`int32`，数据格式要求为$ND$。当`row_idx_type`为1时， 前available_idx_num个元素为有效数据，无效数据未初始化；当`row_idx_type`为0时，无效数据由-1填充。
 - **expert_token_cumsum_or_count** (`Tensor`)：表示输出每个专家处理的token数量的统计结果或累加值。
     - 在`expert_tokens_num_type`为0时，表示`active_expert_range`范围内expert在排序后处理token总数的前缀和。
@@ -636,7 +636,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
     - 在`expert_tokens_num_type`为2的场景下，要求是2维张量，shape为(expert_num, 2)，表示`active_expert_range`范围内token总数为非0的expert，以及对应expert处理token的总数；
 
     expert_idx在active_expert_range范围且剔除对应expert处理token为0的元素对为有效元素对，存放于Tensor头部并保持原序。数据类型支持`int64`，数据格式要求为$ND$。
-- **expanded_scale** (`Tensor`)：数据类型支持`float32`，数据格式要求为$ND$。输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。令available_idx_num为`active_expert_range`范围的元素的个数。
+- **expanded_scale** (`Tensor`)：数据格式要求为$ND$。默认数据类型为`float32`，`quant_mode`为2/3/16/17时数据类型为`float8_e8m0fnu`。默认输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积；`quant_mode`为2/3/16/17时shape为[有效输出行数, CeilAlign(CeilDiv(H, 32), 2)]；`quant_mode`为9时shape为[有效输出行数, CeilDiv(H, 64), 2]；`quant_mode`为11/12时shape为[有效输出行数, CeilDiv(H, 256), 2]。令available_idx_num为`active_expert_range`范围的元素的个数。
     - Atlas A2 训练系列产品/Atlas A2 推理系列产品/Atlas A3 训练系列产品/Atlas A3 推理系列产品：
         - 非量化场景下，当`scale`输入时，前`available_idx_num`个元素为有效数据。
         - 动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据。

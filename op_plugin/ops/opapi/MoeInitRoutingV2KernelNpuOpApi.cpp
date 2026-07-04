@@ -29,6 +29,8 @@ constexpr int64_t QUANT_MODE_STATIC = 0;
 constexpr int64_t QUANT_MODE_DYNAMIC = 1;
 constexpr int64_t QUANT_MODE_MXFP8_E5M2 = 2;
 constexpr int64_t QUANT_MODE_MXFP8_E4M3FN = 3;
+constexpr int64_t QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E5M2 = 16;
+constexpr int64_t QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E4M3FN = 17;
 constexpr int64_t QUANT_MODE_MXFP8_E5M2_GROUP = 4;
 constexpr int64_t QUANT_MODE_MXFP8_E4M3FN_GROUP = 5;
 constexpr int64_t QUANT_MODE_HIF8_CAST = 6;
@@ -61,7 +63,9 @@ inline bool IsQuantModeMXFP4(int64_t quantMode) {
 }
 
 inline bool IsQuantModeMXFP8(int64_t quantMode) {
-    return quantMode == QUANT_MODE_MXFP8_E5M2 || quantMode == QUANT_MODE_MXFP8_E4M3FN;
+    return quantMode == QUANT_MODE_MXFP8_E5M2 || quantMode == QUANT_MODE_MXFP8_E4M3FN ||
+        quantMode == QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E5M2 ||
+        quantMode == QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E4M3FN;
 }
 
 inline bool IsQuantModeFP8(int64_t quantMode) {
@@ -213,10 +217,12 @@ tensor_list npu_moe_init_routing_v2(const at::Tensor &x, const at::Tensor &exper
         switch (quant_mode) {
 #if VERSION_BETWEEN(V2R7, VERSION_NEWEST)
             case QUANT_MODE_MXFP8_E5M2:
+            case QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E5M2:
                 expanded_x = npu_preparation::apply_tensor_without_format(
                     {expanded_scale_len, h}, x.options().dtype(at::kFloat8_e5m2));
                 break;
             case QUANT_MODE_MXFP8_E4M3FN:
+            case QUANT_MODE_MXFP8_ROUNDSCALE_AMAX_E4M3FN:
                 expanded_x = npu_preparation::apply_tensor_without_format(
                     {expanded_scale_len, h}, x.options().dtype(at::kFloat8_e4m3fn));
                 break;
