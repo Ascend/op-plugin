@@ -276,7 +276,7 @@ def gen_return(
         impl_name = f.impl_name
         if not f.impl_name:
             impl_name = op_name
-        
+
         deprecated_warn = ""
         if op_name_with_overload in deprecated_dict.keys():
             deprecated_func = f'torch_npu.{str(f.func.name.name)}'
@@ -417,6 +417,14 @@ Use {deprecated_replace} instead.");'
 
 
 def should_generate_op_interface(f: NativeFunction) -> bool:
+    # The cat family (cat / cat.out) carries structured metadata in the yaml,
+    # but its kernels are still hand-implemented in op_plugin and consumed via
+    # the regular OpInterface/OpApiInterface/AclOpsInterface declarations (the
+    # generated dispatch wrapper in RegisterNPU.cpp calls op_plugin::cat).
+    # Keep generating their interfaces, mirroring the cat special-case in
+    # gen_backend_stubs.py.
+    if str(f.func.name.name) == "cat":
+        return True
     return f.structured_delegate is None
 
 

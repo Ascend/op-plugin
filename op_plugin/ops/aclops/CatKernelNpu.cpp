@@ -123,4 +123,39 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     }
     return result;
 }
+
+at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim)
+{
+    auto materialized = tensors.materialize();
+    c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(materialized);
+
+    int64_t dim_post_expr = 0;
+    if (input_tensors.size() > 0) {
+        dim_post_expr = input_tensors[0].dim();
+    } else {
+        at::Tensor result = npu_preparation::apply_tensor(materialized[0]);
+        return result;
+    }
+    dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
+    auto output_size = op_infer::cat_npu_output_size(input_tensors, dim);
+
+    // check tensors_dim for output format setting
+    bool tensors_dim_check = true;
+    for (at::Tensor t : materialized) {
+        if (t.sizes().size() != 4) {
+            break;
+        }
+        int64_t C = t.size(1);
+        if (C % 16 != 0) {
+            tensors_dim_check = false;
+            break;
+        }
+    }
+
+    at::Tensor result = tensors_dim_check ?
+        npu_preparation::apply_tensor(input_tensors[0], output_size) :
+        npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
+    cat_output_nocheck(result, materialized, dim);
+    return result;
+}
 } // namespace acl_op
