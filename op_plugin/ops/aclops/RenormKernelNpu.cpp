@@ -77,8 +77,13 @@ at::Tensor& renorm_out_nocheck(
         self.options().dtype(at::kFloat),
         npu_preparation::get_tensor_npu_format(self));
     if (ori_type == c10::ScalarType::Half) {
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
         at::Tensor self_no_name = self.rename(c10::nullopt);
         at::Tensor result_no_name = result.rename(c10::nullopt);
+#else
+        at::Tensor self_no_name = self;
+        at::Tensor result_no_name = result;
+#endif
         self_no_name = at_npu::native::custom_ops::_npu_dtype_cast(self_no_name, c10::ScalarType::Float);
         result_no_name = at_npu::native::custom_ops::_npu_dtype_cast(result_no_name, c10::ScalarType::Float);
         renorm_compute(

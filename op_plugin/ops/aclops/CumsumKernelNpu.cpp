@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -66,10 +66,12 @@ at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::Sc
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor &cumsum_out(const at::Tensor &self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor &result)
 {
     return acl_op::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
 }
+#endif
 
 at::Tensor cumsum(const at::Tensor &self, int64_t dim, const c10::optional<at::ScalarType> dtype)
 {

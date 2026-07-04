@@ -133,6 +133,7 @@ at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, at::Dimname dim, bool keepdim,
                                                at::Tensor &output, at::Tensor &indices)
 {
@@ -146,5 +147,6 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, at::Dimname dim, 
     DO_COMPATIBILITY(aclnnMaxDim, acl_op::max(self, dim, keepdim));
     return op_api::max(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 }

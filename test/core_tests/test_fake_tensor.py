@@ -374,10 +374,10 @@ class FakeTensorTest(TestCase):
             x = torch.rand([4])
             y = torch.rand([4], device="npu")
 
-            with self.assertRaisesRegex(Exception, "found two different devices"):
+            with self.assertRaisesRegex(Exception, "found.+two.+devices"):
                 torch.sin(x, out=y)
 
-            with self.assertRaisesRegex(Exception, "found two different devices"):
+            with self.assertRaisesRegex(Exception, "found.+two.+devices"):
                 x.add_(y)
 
 

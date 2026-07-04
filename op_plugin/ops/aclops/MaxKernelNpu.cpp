@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -95,11 +95,13 @@ std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, int64_t d
     return std::tie(max, max_values);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor &, at::Tensor &> max_out(const at::Tensor &self, at::Dimname dim, bool keepdim,
                                                at::Tensor &max, at::Tensor &max_values)
 {
     return acl_op::max_out(self, dimname_to_position(self, dim), keepdim, max, max_values);
 }
+#endif
 
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, int64_t dim, bool keepdim)
 {
@@ -125,10 +127,12 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, int64_t dim, bool
     return std::tie(outputs, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor &self, at::Dimname dim, bool keepdim)
 {
     return at::max(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 at::Tensor &max_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
 {

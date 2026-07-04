@@ -31,7 +31,7 @@ def main():
             del new_item['version']
             new_yaml.append(new_item)
 
-    flags = os.O_WRONLY | os.O_CREAT
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
     modes = stat.S_IWUSR | stat.S_IRUSR
     if os.path.islink(output_dir):
         raise RuntimeError(f'output_dir: Invalid path is a soft chain')

@@ -38,6 +38,7 @@ at::Tensor& gather_out(
     return out;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& gather_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -56,6 +57,7 @@ at::Tensor& gather_out(
     EXEC_NPU_CMD(aclnnGather, self, real_dim, index, out);
     return out;
 }
+#endif
 
 at::Tensor gather(
     const at::Tensor& self,
@@ -70,6 +72,7 @@ at::Tensor gather(
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor gather(
     const at::Tensor& self,
     at::Dimname dim,
@@ -83,4 +86,5 @@ at::Tensor gather(
     EXEC_NPU_CMD(aclnnGather, self, real_dim, index, result);
     return result;
 }
+#endif
 }

@@ -28,10 +28,12 @@ at::Tensor& logsumexp_out(const at::Tensor& self, at::IntArrayRef dims, bool kee
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& logsumexp_out(const at::Tensor& self, at::DimnameList dims, bool keepdim, at::Tensor& result)
 {
     return op_api::logsumexp_out(self, dimnames_to_positions(self, dims), keepdim, result);
 }
+#endif
 
 at::Tensor logsumexp(const at::Tensor& self, at::IntArrayRef dims, bool keepdim)
 {
@@ -48,9 +50,11 @@ at::Tensor logsumexp(const at::Tensor& self, at::IntArrayRef dims, bool keepdim)
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor logsumexp(const at::Tensor& self, at::DimnameList dims, bool keepdim)
 {
     return op_api::logsumexp(self, dimnames_to_positions(self, dims), keepdim);
 }
+#endif
 
 }

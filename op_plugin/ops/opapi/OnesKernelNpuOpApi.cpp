@@ -47,6 +47,7 @@ at::Tensor ones(at::IntArrayRef size,
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor ones(at::IntArrayRef size,
                 c10::optional<at::DimnameList> names,
                 c10::optional<at::ScalarType> dtype,
@@ -67,4 +68,5 @@ at::Tensor ones(at::IntArrayRef size,
     at::namedinference::propagate_names_if_nonempty(result, maybe_name);
     return result;
 }
+#endif
 } // op_api

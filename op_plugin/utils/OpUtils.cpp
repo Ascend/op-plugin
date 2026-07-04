@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
@@ -261,6 +261,7 @@ at::Tensor get_cast_input(const at::Tensor& self, at::ScalarType calculate_type)
 NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
 {
     NameVector names;
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
     bool has_names = false;
 
     for (auto tensor : tensor_list) {
@@ -281,6 +282,7 @@ NameVector compute_names_npu(std::vector<at::Tensor> tensor_list)
             names = NameVector(at::unify_from_right(names, tensor.names()));
         }
     }
+#endif
     return names;
 }
 
@@ -523,7 +525,7 @@ int64_t check_and_get_group_size(at::IntArrayRef group_size_list)
                                   (static_cast<uint64_t>(group_n) << OFFSET_16_BITS) + static_cast<uint64_t>(group_k));
     return groups;
 }
-    
+
 int8_t get_cube_math_type_with_passthrough()
 {
     int8_t cube_math_type = at_npu::native::OpPreparation::get_cube_math_type(at_npu::native::env::IsAllowMatmulHF32());

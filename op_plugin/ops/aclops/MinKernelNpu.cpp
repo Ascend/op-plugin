@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -147,6 +147,7 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, int64_t dim, bool
     return std::tie(outputs, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&> min_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -161,6 +162,7 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, at::Dimname dim, 
 {
     return acl_op::min(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 at::Tensor& min_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result)
 {

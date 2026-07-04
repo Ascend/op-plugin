@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -69,6 +69,7 @@ at::Tensor& gather_out(
     return out;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& gather_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -78,6 +79,7 @@ at::Tensor& gather_out(
 {
     return acl_op::gather_out(self, dimname_to_position(self, dim), index, sparse_grad, out);
 }
+#endif
 
 at::Tensor gather(
     const at::Tensor& self,
@@ -90,6 +92,7 @@ at::Tensor gather(
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor gather(
     const at::Tensor& self,
     at::Dimname dim,
@@ -98,4 +101,5 @@ at::Tensor gather(
 {
     return acl_op::gather(self, dimname_to_position(self, dim), index, sparse_grad);
 }
+#endif
 }  // op_plugin

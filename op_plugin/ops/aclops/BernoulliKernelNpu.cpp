@@ -16,7 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 #include "op_plugin/utils/OpAdapter.h"

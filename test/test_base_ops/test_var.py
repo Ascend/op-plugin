@@ -1,9 +1,17 @@
+import unittest
+
 import torch
 import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+
+
+# Upstream pytorch#173895 removed named-tensor support in PyTorch 2.13.
+# torch.Tensor.refine_names -- the entry point to naming tensor dims that
+# these tests rely on -- is gone. Skip the dimname test methods on 2.13+.
+_TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestVar(TestCase):
@@ -191,6 +199,7 @@ class TestVar(TestCase):
             npu_output = self.npu_op_dim_exec(npu_input, item[3], item[4], item[5])
             self.assertRtolEqual(cpu_output, npu_output)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_var_names_dim_shape_format_fp16(self):
         format_list = [-1]
         shape_list1 = [[32, 24], [32, 8, 24]]
@@ -209,6 +218,7 @@ class TestVar(TestCase):
             npu_output = self.npu_op_names_dim_exec(npu_input, item[3], item[4], item[5])
             self.assertRtolEqual(cpu_output, npu_output)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_var_names_dim_shape_format_fp32(self):
         format_list = [-1]
         shape_list1 = [[32, 24], [32, 8, 24]]
@@ -365,6 +375,7 @@ class TestVar(TestCase):
             self.assertRtolEqual(cpu_output1, npu_output1)
             self.assertRtolEqual(cpu_output2, npu_output2)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_var_mean_names_dim_shape_format_fp16(self):
         shape = (1024, 8, 32)
         dimlist = ['N', 'C', 'H']
@@ -381,6 +392,7 @@ class TestVar(TestCase):
         self.assertRtolEqual(cpu_output1, npu_output1)
         self.assertRtolEqual(cpu_output2, npu_output2)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_var_mean_names_dim_shape_format_fp32(self):
         shape = (1024, 8, 32)
         dimlist = ['N', 'C', 'H']

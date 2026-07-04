@@ -36,7 +36,11 @@ at::Tensor &median_out_nocheck(at::Tensor &result, const at::Tensor &self)
         return result;
     }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
     at::Tensor input = self.has_names() ? self.rename(c10::nullopt).reshape({-1}) : self.reshape({-1});
+#else
+    at::Tensor input = self.reshape({-1});
+#endif
     int64_t k = input.size(0) / 2;
 
     auto ret = at::topk(input, k + 1);
@@ -52,7 +56,11 @@ std::tuple<at::Tensor &, at::Tensor &> median_out_value_nocheck(at::Tensor &valu
     dim = op_plugin::utils::make_warp_dim(dim, self.dim());
     int64_t k = self.dim() > 0 ? (self.size(dim) + 1) / 2 : 1;
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
     at::Tensor self_name = self.has_names() ? self.rename(c10::nullopt) : self;
+#else
+    at::Tensor self_name = self;
+#endif
     auto ret = at::topk(self_name, k, dim, false, true);
     at::Tensor topk_values = std::get<0>(ret);
     at::Tensor topkIndices = std::get<1>(ret);
@@ -74,11 +82,14 @@ std::tuple<at::Tensor &, at::Tensor &> median_out_value_nocheck(at::Tensor &valu
     return std::tuple<at::Tensor &, at::Tensor &>(values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor &, at::Tensor &> median_out_npu_nocheck(at::Tensor &values, at::Tensor &indices,
                                                               const at::Tensor &self, at::Dimname dim, bool keepdim)
 {
     return median_out_value_nocheck(values, indices, self, dimname_to_position(self, dim), keepdim);
 }
+#endif
+
 } // namespace
 
 std::tuple<at::Tensor &, at::Tensor &> median_out(const at::Tensor &self, int64_t dim, bool keepdim, at::Tensor &values,

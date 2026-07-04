@@ -38,10 +38,12 @@ std::tuple<at::Tensor&, at::Tensor&> min_v1_out_npu_nocheck(
     return std::tie(output, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, at::Dimname dim, bool keepdim)
 {
     return acl_op::npu_min(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 std::tuple<at::Tensor, at::Tensor> npu_min(const at::Tensor& self, int64_t dim, bool keepdim)
 {

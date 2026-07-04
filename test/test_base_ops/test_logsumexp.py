@@ -1,9 +1,17 @@
+import unittest
+
 import torch
 import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+
+
+# Upstream pytorch#173895 removed named-tensor support in PyTorch 2.13.
+# torch.Tensor.refine_names -- the entry point to naming tensor dims that
+# these tests rely on -- is gone. Skip the dimname test methods on 2.13+.
+_TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestLogsumexp(TestCase):
@@ -63,6 +71,7 @@ class TestLogsumexp(TestCase):
             cpu_result = cpu_result.to(npu_result.dtype)
             self.assertRtolEqual(cpu_result.numpy(), npu_result.numpy())
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_logsumexp_dimname1(self):
         cpu_input = self.generate_data(-10, 10, (2, 14, 69, 96, 1824), np.float32)
         cpu_input.names = ['A', 'B', 'C', 'D', 'E']
@@ -72,6 +81,7 @@ class TestLogsumexp(TestCase):
         npu_out = self.npu_op_exec(cpu_input.npu(), dim, keepdim)
         self.assertRtolEqual(cpu_out.numpy(), npu_out.numpy())
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_logsumexp_dimname2(self):
         cpu_input = self.generate_data(-10, 10, (14, 69, 96, 1824), np.float32)
         cpu_input.names = ['A', 'B', 'C', 'D']
@@ -81,6 +91,7 @@ class TestLogsumexp(TestCase):
         npu_out = self.npu_op_exec(cpu_input.npu(), dim, keepdim)
         self.assertRtolEqual(cpu_out.numpy(), npu_out.numpy())
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_logsumexp_dimname3(self):
         cpu_input = self.generate_data(-10, 10, (14, 69, 96, 1824), np.float32)
         cpu_input.names = ['A', 'B', 'C', 'D']

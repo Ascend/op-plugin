@@ -49,7 +49,11 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
 {
     const int64_t DIM_SIZE = 4;
     max_pool2d_with_indices_parameter_check(self, kernel_size, stride, padding, dilation);
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
     at::DimnameList maybe_names = self.has_names() ? self.names() : at::DimnameList{};
+#else
+    at::DimnameList maybe_names{};
+#endif
 
     const int k_H = at::native::safe_downcast<int, int64_t>(kernel_size[0]);
     const int k_W = kernel_size.size() == 1 ? k_H : at::native::safe_downcast<int, int64_t>(kernel_size[1]);

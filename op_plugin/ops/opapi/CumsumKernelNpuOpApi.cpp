@@ -43,12 +43,14 @@ at::Tensor& cumsum_out(const at::Tensor& self, int64_t dim, c10::optional<at::Sc
     return out;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& cumsum_out(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype,
                        at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
     return op_api::cumsum_out(self, dimname_to_position(self, dim), dtype, out);
 }
+#endif
 
 at::Tensor cumsum(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype)
 {

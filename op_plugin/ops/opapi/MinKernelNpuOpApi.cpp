@@ -120,6 +120,7 @@ at::Tensor& min_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&> min_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -136,5 +137,6 @@ std::tuple<at::Tensor, at::Tensor> min(const at::Tensor& self, at::Dimname dim, 
     DO_COMPATIBILITY(aclnnMinDim, acl_op::min(self, dim, keepdim));
     return op_api::min(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 }

@@ -21,6 +21,7 @@
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/Export.h"
 #include "op_plugin/utils/Version.h"
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 namespace op_plugin {
 namespace utils {

@@ -4513,11 +4513,15 @@ full_like:
 gather:
   test_backward:
   - float32
+  test_compare_cpu:
+  - float32
   test_conj_view:
   - complex64
   test_fake_crossref_backward_amp:
   - float32
   test_fake_crossref_backward_no_amp:
+  - float32
+  test_forward_ad:
   - float32
   test_neg_conj_view:
   - complex128
@@ -4525,6 +4529,8 @@ gather:
   - float64
   test_non_standard_bool_values:
   - bool
+  test_operator:
+  - float32
   test_variant_consistency_eager:
   - complex64
   - float32
@@ -5713,14 +5719,20 @@ sgn:
 scatter_reduce:
   test_backward:
   - float32
+  test_compare_cpu:
+  - float32
   test_fake_crossref_backward_amp:
   - float32
   test_fake_crossref_backward_no_amp:
+  - float32
+  test_forward_ad:
   - float32
   test_neg_view:
   - float64
   test_non_standard_bool_values:
   - bool
+  test_operator:
+  - float32
   test_out:
   - float32
   test_variant_consistency_eager:

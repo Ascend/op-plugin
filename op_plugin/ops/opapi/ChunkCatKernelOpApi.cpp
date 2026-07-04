@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 #include <ATen/native/TensorShape.h>
 #include <ATen/native/TypeProperties.h>
 #include "op_plugin/AclOpsInterface.h"

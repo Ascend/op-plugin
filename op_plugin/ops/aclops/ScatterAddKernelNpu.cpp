@@ -68,6 +68,7 @@ at::Tensor& scatter_add_(
   return self;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor scatter_add(
     const at::Tensor& self,
     at::Dimname dim,
@@ -75,5 +76,6 @@ at::Tensor scatter_add(
     const at::Tensor& src) {
   return acl_op::scatter_add(self, dimname_to_position(self, dim), index, src);
 }
+#endif
 
 } // namespace acl_op

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 #include <ATen/native/TypeProperties.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
@@ -121,6 +121,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     return out;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& out)
 {
     DO_COMPATIBILITY(aclnnCat, acl_op::cat_out(tensors, dim, out));
@@ -132,5 +133,6 @@ at::Tensor cat(at::TensorList tensors, at::Dimname dim)
     DO_COMPATIBILITY(aclnnCat, acl_op::cat(tensors, dim));
     return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
+#endif
 
 }

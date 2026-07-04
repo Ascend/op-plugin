@@ -37,6 +37,7 @@ std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self, int64_t dim, boo
     return sort_output(self, stable, dim, descending, values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self, at::Dimname dim, bool descending)
 {
     DO_COMPATIBILITY(aclnnSort, acl_op::sort(self, dim, descending));
@@ -47,6 +48,7 @@ std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self, at::Dimname dim,
 
     return sort_output(self, stable, argDim, descending, values, indices);
 }
+#endif
 
 std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, int64_t dim,
     bool descending, at::Tensor &values, at::Tensor &indices)
@@ -59,6 +61,7 @@ std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, int64_t 
     return sort_output(self, stable, dim, descending, values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, at::Dimname dim,
     bool descending, at::Tensor &values, at::Tensor &indices)
 {
@@ -69,6 +72,7 @@ std::tuple<at::Tensor &, at::Tensor &> sort_out(const at::Tensor &self, at::Dimn
 
     return sort_output(self, stable, dimname_to_position(self, dim), descending, values, indices);
 }
+#endif
 
 std::tuple<at::Tensor, at::Tensor> sort(const at::Tensor &self,
                                         c10::optional<bool> stable,

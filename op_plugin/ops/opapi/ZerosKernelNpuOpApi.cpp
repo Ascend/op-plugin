@@ -44,6 +44,7 @@ at::Tensor zeros_symint(
 }
 
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor zeros(
     at::IntArrayRef size,
     c10::optional<at::DimnameList> names,
@@ -62,4 +63,5 @@ at::Tensor zeros(
     at::namedinference::propagate_names_if_nonempty(result, maybe_name);
     return result.zero_();
 }
+#endif
 }

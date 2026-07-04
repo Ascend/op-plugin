@@ -1,8 +1,16 @@
+import unittest
+
 import torch
 import numpy as np
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
+
+
+# Upstream pytorch#173895 removed named-tensor support in PyTorch 2.13.
+# torch.Tensor.refine_names -- the entry point to naming tensor dims that
+# these tests rely on -- is gone. Skip the dimname test methods on 2.13+.
+_TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestCummaxminBackward(TestCase):
@@ -97,6 +105,7 @@ class TestCummaxminBackward(TestCase):
         self.assertRtolEqual(cpu_output, npu_output)
         self.assertRtolEqual(cpuoutput_grad, npuoutput_grad)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_cummax_backward_dim4_H_float32_dimname(self):
         input_x1 = self.generate_dimname_data(-1, 1, (3, 3, 3, 3), np.float32)
         input_x2 = input_x1.clone().npu()
@@ -137,6 +146,7 @@ class TestCummaxminBackward(TestCase):
         self.assertRtolEqual(cpu_output, npu_output)
         self.assertRtolEqual(cpu_argmin, npu_argmin)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_cummin_backward_dim4_H_float32_dimname(self):
         input_x1 = self.generate_dimname_data(-1, 1, (3, 3, 3, 3), np.float32)
         input_x2 = input_x1.clone().npu()

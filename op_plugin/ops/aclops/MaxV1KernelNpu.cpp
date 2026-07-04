@@ -52,9 +52,11 @@ std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, int64_t dim, 
   return std::tie(outputs, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> npu_max(const at::Tensor& self, at::Dimname dim, bool keepdim) {
   return acl_op::npu_max(self, dimname_to_position(self, dim), keepdim);
 }
+#endif
 
 at::Tensor npu_max_backward_symint(const at::Tensor &grad, int64_t dim, const at::Tensor &indices,
                                    c10::SymIntArrayRef sizes_symint, bool keepdim)

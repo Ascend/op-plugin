@@ -20,6 +20,7 @@
 
 namespace op_api {
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& sum_out(const at::Tensor &self,
                     at::DimnameList dim,
                     bool keepdim,
@@ -38,6 +39,7 @@ at::Tensor sum(const at::Tensor &self,
     DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum(self, dim, keepdim, dtype));
     return op_api::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
 }
+#endif
 
 at::Tensor sum(const at::Tensor &self, c10::optional<c10::ScalarType> dtype)
 {

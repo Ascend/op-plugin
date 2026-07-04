@@ -37,11 +37,15 @@ at::Tensor mv(const at::Tensor &self, const at::Tensor &vec)
 {
     DO_COMPATIBILITY(aclnnMv, acl_op::mv(self, vec));
     at::Tensor result;
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
     if (self.has_names() || vec.has_names()) {
         result = at::empty({self.size(0)}, vec.options());
     } else {
         result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
     }
+#else
+    result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
+#endif
     auto names = at::namedinference::propagate_names_for_addmv(self, vec, result);
     int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);

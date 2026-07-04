@@ -30,10 +30,12 @@ at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
     return std::get<1>(at::sort(self, dim, descending));
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending)
 {
     return op_api::argsort(self, dimname_to_position(self, dim), descending);
 }
+#endif
 
 at::Tensor argsort(const at::Tensor &self, bool stable, int64_t dim, bool descending)
 {

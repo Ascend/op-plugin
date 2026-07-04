@@ -1,9 +1,17 @@
+import unittest
+
 import torch
 from torch.nn import functional as F
 import torch_npu
 
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+
+
+# Upstream pytorch#173895 removed named-tensor support in PyTorch 2.13.
+# torch.Tensor.refine_names -- the entry point to naming tensor dims that
+# these tests rely on -- is gone. Skip the dimname test methods on 2.13+.
+_TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestOnes(TestCase):
@@ -69,6 +77,7 @@ class TestOnes(TestCase):
 
             self.assertRtolEqual(cpu_output, npu_output)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_ones_name_format(self):
         shape_format = [
             [(2, 3, 4, 1, 5), ('A', 'B', 'C', 'D', 'E'), torch.float32],

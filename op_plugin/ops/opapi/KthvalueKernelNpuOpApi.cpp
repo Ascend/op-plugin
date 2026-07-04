@@ -38,6 +38,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     const at::Tensor& self,
     int64_t k,
@@ -56,6 +57,7 @@ std::tuple<at::Tensor&, at::Tensor&> kthvalue_out(
     EXEC_NPU_CMD(aclnnKthvalue, self, k, real_dim, keepdim, values, indices);
     return std::tuple<at::Tensor&, at::Tensor&>(values, indices);
 }
+#endif
 
 std::tuple<at::Tensor, at::Tensor> kthvalue(
     const at::Tensor& self,
@@ -73,6 +75,7 @@ std::tuple<at::Tensor, at::Tensor> kthvalue(
     return std::tuple<at::Tensor, at::Tensor>(values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> kthvalue(
     const at::Tensor& self,
     int64_t k,
@@ -89,4 +92,5 @@ std::tuple<at::Tensor, at::Tensor> kthvalue(
     EXEC_NPU_CMD(aclnnKthvalue, self, k, real_dim, keepdim, values, indices);
     return std::tuple<at::Tensor, at::Tensor>(values, indices);
 }
+#endif
 }

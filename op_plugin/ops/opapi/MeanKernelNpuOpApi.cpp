@@ -73,6 +73,7 @@ at::Tensor mean(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdi
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor mean(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<c10::ScalarType> dtype)
 {
     DO_COMPATIBILITY(aclnnMean, acl_op::mean(self, dim, keepdim, dtype));
@@ -85,6 +86,7 @@ at::Tensor& mean_out(const at::Tensor& self, at::DimnameList dim, bool keepdim, 
     DO_COMPATIBILITY(aclnnMean, acl_op::mean_out(self, dim, keepdim, dtype, out));
     return op_api::mean_out(self, dimnames_to_positions(self, dim), keepdim, dtype, out);
 }
+#endif
 
 at::Tensor mean(const at::Tensor& self, c10::optional<c10::ScalarType> dtype)
 {

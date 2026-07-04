@@ -52,6 +52,7 @@ at::Tensor softmax(
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor softmax(
     const at::Tensor &self,
     at::Dimname dim,
@@ -59,6 +60,7 @@ at::Tensor softmax(
 {
     return acl_op::softmax(self, dimname_to_position(self, dim), dtype);
 }
+#endif
 
 at::Tensor _softmax(const at::Tensor &self, int64_t dim, bool half_to_float)
 {

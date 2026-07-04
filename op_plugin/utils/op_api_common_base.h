@@ -24,7 +24,7 @@
 #include <functional>
 #include <type_traits>
 #include <ATen/Tensor.h>
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 #include <acl/acl_base.h>
 #include "op_plugin/utils/KernelNpuOutputSize.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"

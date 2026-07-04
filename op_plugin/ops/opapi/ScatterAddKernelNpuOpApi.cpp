@@ -46,6 +46,7 @@ at::Tensor& scatter_add_(
     return self;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor scatter_add(
     const at::Tensor& self,
     at::Dimname dim,
@@ -55,5 +56,6 @@ at::Tensor scatter_add(
     DO_COMPATIBILITY(aclnnScatterAdd, acl_op::scatter_add(self, dim, index, src));
     return op_api::scatter_add(self, dimname_to_position(self, dim), index, src);
 }
+#endif
 
 }

@@ -1,11 +1,19 @@
 import numpy as np
 
+import unittest
+
 import torch
 import torch.nn as nn
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
+
+
+# Upstream pytorch#173895 removed named-tensor support in PyTorch 2.13.
+# torch.Tensor.refine_names -- the entry point to naming tensor dims that
+# these tests rely on -- is gone. Skip the dimname test methods on 2.13+.
+_TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestSoftMax(TestCase):
@@ -102,6 +110,7 @@ class TestSoftMax(TestCase):
         shape_format = [[np.float32, i, [64, 112, 7, 7]] for i in format_list]
         self.softmax_result(shape_format)
 
+    @unittest.skipUnless(_TORCH_HAS_NAMED_TENSOR, "Named tensor removed in PyTorch 2.13 (pytorch#173895)")
     def test_softmax_dimname_shape_format(self, device='npu'):
         cpu_input1 = torch.randn(4, 3, names=('N', 'C'))
         npu_input1 = cpu_input1.npu()

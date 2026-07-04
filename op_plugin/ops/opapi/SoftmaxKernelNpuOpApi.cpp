@@ -35,9 +35,11 @@ at::Tensor softmax(const at::Tensor& self, int64_t dim, c10::optional<at::Scalar
     return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor softmax(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype)
 {
     return op_api::softmax(self, dimname_to_position(self, dim), dtype);
 }
+#endif
 
 }

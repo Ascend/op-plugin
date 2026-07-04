@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
@@ -112,6 +112,7 @@ at::Tensor index_select(
   return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& index_select_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -130,4 +131,5 @@ at::Tensor index_select(
     const at::Tensor& index) {
   return acl_op::index_select(self, dimname_to_position(self, dim), index);
 }
+#endif
 } // namespace acl_op

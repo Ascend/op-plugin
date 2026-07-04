@@ -36,6 +36,7 @@ at::Tensor index_select(const at::Tensor& self, int64_t dim, const at::Tensor& i
   return result;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor& index_select_out(const at::Tensor& self, at::Dimname dim, const at::Tensor& index, at::Tensor& result) {
   DO_COMPATIBILITY(aclnnIndexSelect, acl_op::index_select_out(self, dim, index, result));
   return op_api::index_select_out(self, dimname_to_position(self, dim), index, result);
@@ -45,5 +46,6 @@ at::Tensor index_select(const at::Tensor& self, at::Dimname dim, const at::Tenso
   DO_COMPATIBILITY(aclnnIndexSelect, acl_op::index_select(self, dim, index));
   return op_api::index_select(self, dimname_to_position(self, dim), index);
 }
+#endif
 
 }

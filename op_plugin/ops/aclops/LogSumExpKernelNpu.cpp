@@ -61,10 +61,12 @@ at::Tensor &logsumexp_out_nocheck(at::Tensor &result, const at::Tensor &self, at
 }
 } // namespace
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor &logsumexp_out(const at::Tensor &self, at::DimnameList dims, bool keepdim, at::Tensor &result)
 {
     return logsumexp_out(self, dimnames_to_positions(self, dims), keepdim, result);
 }
+#endif
 
 at::Tensor &logsumexp_out(const at::Tensor &self, at::IntArrayRef dims, bool keepdim, at::Tensor &result)
 {
@@ -87,9 +89,11 @@ at::Tensor logsumexp(const at::Tensor &self, at::IntArrayRef dims, bool keepdim)
     return logsumexp_out_nocheck(result, self, dims, keepdim);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor logsumexp(const at::Tensor &self, at::DimnameList dims, bool keepdim)
 {
     return acl_op::logsumexp(self, dimnames_to_positions(self, dims), keepdim);
 }
+#endif
 
 } // namespace acl_op

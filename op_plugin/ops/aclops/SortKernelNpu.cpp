@@ -114,6 +114,7 @@ std::tuple<at::Tensor&, at::Tensor&> sort_out(
     return std::tie(values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&> sort_out(
     const at::Tensor& self,
     at::Dimname dim,
@@ -123,6 +124,7 @@ std::tuple<at::Tensor&, at::Tensor&> sort_out(
 {
     return acl_op::sort_out(self, dimname_to_position(self, dim), descending, values, indices);
 }
+#endif
 
 std::tuple<at::Tensor, at::Tensor> sort(
     const at::Tensor& self,
@@ -141,6 +143,7 @@ std::tuple<at::Tensor, at::Tensor> sort(
     return std::tie(values, indices);
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor, at::Tensor> sort(
     const at::Tensor& self,
     at::Dimname dim,
@@ -148,5 +151,6 @@ std::tuple<at::Tensor, at::Tensor> sort(
 {
     return acl_op::sort(self, dimname_to_position(self, dim), descending);
 }
+#endif
 
 } // namespace acl_op

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <ATen/NamedTensorUtils.h>
+#include "op_plugin/utils/NamedTensorCompat.h"
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -58,8 +58,10 @@ at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
     return indices;
 }
 
+#if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending)
 {
     return acl_op::argsort(self, dimname_to_position(self, dim), descending);
 }
+#endif
 } // namespace acl_op
