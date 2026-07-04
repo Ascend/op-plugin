@@ -95,7 +95,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
     TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
     TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
-    c10::string_view comm_mode_value = comm_mode.value_or("");
+    c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
     char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     EXEC_NPU_CMD(aclnnAllGatherMatmulV2, x1_wrapper, x2_wrapper, bias_value, x1_scale_wrapper, x2_scale_wrapper,
                  quant_scale_value, block_size, hcom_value, gather_index, comm_turn, stream_mode, group_size, comm_mode_ptr,

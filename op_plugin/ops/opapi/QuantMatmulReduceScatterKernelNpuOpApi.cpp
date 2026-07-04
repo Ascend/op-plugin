@@ -42,7 +42,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     TORCH_CHECK(world_size != 0, "world_size cannot be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
                 OPS_ERROR(ErrCode::PARAM));
-    c10::string_view comm_mode_value = comm_mode.value_or("");
+    bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
+    c10::string_view default_comm_mode = isSocBelowAscend950 ? "aiv" : "ai_cpu";
+    c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
     TORCH_CHECK(group_size != -1, "Invalid group_sizes.", OPS_ERROR(ErrCode::PARAM));
