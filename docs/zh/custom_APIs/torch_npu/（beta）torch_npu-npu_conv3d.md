@@ -24,10 +24,10 @@ torch_npu.npu_conv3d(input, weight, bias, stride, padding, dilation, groups) -> 
 
 ## 参数说明
 
-- **input**（`Tensor`）：输入张量，shape为(minibatch, in_channels, iT, iH, iW)。
-- **weight**（`Tensor`）：过滤器张量，shape为(out_channels, in_channels/groups, kT, kH, kW)。
-- **bias**（`Tensor`）：可选参数，偏差张量，shape为(out_channels)。
-- **stride**（`List[int]`）：卷积核步长。
-- **padding**（`List[int]`）：输入两侧的隐式填充。
-- **dilation**（`List[int]`）：内核元素间距。
-- **groups**（`int`）：对输入进行分组。in_channels可被组数整除。
+- **input**（`Tensor`）：必选参数，输入张量，shape为(minibatch, in_channels, iT, iH, iW)。
+- **weight**（`Tensor`）：必选参数，过滤器张量，shape为(out_channels, in_channels/groups, kT, kH, kW)。
+- **bias**（`Tensor`）：可选参数，默认为None，偏置张量，shape为(out_channels)。
+- **stride**（`List[int]`）：可选参数，默认为[1,1,1]，卷积核步长。
+- **padding**（`List[int]`）：可选参数，默认为[1,1,1]，输入两侧的隐式填充。
+- **dilation**（`List[int]`）：可选参数，默认为[1,1,1]，内核元素间距。
+- **groups**（`int`）：可选参数，默认为1，对输入进行分组。in_channels可被组数整除。

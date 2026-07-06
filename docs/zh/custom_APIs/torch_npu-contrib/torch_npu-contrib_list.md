@@ -38,7 +38,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p14344279524"><a name="p14344279524"></a><a name="p14344279524"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p8298559105514"><a name="p8298559105514"></a><a name="p8298559105514"></a>应用基于NPU的调制可变形2D卷积操作。ModulationDeformConv的实现主要是基于mmcv的实现进行设计和重构。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p8298559105514"><a name="p8298559105514"></a><a name="p8298559105514"></a>应用基于NPU的调制可变形2D卷积操作。DCNv2的实现主要是基于mmcv的实现进行设计和重构。</p>
 </td>
 </tr>
 <tr id="row1829825935515"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p829895965516"><a name="p829895965516"></a><a name="p829895965516"></a><a href="（beta）torch_npu-contrib-BiLSTM.md">（beta）torch_npu.contrib.BiLSTM</a></p>

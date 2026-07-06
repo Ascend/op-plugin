@@ -45,7 +45,7 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
     * <term>Atlas 推理系列产品</term>: Tensor数据类型支持`float16` 、`float32`、`int8`。
     * <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>: Tensor数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
 - **model_obf_seed_id**（`int`）：可选参数， 模型混淆因子id，用于`TA`从`TEE KMC`查询模型混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
-- **data_obf_seed_id**（`int`）：必选参数， 数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
+- **data_obf_seed_id**（`int`）：可选参数， 数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
 - **thread_num**（`int`）：可选参数， `CA`/`TA`进行混淆处理使用的线程数，数据类型为`int32`，取值范围为{1, 2, 3, 4, 5, 6}，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
 - **obf_coefficient**（`float`）：可选参数，混淆系数，支持输入范围为0-1，默认值1.0。
 
