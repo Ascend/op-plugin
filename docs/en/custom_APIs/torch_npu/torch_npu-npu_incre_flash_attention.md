@@ -24,39 +24,39 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 ## Parameters
 
 - **`query`** (`Tensor`): Required. Query input of the attention mechanism. The data layout can be ND. ND indicates an N-dimensional tensor (a tensor of arbitrary dimensions).
-    - <term>Atlas inference accelerator cards</term>: The data type can be `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16` or `bfloat16`.
+    - Atlas inference accelerator cards: The data type can be `float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16` or `bfloat16`.
 
 - **`key`** (`Tensor`): Required. Key input of the attention mechanism. The data layout can be ND.
-    - <term>Atlas inference accelerator cards</term>: The data type can be `float16`, `bfloat16`, or `int8`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `bfloat16`, or `int8`.
+    - Atlas inference accelerator cards: The data type can be `float16`, `bfloat16`, or `int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `bfloat16`, or `int8`.
 
 - **`value`** (`Tensor`): Required. Value input of the attention mechanism. The data layout can be ND.
-    - <term>Atlas inference accelerator cards</term>: The data type can be `float16` or `int8`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `bfloat16`, or `int8`.
+    - Atlas inference accelerator cards: The data type can be `float16` or `int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `bfloat16`, or `int8`.
 
 - **`*`**: Required. Positional argument separator. Parameters before this symbol are positional-only and must be provided in order. Parameters after this symbol are keyword-only and must be provided as key-value pairs. Default values are used if omitted.
 - **`padding_mask`** (`Tensor`): Reserved parameter, currently not used. The default value is `None`.
 - **`pse_shift`** (`Tensor`): Optional. Positional encoding parameter used within the attention mechanism. The data layout can be ND. This parameter can be omitted or set to `None` if this feature is not used.
-    - <term>Atlas inference accelerator cards</term>: Only `None` is supported.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16` or `bfloat16`.
+    - Atlas inference accelerator cards: Only `None` is supported.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16` or `bfloat16`.
 - **`atten_mask`** (`Tensor`): Optional. A value of `1` indicates that the position is masked out and excluded from computation, and `0` indicates that the position is included in computation. The default value is `None` (all positions are included). The data type can be `bool`, `int8`, or `uint8`. The data layout can be ND.
 - **`actual_seq_lengths`** (`List[int]`): Optional. Valid sequence lengths $S$ for `key` and `value`. The shape of this parameter is `(B,)` or `(1,)`, such as `[1, 2, 3]`. The default value is `None` (all elements are valid). The data type can be `int64`. The data layout can be ND.
-- **`dequant_scale1`** (`Tensor`): Optional. Dequantization factor after BMM1. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in dequantization scenarios after BMM1, typically when the BMM1 output represents quantized results and subsequent computations require restoration to a floating-point representation. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for <term>Atlas inference accelerator cards</term>.
-- **`quant_scale1`** (`Tensor`): Optional. Quantization factor before BMM2. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in quantization scenarios before BMM2, typically when the inputs must be converted to a quantized representation before entering BMM2. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for <term>Atlas inference accelerator cards</term>.
-- **`dequant_scale2`** (`Tensor`): Optional. Dequantization factor after BMM2. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in dequantization scenarios after BMM2, typically when the BMM2 output represents quantized results and subsequent computations require restoration to a floating-point representation. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for <term>Atlas inference accelerator cards</term>.
+- **`dequant_scale1`** (`Tensor`): Optional. Dequantization factor after BMM1. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in dequantization scenarios after BMM1, typically when the BMM1 output represents quantized results and subsequent computations require restoration to a floating-point representation. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for Atlas inference accelerator cards.
+- **`quant_scale1`** (`Tensor`): Optional. Quantization factor before BMM2. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in quantization scenarios before BMM2, typically when the inputs must be converted to a quantized representation before entering BMM2. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for Atlas inference accelerator cards.
+- **`dequant_scale2`** (`Tensor`): Optional. Dequantization factor after BMM2. `pertensor` (scalar) mode is supported. The data type can be `float32`. The data layout can be ND. This parameter is used in dequantization scenarios after BMM2, typically when the BMM2 output represents quantized results and subsequent computations require restoration to a floating-point representation. This parameter can be omitted or set to `None` if this feature is not used. Currently, this parameter is not used for Atlas inference accelerator cards.
 - **`quant_scale2`** (`Tensor`): Optional. Quantization factor for output quantization. `pertensor` (scalar) and `perchannel` (list) modes are supported. The data layout can be ND. This parameter is used in final output quantization scenarios and must be used together with `quant_offset2` when the output requires quantization. This parameter can be omitted or set to `None` if this feature is not used.
-    - <term>Atlas inference accelerator cards</term>: This parameter is not supported in the current version.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32` or `bfloat16`.
+    - Atlas inference accelerator cards: This parameter is not supported in the current version.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32` or `bfloat16`.
 - **`quant_offset2`** (`Tensor`): Optional. Quantization offset for output quantization. `pertensor` (scalar) and `perchannel` (list) modes are supported. The data layout can be ND. This parameter is used in final output quantization scenarios and is typically used together with `quant_scale2`. This parameter can be omitted or set to `None` if the output quantization feature is not used.
-    - <term>Atlas inference accelerator cards</term>: This parameter is not supported in the current version.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32` or `bfloat16`.
+    - Atlas inference accelerator cards: This parameter is not supported in the current version.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32` or `bfloat16`.
 - **`antiquant_scale`** (`Tensor`): Optional. Dequantization factor. `perchannel` (list) mode is supported, which is determined by the shape. In $BNSD$ layouts, the shape of this parameter is `(2, N, 1, D)`. In $BSH$ layouts, the shape is `(2, H)`. In $BSND$ layouts, the shape is `(2, N, D)`. This parameter is used in input or weight dequantization scenarios, typically to restore low-bit data to the required format for computation, and is typically used together with `antiquant_offset`. This parameter can be omitted or set to `None` if this feature is not used.
-    - <term>Atlas inference accelerator cards</term>: The data type can be `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16` or `bfloat16`.
+    - Atlas inference accelerator cards: The data type can be `float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16` or `bfloat16`.
 - **`antiquant_offset`** (`Tensor`): Optional. Dequantization offset. `perchannel` (list) mode is supported, which is determined by the shape. In $BNSD$ layouts, the shape of this parameter is `(2, N, 1, D)`. In $BSH$ layouts, the shape is `(2, H)`. In $BSND$ layouts, the shape is `(2, N, D)`. This parameter is used in input or weight dequantization scenarios and is typically used together with `antiquant_scale`. This parameter can be omitted or set to `None` if this feature is not used.
-    - <term>Atlas inference accelerator cards</term>: The data type can be `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16` or `bfloat16`.
+    - Atlas inference accelerator cards: The data type can be `float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16` or `bfloat16`.
 - **`block_table`** (`Tensor`): Optional. The data type can be `int32`. The data layout can be ND. This parameter must be a 2D tensor. It indicates the block mapping table used for KV storage in page attention. For details about the constraints and usage, see [Constraints](#en-us_topic_0000001711274864_section12345537164214). This parameter can be omitted or set to `None` if this feature is not used.
 - **`kv_padding_size`** (`Tensor`): Optional. Distance from the last valid token to $S$ when left padding of KV is enabled. The data type can be `int64`. The data layout can be ND. This parameter can be set to `None` if this feature is not used.
 - **`num_heads`** (`int`): Optional. Head count of `query`, $N$ in the formula for `query`. The default value is `1`. The data type can be `int64`.
@@ -89,8 +89,8 @@ Final computation result, $atten\_out$ in the formula. The shape of this paramet
 - The value of `input_layout` is determined by the shape of `query`. For a 3D `Tensor`, the layout is $BSH$. For a 4D `Tensor`, the layout can be $BNSD$ or $BSND$.
 - The value of `num_key_value_heads` must be equal to $N$ of `key` and `value`, and `num_heads` must be divisible by `num_key_value_heads`.
 - Constraints on `query`, `key`, and `value`:
-    - <term>Atlas A2 training products and Atlas A2 inference products</term>: The size of the $B$ axis can be less than or equal to `65535`, the size of the $N$ axis can be less than or equal to `256`, the size of the $S$ axis can be less than or equal to `262144`, and the size of the $D$ axis can be less than or equal to `512`.
-    - <term>Atlas inference accelerator cards</term>: The size of the $B$ axis can be less than or equal to `256`, the size of the $N$ axis can be less than or equal to `256`, the size of the $S$ axis can be less than or equal to `65536`, and the size of the $D$ axis can be less than or equal to `512` 
+    - Atlas A2 training products and Atlas A2 inference products: The size of the $B$ axis can be less than or equal to `65535`, the size of the $N$ axis can be less than or equal to `256`, the size of the $S$ axis can be less than or equal to `262144`, and the size of the $D$ axis can be less than or equal to `512`.
+    - Atlas inference accelerator cards: The size of the $B$ axis can be less than or equal to `256`, the size of the $N$ axis can be less than or equal to `256`, the size of the $S$ axis can be less than or equal to `65536`, and the size of the $D$ axis can be less than or equal to `512` 
     - Scenarios where `query`, `key`, and `value` inputs are all `int8` are currently not supported.
 
 - Comprehensive constraints on the number of `int8` quantization-related parameters and the input or output data formats:

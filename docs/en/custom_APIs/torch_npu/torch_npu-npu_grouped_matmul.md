@@ -64,19 +64,19 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **`x`** (`List[Tensor]`): Required. Input matrix list representing the left matrices in MatMul.
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products</term>: `float16`, `float32`, `bfloat16`, `int8`, or `int4`.
-        - <term>Atlas inference products</term>: `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16`, `float32`, `bfloat16`, `int8`, or `int4`.
+        - Atlas inference products: `float16`.
 
     - The maximum list length is `128`.
     - When `split_item` is set to `0`, each tensor supports 2D to 6D inputs. In other configurations, only 2D inputs are supported.
 
 - **`weight`** (`List[Tensor]`): Required. Weight matrix list representing the right matrices in MatMul.
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
             - When `group_list` is of type `List[int]`, the data type can be `float16`, `float32`, `bfloat16`, or `int8`.
             - When `group_list` is of type `Tensor`, the data type can be `float16`, `float32`, `bfloat16`, `int4`, or `int8`.
 
-        - <term>Atlas inference products</term>: `float16`.
+        - Atlas inference products: `float16`.
 
     - The maximum list length is `128`.
     - Each input tensor can be 2D or 3D.
@@ -84,28 +84,28 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`bias`** (`List[Tensor]`): Optional. Independent bias term for each grouped MatMul output.
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products</term>: `float16`, `float32`, or `int32`.
-        - <term>Atlas inference products</term>: `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16`, `float32`, or `int32`.
+        - Atlas inference products: `float16`.
 
     - The list length must be identical to that of `weight`.
     - Each input tensor must be 1D.
 
 - **`scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, corresponding to Formula (2) and Formula (3).
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
             - When `group_list` is of type `List[int]`, the data type can be `int64`.
             - When `group_list` is of type `Tensor`, the data type can be `float32`, `bfloat16`, or `int64`.
 
-        - <term>Atlas inference products</term>: Only `None` is supported.
+        - Atlas inference products: Only `None` is supported.
 
     - The list length must be identical to that of `weight`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: Each input tensor must be 1D.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Each input tensor must be 1D.
 
 - **`offset`** (`List[Tensor]`): Optional. Offset in quantization parameters, used to adjust quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (2). Currently, only `None` is supported.
 - **`antiquant_scale`** (`List[Tensor]`): Optional. Scaling factor in fake-quantization parameters, used to scale original values to match the fake-quantized range, corresponding to Formula (4).
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: `float16` or `bfloat16`.
-        - <term>Atlas inference products</term>: Only `None` is supported.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16` or `bfloat16`.
+        - Atlas inference products: Only `None` is supported.
 
     - The list length must be identical to that of `weight`.
     - Each tensor supports the following shapes, where $g$ indicates the number of MatMul groups, $G$ indicates the number of `pergroup` partitions, and $G_i$ indicates the number of `pergroup` partitions for the $i$-th tensor.
@@ -114,8 +114,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **`antiquant_offset`** (`List[Tensor]`): Optional. Offset in fake-quantization parameters, used to adjust fake-quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (4).
     - Valid data types:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: `float16` or `bfloat16`.
-        - <term>Atlas inference products</term>: Only `None` is supported.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16` or `bfloat16`.
+        - Atlas inference products: Only `None` is supported.
 
     - The list length must be identical to that of `weight`.
     - Each tensor must have an identical input dimension to that of `antiquant_scale`.
@@ -123,13 +123,13 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`per_token_scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, representing the scaling factor introduced by `x` quantization in `pertoken` quantization parameters, corresponding to Formula (3).
     - When `group_list` is of type `List[int]`, only `None` can be provided.
     - When `group_list` is of type `Tensor`:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float32`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`.
         - The list length must be identical to that of `x`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: Each input tensor must be 1D.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Each input tensor must be 1D.
 
 - **`group_list`** (`List[int]`/`Tensor`): Optional. Grouping index indicating the index mapping of MatMul along dimension `0` of `x`. The data type can be `int64`.
-    - <term>Atlas inference products</term>: Only the <code>**Tensor**</code> type is supported. Each input tensor must be 1D. The length must be identical to that of `weight`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: Both **`List[int]`** and **`Tensor`** types are supported. If it is a **`Tensor`**, it must be 1D, and the length must be identical to that of `weight`.
+    - Atlas inference products: Only the <code>**Tensor**</code> type is supported. Each input tensor must be 1D. The length must be identical to that of `weight`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Both **`List[int]`** and **`Tensor`** types are supported. If it is a **`Tensor`**, it must be 1D, and the length must be identical to that of `weight`.
     - Configuration requirements:
         - When `group_list` is of type `List[int]`, the configuration must be a non-negative strictly increasing sequence, and the length cannot be `1`.
         - When `group_list` is of type `Tensor`:
@@ -148,8 +148,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, and the matrix multiplication is $C[m,n]=A[m,k] \times B[k,n]$, the valid enum values are: `-1` (no grouping), `0` (grouping along the m-axis), and `2` (grouping along the k-axis).
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: Currently, the value can be `-1`, `0`, or `2`.
-        - <term>Atlas inference products</term>: Currently, only `0` is supported.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Currently, the value can be `-1`, `0`, or `2`.
+        - Atlas inference products: Currently, only `0` is supported.
 
 - `group_list_type` (`int`): Optional. Representation format of `group_list`. The data type can be `int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
@@ -158,22 +158,22 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         - `0`: Default value. The values in `group_list` indicate the cumulative sum (`cumsum`) results of group sizes along the grouping axis.
         - `1`: The values in `group_list` indicate the size of each group along the grouping axis.
         - `2`: The shape of `group_list` must be `[E, 2]`, where `E` indicates the group size. The data layout must be `[[groupIdx0, groupSize0], [groupIdx1, groupSize1]...]`. `groupSize` indicates the size of each group along the grouping axis.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The value `2` is supported only when the data type of `x` and `weight` is `INT8`, and `group_type` is set to `0` (m-axis grouping).
-        - <term>Atlas inference products</term>: The value `2` is not supported.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The value `2` is supported only when the data type of `x` and `weight` is `INT8`, and `group_type` is set to `0` (m-axis grouping).
+        - Atlas inference products: The value `2` is not supported.
     
 - **`act_type`** (`int`): Optional. Activation function type. The data type can be `int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, valid enum values are: `0` (no activation), `1` (`RELU` activation), `2` (`GELU_TANH` activation), `3` (not supported), `4` (`FAST_GELU` activation), or `5` (`SILU` activation).
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The value ranges from 0 to 5.
-        - <term>Atlas inference products</term>: Currently, only `0` is supported.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The value ranges from 0 to 5.
+        - Atlas inference products: Currently, only `0` is supported.
 
 - **`output_dtype`** (`torch.dtype`): Optional. Output data type. Valid values are:
     - `None`: Default value. The output data type is identical to that of `x`.
     - A type identical to that of output `y`. For details, see [Constraints](#en-us_topic_0000002262888689_section618392112366).
 
 - **`tuning_config`** (`List[int]`): Optional. The first element in this list specifies the expected number of tokens processed by each expert. During operator tiling, optimization is performed based on this element for higher performance. For details about the usage scenarios, see [Constraints](#en-us_topic_0000002262888689_section618392112366). Elements starting from the second element are reserved for future extensions and can be omitted. This parameter can be omitted if it is not used.
-    - <term>Atlas inference products</term>: This parameter is not supported currently.
+    - Atlas inference products: This parameter is not supported currently.
 
 ## Return Values<a name="en-us_topic_0000002262888689_section1558311519405"></a>
 
@@ -186,7 +186,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
-- <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The inner dimension limit `InnerLimit` is fixed at `65536`.
+- Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The inner dimension limit `InnerLimit` is fixed at `65536`.
 - For each tensor group in `x` and `weight`, the size of the last dimension must be less than `InnerLimit`. The last dimension of <code>x<sub>i</sub></code> indicates the K-axis of <code>x<sub>i</sub></code> when `x` is not transposed, or the M-axis of <code>x<sub>i</sub></code> when `x` is transposed. The last dimension of <code>weight<sub>i</sub></code> indicates the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed.
 
 - Usage scenario constraints for `tuning_config`:
@@ -201,7 +201,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
     |`int8`|`int8`|`int32`|`int32`|
 
 - Constraints on the input and output data types in different scenarios:
-    - **When `group_list` is of type `List[int]`**: Data type constraints for <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term> apply.
+    - **When `group_list` is of type `List[int]`**: Data type constraints for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products apply.
 
         **Table 1** Data type constraints
 
@@ -215,7 +215,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         |Fake-quantization|`bfloat16`|`int8`|`float32`|Not required|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|
 
     - **When `group_list` is of type `Tensor`**: Data type constraints for the following products apply:
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
             **Table 2** Data type constraints
 
@@ -239,7 +239,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             > - In fake-quantization scenarios, if the data type of `weight` is `int4`, the size of the last dimension for each tensor group in `weight` must be an even number. The last dimension of <code>weight<sub>i</sub></code> indicates the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed. In `pergroup` mode, when `weight` is transposed, the `pergroup` length $s_i$ must be an even number. A transposed tensor refers to a configuration where a tensor with shape `[M, K]` has a stride of `[1, M]` and a data layout of `[K, M]`. That is, it indicates a non-contiguous tensor.
             > - PyTorch does not natively support the `int4` data type. To use `int4`, you can represent it using `int32` data through the [torch_npu.npu_quantize](torch_npu-npu_quantize.md) API.
 
-        - <term>Atlas inference products</term>:
+        - Atlas inference products:
 
             **Table 3** Data type constraints
 
@@ -248,7 +248,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |`float16`|`float16`|`float16`|Not required|Not required|Not required|`float32`|`float16`|`float16`|
             
 - The following scenarios are supported based on the variations in the tensor counts of input `x`, input `weight`, and output `y`. In these scenario descriptions, "single" indicates a single tensor, and "multiple" indicates multiple tensors. The naming sequence follows the order of `x`, `weight`, and `y`. For example, "single-multiple-single" indicates that `x` is a single tensor, `weight` is a list of tensors, and `y` is a single tensor.
-    - **When `group_list` is of type `List[int]`**: constraints for <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term> apply.
+    - **When `group_list` is of type `List[int]`**: constraints for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products apply.
 
         |Supported Scenario|Description|Constraints|
         |--------|--------|--------|
@@ -258,7 +258,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         |Multiple–Multiple–Single|`x` and `weight` are lists of tensors, and `y` is a single tensor. The results of each matrix multiplication group are stored sequentially within the same continuous tensor.|1. `split_item` must be `2` or `3`.<br>2. The tensors in `x`, `weight`, and `y` must be 2D.<br>3. The N-axis size of each tensor in `weight` must be identical.<br>4. If `group_list` is provided, the differences between adjacent elements in `group_list` must correspond one-to-one to the first dimension of each tensor in `x`.|
         
     - **When `group_list` is of type `Tensor`**: constraints for the following products apply.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
             > [!NOTE]   
             > - Quantization and fake-quantization are supported only when `group_type` is set to `-1` or `0`.
@@ -271,7 +271,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
             |0|Single-Multiple-Single|`x` and `y` are single tensors, and `weight` is a list of tensors.|1. `split_item` must be `2` or `3`.<br>2. `group_list` must be provided. When `group_list_type` is set to `0`, its last value must be identical to the first dimension of the tensor in `x`. When `group_list_type` is set to `1`, the sum of its values must be identical to the first dimension of the tensor in `x`, and the maximum length is `128`. When `group_list_type` is set to `2`, the sum of the values in its second column must be identical to the first dimension of the tensor in `x`, and the maximum length is `128`.<br>3. The tensors in `x`, `weight`, and `y` must be 2D.<br>4. The N-axis size of each tensor in `weight` must be identical.<br>5. Transposition of `weight` is supported, but the transpose configuration of each tensor in `weight` must be identical.<br>6. `x` does not support transposition.|
             |0|Multiple–Multiple–Single|`x` and `weight` are lists of tensors, and `y` is a single tensor. The results of each matrix multiplication group are stored sequentially within the same continuous tensor.|1. `split_item` must be `2` or `3`.<br>2. The tensors in `x`, `weight`, and `y` must be 2D.<br>3. The N-axis size of each tensor in `weight` must be identical.<br>4. If `group_list` is provided, when `group_list_type` is set to `0`, the differences between adjacent elements in `group_list` must correspond one-to-one to the first dimension of each tensor in `x`. When `group_list_type` is set to `1`, the values of `group_list` must correspond one-to-one to the first dimension of each tensor in `x`, and the maximum length is `128`. When `group_list_type` is set to `2`, the values in the second column of `group_list` must correspond one-to-one to the first dimension of each tensor in `x`, and the maximum length is `128`.<br>5. Transposition of `weight` is supported, but the transpose configuration of each tensor in `weight` must be identical.<br>6. `x` does not support transposition.|
 
-        - <term>Atlas inference products</term>
+        - Atlas inference products
 
             The inputs and outputs support only the `float16` data type. The N-axis size of the output `y` must be a multiple of `16`.
 
@@ -344,7 +344,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         ```
 
 - Graph mode call
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>, <term>Atlas inference products</term>, and <term>Atlas A3 training products/Atlas A3 inference products</term>
+    - Atlas A2 training products/Atlas A2 inference products, Atlas inference products, and Atlas A3 training products/Atlas A3 inference products
 
         ```python
         import torch

@@ -41,8 +41,8 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 - **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales`, valid only in MoE scenarios. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported.
 
 - **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `int8` if `None` is provided.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Valid values are `int8` or `quint4x2`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: Valid values are `int8` or `quint4x2`.
+    - Atlas A2 training products/Atlas A2 inference products: Valid values are `int8` or `quint4x2`.
+    - Atlas A3 training products/Atlas A3 inference products: Valid values are `int8` or `quint4x2`.
 
 ## Return Values
 

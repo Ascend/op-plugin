@@ -170,7 +170,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   > 
   > - `token_x`, `weight_dq`, `weight_uq_qr`, `weight_dkv_kr`, and `kv_cache` do not support `float8_e4m3fn` or `hifloat8`.
   > - `dequant_scale_x`, `dequant_scale_w_dq`, `dequant_scale_w_uq_qr`, and `dequant_scale_w_dkv_kr` do not support `float8_e8m0`.
@@ -189,7 +189,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   > 
   > - `query` and `query_norm` do not support the `float8_e4m3fn` or `hifloat8` data type.
   > - `dequant_scale_q_norm` does not support the `float8_e8m0` data type.
@@ -222,7 +222,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   > 
   > - Currently, fp8, hif8, and mxfp8 full quantization scenarios are not supported.
 

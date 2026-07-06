@@ -54,31 +54,31 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of `torch_npu.npu_moe_distribute_dispatch`. The value range of elements inside the tensor is [0, `moe_expert_num`), and the $K$ values within the identical row must be unique.
 - **`expand_idx`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expand_idx` output of `torch_npu.npu_moe_distribute_dispatch`.
 - **`ep_send_counts`** (`Tensor`): Required. Data amount sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain. This parameter must be a 1D tensor. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`. EP is a parallelization strategy specific to Mixture-of-Experts (MoE) networks, where different experts are distributed across different ranks and each rank holds only a subset of the complete expert set. Each token is routed to specify which experts must process it, and is sent to the corresponding rank through AlltoAll communication to complete computation.
-    <term>Atlas A3 training products/Atlas A3 inference products</term>: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
+    Atlas A3 training products/Atlas A3 inference products: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
 
 - **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float`. The data layout is ND. Non-contiguous tensors are supported.
 - **`residual_x`** (`Tensor`): Required. Residual parameter to be added to the processed tokens. This parameter must be 3D with shape `(BS, 1, H)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
 - **`gamma`** (`Tensor`): Required. Weight parameter for `rms_norm`. This parameter must be 1D with shape `(H,)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
 - **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length value range is [1, 128). The value of this parameter must differ from `group_tp`.
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [2, 768].
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [2, 768].
 
 - **`ep_rank_id`** (`int`): Required. Rank ID of the current rank within the EP communication domain. The value range is [0, `ep_world_size`). The `ep_rank_id` values of all ranks within the identical EP communication domain must be unique.
 - **`moe_expert_num`** (`int`): Required. Number of MoE experts. The value range is [1, 1024], and the condition `moe_expert_num % (ep_world_size - shared_expert_rank_num) == 0` must be satisfied.
 - **`tp_send_counts`** (`Tensor`): Optional. Amount of data sent from each expert on the current rank to each rank within the Tensor Parallelism (TP) communication domain. This parameter corresponds to the `tp_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`. TP is a general model parallelism strategy in which the weights or activations of a single operator are partitioned across multiple ranks along a given dimension. The ranks collaboratively perform the computation, and the results are aggregated through collective communication operations such as AllReduce and AllGather.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The TP communication domain is supported. This parameter must be 1D with shape `(tp_world_size,)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A3 training products/Atlas A3 inference products: The TP communication domain is supported. This parameter must be 1D with shape `(tp_world_size,)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`x_active_mask`** (`Tensor`):
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: This parameter must be 1D or 2D. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid.
+    - Atlas A3 training products/Atlas A3 inference products: This parameter must be 1D or 2D. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid.
 
 - **`activation_scale`** (`Tensor`): Optional. **Reserved parameter, currently not used. Retain the default value.**
 - **`weight_scale`** (`Tensor`): Optional. **Reserved parameter, currently not used. Retain the default value.**
 - **`group_list`** (`Tensor`): Optional. **Reserved parameter, currently not used. Retain the default value.**
 - **`expand_scales`** (`Tensor`): Optional. This parameter corresponds to the `expand_scales` output of `torch_npu.npu_moe_distribute_dispatch`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: Currently, this parameter is not supported. Retain the default value.
+    - Atlas A3 training products/Atlas A3 inference products: Currently, this parameter is not supported. Retain the default value.
 
 - **`shared_expert_x`** (`Tensor`): Optional. The data type must be identical to that of `expand_x`. This parameter is the shared-expert token data that must be added during the combine operation. Use it only when the number of shared-expert devices `shared_expert_rank_num` is `0`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type must match that of `expand_x`, and the shape of this parameter is `(BS, H)`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type must match that of `expand_x`, and the shape of this parameter is `(BS, H)`.
 
 - **`elastic_info`** (`Tensor`): Optional. Reserved parameter, currently not used. Retain the default value `None`.
 
@@ -91,21 +91,21 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **`const_expert_v`** (`Tensor`): Optional. Calculation coefficient required when `const_expert` is enabled. You can choose to pass a valid tensor or `None`. When `const_expert_num` is not 0, a valid tensor must be provided. This parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`group_tp`** (`str`): Optional. Communication domain name used for tensor parallelism. This parameter is required only when TP domain communication is involved.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When there is TP domain communication, the string length value range is [0, 128). The value of this parameter must differ from `group_ep`. An empty value is supported only when there is no TP domain.
+    - Atlas A3 training products/Atlas A3 inference products: When there is TP domain communication, the string length value range is [0, 128). The value of this parameter must differ from `group_ep`. An empty value is supported only when there is no TP domain.
 
 - **`tp_world_size`** (`int`): Optional. Size of the TP communication domain. This parameter is required only when TP domain communication is involved.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When TP domain communication is involved, the value range is [0, 2]. The values `0` and `1` indicate that there is no TP domain communication, and the value `2` indicates that there is TP domain communication.
+    - Atlas A3 training products/Atlas A3 inference products: When TP domain communication is involved, the value range is [0, 2]. The values `0` and `1` indicate that there is no TP domain communication, and the value `2` indicates that there is TP domain communication.
 
 - **`tp_rank_id`** (`int`): Optional. Rank ID of the current rank within the TP communication domain. This parameter is required only when TP domain communication is involved.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When TP domain communication is involved, the value range is [0, 1]. The `tp_rank_id` of each rank in the same TP communication domain must be unique. If there is no TP domain communication, pass `0`.
+    - Atlas A3 training products/Atlas A3 inference products: When TP domain communication is involved, the value range is [0, 1]. The `tp_rank_id` of each rank in the same TP communication domain must be unique. If there is no TP domain communication, pass `0`.
 
 - **`expert_shard_type`** (`int`): Optional. Layout type of shared-expert ranks.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: Currently, only `0` is supported, indicating that shared-expert ranks are arranged in front of MoE expert ranks.
+    - Atlas A3 training products/Atlas A3 inference products: Currently, only `0` is supported, indicating that shared-expert ranks are arranged in front of MoE expert ranks.
 
 - **`shared_expert_num`** (`int`): Optional. Number of shared experts, where a shared expert can be replicated and deployed across multiple ranks. **Reserved parameter, currently not used. Only the default value `0` is supported.**
 - **`shared_expert_rank_num`** (`int`): Optional. **Reserved parameter, currently not used. Only the default value `0` is supported.**
 - **`global_bs`** (`int`): Optional. Global batch size within the EP communication domain.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When the batch sizes differ across ranks, passing `max_bs * ep_world_size` is supported, where `max_bs` indicates the maximum batch size of a single rank. When the batch sizes are identical across ranks, passing `0` or `BS * ep_world_size` is supported.
+    - Atlas A3 training products/Atlas A3 inference products: When the batch sizes differ across ranks, passing `max_bs * ep_world_size` is supported, where `max_bs` indicates the maximum batch size of a single rank. When the batch sizes are identical across ranks, passing `0` or `BS * ep_world_size` is supported.
 
 - **`out_dtype`** (`int`): Optional. **Reserved parameter, currently not used. Retain the default value.**
 - **`comm_quant_mode`** (`int`): Optional. Communication quantization type. **Reserved parameter, currently not used. Retain the default value.**
@@ -129,7 +129,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - This API can be used in inference scenarios.
 - This API supports graph mode.
 - The values of `expert_ids`, `x_active_mask`, `elastic_info`, `group_ep`, `ep_world_size`, `moe_expert_num`, `group_tp`, `tp_world_size`, `expert_shard_type`, `shared_expert_num`, `shared_expert_rank_num`, `global_bs`, `comm_alg`, `zero_expert_num`, `copy_expert_num`, `const_expert_num`, and `HCCL_BUFFSIZE` must be identical across all ranks during API execution. These values must also remain consistent across different layers of the network and match the corresponding parameters of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-- <term>Atlas A3 training products/Atlas A3 inference products</term>: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
+- Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 - The condition `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32` must be satisfied, where the value of `MAX_INT32` is `2147483647`.
 - Variables used in parameter tensor shapes:
     - `A`: Maximum number of tokens that can be received by the current rank. The value range is as follows:
@@ -137,10 +137,10 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         - When the value of `global_bs` is not `0`, the condition `A >= global_bs * min(local_expert_num, K)` must be satisfied.
 
     - `H`: Hidden layer size.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [1024, 8192].
+        - Atlas A3 training products/Atlas A3 inference products: The value range is [1024, 8192].
 
     - `BS`: Number of tokens to be sent.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is 0 < `BS` <= 512.
+        - Atlas A3 training products/Atlas A3 inference products: The value range is 0 < `BS` <= 512.
 
     - `K`: Number of top-K experts selected. The value range is 0 < `K` <= 8, and the condition 0 < `K` <= `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num` must be satisfied.
     - `local_expert_num`: Number of experts on the current rank.
@@ -160,7 +160,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
     - The `npu_moe_distribute_dispatch_v2` and `npu_moe_distribute_combine_add_rms_norm` operators within a single model must either operate in the same TP communication domain or both operate without a TP communication domain. When a TP communication domain is involved, this domain must not include other operators.
 
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: Nodes in a communication domain must reside within the same SuperPoD. Cross-SuperPoD deployment is not supported.
+    - Atlas A3 training products/Atlas A3 inference products: Nodes in a communication domain must reside within the same SuperPoD. Cross-SuperPoD deployment is not supported.
 
 ## Examples<a name="en-us_topic_0000002322738573_section9702174311218"></a>
 

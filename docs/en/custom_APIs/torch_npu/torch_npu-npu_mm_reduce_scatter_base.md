@@ -51,8 +51,8 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **`x2`** (`Tensor`): Required. The data type must be identical to that of `input`. The data layout can be ND or NZ. NZ is supported only when `comm_mode` is set to `aiv`. This parameter must be 2D with shape `(k, n)`. The dimensions must satisfy the requirements of the MatMul operator. The values along the $k$ axis must be equal and must be in the range [256, 65535). The value of $m$ must be divisible by `world_size`.
 - **`hcom`** (`str`): Required. Communicator handle name obtained by calling the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
-    - <term>Atlas A2 training products</term>: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term> Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
+    - Atlas A2 training products: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
+    - Atlas A3 training products/Atlas A3 inference products Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
 
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`reduce_op`** (`str`): Optional. Type of the reduce operation. Only the default value `'sum'` is supported.
@@ -79,7 +79,7 @@ In quantization scenarios, if the data type of `x2_scale` is `int64`, the output
   - When `comm_mode` is `ai_cpu`:
        - This API is used only in training scenarios.
        - This API supports graph mode.
-       - <term>Atlas A2 training products</term>: Communication fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a single model must share the identical communication domain.
+       - Atlas A2 training products: Communication fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a single model must share the identical communication domain.
   - When `comm_mode` is `aiv`, this API is supported in both training and inference scenarios. 
 
 - **Supported `comm_mode` matrix**

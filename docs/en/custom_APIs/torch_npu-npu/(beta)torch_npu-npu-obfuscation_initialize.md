@@ -43,8 +43,8 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
     * `2`: initializes resources for quantized inference mode.
     * `3`: releases resources.
 - **`data_type`** (`int`): Optional. Numeric ID representing the tensor data type. The data type is `int32`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-    * <term>Atlas inference products</term>: The data type can be `float16`, `float32`, or `int8`.
-    <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, `bfloat16`, or `int8`.
+    Atlas inference products: The data type can be `float16`, `float32`, or `int8`.
+    Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, `bfloat16`, or `int8`.
 - **`model_obf_seed_id`** (`int`): Optional. Model obfuscation factor ID used by the `TA` module to query the model obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
 - **`data_obf_seed_id`** (`int`): Required. Data obfuscation factor ID used by the `TA` module to query the data obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
 - **`thread_num`** (`int`): Optional. Number of threads used by the `CA` and `TA` modules for obfuscation processing. The data type is `int32`. Valid values are `{1, 2, 3, 4, 5, 6}`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.

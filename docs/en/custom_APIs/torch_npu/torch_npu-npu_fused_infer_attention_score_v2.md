@@ -228,8 +228,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - The corresponding tensors of `key` and `value` must have identical shapes. In non-contiguous scenarios, each tensor in the tensorlist of `key` and `value` must have a batch size of 1. The number of tensors must be equal to `B` in `query`, and the `N` and `D` dimensions must be identical.
 - Constraints on the number of input parameters and output data formats related to INT8 quantization:
     - For `int8` output: The input parameter `quant_scale_out` must be provided. `quant_offset_out` is optional and defaults to `0` if not specified.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term>: The input data type is `int8`.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The input data type is `int8`.
+        - Atlas A2 training products/Atlas A2 inference products: The input data type is `int8`.
+        - Atlas A3 training products/Atlas A3 inference products: The input data type is `int8`.
 
     - For `float16` output: If the input parameter `quant_offset_out` or `quant_scale_out` is provided (not `None`), an error is raised and execution returns.
     - `quant_offset_out` and `quant_scale_out` support `pertensor` or `perchannel` modes, and their data types can be `float32` or `bfloat16`.
@@ -317,15 +317,15 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
         - When the data types of `query`, `key`, or `value` include `int8`, the `D` dimension must be a multiple of 32. When the data types are all `float16` or `bfloat16`, the `D` dimension must be a multiple of 16.
         - Constraints on the `D` dimension:
-            - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: When the data types of `query`, `key`, or `value` include `int8`, the `D` dimension must be a multiple of 32. When the data types of `query`, `key`, `value`, or `attentionOut` include `int4`, the `D` dimension must be a multiple of 64. When the data types are all `float16` or `bfloat16`, the `D` dimension must be a multiple of 16.
+            - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When the data types of `query`, `key`, or `value` include `int8`, the `D` dimension must be a multiple of 32. When the data types of `query`, `key`, `value`, or `attentionOut` include `int4`, the `D` dimension must be a multiple of 64. When the data types are all `float16` or `bfloat16`, the `D` dimension must be a multiple of 16.
 
     - Constraints on `actual_seq_qlen`:
     
-        <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. For details about the comprehensive constraints when `input_layout` of `query` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. For details about the comprehensive constraints when `input_layout` of `query` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
         
     - Constraints on `actual_seq_kvlen`:
     
-        <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
         
     - The `sparse_mode` parameter supports only values of `0`, `1`, `2`, `3`, `4`, and `9`. Other values result in an error.
 
@@ -367,7 +367,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - `key_quant_mode` and `value_quant_mode` must have identical values.
         - `dequant_scale_key` and `dequant_scale_value` must either both be omitted or both be provided. Likewise, `dequant_offset_key` and `dequant_offset_value` must either both be omitted or both be provided.
         - When `dequant_scale_key` and `dequant_scale_value` are both provided, their shapes must be identical. When `dequant_offset_key` and `dequant_offset_value` are both provided, their shapes must be identical. 
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:  
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:  
             - Only `pertoken` and `perchannel` modes are supported. In `pertoken` mode, the shapes of both parameters must be `(B, KV_S)`, and their data types must be `float32`. In `perchannel` mode, the shapes of both parameters must be `(KV_N, D)` or `(H)`, and their data types must be `bfloat16`, where `H` equals the product of `KV_N` and `D`.
             - When `dequant_scale_key` and `dequant_scale_value` are both provided, the sequence length `S` of `query` must be less than or equal to 16. The data type of `query` must be `bfloat16`, the data types of `key` and `value` must be `int8`, and the output data type must be `bfloat16`. This configuration does not support tensorlist or page attention.
         
@@ -417,15 +417,15 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - Constraints on `actual_seq_qlen`:
     
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: When `input_layout` of `query` is not `TND` and `Q_S` is 1, this parameter is ignored. For details about the comprehensive constraints when the `input_layout` of `query` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When `input_layout` of `query` is not `TND` and `Q_S` is 1, this parameter is ignored. For details about the comprehensive constraints when the `input_layout` of `query` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
         
     - Constraints on `actual_seq_kvlen`:
     
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
         
     - Page attention scenarios:
         - Page attention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in a contiguous memory space based on the indices in `block_table`. In this case, the `input_layout` parameter of `key` and `value` is ignored.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
             - The data types of `key` and `value` can be `float16`, `bfloat16`, or `int8`.
             - Scenarios where `query` is `bfloat16` or `float16` while `key` and `value` are `int4` (`int32`) are not supported.
     

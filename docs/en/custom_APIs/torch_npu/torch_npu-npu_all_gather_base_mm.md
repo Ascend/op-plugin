@@ -46,8 +46,8 @@ torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=N
 - **`x2`** (`Tensor`): Required. Right matrix in matrix multiplication. The data type must be identical to `x1`. The data layout can be ND or NZ. NZ is supported only when `comm_mode` is set to `'aiv'`. This parameter must be 2D with shape `(k, n)`. The axis dimensions must satisfy the matmul input requirements, where the first axis matches the second axis of `x1`, and the value range of `k` is [256, 65535).
 - **`hcom`** (`string`): Required. Name of the communication domain handle, which is obtained by calling the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
-    - <term>Atlas A2 training products</term>: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term> Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
+    - Atlas A2 training products: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
+    - Atlas A3 training products/Atlas A3 inference products Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
 - **`bias`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. The data type must be identical to `x1`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. **The current version does not support non-zero bias inputs.**
 - **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix. The data type can be `float32`. The data layout is ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
 - **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix. The data type can be `float32` or `int64`. The data layout is ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `x2_scale`.
@@ -70,7 +70,7 @@ In quantization scenarios, if the data type of `x2_scale` is `int64`, the output
 - When `comm_mode` is `ai_cpu`:
      - This API can be used in training scenarios.
      - This API supports graph mode. 
-     - <term>Atlas A2 training products</term>: Communication fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a single model must share the identical communication domain.
+     - Atlas A2 training products: Communication fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a single model must share the identical communication domain.
 - When `comm_mode` is `aiv`, this API is supported in both training and inference scenarios.
 
 ## Examples<a name="en-us_topic_0000001694916914_section14459801435"></a>

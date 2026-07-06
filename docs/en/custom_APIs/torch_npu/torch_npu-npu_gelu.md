@@ -36,9 +36,9 @@ torch_npu.npu_gelu(input, approximate='none') -> Tensor
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 8D.
-    - <term>Atlas training products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32`, `float16`, or `bfloat16`.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
+    - Atlas training products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`, `float16`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
 
 - **`approximate`** (`str`): Optional. Activation function mode used for calculation, which can be set to `"none"` or `"tanh"`. `"none"` indicates `erf` mode and `"tanh"` indicates `tanh` mode.
 

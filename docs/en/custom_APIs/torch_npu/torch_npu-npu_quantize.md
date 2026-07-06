@@ -32,31 +32,31 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Source data tensor to be quantized, $input$ in the formulas. The data layout can be ND. Empty tensors are supported. Non-contiguous tensors are supported. When `div_mode` is `False` and `dtype` is `"quint4x2"`, the last dimension must be divisible by 8.
-    - <term>Atlas inference products</term>: The data type can be `float` or `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float`, `float16`, or `bfloat16`. When `div_mode` is `False` and the data type is `float`, the data layout can be NZ.
+    - Atlas inference products: The data type can be `float` or `float16`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float`, `float16`, or `bfloat16`. When `div_mode` is `False` and the data type is `float`, the data layout can be NZ.
 
 - **`scales`** (`Tensor`): Required. Scaling tensor, $scales$ in the formula. Empty tensors are supported. Non-contiguous tensors are supported.
     - When `div_mode` is `True`:
-        - <term>Atlas inference products</term>: The data type can be `float`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float` or `bfloat16`.
+        - Atlas inference products: The data type can be `float`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float` or `bfloat16`.
 
     - When `div_mode` is `False`, the data layout can be ND. This parameter can be a 1D or multidimensional tensor. If it is a 1D tensor, the size of the corresponding axis must be identical to the `axis` dimension size in `input` or `1`. If it is a multidimensional tensor, its shape must match the dimension count of `input`. All dimensions except the specified `axis` dimension must be `1`, and the size of the specified `axis` dimension must be identical to the corresponding dimension size in `input` or `1`. The data type and data layout must be identical to the data type and data layout of `input`.
-        - <term>Atlas inference products</term>: The data type can be `float` or `float16`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float`, `float16`, or `bfloat16`. When the data layout is NZ, all elements in `scales` must be identical to `1`.
+        - Atlas inference products: The data type can be `float` or `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float`, `float16`, or `bfloat16`. When the data layout is NZ, all elements in `scales` must be identical to `1`.
 
 - **`zero_points`** (`Tensor`): Required. Offset tensor for `input`, $zero_points$ in the formulas. This parameter can be set to `None`. Empty tensors are supported. Non-contiguous tensors are supported.
     - When `div_mode` is `True`:
-        - <term>Atlas inference products</term>: The data type can be `int8`, `uint8`, or `int32`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `int8`, `uint8`, `int32`, or `bfloat16`.
+        - Atlas inference products: The data type can be `int8`, `uint8`, or `int32`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `int8`, `uint8`, `int32`, or `bfloat16`.
 
     - When `div_mode` is `False`, the data layout can be ND. This parameter can be a 1D or multidimensional tensor. If it is a 1D tensor, the size of the corresponding axis must be identical to the `axis` dimension size in `input` or `1`. If it is a multidimensional tensor, its shape must match the dimension count of `input`. All dimensions except the specified `axis` dimension must be `1`, and the size of the specified `axis` dimension must be identical to the corresponding dimension size in `input`. The shape and data type of `zero_points` must be identical to those of `scales`.
-        - <term>Atlas inference products</term>: The data type can be `float` or `float16`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float`, `float16`, or `bfloat16`. When the data layout of `input` is NZ, this value is empty.
+        - Atlas inference products: The data type can be `float` or `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float`, `float16`, or `bfloat16`. When the data layout of `input` is NZ, this value is empty.
 
 - **`dtype`** (`int`): Required. Data type of the output parameter.
     - When `div_mode` is `True`:
-        - <term>Atlas inference products</term>: The data type can be `qint8`, `quint8`, or `int32`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `qint8`, `quint8`, or `int32`.
+        - Atlas inference products: The data type can be `qint8`, `quint8`, or `int32`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `qint8`, `quint8`, or `int32`.
 
     - When `div_mode` is `False`, the data type can be `qint8` or `quint4x2`. If `dtype` is `"quint4x2"`, the output tensor data type is `int32`, which is concatenated by eight `int4` values.
 
@@ -78,13 +78,13 @@ $result$ in the formula. The data type is specified by the `dtype` parameter. If
 - This API supports graph mode.
 - When the data layout of `input` is NZ, this parameter must be 3D with shape `(e, k, n)`, where `k` must be divisible by `256` and `n` must be divisible by `8`. The shape of `scales` can be 1D or 3D. The `zero_points` parameter must be set to `None`, and `dtype` must be `"quint4x2"`.
 - When `div_mode` is `False`:
-    - This API is supported on <term>Atlas A2 training products/Atlas A2 inference products</term>.
+    - This API is supported on Atlas A2 training products/Atlas A2 inference products.
     - When `dtype` is `"quint4x2"` or `axis` is `-2`, this API is not supported on Atlas inference products.
 
 ## Examples
 
 - Single-operator call
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>
+    - Atlas A2 training products/Atlas A2 inference products
 
         ```python
         >>> import torch
@@ -102,7 +102,7 @@ $result$ in the formula. The data type is specified by the `dtype` parameter. If
             dtype=torch.int8)
         ```
 
-    - <term>Atlas inference products</term>
+    - Atlas inference products
 
         ```python
         >>> import torch

@@ -64,11 +64,11 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 
 ## Constraints
 
-- <term>Atlas inference products</term>: The tail-axis lengths of `x`, `y`, and `gamma` must be greater than or equal to 32 bytes.
-- <term>Atlas A2 training products/Atlas A2 inference products</term>: When `dst_dtype` is `"quint4x2"`, the last dimension of `x`, `gamma`, and `beta` must be an even number, and the last dimension of `x` must be divisible by 8.
+- Atlas inference products: The tail-axis lengths of `x`, `y`, and `gamma` must be greater than or equal to 32 bytes.
+- Atlas A2 training products/Atlas A2 inference products: When `dst_dtype` is `"quint4x2"`, the last dimension of `x`, `gamma`, and `beta` must be an even number, and the last dimension of `x` must be divisible by 8.
 - Description of data types supported by different product models:
   
-  - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+  - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
@@ -77,7 +77,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
     | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int32      |
 
-  - <term>Atlas inference series products</term> and <term>Atlas 200I/500 A2 inference series products</term>:
+  - Atlas inference series products and Atlas 200I/500 A2 inference series products:
 
     | x | gamma | beta | scale | offset | epsilon | y
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |

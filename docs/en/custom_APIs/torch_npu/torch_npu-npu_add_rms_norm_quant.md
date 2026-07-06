@@ -73,26 +73,26 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
 ## Constraints
 
-- <term>Atlas inference products</term>: The number of data elements in the last dimension of `x1` and `x2` must be greater than or equal to 32. The number of data elements in `gamma`, `beta`, `scales1`, `zero_points1`, `scales2`, and `zero_points2` must be greater than or equal to 32.
+- Atlas inference products: The number of data elements in the last dimension of `x1` and `x2` must be greater than or equal to 32. The number of data elements in `gamma`, `beta`, `scales1`, `zero_points1`, `scales2`, and `zero_points2` must be greater than or equal to 32.
 
 - **Boundary value scenarios**
 
-  - <term>Atlas inference products</term>: Inputs containing `inf` or `nan` are not supported.
-  - <term>Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: When the input is `inf`, the output is `inf`. When the input is `nan`, the output is `nan`.
+  - Atlas inference products: Inputs containing `inf` or `nan` are not supported.
+  - Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components and Atlas A3 training products/Atlas A3 inference products: When the input is `inf`, the output is `inf`. When the input is `nan`, the output is `nan`.
 
 - **Dimension boundaries**
 
   The size of each dimension in the shapes of `x1`, `x2`, `gamma`, `scales1`, `zero_points1`, `beta`, `scales2`, `zero_points2`, `y1`, `y2`, and `x` must be less than or equal to 2147483647, which is the maximum value of `int32`. 
 
 - **Data types supported by different product models**
-  - <term>Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+  - Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components and Atlas A3 training products/Atlas A3 inference products:
 
      | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
      | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |
      | float16    | float16    | float16       | float32         | float32                 | int32                       | int32                       | float16              | int8          | int8          | float16      |
      | bfloat16   | bfloat16   | bfloat16      | bfloat16        | bfloat16                | bfloat16                    | bfloat16                    | bfloat16             | int8          | int8          | bfloat16     |
 
-  - <term>Atlas inference products</term>
+  - Atlas inference products
 
     | x1 | x2 | gamma | scales1| scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |

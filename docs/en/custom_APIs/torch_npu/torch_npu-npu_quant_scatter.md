@@ -23,16 +23,16 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
     - Atlas inference products, Atlas A2 training products, and Atlas 800I A2 inference products: The data type can be `int8`.
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `bfloat16` or `float16`.
+    - Atlas inference products: The data type can be `float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `float16`.
 
 - **`quant_scales`** (`Tensor`): Required. Quantization scale tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `bfloat16` or `float32`.
+    - Atlas inference products: The data type can be `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `float32`.
 
 - **`quant_zero_points`** (`Tensor`): Optional. Quantization offset tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `int32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `bfloat16` or `int32`.
+    - Atlas inference products: The data type can be `int32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `int32`.
 
 - **`axis`** (`int`): Optional. Axis on `updates` used for updating. The default value is `0`.
 - **`quant_axis`** (`int`): Optional. Axis on `updates` used for quantization. The default value is `1`.

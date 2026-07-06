@@ -7,7 +7,6 @@
 
 | Product                                                        | Supported|
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas 350 accelerator card</term>           |    √     |
 |<term>Atlas A3 training products</term>           |    √     |
 |<term>Atlas A2 training products</term> | √    |
 |<term>Atlas inference products</term>                                      |    √     |
@@ -40,8 +39,7 @@ Result of the mask operation.
 
 ## Constraints
 
-Atlas 350 accelerator card: The second dimension of `boxes1` or `boxes2` must be a multiple of 1024. `is_cross` must be set to `False`. Backward computation is not supported currently.
-Atlas A3 training products, Atlas A2 training products, Atlas inference products, and Atlas training products: Currently, CIoU backward computation only supports `trans == True`, `is_cross == False`, and `mode == 0` ('iou'). If backward propagation is required, ensure that the parameters are correct.
+Currently, CIoU backward computation only supports `trans == True`, `is_cross == False`, and `mode == 0` ('iou'). If backward propagation is required, ensure that the parameters are correct.
 
 ## Example
 

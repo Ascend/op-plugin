@@ -22,17 +22,17 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Source data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `updates`. The shape must have 1 to 8 dimensions.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
-    - <term>Atlas inference products</term>: The data type can be `float32`, `float16`, or `bool`.
-    - <term>Atlas training products</term>: The data type can be `float32`, `float16`, or `bool`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
+    - Atlas inference products: The data type can be `float32`, `float16`, or `bool`.
+    - Atlas training products: The data type can be `float32`, `float16`, or `bool`.
       
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `int32` or `int64`. The data layout can be ND. Non-contiguous tensors are supported. The index values in `indices` must not be out of bounds.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `input`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
-    - <term>Atlas inference products</term>: The data type can be `float32`, `float16`, or `bool`.
-    - <term>Atlas training products</term>: The data type can be `float32`, `float16`, or `bool`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`, `float16`, `bool`, `bfloat16`, `int64`, or `int8`.
+    - Atlas inference products: The data type can be `float32`, `float16`, or `bool`.
+    - Atlas training products: The data type can be `float32`, `float16`, or `bool`.
 
 ## Return Value
 

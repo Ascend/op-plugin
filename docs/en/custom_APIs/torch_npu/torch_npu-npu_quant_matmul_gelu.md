@@ -105,7 +105,7 @@ Output tensor representing the result of the fused quantized matrix multiplicati
 
 - The following tables describe the supported data type combinations among input parameters.
 
-    **Table 1** <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>
+    **Table 1** Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
     | x1    | x2    | x1_scale | x2_scale  | bias                                | Output Data Type   |
     |-------|-------|----------|-----------|-------------------------------------|-----------|

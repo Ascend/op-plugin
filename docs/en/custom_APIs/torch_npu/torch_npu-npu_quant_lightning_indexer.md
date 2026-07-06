@@ -4,7 +4,6 @@
 
 | Product                                                        | Supported|
 | ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>   |  √  |
 |<term>Atlas A3 inference products</term>  | √  |
 |<term>Atlas A2 inference products</term>  | √  |
 
@@ -22,8 +21,7 @@
 ## Prototype
 
 ```python
-torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1,
-query_dtype=None, key_dtype=None) -> Tensor
+torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1,) -> Tensor
 ```
 
 ## Parameters
@@ -67,10 +65,6 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
-- **`query_dtype`** (`int`): Optional. Actual data type of `query`. Valid values are `int8`, `float8_e4m3fn`, or `hifloat8`.
-
-- **`key_dtype`** (`int`): Optional. Actual data type of `key`. Valid values are `int8`, `float8_e4m3fn`, or `hifloat8`.
-
 ## Return Values
 
 `Tensor`
@@ -82,15 +76,6 @@ $out$ in the formula. The data layout can be ND. The data type can be `int32`. T
 - This API supports graph mode.
 - The result of $W \odot Scale_Q$ must be within the representable range of `float16`.
 - Sorting NaN values during the TopK process is undefined behavior.
-- Atlas A3 inference products:
-    - The data types of `query` and `key` can be `int8`.
-    - Only the data type combination of (`float16`, `float16`, `float16`) is supported for `weights`, `query_dequant_scale`, and `key_dequant_scale`.
-- Ascend 950PR/Ascend 950DT:
-    - Valid values for `N1` in `query` are `8`, `16`, `24`, `32`, or `64`.
-    - The data types of `query` and `key` can be `float8_e4m3fn`, `hifloat8`, or `int8`.
-    - When the data types of `query` and `key` are `float8_e4m3fn`, data types of `weights`, `query_dequant_scale`, and `key_dequant_scale` can be (`bfloat16`, `float`, `float`) or (`float16`, `float16`, `float16`).
-    - When the data types of `query` and `key` are `hifloat8`, only the data types (`bfloat16`, `float`, `float`) are supported for `weights`, `query_dequant_scale`, and `key_dequant_scale`.
-    - When the data types of `query` and `key` are `int8`, only the data types (`float16`, `float16`, `float16`) are supported for `weights`, `query_dequant_scale`, and `key_dequant_scale`.
 
 ## Examples
 

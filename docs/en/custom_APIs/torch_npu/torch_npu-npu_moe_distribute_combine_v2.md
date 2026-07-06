@@ -61,121 +61,121 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 ### Detailed Parameter Description
 
 - **`expand_x`** (`Tensor`): Required. Token features expanded according to `expert_ids`. This parameter must be 2D with shape `(max(tp_world_size, 1) * A, H)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Shared-expert scenarios is not supported.
+    - Atlas A2 training products/Atlas A2 inference products: Shared-expert scenarios is not supported.
 
 - **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md). The value range of elements inside the tensor is `[0, moe_expert_num)`, and the top-K values within the identical row must be unique.
 - **`assist_info_for_combine`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `assist_info_for_combine` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
 
 - **`ep_send_counts`** (`Tensor`): Required. Number of tokens sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain, where token counts are represented as prefix sums. This parameter must be a 1D tensor. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The shape must be `(moe_expert_num + 2 * global_bs * K * server_num,)`. The first `moe_expert_num` elements indicate the token counts received by each expert on the current rank from other ranks within the EP communication domain, represented as prefix sums. The remaining `2 * global_bs * K * server_num` elements are used to store the token counts that can be reduced in advance during the combine operation and the communication buffer offsets before executing inter-server and intra-server communication. When the value of `global_bs` is `0`, the value is calculated as `bs * ep_world_size`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
+    - Atlas A2 training products/Atlas A2 inference products: The shape must be `(moe_expert_num + 2 * global_bs * K * server_num,)`. The first `moe_expert_num` elements indicate the token counts received by each expert on the current rank from other ranks within the EP communication domain, represented as prefix sums. The remaining `2 * global_bs * K * server_num` elements are used to store the token counts that can be reduced in advance during the combine operation and the communication buffer offsets before executing inter-server and intra-server communication. When the value of `global_bs` is `0`, the value is calculated as `bs * ep_world_size`.
+    - Atlas A3 training products/Atlas A3 inference products: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
 
 - **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported.
-- **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length range is [1, 128). On <term>Atlas A3 training products/Atlas A3 inference products</term>, the value of this parameter must differ from `group_tp`.
+- **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length range is [1, 128). On Atlas A3 training products/Atlas A3 inference products, the value of this parameter must differ from `group_tp`.
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The valid values are as follows:
+    - Atlas A2 training products/Atlas A2 inference products: The valid values are as follows:
          - When `comm_alg` is set to `"fullmesh"`: `2`, `3`, `4`, `5`, `6`, `7`, `8`, `16`, `32`, `64`, `128`, or `256`.
          - When `comm_alg` is set to `"hierarchy"`: `16`, `32`, or `64`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [2, 768]. When `comm_alg` is set to `"hierarchy"`, the value range is [16, 256] and the value must be a multiple of 16.
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [2, 768]. When `comm_alg` is set to `"hierarchy"`, the value range is [16, 256] and the value must be a multiple of 16.
 
 - **`ep_rank_id`** (`int`): Required. Rank ID of the current rank within the EP communication domain. The value range is [0, `ep_world_size`). The `ep_rank_id` values of all ranks within the identical EP communication domain must be unique.
 - **`moe_expert_num`** (`int`): Required. Number of MoE experts. The value range is [1, 1024], and the condition `moe_expert_num % (ep_world_size - shared_expert_rank_num) == 0` must be satisfied.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When `comm_alg` is set to `"hierarchy"`, the value range is (0, 512].
+    - Atlas A3 training products/Atlas A3 inference products: When `comm_alg` is set to `"hierarchy"`, the value range is (0, 512].
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`tp_send_counts`** (`Tensor`): Optional. Amount of data sent from each expert on the current rank to each rank within the Tensor Parallelism (TP) communication domain. This parameter corresponds to the `tp_recv_counts` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The TP communication domain is not supported. Use the default value.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The TP communication domain is supported. This parameter must be 1D with shape `(tp_world_size,)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A2 training products/Atlas A2 inference products: The TP communication domain is not supported. Use the default value.
+    - Atlas A3 training products/Atlas A3 inference products: The TP communication domain is supported. This parameter must be 1D with shape `(tp_world_size,)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`x_active_mask`** (`Tensor`): Optional. Controls whether tokens participate in communication.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>:
+    - Atlas A2 training products/Atlas A2 inference products:
          - When `comm_alg` is set to `"fullmesh"`, this parameter must be a 1D or 2D tensor. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid. Support for 2D tensors is part of the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: This parameter must be a 1D or 2D tensor. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid.
+    - Atlas A3 training products/Atlas A3 inference products: This parameter must be a 1D or 2D tensor. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid.
 
 - `expand_scales` (`Tensor`): Optional. This parameter corresponds to the `expand_scales` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Required. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When `comm_alg` is set to `"hierarchy"`, this parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported. When `comm_alg` is set to `""`, this parameter is not supported. Use the default value.
+    - Atlas A2 training products/Atlas A2 inference products: Required. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported.
+    - Atlas A3 training products/Atlas A3 inference products: When `comm_alg` is set to `"hierarchy"`, this parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported. When `comm_alg` is set to `""`, this parameter is not supported. Use the default value.
 
 - **`shared_expert_x`** (`Tensor`): Optional. The data type must be identical to that of `expand_x`. This parameter is the shared-expert token data that must be added after `combine_v2`. Use it only when the number of shared-expert devices `shared_expert_rank_num` is `0`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Retain the default value.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: This parameter must be a 2D or 3D tensor. When the tensor is 2D, the shape is `(BS, H)`. When the tensor is 3D, the product of the first two dimensions must be equal to `BS`, and the third dimension must be equal to `H`.
+    - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
+    - Atlas A3 training products/Atlas A3 inference products: This parameter must be a 2D or 3D tensor. When the tensor is 2D, the shape is `(BS, H)`. When the tensor is 3D, the product of the first two dimensions must be equal to `BS`, and the third dimension must be equal to `H`.
 
 - **`elastic_info`** (`Tensor`): Optional. Reserved parameter, currently not used. Retain the default value `None`.
 
 - **`ori_x`** (`Tensor`): Optional. Token data before FFN processing. This parameter is required when `copy_expert_num` or `const_expert_num` is not `0`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>:
+    - Atlas A2 training products/Atlas A2 inference products:
          - When `comm_alg` is set to `"fullmesh"`, you can choose to pass a valid tensor or `None`. When `copy_expert_num` is not 0, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(BS, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported. A valid tensor enables the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: You can choose to pass a valid tensor or `None`. When `copy_expert_num` or `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, it must be 2D with shape `(BS, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A3 training products/Atlas A3 inference products: You can choose to pass a valid tensor or `None`. When `copy_expert_num` or `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, it must be 2D with shape `(BS, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`const_expert_alpha_1`** (`Tensor`): Optional. Calculation coefficient required when `const_expert_num` is not `0`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Reserved parameter, currently not supported. Set it to `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A2 training products/Atlas A2 inference products: Reserved parameter, currently not supported. Set it to `None`.
+    - Atlas A3 training products/Atlas A3 inference products: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`const_expert_alpha_2`** (`Tensor`): Optional. Calculation coefficient required when `const_expert_num` is not `0`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Reserved parameter, currently not supported. Set it to `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A2 training products/Atlas A2 inference products: Reserved parameter, currently not supported. Set it to `None`.
+    - Atlas A3 training products/Atlas A3 inference products: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`const_expert_v`** (`Tensor`): Optional. Calculation coefficient required when `const_expert_num` is not `0`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Reserved parameter, currently not supported. Set it to `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
+    - Atlas A2 training products/Atlas A2 inference products: Reserved parameter, currently not supported. Set it to `None`.
+    - Atlas A3 training products/Atlas A3 inference products: You can choose to pass a valid tensor or `None`. When `const_expert_num` is not `0`, a valid tensor must be provided. When a valid tensor is provided, this parameter must be 2D with shape `(const_expert_num, H)`. The data type must be identical to that of `expand_x`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`performance_info`** (`Tensor`): Optional. Communication wait time of the current rank for data from other ranks, in microseconds (us). The communication time incurred by each operator call is accumulated into this tensor. The operator does not clear the tensor automatically. Therefore, before enabling this tensor to record communication time, you must clear it manually. Passing `None` disables communication-time recording. When a valid tensor is provided, this parameter must be 1D with shape `(ep_world_size,)`. The data type can be `int64`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`group_tp`** (`string`): Optional. Communication domain name used for tensor parallelism. This parameter is required only when TP domain communication is involved. Otherwise, use the default value `""`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: In eager mode, use the default value. In graph mode, the value must be identical to that of `group_ep`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The string length value range is [0, 128). The value of this parameter must differ from `group_ep`. An empty value is supported only when there is no TP domain.
+    - Atlas A2 training products/Atlas A2 inference products: In eager mode, use the default value. In graph mode, the value must be identical to that of `group_ep`.
+    - Atlas A3 training products/Atlas A3 inference products: The string length value range is [0, 128). The value of this parameter must differ from `group_ep`. An empty value is supported only when there is no TP domain.
 
 - **`tp_world_size`** (`int`): Optional. Size of the TP communication domain. This parameter is required only when TP domain communication is involved.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: TP domain communication is not supported. Use the default value `0`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When TP domain communication is involved, the value range is [0, 2]. The values `0` and `1` indicate that there is no TP domain communication, and the value `2` indicates that there is TP domain communication.
+    - Atlas A2 training products/Atlas A2 inference products: TP domain communication is not supported. Use the default value `0`.
+    - Atlas A3 training products/Atlas A3 inference products: When TP domain communication is involved, the value range is [0, 2]. The values `0` and `1` indicate that there is no TP domain communication, and the value `2` indicates that there is TP domain communication.
 
 - **`tp_rank_id`** (`int`): Optional. Rank ID of the current rank within the TP communication domain. This parameter is required only when TP domain communication is involved.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: TP domain communication is not supported. Use the default value `0`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: When TP domain communication is involved, the value range is [0, 1]. The `tp_rank_id` of each rank in the same TP communication domain must be unique. If there is no TP domain communication, pass `0`.
+    - Atlas A2 training products/Atlas A2 inference products: TP domain communication is not supported. Use the default value `0`.
+    - Atlas A3 training products/Atlas A3 inference products: When TP domain communication is involved, the value range is [0, 1]. The `tp_rank_id` of each rank in the same TP communication domain must be unique. If there is no TP domain communication, pass `0`.
 
 - **`expert_shard_type`** (`int`): Optional. Layout type of shared-expert ranks.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Retain the default value.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: Currently, only `0` is supported, indicating that shared-expert ranks are arranged in front of MoE expert ranks.
+    - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
+    - Atlas A3 training products/Atlas A3 inference products: Currently, only `0` is supported, indicating that shared-expert ranks are arranged in front of MoE expert ranks.
 
 - **`shared_expert_num`** (`int`): Optional. Number of shared experts, where a shared expert can be replicated and deployed across multiple ranks.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Retain the default value.
-    - <term> Atlas A3 training products/Atlas A3 inference products </term>: The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
+    - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
+    - Atlas A3 training products/Atlas A3 inference products : The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
 
 - **`shared_expert_rank_num`** (`int`): Optional. Number of shared-expert ranks.
-    - <term> Atlas A2 training products/Atlas A2 inference products </term>: Expert sharing is not supported. Retain the default value.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [0, `ep_world_size`). If the value is not 0, the condition `shared_expert_rank_num % shared_expert_num == 0` must be satisfied.
+    - Atlas A2 training products/Atlas A2 inference products : Expert sharing is not supported. Retain the default value.
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `ep_world_size`). If the value is not 0, the condition `shared_expert_rank_num % shared_expert_num == 0` must be satisfied.
 
 - **`global_bs`** (`int`): Optional. Global batch size within the EP communication domain. When the batch sizes differ across ranks, passing `max_bs * ep_world_size` is supported, where `max_bs` indicates the maximum batch size of a single rank. When the batch sizes are identical across ranks, passing `0` or `BS * ep_world_size` is supported.
 
 - **`comm_quant_mode`** (`int`): Optional. Communication quantization type.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The value can be `0` or `2`. `0` disables quantization during communication, and `2` enables `int8` quantization during communication. The value `2` is supported only when `comm_alg` is set to `"hierarchy"`, or when `HCCL_INTRA_PCIE_ENABLE=1`, `HCCL_INTRA_ROCE_ENABLE=0`, and the driver version is not earlier than 25.0.RC1.1.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value can be `0` or `2`. `0` disables quantization during communication, and `2` enables `int8` quantization during communication. `int8` quantization can be enabled only when `tp_world_size` is not `2`.
+    - Atlas A2 training products/Atlas A2 inference products: The value can be `0` or `2`. `0` disables quantization during communication, and `2` enables `int8` quantization during communication. The value `2` is supported only when `comm_alg` is set to `"hierarchy"`, or when `HCCL_INTRA_PCIE_ENABLE=1`, `HCCL_INTRA_ROCE_ENABLE=0`, and the driver version is not earlier than 25.0.RC1.1.
+    - Atlas A3 training products/Atlas A3 inference products: The value can be `0` or `2`. `0` disables quantization during communication, and `2` enables `int8` quantization during communication. `int8` quantization can be enabled only when `tp_world_size` is not `2`.
 
 - **`comm_alg`** (`str`): Optional. Communication-optimized memory-layout algorithm.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The current version supports `""`, `"fullmesh"`, and `"hierarchy"`. You are advised to use `"hierarchy"` together with driver version 25.0.RC1.1 or later.
+    - Atlas A2 training products/Atlas A2 inference products: The current version supports `""`, `"fullmesh"`, and `"hierarchy"`. You are advised to use `"hierarchy"` together with driver version 25.0.RC1.1 or later.
         - `""`: If `HCCL_INTRA_PCIE_ENABLE=1` and `HCCL_INTRA_ROCE_ENABLE=0`, the `"hierarchy"` algorithm is used. Otherwise, the `"fullmesh"` algorithm is used. This mode is not recommended.
         - `"fullmesh"`: Token data is sent directly back to the target rank through RDMA.
         - `"hierarchy"`: Token data is transmitted in two stages: intra-server and inter-server. The same token data is first aggregated and summed within a server, and then transmitted across servers to reduce the data volume of inter-server communication.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The current version supports `""` and `"hierarchy"`.
+    - Atlas A3 training products/Atlas A3 inference products: The current version supports `""` and `"hierarchy"`.
         - `""`: Default value. Token data is sent directly back to the target rank through MTE.
         - `"hierarchy"`: Token data is transmitted in two stages: intra-server and inter-server. The same token data is first aggregated and summed within a server, and then transmitted across servers to reduce the data volume of inter-server communication. This template supports only scenarios where `tp_world_size` is 1 and the number of shared experts is 0, and does not support 2D masks, special experts, dynamic scale-in, or performance profiling.
 
 - **`zero_expert_num`** (`int`): Optional. Number of zero experts.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>:
+    - Atlas A2 training products/Atlas A2 inference products:
          - When `comm_alg` is set to `"fullmesh"`, the value range is [0, MAX_INT32), where the value of `MAX_INT32` is `2147483647`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`).
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`).
 
 - **`copy_expert_num`** (`int`): Optional. Number of copy experts.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>:
+    - Atlas A2 training products/Atlas A2 inference products:
          - When `comm_alg` is set to `"fullmesh"`, the value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`).
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`).
 
 - **`const_expert_num`** (`int`): Optional. Number of constant experts.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: This parameter is currently not supported. Set it to `0`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid constant-expert ID values are in the range [`moe_expert_num + zero_expert_num + copy_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num`).
+    - Atlas A2 training products/Atlas A2 inference products: This parameter is currently not supported. Set it to `0`.
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid constant-expert ID values are in the range [`moe_expert_num + zero_expert_num + copy_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num`).
 
 ## Return Values<a name="en-us_topic_0000002168254826_section22231435517"></a>
 
@@ -189,7 +189,7 @@ Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type 
 - This API supports graph mode. `npu_moe_distribute_dispatch_v2` and `npu_moe_distribute_combine_v2` must be used together.
 - Element values inside the `assist_info_for_combine`, `ep_recv_counts`, `tp_recv_counts`, and `expand_scales` tensors output by `npu_moe_distribute_dispatch_v2` can vary across different product models, communication algorithms, or software versions. When using this API, pass these tensors directly to the corresponding parameters of `npu_moe_distribute_combine_v2`. Other service logic of the model must not depend on them.
 - Values of the `group_ep`, `ep_world_size`, `moe_expert_num`, `group_tp`, `tp_world_size`, `expert_shard_type`, `shared_expert_num`, `shared_expert_rank_num`, and `global_bs` parameters must remain identical across all ranks during the API execution process. In addition, the values of `group_ep`, `ep_world_size`, `group_tp`, `tp_world_size`, `expert_shard_type`, and `global_bs` must also remain identical across different layers in the network and must match the corresponding parameters in [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-- <term>Atlas A3 training products/Atlas A3 inference products</term>: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
+- Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 - `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32`
 - Variables used in parameter tensor shapes:
     - `A`: Maximum number of tokens that can be received by the current rank. The value range is as follows:
@@ -197,39 +197,39 @@ Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type 
         - For MoE experts, when `global_bs` is `0`: `A >= BS * ep_world_size * min(local_expert_num, K)`. When `global_bs` is not `0`: `A >= global_bs * min(local_expert_num, K)`.
 
     - `H`: Hidden layer size.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term>: The value range of `H` is as follows:
+        - Atlas A2 training products/Atlas A2 inference products: The value range of `H` is as follows:
             - When `comm_alg` is set to `"fullmesh"`, the value range of `H` is (0, 7168], and `H` must be a multiple of 32.
             - When `comm_alg` is set to `"hierarchy"` and the driver version is not earlier than 25.0.RC1.1, the value range of `H` is (0, 10 * 1024], and `H` must be a multiple of 32.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range is [1024, 8192].
+        - Atlas A3 training products/Atlas A3 inference products: The value range is [1024, 8192].
 
     - `BS`: Number of tokens to be sent.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term>: The value range of `BS` is as follows:
+        - Atlas A2 training products/Atlas A2 inference products: The value range of `BS` is as follows:
             - When `comm_alg` is set to `"fullmesh"`: 0 < `BS` <= 256.
             - When `comm_alg` is set to `"hierarchy"` and the Ascend HDK version is not earlier than 25.0.RC1.1: 0 < `BS` <= 512.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The value range of `BS` is as follows.
+        - Atlas A3 training products/Atlas A3 inference products: The value range of `BS` is as follows.
             - When `comm_alg` is set to `""`: 0 < `BS` <= 512.
             - When `comm_alg` is set to `"hierarchy"`: 0 < `BS` <= 256.
 
     - `K`: Number of top-K experts selected. The value range is 0 < `K` <= 16, and the condition 0 < `K` <= `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num` must be satisfied.
 
     - `server_num`: Number of server nodes. Valid values are `2`, `4`, or `8`.
-        - <term>Atlas A2 training products/Atlas A2 inference products</term>: This variable is used only in shapes for this scenario.
+        - Atlas A2 training products/Atlas A2 inference products: This variable is used only in shapes for this scenario.
 
     - `local_expert_num`: Number of experts on the current rank.
         - For shared-expert ranks, `local_expert_num = 1`.
         - For MoE expert ranks, `local_expert_num = moe_expert_num/(ep_world_size - shared_expert_rank_num)`. When `local_expert_num > 1`, communication in the TP domain is not supported.
-        - <term>Atlas A3 training products/Atlas A3 inference products</term>: The condition `0 < local_expert_num * ep_world_size <= 2048` must be satisfied.
+        - Atlas A3 training products/Atlas A3 inference products: The condition `0 < local_expert_num * ep_world_size <= 2048` must be satisfied.
 
 - HCCL communication domain buffer size:
 
     Before calling this API, verify that the configured HCCL communication domain buffer size is reasonable. The unit is MB, and the default value is `200` MB if not configured.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>:
+    - Atlas A2 training products/Atlas A2 inference products:
         The buffer size can be configured using the `HCCL_BUFFSIZE` environment variable.
         - When `comm_alg` is set to `""`: `HCCL_INTRA_PCIE_ENABLE` and `HCCL_INTRA_ROCE_ENABLE` take effect only under this configuration. The `"fullmesh"` or `"hierarchy"` formula is selected based on the `HCCL_INTRA_PCIE_ENABLE` and `HCCL_INTRA_ROCE_ENABLE` configurations.
         - When `comm_alg` is set to `"fullmesh"`: The configured size must be greater than or equal to `2 * (BS * ep_world_size * min(local_expert_num, K) * H * sizeof(uint16) + 2MB)`.
         - When `comm_alg` is set to `"hierarchy"`: The configured size must be greater than or equal to `(moe_expert_num + ep_world_size/4) * Align512(max_bs * (H * sizeof(dtype_x) + 4 * Align8(K) * sizeof(uint32))) * 1B + 8MB`, where `Align512(x) = ((x + 512 - 1)/512) * 512` and `Align8(x) = ((x + 8 - 1)/8) * 8`.
 
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>:
+    - Atlas A3 training products/Atlas A3 inference products:
         The buffer size can be configured through either the `HCCL_BUFFSIZE` environment variable or the `hccl_buffer_size` parameter. For details, see section "hccl_buffer_size" in [PyTorch Training Model Porting and Tuning](https://hiascend.com/document/redirect/canncommercial-ptmigr) (path: **Performance Profiling** > **Performance Profiling Methods** > **Communication Optimization** > **Optimization Methods** > **hccl_buffer_size**).
         - Within the EP communication domain: The configured size must be greater than or equal to 2, and it must satisfy the condition `>= 2 * (local_expert_num * max_bs * ep_world_size * Align512(Align32(2 * h) + 64) + (K + shared_expert_num) * max_bs * Align512(2 * h))`.
         - Within the TP communication domain: The value must be grater than or equal to `(A * Align512(Align32(h * 2) + 44) + A * Align512(h * 2)) * 2`.
@@ -237,7 +237,7 @@ Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type 
         - When `comm_alg` is set to `"hierarchy"`, only the `HCCL_BUFFSIZE` environment variable is supported for configuration.
 
 - `HCCL_INTRA_PCIE_ENABLE` and `HCCL_INTRA_ROCE_ENABLE`:
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: These environment variables are no longer recommended. You are advised to set `comm_alg` to `"hierarchy"`.
+    - Atlas A2 training products/Atlas A2 inference products: These environment variables are no longer recommended. You are advised to set `comm_alg` to `"hierarchy"`.
 
 - In formulas in this document, the division sign (/) indicates integer division.
 
@@ -248,7 +248,7 @@ Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type 
     - The `npu_moe_distribute_dispatch_v2` and `npu_moe_distribute_combine_v2` operators within a single model must either operate in the same TP communication domain or both operate without a TP communication domain. When a TP communication domain is involved, this domain must not include other operators.
 
 - Networking constraints:
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: In multi-server deployments, only switch-based networking is supported. Direct connections between two servers are not supported.
+    - Atlas A2 training products/Atlas A2 inference products: In multi-server deployments, only switch-based networking is supported. Direct connections between two servers are not supported.
 
 ## Examples<a name="en-us_topic_0000002168254826_section14459801435"></a>
 

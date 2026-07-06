@@ -23,8 +23,8 @@ torch_npu.npu.config.allow_internal_format = bool
 
 The input is a `bool` value.
 
-- <term>Atlas A2 training products</term>/<term>Atlas A3 training products</term> The default value is `False`.
-- <term>Atlas inference products</term>/<term>Atlas training products</term> The default value is `True`.
+- Atlas A2 training products/Atlas A3 training products The default value is `False`.
+- Atlas inference products/Atlas training products The default value is `True`.
 
 ## Constraints
 

@@ -41,9 +41,9 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 ## Constraints
 
-- <term>Atlas inference products</term>: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 bytes.
+- Atlas inference products: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 bytes.
 - The supported data types and their mappings for each product are as follows:
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
 
     | self| gamma|
     | -------- | -------- |
@@ -53,7 +53,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     | `bfloat16` | `bfloat16` |
     | `float32` | `float32`  |
 
-  - <term>Atlas inference products</term> and <term>Atlas training products</term>:
+  - Atlas inference products and Atlas training products:
 
     | self| gamma|
     | -------- | -------- |

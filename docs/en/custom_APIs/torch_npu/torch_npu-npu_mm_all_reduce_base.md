@@ -68,7 +68,7 @@ In non-quantization and fake-quantization scenarios, the data type is identical 
 - The input `x1` can be 2D or 3D with shape `(m, k)` or `(b, s, k)`, and `x2` must be 2D with shape `(k, n)`. The $k$ dimension must match and meet the requirements of the mm operator. The parameter `bias` supports only 1D tensors, where the size must be identical to that of the last dimension of `output`. The shape of `x3` must be identical to that of `output`.
 - `x1` does not support transposed input. If `x2` is transposed, the size of its first dimension must match the last dimension of `x1`, satisfying the requirements of the MatMul operation.
 - The value range of $k$ in `antiquant_group_size` is identical to that in the MatMul operation. `INT_MAX` must be greater than $(k-1)$.
-- <term>Atlas A2 training products/Atlas A2 inference products</term>:
+- Atlas A2 training products/Atlas A2 inference products:
     - The data type can be `bfloat16`.
     - Empty tensors are not supported for `x1` and `x2`.
     - Configurations of 1, 2, 4, and 8 ranks are supported. Only all-mesh networking over HCCS links is supported.

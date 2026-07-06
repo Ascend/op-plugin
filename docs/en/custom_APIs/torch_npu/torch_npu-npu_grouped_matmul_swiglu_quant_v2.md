@@ -148,7 +148,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - This API can be used in inference and training scenarios.
 - This API supports graph mode.
 - Deterministic computation: This API defaults to a deterministic implementation. For identical inputs, multiple execution passes generate identical outputs to guarantee repeatability.
-- <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+- Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
     - The A8W8, A8W4 and A4W4 quantization scenarios are supported. The following table describes the data type configurations supported by the input and output tensors.
 
         |Quantization Scenario|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|

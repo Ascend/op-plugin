@@ -33,16 +33,16 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Source data tensor. This parameter must be 2D to 8D, and the size of its first dimension must be divisible by `group`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 - **`weight`** (`Tensor`): Optional. Index tensor. This parameter must be a 1D tensor, and its element count must be identical to the size of the first dimension of `input`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 - **`bias`** (`Tensor`): Optional. Tensor of updated data. This parameter must be a 1D tensor, and its element count must be identical to the size of the first dimension of `input`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 - **`group`** (`int`): Required. Number of groups that the first dimension of `input` is divided into. The value of `group` must be greater than 0.
 - **`eps`** (`float`): Optional. Value added to the denominator for numerical stability. To maintain precision, the value of `eps` must be greater than 0. The default value is `0.00001`.
@@ -50,16 +50,16 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 ## Return Values
 
 - **`out`** (`Tensor`): Output tensor. The shape and data type are identical to those of `input`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 - **`meanOut`** (`Tensor`): The data type is identical to that of `input`. The shape of this parameter is `(N, group)`, where $N$ indicates the size of the 0th dimension of `input`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 - **`rstdOut`** (`Tensor`): The data type is identical to that of `input`. The shape of this parameter is `(N, group)`, where $N$ indicates the size of the 0th dimension of `input`. The data layout can be ND. Non-contiguous tensors are supported.
-    - <term>Atlas inference products</term>: The data type can be `float16` or `float32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
+    - Atlas inference products: The data type can be `float16` or `float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
 
 ## Constraints
 

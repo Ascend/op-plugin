@@ -15,12 +15,12 @@
 
 - Formulas:
 
-  - Formula for <term>Atlas training products</term> and <term>Atlas inference products</term>:
+  - Formula for Atlas training products and Atlas inference products:
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702 \mid x\mid}} e^{0.851 x(x- \mid x\mid)}
   $$
 
-  - Formula for <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+  - Formula for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702x}}
   $$
@@ -35,10 +35,10 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 
 **`input`** (`Tensor`): $x$ in the formula. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 8D. Empty tensors are supported.
 
-- <term>Atlas training products</term>: The data type can be `float16` or `float32`.
-- <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
-- <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float16`, `float32`, or `bfloat16`.
-- <term>Atlas inference products</term>: The data type must be `float16` or `float32`.
+- Atlas training products: The data type can be `float16` or `float32`.
+- Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
+- Atlas A3 training products/Atlas A3 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
+- Atlas inference products: The data type must be `float16` or `float32`.
 
 ## Return Values
 

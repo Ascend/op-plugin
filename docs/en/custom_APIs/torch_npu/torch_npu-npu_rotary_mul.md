@@ -85,7 +85,7 @@ Output tensor representing the computation result. Its shape and data type must 
 
 ## Constraints
 
-- `jit_compile=False` scenarios (applicable to <term>Atlas A2 training products</term> or <term>Atlas A3 training products</term>):
+- `jit_compile=False` scenarios (applicable to Atlas A2 training products or Atlas A3 training products):
     - When `rotary_mode` is `"half"`:
 
         `input`: The layout can be `"BNSD"`, `"BSND"`, `"SBND"`, or `"TND"`. The `D` dimension size must be less than `896` and must be divisible by `2`. The sizes of the `B` and `N` dimensions must be less than `1000`. When backward gradients are required for `cos` or `sin`, the product of `B` and `N` must be less than or equal to `1024`.
@@ -111,7 +111,7 @@ Output tensor representing the computation result. Its shape and data type must 
         - When `x` is `"SBND"`: `"S11D"`
         - When `x` is `"TND"`: `"T1D"`
 
-- **`jit_compile=True`** scenarios (applicable to <term>Atlas training products</term>, <term>Atlas A2 training products</term>, and <term>Atlas inference products</term>):
+- **`jit_compile=True`** scenarios (applicable to Atlas training products, Atlas A2 training products, and Atlas inference products):
 
      Only `rotary_mode="half"` is supported. Typical `r1` and `r2` layouts are `"11SD"`, `"1S1D"`, and `"S11D"`.
 

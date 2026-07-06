@@ -41,8 +41,8 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
     - In single-operator mode, the `dtype` of `smooth_scales` must match that of `x`. In graph mode, they can be different.
 - **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales` (representing the row index of `x`), valid only in MoE scenarios. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. The shape must be `[E,]`, where `E` ranges from 1 to 1024 and matches the first dimension of `smooth_scales`. The tensor values must be strictly incrementing within the range [1, S], and the last value must equal `S` (`S` indicates the number of rows in the input `x`, which is the product of the dimensions of `x` except the last dimension).
 - **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `int8` if `None` is provided.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `int8` or `quint4x2`.
-    - <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `int8` or `quint4x2`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `quint4x2`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `quint4x2`.
 
 ## Return Values
 

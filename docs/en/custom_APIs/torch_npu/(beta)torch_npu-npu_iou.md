@@ -7,7 +7,6 @@
 
 | Product                                                        | Supported|
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas 350 accelerator card</term>           |    √     |
 |<term>Atlas A3 training products</term>           |    √     |
 |<term>Atlas A2 training products</term> | √    |
 |<term>Atlas inference products</term>                                      |    √     |

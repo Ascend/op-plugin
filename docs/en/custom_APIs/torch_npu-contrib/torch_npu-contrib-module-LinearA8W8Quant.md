@@ -29,10 +29,10 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
 - **`out_features`** (`int`): Value of the N dimension in the matrix multiplication computation.
 - **`bias`** (`bool`): Specifies whether to include bias in the computation. If set to `False`, `bias` is excluded from the quantized matrix multiplication computation.
 - **`offset`** (`bool`): Specifies whether to include offset in the computation. If set to `False`, `offset` is excluded from the quantized matrix multiplication computation.
-- **`pertoken_scale`** (`bool`): Specifies whether to include `pertoken_scale` parameters in the computation. If set to `False`, `pertoken_scale` is excluded from the quantized matrix multiplication computation. <term>Atlas inference products</term>: Currently, this parameter is not supported.
+- **`pertoken_scale`** (`bool`): Specifies whether to include `pertoken_scale` parameters in the computation. If set to `False`, `pertoken_scale` is excluded from the quantized matrix multiplication computation. Atlas inference products: Currently, this parameter is not supported.
 - **`output_dtype`** (`ScalarType`):Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
-    - <term>Atlas inference products</term>: The input data type can be `int8` or `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The input data type can be `int8`, `float16`, or `bfloat16`.
+    - Atlas inference products: The input data type can be `int8` or `float16`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The input data type can be `int8`, `float16`, or `bfloat16`.
 
 **Computation Input**
 
@@ -41,22 +41,22 @@ torch_npu.contrib.module.LinearA8W8Quant(in_features, out_features, *, bias=True
 ## Variable Description
 
 - **`weight`** (`Tensor`): Weight tensor used for matrix multiplication. The data type can be `int8`. The data layout can be ND. This parameter must be 2D to 6D with shape `(batch, n, k)`.
-    - <term>Atlas inference products</term>: You must call `torchair.experimental.inference.use_internal_format_weight` or `torch_npu.npu_format_cast` to configure the high-performance data layout for `weight` with shape `(batch, n, k)`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: You must call `torch_npu.npu_format_cast` to configure the high-performance data layout for `weight` with shape `(batch, n, k)`. However, using this module method is not recommended. Use `torch_npu.npu_quant_matmul` instead.
+    - Atlas inference products: You must call `torchair.experimental.inference.use_internal_format_weight` or `torch_npu.npu_format_cast` to configure the high-performance data layout for `weight` with shape `(batch, n, k)`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: You must call `torch_npu.npu_format_cast` to configure the high-performance data layout for `weight` with shape `(batch, n, k)`. However, using this module method is not recommended. Use `torch_npu.npu_quant_matmul` instead.
 
 - **`scale`** (`Tensor`): Scale for quantized computation. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t = 1` or `t = n`, and `n` matches the `n` dimension of `weight`. If an `int64` `scale` is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `scale`.
-    - <term>Atlas inference products</term>: The data type can be `float32` or `int64`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `float32`, `int64,` or `bfloat16`.
+    - Atlas inference products: The data type can be `float32` or `int64`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `int64,` or `bfloat16`.
 
 - **`offset`** (`Tensor`): Optional. Offset for quantized computation. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t = 1` or `t = n`, and `n` matches the `n` dimension of `weight`.
-- **`pertoken_scale`** (`Tensor`): Optional. Per-token scale tensor for quantized computation. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(m,)`, where `m` matches the `m` dimension of `x1`. This parameter can be non-empty only when the output data type is `float16` or `bfloat16`. <term>Atlas inference products</term>: Currently, this parameter is not supported.
+- **`pertoken_scale`** (`Tensor`): Optional. Per-token scale tensor for quantized computation. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(m,)`, where `m` matches the `m` dimension of `x1`. This parameter can be non-empty only when the output data type is `float16` or `bfloat16`. Atlas inference products: Currently, this parameter is not supported.
 - **`bias`** (`Tensor`): Optional. Bias in matrix multiplication. The data layout can be ND. This parameter must be 1D with shape `(n,)` or 3D with shape `(batch, 1, n)`, where `n` matches the `n` dimension of `weight`. The `batch` value must match the `batch` value deduced after broadcasting `x1` and `weight`. When the output tensor has 2, 4, 5, or 6 dimensions, `bias` must be a 1D tensor. When the output tensor has 3 dimensions, `bias` can be a 1D or 3D tensor.
-    - <term>Atlas inference products</term>: The data type can be `int32`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
+    - Atlas inference products: The data type can be `int32`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
 
 - **`output_dtype`** (`ScalarType`): Optional. Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
-    - <term>Atlas inference products</term>: The input data type can be `int8` or `float16`.
-    - <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>: The input data type can be `int8`, `float16`, or `bfloat16`.
+    - Atlas inference products: The input data type can be `int8` or `float16`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The input data type can be `int8`, `float16`, or `bfloat16`.
 
 ## Return Values
 
@@ -76,7 +76,7 @@ Output tensor representing the computation result of quantized matrix multiplica
 - The last dimension of `x1` and `weight` must be less than or equal to 65535.
 - The following table describes the supported data type combinations for the input parameters and variables.
 
-    **Table 1** <term>Atlas inference products</term>
+    **Table 1** Atlas inference products
 
     <a name="en-us_topic_0000001778938168_table75025595916"></a>
     <table><thead align="left"><tr id="en-us_topic_0000001778938168_row13503185919911"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="en-us_topic_0000001778938168_p35036591098"><a name="en-us_topic_0000001778938168_p35036591098"></a><a name="en-us_topic_0000001778938168_p35036591098"></a><code>x1</code> (Input Parameter)</p>
@@ -131,7 +131,7 @@ Output tensor representing the computation result of quantized matrix multiplica
     </tbody>
     </table>
 
-    **Table 2** <term>Atlas A2 training products/Atlas A2 inference products</term> and <term>Atlas A3 training products/Atlas A3 inference products</term>
+    **Table 2** Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
     <a name="en-us_topic_0000001778938168_table2504155910917"></a>
     <table><thead align="left"><tr id="en-us_topic_0000001778938168_row35048591395"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="en-us_topic_0000001778938168_p185044592912"><a name="en-us_topic_0000001778938168_p185044592912"></a><a name="en-us_topic_0000001778938168_p185044592912"></a><code>x1</code> (Input Parameter)</p>
@@ -275,7 +275,7 @@ Output tensor representing the computation result of quantized matrix multiplica
     model.scale.data = scale
     model.offset.data = offset
     if output_dtype != torch.bfloat16:
-        # Include the `npu_trans_quant_param` functionality and enable high-bandwidth x2 data layout for <term>Atlas inference products</term>
+        # Include the `npu_trans_quant_param` functionality and enable high-bandwidth x2 data layout for Atlas inference products
         tng.experimental.inference.use_internal_format_weight(model)
     model.bias.data = bias
     model = torch.compile(model, backend=npu_backend, dynamic=False)

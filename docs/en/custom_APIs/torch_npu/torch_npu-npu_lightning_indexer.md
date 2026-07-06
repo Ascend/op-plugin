@@ -4,7 +4,6 @@
 
 | Product                                                        | Supported|
 | ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>     | √  |
 |<term>Atlas A2 inference products</term>        | √  |
 |<term>Atlas A3 inference products</term>        | √  |
 
@@ -78,10 +77,6 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - The size of the `D` dimension in both `query` and `key` must be identical and equal to `128`.
 - The data types of `query` and `key` must be identical.
 - When the data type of `weights` is not `float32`, the data types of `query`, `key`, and `weights` must be identical.
-- The `return_value` feature is supported in graph mode only on Ascend 950PR and Ascend 950DT processors.
-- Ascend 950PR/Ascend 950DT:
-    - Valid values for `N` in `query` are `8`, `16`, `24`, `32`, or `64`.
-    - The `weights` parameter does not support the `float32` data type.
 
 ## Examples
 
