@@ -129,7 +129,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：保证取值范围为0<K≤16。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：保证取值范围为0<K≤8。
 
-    - server\_num：表示服务器的节点数，取值只支持2、4、8。
+    - server\_num：表示服务器的节点数，取值只支持1、2、4、8。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
 
     - local\_expert\_num：表示本卡专家数量。

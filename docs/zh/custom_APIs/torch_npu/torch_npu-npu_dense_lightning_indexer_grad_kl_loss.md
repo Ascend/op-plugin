@@ -114,7 +114,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 - **d\_query\_index**(`Tensor`)：对应公式中的$d\tilde{Q}$，表示`query_index`的梯度，数据类型支持`bfloat16`、`float16`。
 - **d\_key\_index**(`Tensor`)：对应公式中的$d\tilde{K}$，表示`key_index`的梯度，数据类型支持`bfloat16`、`float16`。
 - **d\_weights**(`Tensor`)：对应公式中的$dW$，表示`weights`的梯度，数据类型支持`bfloat16`、`float16`、`float32`。
-- **loss**(`Tensor`)：对应公式中的$Loss$，表示网络正向输出和golden值的差异，数据类型支持`float32`。
+- **loss**(`Tensor`)：对应公式中的$Loss$，表示网络正向输出和目标分布(target distribution)的差异，数据类型支持`float32`。
 
 ## 约束说明
 

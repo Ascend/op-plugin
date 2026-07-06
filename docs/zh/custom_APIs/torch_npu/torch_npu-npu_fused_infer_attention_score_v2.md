@@ -126,7 +126,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **learnable_sink**（`Tensor`）：可选参数，表示通过可学习的“Sink Token”起到吸收Attention Score的作用，数据类型支持`bfloat16`，数据格式支持ND，shape输入为(Q_N,)。默认值为None，综合约束请见[learnable_sink约束](#zh-cn_topic_0000001832267082_section_learnable_sink_constraint)。
 
 - **num\_query\_heads**（`int`）：可选参数，代表query的head个数，数据类型支持`int64`，在BNSD场景下，需要与shape中的`query`的N轴shape值相同，否则执行异常。综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
-- **num\_key\_value\_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为0，表示`key`/`value`/`query`的head个数相等，需要满足`num_query_heads`整除`num_key_value_heads`，`num_query_heads`与`num_key_value_heads`的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的`key`/`value`的N轴shape值相同，否则执行异常。综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
+- **num\_key\_value\_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，数据类型支持`int64`。默认值为0，表示`key`/`value`/`query`的head个数相等，需要满足`num_key_value_heads`整除`num_query_heads`，`num_query_heads`与`num_key_value_heads`的比值不能大于64。在BSND、BNSD、BNSD\_BSND（仅支持Q\_S大于1）场景下，还需要与shape中的`key`/`value`的N轴shape值相同，否则执行异常。综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。
 - **softmax\_scale**（`float`）：可选参数，公式中d开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float32`。数据类型与`query`数据类型需满足数据类型推导规则。默认值为1.0，即不做缩放。**建议传入`1/√D`（D为Head Dim）**，例如当D=128时传入`1/math.sqrt(128.0)`，以获得正确的注意力计算结果。
 - **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
 - **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为2147483647，Q\_S为1时该参数无效。
@@ -204,7 +204,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
 ## 返回值说明<a name="zh-cn_topic_0000001832267082_section22231435517"></a>
 
-- **attention\_out**（`Tensor`）：公式中的输出，数据类型支持`float16`、`bfloat16`、`int8`。数据格式支持ND。限制：该入参的D维度与`value`的D保持一致，其余维度需要与入参`query`的shape保持一致。
+- **attention\_out**（`Tensor`）：公式中的输出，数据类型支持`float16`、`bfloat16`、`int8`。数据格式支持ND。限制：输出的D维度需要与`value`的D保持一致，其余维度需要与入参`query`的shape保持一致。
 - **softmax\_lse**（`Tensor`）：ring attention算法对query乘key的结果先取max得到softmax\_max，query乘key的结果减去softmax\_max，再取exp，最后取sum，得到softmax\_sum，最后对softmax\_sum取log，再加上softmax\_max得到的结果。数据类型支持`float32`，当`return_softmax_lse`为True时，一般情况下输出shape为\(B, Q\_N, Q\_S, 1\)，若input\_layout为TND/NTD\_TND时，输出shape为\(T,Q\_N,1\)；当`return_softmax_lse`为False时，输出shape为\[1\]的值为0的Tensor。
 
 ## 约束说明<a name="zh-cn_topic_0000001832267082_section12345537164214"></a>
@@ -374,7 +374,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - 管理scale/offset的量化模式如下：
         
             > [!NOTE]   
-            > 注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_key、dequant\_offset\_value、dequant\_offset\_value参数。
+            > 注意scale、offset具体指dequant\_scale\_key、dequant\_scale\_value、dequant\_offset\_key、dequant\_offset\_value参数。
 
             <a name="zh-cn_topic_0000001832267082_table3276159203213"></a>
             <table><thead align="left"><tr id="zh-cn_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="zh-cn_topic_0000001832267082_p19276135910323"><a name="zh-cn_topic_0000001832267082_p19276135910323"></a><a name="zh-cn_topic_0000001832267082_p19276135910323"></a>量化模式</p>

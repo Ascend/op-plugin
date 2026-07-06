@@ -18,16 +18,12 @@ conv类算子开启支持hf32类型能力。
 ## 函数原型
 
 ```python
-torch_npu.npu.conv.allow_hf32 = bool
+torch_npu.npu.conv.allow_hf32: bool
 ```
 
 ## 参数说明
 
-输入bool值，默认值True。
-
-## 输出说明
-
-`bool`
+bool型配置属性，无返回值。直接赋值修改，默认值为True。
 
 ## 调用示例
 
