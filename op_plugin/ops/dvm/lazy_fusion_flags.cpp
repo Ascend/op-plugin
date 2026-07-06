@@ -181,6 +181,8 @@ void RegisterFlags(std::map<std::string, std::string> *flag_map, LazyFusionFlags
   reg.AddFlag("disable_ops", &flags->disable_ops);
   reg.AddFlag("enable_ops", &flags->enable_ops);
   reg.AddFlag("enable_ops_only", &flags->enable_ops_only);
+  reg.AddFlag("foreach_max_tensors", &flags->foreach_max_tensors);
+  reg.AddFlag("foreach_min_numel", &flags->foreach_min_numel);
   for (const auto &item : *flag_map) {
     ASCEND_LOGW("Unknown flag: %s", item.first.c_str());
   }

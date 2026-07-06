@@ -50,6 +50,10 @@ class LazyFusionFlags {
   std::vector<std::string> disable_ops;
   std::vector<std::string> enable_ops;
   std::vector<std::string> enable_ops_only;
+
+  // foreach launch-bound gate
+  uint64_t foreach_max_tensors{8};
+  uint64_t foreach_min_numel{65536};
 };
 }  // namespace lazy_fusion
 #endif  // DVM_LAZY_FUSION_FLAGS_H

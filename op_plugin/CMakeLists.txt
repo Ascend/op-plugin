@@ -10,11 +10,8 @@ FILE(GLOB _OPPLUGIN_BASE_OPS_SRCS
     ops/aclops/*.cpp
     ops/opapi/*.cpp)
 
-# DVM lazy-fusion sources compile only when the host repo opts in via the _TORCH_NPU_ENABLE_DVM env var
-if(DEFINED ENV{_TORCH_NPU_ENABLE_DVM} AND "$ENV{_TORCH_NPU_ENABLE_DVM}" STREQUAL "1")
-    FILE(GLOB _OPPLUGIN_DVM_SRCS ops/dvm/*.cpp)
-    LIST(APPEND _OPPLUGIN_BASE_OPS_SRCS ${_OPPLUGIN_DVM_SRCS})
-endif()
+FILE(GLOB _OPPLUGIN_DVM_SRCS ops/dvm/*.cpp)
+LIST(APPEND _OPPLUGIN_BASE_OPS_SRCS ${_OPPLUGIN_DVM_SRCS})
 
 FILE(GLOB _OPPLUGIN_UTILS_SRCS
     *.cpp

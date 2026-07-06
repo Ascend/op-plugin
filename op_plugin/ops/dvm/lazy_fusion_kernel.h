@@ -27,8 +27,11 @@
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/ops/dvm/lazy_fusion_flags.h"
 #include "third_party/dvm/dvm/include/dvm.h"
+#include "torch_npu/csrc/core/NPUBridge.h"
 
 namespace lazy_fusion {
+bool IsViewLoadable(const at::Tensor &x);
+
 class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
  public:
   LazyFusionKernel();
@@ -106,10 +109,10 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
  private:
   void ClearGraphRefs() {
     for (size_t i = 0; i < input_used_; i++) {
-      auto p = inputs_[i]->tensor.storage().getWeakStorageImpl().lock();
-      if (p) {
-        auto storage = static_cast<torch_npu::NPUStorageImpl *>(p.get());
-        storage->lazy_fusion_data_ = nullptr;
+      // We still hold a strong ref via inputs_[i]->tensor, so the StorageImpl is
+      // guaranteed alive here -- skip the atomic weak_ptr.lock() and grab the raw impl.
+      if (inputs_[i]->tensor.defined()) {
+        torch_npu::NPUBridge::GetNpuStorageImpl(inputs_[i]->tensor)->lazy_fusion_data_ = nullptr;
       }
       inputs_[i]->tensor = at::Tensor();
     }
@@ -200,8 +203,8 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     int64_t storage_offset{0};
     at::ScalarType dtype{at::ScalarType::Undefined};
     int64_t dim{0};
-    std::vector<int64_t> sizes;
-    std::vector<int64_t> strides;
+    at::DimVector sizes;
+    at::DimVector strides;
   };
 
   struct Load {
@@ -221,6 +224,7 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     TensorMeta tensor_meta;
     bool inplace{false};
     bool skip{false};
+    bool has_stride{false};           // true → strided (view) Store for non-contiguous output
     c10::weak_intrusive_ptr<c10::StorageImpl> storage;
   };
 
@@ -246,14 +250,15 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   struct DvmOp {
     dvm::NDObject *op{nullptr};
     TensorMeta tensor_meta;
-    std::vector<int64_t> dvm_shape;
+    at::DimVector dvm_shape;
     bool reloadable_from_gm{false};
+    bool has_shape_override{false};
   };
 
   static void CacheTensorMeta(TensorMeta *meta, const at::Tensor &tensor);
   static bool MatchTensorMeta(const TensorMeta &meta, const at::Tensor &tensor);
-  static void CacheDvmShape(DvmOp *dvm_op, dvm::ShapeRef *shape, c10::IntArrayRef default_shape);
-  static bool MatchDvmShape(const DvmOp *dvm_op, dvm::ShapeRef *shape, c10::IntArrayRef default_shape);
+  static void CacheDvmShape(DvmOp *dvm_op, dvm::ShapeRef *shape);
+  static bool MatchDvmShape(const DvmOp *dvm_op, dvm::ShapeRef *shape);
   // Exact reuse requires both tensor metadata and logical DVM shape to match.
   static bool MatchDvmOp(const DvmOp *dvm_op, const at::Tensor &tensor, dvm::ShapeRef *shape);
 

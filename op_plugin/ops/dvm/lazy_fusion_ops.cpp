@@ -46,41 +46,6 @@ bool IsFloatIntType(const at::ScalarType &type) { return IsFloatType(type) || ty
 
 bool IsSupportType(const at::ScalarType &type) { return IsFloatIntType(type) || type == at::ScalarType::Bool; }
 
-// DVM's strided Load (ViewLoad) is implemented for sub-rectangular blocks of a
-// contiguous storage where the innermost load-carrying dim has unit stride.
-// Aligned with MindSpore's IsViewLoadSupported (same DVM library underneath).
-//
-// Key correctness gate: `sizes[-1] != 1`. Without it, views with a trailing
-// unsqueezed dim (size==1, stride==1) would slip past a naive `strides[-1]==1`
-// check while the *real* load-carrying dim has stride>1. Concrete GLM4.7 RoPE
-// example:
-//   shape  = [8192, 1, 16, 32, 1]
-//   stride = [1024, 1024, 64,  2, 1]
-// strides[-1]==1 only because sizes[-1]==1. The actual load-carrying dim is
-// shape[3]=32 with stride=2 (an `x.view(..., D/2, 2)[..., 0]` even/odd slice).
-// DVM cannot ViewLoad with stride=2 and silently corrupts the matmul output,
-// which manifested as GLM4.7 forward loss going wrong.
-//
-// Negative-stride and zero/negative-size views are rejected as well because
-// DVM's address arithmetic assumes non-negative strides over real elements.
-bool IsViewLoadable(const at::Tensor &x) {
-  if (!x.defined()) {
-    return false;
-  }
-  auto ndim = x.dim();
-  if (ndim == 0) {
-    return false;
-  }
-  auto sizes = x.sizes();
-  auto strides = x.strides();
-  for (int64_t i = 0; i < ndim; ++i) {
-    if (sizes[i] <= 0 || strides[i] < 0) {
-      return false;
-    }
-  }
-  return strides[ndim - 1] == 1 && sizes[ndim - 1] != 1;
-}
-
 bool InputCheck(const at::Tensor &x, const std::function<bool(const at::ScalarType &type)> &type_check = IsFloatType,
                 bool allow_non_contig = false) {
   if (!x.is_contiguous()) {
@@ -116,6 +81,10 @@ bool NpuCheck(const c10::optional<at::Tensor> &x) {
 template <typename T, typename... Args>
 bool NpuCheck(const T &x, const Args &...xs) {
   return NpuCheck(x) && NpuCheck(xs...);
+}
+
+bool OutputCheck(const at::Tensor &out) {
+  return NpuCheck(out) && out.is_contiguous();
 }
 
 bool GetScalarValue(const at::Scalar &scalar, float *v) {
@@ -233,8 +202,7 @@ bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
   if (IsCPUScalar(other)) {
     return AddScalar(self, other.item(), alpha, out);
   }
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, IsFloatIntType, /*allow_non_contig=*/!inplace) ||
+  if (!InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true) ||
       !InputCheck(other, IsFloatIntType, /*allow_non_contig=*/true)) {
     return false;
   }
@@ -272,8 +240,7 @@ bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
 }
 
 bool Sub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor *out = nullptr) {
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, IsFloatIntType, /*allow_non_contig=*/!inplace) ||
+  if (!InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true) ||
       !InputCheck(other, IsFloatIntType, /*allow_non_contig=*/true)) {
     return false;
   }
@@ -315,11 +282,7 @@ bool Sub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
 bool BinaryScalar(const at::Tensor &self, const at::Scalar &other, dvm::BinaryOpType op_type,
             const std::function<bool(const at::ScalarType &type)> &type_check,
             dvm::DType dst_type = dvm::DType::kDataTypeEnd, at::Tensor *out = nullptr) {
-  // out == nullptr is the inplace path (writes back to self) → must be contig.
-  // out != nullptr is the functional path (fresh output) → self is read-only,
-  // can be a non-contig view; Input() will route to a strided Load.
-  bool allow_non_contig = (out != nullptr);
-  if (!InputCheck(self, type_check, allow_non_contig)) {
+  if (!InputCheck(self, type_check, true)) {
     return false;
   }
   float scalar = 1.0f;
@@ -380,11 +343,7 @@ bool BinaryTensor(const at::Tensor &self, const at::Tensor &other, dvm::BinaryOp
   if (IsCPUScalar(other)) {
     return BinaryScalar(self, other.item(), op_type, type_check, dst_type, out);
   }
-  // out == nullptr → inplace into self → self must be contig (DVM Store has no
-  // strided form). other is always read-only and may be non-contig.
-  // out != nullptr → functional path, both self and other are read-only.
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, type_check, /*allow_non_contig=*/!inplace) ||
+  if (!InputCheck(self, type_check, /*allow_non_contig=*/true) ||
       !InputCheck(other, type_check, /*allow_non_contig=*/true)) {
     return false;
   }
@@ -414,7 +373,25 @@ bool BinaryTensor(const at::Tensor &self, const at::Tensor &other, dvm::BinaryOp
   return true;
 }
 
+// Keep the DVM path only when the list is short or every tensor is large enough to be
+// compute/bandwidth-bound; otherwise bail so the caller falls back to native.
+bool ForeachWorthFusing(at::TensorList self) {
+  const auto &flags = g_lazy_fusion_manager.flags_;
+  if (self.size() <= flags.foreach_max_tensors) {
+    return true;
+  }
+  for (const auto &t : self) {
+    if (static_cast<size_t>(t.numel()) < flags.foreach_min_numel) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool ForeachBinaryScalar(at::TensorList self, const at::Scalar& scalar, dvm::BinaryOpType op_type) {
+  if (!ForeachWorthFusing(self)) {
+    return false;
+  }
   for (size_t i = 0; i < self.size(); ++i) {
     if (!InputCheck(self[i])) {
       return false;
@@ -434,6 +411,9 @@ bool ForeachBinaryScalar(at::TensorList self, const at::Scalar& scalar, dvm::Bin
 }
 
 bool ForeachBinaryScalar(at::TensorList self, at::ArrayRef<at::Scalar> scalars, dvm::BinaryOpType op_type) {
+  if (!ForeachWorthFusing(self)) {
+    return false;
+  }
   if (scalars.size() != self.size()) {
     return false;
   }
@@ -454,6 +434,9 @@ bool ForeachBinaryScalar(at::TensorList self, at::ArrayRef<at::Scalar> scalars, 
 
 bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
                  const at::TensorList tensors2, const at::Scalar &scalar, dvm::BinaryOpType op_type) {
+  if (!ForeachWorthFusing(input)) {
+    return false;
+  }
   float scalar_value = 1.0f;
   if (tensors1.size() != input.size() || tensors2.size() != input.size() || !GetScalarValue(scalar, &scalar_value)) {
     return false;
@@ -483,6 +466,7 @@ bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
 
 bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
                  const at::TensorList tensors2, at::ArrayRef<at::Scalar> scalars, dvm::BinaryOpType op_type) {
+  // op-plugin does NOT group natively (always per-tensor addcdiv_)
   if (tensors1.size() != input.size() || tensors2.size() != input.size() || scalars.size() != input.size()) {
     return false;
   }
@@ -683,7 +667,7 @@ at::Tensor exp(const at::Tensor & self) {
 
 at::Tensor & exp_(at::Tensor & self) {
   static auto enable = IsEnabled("exp_");
-  if (!enable || !InputCheck(self)) {
+  if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::exp_(self);
   }
   PrepareWritableOutput(self);
@@ -882,8 +866,7 @@ at::Tensor & pow_(at::Tensor & self, const at::Tensor & exponent) {
 
 // ===================== FloorDivide =====================
 bool FloorDivideScalar(const at::Tensor &self, const at::Scalar &other, at::Tensor *out) {
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/!inplace)) {
+  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return false;
   }
   float scalar = 1.0f;
@@ -918,8 +901,7 @@ bool FloorDivideTensor(const at::Tensor &self, const at::Tensor &other, at::Tens
   if (IsCPUScalar(other)) {
     return FloorDivideScalar(self, other.item(), out);
   }
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType)) {
+  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return false;
   }
   if (out == nullptr) {
@@ -989,8 +971,8 @@ at::Tensor & floor_divide_(at::Tensor & self, const at::Scalar & other) {
 
 at::Tensor & floor_divide_out(const at::Tensor & self, const at::Tensor & other, at::Tensor & out) {
   static auto enable = IsEnabled("floor_divide");
-  if (!enable || !NpuCheck(out) || IsCPUScalar(other) ||
-      !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType)) {
+  if (!enable || !OutputCheck(out) || IsCPUScalar(other) ||
+      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::floor_divide_out(self, other, out);
   }
   PrepareWritableOutput(out);
@@ -1160,7 +1142,7 @@ at::Tensor where(const at::Tensor & condition, const at::Tensor & self, const at
   auto cond_ok = condition.defined() && condition.is_contiguous() && torch_npu::utils::is_npu(condition) &&
                  condition.scalar_type() == at::ScalarType::Bool;
   if (!enable || !cond_ok ||
-      !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType)) {
+      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::where(condition, self, other);
   }
   PrepareFusionInputs(condition, self, other);
@@ -1187,7 +1169,7 @@ at::Tensor & where_out(const at::Tensor & condition, const at::Tensor & self,
   auto cond_ok = condition.defined() && condition.is_contiguous() && torch_npu::utils::is_npu(condition) &&
                  condition.scalar_type() == at::ScalarType::Bool;
   if (!enable || !cond_ok ||
-      !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType) || !NpuCheck(out)) {
+      !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType) || !OutputCheck(out)) {
     return op_api::where_out(condition, self, other, out);
   }
   PrepareWritableOutput(out);
@@ -1269,7 +1251,7 @@ at::Tensor tanh(const at::Tensor & self) {
 
 at::Tensor & tanh_(at::Tensor & self) {
   static auto enable = IsEnabled("tanh_");
-  if (!enable || !InputCheck(self)) {
+  if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::tanh_(self);
   }
   PrepareWritableOutput(self);
@@ -1286,7 +1268,7 @@ at::Tensor & tanh_(at::Tensor & self) {
 at::Tensor tanh_backward(const at::Tensor & grad_output, const at::Tensor & output) {
   static auto enable = IsEnabled("tanh_backward");
   if (!enable ||
-      !InputCheck(grad_output, IsFloatType) || !InputCheck(output, IsFloatType) ||
+      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(output, IsFloatType, /*allow_non_contig=*/true) ||
       grad_output.scalar_type() != output.scalar_type()) {
     return op_api::tanh_backward(grad_output, output);
   }
@@ -1307,7 +1289,7 @@ at::Tensor tanh_backward(const at::Tensor & grad_output, const at::Tensor & outp
 
 at::Tensor & gelu_out(const at::Tensor & self, c10::string_view approximate, at::Tensor & out) {
   static auto enable = IsEnabled("gelu");
-  if (!enable || !InputCheck(self, IsFloatType) || !NpuCheck(out) || approximate != "tanh") {
+  if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out) || approximate != "tanh") {
     return op_api::gelu_out(self, approximate, out);
   }
   PrepareWritableOutput(out);
@@ -1336,7 +1318,7 @@ at::Tensor & gelu_out(const at::Tensor & self, c10::string_view approximate, at:
 at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, c10::string_view approximate) {
   static auto enable = IsEnabled("gelu_backward");
   if (!enable ||
-      !InputCheck(grad_output, IsFloatType) || !InputCheck(self, IsFloatType) ||
+      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
       grad_output.scalar_type() != self.scalar_type()) {
     return op_api::gelu_backward(grad_output, self, approximate);
   }
@@ -1387,7 +1369,7 @@ at::Tensor relu(const at::Tensor & self) {
 
 at::Tensor & relu_(at::Tensor & self) {
   static auto enable = IsEnabled("relu_");
-  if (!enable || !InputCheck(self, IsFloatIntType)) {
+  if (!enable || !InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true)) {
     return op_api::relu_(self);
   }
   PrepareWritableOutput(self);
@@ -1401,12 +1383,11 @@ at::Tensor & relu_(at::Tensor & self) {
 
 bool LeakyRelu(const at::Tensor &self, const at::Scalar &negative_slope, at::Tensor *out = nullptr) {
   float slope = 0.0f;
-  bool inplace = (out == nullptr);
-  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/!inplace) ||
+  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
       !GetScalarValue(negative_slope, &slope)) {
     return false;
   }
-  if (inplace) {
+  if (out == nullptr) {
     PrepareWritableOutput(self);
   }
   PrepareFusionInput(self);
@@ -1566,13 +1547,57 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   const c10::optional<at::Tensor> & save_mean, const c10::optional<at::Tensor> & save_invstd,
   bool train, double eps, ::std::array<bool,3> output_mask) {
   static auto enable = IsEnabled("native_batch_norm_backward", Level::kO2);
-  if (!enable || train || grad_out.scalar_type() != at::ScalarType::Float || input.scalar_type() != at::ScalarType::Float ||
+  if (!enable || grad_out.scalar_type() != at::ScalarType::Float || input.scalar_type() != at::ScalarType::Float ||
       grad_out.scalar_type() != input.scalar_type() || input.dim() < 2 || input.dim() > 4 ||
       !NpuCheck(grad_out, input, weight, running_mean, running_var)) {
     return op_api::native_batch_norm_backward(
       grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
   }
   auto channels = input.size(1);
+
+  if (train) {
+    // === Training BatchNorm backward ===
+    if (!save_mean.has_value() || !save_invstd.has_value() || channels == 0 ||
+        !BatchNormVectorCheck(weight, channels) ||
+        !BatchNormVectorCheck(save_mean, channels) ||
+        !BatchNormVectorCheck(save_invstd, channels) ||
+        !NpuCheck(save_mean.value(), save_invstd.value())) {
+      return op_api::native_batch_norm_backward(
+        grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
+    }
+    bool need_input_reduce = output_mask[0] || output_mask[1];
+    auto reduce_res = op_api::batch_norm_backward_reduce(
+      grad_out, input, save_mean.value(), save_invstd.value(), weight,
+      need_input_reduce, false, output_mask[2]);
+    at::Tensor grad_input;
+    at::Tensor grad_weight;
+    at::Tensor grad_bias = output_mask[2] ? std::get<3>(reduce_res) : at::Tensor();
+    if (need_input_reduce) {
+      at::Tensor sum_dy = std::get<0>(reduce_res);
+      at::Tensor sum_dy_xmu = std::get<1>(reduce_res);
+      auto k = g_lazy_fusion_manager.Get();
+      auto rstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(
+        k->Unary<dvm::UnaryType::kSqrt>(
+          k->Binary<dvm::BinaryType::kAdd>(k->Input(save_invstd.value().contiguous()),
+                                           static_cast<float>(eps))));
+      at::Tensor rstd;
+      if (output_mask[0]) {
+        rstd = k->Output(rstd_obj, k->GetShape(rstd_obj), input.options().dtype(at::kFloat));
+      }
+      if (output_mask[1]) {
+        auto gw_obj = k->Binary<dvm::BinaryType::kMul>(rstd_obj, k->Input(sum_dy_xmu));
+        grad_weight = k->Output(gw_obj, k->GetShape(gw_obj), input.options().dtype(at::kFloat));
+      }
+      if (output_mask[0]) {
+        auto count = at::full({1},
+          static_cast<double>(input.numel() / channels), input.options().dtype(at::kFloat));
+        grad_input = lazy_fusion::batch_norm_backward_elemt(
+          grad_out, input, save_mean.value(), rstd, weight, sum_dy, sum_dy_xmu, count);
+      }
+    }
+    DumpOp("native_batch_norm_backward", grad_out, input, weight, save_mean, save_invstd, train, eps);
+    return std::make_tuple(std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
+  }
   if (!BatchNormVectorCheck(weight, channels) ||
       !BatchNormVectorCheck(running_mean, channels) ||
       !BatchNormVectorCheck(running_var, channels)) {
@@ -1895,7 +1920,7 @@ at::Tensor & sum_out(const at::Tensor & self, at::OptionalIntArrayRef dim, bool 
   static auto enable = IsEnabled("sum", Level::kO2);
   auto out_type = dtype.has_value() ? dtype.value() : self.scalar_type();
   if (!enable || out_type != at::ScalarType::Float ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !NpuCheck(out)) {
+      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out)) {
     return op_api::sum_out(self, dim, keepdim, dtype, out);
   }
   PrepareWritableOutput(out);
@@ -2009,7 +2034,7 @@ at::Tensor addmm(const at::Tensor & self, const at::Tensor & mat1, const at::Ten
 // ===================== Foreach =====================
 std::vector<at::Tensor> _foreach_sqrt(at::TensorList tensors) {
   static auto enable = IsEnabled("_foreach_sqrt");
-  if (!enable) {
+  if (!enable || !ForeachWorthFusing(tensors)) {
     return op_api::_foreach_sqrt(tensors);
   }
   for (size_t i = 0; i < tensors.size(); ++i) {
@@ -2030,7 +2055,7 @@ std::vector<at::Tensor> _foreach_sqrt(at::TensorList tensors) {
 
 void _foreach_sqrt_(at::TensorList tensors) {
   static auto enable = IsEnabled("_foreach_sqrt_");
-  if (!enable) {
+  if (!enable || !ForeachWorthFusing(tensors)) {
     op_api::_foreach_sqrt_(tensors);
     return;
   }
