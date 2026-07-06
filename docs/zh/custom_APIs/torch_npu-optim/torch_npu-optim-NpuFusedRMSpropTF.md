@@ -21,11 +21,11 @@ class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, w
 ## 参数说明
 
 - **params** (`iterable`)：必选参数，模型参数或模型参数组。
-- **lr** (`float`)：可选参数，学习率，默认值为1e-2。`lr`的值小于0时，打印“ValueError”异常信息。
-- **alpha** (`float`)：可选参数，平滑常量，默认值为0.9。`alpha`的值小于0时，打印“ValueError”异常信息。
-- **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-10。`eps`的值小于0时，打印“ValueError”异常信息。
-- **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`的值小于0时，打印“ValueError”异常信息。
-- **momentum** (`float`)：可选参数，动量因子，默认值为0。`momentum`的值小于0时，打印“ValueError”异常信息。
+- **lr** (`float`)：可选参数，学习率，默认值为1e-2。`lr`的值小于0时，系统会抛出“ValueError”异常信息。
+- **alpha** (`float`)：可选参数，平滑常量，默认值为0.9。`alpha`的值小于0时，系统会抛出“ValueError”异常信息。
+- **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-10。`eps`的值小于0时，系统会抛出“ValueError”异常信息。
+- **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`的值小于0时，系统会抛出“ValueError”异常信息。
+- **momentum** (`float`)：可选参数，动量因子，默认值为0。`momentum`的值小于0时，系统会抛出“ValueError”异常信息。
 - **centered** (`bool`)：可选参数，计算中心RMSProp，梯度将被方差的估计值归一化，默认值为False。
 - **decoupled_decay** (`bool`)：可选参数，权重衰减仅作用于参数，默认值为False。
 - **lr_in_momentum** (`bool`)：可选参数，计算动量buffer时使用lr，默认值为True。

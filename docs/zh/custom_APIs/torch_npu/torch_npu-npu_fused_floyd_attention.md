@@ -74,7 +74,7 @@ import torch_npu
 import math
 
 def truncated_normal(mean, std, min, max, size):
-    x = torch.normal(mean, std, size)
+    x = torch.normal(mean, std, size=size)
     x = torch.where((x < min) | (x > max), torch.tensor(0.0), x)
     return x
 B, N, S1, S2, S3, D = 1, 1, 16, 256, 256, 64

@@ -43,6 +43,8 @@ DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时
 ## 调用示例
 
 ```python
+    >>> import torch
+    >>> import torch_npu
     >>> box1 = torch.randn(4, 32).npu()
     >>> box1.requires_grad = True
     >>> box2 = torch.randn(4, 32).npu()
