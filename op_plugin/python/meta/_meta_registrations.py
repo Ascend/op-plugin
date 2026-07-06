@@ -5880,6 +5880,40 @@ def npu_swiglu_quant_meta(x, smooth_scales=None, offsets=None, group_index=None,
             torch.empty(scale_size, dtype=torch.float32, device=x.device))
 
 
+@impl(m, "npu_swiglu_group_quant")
+def npu_swiglu_group_quant_meta(x, *, weight=None, group_index=None, scale=None,
+                                dst_type=296, quant_mode=0, block_size=0, round_scale=False,
+                                clamp_limit=-1.0, dst_type_max=0.0, output_origin=False):
+    dim_num = x.dim()
+    x_last_dim = x.size(dim_num - 1)
+
+    y_shape = list(x.shape)
+    y_shape[dim_num - 1] = x_last_dim // 2
+
+    if quant_mode == 2 or quant_mode == 3:
+        y = x.new_empty(y_shape, dtype=torch.uint8)
+    else:
+        y = x.new_empty(y_shape, dtype=torch.uint8)
+
+    if quant_mode == 2:
+        y_scale = x.new_empty([0], dtype=torch.float32)
+    elif quant_mode == 3:
+        if group_index is not None and group_index.numel() > 0:
+            y_scale = group_index.new_empty(group_index.shape, dtype=torch.float32)
+        else:
+            y_scale = x.new_empty([1], dtype=torch.float32)
+    else:
+        y_scale = None
+
+    if output_origin:
+        y_origin_shape = list(x.shape)
+        y_origin_shape[dim_num - 1] = x_last_dim // 2
+        y_origin = x.new_empty(y_origin_shape, dtype=x.dtype)
+    else:
+        y_origin = None
+    return (y, y_scale, y_origin)
+
+
 @impl(m, "npu_swiglu_group_quant_backward")
 def npu_swiglu_group_quant_backward_meta(grad_y, x, *, weight=None, y_origin=None, group_index=None, clamp_limit=0.0):
     grad_x = torch.empty_like(x, dtype=x.dtype)

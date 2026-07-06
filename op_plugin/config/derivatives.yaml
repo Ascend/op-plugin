@@ -250,6 +250,10 @@ backward:
   self: npu_swiglu_backward(grad, self, dim)
   version: [v2.1, newest]
 
+- name: npu_swiglu_group_quant(Tensor x, *, Tensor? weight=None, Tensor? group_index=None, Tensor? scale=None, int dst_type=291, int quant_mode=0, int block_size=0, bool round_scale=False, float clamp_limit=-1.0, float dst_type_max=15.0, bool output_origin=False) -> (Tensor, Tensor, Tensor)
+  x, weight: npu_swiglu_group_quant_backward(grads[0], x, weight, grads[2], group_index, clamp_limit)
+  version: all_version
+
 - name: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, int? output_size=None) -> Tensor
   self: repeat_interleave_backward_tensor(grad, self, repeats, dim)
   version: v2.1

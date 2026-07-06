@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> npu_swiglu_group_quant_backward(const at::Tensor &grad_y, const at::Tensor &x,
     const c10::optional<at::Tensor> &weight, const c10::optional<at::Tensor> &y_origin,
-    const c10::OptionalIntArrayRef group_index, double clamp_limit)
+    const c10::optional<at::Tensor> &group_index, double clamp_limit)
 {
 
     // check x last dim
