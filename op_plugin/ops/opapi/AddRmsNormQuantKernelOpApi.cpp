@@ -45,8 +45,13 @@ namespace op_api {
         TensorWrapper y1_wrapper = {y1, y_acltype};
         TensorWrapper y2_wrapper = {y2, y_acltype};
         if ((c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 || beta.has_value()) && check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
-            EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1, y2, x_out, rmsnorm_out);
+            // 在有V2的情况下，A2/A3优先走V2, A5在使用beta的时候走V2。
+            EXEC_NPU_CMD(aclnnAddRmsNormQuantV2, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, beta, axis, epsilon, div_mode, y1_wrapper, y2_wrapper, x_out, rmsnorm_out);
+        } else if (c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend950 && !beta.has_value()) {
+            // 950上，没有beta调用V1。 防止老CANN包 + 新的PTA 由于没有V2 报错。
+            EXEC_NPU_CMD(aclnnAddRmsNormQuant, x1, x2, gamma, scales1, scales2, zero_points1, zero_points2, axis, epsilon, div_mode, y1_wrapper, y2_wrapper, x_out);
         } else {
+            // 在A2/A3平台，并且没有V2的情况下，调用V1
             TORCH_CHECK(!scales2.has_value(), "In the current CANN version, for aclnnAddRmsNormQuant, the parameter scales2 input only support None. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please set the scales2=None.", OPS_ERROR(ErrCode::PARAM));
             TORCH_CHECK(!zero_points2.has_value(), "In the current CANN version, for aclnnAddRmsNormQuant,  the parameter zero_points2 input only supprt None. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please set the zero_points2=None.", OPS_ERROR(ErrCode::PARAM));
             TORCH_CHECK(!beta.has_value(), "In the current CANN version, aclnnAddRmsNormQuant does not support the parameter beta input. It is recommended to upgrade the CANN package to version 8.3 or higher. Or please remove the beta input parameter.", OPS_ERROR(ErrCode::PARAM));
