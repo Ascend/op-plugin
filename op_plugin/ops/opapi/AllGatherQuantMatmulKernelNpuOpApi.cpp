@@ -88,27 +88,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
         gather_out_size, self.options().dtype(gather_out_scalar_type)) : at::empty({0}, self.options());
     at::Tensor amax = amax_output ? npu_preparation::apply_tensor_without_format(
         amax_size, self.options().dtype(amax_dtype)) : at::Tensor();
-    TensorWrapper x1_wrapper = {
-        self, (x1_dtype.has_value()) ? c10_npu::GetAclDataType(x1_dtype.value())
-                                     : npu_preparation::convert_to_acl_data_type(self.scalar_type())};
-    TensorWrapper x2_wrapper = {x2, (x2_dtype.has_value())
-                                        ? c10_npu::GetAclDataType(x2_dtype.value())
-                                        : npu_preparation::convert_to_acl_data_type(x2.scalar_type())};
-    TensorWrapper gather_out_wrapper = {
-        gather_out, (gather_out_dtype.has_value())
-                        ? c10_npu::GetAclDataType(gather_out_dtype.value())
-                        : npu_preparation::convert_to_acl_data_type(gather_out_scalar_type)};
-    auto x1_scale_scalar_dtype = x1_scale.has_value() ? x1_scale.value().scalar_type() : at::kFloat;
-    auto x2_scale_scalar_dtype = x2_scale.has_value() ? x2_scale.value().scalar_type() : at::kFloat;
-    TensorWrapper x1_scale_wrapper = {x1_scale.value_or(at::Tensor()),
-                                      (x1_scale_dtype.has_value())
-                                          ? c10_npu::GetAclDataType(x1_scale_dtype.value())
-                                          : npu_preparation::convert_to_acl_data_type(x1_scale_scalar_dtype)};
-    TensorWrapper x2_scale_wrapper = {x2_scale.value_or(at::Tensor()),
-                                      (x2_scale_dtype.has_value())
-                                          ? c10_npu::GetAclDataType(x2_scale_dtype.value())
-                                          : npu_preparation::convert_to_acl_data_type(x2_scale_scalar_dtype)};
-    c10::string_view comm_mode_value = comm_mode.value_or("");
+    TensorWrapper x1_wrapper =  make_wrapper(self, x1_dtype);
+    TensorWrapper x2_wrapper =  make_wrapper(x2, x2_dtype);
+    TensorWrapper gather_out_wrapper = make_wrapper(gather_out, gather_out_dtype);
+    const at::Tensor &x1_scale_real = x1_scale.value_or(at::Tensor());
+    const at::Tensor &x2_scale_real = x2_scale.value_or(at::Tensor());
+    TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
+    TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
+    c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
     char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     EXEC_NPU_CMD(aclnnAllGatherMatmulV2, x1_wrapper, x2_wrapper, bias_value, x1_scale_wrapper, x2_scale_wrapper,
                  quant_scale_value, block_size, hcom_value, gather_index, comm_turn, stream_mode, group_size, comm_mode_ptr,

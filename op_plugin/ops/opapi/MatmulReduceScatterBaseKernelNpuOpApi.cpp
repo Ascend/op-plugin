@@ -33,8 +33,7 @@ at::Tensor npu_mm_reduce_scatter_base(const at::Tensor & self, const at::Tensor 
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size."
                 + OPS_ERROR(ErrCode::PARAM));
     bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
-    std::string default_comm_mode = isSocBelowAscend950 ? "ai_cpu" : "";
-    c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
+    c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
     auto output_size = {self.size(0) / world_size, x2.size(1)};
     auto result_dtype = self.scalar_type();
     bool has_quant = x2_scale.has_value();

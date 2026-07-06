@@ -175,7 +175,7 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
                                   int64_t comm_quant_mode, c10::optional<c10::string_view> comm_mode)
 {
     bool is_comm_mode = comm_mode.has_value();
-    c10::string_view comm_mode_value = comm_mode.value_or("");
+    c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
     char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
     bool is_a8 = (x1_dtype.has_value() ?
         (x1_dtype.value() == static_cast<int>(c10_npu::DType::HIFLOAT8)) : false) ||

@@ -48,8 +48,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(const at::Tensor &self
                 "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
                 self.size(1), " and the K-axis of x2 is ", x2.size(0), "." + OPS_ERROR(ErrCode::PARAM));
     bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
-    std::string default_comm_mode = isSocBelowAscend950 ? "ai_cpu" : "";
-    c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
+    c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
     auto out_gather_mm_size = get_output_size_gather_mm(self, x2, world_size, gather_index);
     auto out_gather_size = get_output_size_gather(self, x2, world_size, gather_index);
     bool has_quant = x2_scale.has_value();
