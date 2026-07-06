@@ -172,12 +172,12 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 ## 参数说明
 
 - **x**（`Tensor`）：必选输入，矩阵乘法的左矩阵，对应公式中的$X$。shape支持2维[m,k]，数据格式支持$ND$，支持非连续的Tensor。
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`int32`。
+  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int4`、`int8`和`int32`。
   - <term>Atlas 350 加速卡</term>：数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数x\_dtype为对应类型，此时x本身的dtype不再生效，但仍需保证x本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴K需为偶数，以保证8bits可以转换为2个float4。数据格式支持ND。
 
 - **weight**（`TensorList`）：必选输入，权重矩阵（矩阵乘法右矩阵），对应公式中的$W$。目前仅支持TensorList长度为1。shape支持3维[e,k,n]（$ND$格式）或5维NZ格式，数据格式支持$ND$和FRACTAL_NZ（通过接口npu\_format\_cast，可实现格式转换），支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
-    - 数据类型支持`int8`。`int32`为A8W4和A4W4场景下的适配用途，实际1个`int32`会被解释为8个int4数据。
+    - 数据类型支持`int4`、`int8`和`int32`。`int32`为A8W4和A4W4场景下的适配用途，实际1个`int32`会被解释为8个int4数据。
     - A8W8场景下，weight仅支持NZ格式（FRACTAL\_NZ），不支持$ND$数据格式。
   - <term>Atlas 350 加速卡</term>：
     - 数据格式为ND时，shape支持3维，非转置shape\[\[e, k, n\]\]，转置shape\[\[e, n, k\]\]。数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数weight\_dtype为对应类型，此时weight本身的dtype不再生效，但仍需保证weight本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴需为偶数，以保证8bits可以转换为2个float4。

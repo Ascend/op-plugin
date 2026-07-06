@@ -26,7 +26,7 @@ torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_o
 
 - **dets**（`Tensor`）：shape为[num_boxes, 5]的2D浮点张量。
 - **scores**（`Tensor`）：shape为[num_boxes]的1D浮点张量，表示每个框对应的一个分数。
-- **iou_threshold**（`float`）：表示框与IoU重叠上限阈值的标量。
+- **iou_threshold**（`float`）：表示框间IoU重叠阈值的标量。
 - **scores_threshold**（`float`）：表示决定何时删除框的分数阈值的标量，默认值为0。
 - **max_output_size**（`int`）：表示非最大抑制下要选择的最大框数。默认值为-1，即不施加任何约束。
 - **mode**（`int`）：指定dets布局类型，默认值为0。如果mode设置为0，则dets的输入值为x、y、w、h和角度。如果mode设置为1，则dets的输入值为x1、y1、x2、y2和角度。
