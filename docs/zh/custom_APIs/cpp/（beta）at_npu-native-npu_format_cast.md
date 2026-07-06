@@ -18,7 +18,7 @@ NPU tensor格式转换，返回值类型Tensor，表示转换后的tensor。
 
 self：Tensor类型，待转换格式的tensor。
 
-acl_format：int64_t型，待转换的格式。
+acl_format：int64_t类型，转换后的目标格式。
 
 customize_dtype：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`c10::nullopt`。
 
