@@ -23,17 +23,17 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 
 **计算参数**
 
-- **drop_prob** (`float`)：dropout概率。
+- **drop_prob** (`float`)：DropPath概率（路径丢弃概率）。
 
 **计算输入**
 
-- **x** (`Tensor`)：应用dropout的输入张量。
+- **x** (`Tensor`)：应用DropPath的输入张量。
 
 ## 返回值说明
 
 `Tensor`
 
-dropout的计算结果。
+DropPath的计算结果。
 
 ## 调用示例
 
