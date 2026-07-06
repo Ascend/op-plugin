@@ -201,9 +201,9 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 ## 返回值说明
 
-- **query**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
+- **query_out**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
 
-- **query_rope**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。数据格式支持ND，dtype支持`bfloat16`。shape支持3维和4维，格式为[T, N, Dr]和[B, S, N, Dr]。
+- **query_rope_out**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。数据格式支持ND，dtype支持`bfloat16`。shape支持3维和4维，格式为[T, N, Dr]和[B, S, N, Dr]。
 
 - **dequant_scale_q_nope**（`Tensor`）：表示Query的输出Tensor的反量化参数。数据格式支持ND，dtype支持`float`。shape支持3维，weightQuantMode=2/3/4/5时，其shape为[T, N, 1]和[B*S, N, 1]；weightQuantMode=0/1时为nullptr。
 
