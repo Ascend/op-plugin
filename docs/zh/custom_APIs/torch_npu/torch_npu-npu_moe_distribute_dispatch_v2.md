@@ -365,10 +365,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             tp_rank_id=rank % tp_world_size,
         )
         (
-            expand_x, dynamic_scales, expand_idx,
+            expand_x, dynamic_scales, assist_info_for_combine,
             expert_token_nums, ep_recv_counts, tp_recv_counts, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
 
 
     def get_dispatch_kwargs_warmup(
@@ -673,10 +673,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         )
 
         (
-            expand_x, dynamic_scales, expand_idx,
+            expand_x, dynamic_scales, assist_info_for_combine,
             expert_token_nums, ep_recv_counts, tp_recv_counts, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
 
 
     def get_dispatch_kwargs_warmup(

@@ -15,12 +15,14 @@
 
     1. `out`为64位格式，初始为0。
 
-    2. 若`round_mode`为1，`scale`按bit位round到高19位，`round_mode`为0不做处理。
+    2. 根据`round_mode`将`scale`从`float32`转换为FP19：
+        - 若`round_mode`为0（截断填充模式，默认值）：不对`scale`做R_INT舍入。
+        - 若`round_mode`为1（R_INT模式）：先对`scale`执行R_INT舍入：
         $$
         scale = Round(scale)
         $$
 
-    3. `scale`按bit位取高19位截断，存储于`out`的低32位（bit 0-31），并将第46位修改为1。
+    3. 将`scale`按bit位取高19位截断，存储于`out`的低32位（bit 0-31），并将第46位修改为1。
      
         $$
         out = out\ |\ (scale\ \&\ 0XFFFFE000)\ |\ (1\ll46)
@@ -50,7 +52,9 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 - **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
 - **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
-- **round_mode** (`int`)：可选参数。量化计算中数据类型的转换模式选择，默认值为0。0表示截断填充模式（取高19位），1表示R_INT模式（可提升计算精度）。
+- **round_mode** (`int`)：可选参数，指定`scale`从`float32`转换为FP19的模式，默认值为0。支持以下选项：
+  - 0：截断填充模式，直接将`scale`截断为FP19后打包。
+  - 1：R_INT模式，先将`scale`按R_INT规则舍入为FP19，再截断打包，可提升计算精度。
 
 ## 返回值说明
 
