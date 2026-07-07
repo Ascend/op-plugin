@@ -371,4 +371,4 @@ backward:
 
 - name: renorm(Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor
   self: npu_renorm_backward(grad, self, p, dim, maxnorm)
-  version: all_version
+  version: [v2.7, newest]
