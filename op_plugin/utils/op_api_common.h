@@ -588,7 +588,8 @@ auto DecodeDevice(Ts&... args) -> at::Device
         if (op_plugin::utils::is_two_tensor_base_format(input1, input2)) {                                             \
             DO_COMPATIBILITY(aclnn_nd_api, aclop_func_call);                                                           \
         } else {                                                                                                       \
-            static bool is_support_soc = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&              \
+            static bool is_support_soc = Is310PBoolCheck() ||                                                         \
+                                         (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&              \
                                              c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||           \
                                          (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4);                \
             bool is_nz_dtype_valid = (c10_npu::IsAclnnOnly() || ((input1).scalar_type() != at::ScalarType::Float &&    \
