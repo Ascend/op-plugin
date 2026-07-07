@@ -38,7 +38,7 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 
 ## 约束说明
 
-到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0。如果需要反向传播，确保参数正确。
 
 ## 调用示例
 

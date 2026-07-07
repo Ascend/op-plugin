@@ -38,7 +38,7 @@ DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时
 
 ## 约束说明
 
-到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0。如果需要反向传播，确保参数正确。
 
 ## 调用示例
 
@@ -49,7 +49,7 @@ DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时
     >>> box1.requires_grad = True
     >>> box2 = torch.randn(4, 32).npu()
     >>> box2.requires_grad = True
-    >>> diou = torch_npu.contrib.function.npu_diou(box1, box2) 
+    >>> diou = torch_npu.npu_diou(box1, box2, trans=True)
     >>> l = diou.sum()
     >>> l.backward()
 ```
