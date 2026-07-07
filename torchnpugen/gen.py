@@ -31,11 +31,6 @@ from torchnpugen.api.types.signatures import NativeSignature
 from torchnpugen.context import native_function_manager
 from torchnpugen.op_codegen_utils import concatMap, context
 
-# DVM lazy-fusion codegen is opt-in via the _TORCH_NPU_ENABLE_DVM env var
-ENABLE_DVM = os.environ.get("_TORCH_NPU_ENABLE_DVM", "0").lower() == "1"
-
-
-
 T = TypeVar('T')
 
 
@@ -247,7 +242,7 @@ def gen_function_declaration(
         sig_str = f"OP_PLUGIN_HIDDEN {sig.decl(name=op_name)};"
         backend_decalarations["op_api"].append(sig_str)
         backend_decalarations["acl_op"].append(sig_str)
-        if ENABLE_DVM and "dvm" in f.impl_ns:
+        if "dvm" in f.impl_ns:
             backend_decalarations["lazy_fusion"].append(sig_str)
         if f.sparse is not None:
             op_name += "_sparse"
@@ -309,7 +304,7 @@ Use {deprecated_replace} instead.");'
         aclnn_extension = os.getenv('ACLNN_EXTENSION_SWITCH') == 'TRUE'
 
         dvm_call = ""
-        if ENABLE_DVM and "dvm" in f.impl_ns:
+        if "dvm" in f.impl_ns:
             if len(f.func.returns) == 0:
                 dvm_call = f"""if (lazy_fusion::IsEnabled()) {{
             lazy_fusion::{impl_name}({args_exprs_str});
