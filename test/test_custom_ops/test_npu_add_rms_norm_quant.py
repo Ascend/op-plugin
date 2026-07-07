@@ -437,6 +437,266 @@ class TestNPUAddRmsNormQuant(TestCase):
         x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
         self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_950_v1_int8(self):
+        # 950 + 无 beta + 默认 dst_type(int8) -> 走 aclnnAddRmsNormQuant (V1) 新增分支
+        shape_list = [[[16, ], [16, ]],
+                      [[2, 16], [16, ]],
+                      [[16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [16, 32]]]
+        for item in shape_list:
+            x_shape = item[0]
+            quant_shape = item[1]
+            x1 = torch.randn(x_shape, dtype=torch.float32)
+            x2 = torch.randn(x_shape, dtype=torch.float32)
+            gamma = torch.randn(quant_shape, dtype=torch.float32)
+            scales1 = torch.randn(quant_shape, dtype=torch.float32)
+            zero_points1 = torch.randint(-10, 10, quant_shape, dtype=torch.int32)
+
+            x1_npu = x1.npu()
+            x2_npu = x2.npu()
+            gamma_npu = gamma.npu()
+            scales1_npu = scales1.npu()
+            zero_points1_npu = zero_points1.npu()
+
+            y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu)
+            y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_golden(
+                x1, x2, gamma, scales1, zero_points1)
+
+            benchmark = math.pow(2, -7)
+            benchmark_int8 = 1
+            y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+            y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+            y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+            y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_950_v2_beta_int8(self):
+        # 950 + 有 beta + int8 -> 走 aclnnAddRmsNormQuantV2 分支
+        shape_list = [[[16, ], [16, ]],
+                      [[2, 16], [16, ]],
+                      [[16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [16, 32]]]
+        for item in shape_list:
+            x_shape = item[0]
+            quant_shape = item[1]
+            x1 = torch.randn(x_shape, dtype=torch.float32)
+            x2 = torch.randn(x_shape, dtype=torch.float32)
+            gamma = torch.randn(quant_shape, dtype=torch.float32)
+            beta = torch.randn(quant_shape, dtype=torch.float32)
+            scales1 = torch.randn(quant_shape, dtype=torch.float32)
+            zero_points1 = torch.randint(-10, 10, quant_shape, dtype=torch.int32)
+
+            x1_npu = x1.npu()
+            x2_npu = x2.npu()
+            gamma_npu = gamma.npu()
+            beta_npu = beta.npu()
+            scales1_npu = scales1.npu()
+            zero_points1_npu = zero_points1.npu()
+
+            y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu)
+            y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_v2_golden(
+                x1, x2, gamma, scales1, zero_points1, beta)
+
+            benchmark = math.pow(2, -7)
+            benchmark_int8 = 1
+            y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+            y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+            y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+            y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_950_dst_type(self):
+        # 950 + 无 beta + 不同 dst_type -> 走 V1 分支，覆盖 int8/hifloat8/float8_e5m2/float8_e4m3fn
+        x_shape = [2, 16]
+        quant_shape = [x_shape[1]]
+        x1 = torch.randn(x_shape, dtype=torch.float32)
+        x2 = torch.randn(x_shape, dtype=torch.float32)
+        gamma = torch.randn(quant_shape, dtype=torch.float32)
+        scales1 = torch.randn(quant_shape, dtype=torch.float32)
+        zero_points1 = torch.randn(quant_shape, dtype=torch.float32)
+
+        x1_npu = x1.npu()
+        x2_npu = x2.npu()
+        gamma_npu = gamma.npu()
+        scales1_npu = scales1.npu()
+        zero_points1_npu = zero_points1.npu()
+
+        benchmark = math.pow(2, -7)
+        benchmark_int8 = 1
+        benchmark_float8 = 1e-8
+        dst_type_list = [1, 290, 291, 292]
+        for dst_type in dst_type_list:
+            y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, dst_type=dst_type)
+            y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_golden(
+                x1, x2, gamma, scales1, zero_points1, dst_type=dst_type)
+
+            if dst_type == 1:
+                y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+                y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+                y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+                y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+            else:
+                y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+                y1_npu_data = y1_npu.to(torch.float32).reshape(1, y1_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_float8))
+                y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+                y2_npu_data = y2_npu.to(torch.float32).reshape(1, y2_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_float8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_950_scales2_zero_points2(self):
+        # 950 + scales2/zero_points2，验证第二组量化输出 y2
+        # 无 beta -> 走 V1 分支（透传 scales2/zero_points2）；有 beta -> 走 V2 分支
+        shape_list = [[[2, 16], [16, ]],
+                      [[16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [32, ]]]
+        for item in shape_list:
+            x_shape = item[0]
+            quant_shape = item[1]
+            x1 = torch.randn(x_shape, dtype=torch.float32)
+            x2 = torch.randn(x_shape, dtype=torch.float32)
+            gamma = torch.randn(quant_shape, dtype=torch.float32)
+            beta = torch.randn(quant_shape, dtype=torch.float32)
+            scales1 = torch.randn(quant_shape, dtype=torch.float32)
+            zero_points1 = torch.randint(-10, 10, quant_shape, dtype=torch.int32)
+            scales2 = torch.randn(quant_shape, dtype=torch.float32)
+            zero_points2 = torch.randint(-10, 10, quant_shape, dtype=torch.int32)
+
+            x1_npu = x1.npu()
+            x2_npu = x2.npu()
+            gamma_npu = gamma.npu()
+            beta_npu = beta.npu()
+            scales1_npu = scales1.npu()
+            zero_points1_npu = zero_points1.npu()
+            scales2_npu = scales2.npu()
+            zero_points2_npu = zero_points2.npu()
+
+            benchmark = math.pow(2, -7)
+            benchmark_int8 = 1
+
+            # 无 beta -> 950 走 V1 分支（透传 scales2/zero_points2）
+            y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu,
+                scales2=scales2_npu, zero_points2=zero_points2_npu)
+            y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_golden(
+                x1, x2, gamma, scales1, zero_points1, scales2, zero_points2)
+
+            y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+            y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+            y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+            y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+            # 有 beta -> 950 走 V2 分支
+            y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu, beta_npu,
+                scales2=scales2_npu, zero_points2=zero_points2_npu)
+            y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_v2_golden(
+                x1, x2, gamma, scales1, zero_points1, beta, scales2, zero_points2)
+
+            y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+            y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+            y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+            y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+            self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+
+            x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+            x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+            self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_950_fp16_bf16(self):
+        # 950 + fp16/bf16 输入 + 无 beta -> 走 V1 分支，dtype 覆盖
+        shape_list = [[[2, 16], [16, ]],
+                      [[16, 32], [32, ]],
+                      [[2, 2, 2, 8, 16, 32], [32, ]]]
+        for dtype in [torch.float16, torch.bfloat16]:
+            for item in shape_list:
+                x_shape = item[0]
+                quant_shape = item[1]
+                x1 = torch.randn(x_shape, dtype=dtype)
+                x2 = torch.randn(x_shape, dtype=dtype)
+                gamma = torch.randn(quant_shape, dtype=dtype)
+                # Don't support scales with 0.
+                scales1 = torch.randn(quant_shape, dtype=dtype).uniform_(0.1, 1)
+                zero_points1 = torch.randint(-10, 10, quant_shape, dtype=torch.int32)
+
+                x1_npu = x1.npu()
+                x2_npu = x2.npu()
+                gamma_npu = gamma.npu()
+                scales1_npu = scales1.npu()
+                zero_points1_npu = zero_points1.npu()
+
+                y1_npu, y2_npu, x_out = torch_npu.npu_add_rms_norm_quant(
+                    x1_npu, x2_npu, gamma_npu, scales1_npu, zero_points1_npu)
+                y1_cpu, y2_cpu, x_out_cpu = self.npu_add_rms_norm_quant_golden(
+                    x1, x2, gamma, scales1, zero_points1)
+
+                benchmark = math.pow(2, -7)
+                benchmark_int8 = 1
+                y1_cpu_data = y1_cpu.reshape(1, y1_cpu.numel())[0].cpu()
+                y1_npu_data = y1_npu.reshape(1, y1_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y1_cpu_data, y1_npu_data, benchmark_int8))
+
+                y2_cpu_data = y2_cpu.reshape(1, y2_cpu.numel())[0].cpu()
+                y2_npu_data = y2_npu.reshape(1, y2_npu.numel())[0].cpu()
+                self.assertTrue(self.compare(y2_cpu_data, y2_npu_data, benchmark_int8))
+
+                x_cpu_data = x_out_cpu.reshape(1, x_out_cpu.numel())[0].cpu()
+                x_npu_data = x_out.reshape(1, x_out.numel())[0].cpu()
+                self.assertTrue(self.compare(x_cpu_data, x_npu_data, benchmark))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_add_rms_norm_quant_axis_invalid(self):
+        # axis != -1 -> TORCH_CHECK 抛异常
+        x_shape = [2, 16]
+        x1 = torch.randn(x_shape, dtype=torch.float32)
+        x2 = torch.randn(x_shape, dtype=torch.float32)
+        gamma = torch.randn([x_shape[1]], dtype=torch.float32)
+        scales1 = torch.randn([x_shape[1]], dtype=torch.float32)
+
+        x1_npu = x1.npu()
+        x2_npu = x2.npu()
+        gamma_npu = gamma.npu()
+        scales1_npu = scales1.npu()
+
+        with self.assertRaises(RuntimeError):
+            torch_npu.npu_add_rms_norm_quant(x1_npu, x2_npu, gamma_npu, scales1_npu, axis=0)
+
 
 if __name__ == "__main__":
     run_tests()
