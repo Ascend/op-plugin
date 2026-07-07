@@ -9,7 +9,7 @@ This example project demonstrates the complete adaptation development workflow f
 Before getting started, ensure that you have completed the installation of the following environments:
 
 1. Install the NPU driver, firmware, and CANN software (including the Toolkit, ops, and NNAL packages) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/zh/canncommercial/900/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum) (Commercial Edition) or [CANN Software Installation](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/900/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum) (Community Edition).
-2. Install the PyTorch framework by referring to [Ascend Extension for PyTorch Software Installation Guide](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/zh/installation_guide/installation_description.md).
+2. Install the PyTorch framework by referring to [Ascend Extension for PyTorch Software Installation Guide](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/en/installation_guide/installation_description.md).
 
 ### Adaptation File Structure
 
@@ -32,7 +32,7 @@ Before getting started, ensure that you have completed the installation of the f
 
     > [!NOTE]
     > 
-    > The following is the code sample for single-rank scenarios. In these scenarios, the `const c10::OptionalDeviceGuard device_guard(device_of(self));` statement is optional. In multi-rank scenarios, this statement must be included in the adaptation code.  
+    > The following is the code sample for single-device scenarios. In these scenarios, the `const c10::OptionalDeviceGuard device_guard(device_of(self));` statement is optional. In multi-device scenarios, this statement must be included in the adaptation code.  
 
     ```cpp
     // Register forward implementation for NPU devices

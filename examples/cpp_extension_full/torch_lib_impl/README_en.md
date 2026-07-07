@@ -1,6 +1,6 @@
-# Adaptation Development and Usage (Basic Example)
+# Adaptation Development and Usage (Complete TORCH_LIBRARY_IMPL Example)
 
-This example project demonstrates the complete adaptation development workflow for calling custom operators through the `torch_npu` framework by using C++ extensions and `single-op` APIs. The workflow covers operator definition, operator adaptation, and ATen IR registration and binding, ultimately enabling calls to custom operators.
+This example project demonstrates how to adapt and call a single-operator API through `torch_npu` using C++ extensions. The forward and backward bindings are registered through PyTorch `TORCH_LIBRARY_IMPL`.
 
 ## Operator Adaptation Development
 
@@ -17,7 +17,7 @@ Before getting started, ensure that you have completed the installation of the f
 ├── build_and_run.sh                // Script for compiling and installing the custom operator wheel package and executing the test case
 ├── csrc                            // Directory of the C++ code at the operator adaptation layer
 │   └── add_custom.cpp              // Forward and backward adaptation code, ATen IR registration, and binding for the custom operator
-├── cpp_extension_base              // Python-side code for the custom operator package
+├── cpp_extension_full              // Python-side code for the custom operator package
 │   ├── ops.py                      // Defines operator APIs
 │   └── __init__.py                 // Python initialization file
 ├── setup.py                        // Compilation file of the wheel package
@@ -27,11 +27,11 @@ Before getting started, ensure that you have completed the installation of the f
 
 ### Procedure
 
-1. Implement the C++ operator code, adaptation layer, custom operator schema registration, and implementation binding in the `add_custom.cpp` file under the operator adaptation layer C++ directory (`csrc`). PyTorch provides the `TORCH_LIBRARY` macro to define a globally unique namespace and register the operator schema within it. The code sample is as follows:
+1. Implement the C++ operator adaptation code, register the custom operator schema, register implementations for Meta and NPU devices, and bind the concrete implementations in `add_custom.cpp` under the operator adaptation layer C++ directory (`csrc`). PyTorch provides the `TORCH_LIBRARY` macro to define a new namespace and register the schema within the namespace. Note that the namespace name must be unique. The code sample is as follows:
 
     > [!NOTE]
     > 
-    > In multi-device scenarios, you must add `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))` to the adaptation code to ensure proper cross-device access.
+    > In multi-device scenarios, you must add `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))` to the adaptation code to ensure proper cross-device access. This statement can be omitted in single-device scenarios.
 
     ```cpp
     // Register forward implementation for NPU devices
@@ -48,40 +48,85 @@ Before getting started, ensure that you have completed the installation of the f
         return result;
     }
 
-    // Forward and backward registration for NPU devices
-    // NPU devices use PrivateUse1 in PyTorch 2.1 and later versions, and XLA in earlier versions (change PrivateUse1 to XLA for earlier versions)
-    TORCH_LIBRARY_IMPL(cpp_extension_base, PrivateUse1, m) {
-        m.impl("add_custom", &add_custom_impl_npu);
+    // Register backward implementation for NPU devices
+    std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor& grad)
+    {
+        const c10::OptionalDeviceGuard device_guard(device_of(grad));
+        at::Tensor result = grad; // Allocate output memory
+
+        return {result, result};
     }
 
-    TORCH_LIBRARY(cpp_extension_base, m) {
-        m.def("add_custom(Tensor self, Tensor other) -> Tensor");
+    // Register forward implementation for Meta devices
+    at::Tensor add_custom_impl_meta(const at::Tensor& self, const at::Tensor& other)
+    {
+        return at::empty_like(self);
     }
+
+    // Register backward implementation for Meta devices
+    std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tensor& self)
+    {
+        auto result = at::empty_like(self);
+        return std::make_tuple(result, result);
+    }
+
+    // Register forward and backward implementations for NPU devices
+    // NPU devices use PrivateUse1 in PyTorch 2.1 and later versions, and XLA in earlier versions (change PrivateUse1 to XLA for earlier versions)
+    TORCH_LIBRARY_IMPL(cpp_extension_full, PrivateUse1, m) {
+        m.impl("add_custom", &add_custom_impl_npu);
+        m.impl("add_custom_backward", &add_custom_backward_impl_npu);
+    }
+
+    // Automatic derivation of the NPU bound to the operator
+    // If the PyTorch version is earlier than 2.1, change AutogradPrivateUse1 to AutogradXLA.
+    TORCH_LIBRARY_IMPL(cpp_extension_full, AutogradPrivateUse1, m) {
+        m.impl("add_custom", &add_custom_autograd);
+    }
+
+
+    // Register implementations for the AutogradMeta key
+    TORCH_LIBRARY_IMPL(cpp_extension_full, AutogradMeta, m) {
+        m.impl("add_custom", &add_custom_autograd_meta);
+    }
+
+
+    // Register forward and backward implementations for Meta devices
+    TORCH_LIBRARY_IMPL(cpp_extension_full, Meta, m) {
+        m.impl("add_custom", &add_custom_impl_meta);
+        m.impl("add_custom_backward", &add_custom_backward_impl_meta);
+    }
+
+    TORCH_LIBRARY(cpp_extension_full, m) {
+        m.def("add_custom(Tensor self, Tensor other) -> Tensor");
+        m.def("add_custom_backward(Tensor self) -> (Tensor, Tensor)");
+    }
+
     ```
 
-2. Add the operator call logic and load the `.so` file in the `__init__.py` and `ops.py` files under the `cpp_extension_base` directory. The code sample is as follows:
+2. Add the operator call logic and load the `.so` file in the `__init__.py` and `ops.py` files under the `cpp_extension_full` directory. The code sample is as follows:
 
     ```Python
     # __init__.py
-    __all__ = ['ops', 'add_custom']
-    from .ops import add_custom
+    __all__ = ['ops', 'add_custom', 'add_custom_backward']
+    from .ops import add_custom, add_custom_backward
     import pathlib
     import torch
+    # Load the custom operator library
     def _load_opextension_so():
         so_dir = pathlib.Path(__file__).parents[0]
         so_files = list(so_dir.glob('custom_ops_lib*.so'))
-
         if not so_files:
             raise FileNotFoundError(f"not find custom_ops_lib*.so in {so_dir}")
-
-        so_path = str(so_files[0])
-        torch.ops.load_library(so_path)
+        atb_so_path = str(so_files[0])
+        torch.ops.load_library(atb_so_path)
     _load_opextension_so()
 
     # ops.py
     import torch
     def add_custom(self, other):
-        return torch.ops.cpp_extension_base.add_custom(self, other)
+        return torch.ops.cpp_extension_full.add_custom(self, other)
+    def add_custom_backward(grad):
+        return torch.ops.cpp_extension_full.add_custom_backward(grad)
     ```
 
 ## Usage Example
@@ -92,10 +137,10 @@ After completing the operator adaptation development, you can call the custom op
 2. Download the sample code.
 
     ```bash
-    # Downloading sample code
+    # Download sample code
     git clone https://gitcode.com/Ascend/op-plugin
     # Go to the code directory
-    cd examples/cpp_extension_base
+    cd examples/cpp_extension_full/torch_library_impl
     ```
 
 3. Complete operator adaptation. For details, see [Operator Adaptation Development](#operator-adaptation-development).
@@ -111,4 +156,3 @@ After completing the operator adaptation development, you can call the custom op
     Ran xx tests in xx s
     OK
     ```
-    
