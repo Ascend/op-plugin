@@ -1,4 +1,4 @@
-# torch\_npu.npu\_moe\_distribute\_dispatch\_v2<a name="ZH-CN_TOPIC_0000002343094193"></a>
+﻿# torch\_npu.npu\_moe\_distribute\_dispatch\_v2<a name="ZH-CN_TOPIC_0000002343094193"></a>
 
 ## 产品支持情况
 
@@ -11,7 +11,7 @@
 
 - API功能：
     需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)或[torch\_npu.npu\_moe\_distribute\_combine\_add\_rms\_norm](torch_npu-npu_moe_distribute_combine_add_rms_norm.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。
-     - 支持动态量化场景，对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor  Parallelism）域的allgatherv通信（可选）；
+     - 支持动态量化场景，对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信；
      - 支持特殊专家场景。
 
 - 相较于npu_moe_distribute_dispatch接口，该接口变更如下：
@@ -19,71 +19,48 @@
      - 新增输入参数`comm_alg`，可用于代替HCCL_INTRA_PCIE_ENABLE和HCCL_INTRA_ROCE_ENABLE环境变量。
 
 - 计算公式：
-    - 动态量化场景：
 
-      若`quant_mode`不为`2`，即非动态量化场景：
+  动态量化场景：
 
-         $$
-         \ quant\_out=
-         \begin{cases}
-         \ x, & \quad \text{if}\ quant\_mode = 0 \\
-         \ CastToInt8(\ CastToFp32(x) \times \ scales ), & \quad \text{if } quant\_mode ≠ 0 \\
-         \end{cases}
-         $$
+  若`quant_mode`不为`2`，即非动态量化场景：
 
-         $$\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$$
+  $$
+  \begin{aligned}
+  \text{quant\_out} &=
+  \begin{cases}
+  x, & \text{if } \text{quant\_mode}=0 \\
+  \operatorname{CastToInt8}(\operatorname{CastToFp32}(x) \times \text{scales}), & \text{if } \text{quant\_mode}\ne0
+  \end{cases} \\
+  \text{alltoall\_x\_out} &= \operatorname{alltoallv}(\text{quant\_out}) \\
+  \text{expand\_x} &= \text{alltoall\_x\_out}
+  \end{aligned}
+  $$
 
-         $$
-         \ expand\_x=
-         \begin{cases}
-         \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
-         \ alltoall\_x\_out & \quad \ 无TP通信域 \\
-         \end{cases}
-         $$
+  若`quant_mode`为`2`，即动态量化场景：
 
-      若`quant_mode`为`2`，即动态量化场景：
+  $$
+  \begin{aligned}
+  \text{x\_fp32} &= \operatorname{CastToFp32}(x) \times \text{scales} \\
+  \text{dynamic\_scales\_value} &= 127.0 / \operatorname{Max}(\operatorname{Abs}(\text{x\_fp32})) \\
+  \text{quant\_out} &= \operatorname{CastToInt8}(\text{x\_fp32} \times \text{dynamic\_scales\_value}) \\
+  \text{alltoall\_x\_out} &= \operatorname{alltoallv}(\text{quant\_out}) \\
+  \text{alltoall\_dynamic\_scales\_out} &= \operatorname{alltoall}(1.0 / \text{dynamic\_scales\_value}) \\
+  \text{expand\_x} &= \text{alltoall\_x\_out} \\
+  \text{dynamic\_scales} &= \text{alltoall\_dynamic\_scales\_out}
+  \end{aligned}
+  $$
 
-         $$\ x\_fp32= \ CastToFp32(x) \times \ scales$$
+  特殊专家场景：
 
-         $$\ dynamic\_scales\_value = 127.0/Max(Abs(x\_fp32))$$
+  $$
+  \begin{aligned}
+  \operatorname{Moe}(\text{ori\_x}) &= 0, && \text{zero\_expert\_num}\ne0 \\
+  \operatorname{Moe}(\text{ori\_x}) &= \text{ori\_x}, && \text{copy\_expert\_num}\ne0 \\
+  \operatorname{Moe}(\text{ori\_x}) &= \text{const\_expert\_alpha\_1} \times \text{ori\_x} + \text{const\_expert\_alpha\_2} \times \text{const\_expert\_v}, && \text{const\_expert\_num}\ne0
+  \end{aligned}
+  $$
 
-         $$\ quant\_out=CastToInt8(\ x\_fp32 \times \ dynamic\_scales\_value )$$
-
-         $$\ alltoall\_x\_out= \ alltoallv(\ quant\_out)$$
-
-         $$\ alltoall\_dynamic\_scales\_out = alltoall(1.0/dynamic\_scales)$$
-
-         $$
-         \ expand\_x=
-         \begin{cases}
-         \ allgatherv(alltoall\_x\_out), & \quad \ 有TP通信域 \\
-         \ alltoall\_x\_out & \quad \ 无TP通信域 \\
-         \end{cases}
-         $$
-
-         $$
-         \ dynamic\_scales=
-         \begin{cases}
-         \ allgatherv(alltoall\_dynamic\_scales\_out), & \quad \ 有TP通信域 \\
-         \ \ alltoall\_dynamic\_scales\_out & \quad \ 无TP通信域 \\
-         \end{cases}
-         $$
-
-    - 特殊专家场景：
-
-      零专家场景，即`zero_expert_num`不为0：
-
-         $$Moe(ori\_x)=0$$
-
-      拷贝专家场景，即`copy_expert_num`不为0：
-
-         $$Moe(ori\_x)=ori\_x$$
-
-      常量专家场景，即`const_expert_num`不为0：
-
-         $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
-
-      参数ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v见[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)文档。
+  参数ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v见[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)文档。
 
 ## 函数原型<a name="zh-cn_topic_0000002203575833_section45077510411"></a>
 
@@ -95,7 +72,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
 - **expert\_ids** (`Tensor`)：必选参数，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
-- **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>时，`group_ep`不能与`group_tp`相同。
+- **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
 - **ep\_world\_size**(`int`)：必选参数，EP通信域size。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`ep_world_size`的取值范围如下所示。
          - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为2、3、4、5、6、7、8、16、32、64、128、256。
@@ -122,17 +99,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - **performance\_info** (`Tensor`)：可选参数，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1D的Tensor，shape为(ep_world_size,)，数据类型支持int64，数据格式要求为ND，支持非连续的Tensor。
 
-- **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值""即可。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[0, 128\)，不能和`group_ep`相同，仅在无TP域时支持传空。
+- **group\_tp** (`string`)：可选参数，TP通信域名称，数据并行的通信域。当前版本不支持TP域通信，该参数为预留参数，使用默认值""即可，传入其他值不生效。
 
-- **tp\_world\_size** (`int`)：可选参数，TP通信域size。有TP域通信才需要传参。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值0即可。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
+- **tp\_world\_size** (`int`)：可选参数，TP通信域size。当前版本不支持TP域通信，该参数为预留参数，仅支持取值0或1（均表示无TP域通信），建议不传入该参数，直接使用默认值0即可。
 
-- **tp\_rank\_id** (`int`)：可选参数，TP通信域本卡ID。有TP域通信才需要传参。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值即可。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，默认为0，同一个TP通信域中各卡的`tp_rank_id`不重复。无TP域通信时，传0即可。
+- **tp\_rank\_id** (`int`)：可选参数，TP通信域本卡ID。当前版本不支持TP域通信，该参数为预留参数，使用默认值0即可。
 
 - **expert\_shard\_type** (`int`)：可选参数，表示共享专家卡排布类型。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
@@ -180,18 +151,16 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
-- **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \*A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持`bfloat16`、`float16`、`int8`。量化时类型为`int8`，非量化时与`x`数据类型保持一致。数据格式为$ND$，支持非连续的Tensor。
+- **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2维张量，shape为\(A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持`bfloat16`、`float16`、`int8`。量化时类型为`int8`，非量化时与`x`数据类型保持一致。数据格式为$ND$，支持非连续的Tensor。
 - **dynamic\_scales** (`Tensor`)：表示计算得到的动态量化参数。当`quant_mode`不为0时才有该输出，要求为1维张量，shape为\(A,\)，数据类型支持`float32`，数据格式支持$ND$，支持非连续的Tensor。
 - **assist\_info\_for\_combine** (`Tensor`)：表示给同一专家发送的token个数，要求是一个1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`assist_info_for_combine`输入。
 
 - **expert\_token\_nums** (`Tensor`)：本卡每个专家实际收到的token数量，要求为1维张量，shape为\(local\_expert\_num,\)，数据类型`int64`，数据格式支持$ND$，支持非连续的Tensor。
 - **ep\_recv\_counts** (`Tensor`)：表示EP通信域各卡收到的token数（token数以前缀和的形式表示），要求为1维张量，数据类型`int32`，数据格式支持$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`ep_send_counts`输入。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求shape为\(ep\_world\_size\*local\_expert\_num, \)。
 
-- **tp\_recv\_counts** (`Tensor`)：表示TP通信域各卡收到的token数量。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`tp_send_counts`输入。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP通信域，暂无该输出。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1D Tensor，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+- **tp\_recv\_counts** (`Tensor`)：表示TP通信域各卡收到的token数量。当前版本不支持TP域通信，该输出为预留输出，无实际意义。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`tp_send_counts`输入。
 
 - **expand\_scales** (`Tensor`)：表示`expert_scales`与`x`一起进行alltoallv之后的输出。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求是一个1维张量，shape为\(A, \)，数据类型支持`float32`，数据格式要求为$ND$，支持非连续的Tensor。
@@ -201,8 +170,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - 该接口支持推理场景下使用。
 - 该接口支持静态图模式，`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
-- 在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`tp_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
-- 调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
+- 在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
+- 调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`expert_shard_type`、`global_bs`网络不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)对应参数也保持一致。
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 - moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32。
 - 参数里Shape使用的变量如下：
@@ -231,7 +200,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
     - local\_expert\_num：表示本卡专家数量。
         - 对于共享专家卡，local\_expert\_num为1。
-        - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)，当local_expert_num大于1时，不支持TP域通信。
+        - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：应满足0 < local\_expert\_num * ep\_world\_size ≤ 2048。
 
 - HCCL通信域缓存区大小:
@@ -259,8 +228,6 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - 通信域使用约束：
 
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
-
-    - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
 
 - 组网约束：
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：多机场景仅支持交换机组网，不支持双机直连组网。
@@ -300,8 +267,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     h = 7168  # 每个token的长度
     k = 8
     random_seed = 0
-    tp_world_size = 1
-    ep_world_size = int(world_size / tp_world_size)
+    ep_world_size = world_size
     moe_rank_num = ep_world_size - shared_expert_rank_num
     local_moe_expert_num = moe_expert_num // moe_rank_num
     globalBS = bs * ep_world_size
@@ -328,21 +294,12 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 
     def get_new_group(rank):
-        for i in range(tp_world_size):
-            # 如果tp_world_size = 2，ep_world_size = 8，则为[[0, 2, 4, 6, 8, 10, 12, 14], [1, 3, 5, 7, 9, 11, 13, 15]]
-            ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
-            ep_group = dist.new_group(backend="hccl", ranks=ep_ranks)
-            if rank in ep_ranks:
-                ep_group_t = ep_group
-                print(f"rank:{rank} ep_ranks:{ep_ranks}")
-        for i in range(ep_world_size):
-            # 如果tp_world_size = 2，ep_world_size = 8，则为[[0, 1], [2, 3], [4, 5], [6, 7], [8, 9], [10, 11], [12, 13], [14, 15]]
-            tp_ranks = [x + tp_world_size * i for x in range(tp_world_size)]
-            tp_group = dist.new_group(backend="hccl", ranks=tp_ranks)
-            if rank in tp_ranks:
-                tp_group_t = tp_group
-                print(f"rank:{rank} tp_ranks:{tp_ranks}")
-        return ep_group_t, tp_group_t
+        ep_ranks = list(range(ep_world_size))
+        ep_group = dist.new_group(backend="hccl", ranks=ep_ranks)
+        if rank in ep_ranks:
+            ep_group_t = ep_group
+            print(f"rank:{rank} ep_ranks:{ep_ranks}")
+        return ep_group_t
 
 
     def get_hcomm_info(rank, comm_group):
@@ -353,26 +310,24 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         return hcomm_info
 
 
-    def warm_up_dispatch(rank, group_ep, group_tp):
+    def warm_up_dispatch(rank, group_ep):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
         expert_ids_warm_up = torch.arange(0, k, dtype=torch.int32).unsqueeze(0).npu()
         dispatch_kwargs_before = get_dispatch_kwargs_warmup(
             x_warm_up=x_warm_up,
             expert_ids_warm_up=expert_ids_warm_up,
             group_ep=group_ep,
-            group_tp=group_tp,
-            ep_rank_id=rank // tp_world_size,
-            tp_rank_id=rank % tp_world_size,
-        )
+            ep_rank_id=rank,
+                    )
         (
             expand_x, dynamic_scales, assist_info_for_combine,
-            expert_token_nums, ep_recv_counts, tp_recv_counts, _
+            expert_token_nums, ep_recv_counts, _, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, _
 
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
+        x_warm_up, expert_ids_warm_up, group_ep, ep_rank_id,
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -381,12 +336,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             'expert_ids': expert_ids_warm_up,
             'x_active_mask': None,
             'group_ep': group_ep,
-            'group_tp': group_tp,
-            'ep_rank_id': ep_rank_id,
-            'tp_rank_id': tp_rank_id,
-            'ep_world_size': ep_world_size,
-            'tp_world_size': tp_world_size,
-            'expert_shard_type': 0,
+                        'ep_rank_id': ep_rank_id,
+                        'ep_world_size': ep_world_size,
+                        'expert_shard_type': 0,
             'shared_expert_num': 0,
             'shared_expert_rank_num': shared_expert_rank_num,
             'moe_expert_num': moe_expert_num,
@@ -400,10 +352,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         torch_npu.npu.set_device(rank)
         rank = rank + 16 * server_index
         dist.init_process_group(backend='hccl', rank=rank, world_size=world_size, init_method=f'tcp://{master_ip}:{port}')
-        ep_group, tp_group = get_new_group(rank)
+        ep_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
-        tp_hcomm_info = get_hcomm_info(rank, tp_group)
-
+        
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([[5, 7, 17, 4, 2, 6, 11, 16],
@@ -426,18 +377,15 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         const_expert_alpha_2 = gen_const_expert_alpha_2().npu()    
         const_expert_v = gen_const_expert_v().npu()
 
-        out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
+        out = warm_up_dispatch(rank, ep_hcomm_info)
 
-        expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales = torch_npu.npu_moe_distribute_dispatch_v2(
+        expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, _, expand_scales = torch_npu.npu_moe_distribute_dispatch_v2(
             x=x,
             expert_ids=expert_ids,
             group_ep=ep_hcomm_info,
-            group_tp=tp_hcomm_info,
-            ep_world_size=ep_world_size,
-            tp_world_size=tp_world_size,
-            ep_rank_id=rank // tp_world_size,
-            tp_rank_id=rank % tp_world_size,
-            expert_shard_type=0,
+                        ep_world_size=ep_world_size,
+                        ep_rank_id=rank,
+                        expert_shard_type=0,
             shared_expert_rank_num=shared_expert_rank_num,
             moe_expert_num=moe_expert_num,
             scales=scales,
@@ -454,15 +402,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                                                 expert_ids=expert_ids,
                                                 assist_info_for_combine=assist_info_for_combine,
                                                 ep_send_counts=ep_recv_counts,
-                                                tp_send_counts=tp_recv_counts,
-                                                expert_scales=expert_scales,
+                                                                                                expert_scales=expert_scales,
                                                 group_ep=ep_hcomm_info,
-                                                group_tp=tp_hcomm_info,
-                                                ep_world_size=ep_world_size,
-                                                tp_world_size=tp_world_size,
-                                                ep_rank_id=rank // tp_world_size,
-                                                tp_rank_id=rank % tp_world_size,
-                                                expert_shard_type=0,
+                                                                                                ep_world_size=ep_world_size,
+                                                                                                ep_rank_id=rank,
+                                                                                                expert_shard_type=0,
                                                 shared_expert_rank_num=shared_expert_rank_num,
                                                 moe_expert_num=moe_expert_num,
                                                 global_bs=globalBS,
@@ -473,7 +417,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                                                 zero_expert_num=zero_expert_num,
                                                 copy_expert_num=copy_expert_num,
                                                 const_expert_num=const_expert_num)
-        print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
+        print(f'rank {rank} npu finished! \n')
 
 
     if __name__ == "__main__":
@@ -484,12 +428,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         print(f"k={k}")
         print(f"quant_mode={quant_mode}", flush=True)
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
-        print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
 
-        if tp_world_size != 1 and local_moe_expert_num > 1:
-            print("unSupported tp = 2 and local moe > 1")
-            exit(0)
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num 不能大于 ep_world_size")
             exit(0)
@@ -545,8 +485,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     h = 7168  # 每个token的长度
     k = 8
     random_seed = 0
-    tp_world_size = 1
-    ep_world_size = int(world_size / tp_world_size)
+    ep_world_size = world_size
     moe_rank_num = ep_world_size - shared_expert_rank_num
     local_moe_expert_num = moe_expert_num // moe_rank_num
     globalBS = bs * ep_world_size
@@ -562,19 +501,16 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         def __init__(self):
             super().__init__()
 
-        def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size,
-                    ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
+        def forward(self, x, expert_ids, group_ep, ep_world_size,
+                    ep_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
                     scales, quant_mode, global_bs, expert_scales, elastic_info, const_expert_alpha_1, const_expert_alpha_2, const_expert_v, zero_expert_num, copy_expert_num, const_expert_num):
             output_dispatch_npu = torch_npu.npu_moe_distribute_dispatch_v2(
                 x=x,
                 expert_ids=expert_ids,
                 group_ep=group_ep,
-                group_tp=group_tp,
                 ep_world_size=ep_world_size,
-                tp_world_size=tp_world_size,
-                ep_rank_id=ep_rank_id,
-                tp_rank_id=tp_rank_id,
-                expert_shard_type=expert_shard_type,
+                                ep_rank_id=ep_rank_id,
+                                expert_shard_type=expert_shard_type,
                 shared_expert_rank_num=shared_expert_rank_num,
                 moe_expert_num=moe_expert_num,
                 scales=scales,
@@ -585,7 +521,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                 copy_expert_num=copy_expert_num,
                 const_expert_num=const_expert_num
             )
-            expand_x_npu, _, assist_info_for_combine_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
+            expand_x_npu, _, assist_info_for_combine_npu, _, ep_recv_counts_npu, _, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
                 expand_x_npu = expand_x_npu.to(input_dtype)
 
@@ -594,15 +530,11 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                 expert_ids=expert_ids,
                 assist_info_for_combine=assist_info_for_combine_npu,
                 ep_send_counts=ep_recv_counts_npu,
-                tp_send_counts=tp_recv_counts_npu,
-                expert_scales=expert_scales,
+                                expert_scales=expert_scales,
                 group_ep=group_ep,
-                group_tp=group_tp,
                 ep_world_size=ep_world_size,
-                tp_world_size=tp_world_size,
-                ep_rank_id=ep_rank_id,
-                tp_rank_id=tp_rank_id,
-                expert_shard_type=expert_shard_type,
+                                ep_rank_id=ep_rank_id,
+                                expert_shard_type=expert_shard_type,
                 shared_expert_rank_num=shared_expert_rank_num,
                 moe_expert_num=moe_expert_num,
                 global_bs=global_bs,
@@ -636,19 +568,12 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 
     def get_new_group(rank):
-        for i in range(tp_world_size):
-            ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
-            ep_group = dist.new_group(backend="hccl", ranks=ep_ranks)
-            if rank in ep_ranks:
-                ep_group_t = ep_group
-                print(f"rank:{rank} ep_ranks:{ep_ranks}")
-        for i in range(ep_world_size):
-            tp_ranks = [x + tp_world_size * i for x in range(tp_world_size)]
-            tp_group = dist.new_group(backend="hccl", ranks=tp_ranks)
-            if rank in tp_ranks:
-                tp_group_t = tp_group
-                print(f"rank:{rank} tp_ranks:{tp_ranks}")
-        return ep_group_t, tp_group_t
+        ep_ranks = list(range(ep_world_size))
+        ep_group = dist.new_group(backend="hccl", ranks=ep_ranks)
+        if rank in ep_ranks:
+            ep_group_t = ep_group
+            print(f"rank:{rank} ep_ranks:{ep_ranks}")
+        return ep_group_t
 
 
     def get_hcomm_info(rank, comm_group):
@@ -659,7 +584,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         return hcomm_info
 
 
-    def warm_up_dispatch(rank, group_ep, group_tp):
+    def warm_up_dispatch(rank, group_ep):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
         expert_ids_warm_up = torch.arange(0, k, dtype=torch.int32).unsqueeze(0).npu()
 
@@ -667,20 +592,18 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             x_warm_up=x_warm_up,
             expert_ids_warm_up=expert_ids_warm_up,
             group_ep=group_ep,
-            group_tp=group_tp,
-            ep_rank_id=rank//tp_world_size,
-            tp_rank_id=rank%tp_world_size,
-        )
+            ep_rank_id=rank,
+                    )
 
         (
             expand_x, dynamic_scales, assist_info_for_combine,
-            expert_token_nums, ep_recv_counts, tp_recv_counts, _
+            expert_token_nums, ep_recv_counts, _, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, _
 
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
+        x_warm_up, expert_ids_warm_up, group_ep, ep_rank_id,
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -690,12 +613,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             'expert_ids': expert_ids_warm_up,
             'x_active_mask': None,
             'group_ep': group_ep,
-            'group_tp': group_tp,
-            'ep_rank_id': ep_rank_id,
-            'tp_rank_id': tp_rank_id,
-            'ep_world_size': ep_world_size,
-            'tp_world_size': tp_world_size,
-            'expert_shard_type': 0,
+                        'ep_rank_id': ep_rank_id,
+                        'ep_world_size': ep_world_size,
+                        'expert_shard_type': 0,
             'shared_expert_num': 0,
             'shared_expert_rank_num': shared_expert_rank_num,
             'moe_expert_num': moe_expert_num,
@@ -714,10 +634,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             world_size=world_size,
             init_method=f'tcp://{master_ip}:{port}'
         )
-        ep_group, tp_group = get_new_group(rank)
+        ep_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
-        tp_hcomm_info = get_hcomm_info(rank, tp_group)
-
+        
         # 创建输入tensor
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([
@@ -742,20 +661,20 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         const_expert_alpha_1 = gen_const_expert_alpha_1().npu()    
         const_expert_alpha_2 = gen_const_expert_alpha_2().npu()    
         const_expert_v = gen_const_expert_v().npu()
-        out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
+        out = warm_up_dispatch(rank, ep_hcomm_info)
 
         model = MOE_DISTRIBUTE_GRAPH_Model()
         model = model.npu()
         npu_backend = torchair.get_npu_backend()
         model = torch.compile(model, backend=npu_backend, dynamic=False)
         output = model.forward(
-            x, expert_ids, ep_hcomm_info, tp_hcomm_info, ep_world_size, tp_world_size,
-            rank // tp_world_size, rank % tp_world_size, 0, shared_expert_rank_num, moe_expert_num, scales,
+            x, expert_ids, ep_hcomm_info, ep_world_size,
+            rank, 0, shared_expert_rank_num, moe_expert_num, scales,
             quant_mode, globalBS, expert_scales, elastic_info, const_expert_alpha_1, const_expert_alpha_2, const_expert_v,
             zero_expert_num, copy_expert_num, const_expert_num
         )
         torch.npu.synchronize()
-        print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
+        print(f'rank {rank} npu finished! \n')
 
         time.sleep(10)
 
@@ -768,12 +687,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         print(f"k={k}")
         print(f"quant_mode={quant_mode}", flush=True)
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
-        print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-
-        if tp_world_size != 1 and local_moe_expert_num > 1:
-            print("unSupported tp = 2 and local moe > 1")
-            exit(0)
 
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num 不能大于 ep_world_size")
