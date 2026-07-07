@@ -54,17 +54,17 @@ void check_params(const at::Tensor& x1, const at::Tensor& x2,
     // A8W8: antiquantScale and antiquantOffset should be None.
     // A16W8: dequantScale should be None.
     // MC2 without quantization. antiquantScale and antiquantOffset and dequantScale should be None.
-    if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
+    if (isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false)) {
         TORCH_CHECK(x1.scalar_type() == at::kChar, "x1 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value()),
                     "when both dtype of x1 and dtype of x2 are equal to int8, "
                     "antiquantScale, antiquantOffset should both be null", OPS_ERROR(ErrCode::TYPE));
-    } else if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
+    } else if (!isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false)) {
         TORCH_CHECK(x2.scalar_type() == at::kChar, "x2 must be an int8 tensor for weight quant.", OPS_ERROR(ErrCode::TYPE));
         TORCH_CHECK((!dequant_scale.has_value()),
                     "when only dtype of x2 is equal to int8, dequantScale should be null", OPS_ERROR(ErrCode::TYPE));
-    } else if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
+    } else if (!isIntegralType(x1.scalar_type(), false) && !isIntegralType(x2.scalar_type(), false)) {
         TORCH_CHECK((!antiquant_scale.has_value() && !antiquant_offset.has_value() && !dequant_scale.has_value()),
                     "when neither dtype of x1 or dtype of x2 is equal to int8, "
                     "antiquantScale, antiquantOffset and dequantScale should all be null", OPS_ERROR(ErrCode::TYPE));
@@ -138,7 +138,7 @@ void check_a5_required_inputs(const at::Tensor& x1, const at::Tensor& x2, bool i
     if ((is_a8 && !is_w8) || (is_a4 && !is_w4)) {
         TORCH_CHECK(false, "when dtype of x1 is fp8 or fp4, dtype of x2 also should be fp8 or fp4",
             OPS_ERROR(ErrCode::TYPE));
-    } else if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) {
+    } else if (isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false)) {
         TORCH_CHECK((x1.scalar_type() == at::kChar) || (x1.scalar_type() == at::kInt) || (x1.scalar_type() == at::kByte),
             "x1 must be an int8 or uint8 tensor for quant, but x1 actual type is ",
             c10::toString(x1.scalar_type()),
@@ -147,12 +147,12 @@ void check_a5_required_inputs(const at::Tensor& x1, const at::Tensor& x2, bool i
             "x2 must be an int8 or uint8 tensor for quant, but x2 actual type is ",
             c10::toString(x2.scalar_type()),
             OPS_ERROR(ErrCode::TYPE));
-    } else if ((!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type())) || (!is_a8 && is_w8)) {
+    } else if ((!isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false)) || (!is_a8 && is_w8)) {
         TORCH_CHECK((x2.scalar_type() == at::kChar) || (x2.scalar_type() == at::kInt) || is_w8,
             "x2 must be an int8 or uint8 tensor for weight quant, but x2 actual type is ",
             c10::toString(x2.scalar_type()),
             OPS_ERROR(ErrCode::TYPE));
-    } else if (isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type())) {
+    } else if (isIntegralType(x1.scalar_type(), false) && !isIntegralType(x2.scalar_type(), false)) {
         TORCH_CHECK(false, "when neither dtype of x1 or dtype of x2 is vaild, current x1 dtype is ",
             c10::toString(x1.scalar_type()), " and x2 dtype is ", c10::toString(x2.scalar_type()),
             OPS_ERROR(ErrCode::TYPE));
@@ -263,7 +263,7 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
         }
     }
 
-    if (!isIntegralType(x1.scalar_type()) && !isIntegralType(x2.scalar_type()) && !is_fp8 && !is_a4) {
+    if (!isIntegralType(x1.scalar_type(), false) && !isIntegralType(x2.scalar_type(), false) && !is_fp8 && !is_a4) {
         if (is_comm_mode) {
             TORCH_CHECK(check_aclnn_kernel_available("aclnnMatmulAllReduceV3"),
                 "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.", OPS_ERROR(ErrCode::PARAM));
@@ -278,7 +278,7 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
         }
     }
 
-    if (isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type()) && !is_fp8 && !is_a4) {
+    if (isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false) && !is_fp8 && !is_a4) {
         if (is_comm_mode) {
             TORCH_CHECK(check_aclnn_kernel_available("aclnnQuantMatmulAllReduceV5"),
                 "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.", OPS_ERROR(ErrCode::PARAM));
@@ -302,7 +302,7 @@ at::Tensor npu_mm_all_reduce_base(const at::Tensor& x1, const at::Tensor& x2, c1
         }
     }
 
-    if (!isIntegralType(x1.scalar_type()) && isIntegralType(x2.scalar_type()) || (!is_a8 && is_w8)) {
+    if (!isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false) || (!is_a8 && is_w8)) {
         if (is_comm_mode) {
             TORCH_CHECK(check_aclnn_kernel_available("aclnnWeightQuantMatmulAllReduceV2"),
                 "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.", OPS_ERROR(ErrCode::PARAM));

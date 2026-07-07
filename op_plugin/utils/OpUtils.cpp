@@ -361,7 +361,7 @@ bool check_foreach_tensor_dtype_spport_base_and_int(at::ScalarType tensorDtype)
 
 bool check_foreach_scalar_dtype_spport(at::ScalarType scalarDtype)
 {
-    return at::isIntegralType(scalarDtype) || at::isFloatingType(scalarDtype);
+    return at::isIntegralType(scalarDtype, false) || at::isFloatingType(scalarDtype);
 }
 
 bool check_mapping_between_tensor_and_scalar_list(at::ScalarType tensorDtype, at::ScalarType scalarDtype, ForeachMappingType mapping)
@@ -372,7 +372,7 @@ bool check_mapping_between_tensor_and_scalar_list(at::ScalarType tensorDtype, at
 
     switch (mapping) {
         case ForeachMappingType::MAP_SCALARLIST_DEFAULT:
-            return (at::isIntegralType(scalarDtype) && at::isIntegralType(tensorDtype)) ||
+            return (at::isIntegralType(scalarDtype, false) && at::isIntegralType(tensorDtype, false)) ||
                    (at::isFloatingType(scalarDtype) && at::isFloatingType(tensorDtype));
         default:
             TORCH_CHECK(false, "Invalid  ForeachMappingType Parm Between Tensor And ScalarList", OPS_ERROR(ErrCode::PARAM));
@@ -387,7 +387,7 @@ bool check_mapping_between_tensor_and_scalar(at::ScalarType tensorDtype, at::Sca
 
     switch (mapping) {
         case ForeachMappingType::MAP_SCALAR_DEFAULT:
-            return !at::isIntegralType(tensorDtype) && at::isFloatingType(scalarDtype);
+            return !at::isIntegralType(tensorDtype, false) && at::isFloatingType(scalarDtype);
         case ForeachMappingType::MAP_POW_SCALAR_AND_TENSOR:
             return true;
         default:

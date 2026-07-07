@@ -32,6 +32,20 @@ F = TypeVar(
 )
 
 
+# Ops that upstream converted to structured on newer PyTorch but that
+# op_plugin_functions.yaml still declares as plain functions. torchgen emits
+# `const ITensorListRef&` (not `TensorList`) for `Tensor[]` params of
+# structured ops, so the wrapper in torch_npu's RegisterNPU.cpp uses
+# ITensorListRef on those versions and we must match. Since IListRef has an
+# implicit constructor from ArrayRef, this signature is also accepted from
+# older wrappers that still pass TensorList -- so no version gating is needed.
+# See upstream pytorch#185272 for _scaled_mm_v2 (landed 2026-06-15, releasing
+# in 2.14).
+_FORCE_ILISTREF_TENSOR_LIST_OPS = {
+    "_scaled_mm_v2",
+}
+
+
 @contextlib.contextmanager
 def native_function_manager(g: Union[NativeFunctionsGroup, NativeFunction]) -> Iterator[None]:
     if isinstance(g, NativeFunctionsGroup):
@@ -43,11 +57,14 @@ def native_function_manager(g: Union[NativeFunctionsGroup, NativeFunction]) -> I
     else:
         f = g
 
+    use_ilistref = f.part_of_structured_group or (
+        str(f.func.name.name) in _FORCE_ILISTREF_TENSOR_LIST_OPS
+    )
     # print("f", f['func'])
     with context(lambda: f'in native_functions.yaml func:\n  {f.func}'):
         with local.parametrize(
             param_use_const_ref_for_mutable_tensors=f.use_const_ref_for_mutable_tensors,
-            param_use_ilistref_for_tensor_lists=f.part_of_structured_group,
+            param_use_ilistref_for_tensor_lists=use_ilistref,
         ):
             yield
 

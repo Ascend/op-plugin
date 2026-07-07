@@ -24,7 +24,7 @@ namespace op_api {
     {
         at::Scalar scalar_ = scalar;
         auto scalar_type = tensors[0].scalar_type();
-        if (at::isFloatingType(scalar_type) && at::isIntegralType(scalar.type())) {
+        if (at::isFloatingType(scalar_type) && at::isIntegralType(scalar.type(), false)) {
             scalar_ = at::Scalar(scalar.toDouble());
         }
 
@@ -35,7 +35,7 @@ namespace op_api {
     {
         at::Scalar scalar_ = scalar;
         auto scalar_type = tensors[0].scalar_type();
-        if (at::isIntegralType(scalar_type) && at::isFloatingType(scalar.type())) {
+        if (at::isIntegralType(scalar_type, false) && at::isFloatingType(scalar.type())) {
             scalar_ = at::Scalar(scalar.toLong());
         }
 

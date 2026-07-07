@@ -78,7 +78,7 @@ at::Tensor& range_out(const at::Scalar& start, const at::Scalar& end, const at::
         TORCH_CHECK(((step_value > 0) && (end_value >= start_value)) ||
                         ((step_value < 0) && (end_value <= start_value)),
                     "upper bound and larger bound inconsistent with step sign", OPS_ERROR(ErrCode::VALUE));
-        TORCH_CHECK(isFloatingType(res_type) || isIntegralType(res_type), "out datatype: ", res_type,
+        TORCH_CHECK(isFloatingType(res_type) || isIntegralType(res_type, false), "out datatype: ", res_type,
                     " unsupported datatype", OPS_ERROR(ErrCode::TYPE));
         npu_preparation::check_tensor({}, result, res_type, result.sizes());
 
