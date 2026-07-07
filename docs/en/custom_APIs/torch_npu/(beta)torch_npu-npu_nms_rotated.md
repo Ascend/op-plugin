@@ -1,7 +1,7 @@
 # (beta) torch_npu.npu_nms_rotated
 
 > [!NOTICE]  
-> This API is planned for deprecation. For details about the replacement, see [Small Operator Concatenation Solution](https://gitcode.com/Ascend/op-plugin/blob/master/test/test_base_ops/test_nms_rotated.py).
+> This API is planned for deprecation. For details about the replacement, see [Small Operator Concatenation Solution](https://gitcode.com/Ascend/op-plugin/blob/26.0.0/test/test_base_ops/test_nms_rotated.py).
 
 ## Supported Products
 

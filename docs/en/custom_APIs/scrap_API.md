@@ -76,7 +76,7 @@
 </tr>
 <tr id="row0331103454113"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p19331734194116"><a name="p19331734194116"></a><a name="p19331734194116"></a><a href="./torch_npu/(beta)torch_npu-npu_nms_rotated.md">torch_npu.npu_nms_rotated</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p208131543205314"><a name="p208131543205314"></a><a name="p208131543205314"></a>This API is planned for deprecation. For details about the replacement, see <a href="https://gitcode.com/Ascend/op-plugin/blob/master/test/test_base_ops/test_nms_rotated.py" target="_blank" rel="noopener noreferrer">Small Operator Concatenation Solution</a>.</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p208131543205314"><a name="p208131543205314"></a><a name="p208131543205314"></a>This API is planned for deprecation. For details about the replacement, see <a href="https://gitcode.com/Ascend/op-plugin/blob/26.0.0/test/test_base_ops/test_nms_rotated.py" target="_blank" rel="noopener noreferrer">Small Operator Concatenation Solution</a>.</p>
 </td>
 </tr>
 <tr id="row43319341418"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p63313347411"><a name="p63313347411"></a><a name="p63313347411"></a><a href="./torch_npu/(beta)torch_npu-npu_ptiou.md">torch_npu.npu_ptiou</a></p>

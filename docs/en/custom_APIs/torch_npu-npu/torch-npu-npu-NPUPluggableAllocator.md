@@ -37,7 +37,7 @@ torch_npu.npu.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name
 
 ## Example
 
-For details about the complete call example, see [LINK](https://gitcode.com/ascend/pytorch/blob/v2.7.1/test/allocator/test_pluggable_allocator_extensions.py).
+For details about the complete call example, see [LINK](https://gitcode.com/ascend/pytorch/blob/v2.7.1-26.0.0/test/allocator/test_pluggable_allocator_extensions.py).
 
 **Python Code Sample**
 

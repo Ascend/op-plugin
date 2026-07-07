@@ -267,7 +267,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - Version mapping constraints:
 
-     In static graph mode, starting with Ascend Extension for PyTorch 8.0.0, the Ascend Extension for PyTorch framework performs strict validation between the Meta inference results and inferShape inference results of the output of the last node in the static graph. If the graph contains only one Dispatch_v2 operator and the CANN version is earlier than the Ascend Extension for PyTorch version, a shape mismatch error may occur. You are advised to upgrade the CANN version. For details about version compatibility information, see section **Related Product Versions** in the [Ascend Extension for PyTorch Release Notes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md).
+     In static graph mode, starting with Ascend Extension for PyTorch 8.0.0, the Ascend Extension for PyTorch framework performs strict validation between the Meta inference results and inferShape inference results of the output of the last node in the static graph. If the graph contains only one Dispatch_v2 operator and the CANN version is earlier than the Ascend Extension for PyTorch version, a shape mismatch error may occur. You are advised to upgrade the CANN version. For details about version compatibility information, see section **Related Product Versions** in the [Ascend Extension for PyTorch Release Notes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/en/release_notes/release_notes.md).
 
 ## Examples<a name="en-us_topic_0000002203575833_section14459801435"></a>
 

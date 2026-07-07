@@ -13,4 +13,4 @@ Currently, some APIs are marked as beta APIs. Beta APIs are experimental and may
 By default, all custom APIs support all PyTorch versions compatible with the corresponding Ascend Extension for PyTorch release. If an API does not support all compatible PyTorch versions, the restrictions are specified in the Constraints section of that API.
 
 > [!NOTE]  
-> Some features of Ascend Extension for PyTorch can be configured through environment variables. For details, see [Environment Variable Reference](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/environment_variable_reference/env_variable_list.md).
+> Some features of Ascend Extension for PyTorch can be configured through environment variables. For details, see [Environment Variable Reference](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/docs/en/environment_variable_reference/env_variable_list.md).

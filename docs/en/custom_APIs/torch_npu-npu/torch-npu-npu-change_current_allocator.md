@@ -33,7 +33,7 @@ This function fails if the memory allocator has already been initialized.
 
 ## Example
 
-For details about the complete call example, see [LINK](https://gitcode.com/ascend/pytorch/blob/v2.7.1/test/allocator/test_pluggable_allocator_extensions.py).
+For details about the complete call example, see [LINK](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.0.0/test/allocator/test_pluggable_allocator_extensions.py).
 
 **Python Code Sample**
 

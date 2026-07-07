@@ -287,9 +287,9 @@
     \end{cases}
     $$
 
-  * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math-dev/blob/master/random/dsa_random_uniform/docs/aclnnMultinomial.md>.
+  * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/9.0.0/random/dsa_random_uniform/docs/aclnnMultinomial.md>.
 
-  * When called through Ascend Extension for PyTorch, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
+  * When called through Ascend Extension for PyTorch, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/26.0.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
 
 ## Prototype
 
