@@ -20,7 +20,7 @@ torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 
 
 ## 参数说明
 
-- **wait** (`int`)：必选参数，每次重复执行采集前跳过的step轮数。
+- **wait** (`int`)：必选参数，每个采集周期内执行采集前跳过的step轮数。
 
 - **active** (`int`)：必选参数，采集的step轮数。
 

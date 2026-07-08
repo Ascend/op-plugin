@@ -14,7 +14,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=0, quant_axis=1, reduce='update') -> Tensor
+torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=-2, quant_axis=-1, reduce='update') -> Tensor
 ```
 
 ## 参数说明
@@ -34,8 +34,8 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
     - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`int32`。
 
-- **axis** (`int`)：可选参数，`updates`上用来更新的轴，默认值为`0`。
-- **quant_axis** (`int`)：可选参数，`updates`上用来量化的轴，默认值为`1`。
+- **axis** (`int`)：可选参数，`updates`上用来更新的轴，默认值为`-2`。
+- **quant_axis** (`int`)：可选参数，`updates`上用来量化的轴，默认值为`-1`。
 - **reduce** (`str`)：可选参数，表示数据操作方式；当前只支持`update`，即更新操作。
 
 ## 返回值说明
