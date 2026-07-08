@@ -45,6 +45,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
     c10::string_view default_comm_mode = isSocBelowAscend950 ? "aiv" : "ai_cpu";
     c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
+    std::string hcom_str = std::string(hcom);
+    std::string reduce_op_str = std::string(reduce_op);
+    std::string comm_mode_str = std::string(comm_mode_value);
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
     TORCH_CHECK(group_size != -1, "Invalid group_sizes.", OPS_ERROR(ErrCode::PARAM));
@@ -69,9 +72,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     }
     c10::TensorOptions options = self.options().dtype(output_scalar_type);
     auto result = npu_preparation::apply_tensor_without_format(output_size, options);
-    char* reduce_op_ptr = const_cast<char*>(reduce_op.data());
-    char* hcom_ptr = const_cast<char*>(hcom.data());
-    char *comm_mode_ptr = const_cast<char *>(comm_mode_value.data());
+    char *reduce_op_ptr = const_cast<char*>(reduce_op_str.data());
+    char *hcom_ptr = const_cast<char*>(hcom_str.data());
+    char *comm_mode_ptr = const_cast<char*>(comm_mode_str.data());
     const at::Tensor& bias_real = bias.value_or(at::Tensor());
     const at::Tensor& quant_scale_real = quant_scale.value_or(at::Tensor());
     int64_t stream_mode = ACL_STOP_ON_FAILURE;
