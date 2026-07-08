@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas 350 加速卡</term>            |    √     |
+|<term>Ascend 950PR/Ascend 950DT</term>            |    √     |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 
@@ -110,7 +110,7 @@
 
     </details>
   
-  - <term>Atlas 350 加速卡</term>：  
+  - <term>Ascend 950PR/Ascend 950DT</term>：  
     <details>
     <summary>MX量化场景：</summary>
 
@@ -173,23 +173,23 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - **x**（`Tensor`）：必选输入，矩阵乘法的左矩阵，对应公式中的$X$。shape支持2维[m,k]，数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int4`、`int8`和`int32`。
-  - <term>Atlas 350 加速卡</term>：数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数x\_dtype为对应类型，此时x本身的dtype不再生效，但仍需保证x本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴K需为偶数，以保证8bits可以转换为2个float4。数据格式支持ND。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数x\_dtype为对应类型，此时x本身的dtype不再生效，但仍需保证x本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴K需为偶数，以保证8bits可以转换为2个float4。数据格式支持ND。
 
 - **weight**（`TensorList`）：必选输入，权重矩阵（矩阵乘法右矩阵），对应公式中的$W$。目前仅支持TensorList长度为1。shape支持3维[e,k,n]（$ND$格式）或5维NZ格式，数据格式支持$ND$和FRACTAL_NZ（通过接口npu\_format\_cast，可实现格式转换），支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
     - 数据类型支持`int4`、`int8`和`int32`。`int32`为A8W4和A4W4场景下的适配用途，实际1个`int32`会被解释为8个int4数据。
     - A8W8场景下，weight仅支持NZ格式（FRACTAL\_NZ），不支持$ND$数据格式。
-  - <term>Atlas 350 加速卡</term>：
+  - <term>Ascend 950PR/Ascend 950DT</term>：
     - 数据格式为ND时，shape支持3维，非转置shape\[\[e, k, n\]\]，转置shape\[\[e, n, k\]\]。数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数weight\_dtype为对应类型，此时weight本身的dtype不再生效，但仍需保证weight本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴需为偶数，以保证8bits可以转换为2个float4。
     - 数据格式为FRACTAL\_NZ\(通过接口npu\_format\_cast，可实现格式转换\)时，shape支持5维，非转置shape\[e, n/32, k/16, 16, 32\], 转置shape\[e, k/32, n/16, 16, 32\]；数据类型仅支持torch.float8\_e4m3fn。
   
 - **weight\_scale**（`TensorList`）：必选输入，右矩阵的量化因子，对应公式中的$w_{scale}$。目前仅支持TensorList长度为1。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`weight`数据类型为`int8`时，`weight_scale`的shape支持2维；`weight`数据类型为`int32`时，`weight_scale`的shape支持2维和3维。数据类型支持`float32`、`float16`、`bfloat16`、`uint64`。
-  - <term>Atlas 350 加速卡</term>：MX量化场景下：shape支持4维，非转置shape\[\[e, ceil\(k / 64\), n, 2\]\]，转置shape\[\[e, n, ceil\(k / 64\), 2\]\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持2维，shape\[\[e, n\]\]，当x为torch.int8时，weightScale需支持torch.bfloat16、torch.float32、torch.float16，当x为torch.float8\_e4m3fn/torch.float8\_e5m2/torch\_npu.hifloat8时，weightScale支持torch.bfloat16、torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持4维，非转置shape\[\[e, ceil\(k / 64\), n, 2\]\]，转置shape\[\[e, n, ceil\(k / 64\), 2\]\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持2维，shape\[\[e, n\]\]，当x为torch.int8时，weightScale需支持torch.bfloat16、torch.float32、torch.float16，当x为torch.float8\_e4m3fn/torch.float8\_e5m2/torch\_npu.hifloat8时，weightScale支持torch.bfloat16、torch.float32。
 
 - **x\_scale**（`Tensor`）：必选输入，左矩阵的量化因子，对应公式中的$x_scale$。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：shape支持1维[m]，数据类型支持`float32`。
-  - <term>Atlas 350 加速卡</term>：MX量化场景下：shape支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持1维\[m\]，数据类型支持torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持1维\[m\]，数据类型支持torch.float32。
 
 - **group\_list**（`Tensor`）：必选输入，指示每个分组参与计算的Token个数，对应公式中的$groupList$。shape支持1维[e]，长度需与`weight`的首轴维度相等。数据类型支持`int64`，数据格式支持$ND$，支持非连续的Tensor。
 - **smooth\_scale**（`Tensor`）：可选输入，平滑缩放因子，对应公式中的$smoothScale$。数据类型为`float32`，数据格式支持$ND$。仅A4W4场景下需传入，首轴长度需与`weight`的首轴维度相等，支持两种shape：(E, N/2)或(E,)，当使用(E,)时会进行广播乘法。其他场景传入默认值None。
@@ -197,19 +197,19 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **bias**（`Tensor`）：可选输入，矩阵乘计算的偏移值，对应公式中的$bias$，shape支持2维，数据类型支持`int32`，当前仅支持传入默认值None。
 - **dequant\_mode**（`int`）：可选输入，表示反量化模式，数据类型为`int32`，默认值为0。取值为0时，表示激活矩阵pertoken，权重矩阵perchannel。取值为1时，表示激活矩阵pertoken，权重矩阵pergroup。取值为2时，表示mx量化。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：A8W4场景下，dequant_mode支持取值0和1；A8W8和A4W4场景下，dequant_mode仅支持取值0。
-  - <term>Atlas 350 加速卡</term>：当前仅支持传入0以及2。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入0以及2。
 
 - **dequant\_dtype**（`int`）：可选输入，表示反量化类型，数据类型为`int32`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示`float32`）。
-  - <term>Atlas 350 加速卡</term>：默认值为torch.int8，当前仅支持传入torch.float32、torch.bfloat16、torch.float16。
+  - <term>Ascend 950PR/Ascend 950DT</term>：默认值为torch.int8，当前仅支持传入torch.float32、torch.bfloat16、torch.float16。
 
 - **quant\_mode**（`int`）：可选输入，参数表示SwiGLU后的量化模式。数据类型为`int32`。支持取值：0（默认）表示pertoken量化；1表示pergroup量化；2表示mx量化。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示pertoken）。
-  - <term>Atlas 350 加速卡</term>：当前仅支持传入0以及2。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入0以及2。
 
 - **quant\_dtype**（`int`）：可选输入，参数表示量化后低比特数据类型。数据类型为`int32`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示`int8`）。
-  - <term>Atlas 350 加速卡</term>：默认值为torch.int8，当前支持传入torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8。
+  - <term>Ascend 950PR/Ascend 950DT</term>：默认值为torch.int8，当前支持传入torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8。
 
 - **group\_list\_type**（`int`）：可选输入，参数表示`group_list`的输入类型，数据类型为`int32`，默认值为0。
     - 取值为0时，表示cumsum模式，`group_list`中的每个元素代表当前分组的累计长度。
@@ -218,29 +218,29 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - **x\_dtype**（int）：可选参数，指定输入x的真实数据类型。当前仅支持默认值None，表示输入x真实的数据类型与输入x的dtype相同。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值。
-  - <term>Atlas 350 加速卡</term>：当x为float4\_e2m1fn\_x2、hifloat8时，x\_dtype需要传入torch\_npu.float4\_e2m1fn\_x2、torch\_npu.hifloat8。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当x为float4\_e2m1fn\_x2、hifloat8时，x\_dtype需要传入torch\_npu.float4\_e2m1fn\_x2、torch\_npu.hifloat8。
 
 - **weight\_dtype**（int）：可选参数，指定输入weight的真实数据类型。当前仅支持默认值None，表示输入weight真实的数据类型与输入weight的dtype相同。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值。
-  - <term>Atlas 350 加速卡</term>：当weight为float4\_e2m1fn\_x2、hifloat8时，weight\_dtype需要传入torch\_npu.float4\_e2m1fn\_x2、torch\_npu.hifloat8。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当weight为float4\_e2m1fn\_x2、hifloat8时，weight\_dtype需要传入torch\_npu.float4\_e2m1fn\_x2、torch\_npu.hifloat8。
 
 - **weight\_scale\_dtype**（int）：可选参数，指定输入weight\_scale的真实数据类型。默认值None，表示输入weight\_scale真实的数据类型与输入weight\_scale的dtype相同。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值。
-  - <term>Atlas 350 加速卡</term>：当weight\_scale为float8\_e8m0fnu时，weight\_scale\_dtype需要传入torch\_npu.float8\_e8m0fnu。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当weight\_scale为float8\_e8m0fnu时，weight\_scale\_dtype需要传入torch\_npu.float8\_e8m0fnu。
 
 - **x\_scale\_dtype**（int）：可选参数，指定输入x\_scale的真实数据类型。默认值None，表示输入x\_scale真实的数据类型与输入x\_scale的dtype相同。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值。
-  - <term>Atlas 350 加速卡</term>：当x\_scale为float8\_e8m0fnu时，x\_scale\_dtype需要传入torch\_npu.float8\_e8m0fnu。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当x\_scale为float8\_e8m0fnu时，x\_scale\_dtype需要传入torch\_npu.float8\_e8m0fnu。
 
 ## 返回值说明
 
 - **output**（`Tensor`）：输出的量化结果，对应公式中的$Q$。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`，shape支持2维[m, n/2]。
-  - <term>Atlas 350 加速卡</term>：数据类型支持torch.float8\_e4m3fn、torch.float8\_e5m2、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，shape支持2维\[m，n / 2\]。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持torch.float8\_e4m3fn、torch.float8\_e5m2、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，shape支持2维\[m，n / 2\]。
 
 - **output\_scale**（`Tensor`）：输出的量化因子，对应公式中的$Q_{scale}$。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`，shape支持1维[m]。
-  - <term>Atlas 350 加速卡</term>：MX量化场景：数据类型支持torch\_npu.float8\_e8m0fnu，shape支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。pertoken量化场景：shape支持1维\[m\]，数据类型支持torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景：数据类型支持torch\_npu.float8\_e8m0fnu，shape支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。pertoken量化场景：shape支持1维\[m\]，数据类型支持torch.float32。
 
 ## 约束说明
 
@@ -253,7 +253,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - 参数说明里Shape使用的变量说明：
   - e：表示分组数目，取值范围为1-1024。
   - m：输出矩阵output的倒数第二维大小，取值范围为1-2147483647。
-  - n：输出矩阵output的倒数第一维大小的两倍，取值范围为1-2147483647。<term>Atlas 350 加速卡</term> mx量化场景下要求n为128对齐。
+  - n：输出矩阵output的倒数第一维大小的两倍，取值范围为1-2147483647。<term>Ascend 950PR/Ascend 950DT</term> mx量化场景下要求n为128对齐。
   - k：矩阵乘法reduce轴的大小，取值范围为1-2147483647。
 
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
@@ -276,7 +276,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     - A8W8场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于65536。
     - A8W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
     - A4W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
-- <term>Atlas 350 加速卡</term>：
+- <term>Ascend 950PR/Ascend 950DT</term>：
     - 输入和输出Tensor支持的数据类型组合如下：
 
       - MX量化场景：
@@ -332,7 +332,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu())
     ```
   
-  - <term>Atlas 350 加速卡</term>：mx量化场景示例-mxfp8
+  - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp8
 
     ```python
     import unittest
@@ -372,7 +372,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         x_scale_dtype=torch_npu.float8_e8m0fnu)
     ```
 
-  - <term>Atlas 350 加速卡</term>：mx量化场景示例-mxfp4
+  - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp4
 
     ```python
     import numpy as np
@@ -409,7 +409,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     print("y_scale.shape: ", y_scale.shape)
     ```
 
-  - <term>Atlas 350 加速卡</term>：pertoken量化场景示例
+  - <term>Ascend 950PR/Ascend 950DT</term>：pertoken量化场景示例
 
     ```python
     import numpy as np
@@ -480,7 +480,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     y = model(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu(), quant_dtype)
     ```
 
-  - <term>Atlas 350 加速卡</term>：mx量化场景示例-mxfp8
+  - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp8
 
     ```python
     import os
@@ -553,7 +553,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         run_npu(x_npu, weight_npu, weightScale_npu, xScale_npu, groupList_npu, transpose)
     ```
 
-  - <term>Atlas 350 加速卡</term>：mx量化场景示例-mxfp4
+  - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp4
 
     ```python
     import os
@@ -674,7 +674,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         print("y_scale shape: ", y_scale.shape)
     ```
 
-  - <term>Atlas 350 加速卡</term>：Pertoken量化场景示例
+  - <term>Ascend 950PR/Ascend 950DT</term>：Pertoken量化场景示例
 
     ```python
     import os
