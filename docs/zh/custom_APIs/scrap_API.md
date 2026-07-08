@@ -51,7 +51,7 @@
 </tr>
 <tr id="row48671427164110"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p8867627114111"><a name="p8867627114111"></a><a name="p8867627114111"></a><a href="./torch_npu/（beta）torch_npu-npu_dtype_cast.md">torch_npu.npu_dtype_cast</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p15123104845216"><a name="p15123104845216"></a><a name="p15123104845216"></a>该接口计划废弃，可以使用torch.to接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p15123104845216"><a name="p15123104845216"></a><a name="p15123104845216"></a>该接口计划废弃，可以使用tensor.to()接口进行替换。</p>
 </td>
 </tr>
 <tr id="row186752718417"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p4868162714410"><a name="p4868162714410"></a><a name="p4868162714410"></a><a href="./torch_npu/（beta）torch_npu-npu_gru.md">torch_npu.npu_gru</a></p>

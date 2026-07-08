@@ -244,7 +244,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>kv_cache非量化 </td>
       <td>
           weight_quant_mode=1, kv_cache_quant_mode=0, query_quant_mode=0<br>
-          入参：weight_uq_qr传入pertoken量化数据，其余入参皆为非量化数据。dequant_scale_w_uq_qr字段必须传入，smooth_scale_cq字段可选传入<br>
+          入参：weight_uq_qr传入pertoken量化数据，其余入参皆为非量化数据。dequant_scale_w_uq_qr字段必须传入，smooth_scales_cq字段可选传入<br>
           出参：所有出参返回非量化数据
       </td>
     </tr>
@@ -253,7 +253,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           weight_quant_mode=1, kv_cache_quant_mode=2, query_quant_mode=0<br>
           入参：weight_uq_qr传入pertoken量化数据，kv_cache、kr_cache传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_w_uq_qr、quant_scale_ckv、quant_scale_ckr字段必须传入，smooth_scale_cq字段可选传入 <br>
+          dequant_scale_w_uq_qr、quant_scale_ckv、quant_scale_ckr字段必须传入，smooth_scales_cq字段可选传入 <br>
           出参：kv_cache、kr_cache返回perchannel量化数据，其余出参返回非量化数据
       </td>
     </tr>
@@ -262,7 +262,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           weight_quant_mode=1, kv_cache_quant_mode=3, query_quant_mode=0<br>
           入参：weight_uq_qr传入pertoken量化数据，kv_cache传入per-tile量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_w_uq_qr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入 <br>
+          dequant_scale_w_uq_qr字段必须传入，smooth_scales_cq字段可选传入 <br>
           出参：kv_cache_out返回pertile量化数据，其余出参返回非量化数据
       </td>
     </tr>
@@ -272,7 +272,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           weight_quant_mode=2/4/5, kv_cache_quant_mode=0, query_quant_mode=0<br>
           入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr字段必须传入，smooth_scale_cq字段可选传入 <br>
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr字段必须传入，smooth_scales_cq字段可选传入 <br>
           出参：所有出参皆为非量化数据
       </td>
     </tr>
@@ -281,7 +281,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           weight_quant_mode=2/4/5, kv_cache_quant_mode=1, query_quant_mode=1<br>
           入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，kv_cache传入pertensor量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入 <br>
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scales_cq字段可选传入 <br>
           出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参返回非量化数据
       </td>
     </tr>
@@ -290,7 +290,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           weight_quant_mode=2/4/5, kv_cache_quant_mode=3, query_quant_mode=0<br>
           入参：token_x传入pertoken量化数据，weight_dq、weight_uq_qr、weight_dkv_kr传入perchannel量化数据，其余入参皆为非量化数据 <br>
-          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr、quant_scale_ckv字段必须传入，smooth_scale_cq字段可选传入 <br>
+          dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr字段必须传入，smooth_scales_cq字段可选传入 <br>
           出参：query_out返回pertoken_head量化数据，kv_cache出参返回pertensor量化数据，其余出参返回非量化数据
       </td>
     </tr>

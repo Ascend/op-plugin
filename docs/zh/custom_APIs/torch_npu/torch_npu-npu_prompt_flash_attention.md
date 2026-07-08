@@ -66,7 +66,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
 
-- **num_heads** (`List[int]`)：可选参数，代表`query`的head个数，数据类型支持`int64`。
+- **num_heads** (`int`)：可选参数，代表`query`的head个数，数据类型支持`int64`。
 - **scale_value** (`float`)：可选参数，对应公式中$scale$，值通常是$d$开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`。数据类型与`query`的数据类型需满足数据类型推导规则。默认值为`1.0`。
 - **pre_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention（注意力机制）需要和前几个Token计算关联，数据类型支持`int64`。默认值为2147483647。<term>Atlas 推理系列加速卡产品</term>仅支持默认值2147483647。
 - **next_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为`0`。<term>Atlas 推理系列加速卡产品</term>仅支持0和2147483647。
