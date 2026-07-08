@@ -515,6 +515,30 @@ class TestQuantMatmul(TestCase):
         custom_output = torch_npu.npu_quant_matmul(x1_clone.npu(), x2_clone.npu(), scale_clone.npu(), pertoken_scale=pertoken_scale_clone.npu(), x1_dtype=torch_npu.float4_e2m1fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2, scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu, output_dtype=torch.bfloat16)
         self.assertRtolEqual(supported_output.float().cpu().numpy(), custom_output.float().cpu().numpy(), 0.001)
 
+    @unittest.skip("skip test_npu_quant_matmul_mxfp8_scale_with_batch")
+    def test_npu_quant_matmul_mxfp8_scale_with_batch(self):
+        # fp8 MX scale带batch前缀: ps(B,M,ceilK,2), sc(B,ceilK,N,2)
+        B, M, N, K = 2, 64, 128, 256
+        ceilK = (K + 63) // 64
+        x1 = torch.randint(-5, 5, (B, M, K)).to(torch.float8_e4m3fn)
+        x2 = torch.randint(-5, 5, (B, K, N)).to(torch.float8_e4m3fn)
+        pertoken_scale = torch.randint(125, 131, (B, M, ceilK, 2), dtype=torch.uint8)
+        scale = torch.randint(125, 131, (B, ceilK, N, 2), dtype=torch.uint8)
+        # golden: e8m0→f32, reshape→broadcast×32, matmul
+        def e8m0_f32(t):
+            e = t.float()
+            return torch.where(t == 0, torch.zeros_like(e), torch.pow(2.0, e - 127.0))
+        ps = e8m0_f32(pertoken_scale).reshape(B, M, ceilK * 2)
+        sc = e8m0_f32(scale).transpose(-1, -2).reshape(B, ceilK * 2, N)
+        supported_output = torch.matmul(
+            x1.float() * ps.repeat_interleave(32, dim=-1)[..., :K],
+            x2.float() * sc.repeat_interleave(32, dim=-2)[..., :K, :])
+        custom_output = torch_npu.npu_quant_matmul(
+            x1.npu(), x2.npu(), scale.npu(), pertoken_scale=pertoken_scale.npu(),
+            scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu,
+            output_dtype=torch.float16, group_sizes=[1, 1, 32])
+        self.assertRtolEqual(supported_output.float().numpy(), custom_output.float().cpu().numpy(), 0.001)
+
     @SupportedDevices(['Ascend950'])
     def test_npu_quant_matmul_hif8_perblock(self):
         x1 = torch.randint(0, 255, (8192, 320), dtype=torch.uint8)

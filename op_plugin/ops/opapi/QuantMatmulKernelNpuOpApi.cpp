@@ -266,9 +266,14 @@ at::Tensor npu_quant_matmul(const at::Tensor &x1, const at::Tensor &x2, const at
         int64_t dim_x2 = x2.dim() - 2; //  check the last 2 dim
         int64_t dim_x1_scale = 0;
         int64_t dim_x2_scale = 0;
+        int64_t scaleNonBatchDim = 2;
+        int64_t mxScaleNonBatchDim = 3;
         if (pertoken_scale_dtype_real != aclDataType::ACL_FLOAT8_E8M0) {
-            dim_x1_scale = pertoken_scale_real.dim() - 2; // check the last 2 dim in GB/BB
-            dim_x2_scale = scale.dim() - 2; // check the last 2 dim in GB/BB
+            dim_x1_scale = pertoken_scale_real.dim() - scaleNonBatchDim; // check the last 2 dim in GB/BB
+            dim_x2_scale = scale.dim() - scaleNonBatchDim; // check the last 2 dim in GB/BB
+        } else if (pertoken_scale_real.dim() > 2){
+            dim_x1_scale = pertoken_scale_real.dim() - mxScaleNonBatchDim; // MX: skip batch + trailing 3D
+            dim_x2_scale = scale.dim() - mxScaleNonBatchDim;
         }
         TORCH_CHECK(is_x_scale_same_transpose(x1, pertoken_scale_real, dim_x1, dim_x1_scale),
                     "Input x1 tensor and pertoken_scale tensor's transpose are not same, please check input.",
