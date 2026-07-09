@@ -65,9 +65,43 @@ class TestNpuMhcPre(TestCase):
 
         return x, phi, alpha, bias, gamma
 
+    def build_hy_input_tensors(self, T, n, D):
+        x = torch.randn(T, n, D, dtype=torch.bfloat16)
+        phi = torch.randn(2 * n, n * D, dtype=torch.float32)
+        alpha = torch.tensor([0.5, 0.5], dtype=torch.float32)
+        gamma = torch.ones(n, D, dtype=torch.float32)
+
+        bias_pre = torch.full((n,), 0.01, dtype=torch.float32)
+        bias_post = torch.full((n,), 0.01, dtype=torch.float32)
+        bias = torch.cat([bias_pre, bias_post.reshape(-1)], dim=0)
+
+        return x, phi, alpha, bias, gamma
+
     def run_and_check(self, T, n, D, out_flag, output_names, tol_map):
         with torch.no_grad():
             x, phi, alpha, bias, gamma = self.build_input_tensors(T, n, D)
+
+            expected_output = self.cpu_op_exec(x, phi, alpha, bias, gamma)[:len(output_names)]
+            actual_output = self.custom_op_exec(
+                x.npu(), phi.npu(), alpha.npu(), bias.npu(), gamma.npu(), out_flag=out_flag
+            )[:len(output_names)]
+
+            for name, exp, act in zip(output_names, expected_output, actual_output):
+                try:
+                    self.assertRtolEqual(
+                        exp.float().numpy(),
+                        act.float().cpu().numpy(),
+                        prec=tol_map[name]
+                    )
+                except AssertionError as e:
+                    raise AssertionError(
+                        f"Output {name} compare failed for shape (T={T}, n={n}, D={D}), "
+                        f"out_flag={out_flag}: {e}"
+                    )
+
+    def run_hy_and_check(self, T, n, D, out_flag, output_names, tol_map):
+        with torch.no_grad():
+            x, phi, alpha, bias, gamma = self.build_hy_input_tensors(T, n, D)
 
             expected_output = self.cpu_op_exec(x, phi, alpha, bias, gamma)[:len(output_names)]
             actual_output = self.custom_op_exec(
@@ -129,6 +163,37 @@ class TestNpuMhcPre(TestCase):
         }
         self.run_and_check(T, n, D, out_flag, output_names, tol_map)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_prefill_hy(self, device="npu"):
+        # hy场景的 prefill 模式: T >= 512, out_flag=1, 有效输出 h_in, h_post, h_res, inv_rms, h_mix, h_pre
+        T, n, D = (1024, 4, 2560)
+        out_flag = 1
+        output_names = ["h_in", "h_post", "h_res", "inv_rms", "h_mix", "h_pre"]
+        tol_map = {
+            "h_in": 2 ** -7,
+            "h_post": 1e-3,
+            "h_res": 1e-3,
+            "inv_rms": 1e-3,
+            "h_mix": 1e-3,
+            "h_pre": 1e-3,
+        }
+        self.run_hy_and_check(T, n, D, out_flag, output_names, tol_map)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_decode_hy(self, device="npu"):
+        # hy场景的 decode 模式: T < 512, out_flag=1，有效输出 h_in, h_post, h_res, inv_rms, h_mix, h_pre
+        T, n, D = (64, 4, 2560)
+        out_flag = 1
+        output_names = ["h_in", "h_post", "h_res", "inv_rms", "h_mix", "h_pre"]
+        tol_map = {
+            "h_in": 2 ** -7,
+            "h_post": 1e-3,
+            "h_res": 1e-3,
+            "inv_rms": 1e-3,
+            "h_mix": 1e-3,
+            "h_pre": 1e-3,
+        }
+        self.run_hy_and_check(T, n, D, out_flag, output_names, tol_map)
 
 if __name__ == "__main__":
     run_tests()

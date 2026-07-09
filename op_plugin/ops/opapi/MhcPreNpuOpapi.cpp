@@ -26,6 +26,7 @@ constexpr int64_t TND_DIMS = 3;
 constexpr int64_t REMOVE_ONE_DIM = 1;
 constexpr int64_t REMOVE_TWO_DIMS = 2;
 constexpr int64_t ALPHA_NUMEL = 3;
+constexpr int64_t ALPHA_NUMEL_HY = 2;
 
 // aclnnMhcPre 依赖 CANN 9.0.0 及以上版本，此次校验避免旧版本环境出现找不到算子的兼容性问题。
 inline void check_mhc_pre_supported()
@@ -179,7 +180,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 {
     TORCH_CHECK(x.numel() > 0, "Input x should not be empty.");
     TORCH_CHECK(phi.numel() > 0, "Input phi should not be empty.");
-    TORCH_CHECK(alpha.numel() == ALPHA_NUMEL, "Input alpha must have 3 elements, but got ", alpha.numel(), ".");
+    TORCH_CHECK(alpha.numel() == ALPHA_NUMEL || alpha.numel() == ALPHA_NUMEL_HY,
+        "Input alpha must have 3 or 2 elements, but got ", alpha.numel(), ".");
     TORCH_CHECK(bias.numel() > 0, "Input bias should not be empty.");
 
     TORCH_CHECK(x.dim() == TND_DIMS || x.dim() == BSND_DIMS, "Input x must be 3D or 4D, but got ", x.dim(), "D.");
