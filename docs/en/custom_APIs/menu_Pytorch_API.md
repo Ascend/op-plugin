@@ -265,10 +265,10 @@
             -   [(beta) torch_npu.npu.get_autocast_dtype](./torch_npu-npu/(beta)torch_npu-npu-get_autocast_dtype.md)
             -   [(beta) torch_npu.npu.set_autocast_dtype](./torch_npu-npu/(beta)torch_npu-npu-set_autocast_dtype.md)
     
-    -   [Random Number Generator](./torch_npu-npu/Random-Number-Generator.md)
+        -   [Random Number Generator](./torch_npu-npu/Random-Number-Generator.md)
         -   [NPU Device](./torch_npu-npu/NPU-Device.md)
         -   [Memory Management](./torch_npu-npu/Memory-management.md)
-        -   [Memory Management API](./torch_npu-npu/Memory-management-API.md)
+            -   [Memory Management API](./torch_npu-npu/Memory-management-API.md)
             -   [torch_npu.npu.empty_virt_addr_cache](./torch_npu-npu/torch_npu-npu-empty_virt_addr_cache.md)
             -   [torch_npu.npu.NPUPluggableAllocator](./torch_npu-npu/torch-npu-npu-NPUPluggableAllocator.md)
             -   [torch_npu.npu.change_current_allocator](./torch_npu-npu/torch-npu-npu-change_current_allocator.md)
@@ -327,7 +327,7 @@
     
     -   [torch_npu.utils](./torch_npu-utils/torch_npu-utils.md)
         -   [torch_npu.utils APIs](./torch_npu-utils/torch_npu-utils_list.md)
-    -   [(beta) torch_npu.utils.save_async](./torch_npu-utils/(beta)torch_npu-utils-save_async.md)
+        -   [(beta) torch_npu.utils.save_async](./torch_npu-utils/(beta)torch_npu-utils-save_async.md)
         -   [(beta) torch_npu.utils.npu_combine_tensors](./torch_npu-utils/(beta)torch_npu-utils-npu_combine_tensors.md)
         -   [(beta) torch_npu.utils.get_part_combined_tensor](./torch_npu-utils/(beta)torch_npu-utils-get_part_combined_tensor.md)
         -   [(beta) torch_npu.utils.is_combined_tensor_valid](./torch_npu-utils/(beta)torch_npu-utils-is_combined_tensor_valid.md)
