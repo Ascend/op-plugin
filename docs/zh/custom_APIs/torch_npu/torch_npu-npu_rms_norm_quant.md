@@ -4,6 +4,7 @@
 
 | 产品 | 是否支持 |
 | :---------------------- | :------: |
+| <term>Ascend 950DT </term>                                                |    √    |
 | <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>                        |    √    |
 | <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> |    √    |
 | <term>Atlas 200I/500 A2 推理产品</term>                                         |    √    |
@@ -34,24 +35,32 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 - **x** (`Tensor`)：必选参数，输入张量，表示标准化过程中的源数据张量，对应公式中的$x$，数据格式支持 `ND`，shape支持 1-8 维，支持非连续的`Tensor`，不支持空`Tensor`。
   - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品：数据类型支持`float16`。
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持`float16`、`bfloat16`。
+  - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
 
 - **gamma** (`Tensor`)：必选参数，表示标准化过程中的缩放张量，对应公式中的$g$，shape支持1-2维，若shape为1维，则需与`x`最后一维维度一致；若shape为2维，则第一维必须为1，第二维需与`x`最后一维维度一致。数据类型需与`x`保持一致，数据格式支持`ND`，支持非连续`Tensor`，不支持空`Tensor`。
   - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品：数据类型支持`float16`。
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持`float16`、`bfloat16`。
+  - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
 
 - **beta** (`Tensor`)：必选参数，表示标准化过程中的偏移张量，对应公式中的$b$。shape支持1-2维，规则同`gamma`。数据类型需与`x`保持一致，数据格式支持`ND`，支持非连续`Tensor`，不支持空`Tensor`。
   - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品：数据类型支持`float16`。
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持`float16`、`bfloat16`。
+  - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
 
 - **scale** (`Tensor`)：必选参数，表示量化过程中得到`y`进行的`scale`张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持`ND`，支持非连续的`Tensor`，不支持空`Tensor`。该参数的值不能为0。
   - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品：数据类型支持`float16`。
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持 `float16`、`bfloat16`。
+  - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
 
-- **offset** (`Tensor`)：必选参数，表示量化过程中的偏移张量，对应公式中的$offset$。shape需与 `scale` 保持一致，数据格式支持 `ND`，支持非连续 `Tensor`，不支持空 `Tensor`。数据类型支持 `int8`。
+- **offset** (`Tensor`)：必选参数，表示量化过程中的偏移张量，对应公式中的$offset$。shape需与 `scale` 保持一致，数据格式支持 `ND`，支持非连续 `Tensor`，不支持空 `Tensor`。
+  - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持 `int8`。
+  - Ascend 950DT：数据类型支持 `int8`、`int32`、`float16`、`bfloat16`、`float32`。
 
 - **epsilon** (`double`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为 `1e-6`。建议传入较小的正数。
 
 - **dst_dtype** (`int`): 可选参数，指定量化输出的类型，默认值为`int8`。传`None`时当做int8处理，支持取值`int8`、`quint4x2`。
+  - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持取值 `int8`、`quint4x2`。
+  - Ascend 950DT：支持取值 `int8`、`quint4x2`、`float8_e4m3fn`、`float8_e5m2`、`hifloat8`。
 
 ## 返回值说明
   
@@ -80,6 +89,20 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
     | float16   | float16       | float16       | float16       | int8           | double      |int8      |
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
+
+  - <term>Ascend 950DT</term>：
+
+    | x | gamma | beta | scale | offset | epsilon | y |
+    | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+    | float16 | float16 | float16 | float16 | int8 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | bfloat16 | bfloat16 | bfloat16 | bfloat16 | int8 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | float16 | float16 | float16 | float16 | float16 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | bfloat16 | bfloat16 | bfloat16 | bfloat16 | bfloat16 | double | int8、int4、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | float32 | float32 | float32 | float32 | float32 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | float16 | float16 | float16 | float32 | int32 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | bfloat16 | bfloat16 | bfloat16 | float32 | int32 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | float16 | float16 | float16 | float32 | float32 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
+    | bfloat16 | bfloat16 | bfloat16 | float32 | float32 | double | int8、int32、float8_e4m3fn、float8_e5m2、hifloat8 |
 
 ## 调用示例
 
