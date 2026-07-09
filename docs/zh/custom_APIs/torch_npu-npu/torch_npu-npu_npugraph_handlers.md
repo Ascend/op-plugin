@@ -113,7 +113,7 @@ import torch
 import torch_npu
 from torch_npu.npu import (
     NpuGraphOpHandler,
-    register_npu_graph_handle
+    register_npu_graph_handler
 )
 
 @register_npu_graph_handler(["my_custom_op.default"])

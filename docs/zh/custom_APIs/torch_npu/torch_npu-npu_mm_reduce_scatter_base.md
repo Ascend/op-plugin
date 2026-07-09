@@ -48,7 +48,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 ## 参数说明
 
 - **input** (`Tensor`)：必选参数。数据类型支持`float16`、`bfloat16`、`int8`，数据格式支持$ND$，输入shape支持2维，形如\(m, k\)。
-- **x2** (`Tensor`)：必选参数。数据类型与`input`一致，数据格式支持$ND$、$NZ$。$NZ$仅在`comm_mode`为`aiv`时支持。输入shape支持2维，形如\(k, n\)。轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)，m轴需要整除`world_size`。
+- **x2** (`Tensor`)：必选参数。数据类型与`input`一致，数据格式支持$ND$、$NZ$。$NZ$仅在`comm_mode`为`aiv`时支持。输入shape支持2维，形如\(k, n\)。轴满足matmul算子入参要求，k轴相等（`input`最后一维 = `x2`第一维），且k轴取值范围为\[256, 65535\)，`input`的m轴需要整除`world_size`。
 - **hcom** (`str`)：必选参数。通信域handle名，通过get\_hccl\_comm\_name接口获取。
 - **world\_size** (`int`)：必选参数。通信域内的rank总数。
     - <term>Atlas A2 训练系列产品</term>支持2、4、8卡，支持HCCS链路all mesh组网（每张卡和其它卡两两相连）。

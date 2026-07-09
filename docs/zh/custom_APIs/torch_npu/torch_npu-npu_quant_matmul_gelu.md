@@ -51,14 +51,13 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
 
 - **x1_scale** (`Tensor`)：必选参数，`x1`的量化缩放因子，数据格式支持$ND$。数据类型支持`float32`。shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致。采用pertoken量化方式，每个token（行）有一个独立的scale值。
 
-- **x2_scale** (`Tensor`)：必选参数，`x2`的量化缩放因子，数据格式支持$ND$。数据类型支持`float32`、`bfloat16`。shape需要是1维$(n,)$或$(1,)$，其中$n$与`x2`的$n$一致。采用perchannel量化方式，每个输出通道有一个独立的scale值，或使用pertensor量化（shape为$(1,)$）。
+- **x2_scale** (`Tensor`)：必选参数，`x2`的量化缩放因子，数据格式支持$ND$。数据类型支持`float32`、`bfloat16`。shape需要是1维$(n,)$或$(1,)$，其中$n$与`x2`的$n$一致。采用perchannel量化方式，每个输出通道有一个独立的scale值，或使用pertensor量化（shape为$(1,)$），shape约束如下：
+    - A4W4量化场景下：shape仅支持1维$(n,)$，$n$与`x2`的$n$一致。
+    - A8W8量化场景下：shape支持1维$(n,)$或3维$(batch, 1, n)$，$n$与`x2`的$n$一致，同时batch值需要等于`x1`和`x2` broadcast后推导得出的batch值。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
 - **bias** (`Tensor`)：可选参数，默认值为`None`，偏置项，数据格式支持$ND$。数据类型支持`int32`、`float32`、`bfloat16`、`float16`。
-
-    - A4W4量化场景下：shape仅支持1维$(n,)$，$n$与`x2`的$n$一致。
-    - A8W8量化场景下：shape支持1维$(n,)$或3维$(batch, 1, n)$，$n$与`x2`的$n$一致，同时batch值需要等于`x1`和`x2` broadcast后推导得出的batch值。
 
 - **approximate** (`str`)：可选参数，默认值为`"gelu_erf"`。指定GELU激活函数的类型。支持`"gelu_tanh"`（GELU的tanh近似版本）和`"gelu_erf"`（GELU的erf精确版本）。
 

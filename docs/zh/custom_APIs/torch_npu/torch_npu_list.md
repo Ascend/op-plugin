@@ -399,7 +399,7 @@
 </tr>
 <tr id="row16527145114477"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1338142581"><a name="p1338142581"></a><a name="p1338142581"></a><a href="torch_npu-npu_convert_weight_to_int4pack.md">torch_npu.npu_convert_weight_to_int4pack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>将数据类型为int32的输入tensor打包为int4存放，每8个int4数据通过一个int32数据承载，并进行交叠排放。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>将数据类型为int32的输入tensor打包为int4存放，每8个int4数据通过一个int32数据承载，并进行交错排放。</p>
 </td>
 </tr>
 <tr id="row194591911194818"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p633812455816"><a name="p633812455816"></a><a name="p633812455816"></a><a href="torch_npu-npu_dynamic_quant.md">torch_npu.npu_dynamic_quant</a></p>
