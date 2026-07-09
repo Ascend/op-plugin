@@ -85,7 +85,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 
   - <term>Atlas 推理系列产品</term>、<term>Atlas 200I/500 A2 推理产品</term>：
 
-    | x | gamma | beta | scale | offset | epsilon | y
+    | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
     | float16   | float16       | float16       | float16       | int8           | double      |int8      |
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
