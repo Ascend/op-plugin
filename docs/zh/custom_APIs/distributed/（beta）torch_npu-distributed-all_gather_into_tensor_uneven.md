@@ -29,7 +29,7 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 
 ## 返回值说明
 
-`output`的shape为所有卡上`input`的shape拼接大小。
+`output`的shape为所有卡上`input`拼接后的shape。
 
 ## 约束说明
 

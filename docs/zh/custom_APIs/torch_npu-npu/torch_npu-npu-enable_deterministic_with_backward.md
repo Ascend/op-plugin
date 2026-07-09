@@ -23,7 +23,7 @@ torch_npu.npu.enable_deterministic_with_backward(tensor) -> Tensor
 
 ## 参数说明
 
-**tensor** (`Tensor`)：该接口为透明传输接口，不做数据处理，类型支持和数据格式为PyTorch在各芯片上可支持的数据类型和数据格式，无接口级别的约束。
+**tensor** (`Tensor`)：该接口为透明传输接口，不做数据处理，支持的数据类型和数据格式为PyTorch在各芯片上可支持的数据类型和数据格式，无接口级别的约束。
 
 ## 返回值说明
 

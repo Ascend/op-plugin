@@ -12,7 +12,7 @@
 
 ## 功能说明
 
-计算输入张量`x`缩放并按照`mask`遮蔽后的`Softmax`结果。
+计算输入张量`x`经缩放和`mask`遮蔽后的`Softmax`结果。
 
 ## 函数原型
 
@@ -50,5 +50,5 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 >>> fixed_triu_mask = False
 >>> output = torch_npu.npu_scaled_masked_softmax(x, mask, scale, fixed_triu_mask)
 >>> print(output.shape)
-torch.size([4, 4, 2048, 2048])
+torch.Size([4, 4, 2048, 2048])
 ```
