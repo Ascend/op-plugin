@@ -23,6 +23,7 @@
 #include <algorithm>
 
 #include "op_plugin/utils/OpAdapter.h"
+#include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 typedef struct {
     const at::Tensor& tensor_;
@@ -61,7 +62,7 @@ inline void replace_and_append_newline(std::string& str)
 {
     size_t count = std::count(str.begin(), str.end(), '\n');
     str.reserve(str.size() + count + 1);
- 
+
     for (size_t pos = 0; (pos = str.find('\n', pos)) != std::string::npos; pos += REPLACE_WORKSPACE) {
         str.replace(pos, 1, ", ");
     }
@@ -578,7 +579,7 @@ inline std::vector<std::string> split_and_processing_args(const char* args)
     std::string s(args);
     size_t pos = 0;
     size_t next;
-    
+
     while ((next = s.find(", ", pos)) != string::npos) {
         result.push_back(s.substr(pos, next - pos) + ": ");
         pos = next + REPLACE_WORKSPACE;
