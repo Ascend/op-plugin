@@ -89,8 +89,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **mm\_x\_scale\_dtype** (`int`)：可选参数，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。当存在共享专家计算时，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **mm\_weight\_scale\_dtype** (`int`)：可选参数，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。当存在共享专家计算时，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **mm\_y\_dtype** (`int`)：可选参数，表示共享专家输出张量`mm_y`的数据类型。当存在共享专家计算时，需要指定该参数取值。数据类型支持`float16`、`bfloat16`。
-- **comm\_mode** (`str`)：可选参数，表示通信模式。默认值为None。
-    - Ascend 950PR/Ascend 950DT：支持`"ai_cpu"`、`"ccu"`、None、空字符串。当为None或空字符串时，world_size≤8卡走CCU通信，world_size>8卡走AI\_CPU通信。AI\_CPU模式仅支持基础场景，CCU模式支持基础场景和量化场景。
+- **comm\_mode** (`str`)：可选参数，表示通信模式。默认值为None。支持`"ai_cpu"`、`"ccu"`、None、空字符串。当为None或空字符串时，world_size≤8卡走CCU通信，world_size>8卡走AI\_CPU通信。AI\_CPU模式仅支持基础场景，CCU模式支持基础场景和量化场景。
 
 ## 返回值说明
 
