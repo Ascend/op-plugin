@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/ATen.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -47,6 +48,23 @@ at::Tensor& index_add_out(
     if (!result.is_same(self)) {
         result.copy_(self);
     }
+
+    if (at::globalContext().deterministicAlgorithms()) {
+        auto wrapped_dim = at::maybe_wrap_dim(dim, self.dim());
+        c10::List<c10::optional<at::Tensor>> indices;
+        indices.reserve(self.dim());
+        for (const auto i : c10::irange(self.dim())) {
+            if (i == wrapped_dim) {
+                indices.emplace_back(index.to(at::kLong));
+            } else {
+                indices.emplace_back(c10::nullopt);
+            }
+        }
+
+        result.index_put_(indices, source * alpha, true);
+        return result;
+    }
+
     EXEC_NPU_CMD(aclnnIndexAdd, result, dim, index, source, alpha, result);
     return result;
 }
@@ -72,7 +90,25 @@ at::Tensor index_add(
                 source.sizes(),
                 OPS_ERROR(ErrCode::PARAM));
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
-    EXEC_NPU_CMD(aclnnIndexAdd, result.copy_(self), dim, index, source, alpha, result.copy_(self));
+
+    if (at::globalContext().deterministicAlgorithms()) {
+        auto wrapped_dim = at::maybe_wrap_dim(dim, self.dim());
+        result.copy_(self);
+        c10::List<c10::optional<at::Tensor>> indices;
+        indices.reserve(self.dim());
+        for (const auto i : c10::irange(self.dim())) {
+            if (i == wrapped_dim) {
+                indices.emplace_back(index.to(at::kLong));
+            } else {
+                indices.emplace_back(c10::nullopt);
+            }
+        }
+
+        result.index_put_(indices, source * alpha, true);
+        return result;
+    }
+
+    EXEC_NPU_CMD(aclnnIndexAdd, result.copy_(self), dim, index, source, alpha, result);
     return result;
 }
 
@@ -82,10 +118,9 @@ at::Tensor index_add(
     at::Dimname dim,
     const at::Tensor& index,
     const at::Tensor& source,
-    const at::Scalar& alpha)
-{
+    const at::Scalar& alpha) {
     return op_api::index_add(self, dimname_to_position(self, dim), index, source, alpha);
 }
 #endif
 
-}
+} // namespace op_api
