@@ -47,7 +47,7 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 - **num_seqs** (`int`)：必选参数，记录输入的seq数量；取值范围为大于0的正整数。
 - **num_queries** (`int`)：必选参数，记录输入的query数量；取值范围为大于0的正整数。
 - **block_size** (`int`)：必选参数，对应公式中的$blockSize$，每个block的大小；取值范围为大于0的正整数。
-- **spec_token** (`Tensor`): 可选参数，输入张量，用于记录投机场景下当前的token的idx。数据类型支持`int64`；spec_token为空时，则为非投机场景，默认为`None`；`spec_token`不为空时，则为投机场景，shape为[num_seqs, spec_num]；不支持空tensor，必须为大于0的正整数。
+- **spec_token** (`Tensor`): 可选参数，输入张量，用于记录投机场景下当前的token的idx。数据类型支持`int64`；spec_token为空时，则为非投机场景，默认为`None`；`spec_token`不为空时，则为投机场景，shape为[num_seqs, spec_num]；spec_token不支持空tensor，必须为大于0的正整数。
 - **accepted_num** (`Tensor`): 可选参数，输入张量，用于记录投机场景下每个request接受的投机的数量。数据类型支持`int64`。
 
 ## 返回值说明
