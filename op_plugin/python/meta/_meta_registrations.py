@@ -7248,10 +7248,10 @@ def npu_quant_max(x, scale, *, round_mode="rint", dst_dtype=291, group_list=None
     else:
         # hifloat8 等 PyTorch 无原生 dtype 对应，存储用 uint8 承载
         y = torch.empty_like(x, dtype=torch.uint8)
-    if group_list is not None and group_list.shape[0] != 1:
-        amax = x.new_empty([group_list.shape[0]], dtype=x.dtype)
-    else:
+    if group_list is None or group_list.shape[0] <= 1:
         amax = x.new_empty([1], dtype=x.dtype)
+    else:
+        amax = x.new_empty([group_list.shape[0]], dtype=x.dtype)
     return (y, amax)
 
 

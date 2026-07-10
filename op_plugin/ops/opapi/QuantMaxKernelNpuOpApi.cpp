@@ -41,7 +41,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_max(
     char *round_mode_ptr = const_cast<char *>(round_mode.data());
     at::Tensor out_amax;
 
-    if (!group_list.has_value() || group_list->sizes()[0] == 1) {
+    if (!group_list.has_value() || group_list->sizes()[0] <= 1) {
         static const bool is_available = check_aclnn_kernel_available("aclnnQuantMax");
         TORCH_CHECK(is_available,
             "Current CANN version do not support this api: npu_quant_max. Please try to update the "
