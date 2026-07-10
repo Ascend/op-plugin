@@ -480,7 +480,7 @@ aclDataType get_dynamic_scales_dtype(const at::Tensor &x, const c10::optional<at
                 at_npu::native::OpPreparation::convert_to_acl_data_type(scales.value().scalar_type()) : ACL_FLOAT;
         dynamic_scale_dtype = (x.scalar_type() == at::kBFloat16 || x.scalar_type() == at::kHalf) ? ACL_FLOAT :
            (scales_dtype.has_value() ? c10_npu::GetAclDataType(scales_dtype.value()) : scale_value_type);
-    } else if (quant_mode == QuantMode::QUANT_MODE_MX) {
+    } else if (quant_mode == QuantMode::QUANT_MODE_MX || quant_mode == QuantMode::QUANT_MODE_MX_CLIP) {
         dynamic_scale_dtype = c10_npu::GetAclDataType(c10_npu::DType::FLOAT8_E8M0);
     }
     return dynamic_scale_dtype;
@@ -499,7 +499,7 @@ std::vector<int64_t> get_dynamic_shape(const c10::optional<at::Tensor> &scales, 
         shape = {a};
     } else if (quant_mode == QuantMode::QUANT_MODE_PERGROUP) {
         shape = {a, (h + PER_GROUP_SIZE - 1) / PER_GROUP_SIZE};
-    } else if (quant_mode == QuantMode::QUANT_MODE_MX) {
+    } else if (quant_mode == QuantMode::QUANT_MODE_MX || quant_mode == QuantMode::QUANT_MODE_MX_CLIP) {
         // ensure the ceiling of h divided by MX_QUANT_SIZE is even
         shape = {a, ((h + MX_QUANT_SIZE - 1) / MX_QUANT_SIZE + 1) / 2 * 2};
     }

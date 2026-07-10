@@ -3671,6 +3671,20 @@ class TestMoeDistributeDispatchV2(TestCase):
         self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
         self.assertEqual(result[1].dtype, torch.uint8)
 
+    def test_tp0_mx_clip(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=0, quant_mode=5, y_dtype=torch.float8_e4m3fn)
+        expected_dim1 = (math.ceil(h / 32) + 1) // 2 * 2
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+        self.assertEqual(result[1].dtype, torch.uint8)
+
+    def test_tp1_mx_clip(self):
+        result, a, h, _ = self._run_dispatch_v2(
+            tp_world_size=1, quant_mode=5, y_dtype=torch.float8_e4m3fn)
+        expected_dim1 = (math.ceil(h / 32) + 1) // 2 * 2
+        self.assertEqual(result[1].shape, torch.Size([a, expected_dim1]))
+        self.assertEqual(result[1].dtype, torch.uint8)
+
     def test_tp0_no_quant(self):
         result, a, h, _ = self._run_dispatch_v2(tp_world_size=0, quant_mode=0)
         self.assertEqual(result[0].shape, torch.Size([a, h]))

@@ -3212,7 +3212,7 @@ def get_dispatch_dynamic_scales_dtype(x, scales, quant_mode):
     if quant_mode == 0:
         if x.dtype != torch.bfloat16 and x.dtype != torch.float16 and scales is not None:
             dynamic_scales_dtype = scales.dtype
-    elif quant_mode == 4:
+    elif quant_mode == 4 or quant_mode == 5:
         dynamic_scales_dtype = torch.uint8  # float8_e8m0
     return dynamic_scales_dtype
 
@@ -3227,7 +3227,7 @@ def get_dispatch_dynamic_shape(scales, quant_mode, a, h):
         shape = tuple([a])
     elif quant_mode == 3:
         shape = tuple([a, math.ceil(h / 128)])
-    elif quant_mode == 4:
+    elif quant_mode == 4 or quant_mode == 5:
         shape = tuple([a, (math.ceil(h / 32) + 1) // 2 * 2])
     return shape
 
