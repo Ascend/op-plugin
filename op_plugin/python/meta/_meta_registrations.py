@@ -2082,8 +2082,9 @@ def npu_fused_infer_attention_score_v2_forward(query, key, value, *, query_rope=
             ops_error(ErrCode.VALUE),
     )
     torch._check(
-        query_quant_mode != 3 and key_quant_mode != 3 and value_quant_mode != 2,
-        lambda: "GQA FP8 Fullquant(Query/Key Per-Token-Head, Value PerHead) only supports path 0." + ops_error(ErrCode.VALUE),
+        not (query_quant_mode == 3 and key_quant_mode == 3 and value_quant_mode == 2
+             and query.dtype == torch.float8_e4m3fn and key.dtype == torch.float8_e4m3fn and value.dtype == torch.float8_e4m3fn),
+        lambda: "GQA FP8 Fullquant(Query/Key Per-Token-Head, Value PerHead) only supports eager mode." + ops_error(ErrCode.VALUE),
     )
 
     num_key_value_heads = num_query_heads if num_key_value_heads == 0 else num_key_value_heads
