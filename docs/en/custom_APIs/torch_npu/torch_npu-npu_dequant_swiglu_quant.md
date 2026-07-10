@@ -77,18 +77,17 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 
 - **`x`** (`Tensor`): Required. Target input tensor. This parameter must be 2D with shape `[TokensNum, 2H]`, and the last dimension must be an even number. The data type can be `int32` or `bfloat16`. The data layout can be ND.
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
-- **`weight_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to weight quantization. This parameter must be 2D with shape `[groupNum, 2H]`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, provide `weight_scale` for dequantization.
+- **`weight_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to weight quantization. This parameter must be 2D with shape `[groupNum, 2H]`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, this parameter must not be `None`, necessitating dequantization.
 - **`activation_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to `pertoken` weight quantization. This parameter must be 2D with shape `[TokensNum, 1]`, where the last dimension is `1` and the remaining dimensions match those of `x`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, this parameter must not be `None`, necessitating dequantization.
 - **`bias`** (`Tensor`): Optional. Bias tensor for `x`. The data type can be `int32`. The data layout can be ND. When `group_index` is configured as a 2D tensor, `bias` must be `None`.
 - **`quant_scale`** (`Tensor`): Optional. Smooth quantization coefficient. This parameter must be 2D with shape `[groupNum, H]`. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND.
-  > **Note**: In static quantization, `quant_scale` supports the `float32` data type only.
 - **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
 - **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `int64`. The data layout can be ND.
-- **`activate_left`** (`bool`): Optional. Specifies whether to apply Swish activation to the left or right half after evenly splitting the input along the last dimension. This parameter is valid only when `swiglu_mode = 0`. The default value is `False`.
+- **`activate_left`** (`bool`): Optional. Specifies whether to perform left activation during the SwiGLU process. The default value is `False`.
     - `True`: `out=swish(split[x, -1, 2][0]) * split[x, -1, 2][1]`
     - `False`: `out=swish(split[x, -1, 2][1]) * split[x, -1, 2][0]`
 
-- **`quant_mode`** (`int`): Optional. Quantization type specification. Valid values are `0` (enables static quantization) or `1` (enables dynamic quantization). The default value is `0`.
+- **`quant_mode`** (`int`): Optional. The quantization type. The default value is `0`. Valid values are `0` (static quantization) or `1` (dynamic quantization). When `group_index` is provided, this parameter supports dynamic quantization only, which requires setting `quant_mode` to `1`.
 - **`swiglu_mode`** (`int`): Optional. SwiGLU computation mode. Valid values are `0` (enables standard SwiGLU) or `1` (enables variant SwiGLU with clamp, alpha, and bias support).
 - **`clamp_limit`** (`float`): Optional. Input threshold limit for variant SwiGLU computation. The default value is `7.0`.
 - **`glu_alpha`** (`float`): Optional. Activation function coefficient for GLU. The default value is `1.702`.
@@ -107,11 +106,11 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
     - Only `count` mode is supported for `group_index`. The calling network must ensure that the sum of all elements in `group_index` does not exceed the `TokensNum` dimension of `x`. Otherwise, out-of-bounds memory access will occur.
     - `H-axis size constraint`: $H \le 10496$ and must be aligned to 64. Configurations failing to meet these specifications will trigger an input validation error.
     - The portions of the output tensors `out` and `scale` that exceed the total sum of `group_index` are not cleared. These memory regions contain garbage data and may exhibit `inf` or `nan` anomalies. The network logic must account for this impact during deployment.
-- When `x` is `int32`, provide `weight_scale` for dequantization.
-- When `x` is of type `float16` or `bfloat16`, `weight_scale` is optional (typically `None`, but a valid tensor may also be provided), while `activation_scale` and `bias` must be `None`.
+- If `x` is of type `int32`, `weight_scale` must be provided.
+- If `x` is of type `float16` or `bfloat16`, `weight_scale`, `activation_scale`, and `bias` must be set to `None`.
 - The last dimension size of `x` must be an even number.
 - When the activation dimension is not the last dimension of `x`, `group_index` must be `None`.
-- When `group_index` is not `None` and dynamic quantization is enabled (`quant_mode = 1`), `bias` and `quant_offset` do not take effect.
+- If `group_index` is not `None`, only dynamic quantization (`quant_mode=1`) is supported, and `bias` and `quant_offset` must be `None`.
 - The `clamp_limit`, `glu_alpha`, and `glu_bias` parameters take effect only when `swiglu_mode = 1`.
 
 ## Examples

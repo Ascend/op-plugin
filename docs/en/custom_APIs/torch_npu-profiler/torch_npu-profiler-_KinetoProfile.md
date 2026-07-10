@@ -15,7 +15,7 @@ Collects profile data during PyTorch training.
 ## Prototype
 
 ```python
-torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_memory=False, with_stack=False, with_flops=False, with_modules=False, experimental_config=None, custom_trace_id_callback=None)
+torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_memory=False, with_stack=False, with_flops=False, with_modules=False, experimental_config=None)
 ```
 
 ## Parameters
@@ -38,8 +38,8 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      The default value is `False`.
 
-     > [!NOTE]
-     > Collecting profile data in environments where glibc is earlier than 2.34 can trigger a known glibc bug ([ID: 19329](https://sourceware.org)). Upgrading the environment glibc version resolves this issue.
+     > [!NOTE]  
+     > Collecting profile data in environments where glibc is earlier than 2.34 can trigger a known glibc bug ([ID: 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)). Upgrading the environment glibc version resolves this issue.
 
 - **`with_stack`** (`bool`): Optional. Specifies whether to record call stack information. This includes call information of the framework layer or CPU operator layer. Valid values are:
 
@@ -60,8 +60,6 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
      This parameter takes effect when `torch_npu.profiler.ProfilerActivity.CPU` is enabled.
 
 - **`experimental_config`**: Optional. Extended configuration for profile data collection. For details about the supported collection items, see [torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md).
-
-- **`custom_trace_id_callback`** (`str`): Optional. Generates a trace_id to identify each piece of profile data. The trace_id is output to the `profiler_metadata.json` file.
 
 ## Return Values
 

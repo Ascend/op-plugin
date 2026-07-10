@@ -21,37 +21,37 @@
 ## Prototype
 
 ```python
-torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1,) -> Tensor
+torch_npu.npu_quant_lightning_indexer(query, key, weights, query_dequant_scale, key_dequant_scale, query_quant_mode, key_quant_mode, *, actual_seq_lengths_query=None, actual_seq_lengths_key=None, block_table=None, layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> Tensor
 ```
 
 ## Parameters
 >
-> [!NOTE]
+> [!NOTE]   
 >
 > - Dimension definitions for the `query`, `key`, `weights`, `query_dequant_scale`, and `key_dequant_scale`:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br>`D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
 > - `S1` and `S2` indicate the input sequence lengths of `query` and `key`, respectively.<br>`N1` and `N2` indicate the head counts corresponding to `query` and `key`, respectively.<br>`k` indicates the number of finally selected indices. The size of the `D` dimension in both `query` and `key` must be identical and equal to `128`. `T1` and `T2` indicate the cumulative sums of input sequence lengths for `query` and `key`, respectively.
 >
-- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{INT8}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `int8`, `float8_e4m3fn`, or `hifloat8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. The value range of `N1` is [1, 64].
+- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{INT8}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `int8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. `N1` must be 64.
+    
+- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{INT8}\in\R^{S_{k}\times d}$ in the formula. Non-contiguous tensors are supported. The data layout can be ND. The data type can be `int8`. When `layout_key` is `"PA_BSND"`, the shape of this parameter is `(block_count, block_size, N2, D)`, where `block_count` represents the total block count in PageAttention, and `block_size` represents the token count within a single block. The value of `block_size` must be divisible by `16`, and must be less than or equal to `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
+    
+- **`weights`** (`Tensor`): Required. Weight coefficient, $W$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `float16`. The shape can be `(B, S1, N1)` or `(T, N1)`.
 
-- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{INT8}\in\R^{S_{k}\times d}$ in the formula. Non-contiguous tensors are supported. The data layout can be ND. The data type can be `int8`, `float8_e4m3fn`, or `hifloat8`. When `layout_key` is `"PA_BSND"`, the shape of this parameter is `(block_count, block_size, N2, D)`, where `block_count` represents the total block count in PageAttention, and `block_size` represents the token count within a single block. The value of `block_size` must be divisible by `16`, and must be less than or equal to `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
+- **`query_dequant_scale`** (`Tensor`): Required. Dequantization coefficient of the index query, $Scale_Q$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `float16`. The shape can be `(B, S1, N1)` or `(T, N1)`.
 
-- **`weights`** (`Tensor`): Required. Weight coefficient, $W$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `float16` or `bfloat16`. The shape can be `(B, S1, N1)` or `(T, N1)`.
-
-- **`query_dequant_scale`** (`Tensor`): Required. Dequantization coefficient of the index query, $Scale_Q$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `float16` or `float32`. The shape can be `(B, S1, N1)` or `(T, N1)`.
-
-- **`key_dequant_scale`** (`Tensor`): Required. Dequantization coefficient of the index key, $Scale_K^T$ in the formula. Non-contiguous tensors are supported. The data layout can be ND. The data type can be `float16` or `float32`. When `layout_key` is `"PA_BSND"`, the shape of this parameter is `(block_count, block_size, N2)`, where `block_count` represents the total block count in PageAttention, and `block_size` represents the token count within a single block.
+- **`key_dequant_scale`** (`Tensor`): Required. Dequantization coefficient of the index key, $Scale_K^T$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `float16`. When `layout_key` is `"PA_BSND"`, the shape of this parameter is `(block_count, block_size, N2)`, where `block_count` represents the total block count in PageAttention, and `block_size` represents the token count within a single block.
 
 - **`query_quant_mode`** (`int`): Optional. Quantization mode for `query`. Currently, only the value `0` (`pertoken-head` mode) is supported.
 
 - **`key_quant_mode`** (`int`): Optional. Quantization mode for `key`. Currently, only the value `0` (`pertoken-head` mode) is supported.
 
-- **`*`**: Positional argument separator. Arguments preceding it are positional and must be provided in order. Arguments following it are optional. If omitted, default values are used.
+- **`*`**: Positional argument separator. Arguments before it are positional and must be provided in order. Arguments following it are optional. If omitted, default values are used.
 
 - **`actual_seq_lengths_query`** (`Tensor`): Optional. Valid token count of `query` in different batches. The data type can be `int32`. If not specified, this parameter can be set to `None` to indicate that its length is identical to the size of the S dimension in the shape of `query`. The valid token count for each batch must not exceed the size of the S dimension in `query` and must be greater than or equal to 0. This parameter must be a 1D tensor of length `B`. When `layout_query` is `TND`, this parameter must be provided, where its element count determines the batch size `B`, and each element indicates the cumulative token count of the current batch and all preceding batches, representing a prefix sum. Therefore, the value of each element must be greater than or equal to that of the preceding element. Negative values are not allowed.
 
 - **`actual_seq_lengths_key`** (`Tensor`): Optional. Valid token count of `key` in different batches. The data type can be `int32`. If this parameter is not specified or is set to `None`, its length is identical to the size of the `S` dimension in the shape of `key`. The valid token count for each batch must not exceed the size of the S dimension in `key` and `value` and must be greater than or equal to `0`. This parameter must be a 1D tensor of length `B`. When `layout_key` is set to `TND` or `PA_BSND`, this parameter must be provided. When `layout_key` is set to `TND`, each element indicates the prefix sum of token counts across batches, and the value of each element must be greater than or equal to that of the preceding element.
 
-- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PageAttention. The data layout is ND. The data type can be `int32`. In PageAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_key` across batches). The value of `block_size` must be divisible by `16`, and must be less than or equal to `1024`.
+- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PageAttention. The data layout can be ND. The data type can be `int32`. In PageAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_key` across batches). The value of `block_size` must be divisible by `16`, and must be less than or equal to `1024`.
 
 - **`layout_query`** (`str`): Optional. Layout format for the data arrangement of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
@@ -118,7 +118,7 @@ $out$ in the formula. The data layout can be ND. The data type can be `int32`. T
                                 if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
     actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
                                 if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
-
+    
     npu_out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),
                                                     key_dequant_scale.npu(),
                                                     actual_seq_lengths_query=actual_seq_lengths_query.npu(),
@@ -170,16 +170,16 @@ $out$ in the formula. The data layout can be ND. The data type can be `int32`. T
                                 if act_seq_q is None else torch.tensor(act_seq_q).to(torch.int32)
     actual_seq_lengths_key = torch.tensor(np.random.uniform(s2, s2, (b))).to(torch.int32) \
                                 if act_seq_k is None else torch.tensor(act_seq_k).to(torch.int32)
-
+    
     class LIQuantNetwork(nn.Module):
         def __init__(self):
             super(LIQuantNetwork, self).__init__()
 
-        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None,
+        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None, 
                     actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0,
                     layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3):
 
-            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),
+            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),       
                                                         key_dequant_scale.npu(),
                                                         actual_seq_lengths_query=actual_seq_lengths_query.npu(),
                                                         actual_seq_lengths_key=actual_seq_lengths_key.npu(),
@@ -190,7 +190,7 @@ $out$ in the formula. The data layout can be ND. The data type can be `int32`. T
                                                         layout_key=layout_key, sparse_count=sparse_count,
                                                         sparse_mode=sparse_mode)
             return out
-
+    
     from torchair.configs.compiler_config import CompilerConfig
     config = CompilerConfig()
     npu_backend = torchair.get_npu_backend(compiler_config=config)

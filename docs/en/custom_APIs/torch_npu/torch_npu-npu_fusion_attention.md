@@ -279,177 +279,12 @@ if __name__ == "__main__":
     run_tests()
 ```
 
-Example of using the `pse` positional encoding configuration:
-
-```python
-import math
-import torch
-import torch_npu
-
-
-def example_with_pse():
-    # Set random seeds so the example is reproducible.
-    torch.manual_seed(0)
-    torch.npu.manual_seed(0)
-
-    # B: batch size, N: head num, S: sequence length, D: head dim.
-    B, N, S, D = 1, 4, 16, 64
-    scale = 1.0 / math.sqrt(D)
-
-    query = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    key = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    value = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    # Build pse in BNSS format; it is added directly to the attention scores.
-    pse = torch.randn(B, N, S, S, dtype=torch.float16, device="npu") * 0.01  # BNSS
-
-    attention_score = torch_npu.npu_fusion_attention(
-        query,
-        key,
-        value,
-        head_num=N,
-        input_layout="BNSD",
-        pse=pse,
-        scale=scale,
-        keep_prob=1.0,
-    )[0]
-
-    # Reference implementation: softmax(scale * QK^T + pse) * V.
-    ref_scores = torch.matmul(query.float().cpu(), key.float().cpu().transpose(2, 3)) * scale
-    ref_out = torch.matmul(torch.softmax(ref_scores + pse.float().cpu(), dim=-1), value.float().cpu())
-
-    max_diff = (attention_score.float().cpu() - ref_out).abs().max().item()
-    print(f"attention_score shape: {attention_score.shape}, max_diff: {max_diff:.6f}")
-
-
-if __name__ == "__main__":
-    if torch.npu.is_available():
-        example_with_pse()
-```
-
-Example of using the `sink` attention head bias:
-
-```python
-import math
-import torch
-import torch_npu
-
-
-def example_with_sink():
-    # Set random seeds so the example is reproducible.
-    torch.manual_seed(0)
-    torch.npu.manual_seed(0)
-
-    # B: batch size, N: head num, S: sequence length, D: head dim.
-    B, N, S, D = 1, 4, 16, 64
-    scale = 1.0 / math.sqrt(D)
-
-    query = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    key = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    value = torch.randn(B, N, S, D, dtype=torch.float16, device="npu")
-    # sink provides one extra bias value for each attention head, with shape [head_num].
-    sink = torch.linspace(-0.2, 0.2, steps=N, dtype=torch.float32, device="npu")  # [head_num]
-
-    attention_score = torch_npu.npu_fusion_attention(
-        query,
-        key,
-        value,
-        head_num=N,
-        input_layout="BNSD",
-        sink=sink,
-        scale=scale,
-        keep_prob=1.0,
-    )[0]
-
-    # Reference implementation: append one sink logit, apply softmax, then drop that column before multiplying by V.
-    ref_scores = torch.matmul(query.float().cpu(), key.float().cpu().transpose(2, 3)) * scale
-    sink_scores = sink.cpu().view(1, N, 1, 1).expand(B, N, S, 1)
-    ref_probs = torch.softmax(torch.cat([ref_scores, sink_scores], dim=-1), dim=-1)[..., :-1]
-    ref_out = torch.matmul(ref_probs, value.float().cpu())
-
-    max_diff = (attention_score.float().cpu() - ref_out).abs().max().item()
-    print(f"attention_score shape: {attention_score.shape}, max_diff: {max_diff:.6f}")
-
-
-if __name__ == "__main__":
-    if torch.npu.is_available():
-        example_with_sink()
-```
-
-Example of using the `prefix` parameter:
-
-```python
-import math
-import torch
-import torch_npu
-
-
-def supported_prefix_exec(query, key, value, prefix, scale):
-    b, n, sq, _ = query.shape
-    skv = key.shape[2]
-    qk = torch.matmul(query.float(), key.float().transpose(2, 3)).mul(scale)
-
-    mask = torch.ones((b, n, sq, skv), dtype=torch.bool)
-    row_idx = torch.arange(sq).view(sq, 1)
-    col_idx = torch.arange(skv).view(1, skv)
-    causal_mask = col_idx <= row_idx
-    for batch_idx, prefix_len in enumerate(prefix):
-        prefix_mask = col_idx < prefix_len
-        mask[batch_idx] = ~(causal_mask | prefix_mask)
-
-    qk = qk.masked_fill(mask, -10000.0)
-    softmax_res = torch.nn.functional.softmax(qk, dim=-1)
-    return torch.matmul(softmax_res, value.float()).half()
-
-
-def custom_prefix_exec(query, key, value, prefix, scale):
-    b, n, sq, _ = query.shape
-    skv = key.shape[2]
-    atten_mask = torch.ones((b, n, sq, skv), dtype=torch.bool, device="npu")
-    row_idx = torch.arange(sq, device="npu").view(sq, 1)
-    col_idx = torch.arange(skv, device="npu").view(1, skv)
-    causal_mask = col_idx <= row_idx
-    for batch_idx, prefix_len in enumerate(prefix):
-        prefix_mask = col_idx < prefix_len
-        atten_mask[batch_idx] = ~(causal_mask | prefix_mask)
-
-    return torch_npu.npu_fusion_attention(
-        query.npu(),
-        key.npu(),
-        value.npu(),
-        head_num=n,
-        input_layout="BNSD",
-        atten_mask=atten_mask,
-        scale=scale,
-        prefix=prefix,
-        sparse_mode=5,
-    )[0]
-
-
-def example_with_prefix():
-    torch.manual_seed(0)
-    b, n, s, d = 2, 4, 32, 64
-    prefix = [4, 8]
-    scale = 1.0 / math.sqrt(d)
-
-    query = torch.randn(b, n, s, d, dtype=torch.float16)
-    key = torch.randn(b, n, s, d, dtype=torch.float16)
-    value = torch.randn(b, n, s, d, dtype=torch.float16)
-
-    cpu_output = supported_prefix_exec(query, key, value, prefix, scale)
-    npu_output = custom_prefix_exec(query, key, value, prefix, scale).cpu()
-    torch.testing.assert_close(npu_output, cpu_output, rtol=1e-2, atol=1e-2)
-
-
-if __name__ == "__main__":
-    example_with_prefix()
-```
-
 Example of using an external `dropout_mask`:
 
 ```python
 import torch
 import torch_npu
-      
+     
      def example_with_dropout_mask():
          """
          Use an external dropout_mask to achieve reproducible dropout effect.
@@ -603,7 +438,7 @@ The QK<sup>T</sup> matrix is masked at positions where `atten_mask` is `True`, a
     ![](../../figures/1-15.png)
 
     > [!NOTE]   
-    > - If `sparse_mode` is set to `8` but only one batch exists, configure the parameters based on the requirements of the band attention mode. When `sparse_mode` is set to `8`, a lower-triangular mask with shape `(2048, 2048)` must be provided as the input for this fused operator.
+    > - If `sparse_mode` is set to `8 but only one batch exists, configure the parameters based on the requirements of the band attention mode. When`sparse_mode`is set to`8, a lower-triangular mask with shape `(2048, 2048)` must be provided as the input for this fused operator.
     > - The sparse attention parameters for the band attention mode generated by out-of-model splitting when `sparse_mode` is set to 2 must satisfy the following conditions:
     >    - `pre_tockens` is greater than or equal to `first_Skv`.
     >    - The value range of `next_tockens` is unrestricted and can be configured as needed.

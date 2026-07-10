@@ -44,25 +44,25 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `int32`. The meaning of `int32` is identical to that of `x1`, which represents `int4` computation.
     - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `int32`. The meaning of `int32` is identical to that of `x1`, which represents `int4` computation.
 
-- **`scale`** (`Tensor`): Required. Scaling factor used in quantization. This parameter must be 1D with shape `(t,)`, where `t = 1` or `n`, and `n` represents the last dimension of `x2`. If an `int64` `scale` is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `scale`.
+- **`scale`** (`Tensor`): Required. Scaling factor used in quantization. This parameter can be 1D with shape `(t,)`, where `t = 1` or `n`. This parameter can also be 2D with shape `(CeilDiv(k, k_group_size), n)` **only when both `x1` and `x2` are of the `int32` type**. The dimensions of $k$ and $n$ are the same as those of `x2`. If an `int64` `scale` is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `scale`.
     - Atlas inference accelerator cards: The data type can be `float32` or `int64`.
     - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`, `int64`, or `bfloat16`.
     - Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `int64`, or `bfloat16`.
 
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`offset`** (`Tensor`): Required only when `scale` is a 2D tensor. The data type must be `float16`. This parameter must be a 2D tensor and its shape must be identical to that of `scale`. In all other scenarios, this parameter is optional and is used to adjust the quantized value offsets. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t` equals `1` or `n`, and `n` must match the n-dimension of `x2`.
-- **`pertoken_scale`** (`Tensor`): Optional. Scaling factor used to scale original values to match the quantized range values. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(m,)`, where `m` must match the m dimension of `x1`, indicating the second-to-last dimension of `x1`. Atlas inference accelerator cards: Currently, this parameter is not supported.
+- **`pertoken_scale`** (`Tensor`): Required only when `scale` is 2D. This parameter must be 2D with shape `(m, 1)`, where `m` is identical to the `m` dimension of `x1`. In other scenarios, this parameter is optional and is used to scale the original values to match the quantized range. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(m,)`, where `m` matches the `m` dimension of `x1`. Atlas inference accelerator cards: Currently, this parameter is not supported.
 - **`bias`** (`Tensor`): Optional. Bias item. The data layout can be ND. This parameter must be1D with shape `(n,)` or 3D with shape `(batch, 1, n)`, where `n` must match the n dimension of `x2`. In addition, the `batch` value must equal the `batch` value derived after broadcasting `x1` and `x2`. In scenarios where the output has 2, 4, 5, or 6 dimensions, `bias` must be a 1D tensor. In scenarios where the output has 3 dimensions, `bias` must be a 1D or 3D tensor.
     - Atlas inference accelerator card: The data type can be `int32`.
     - Atlas A2 training products/Atlas A2 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
-    - Atlas A32 training products/Atlas A3 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
 
 - **`output_dtype`** (`int`): Optional. Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
     - Atlas inference accelerator cards: The data type can be `int8` or `float16`.
     - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8`, `float16`, `bfloat16`, or `int32`.
     - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8`, `float16`, `bfloat16`, or `int32`.
 
-- **`group_sizes`** (`List[int]`): Optional. Quantization group sizes along the $m$ (second-to-last dimension of `x1`), $n$ (last dimension of `x2`), and $k$ (last dimension of `x1` or second-to-last dimension of `x2`) dimensions. The format is `[group_m, group_n, group_k]`. The list must contain three elements, and each element must be `0` or a positive integer.
+- **`group_sizes`** (`list[int]`): Optional. Group quantization granularity.
 
 ## Return Values
 
@@ -137,7 +137,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         >>> npu_out = torch_npu.npu_quant_matmul(
         ...     cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset=offset.npu(), bias=bias.npu()
         ... )
-        >>> print(npu_out)
+        >>> npu_out
         tensor([[[  75, -128,   -7,  ...,   30, -128,  -27],
                 [-128, -128,  -98,  ...,   -1, -128, -102],
                 [-128,  127, -128,  ...,   32,  -12,  -11],
@@ -161,7 +161,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         >>> npu_out = torch_npu.npu_quant_matmul(
         ...     cpu_x1.npu(), cpu_x2.npu(), scale_1, bias=bias.npu()
         ... )
-        >>> print(npu_out)
+        >>> npu_out
         tensor([[[  75, -128,   -7,  ...,   30, -128,  -27],
                 [-128, -128,  -98,  ...,   -1, -128, -102],
                 [-128,  127, -128,  ...,   32,  -12,  -11],
@@ -225,7 +225,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         print(npu_out)
     
         # Expected output of the preceding code sample:
-        print(torch.Size([15, 1, 128]))
+        torch.Size([15, 1, 128])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[[-103.6875, -104.5000, -113.6250,  ..., -108.6875,  -99.5625,
                 -101.1875]],
@@ -309,7 +309,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         print(npu_out)
     
         # Expected output of the preceding code sample:
-        print(torch.Size([15, 6912]))
+        torch.Size([15, 6912])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[-1.0000e+00,  0.0000e+00, -1.0000e+00,  ...,  0.0000e+00,
                 -1.0000e+00, -1.0000e+00],
@@ -436,7 +436,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         print(npu_out)
     
         # Expected output of the preceding code sample:
-        print(torch.Size([15, 6912]))
+        torch.Size([15, 6912])
         [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
         tensor([[ 0.0000e+00, -1.0000e+00, -1.0000e+00,  ..., -1.0000e+00,
                 0.0000e+00, -1.0000e+00],

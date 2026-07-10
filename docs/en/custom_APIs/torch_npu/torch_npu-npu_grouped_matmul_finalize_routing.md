@@ -9,19 +9,7 @@
 
 ## Function<a name="en-us_topic_0000002259406069_section14441124184110"></a>
 
-- **API function**: Fuses the `GroupedMatMul` and `MoeFinalizeRouting` operators. `GroupedMatMul` handles per-expert computation, and `MoeFinalizeRouting` restructures and aggregates the results into the original token order based on routing relationships. Together, they connect in series to form a complete MoE output pipeline.
-  - **MoE**: a Mixture of Experts model. Each token is assigned to one or more experts for computation based on routing results.
-  - **`MoeFinalizeRouting`**: Final stage of MoE routing. It maps the computation results of each expert back to the original token order based on routing indices and aggregates multi-expert results for each token to generate the final output. 
-
-`GroupedMatMul` provides an optimized computation pattern for batched sparse matrix multiplications. Within an MoE architecture, each token is assigned to a specific expert, and different experts process varying numbers of tokens. `GroupedMatMul` aggregates all tokens assigned to the same expert into a single group and executes the matrix multiplication for that expert in a single operation. This eliminates the scheduling overhead of invoking individual matrix multiplications for each token, improving computational efficiency.
-
-The inputs to `GroupedMatMul` typically consist of the input tensor `x`, expert weights `w`, and grouping information `group_list`. The shape of `x` is `(M, K)`, where $M$ indicates the total number of tokens and $K$ indicates the input feature dimension. The expert weights `w` can be represented as a tensor containing $E$ expert weight matrices. The `group_list` describes the number of tokens processed by each expert or the prefix sums of group sizes.
-
-During computation, the operator partitions the rows of `x` into multiple continuous groups based on `group_list`. For each expert, the corresponding token group is extracted and multiplied by the expert weight matrix to generate the expert output. The outputs of all experts are concatenated in group order to form the final `GroupedMatMul` output.
-
-Subsequently, `MoeFinalizeRouting` reorders and combines the `GroupedMatMul` output based on `row_index` to match target token positions. When `logit` is provided, each expert output is first multiplied by the corresponding token logit weight before combination. When `shared_input` is provided, the shared expert output is accumulated using `shared_input_weight` and `shared_input_offset`.
-
-This fused operator is applicable to FFN layers of MoE models, high-performance inference, and dynamic batching scenarios. It reduces zero padding, lowers operator scheduling overhead, and improves NPU throughput.
+Fuses the `GroupedMatMul` and `MoeFinalizeRouting` operators. The output from `GroupedMatMul` is combined along the specified indices.
 
 ## Prototype<a name="en-us_topic_0000002259406069_section45077510411"></a>
 
@@ -45,11 +33,11 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 - **`shared_input`** (`Tensor`): Optional. Output of the shared expert in MoE computation, which must be combined with the MoE expert output. Non-contiguous tensors are not supported. The data type can be `bfloat16`. The data layout can be ND. This shape of this parameter is `(batch/dp, n)`, where `n` is identical to that of `scale`. The value range of `batch/dp` is [1, 2 \* 1024]. The value range of `batch` is [1, 16 \* 1024].
 - **`logit`** (`Tensor`): Optional. Per-token logit values from MoE experts. The output of matrix multiplication is multiplied by these logit values and then combined based on indices. Non-contiguous tensors are not supported. The data type can be `float32`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
 - **`row_index`** (`Tensor`): Optional. Output of MoE experts is combined based on this row index, where the values serve as indices for scatter-add combination. Non-contiguous tensors are not supported. The data type can be `int32` or `int64`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
-- **`dtype`** (`ScalarType`): Optional. Output type of `GroupedMatMul` computation. The data type must be `float32` (default).
+- **`dtype`** (`ScalarType`): Optional. Output type of `GroupedMatMul` computation. Valid values are: `0` (`float32`), `1` (`float16`), or `2` (`bfloat16`). The default value is `0`.
 - **`shared_input_weight`** (`float`): Optional. Factor for combining shared expert output with MoE expert output. The `shared_input` is multiplied by this parameter before accumulating with the MoE expert results. The default value is `1.0`.
 - **`shared_input_offset`** (`int`): Optional. Row offset for combining shared expert and MoE expert outputs. The default value is `0`, indicating no offset.
 - **`output_bs`** (`int`): Optional. Maximum size of the output batch dimension. The default value is `0`.
-- **`group_list_type`** (`int`): Optional. Grouping mode for `GroupedMatMul`. Valid values are: `1` (count mode) or `0` (cumsum mode, representing the prefix sum). The default value is `1`.
+- **`group_list_type`** (`List[int]`): Optional. Grouping mode for `GroupedMatMul`. Valid values are: `1` (count mode) or `0` (cumsum mode, representing the prefix sum). The default value is `1`.
 
 ## Return Values<a name="en-us_topic_0000002259406069_section22231435517"></a>
 
@@ -79,9 +67,7 @@ Return value. Non-contiguous tensors are not supported. The output data type is 
     import torch
     import torch_npu
     from scipy.special import softmax
-
-    torch_npu.npu.config.allow_internal_format = True
-
+     
     m, k, n = 576, 2048, 7168
     batch = 72
     topK = 8
@@ -171,4 +157,3 @@ Return value. Non-contiguous tensors are not supported. The output data type is 
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     y = model(x_clone, weightNz, group_list_clone, scale_clone, pertoken_scale_clone, shared_input_clone, logit_clone, row_index_clone, shared_input_offset, output_bs)
     ```
-    

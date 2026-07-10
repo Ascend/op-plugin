@@ -43,28 +43,24 @@ This API supports graph mode.
     >>> s_cmo = torch.npu.Stream()
     >>> x = torch.randn(10000, 10000, dtype=torch.float32).npu()
     >>> y = torch.randn(10000, 1, dtype=torch.float32).npu()
-    tensor_size = Number of elements x Number of bytes per element
-            = (10000 x 1) x 4    # An float32 element occupies 4 bytes
-            = 40,000 bytes
     >>> add = torch.add(x, 1)
     >>>
     >>> with torch.npu.stream(s_cmo):
-    ...     torch_npu.npu_prefetch(y, None, 40000)
-    ...     torch_npu.npu_prefetch(y, None, 20000, offset=20000)
+    ...     torch_npu.npu_prefetch(y, None, 10000000)
     ...
     >>> abs = torch.abs(add)
     >>> mul = torch.matmul(abs, abs)
     >>> out = torch.matmul(mul, y)
-    >>> print(out)
-    [W428 20:51:15.589252880 ToKernelNpu.cpp:41] Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
-    tensor([[-993366.4375],
-            [-987970.6250],
-            [-998181.7500],
+    >>> out
+    [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
+    tensor([[-946066.3750],
+            [-945756.1875],
+            [-953013.2500],
             ...,
-            [-992221.5625],
-            [-980903.0000],
-            [-999433.1875]], device='npu:0')
-    >>> print(out.shape)
+            [-938365.2500],
+            [-951188.7500],
+            [-941926.4375]], device='npu:0')
+    >>> out.shape
     torch.Size([10000, 1])
     ```
 
@@ -91,8 +87,7 @@ This API supports graph mode.
 
         def forward(self, x, y):
             add = torch.add(x, 1)
-            torch_npu.npu_prefetch(y, add, 40000)
-            torch_npu.npu_prefetch(y, add, 20000, offset=20000)
+            torch_npu.npu_prefetch(y, add, 10000000)
             abs = torch.abs(add)
             mul = torch.matmul(abs, abs)
             out = torch.matmul(mul, y)
@@ -106,12 +101,12 @@ This API supports graph mode.
     print(output.shape)
 
     # Expected output of the preceding code sample:   
-    tensor([[-516592.8438],
-            [-510890.9375],
-            [-518402.5938],
+    tensor([[83962.5078],
+            [87820.6328],
+            [87498.8594],
             ...,
-            [-518633.8750],
-            [-523125.4062],
-            [-509616.8750]], device='npu:0')
+            [76254.0781],
+            [87780.6484],
+            [75411.2188]], device='npu:0')
     torch.Size([10000, 1])
     ```

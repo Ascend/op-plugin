@@ -37,37 +37,25 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Data to be normalized by group. This parameter is 2D to 8D. The data type can be `float16`, `float32`, or `bfloat16`.
-
 - **`num_groups`** (`int`): Required. Number of groups that the first dimension of `input` is divided into. The size of the first dimension of `input` must be divisible by `num_groups`.
-  - `num_groups=1`: equivalent to LayerNorm (layer normalization), which normalizes the entire input. This configuration is applicable to scenarios such as sequence modeling and after fully connected layers.
-  - `num_groups=C` (where `C` is the number of channels): equivalent to InstanceNorm (instance normalization), which normalizes each channel independently. This configuration is applicable to scenarios such as style transfer and image generation.
-  - `1 < num_groups < C`: standard GroupNorm, which divides channels into multiple groups along the channel dimension for normalization. The default configuration is `num_groups=32`, which is commonly used.
-  > [!NOTE]
-  > 
-  > When backward gradients are computed, the result of $input.shape[1]/num_groups$ must not exceed 4000. Violating this constraint can cause errors during training.
-
 - **`weight`** (`Tensor`): Required. Weight tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `float16`, `float32`, or `bfloat16`, which must be identical to that of `input`.
-
 - **`bias`** (`Tensor`): Required. Bias tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `float16`, `float32`, or `bfloat16`, which must be identical to that of `input`.
-
 - **`eps`** (`float`): Optional. Value added to the denominator for numerical stability during group normalization computation. The default value is `1e-5`.
-
 - **`swish_scale`** (`float`): Optional. Scaling factor for Swish computation. The default value is `1.0`.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Final output after group normalization and Swish activation, which is used for network forward propagation. The shape and data type are identical to those of `input`. The data type can be `float16`, `float32`, or `bfloat16`.
+**`y`** (`Tensor`): Final output after group normalization and Swish activation.
 
-- **`mean`** (`Tensor`): Mean value of each group, which is used for gradient computation during backward propagation and must be saved together with `y`. The shape of this parameter is `(N, num_groups)`, where $N$ indicates the size of the 0th dimension of `input`. The data type is identical to that of `input`.
+**`mean`** (`Tensor`): Mean value of each group.
 
-- **`rstd`** (`Tensor`): Reciprocal standard deviation of each group, which is used for gradient calculation during backward propagation and must be saved together with `y`. The shape of this parameter is `(N, num_groups)`, where $N$ indicates the size of the 0th dimension of `input`. The data type is identical to that of `input`.
+**`rstd`** (`Tensor`): Reciprocal of the normalized standard deviation.
 
 ## Constraints
 
-- When **backward gradients** are computed, the result of $input.shape[1]/num_groups$ must not exceed 4000. Violating this constraint can cause errors during training. This constraint takes effect only in forward and backward propagation scenarios. Inference-only scenarios are not limited by this constraint.
-- The `input`, `weight`, and `bias` parameters must not contain `-inf`, `inf`, or `nan` values.
+When backward gradients are computed, the size of the first dimension of `input` divided by `num_groups` must not exceed 4000. The `input`, `weight`, and `bias` parameters must not contain `-inf`, `inf`, or `nan`.
 
-## Examples
+## Example
 
 ```python
 import torch

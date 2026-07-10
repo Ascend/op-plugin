@@ -23,7 +23,7 @@
 ## Prototype<a name="en-us_topic_0000001832267082_section45077510411"></a>
 
 ```python
-torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None, block_table=None, dequant_scale_query=None, dequant_scale_key=None, dequant_offset_key=None, dequant_scale_value=None, dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None, quant_offset_out=None, quant_scale_p=None, learnable_sink=None, num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0, value_quant_mode=0, inner_precise=0, return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None, query_rope_dtype=None, key_rope_dtype=None, key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None, dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None, out_dtype=None) -> (Tensor, Tensor)
+torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=None, key_rope=None, pse_shift=None, atten_mask=None, actual_seq_qlen=None, actual_seq_kvlen=None, block_table=None, dequant_scale_query=None, dequant_scale_key=None, dequant_offset_key=None, dequant_scale_value=None, dequant_offset_value=None, dequant_scale_key_rope=None, quant_scale_out=None, quant_offset_out=None, learnable_sink=None, num_query_heads=1, num_key_value_heads=0, softmax_scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH", sparse_mode=0, block_size=0, query_quant_mode=0, key_quant_mode=0, value_quant_mode=0, inner_precise=0, return_softmax_lse=False, query_dtype=None, key_dtype=None, value_dtype=None, query_rope_dtype=None, key_rope_dtype=None, key_shared_prefix_dtype=None, value_shared_prefix_dtype=None, dequant_scale_query_dtype=None, dequant_scale_key_dtype=None, dequant_scale_value_dtype=None, dequant_scale_key_rope_dtype=None) -> (Tensor, Tensor)
 ```
 
 ## Parameters<a name="en-us_topic_0000001832267082_section112637109429"></a>
@@ -32,57 +32,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 >
 > - Dimension definitions for the `query`, `key`, and `value` parameters:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br> `D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
 > - `Q_S` and `S1` indicate the `S` dimension in the shape of `query`.<br>`KV_S` and `S2` indicate the `S` dimension in the shape of `key` and `value`.<br>`Q_N` indicates `num_query_heads`.<br>`KV_N` indicates `num_key_value_heads`.
->
-
-**Parameter Reference**
-
-| Parameter| Required (Yes/No)| Type| Default Value| Description|
-|------|-----------|------|--------|------|
-| query | Yes| Tensor | - | Query input.|
-| key | Yes| Tensor | - | Key input|
-| value | Yes| Tensor | - | Value input|
-| query_rope | No| Tensor | None | RoPE information of `query` in the MLA structure.|
-| key_rope | No| Tensor | None | Rope information of `key` in the MLA structure.|
-| pse_shift | No| Tensor | None | Positional encoding parameter.|
-| atten_mask | No| Tensor | None | Attention mask.|
-| actual_seq_qlen | No| List[Int] | None | Valid sequence length of `query`.|
-| actual_seq_kvlen | No| List[Int] | None | Valid sequence length of `key` and `value`.|
-| block_table | No| Tensor | None | Block mapping table for page attention.|
-| dequant_scale_query | No| Tensor | None | Dequantization parameter of `query`.|
-| dequant_scale_key | No| Tensor | None | Dequantization factor of `key`.|
-| dequant_offset_key | No| Tensor | None | Dequantization offset of `key`.|
-| dequant_scale_value | No| Tensor | None | Dequantization factor of `value`.|
-| dequant_offset_value | No| Tensor | None | Dequantization offset of `value`.|
-| dequant_scale_key_rope | No| Tensor | None | This parameter is reserved and not used currently.|
-| quant_scale_out | No| Tensor | None | Output quantization factor.|
-| quant_offset_out | No| Tensor | None | Output quantization offset.|
-| quant_scale_p | No| Tensor | None | This parameter is reserved and not used currently.|
-| learnable_sink | No| Tensor | None | Learnable sink token.|
-| num_query_heads | No| int | 1 | Number of query heads.|
-| num_key_value_heads | No| int | 0 | Number of heads for `key` and `value`. `0` indicates that the value is identical to the number of query heads.|
-| softmax_scale | No| float | 1.0 | Scale factor. Provide a value that equals `1/√D`.|
-| pre_tokens | No| int | 2147483647 | Number of preceding tokens for sparse computation.|
-| next_tokens | No| int | 2147483647 | Number of subsequent tokens for sparse computation.|
-| input_layout | No| str | "BSH" | Input data layout.|
-| sparse_mode | No| int | 0 | Sparse mode.|
-| block_size | No| int | 0 | Maximum number of tokens in each block of PageAttention.|
-| query_quant_mode | No| int | 0 | Fake-quantization mode for `query`.|
-| key_quant_mode | No| int | 0 | Fake-quantization mode for `key`.|
-| value_quant_mode | No| int | 0 | Fake-quantization mode for `value`.|
-| inner_precise | No| int | 0 | Precision mode.|
-| return_softmax_lse | No| bool | False | Specifies whether to output `softmax_lse`.|
-| query_dtype | No| int | None | This parameter is reserved and not used currently.|
-| key_dtype | No| int | None | This parameter is reserved and not used currently.|
-| value_dtype | No| int | None | This parameter is reserved and not used currently.|
-| query_rope_dtype | No| int | None | This parameter is reserved and not used currently.|
-| key_rope_dtype | No| int | None | This parameter is reserved and not used currently.|
-| key_shared_prefix_dtype | No| int | None | This parameter is reserved and not used currently.|
-| value_shared_prefix_dtype | No| int | None | This parameter is reserved and not used currently.|
-| dequant_scale_query_dtype | No| int | None | This parameter is reserved and not used currently.|
-| dequant_scale_key_dtype | No| int | None | This parameter is reserved and not used currently.|
-| dequant_scale_value_dtype | No| int | None | This parameter is reserved and not used currently.|
-| dequant_scale_key_rope_dtype | No| int | None | This parameter is reserved and not used currently.|
-| out_dtype | No| int | None | Output data type.|
 
 - **`query`** (`Tensor`): Required. Query input of the attention structure, `Q` in the formula. Non-contiguous tensors are not supported. The data type can be `float16` or `bfloat16`. The data layout can be ND.   
     
@@ -102,7 +51,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - When `sparse_mode` is `0` or `1`:
         - The input shape can be (1, Q_S, KV_S), (B, 1, Q_S, KV_S), or (1, 1, Q_S, KV_S).
         - When `input_layout` is `BSH`, `BSND`, `BNSD`, or `BNSD_BSND`, the `D` dimensions of `query`, `key`, and `value` are identical, and `query_rope` and `key_rope` are omitted, a shape of (B, KV_S) can be passed if `Q_S` is 1, and (Q_S, KV_S) can be passed if `Q_S` is greater than 1.
-        - If `Q_S` or `KV_S` is not 16-byte or 32-byte aligned, it can be rounded up to the aligned value. For details about the constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint).
+        - If `Q_S` or `KV_S` is not 16-byte or 32-byte aligned, it can be rounded up to the aligned value. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
     - When `sparse_mode` is `2`, `3`, or `4`, the input shape can be `(2048, 2048)`, `(1, 2048, 2048)`, or `(1, 1, 2048, 2048)`.
     - When `sparse_mode` is `9`:
         - If `input_layout` is `BSH`, `BSND`, or `BNSD`, the input shape can be `(B, Q_S, Q_S)`.
@@ -110,60 +59,45 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **`actual_seq_qlen`** (`List[int]`): Optional. Valid sequence length (`seqlen`) of `query` in different batches. The data type can be `int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `query` shape.
     The valid `seqlen` of each batch in this parameter must not exceed that of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. When `input_layout` of `query` is `TND`, this parameter is required, and the number of elements in this parameter is used as the batch size. The value of each element in this parameter indicates the sum of sequence lengths of the current batch and all previous batches. Therefore, the value of each element must be greater than or equal to that of the previous element, and cannot be negative.
 
-- **`actual_seq_kvlen`** (`List[int]`): Optional. Valid sequence length of `key` and `value` across different batches. The data type can be `int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `key` and `value` shapes. Different `Q_S` values are subject to different constraints. For details, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint) and [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint).
+- **`actual_seq_kvlen`** (`List[int]`): Optional. Valid sequence length of `key` and `value` across different batches. The data type can be `int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `key` and `value` shapes. Constraints vary across different `Q_S` values. For details, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in page attention. The data type can be `int32`. The data layout can be ND. This parameter can be set to `None` if this feature is not used.
-- **`dequant_scale_query`** (`Tensor`): Optional. Dequantization parameter of `query`, supporting only `pertoken + perhead` mode. The data type can be `float32`. The data layout can be ND. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
-- **`dequant_scale_key`** (`Tensor`): Optional. Dequantization factor of `key` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by page attention, and `pertoken` + `perhead` with scale managed by page attention. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), [GQA Fake-Quantization + KV NZ Format Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+- **`dequant_scale_query`** (`Tensor`): Optional. Dequantization parameter of `query`, supporting only `pertoken + perhead` mode. The data type can be `float32`. The data format can be $ND$. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`dequant_scale_key`** (`Tensor`): Optional. Dequantization factor of `key` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by page attention, and `pertoken` + `perhead` with scale managed by page attention. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).   
     
-- **`dequant_offset_key`** (`Tensor`): Optional. Dequantization offset of `key` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by page attention, and `pertoken` + `perhead` with offset managed by page attention. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), [GQA Fake-Quantization + KV NZ Format Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
-- **`dequant_scale_value`** (`Tensor`): Optional. Dequantization factor of `value` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by page attention, and `pertoken` + `perhead` with scale managed by page attention. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), [GQA Fake-Quantization + KV NZ Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+- **`dequant_offset_key`** (`Tensor`): Optional. Dequantization offset of `key` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by page attention, and `pertoken` + `perhead` with offset managed by page attention. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`dequant_scale_value`** (`Tensor`): Optional. Dequantization factor of `value` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by page attention, and `pertoken` + `perhead` with scale managed by page attention. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
     
-- **`dequant_offset_value`** (`Tensor`): Optional. Dequantization offset of `value` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by page attention, and `pertoken` + `perhead` with offset managed by page attention. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), [GQA Fake-Quantization + KV NZ Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+- **`dequant_offset_value`** (`Tensor`): Optional. Dequantization offset of `value` when the KV fake-quantization parameters are separated. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by page attention, and `pertoken` + `perhead` with offset managed by page attention. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`dequant_scale_key_rope`** (`Tensor`): Optional. **Reserved parameter, currently unused. Retain the default value.**
-- **`quant_scale_out`** (`Tensor`): Optional. Quantization factor for the output. The data type can be `float32` or `bfloat16`. The data layout can be ND. `pertensor` and `perchannel` modes are supported. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` mode, if the output layout is `BSH`, the product of all dimensions of `quant_scale_out` must be identical to `H`. For other layouts, the product must equal `Q_N * D`. (You are advised to pass a shape of `(1, 1, H)` or `(H,)` when the output layout is `BSH`; `(1, Q_N, 1, D)` or `(Q_N, D)` when the output layout is `BNSD`; and `(1, 1, Q_N, D)` or `(Q_N, D)` when the output layout is `BSND`). This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [General Constraints](#en-us_topic_0000001832267082_section_general_constraint).
-- **`quant_offset_out`** (`Tensor`): Optional. Quantization offset for the output. The data type can be `float32` or `bfloat16`. The data layout can be ND. `pertensor` and `perchannel` modes are supported. If `quant_offset_out` is provided, its data type and shape information must be identical to those of `quant_scale_out`. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [General Constraints](#en-us_topic_0000001832267082_section_general_constraint).
-- **`quant_scale_p`** (`Tensor`): Optional. **Reserved parameter, currently not used. Retain the default value.**
-- **`learnable_sink`** (`Tensor`): Optional. Learnable sink token used to absorb attention scores. The data type can be `bfloat16`. The data layout can be ND, and the shape must be `(Q_N,)`. The default value is `None`. For details about the constraints, see [`learnable_sink` Constraints](#en-us_topic_0000001832267082_section_learnable_sink_constraint).
+- **`quant_scale_out`** (`Tensor`): Optional. Quantization factor for the output. The data type can be `float32` or `bfloat16`. The data layout can be ND. `pertensor` and `perchannel` modes are supported. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` mode, if the output layout is `BSH`, the product of all dimensions of `quant_scale_out` must be identical to `H`. For other layouts, the product must equal `Q_N * D`. (You are advised to pass a shape of `(1, 1, H)` or `(H,)` when the output layout is `BSH`; `(1, Q_N, 1, D)` or `(Q_N, D)` when the output layout is `BNSD`; and `(1, 1, Q_N, D)` or `(Q_N, D)` when the output layout is `BSND`). Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`quant_offset_out`** (`Tensor`): Optional. Quantization offset for the output. The data type can be `float32` or `bfloat16`. The data layout can be ND. `pertensor` and `perchannel` modes are supported. If `quant_offset_out` is provided, its data type and shape must be identical to those of `quant_scale_out`. Pass `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`learnable_sink`** (`Tensor`): Optional. Learnable sink token used to absorb attention scores. The data type can be `bfloat16`. The data layout can be ND, and the shape must be `(Q_N,)`. The default value is `None`. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 
-- **`num_query_heads`** (`int`): Optional. Number of heads for `query`. The data type can be `int64`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs. For details about the comprehensive constraints, see [GQA Fake-Quantization + KV NZ Format Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
-- **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. The data type can be `int64`. The default value is `0`, indicating that the number of heads for `key`, `value`, and `query` are identical. The value of `num_query_heads` must be divisible by `num_key_value_heads`, and the ratio of `num_query_heads` to `num_key_value_heads` cannot exceed 64. In `BSND`, `BNSD`, and `BNSD_BSND` (supported only when `Q_S` is greater than 1) scenarios, this value must also be identical to the shape of the N axis of `key` and `value`. Otherwise, an execution exception occurs. For details about the comprehensive constraints, see [GQA Fake-Quantization + KV NZ Format Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
-- **`softmax_scale`** (`float`): Optional. Scaling factor, the reciprocal of the square root of `d` in the formula, used as a scalar value for Muls in the computation flow. The data type can be `float32`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`, indicating that no scaling is performed. **Provide a value that equals `1/√D` (where `D` represents the head dimension)**. For example, if `D` is `128`, provide `1/math.sqrt(128.0)` to yield the correct attention computation result.
-- **`pre_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of preceding tokens with which the attention is associated. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
-- **`next_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of subsequent tokens with which the attention is associated. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`num_query_heads`** (`int`): Optional. Number of heads for `query`. The data type can be `int64`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs.
+- **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. The data type can be `int64`. The default value is `0`, indicating that the number of heads for `key`, `value`, and `query` are identical. The value of `num_query_heads` must be divisible by `num_key_value_heads`, and the ratio of `num_query_heads` to `num_key_value_heads` cannot exceed 64. In `BSND`, `BNSD`, and `BNSD_BSND` (supported only when `Q_S` is greater than 1) scenarios, this value must also be identical to the shape of the N axis of `key` and `value`. Otherwise, an execution exception occurs.
+- **`softmax_scale`** (`float`): Optional. Scaling factor, the reciprocal of the square root of `d` in the formula, used as a scalar value for Muls in the computation flow. The data type can be `float32`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
 - **`input_layout`** (`str`): Optional. Data layout of the input `query`, `key`, and `value`. The default value is "BSH".
 
     > [!NOTE]   
     > When a layout format contains an underscore (_), the portion to the left of the underscore represents the layout of the input `query`, and the portion to the right represents the layout of the output. The operator performs layout conversion internally.
 
-    Supported layouts: `BSH`, `BSND`, `BNSD`, `BNSD_BSND` (when the input is `BNSD`, the output format is `BSND`; supported only when `Q_S` is greater than 1), `BSH_NBSD`, `BSND_NBSD`, `BNSD_NBSD` (when the output format is `NBSD`, supported only when `Q_S` is greater than 1 and less than or equal to 16), `TND`, `TND_NTD`, and `NTD_TND`. For details about the comprehensive constraints on `TND`-related scenarios, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint). `BNSD_BSND` indicates that the input is `BNSD` and the output format is `BSND`. It is supported only when `Q_S` is greater than 1.
+    Supported layouts: `BSH`, `BSND`, `BNSD`, `BNSD_BSND` (when the input is `BNSD`, the output format is `BSND`; supported only when `Q_S` is greater than 1), `BSH_NBSD`, `BSND_NBSD`, `BNSD_NBSD` (when the output format is `NBSD`, supported only when `Q_S` is greater than 1 and less than or equal to 16), `TND`, `TND_NTD`, and `NTD_TND`. For details about the comprehensive constraints on `TND`-related scenarios, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). `BNSD_BSND` indicates that the input is `BNSD` and the output format is `BSND`. It is supported only when `Q_S` is greater than 1.
 
-    | `input_layout` | `query` shape | `key` shape | `value` shape | Output (`attention_out`) Shape| Description|
-    |---------------|-------------|-----------|-------------|------------|------|
-    | BSH | (B, Q\_S, H) | (B, KV\_S, H) | (B, KV\_S, H) | (B, Q\_S, H) | H=N\*D |
-    | BSND | (B, Q\_S, Q\_N, D) | (B, KV\_S, KV\_N, D) | (B, KV\_S, KV\_N, D) | (B, Q\_S, Q\_N, D) | $N$ and $D$ dimensions are separated.|
-    | BNSD | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (B, Q\_N, Q\_S, D) | $N$ and $D$ dimensions are separated, with $N$ in front.|
-    | BNSD\_BSND | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (B, Q\_S, Q\_N, D) | Input layout is `BNSD` and output layout is `BSND`; supported only when $Q\_S > 1$.|
-    | BSH\_NBSD | (B, Q\_S, H) | (B, KV\_S, H) | (B, KV\_S, H) | (Q\_N, B, Q\_S, D) | Input layout is `BSH` and output layout is `NBSD`.|
-    | BSND\_NBSD | (B, Q\_S, Q\_N, D) | (B, KV\_S, KV\_N, D) | (B, KV\_S, KV\_N, D) | (Q\_N, B, Q\_S, D) | Input layout is `BSND` and output layout is `NBSD`.|
-    | BNSD\_NBSD | (B, Q\_N, Q\_S, D) | (B, KV\_N, KV\_S, D) | (B, KV\_N, KV\_S, D) | (Q\_N, B, Q\_S, D) | Input layout is `BNSD` and output layout is `NBSD`; supported only when $Q\_S$ ranges from 1 to 16.|
-    | TND | (T, Q\_N, D) | (T, KV\_N, D) | (T, KV\_N, D) | (T, Q\_N, D) | $T$ represents the cumulative sequence length sum across all batches.|
-    | TND\_NTD | (T, Q\_N, D) | (T, KV\_N, D) | (T, KV\_N, D) | (Q\_N, T, D) | Input layout is `TND` and output layout is `NTD`.|
-    | NTD\_TND | (Q\_N, T, D) | (KV\_N, T, D) | (KV\_N, T, D) | (T, Q\_N, D) | Input layout is `NTD` and output layout is `TND`.|
-
-- **`sparse_mode`** (`int`): Optional. Sparse attention mode. The default value is `0`. The data type can be `int64`. This parameter is invalid when `Q_S` is `1` and no RoPE input is provided. For details about the comprehensive constraints when `input_layout` is `TND`, `TND_NTD`, or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint). In GQA fake-quantization scenarios, see [GQA Fake-Quantization + KV NZ Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint). Currently, only values of `0`, `1`, `2`, `3`, `4`, and `9` are supported; values of `5`, `6`, `7`, and `8` (representing `prefix`, `global`, `dilated`, and `block_local`, respectively) are currently not implemented and must not be used.
-
-    | Value| Mode| Description| Requirement for `atten_mask`|
-    |------|----------|------|-----------------|
-    | 0 | defaultMask | If `atten_mask` is omitted, no masking is performed, and `pre_tokens` and `next_tokens` are ignored (internally set to `INT_MAX`). If `atten_mask` is provided, a complete `atten_mask` matrix with shape (S1, S2) must be provided, indicating that the region between `pre_tokens` and `next_tokens` is computed.| Optional.|
-    | 1 | allMask | A complete `atten_mask` matrix with shape `(S1, S2)` must be provided.| Required. Shape must be `(S1, S2)`.|
-    | 2 | leftUpCausal | Causal masking aligned to the upper-left corner.| Optimized `atten_mask` matrix with shape ``(2048, 2048)``.|
-    | 3 | rightDownCausal | Causal masking aligned to the lower-right corner, corresponding to the lower-triangular matrix divided by the rightmost vertex.| Optimized `atten_mask` matrix with shape ``(2048, 2048)``.|
-    | 4 | band | Band attention masking configuration.| Optimized `atten_mask` matrix with shape ``(2048, 2048)``.|
-    | 9 | treeMask | Tree attention mask for speculative decoding scenarios. Supported only in MLA scenarios where `query_rope` and `key_rope` are both provided. Left padding, `pse_shift`, and `sharedPrefix` are not supported. The output data type cannot be `int8`. Each batch must satisfy the condition $Q\_S \le KV\_S$.| A custom tree mask must be provided.|
+- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int64`. This parameter is invalid when `Q_S` is `1` and no RoPE input is provided. For details about the comprehensive constraints when `input_layout` is `TND`, `TND_NTD`, or `NTD_TND`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+    
+    - A `sparse_mode` value of `0` indicates `defaultMask` mode. If `atten_mask` is omitted, no masking is performed, and `pre_tokens` and `next_tokens` are ignored (assigned internally as `INT_MAX`). If `atten_mask` is provided, the complete `atten_mask` matrix (S1 * S2) must be passed, indicating that the region between `pre_tokens` and `next_tokens` is computed.
+    - A `sparse_mode` value of `1` indicates `allMask` mode. The complete `atten_mask` matrix (S1 * S2) must be passed.
+    - A `sparse_mode` value of `2` indicates the mask in `leftUpCausal` mode. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
+    - A `sparse_mode` value of `3` indicates the mask in `rightDownCausal` mode, corresponding to the lower-triangular scenario partitioned by the right vertex. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
+    - A `sparse_mode` value of `4` indicates the mask in `band` mode. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
+    - When `sparse_mode` is set to `5`, `6`, `7`, or `8`, `prefix`, `global`, `dilated`, or `block_local` mode is enabled, respectively. Currently, these modes are not supported.
+    - A `sparse_mode` value of `9` indicates the `treeMask` mode, which is used to infer the tree-shaped attention mask in decoding scenarios. A custom tree mask must be provided. This mode is supported only in MLA scenarios where `query_rope` and `key_rope` are both provided. Left padding, `pse_shift`, and `sharedPrefix` are not supported. The output data type cannot be `int8`, and `Q_S` must be less than or equal to `KV_S` for each batch. The default value is `0`. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
     
 - **`block_size`** (`int`): Optional. Maximum number of tokens in each block of KV storage in page attention. The data type can be `int64`. The default value is 0.
 - **`query_quant_mode`** (`int`): Optional. Fake-quantization mode for `query`. Only 3 can be passed, indicating mode 3: `pertoken` + `perhead` mode.
-- **`key_quant_mode`** (`int`): Optional. Fake-quantization mode for `key`. The default value is 0. Except for scenarios where `key_quant_mode` is `0` and `value_quant_mode` is `1`, this value must be identical to `value_quant_mode`. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint) and [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint).
+- **`key_quant_mode`** (`int`): Optional. Fake-quantization mode for `key`. The default value is 0. Except for scenarios where `key_quant_mode` is `0` and `value_quant_mode` is `1`, this value must be identical to `value_quant_mode`. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 
     When `Q_S` is greater than or equal to `2`, only values of `0` and `1` are supported. When `Q_S` is `1`, the supported values are `0`, `1`, `2`, `3`, `4`, and `5`.
 
@@ -174,11 +108,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - `4`: enables `pertoken` mode with scale or offset managed by page attention.
     - `5`: enables `pertoken` + `perhead` mode with scale or offset managed by page attention.
 
-- **`value_quant_mode`** (`int`): Optional. Fake-quantization mode for `value`. Mode numbering is identical to that of `key_quant_mode`. The default value is `0`. Except for scenarios where `key_quant_mode` is `0` and `value_quant_mode` is `1`, this value must be identical to `key_quant_mode`. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), and [GQA Fake-Quantization + KV NZ Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
+- **`value_quant_mode`** (`int`): Optional. Fake-quantization mode for `value`. Mode numbering is identical to that of `key_quant_mode`. The default value is `0`. Except for scenarios where `key_quant_mode` is `0` and `value_quant_mode` is `1`, this value must be identical to `key_quant_mode`. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 
     When `Q_S` is greater than or equal to `2`, only values of `0` and `1` are supported. When `Q_S` is `1`, the supported values are `0`, `1`, `2`, `3`, `4`, and `5`.
 
-- **`inner_precise`** (`int`): Optional. The data type can be `int64`. Four modes are supported: `0`, `1`, `2`, and `3`. Each option is represented by a 2-bit value. Bit 0 specifies high-precision or high-performance mode, and bit 1 specifies whether to perform invalid row correction. When `Q_S` is greater than 1, if `sparse_mode` is `0` or `1` and a user-defined mask is provided, enabling invalid row correction is recommended. When `Q_S` is `1`, you can only set `inner_precise` to `0` or `1`. For details about the comprehensive constraints, see [`Q_S > 1` (Full Inference) Constraints](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [`Q_S = 1` (Incremental Inference) Constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+- **`inner_precise`** (`int`): Optional. The data type can be `int64`. Four modes are supported: `0`, `1`, `2`, and `3`. Each option is represented by a 2-bit value. Bit 0 specifies high-precision or high-performance mode, and bit 1 specifies whether to perform invalid row correction. When `Q_S` is greater than 1, if `sparse_mode` is `0` or `1` and a user-defined mask is provided, enabling invalid row correction is recommended. When `Q_S` is `1`, you can only set `inner_precise` to `0` or `1`. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 
     - `0`: enables high-precision mode and disables invalid row correction.
     - `1`: enables high-performance mode and disables invalid row correction.
@@ -200,7 +134,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **`dequant_scale_key_dtype`** (`int`): Optional. Data type of `dequant_scale_key`. **Reserved parameter, currently not used. Retain the default value.**
 - **`dequant_scale_value_dtype`** (`int`): Optional. Data type of `dequant_scale_value`. **Reserved parameter, currently not used. Retain the default value.**
 - **`dequant_scale_key_rope_dtype`** (`int`): Optional. Data type of `dequant_scale_key_rope`. **Reserved parameter, currently not used. Retain the default value.**
-- **`out_dtype`** (`int`): Optional. Output data type. When the input is `int8` or `float8_e4m3fn`, this parameter can be configured to specify the output data type (such as `float8_e5m2`). This parameter can be set to `None` if this feature is not used.
 
 ## Return Values<a name="en-us_topic_0000001832267082_section22231435517"></a>
 
@@ -208,18 +141,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **`softmax_lse`** (`Tensor`): log-sum-exp result computed over the Query-Key product by using the Ring Attention algorithm. It is obtained by first computing `query` * `key`, subtracting the row-wise maximum (`softmax_max`), applying `exp`, summing the results (`softmax_sum`), taking the natural logarithm of `softmax_sum`, and finally adding `softmax_max`. The data type is `float32`. When `return_softmax_lse` is `True`, the output shape is `(B, Q_N, Q_S, 1)` under standard layouts, and `(T, Q_N, 1)` when `input_layout` is `TND` or `NTD_TND`. When `return_softmax_lse` is `False`, the output is a tensor of shape `[1]` with value `0`.
 
 ## Constraints<a name="en-us_topic_0000001832267082_section12345537164214"></a>
-
-> [!NOTICE]
-> Constraints are organized by scenario and can be referenced as needed:
->
-> - [**General Constraints**](#en-us_topic_0000001832267082_section_general_constraint): empty input handling, `key` and `value` shape consistency, and `int8` quantization.
-> - [**MLA Constraints**](#en-us_topic_0000001832267082_section_mla_constraint) (when `query_rope` and `key_rope` are provided): `D = 512`, `D = 128`, and `TND`.
-> - [**GQA Fake-Quantization + KV NZ Constraints**](#en-us_topic_0000001832267082_section_gqa_nz_constraint): `KV` NZ input layouts, `dequant_scale`, `sparse_mode`, and `num_query_heads`/`num_key_value_heads` combinations.
-> - [**`learnable_sink` Constraints**](#en-us_topic_0000001832267082_section_learnable_sink_constraint): usage of `learnable_sink`.
-> - [**`Q_S > 1` (Full Inference) Constraints**](#en-us_topic_0000001832267082_section_qs_gt1_constraint): input shapes, `sparse_mode`, page attention, quantization, `pse_shift`, and KV fake-quantization parameter separation.
-> - [**`Q_S = 1` (Incremental Inference) Constraints**](#en-us_topic_0000001832267082_section_qs_eq1_constraint): input shapes, page attention, and KV fake-quantization parameter separation.
-
-### General Constraints<a name="en-us_topic_0000001832267082_section_general_constraint"></a>
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
@@ -233,8 +154,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - For `float16` output: If the input parameter `quant_offset_out` or `quant_scale_out` is provided (not `None`), an error is raised and execution returns.
     - `quant_offset_out` and `quant_scale_out` support `pertensor` or `perchannel` modes, and their data types can be `float32` or `bfloat16`.
-
-### MLA Constraints<a name="en-us_topic_0000001832267082_section_mla_constraint"></a>
 
 - When `query_rope` and `key_rope` are provided (MLA scenario), the following constraints apply:
     - The data type and data format of `query_rope` must be identical to those of `query`.
@@ -277,9 +196,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             - In page attention scenarios, `block_size` must be a multiple of 16 and less than or equal to 1024.
             - In MHA scenarios, only `float16` and `bfloat16` data types are supported. When the data type is `float16`, `inner_precise` supports only values of `0` and `1`. When the data type is `bfloat16`, `inner_precise` supports only a value of `0`. When `sparse_mode` is `0`, `atten_mask` must not be provided. When `sparse_mode` is `3` or `4`, an optimized `atten_mask` matrix must be provided. Page attention supports only the `BnBsH` format, where the KV cache layout is `(blockNum, blocksize, H)`, with `blockNum` indicating the number of blocks, `blocksize` the number of tokens per block, and `H` the hidden layer size.
             - Left padding, tensorlist, PSE, prefix, fake quantization, and full quantization are not supported.
-
-### GQA Fake-Quantization + KV NZ Constraints<a name="en-us_topic_0000001832267082_section_gqa_nz_constraint"></a>
-
 - Constraints on parameters in GQA fake-quantization scenarios when `key` and `value` are in `NZ` format:
     - `perchannel` and `pertoken` modes are supported. The data type of `query` is fixed to `bfloat16`, and the data types of `key` and `value` are fixed to `int8`. The `D` dimension of `query`, `key`, and `value` must be `128`. The sequence length (`S`) of `query` must be 1 to 16.
     - `input_layout` must be `BSH`, `BSND`, and `BNSD`.
@@ -294,17 +210,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - Configuring `query_rope` and `key_rope` is not supported.
     - Left padding, tensorlist, PSE, prefix, and post-quantization are not supported.
     - Supported combinations of (`num_query_heads`, `num_key_value_heads`) are `(10, 1)`, `(64, 8)`, `(80, 8)`, and `(128, 16)`.
-
-### `learnable_sink` Constraints<a name="en-us_topic_0000001832267082_section_learnable_sink_constraint"></a>
-
 - Constraints on `learnable_sink`:
     - Only `TND` and `NTD_TND` layouts are supported.
     - The `D` dimension of `value` must be less than or equal to `128`.
     - Only non-quantization scenarios are supported.
     - PSE, left padding, shared prefix, and post-quantization are not supported.
-
-### `Q_S > 1` (Full Inference) Constraints<a name="en-us_topic_0000001832267082_section_qs_gt1_constraint"></a>
-
 - **When `Q_S` is greater than 1**:
     - Usage constraints for `query`, `key`, and `value` inputs:
         - The `B` dimension must be less than or equal to 65536. If the `D` dimension is not 32-byte aligned, only values up to 128 are supported.
@@ -321,11 +231,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - Constraints on `actual_seq_qlen`:
     
-        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. For details about the comprehensive constraints when `input_layout` of `query` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. When `input_layout` of `query` is `TND` or `NTD_TND`, see the comprehensive constraints in [Constraints](#en-us_topic_0000001832267082_section12345537164214).
         
     - Constraints on `actual_seq_kvlen`:
     
-        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. When `input_layout` of `key` and `query` is `TND` or `NTD_TND`, see the comprehensive constraints in [Constraints](#en-us_topic_0000001832267082_section12345537164214).
         
     - The `sparse_mode` parameter supports only values of `0`, `1`, `2`, `3`, `4`, and `9`. Other values result in an error.
 
@@ -374,7 +284,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - The following table describes quantization modes for scale and offset management.
         
             > [!NOTE]   
-            > The scale and offset parameters are `dequant_scale_key`, `dequant_scale_value`, `dequant_offset_key`, and `dequant_offset_value`.
+            > The scale and offset parameters are `dequant_scale_key`, `dequant_scale_key`, `dequant_offset_value`, and `dequant_offset_value`.
 
             <a name="en-us_topic_0000001832267082_table3276159203213"></a>
             <table><thead align="left"><tr id="en-us_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="en-us_topic_0000001832267082_p19276135910323"><a name="en-us_topic_0000001832267082_p19276135910323"></a><a name="en-us_topic_0000001832267082_p19276135910323"></a>Quantization Mode</p>
@@ -406,8 +316,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             </tbody>
             </table>
     
-### `Q_S = 1` (Incremental Inference) Constraints<a name="en-us_topic_0000001832267082_section_qs_eq1_constraint"></a>
-
 - **When `Q_S` is equal to 1**:
     - Usage constraints for `query`, `key`, and `value` inputs:
         - The `B` dimension must be less than or equal to 65536, the `N` dimension must be less than or equal to 256, the `S` dimension must be less than or equal to 262144, and the `D` dimension must be less than or equal to 512.
@@ -417,11 +325,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
     - Constraints on `actual_seq_qlen`:
     
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When `input_layout` of `query` is not `TND` and `Q_S` is 1, this parameter is ignored. For details about the comprehensive constraints when the `input_layout` of `query` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When `input_layout` of `query` is not `TND` and `Q_S` is 1, this parameter is ignored. When `input_layout` of `query` is `TND` or `TND_NTD`, see the comprehensive constraints in [Constraints](#en-us_topic_0000001832267082_section12345537164214).
         
     - Constraints on `actual_seq_kvlen`:
     
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the comprehensive constraints when the `input_layout` of `key` and `value` is `TND` or `TND_NTD`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+        - Atlas A2 training products/Atlas A2 inference productsand Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value`. If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. When `input_layout` of `key` and `query` is `TND` or `TND_NTD`, see the comprehensive constraints in [Constraints](#en-us_topic_0000001832267082_section12345537164214).
         
     - Page attention scenarios:
         - Page attention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in a contiguous memory space based on the indices in `block_table`. In this case, the `input_layout` parameter of `key` and `value` is ignored.
@@ -569,7 +477,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     actual_seq_qlen = actseqlen, actual_seq_kvlen = actseqlenkv,
     num_query_heads = 8, input_layout = "BNSD", softmax_scale = softmax_scale, pre_tokens=65535, next_tokens=65535)
 
-    print(out)
     # Expected output of the preceding code sample:
     tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],

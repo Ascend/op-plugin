@@ -11,10 +11,6 @@
 - Description:
 
     This API must be used together with [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md). It returns data along the original data collection path of the `npu_moe_distribute_dispatch_v2` operator and performs an `add_rms_norm` operation.
-    For parameter mappings between this API and [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md), see [Parameters](#en-us_topic_0000002322738573_section187018431529) and [Constraints](#en-us_topic_0000002322738573_section470214314214).
-    > [!NOTE]
-    > Failure to follow the required parameter mappings can lead to routing restoration failures or incorrect communication results.
-
      - This API supports data aggregation by fusing the functionalities of `moe_distribute_combine`, `add`, and `rms_norm`.
      - It also supports special expert scenarios.
 - Formulas:
@@ -37,7 +33,7 @@
         - Copy-expert scenario (`copy_expert_num ≠ 0`):
 
             $$Moe(ori\_x)=ori\_x$$
-
+      
         - Constant-expert scenario (`const_expert_num ≠ 0`):
 
             $$Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v$$
@@ -50,22 +46,22 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 ## Parameters<a name="en-us_topic_0000002322738573_section187018431529"></a>
 
-- **`expand_x`** (`Tensor`): Required. Token features expanded according to `expert_ids`. This parameter must be 2D with shape `(max(tp_world_size, 1) * A, H)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
-- **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of `torch_npu.npu_moe_distribute_dispatch`. The value range of elements inside the tensor is [0, `moe_expert_num`), and the $K$ values within the identical row must be unique.
-- **`expand_idx`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expand_idx` output of `torch_npu.npu_moe_distribute_dispatch`.
-- **`ep_send_counts`** (`Tensor`): Required. Data amount sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain. This parameter must be a 1D tensor. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`. EP is a parallelization strategy specific to Mixture-of-Experts (MoE) networks, where different experts are distributed across different ranks and each rank holds only a subset of the complete expert set. Each token is routed to specify which experts must process it, and is sent to the corresponding rank through AlltoAll communication to complete computation.
+- **`expand_x`** (`Tensor`): Required. Token features expanded according to `expert_ids`. This parameter must be 2D with shape `(max(tp_world_size, 1) * A, H)`. The data type can be `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of `torch_npu.npu_moe_distribute_dispatch`. The value range of elements inside the tensor is [0, `moe_expert_num`), and the $K$ values within the identical row must be unique.
+- **`expand_idx`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `expand_idx` output of `torch_npu.npu_moe_distribute_dispatch`.
+- **`ep_send_counts`** (`Tensor`): Required. Data amount sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain. This parameter must be a 1D tensor. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`.
     Atlas A3 training products/Atlas A3 inference products: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
 
-- **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float`. The data layout is ND. Non-contiguous tensors are supported.
-- **`residual_x`** (`Tensor`): Required. Residual parameter to be added to the processed tokens. This parameter must be 3D with shape `(BS, 1, H)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
-- **`gamma`** (`Tensor`): Required. Weight parameter for `rms_norm`. This parameter must be 1D with shape `(H,)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
+- **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`residual_x`** (`Tensor`): Required. Residual parameter to be added to the processed tokens. This parameter must be 3D with shape `(BS, 1, H)`. The data type can be `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`gamma`** (`Tensor`): Required. Weight parameter for `rms_norm`. This parameter must be 1D with shape `(H,)`. The data type can be `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length value range is [1, 128). The value of this parameter must differ from `group_tp`.
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain.
     - Atlas A3 training products/Atlas A3 inference products: The value range is [2, 768].
 
 - **`ep_rank_id`** (`int`): Required. Rank ID of the current rank within the EP communication domain. The value range is [0, `ep_world_size`). The `ep_rank_id` values of all ranks within the identical EP communication domain must be unique.
 - **`moe_expert_num`** (`int`): Required. Number of MoE experts. The value range is [1, 1024], and the condition `moe_expert_num % (ep_world_size - shared_expert_rank_num) == 0` must be satisfied.
-- **`tp_send_counts`** (`Tensor`): Optional. Amount of data sent from each expert on the current rank to each rank within the Tensor Parallelism (TP) communication domain. This parameter corresponds to the `tp_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`. TP is a general model parallelism strategy in which the weights or activations of a single operator are partitioned across multiple ranks along a given dimension. The ranks collaboratively perform the computation, and the results are aggregated through collective communication operations such as AllReduce and AllGather.
+- **`tp_send_counts`** (`Tensor`): Optional. Amount of data sent from each expert on the current rank to each rank within the Tensor Parallelism (TP) communication domain. This parameter corresponds to the `tp_recv_counts` output of `torch_npu.npu_moe_distribute_dispatch`.
     - Atlas A3 training products/Atlas A3 inference products: The TP communication domain is supported. This parameter must be 1D with shape `(tp_world_size,)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.
 
 - **`x_active_mask`** (`Tensor`):
@@ -120,9 +116,9 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 ## Return Values<a name="en-us_topic_0000002322738573_section1370204314220"></a>
 
-- **`y`** (`Tensor`): Result of applying `add_rms_norm` to the token after combine processing. This parameter must be 3D with shape `(BS, 1, H)`. The data type must be identical to that of the input `residual_x`. The data layout is ND. Non-contiguous tensors are not supported.
-- **`rstd_out`** (`Tensor`): Output of `add_rms_norm`. This parameter must be 3D with shape `(BS, 1, 1)`. The data type can be `float`. The data layout is ND. Non-contiguous tensors are not supported.
-- **`x`** (`Tensor`): Result of the add operation performed on the token after combine processing. This parameter must be 3D with shape `(BS, 1, H)`. The data type must be identical to that of the input `residual_x`. The data layout is ND. Non-contiguous tensors are not supported.
+- **`y`** (`Tensor`): Result of applying `add_rms_norm` to the token after combine processing. This parameter must be 3D with shape `(BS, 1, H)`. The data type must be identical to that of the input `residual_x`. The data layout can be ND. Non-contiguous tensors are not supported.
+- **`rstd_out`** (`Tensor`): Output of `add_rms_norm`. This parameter must be 3D with shape `(BS, 1, 1)`. The data type can be `float`. The data layout can be ND. Non-contiguous tensors are not supported.
+- **`x`** (`Tensor`): Result of the add operation performed on the token after combine processing. This parameter must be 3D with shape `(BS, 1, H)`. The data type must be identical to that of the input `residual_x`. The data layout can be ND. Non-contiguous tensors are not supported.
 
 ## Constraints<a name="en-us_topic_0000002322738573_section470214314214"></a>
 
@@ -134,7 +130,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - Variables used in parameter tensor shapes:
     - `A`: Maximum number of tokens that can be received by the current rank. The value range is as follows:
         - When the value of `global_bs` is `0`, the condition `A >= BS * ep_world_size * min(local_expert_num, K)` must be satisfied.
-        - When the value of `global_bs` is not `0`, the condition `A >= global_bs * min(local_expert_num, K)` must be satisfied.
+        - When the value of `global_bs` is not `0`, the condition `A >= global_bs * min(local_expert_num, K)` must be satisfied.  
 
     - `H`: Hidden layer size.
         - Atlas A3 training products/Atlas A3 inference products: The value range is [1024, 8192].
@@ -176,7 +172,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     import torch.distributed as dist
     from torch.distributed import ReduceOp
     import time
-
+    
     # Control mode
     quant_mode = 2                       # 2 indicates dynamic quantization
     is_dispatch_scales = True            # For dynamic quantization, you can choose whether to pass scales
@@ -216,7 +212,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     def gen_const_expert_v():
         const_expert_v = torch.empty(size=[const_expert_num, h], dtype=input_dtype).uniform_(-1, 1)
         return const_expert_v
-
+    
     def gen_unique_topk_array(low, high, bs, k):
         array = []
         for i in range(bs):
@@ -224,7 +220,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-
+    
     def get_new_group(rank):
         for i in range(tp_world_size):
             # Result when tp_world_size = 2 and ep_world_size = 8: [[0, 2, 4, 6, 8, 10, 12, 14], [1, 3, 5, 7, 9, 11, 13, 15]]
@@ -241,14 +237,14 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-
+    
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-
+    
     def warm_up_dispatch(rank, group_ep, group_tp):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
         expert_ids_warm_up = torch.arange(0, k, dtype=torch.int32).unsqueeze(0).npu()
@@ -271,7 +267,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
+        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id, 
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -302,7 +298,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-
+    
         # Create input tensors
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([[ 5,  7, 17,  4,  2,  6, 11, 16],
@@ -348,7 +344,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
         if is_quant:
             expand_x = expand_x.to(input_dtype)
-
+    
         bs_local = expert_ids.shape[0]
         torch.manual_seed(42)
         residual_x = torch.rand((bs_local, 1, h), dtype=torch.bfloat16).npu()
@@ -386,7 +382,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         )
         time.sleep(10)
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
-
+    
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -397,23 +393,23 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-
+    
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-
+    
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num cannot be greater than ep_world_size")
             exit(0)
-
+    
         if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
             print("ep_world_size must be an integer multiple of shared_expert_rank_num")
             exit(0)
-
+    
         if moe_expert_num % moe_rank_num != 0:
             print("moe_expert_num must be an integer multiple of moe_rank_num")
             exit(0)
-
+    
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))
@@ -439,7 +435,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     import torch.distributed as dist
     from torch.distributed import ReduceOp
     import time
-
+    
     # Control mode
     quant_mode = 2                         # 2 indicates dynamic quantization
     is_dispatch_scales = True              # For dynamic quantization, you can choose whether to pass scales
@@ -471,7 +467,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
-
+    
         def forward(self, x, expert_ids, group_ep, group_tp, ep_world_size, tp_world_size,
                     ep_rank_id, tp_rank_id, expert_shard_type, shared_expert_rank_num, moe_expert_num,
                     scales, quant_mode, global_bs, expert_scales, residual_x, gamma, norm_eps, elastic_info, const_expert_alpha_1, const_expert_alpha_2, const_expert_v, zero_expert_num, copy_expert_num, const_expert_num):
@@ -493,7 +489,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                         zero_expert_num=zero_expert_num,
                                                                         copy_expert_num=copy_expert_num,
                                                                         const_expert_num=const_expert_num)
-
+    
             expand_x_npu, _, expand_idx_npu, _, ep_recv_counts_npu, tp_recv_counts_npu, expand_scales = output_dispatch_npu
             if expand_x_npu.dtype == torch.int8:
                 expand_x_npu = expand_x_npu.to(input_dtype)
@@ -525,7 +521,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                                zero_expert_num=zero_expert_num,
                                                                                copy_expert_num=copy_expert_num,
                                                                                const_expert_num=const_expert_num)
-
+    
             return [y, rstd_out, x]
 
     def gen_const_expert_alpha_1():
@@ -547,8 +543,8 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             random.shuffle(top_idx)
             array.append(top_idx[0:k])
         return np.array(array)
-
-
+    
+    
     def get_new_group(rank):
         for i in range(tp_world_size):
             ep_ranks = [x * tp_world_size + i for x in range(ep_world_size)]
@@ -563,14 +559,14 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                 tp_group_t = tp_group
                 print(f"rank:{rank} tp_ranks:{tp_ranks}")
         return ep_group_t, tp_group_t
-
+    
     def get_hcomm_info(rank, comm_group):
         if torch.__version__ > '2.0.1':
             hcomm_info = comm_group._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcomm_info = comm_group.get_hccl_comm_name(rank)
         return hcomm_info
-
+    
 
     def warm_up_dispatch(rank, group_ep, group_tp):
         x_warm_up = torch.empty(size=[1, h], dtype=input_dtype).uniform_(-1024, 1024).to(input_dtype).npu()
@@ -594,7 +590,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
-        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
+        x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id, 
     ):
         x_warm_up = x_warm_up.to(input_dtype).npu()
         expert_ids_warm_up = expert_ids_warm_up.to(torch.int32).npu()
@@ -625,7 +621,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         ep_group, tp_group = get_new_group(rank)
         ep_hcomm_info = get_hcomm_info(rank, ep_group)
         tp_hcomm_info = get_hcomm_info(rank, tp_group)
-
+    
         # Create input tensors
         x = torch.randn(bs, h, dtype=input_dtype).npu()
         expert_ids = torch.tensor([[0, 8, 4, 1, 6, 12, 14, 17],
@@ -643,7 +639,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             scales = torch.randn(scales_shape, dtype=torch.float32).npu()
         else:
             scales = None
-
+    
         bs_local = expert_ids.shape[0]
         torch.manual_seed(42)
         residual_x = torch.rand((bs_local, 1, h), dtype=torch.bfloat16).npu()
@@ -655,7 +651,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
         const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
         const_expert_v = gen_const_expert_v().npu()
-
+    
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
         model = MOE_DISTRIBUTE_GRAPH_Model()
         model = model.npu()
@@ -667,7 +663,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         torch.npu.synchronize()
         print(f'rank {rank} epid {rank // tp_world_size} tpid {rank % tp_world_size} npu finished! \n')
         time.sleep(10)
-
+    
     if __name__ == "__main__":
         print(f"bs={bs}")
         print(f"global_bs={globalBS}")
@@ -678,23 +674,23 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
         print(f"local_moe_expert_num={local_moe_expert_num}", flush=True)
         print(f"tp_world_size={tp_world_size}", flush=True)
         print(f"ep_world_size={ep_world_size}", flush=True)
-
+    
         if tp_world_size != 1 and local_moe_expert_num > 1:
             print("unSupported tp = 2 and local moe > 1")
             exit(0)
-
+    
         if shared_expert_rank_num > ep_world_size:
             print("shared_expert_rank_num cannot be greater than ep_world_size")
             exit(0)
-
+    
         if shared_expert_rank_num > 0 and ep_world_size % shared_expert_rank_num != 0:
             print("ep_world_size must be an integer multiple of shared_expert_rank_num")
             exit(0)
-
+    
         if moe_expert_num % moe_rank_num != 0:
             print("moe_expert_num must be an integer multiple of moe_rank_num")
             exit(0)
-
+    
         p_list = []
         for rank in range(rank_per_dev):
             p = Process(target=run_npu_process, args=(rank,))

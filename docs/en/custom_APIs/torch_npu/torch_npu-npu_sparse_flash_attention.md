@@ -1,4 +1,4 @@
-﻿# torch_npu.npu_sparse_flash_attention
+# torch_npu.npu_sparse_flash_attention
 
 ## Supported Products
 
@@ -17,34 +17,8 @@
     \text{softmax}(\frac{Q@\tilde{K}^T}{\sqrt{d_k}})@\tilde{V}
     $$
 
-    $\tilde{K}$ and $\tilde{V}$ represent key and value tensors with higher importance obtained through a selection algorithm such as `lightning_indexer`. They typically feature sparse or block-sparse characteristics. $d_k$ represents the per-head dimension of $Q$ and $\tilde{K}$. An index value `b` in `sparse_indices` indicates a selection of a continuous token segment starting from `b * sparse_block_size` in the KV sequence. Collecting `key` or `value` based on `sparse_indices` yields $\tilde{K}$ and $\tilde{V}$.
-
-    When `attention_mode` is set to `2`, MLA-absorb mode is enabled. In this scenario, $Q$ and $\tilde{K}$ in the original formula are constructed by concatenating the `nope` and `rope` components.
-
-    $$
-    Q = [Q_{nope}, Q_{rope}], \quad \tilde{K} = [\tilde{K}_{nope}, \tilde{K}_{rope}]
-    $$
-
-    `query` or `key` provides $Q_{nope}$ or $\tilde{K}_{nope}$. `query_rope` or `key_rope` provides $Q_{rope}$ or $\tilde{K}_{rope}$.
-
-    The valid KV sets corresponding to $\tilde{K}$ or $\tilde{V}$ vary depending on `sparse_mode`.
-
-    - When `sparse_mode` is set to `0`, only KV positions selected by `sparse_indices` are used to construct $\tilde{K}$ or $\tilde{V}$. Only sparse selection is applied. No causal mask is applied.
-    - When `sparse_mode` is set to `3`, a `rightDownCausal` constraint is additionally applied on KV positions selected by `sparse_indices`. This restricts the causal access range of the current query. If the valid query length and KV length for the current batch are $L_q$ and $L_{kv}$ respectively, the accessible KV position $j$ for the $i$-th query position must satisfy the following condition:
-
-      $$
-      j \le (L_{kv} - L_q) + i
-      $$
-
+    $\tilde{K}$ and $\tilde{V}$ represent key and value tensors with higher importance obtained through a selection algorithm such as `lightning_indexer`. They typically feature sparse or block-sparse characteristics. $d_k$ represents the per-head dimension of $Q$ and $\tilde{K}$.
     The `sparse_flash_attention` operator is specifically designed for sparse attention scenarios, with detailed optimizations such as instruction reduction and aggregated data transfer to mitigate the overhead caused by irregular memory access.
-
-    The typical usage process is as follows:
-    1. Use a selection algorithm such as `lightning_indexer` to compute important token indices based on Query and Key.
-    2. Format the indices into the required `sparse_indices` tensor format.
-    3. Provide `sparse_indices` to this API to complete sparse attention computations.
-    > [!NOTE]
-    >
-    > `lightning_indexer` is a sparse KV selection algorithm used to identify KV blocks most relevant to the current query in long-sequence inference. Its output is the `sparse_indices` tensor required by this API. If `lightning_indexer` is not used, users must implement index selection logic to ensure `sparse_indices` satisfies the format requirements in the [Parameters](#parameters) section.
 
 ## Prototype
 
@@ -54,21 +28,21 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 ## Parameters
 
-> [!NOTE]
+> [!NOTE]  
 >
 >- Dimension definitions for the `query`, `key`, and `value` parameters:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br>`D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
 >- `Q_S` or `S1` indicates the S dimension in the shape of `query`.<br>`KV_S` or `S2` indicates the S dimension in the shape of `key`.<br>`Q_N` or `N1` indicates `num_query_heads`.<br>`KV_N` or `N2` indicates `num_key_value_heads`.<br>`T1` indicates the T dimension in the shape of `query`.<br>`T2` indicates the accumulated sum of the input sample sequence lengths in the shape of `key`.
 >
-- **`query`** (`Tensor`): Required. $Q$ in the formulas. Non-contiguous tensors are not supported. The data layout is ND. The data type can be `bfloat16` or `float16`. When `layout_query` is `BSND`, the shape must be `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape must be `[T1, N1, D]`. The value of `N1` can be `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`.
+- **`query`** (`Tensor`): Required. $Q$ in the formulas. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_query` is `BSND`, the shape must be `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape must be `[T1, N1, D]`. The value of `N1` can be `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`.
 - **`key`** (`Tensor`): Required. $\tilde{K}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_kv` is `PA_BSND`, the shape must be `[block_num, block_size, KV_N, D]`. The parameter `block_num` indicates the total number of blocks in PageAttention. The parameter `block_size` indicates the number of tokens in one block. The value of `block_size` must be a multiple of `16` and must be less than or equal to `1024`. When `layout_kv` is `BSND`, the shape must be `[B, S2, KV_N, D]`. When `layout_kv` is `TND`, the shape must be `[T2, KV_N, D]`. The value of `KV_N` must be `1`.
 
 - **`value`** (`Tensor`): Required. $\tilde{V}$ in the formula. Non-contiguous tensors are not supported. The size of the dimension `N` must be `1`. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape must be identical to that of `key`.
     
-- **`sparse_indices`** (`Tensor`): Required. Index tensor for discrete KV cache selection. This index is typically generated through a sparse selection algorithm such as `lightning_indexer`. For details, see the typical usage workflow in the [Function](#function) section. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `int32`. When `layout_query` is `BSND`, the shape of this parameter must be `[B, Q_S, KV_N, sparse_size]`. When `layout_query` is `TND`, the shape of this parameter must be `[Q_T, KV_N, sparse_size]`, where `sparse_size` indicates the block count selected per discrete operation. The valid values in each row must be positioned in the first half, the invalid values must be positioned in the second half, and the value of `sparse_size` must be greater than 0.
+- **`sparse_indices`** (`Tensor`): Required. Index tensor for discrete KV cache selection. Non-contiguous tensors are not supported. The data layout can only be ND. The data type can only `int32`. When `layout_query` is `BSND`, the shape of this parameter must be `[B, Q_S, KV_N, sparse_size]`. When `layout_query` is `TND`, the shape of this parameter must be `[Q_T, KV_N, sparse_size]`, where `sparse_size` indicates the block count selected per discrete operation. The valid values in each row must be positioned in the first half, the invalid values must be positioned in the second half, and the value of `sparse_size` must be greater than 0.
 
 - **`scale_value`** (`double`): Required. Scaling factor applied as a scalar value after the matrix multiplication of query and key. The data type must be `double`.
 
-- **`*`**: Required. Positional parameter separator. Parameters before it are positional parameters and must be provided in order. Parameters after it are optional keyword parameters and must be specified using key-value pairs. If omitted, default values are used.
+- **`*`**: Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 
 - **`block_table`** (`Tensor`): Optional. Block mapping table used for kvCache storage in PageAttention. The data layout can be ND. The data type can be `int32`. The shape of this parameter is 2D. The length of the first dimension must be identical to the batch size `B`, and the length of the second dimension must not be less than the block count corresponding to the maximum `S2` across all batches, computed through dividing `S2_max` by `block_size` and rounding the result up.
 
@@ -77,7 +51,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **`actual_seq_lengths_kv`** (`Tensor`): Optional. Valid token count of `key` and `value` in different batches. The data type can be `int32`. If omitted, you can set it to `None`, indicating that its length is identical to the size of the `S` dimension in the shape of `key`. The valid token count for each batch must not exceed the size of the S dimension in `key` and `value` and must be greater than or equal to `0`. This parameter must be a 1D tensor of length `B`.<br>When `layout_kv` is set to `TND` or `PA_BSND`, this parameter must be provided. When `layout_kv` is set to `TND`, each element indicates the prefix sum of token counts across batches, and the value of each element must be greater than or equal to that of the preceding element.
 
 - **`query_rope`** (`Tensor`): Optional. RoPE information for the query in the MLA structure. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`.
-
+    
 - **`key_rope`** (`Tensor`): Optional. RoPE information for the key in the MLA structure. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`.
 
 - **`sparse_block_size`** (`int`): Optional. Block size used in the sparse phase during the importance score computation. The data type can be `int64`. The value must be a power of 2 in the range of [1, 128].
@@ -92,9 +66,9 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     - `0`: enables full computation.
     - `3`: enables the `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the bottom-right vertex to the top-left vertex.
 
-- **`pre_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of preceding tokens with which the attention is associated. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of subsequent tokens with which the attention is associated. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
 - **`attention_mode`**: Optional. Indicates the attention mode. The data type can be `int64`. Only the value `2` is supported, indicating the MLA-absorb mode. In this mode, computations concatenate the `nope` portion of the query or key with the rope portion of `query_rope` or `key_rope` along the head dimension `D`. This merges them to form the final query or key for subsequent computations. The key or value shares the identical underlying tensor data.
 
@@ -124,7 +98,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     import torch_npu
     import numpy as np
     import random
-
+    
     query_type = torch.float16
     scale_value = 0.041666666666666664
     sparse_block_size = 1
@@ -146,7 +120,6 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     query = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dn))).to(query_type)
     key = torch.tensor(np.random.uniform(-5, 10, (b, s2, n2, dn))).to(query_type)
     value = key.clone()
-    # Note: random.sample is used here only for demonstration purposes. In a production environment, a sparse selection algorithm such as lightning_indexer must be used to generate sparse_indices.
     idxs = random.sample(range(s2_act - s1 + 1), sparse_block_count)
     sparse_indices = torch.tensor([idxs for _ in range(b * s1 * n2)]).reshape(b, s1, n2, sparse_block_count). \
         to(torch.int32)
@@ -165,7 +138,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     act_seq_kv = torch.tensor(act_seq_kv).to(torch.int32).npu()
 
     attention_out, softmax_max, softmax_sum = torch_npu.npu_sparse_flash_attention(
-        query, key, value, sparse_indices, scale_value, block_table=None,
+        query, key, value, sparse_indices, scale_value, block_table=None, 
         actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
         layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
@@ -228,23 +201,23 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
         def __init__(self):
             super(Network, self).__init__()
 
-        def forward(self, query, key, value, sparse_indices, scale_value,
+        def forward(self, query, key, value, sparse_indices, scale_value, 
             block_table, actual_seq_lengths_query, actual_seq_lengths_kv,
             query_rope, key_rope, sparse_block_size, layout_query, layout_kv,
             sparse_mode, pre_tokens, next_tokens, attention_mode, return_softmax_lse):
-
+            
             attention_out, softmax_max, softmax_sum = torch_npu.npu_sparse_flash_attention(
-                query, key, value, sparse_indices, scale_value, block_table=None,
+                query, key, value, sparse_indices, scale_value, block_table=None, 
                 actual_seq_lengths_query=actual_seq_lengths_query, actual_seq_lengths_kv=actual_seq_lengths_kv,
                 query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
-                layout_query=layout_query, layout_kv=layout_kv, sparse_mode=sparse_mode,
-                pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1, attention_mode = attention_mode,
+                layout_query=layout_query, layout_kv=layout_kv, sparse_mode=sparse_mode, 
+                pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1, attention_mode = attention_mode, 
                 return_softmax_lse = return_softmax_lse)
             return attention_out, softmax_max, softmax_sum
 
     mod = torch.compile(Network().npu(), backend=npu_backend, fullgraph=True)
 
-    attention_out, softmax_max, softmax_sum = mod(query, key, value, sparse_indices,
+    attention_out, softmax_max, softmax_sum = mod(query, key, value, sparse_indices, 
         scale_value, block_table=None, actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
         layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,

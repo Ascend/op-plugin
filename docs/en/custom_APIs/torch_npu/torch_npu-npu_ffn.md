@@ -12,22 +12,11 @@
 - Description: Provides Mixture-of-Experts Feed-Forward Network (MoeFFN) and Feed-Forward Network (FFN) computation features. FFN is used when there are no expert groups (`expert_tokens` is empty) and MoeFFN is used when there are expert groups (`expert_tokens` is not empty).
 - Formula:
 
-     $$\text{activation}$$ is the activation function used. $$W_1$$ and $$W_2$$ correspond to `weight1` and `weight2` of the input parameters, respectively. $$b_1$$ and $$b_2$$ correspond to `bias1` and `bias2` of the input parameters, respectively.
+     $\text{activation}$ is the activation function used. $W_1$ and $W_2$ correspond to `weight1` and `weight2` of the input parameters, respectively. $b_1$ and $b_2$ correspond to `bias1` and `bias2` of the input parameters, respectively.
 
-    - Non-quantization scenarios:
-        $$
-        y=activation(x * W1 + b1) * W2 + b2
-        $$
-
-    - Quantization scenarios:
-        $$
-        y=((activation((x * W1 + b1) * deq\_scale1) * scale + offset) * W2 + b2) * deq\_scale2
-        $$
-
-    - Fake-quantization scenarios:
-        $$
-        y=activation(x * ((W1 + antiquant\_offset1) * antiquant\_scale1) + b1) * ((W2 + antiquant\_offset2) * antiquant\_scale2) + b2
-        $$
+    $$
+    \text{out} = \text{activation}(x * W_1 + b_1) * W_2 + b_2
+    $$
 
 > [!NOTE]  
 > When the activation function is `geglu`, `swiglu`, or `reglu`, enabling FFN must meet the following threshold requirements. Specifically, the FFN fusion operator is recommended only when the vector execution time of the corresponding small operators across the entire network takes at least 30 μs and accounts for more than 10% of the total runtime. Alternatively, if the performance of the small operators is unknown, try enabling the fusion operator. If performance deteriorates, disable it.
@@ -88,7 +77,7 @@ Output tensor, $y$ in the formula. The data type can be `float16` or `bfloat16`.
 - If there are experts, the total number of experts must match $M$ of `x`.
 - When the activation layer is `geglu`, `swiglu`, or `reglu`, only the `float16` high-performance scenario (the data types of all mandatory `Tensor` parameters are `float16`) is supported without expert grouping. Here, $N1=2*K2$.
 - When the activation function is `gelu`, `fastgelu`, `relu`, or `silu`, the following scenarios are supported, with or without expert grouping: `float16` high-precision, `float16` high-performance, `bfloat16`, quantization, and fake-quantization. Here, $N1=K2$.
-- In all scenarios, the following general dimension constraints must be met: $K1=N2$, $K1<65536$, $K2<65536$, and the $M$ dimension must be less than the maximum value of `int32` after 32-byte alignment. Additionally, the relationship between $N1$ and $K2$ is determined by the activation function type. `geglu`, `swiglu`, and `reglu` require $N1=2*K2$, while `gelu`, `fastgelu`, `relu`, and `silu` require $N1=K2$. 
+- In all scenarios, the following conditions must be met: $K1 = N2$; $K1 < 65536$; $K2 < 65536$; the $M$ dimension must be less than the maximum value of `int32` after 32-byte alignment.
 - Quantization parameters and fake-quantization parameters cannot be passed in non-quantization scenarios. Fake-quantization parameters cannot be passed in quantization scenarios. Quantization parameters cannot be passed in fake-quantization scenarios.
 - Parameter data types in quantization scenarios: `x` is `int8`, `weight` is `int8`, `bias` is `int32`, `scale` is `float32`, and `offset` is `float32`. Other parameters depend on the type of `y`:
     - When `y` is `float16`, the data type `deq_scale` can be `uint64`, `int64`, or `float32`.
@@ -112,17 +101,17 @@ Output tensor, $y$ in the formula. The data type can be `float16` or `bfloat16`.
     >>> import torch
     >>> import torch_npu
     >>>
-    >>> x = torch.randn((1, 1280), device='npu', dtype=torch.float16)
-    >>> weight1 = torch.randn(1280, 10240, device='npu', dtype=torch.float16)
-    >>> weight2 = torch.randn(10240, 1280, device='npu', dtype=torch.float16)
+    >>> cpu_x = torch.randn((1, 1280), device='npu', dtype=torch.float16)
+    >>> cpu_weight1 = torch.randn(1280, 10240, device='npu', dtype=torch.float16)
+    >>> cpu_weight2 = torch.randn(10240, 1280, device='npu', dtype=torch.float16)
     >>> activation = "fastgelu"
-    >>> npu_out = torch_npu.npu_ffn(x, weight1, weight2, activation, inner_precise=1)
+    >>> npu_out = torch_npu.npu_ffn(cpu_x.npu(), cpu_weight1.npu(), cpu_weight2.npu(), activation, inner_precise=1)
     >>>
-    >>> print(npu_out)
+    >>> npu_out
     tensor([[ 1474.0000,  2000.0000,  1683.0000,  ...,  1938.0000, -1353.0000,
             207.8750]], device='npu:0', dtype=torch.float16)
     >>>
-    >>> print(npu_out.shape)
+    >>> npu_out.shape
     torch.Size([1, 1280])
     ```
 
@@ -150,15 +139,16 @@ Output tensor, $y$ in the formula. The data type can be `float16` or `bfloat16`.
         def forward(self, x, weight1, weight2, activation, expert):
             return torch_npu.npu_ffn(x, weight1, weight2, activation,  expert_tokens=expert, inner_precise=1)
 
-    model = MyModel().npu()
-    x = torch.randn((1954, 2560), device='npu', dtype=torch.float16)
-    weight1 = torch.randn((16, 2560, 5120), device='npu', dtype=torch.float16)
-    weight2 = torch.randn((16, 5120, 2560), device='npu', dtype=torch.float16)
+    cpu_model = MyModel()
+    cpu_x = torch.randn((1954, 2560),device='npu',dtype=torch.float16)
+    cpu_weight1 = torch.randn((16, 2560, 5120),device='npu',dtype=torch.float16)
+    cpu_weight2 = torch.randn((16, 5120, 2560),device='npu',dtype=torch.float16)
     activation = "fastgelu"
     expert = [227, 62, 78, 126, 178, 27, 122, 1, 19, 182, 166, 118, 66, 217, 122, 243]
+    model = cpu_model.npu()
     model = torch.compile(model, backend=npu_backend, dynamic=True)
 
-    npu_out = model(x, weight1, weight2, activation, expert)
+    npu_out = model(cpu_x.npu(), cpu_weight1.npu(), cpu_weight2.npu(), activation, expert)
     print(npu_out.shape)
     print(npu_out)
 

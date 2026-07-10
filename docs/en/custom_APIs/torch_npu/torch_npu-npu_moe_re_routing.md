@@ -10,47 +10,14 @@
 ## Function
 
 - Description: Rearranges tokens by expert order in the Mixture of Experts (MoE) network after AlltoAll communication across ranks.
-    - MoE network: Each layer contains multiple parallel expert sub-networks. The routing module determines which expert or experts process each token.
-    - Token: The smallest data unit processed by the model, typically a feature vector obtained from word or subword embeddings.
-    - Expert: Sub-network in the MoE architecture. In multi-rank deployment, experts are distributed across ranks, and each rank hosts multiple experts.
-    - AlltoAll operation: Collective communication primitive. Each rank partitions its local data by destination rank, sends it to all other ranks, and receives data from all other ranks.
-
 - Formulas:
 
-    $$SrcOffset = \sum_{i=0}^{cur\_rank} \left( \sum_{j=0}^{cur\_expert} expert\_token\_num\_per\_rank(i,j) \right)$$
-
-    $$DstOffset = \sum_{j=0}^{cur\_expert} \left( \sum_{i=0}^{cur\_rank} expert\_token\_num\_per\_rank(i,j) \right)$$
+    ![](../../figures/en-us_formulaimage_0000002277237821.png)
 
     - `SrcOffset`: source offset of tokens to be moved, computed from the input `expert_token_num_per_rank`.
     - `DstOffset`: destination offset of tokens to be moved.
     - `cur_rank`: row index of `expert_token_num_per_rank`, representing the source rank of tokens.
     - `cur_expert`: column index of `expert_token_num_per_rank`, representing the expert on the rank that processes the tokens.
-
-- Process description
-
-    This operator is located in the **communication and computation bridge phase** of the MoE parallel inference pipeline. The following diagram shows its exact position.
-
-    ```text
-    Gating/TopK Routing
-        ↓
-    npu_moe_distribute_dispatch_v2 (AlltoAll dispatches tokens across ranks)
-        ↓
-    npu_moe_re_routing ← This operator reorders tokens by expert
-        ↓
-    Expert FFN computation
-        ↓
-    npu_moe_distribute_combine_v2 (Aggregates results and performs AlltoAll return)
-    ```
-
-  - Purpose:
-
-    1. **Pre-stage**: `npu_moe_distribute_dispatch_v2` uses AlltoAll communication to gather tokens from each rank to the local rank. In this stage, tokens are stored in the local memory **ordered by source rank**.
-
-    2. **Purpose of this operator**: As each expert processes its own tokens in a continuous and batched manner, this operator reorders tokens from ordered by source rank to **ordered by expert**. That is, tokens of the same expert are stored contiguously in memory. This operator also outputs `permute_token_idx`, which is used to restore the original token order after expert computation is complete.
-
-    3. **Post-stage**: The Expert FFN layer processes tokens sequentially based on the token count per expert recorded in `expert_token_num`, reading contiguous data blocks from `permute_tokens`.
-
-    4. **Data restoration**: After expert computation is complete, `permute_token_idx` is used by `npu_moe_distribute_combine_v2` to aggregate and return the computation results along the original routing path.
 
 ## Prototype
 
@@ -68,7 +35,7 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 > - `N`: indicates the number of ranks. The value is not limited.
 > - `E`: indicates the number of experts on a rank. The value is not limited.
 
-- **`tokens`** (`Tensor`): Required. Tokens to be rearranged. This parameter must be 2D with shape `(A, H)`. The data type can be `float16`, `bfloat16`, or `int8`. The data layout is ND.
+- **`tokens`** (`Tensor`): Required. Tokens to be rearranged. This parameter must be 2D with shape `(A, H)`. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND.
 - **`expert_token_num_per_rank`** (`Tensor`): Required. Two-dimensional matrix, where `[i, j]` represents the token count received from rank `i` that is processed by expert `j` on the current rank. This parameter must be 2D with shape `(N, E)`. The data type can be `int32` or `int64`. The data layout must be ND. All values must be greater than 0.
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`per_token_scales`** (`Tensor`): Optional. Scale corresponding to each token, which must be rearranged along with the tokens. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout must be ND.

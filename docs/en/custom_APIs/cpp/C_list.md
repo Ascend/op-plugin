@@ -52,7 +52,7 @@ This section describes the extended C++ APIs provided by Ascend Extension for Py
 </tr>
 <tr id="row124831534202119"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p15593155612361"><a name="p15593155612361"></a><a name="p15593155612361"></a><a href="(beta)at_npu-detail-createNPUGenerator.md">(beta) at_npu::detail::createNPUGenerator</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1059375683612"><a name="p1059375683612"></a><a name="p1059375683612"></a>Creates the default generator for an NPU device. The return value type is <code>Generator</code>, which is identical to <code>at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex <em id="i5642556194214"><a name="i5642556194214"></a><a name="i5642556194214"></a>device_index</em> = -1)</code>.</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1059375683612"><a name="p1059375683612"></a><a name="p1059375683612"></a>Creates the default generator for an NPU device. The return value type is <code>Generator</code>, which is identical to <code>at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex <em>device_index</em> = -1)</code>.</p>
 </td>
 </tr>
 <tr id="row1582212372214"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1145460103719"><a name="p1145460103719"></a><a name="p1145460103719"></a><a href="(beta)class-c10_npu-NPUStream.md">(beta) class c10_npu::NPUStream</a></p>
@@ -72,7 +72,7 @@ This section describes the extended C++ APIs provided by Ascend Extension for Py
 </tr>
 <tr id="row6822103772114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2455402378"><a name="p2455402378"></a><a name="p2455402378"></a><a href="(beta)c10_npu-getCurrentNPUStream.md">(beta) c10_npu::getCurrentNPUStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>Obtains the current NPU stream. The return value type is <code>NPUStream</code>. This function is identical to <code>c10::cuda::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex <em id="i1444171610436"><a name="i1444171610436"></a><a name="i1444171610436"></a>device_index</em> = -1)</code>.</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>Obtains the current NPU stream through a device ID. The return value type is <code>NPUStream</code>, which is identical to <code>c10::CUDA::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex <em>device_index</em> = -1)</code>.</p>
 </td>
 </tr>
 <tr id="row1324644442114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p10455150143713"><a name="p10455150143713"></a><a name="p10455150143713"></a><a href="(beta)c10_npu-setCurrentNPUStream.md">(beta) c10_npu::setCurrentNPUStream</a></p>
@@ -112,7 +112,7 @@ This section describes the extended C++ APIs provided by Ascend Extension for Py
 </tr>
 <tr id="row166762910245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p186712293248"><a name="p186712293248"></a><a name="p186712293248"></a><a href="(beta)c10_npu-current_device.md">(beta) c10_npu::current_device</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p06702919248"><a name="p06702919248"></a><a name="p06702919248"></a>Obtains the NPU device ID. The return value type is <code>DeviceIndex</code>, which represents the obtained device ID. This function is identical to <code>c10::DeviceIndex c10::cuda::current_device()</code>. The main difference from <code>c10_npu::GetDevice</code> is that this function includes additional error checking.</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p06702919248"><a name="p06702919248"></a><a name="p06702919248"></a>Obtains the NPU device ID. The return value type is <code>DeviceIndex</code>, which represents the obtained device ID. This function is identical to <code>c10::DeviceIndex c10::cuda::current_device()</code> in PyTorch 1.11.0. The main difference from <code>c10_npu::GetDevice</code> is that this function includes additional error checking.</p>
 </td>
 </tr>
 <tr id="row193943155249"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p93941215142414"><a name="p93941215142414"></a><a name="p93941215142414"></a><a href="(beta)c10_npu-set_device.md">(beta) c10_npu::set_device</a></p>
@@ -161,7 +161,7 @@ This section describes the extended C++ APIs provided by Ascend Extension for Py
 </td>
 </tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu.native-empty_with_swapped_memory</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a tensor whose device information is NPU while its actual memory resides on the host side.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a tensor with its device type set to NPU, while its actual memory resides on the host side.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard.md">c10_npu::NPUStreamGuard</a></p>

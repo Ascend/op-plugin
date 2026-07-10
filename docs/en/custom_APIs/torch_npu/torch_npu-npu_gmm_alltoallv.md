@@ -2,39 +2,40 @@
 
 ## Supported Products<a name="en-us_topic_0000002317314449_section1369303644412"></a>
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term> |   √   |
+<a name="en-us_topic_0000002317314449_table38301303189"></a>
+<table><thead align="left"><tr id="en-us_topic_0000002317314449_row20831180131817"><th class="cellrowborder" valign="top" width="57.99999999999999%" id="mcps1.1.3.1.1"><p id="en-us_topic_0000002317314449_p1883113061818"><a name="en-us_topic_0000002317314449_p1883113061818"></a><a name="en-us_topic_0000002317314449_p1883113061818"></a><span id="en-us_topic_0000002317314449_ph24751558184613"><a name="en-us_topic_0000002317314449_ph24751558184613"></a><a name="en-us_topic_0000002317314449_ph24751558184613"></a>Product</span></p>
+</th>
+<th class="cellrowborder" align="center" valign="top" width="42%" id="mcps1.1.3.1.2"><p id="en-us_topic_0000002317314449_p783113012187"><a name="en-us_topic_0000002317314449_p783113012187"></a><a name="en-us_topic_0000002317314449_p783113012187"></a>Supported</p>
+</th>
+</tr>
+</thead>
+<tbody><tr id="en-us_topic_0000002317314449_row220181016240"><td class="cellrowborder" valign="top" width="57.99999999999999%" headers="mcps1.1.3.1.1 "><p id="en-us_topic_0000002317314449_p2098311377352"><a name="en-us_topic_0000002317314449_p2098311377352"></a><a name="en-us_topic_0000002317314449_p2098311377352"></a><span id="en-us_topic_0000002317314449_ph1719614396352"><a name="en-us_topic_0000002317314449_ph1719614396352"></a><a name="en-us_topic_0000002317314449_ph1719614396352"></a><a name="en-us_topic_0000002317314449_en-us_topic_0000001312391781_term1253731311225"></a><a name="en-us_topic_0000002317314449_en-us_topic_0000001312391781_term1253731311225"></a><term>Atlas A3 training products/Atlas A3 inference products</term></span></p>
+</td>
+<td class="cellrowborder" align="center" valign="top" width="42%" headers="mcps1.1.3.1.2 "><p id="en-us_topic_0000002317314449_p7948163910184"><a name="en-us_topic_0000002317314449_p7948163910184"></a><a name="en-us_topic_0000002317314449_p7948163910184"></a>√</p>
+</td>
+</tr>
+</tbody>
+</table>
 
 ## Function<a name="en-us_topic_0000002317314449_section14441124184110"></a>
 
 - Description: Performs fused computation of routed expert GroupedMatMul and AlltoAllv, and parallel fused computation with shared expert MatMul in a Mixture of Experts (MoE) network. It performs computation before communication.
-- Routed expert formula:
+- Routed expert formulas:
 
-    $$
-    \begin{aligned}
-    &\text{gmm\_y}=\operatorname{GroupedMatMul}(\text{gmm\_x},\ \text{gmm\_weight}) \\
-    &\text{unpermute\_out}=\operatorname{Unpermute}(\text{gmm\_y}) \\
-    &\text{y}=\operatorname{AlltoAllv}(\text{unpermute\_out},\ \text{send\_counts},\ \text{recv\_counts})
-    \end{aligned}
-    $$
+    ![](../../figures/en-us_formulaimage_0000002323688460.png)
 
     - `gmm_x` is the left matrix in the routed expert GroupedMatMul computation.
-    - `gmm_weight` is the right matrix in the routed expert GroupedMatMul computation. When `trans_gmm_weight` is set to `True`, GroupedMatMul uses the transposed `gmm_weight`.
+    - `gmm_weight` is the right matrix in the routed expert GroupedMatMul computation.
     - `gmm_y` indicates the output of the routed expert GroupedMatMul computation, which is used for Unpermute computation.
     - `unpermute_out` indicates the output of Unpermute applied to `gmm_y`, which serves as the input to AlltoAllv communication.
     - `y` indicates the output of AlltoAllv communication applied to `unpermute_out`.
-    - `send_counts` indicates the distribution of tokens sent from the current rank to each expert shard in the EP communication domain during AlltoAllv.
-    - `recv_counts` indicates the distribution of tokens received by the current rank from each expert shard in the EP communication domain during AlltoAllv, which determines the size of the first dimension of `y`.
 
 - Shared expert formula:
 
-    $$
-    \text{mm\_y}=\text{mm\_x}\times\text{mm\_weight}
-    $$
+    ![](../../figures/en-us_formulaimage_0000002323838248.png)
 
     - `mm_x` indicates the left matrix for shared expert MatMul.
-    - `mm_weight` indicates the right matrix for shared expert MatMul. When `trans_mm_weight` is set to `True`, the shared expert MatMul uses the transposed `mm_weight`.
+    - `mm_weight` indicates the right matrix for shared expert MatMul.
     - `mm_y` indicates the output of shared expert MatMul.
 
 ## Prototype<a name="en-us_topic_0000002317314449_section45077510411"></a>
@@ -49,22 +50,8 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`gmm_weight`** (`Tensor`): Required. Right matrix for GroupedMatMul. The data type must be identical to that of `gmm_x`. This parameter must be 3D with shape `(e, H1, N1)`. The data layout can be ND.
 - **`hcom`** (`str`): Required. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain. Valid values: `8`, `16`, `32`, `64`, or `128`.
-- **`send_counts`** (`List[int]`): Required. Distribution of tokens sent from the current rank to each expert shard in the EP communication domain. The list length must be fixed at `e * ep_world_size` and must not exceed 256. Each element must be an `int` within the range of [0, 52428800], specifying the number of tokens sent to one expert shard. The sum of all elements is the total number of tokens sent by the current rank, denoted as `A`.
-- **`recv_counts`** (`List[int]`): Required. Distribution of tokens received by the current rank from each expert shard in the EP communication domain. The list length must be fixed at `e * ep_world_size` and must not exceed 256. Each element must be an `int` within the range of [0, 52428800], specifying the number of tokens received from one expert shard. The sum of all elements is the total number of tokens received by the current rank, denoted as `BSK`. This parameter determines the first dimension size of the output `y`.
-
-  The following code sample shows a simplified calculation of `send_counts` and `recv_counts`:
-
-  ```python
-  e = 4
-  ep_world_size = 8
-  send_counts = [128] * (e * ep_world_size)  # Length: 32
-  recv_counts = [128] * (e * ep_world_size)  # Length: 32
-
-  A = sum(send_counts)      # Total number of tokens sent by the current rank
-  BSK = sum(recv_counts)    # Total number of tokens received by the current rank, which is also the first dimension of the output y.
-  # y.shape = (BSK, N1)
-  ```
-
+- **`send_counts`** (`List[int]`): Required. A list indicating the number of tokens sent to other devices. The length of the list must equal the number of devices. Each element must be of type `int`. The value of each element must be `e * ep_world_size`, with a maximum value of 256.
+- **`recv_counts`** (`List[int]`): Required. A list indicating the number of tokens received from other devices. The length of the list must equal the number of devices. Each element must be of type `int`. The value of each element must be `e * ep_world_size`, with a maximum value of 256.
 - **`send_counts_tensor`** (`Tensor`): Optional. The data type can be `int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
 - **`recv_counts_tensor`** (`Tensor`): Optional. The data type can be `int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
 - **`mm_x`** (`Tensor`): Optional. Left matrix for shared expert MatMul. This parameter must be provided when shared expert computation is fused. The data type can be `float16` or `bfloat16`. This parameter must be 2D with shape `(BS, H2)`.

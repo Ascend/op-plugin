@@ -12,22 +12,11 @@
 - Description: Applies rotary positional encoding (RoPE) to a single input tensor `x`.
 - Formulas:
 
-    $$q = \text{reshape}(x, [B, N, S, D/2, 2]).\text{transpose}(-1, -2).\text{reshape}([B, N, S, D])$$
+    ![](../../figures/en-us_formulaimage_0000002238091144.png)
 
-    $$q_{\text{embed}} = q \cdot \cos + \text{RotateHalf}(q) \cdot \sin$$
+     `RotateHalf(q)` moves the second half of the elements in the $D$ dimension of `q` to the first half and multiplies them by -1, while filling the second half with the original values of the first half.
 
-     `RotateHalf(q)` performs the following transformation on the tensor `q` along the last dimension $D$.
-
-     1. Split the $D$ dimension evenly into two halves, where the size of each half is $D/2$.
-     2. Move the second half forward and negate its values, while moving the first half backward and keeping its original values.
-
-     Mathematical expression: Given that $q = [q_0, q_1, \ldots, q_{D/2-1}, q_{D/2}, q_{D/2+1}, \ldots, q_{D-1}]$,
-
-     $$\text{RotateHalf}(q) = [-q_{D/2}, -q_{D/2+1}, \ldots, -q_{D-1}, q_0, q_1, \ldots, q_{D/2-1}]$$
-
-     Example: Given that $q = [1, 2, 3, 4]$, the first half is $[1, 2]$ and the second half is $[3, 4]$. After transformation, $\text{RotateHalf}(q) = [-3, -4, 1, 2]$.
-
-    $$\text{RotateHalf}(q)_i = \begin{cases} -q_{i+D/2}, & i < D/2 \\ q_{i-D/2}, & i \geq D/2 \end{cases}$$
+    ![](../../figures/en-us_formulaimage_0000002237943254.png)
 
 ## Prototype
 

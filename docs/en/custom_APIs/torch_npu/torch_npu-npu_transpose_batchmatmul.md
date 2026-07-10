@@ -11,17 +11,10 @@
 
 - Description: Performs batch matrix multiplication between the `input` and `weight` tensors. Only three-dimensional tensors are supported. Tensors can be transposed based on the input index arrays. `perm_x1` and `perm_x2` represent the permutation sequences for tensors `input` and `weight`, respectively. The dimension with a sequence value of `0` represents the batch dimension, while the remaining two dimensions are used for matrix multiplication.
 - Formulas:
-    - Non-quantized fusion:
-    $$
-    Y = (input^{T_1} @ weight^{T_2} + bias)^{T_y}
-    $$
-
-    - Quantized fusion:
-    $$
-    Y = (input^{T_1} @ weight^{T_2} + bias)^{T_y} * scale
-    $$    
 
     $T_1$, $T_2$, and $T_y$ represent the permutation sequences specified by the parameters `perm_x1`, `perm_x2`, and `perm_y`, respectively.
+
+    ![](../../figures/en-us_formulaimage_0000002328618340.png)
 
 ## Prototype<a name="en-us_topic_0000002319693140_section45077510411"></a>
 

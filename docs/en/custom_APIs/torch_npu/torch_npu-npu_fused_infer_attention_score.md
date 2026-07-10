@@ -9,96 +9,12 @@
 
 ## Function<a name="en-us_topic_0000001832267082_section14441124184110"></a>
 
-- Description: Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The two supported scenarios are described as follows:
-  - `PromptFlashAttention`: used for the prefill or prompt phase. Generally, `query`, `key`, and `value` are tensors of the entire sequence, which can be provided with `atten_mask` and optional `pse_shift`. This mode focuses more on throughput. In long sequence scenarios, timeout risks and partitioning strategies must be considered.
-  - `IncreFlashAttention`: Used for the decode phase. The `S` dimension of `query` is identical to `1`, and `key` and `value` are typically obtained from the KV cache. This mode focuses more on single-step latency and KV cache access efficiency. Enabling page attention can improve throughput and memory access, but introduces additional constraints.
-- Formulas:
+- Description: Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch.
+- Formula:
 
-  Basic formula:
-
-  $$
-  attention\_out = softmax \left(scale * (query * key^\top) + atten\_mask \right) * value
-  $$
-
-  Positional encoding formula:
-
-  $$
-  attention\_out = softmax\left( scale \cdot (query \cdot key^\top) + pse\_shift + atten\_mask \right) \cdot value
-  $$
-
-  Full quantization formula:
-
-  $$
-  query_{fp} = query \cdot dequant\_scale1
-  $$
-
-  $$
-  key_{fp} = key \cdot dequant\_scale1
-  $$
-
-  $$
-  value_{fp} = value \cdot dequant\_scale1
-  $$
-
-  $$
-  score_{fp} = scale \cdot (query_{fp} \cdot key_{fp}^\top) + mask
-  $$
-
-  $$
-  score_{int8} = quantize(score_{fp}, quant\_scale1)
-  $$
-
-  $$
-  atten\_prob_{int8} = softmax(score_{int8})
-  $$
-
-  $$
-  out_{fp} = atten\_prob_{int8} \cdot value_{fp}
-  $$
-
-  $$
-  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
-  $$
-
-  Post-quantization formula:
-
-  $$
-  out_{fp} = softmax(scale \cdot (query \cdot key^\top) + mask) \cdot value
-  $$
-
-  $$
-  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
-  $$
-  Here, `quantize` is the quantization function.
-
-  Fake-quantization formula:
-
-  $$
-  key_{fp} = key \cdot antiquant\_scale + antiquant\_offset
-  $$
-
-  $$
-  value_{fp} = value \cdot antiquant\_scale + antiquant\_offset
-  $$
-
-  $$
-  attention\_out = softmax(scale \cdot (query \cdot key_{fp}^\top) + mask) \cdot value_{fp}
-  $$
-
-  MLA scenario:
-
-  $$
-  query_{rot} = RoPE(query, query\_rope)
-  $$
-
-  $$
-  key_{rot} = RoPE(key, key\_rope)
-  $$
-
-  $$
-  attention\_out = softmax(scale \cdot (query_{rot} \cdot key_{rot}^\top) + mask) \cdot value
-  $$
-  Here, `RoPE` is the rotary positional encoding function.
+    $$
+    attention\_out = softmax \left(scale * (query * key^\top) + atten\_mask \right) * value
+    $$
 
 ## Prototype<a name="en-us_topic_0000001832267082_section45077510411"></a>
 
@@ -136,11 +52,11 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     Restriction: The valid `seqlen` of each batch in this parameter must not exceed that of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. When `input_layout` of `query` is `TND`, this parameter is required, and the number of elements in this parameter is used as the batch size. The value of each element in this parameter indicates the sum of sequence lengths of the current batch and all previous batches. Therefore, the value of each element must be greater than or equal to that of the previous element, and cannot be negative.
 
 - **`actual_seq_lengths_kv`** (`List[int]`): Optional. Valid sequence length of `key` and `value` across different batches. The data type can be `int64`. If this parameter is not specified or is set to `None`, the value is identical to the sequence length `S` in the `key` and `value` shapes. Constraints vary across different `Q_S` values. For details, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`dequant_scale1`** (`Tensor`): Optional. The data type can be `uint64` or `float32`. The data layout can be ND. This parameter indicates the dequantization factor after BMM1. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used. For details about the definition of BMM1, see [References](#en-us_topic_0000001832267082_section28169228374).
-- **`quant_scale1`** (`Tensor`): Optional. The data type can be `float32`. The data layout can be ND. This parameter indicates the quantization factor before BMM2. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). For details about the definition of BMM2, see [References](#en-us_topic_0000001832267082_section28169228374).
+- **`dequant_scale1`** (`Tensor`): Optional. The data type can be `uint64` or `float32`. The data layout can be ND. This parameter indicates the dequantization factor after BMM1. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used.
+- **`quant_scale1`** (`Tensor`): Optional. The data type can be `float32`. The data layout can be ND. This parameter indicates the quantization factor before BMM2. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`dequant_scale2`** (`Tensor`): Optional. The data type can be `uint64` or `float32`. The data layout can be ND. This parameter indicates the dequantization factor after BMM2. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used.
 - **`quant_scale2`** (`Tensor`): Optional. The data type can be `float32` or `bfloat16`. The data layout can be ND. This parameter indicates the output quantization factor. `pertensor` and `perchannel` modes are supported. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` mode, if the output layout is `BSH`, the product of all dimensions of `quant_scale2` must be identical to `H`. For other layouts, the product must equal `Q_N * D`. (You are advised to pass a shape of `(1, 1, H)` or `(H,)` when the output layout is `BSH`; `(1, Q_N, 1, D)` or `(Q_N, D)` when the output layout is `BNSD`; and `(1, 1, Q_N, D)` or `(Q_N, D)` when the output layout is `BSND`). This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`quant_offset2`** (`Tensor`): Optional. The data type can be `float32` or `bfloat16`. The data layout can be ND. This parameter indicates the output quantization offset. `pertensor` and `perchannel` modes are supported. If `quant_offset2` is provided, its data type and shape information must be identical to those of `quant_scale2`. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`quant_offset2`** (`Tensor`): Optional. The data type can be `float32` or `bfloat16`. The data layout can be ND. This parameter indicates the output quantization offset. `pertensor` and `perchannel` modes are supported. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`antiquant_scale`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization factor. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`antiquant_offset`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization offset. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the comprehensive constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`block_table`** (`Tensor`): Optional. The data type can be `int32`. The data layout can be ND. This parameter indicates the block mapping table used for KV storage in page attention. This parameter can be set to `None` if this feature is not used.
@@ -160,8 +76,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 - **`key_rope_antiquant_scale`** (`Tensor`): Optional. Reserved parameter, currently not used. Retain the default value.
 - **`num_heads`** (`int`): Optional. Number of heads for `query`. The data type can be `int64`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs.
 - **`scale`** (`float`): Optional. Scaling factor, typically the reciprocal of the square root of `D`, used as a scalar value for Muls in the computation flow. The data type can be `float`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`.
-- **`pre_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of preceding tokens with which the attention is associated. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
-- **`next_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of subsequent tokens with which the attention is associated. The data type can be `int64`. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
 - **`input_layout`** (`string`): Optional. Data layout of the input `query`, `key`, and `value`. The default value is `"BSH"`.
 
     > [!NOTE]   
@@ -212,7 +128,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 ## Return Values<a name="en-us_topic_0000001832267082_section22231435517"></a>
 
 - **`attention_out`** (`Tensor`): Output tensor in the formula. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. Restriction: The `D` dimension of this return value must be identical to that of `value`, and all other dimensions must match those of the input parameter `query`.
-- **`softmax_lse`** (`Tensor`): log-sum-exp result computed over the Query-Key product by using the Ring Attention algorithm. It is obtained by first computing `query` * `key`, subtracting the row-wise maximum (`softmax_max`), applying `exp`, summing the results (`softmax_sum`), taking the natural logarithm of `softmax_sum`, and finally adding `softmax_max`. The data type is `float32`. When `softmax_lse_flag` is `True`, the output shape is `(B, Q_N, Q_S, 1)` under standard layouts, and `(T, Q_N, 1)` when `input_layout` is `TND` or `NTD_TND`. When `softmax_lse_flag` is `False`, the output is a tensor of shape `[1]` with value `0`. For details about Ring Attention, see [References](#en-us_topic_0000001832267082_section28169228374).
+- **`softmax_lse`** (`Tensor`): log-sum-exp result computed over the Query-Key product by using the Ring Attention algorithm. It is obtained by first computing `query` * `key`, subtracting the row-wise maximum (`softmax_max`), applying `exp`, summing the results (`softmax_sum`), taking the natural logarithm of `softmax_sum`, and finally adding `softmax_max`. The data type is `float32`. When `softmax_lse_flag` is `True`, the output shape is `(B, Q_N, Q_S, 1)` under standard layouts, and `(T, Q_N, 1)` when `input_layout` is `TND` or `NTD_TND`. When `softmax_lse_flag` is `False`, the output is a tensor of shape `[1]` with value `0`.
 
 ## Constraints<a name="en-us_topic_0000001832267082_section12345537164214"></a>
 
@@ -352,7 +268,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - Left padding for `key` and `value` must be enabled together with the `actual_seq_lengths_kv` parameter. Otherwise, right padding for `key` and `value` is used by default.   
         - Left padding for `key` and `value` does not support page attention and cannot be enabled together with the `block_table` parameter.
         
-    - The input parameters `quant_scale2` and `quant_offset2` support `pertensor` or `perchannel` quantization, and their data types can be `float32` or `bfloat16`. If `quant_offset2` is provided, its data type and shape information must be identical to those of `quant_scale2`. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` scenarios, when the output layout is `BSH`, the product of all dimensions of `quant_scale2` must equal `H`. For other layouts, the product must equal `N * D`. The recommended shape for `quant_scale2` is `(1, 1, H)` or `(H,)` for the `BSH` output layout, `(1, Q_N, 1, D)` or `(Q_N, D)` for the `BNSD` output layout, and `(1, 1, Q_N, D)` or `(Q_N, D)` for the `BSND` output layout.
+    - The input parameters `quant_scale2` and `quant_offset2` support `pertensor` or `perchannel` quantization, and their data types can be `float32` or `bfloat16`. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` scenarios, when the output layout is `BSH`, the product of all dimensions of `quant_scale2` must equal `H`. For other layouts, the product must equal `N * D`. The recommended shape for `quant_scale2` is `(1, 1, H)` or `(H,)` for the `BSH` output layout, `(1, Q_N, 1, D)` or `(Q_N, D)` for the `BNSD` output layout, and `(1, 1, Q_N, D)` or `(Q_N, D)` for the `BSND` output layout.
     - When the output data type is `int8` and `quant_scale2` and `quant_offset2` are in `perchannel` mode, left padding, Ring Attention, and cases where the `D` dimension is not 32-byte aligned are not supported.
     - When the output data type is `int8`, scenarios where `sparse_mode` is `band` and `pre_tokens` or `next_tokens` are negative are not supported.
     - Usage constraints for the `pse_shift` feature:
@@ -595,7 +511,6 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     actual_seq_lengths = actseqlen, actual_seq_lengths_kv = actseqlenkv,
     num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
     
-    print(out)
     # Expected output of the preceding code sample:
     tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
             [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
@@ -671,45 +586,3 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
             device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
     ```
-
-## References<a name="en-us_topic_0000001832267082_section28169228374"></a>
-
-- Batch Matrix Multiply 1 (BMM1)
-
-  The first matrix multiplication, used to compute attention scores.
-
-  Formula:
-  $$
-  attention\_score = query \cdot key^{\top}
-  $$
-
-- Batch Matrix Multiply 2 (BMM2)
-
-  Definition: The second matrix multiplication, used to apply attention weights to `value` to yield the final output.
-
-  Formula:
-  $$
-  attention\_out = atten\_prob \cdot value
-  $$
-  `atten_prob` represents the normalized attention weights:
-
-  $$
-  atten\_prob = softmax(\cdot)
-  $$
-
-- Ring Attention
-
-  Definition: A distributed attention algorithm that splits a long sequence into blocks and distributes them across multiple ranks. Attention is computed block by block through ring communication, reducing single-rank memory usage and supporting ultra-long sequences. In single-rank scenarios, Ring Attention degenerates to standard attention.
-
-  Computation logic: When `softmax_lse_flag` is `True`, the operator additionally outputs the log-sum-exp (LSE) value of softmax. This value is used to combine the attention results of multiple devices in a distributed environment. Assume that two devices separately compute the attention outputs `(O_1, O_2)` and corresponding LSE values `(lse_1, lse_2)` for parts of the sequence, the global output is:
-
-  $$
-  O_{global} = \frac{e^{lse_1 - lse_{max}} O_1 + e^{lse_2 - lse_{max}} O_2}{e^{lse_1 - lse_{max}} + e^{lse_2 - lse_{max}}}
-  $$
-  Definition of `lse_max`:
-
-  $$
-  lse_{max} = max(lse_1, lse_2)
-  $$
-
-  Application scenarios: This technology is typically used for ultra-large sequence inference or training.

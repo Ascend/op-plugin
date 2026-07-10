@@ -5,7 +5,6 @@ This section describes common custom APIs, including tensor creation and computa
 **Table 1** torch_npu APIs
 
 <a name="table1849611717116"></a>
-
 <table><thead align="left"><tr id="row10496101716111"><th class="cellrowborder" valign="top" width="38.61%" id="mcps1.2.3.1.1"><p id="p1649713174119"><a name="p1649713174119"></a><a name="p1649713174119"></a>API</p>
 </th>
 <th class="cellrowborder" valign="top" width="61.39%" id="mcps1.2.3.1.2"><p id="p9497217151115"><a name="p9497217151115"></a><a name="p9497217151115"></a>Description</p>
@@ -14,7 +13,7 @@ This section describes common custom APIs, including tensor creation and computa
 </thead>
 <tbody><tr id="row1149711715114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13497217191119"><a name="p13497217191119"></a><a name="p13497217191119"></a><a href="(beta)torch_npu-_npu_dropout.md">(beta)torch_npu._npu_dropout</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p349751701118"><a name="p349751701118"></a><a name="p349751701118"></a>Counts dropout results without using a random seed. This API is similar to <code>torch.dropout</code> and is optimized for NPUs.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p349751701118"><a name="p349751701118"></a><a name="p349751701118"></a>Counts dropout results without using a random seed.</p>
 </td>
 </tr>
 <tr id="row13497417121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11170526121211"><a name="p11170526121211"></a><a name="p11170526121211"></a><a href="(beta)torch_npu-copy_memory_.md">(beta)torch_npu.copy_memory_</a></p>
@@ -34,7 +33,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row17497217181119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16497617191116"><a name="p16497617191116"></a><a name="p16497617191116"></a><a href="(beta)torch_npu-npu_alloc_float_status.md">(beta)torch_npu.npu_alloc_float_status</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p6497141711115"><a name="p6497141711115"></a><a name="p6497141711115"></a>Allocates a status tensor used as an input argument to record floating-point operation overflow status.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p6497141711115"><a name="p6497141711115"></a><a name="p6497141711115"></a>Allocates a tensor dedicated to storing floating-point operation status flags. This tensor is used to record overflow status during subsequent computations.</p>
 </td>
 </tr>
 <tr id="row104977172114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1849701710119"><a name="p1849701710119"></a><a name="p1849701710119"></a><a href="(beta)torch_npu-npu_anchor_response_flags.md">(beta)torch_npu.npu_anchor_response_flags</a></p>
@@ -94,7 +93,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row2090953141119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1690125311117"><a name="p1690125311117"></a><a name="p1690125311117"></a><a href="(beta)torch_npu-npu_conv_transpose2d.md">(beta)torch_npu.npu_conv_transpose2d</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p122041623817"><a name="en-us_topic_0000001655404257_p122041623817"></a><a name="en-us_topic_0000001655404257_p122041623817"></a>Applies a 2D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as deconvolution.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p122041623817"><a name="en-us_topic_0000001655404257_p122041623817"></a><a name="en-us_topic_0000001655404257_p122041623817"></a>Applies a 2D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as "deconvolution".</p>
 </td>
 </tr>
 <tr id="row49065381112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p189035310112"><a name="p189035310112"></a><a name="p189035310112"></a><a href="(beta)torch_npu-npu_conv2d.md">(beta)torch_npu.npu_conv2d</a></p>
@@ -114,7 +113,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row9577205019119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7577105010119"><a name="p7577105010119"></a><a name="p7577105010119"></a><a href="(beta)torch_npu-npu_convolution_transpose.md">(beta)torch_npu.npu_convolution_transpose</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p35776509119"><a name="p35776509119"></a><a name="p35776509119"></a>Applies a 2D or 3D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as deconvolution.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p35776509119"><a name="p35776509119"></a><a name="p35776509119"></a>Applies a 2D or 3D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as "deconvolution".</p>
 </td>
 </tr>
 <tr id="row75771250101115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p15771150151111"><a name="p15771150151111"></a><a name="p15771150151111"></a><a href="(beta)torch_npu-npu_deformable_conv2d.md">(beta)torch_npu.npu_deformable_conv2d</a></p>
@@ -199,7 +198,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row115511438538"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p75511930538"><a name="p75511930538"></a><a name="p75511930538"></a><a href="(beta)torch_npu-npu_mish.md">(beta)torch_npu.npu_mish</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12741142714357"><a name="p12741142714357"></a><a name="p12741142714357"></a>Computes the Mish activation function element-wise.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12741142714357"><a name="p12741142714357"></a><a name="p12741142714357"></a>Computes the hyperbolic tangent of <code>self</code> element-wise.</p>
 </td>
 </tr>
 <tr id="row558010477110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17580147201113"><a name="p17580147201113"></a><a name="p17580147201113"></a><a href="(beta)torch_npu-npu_nms_rotated.md">(beta)torch_npu.npu_nms_rotated</a></p>
@@ -384,17 +383,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_attention_update.md">torch_npu.npu_attention_update</a></p>
 </td>
-<td><p>Updates the local intermediate variables <code>lse</code> and <code>local_out</code> output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Updates the local intermediate variables <code>lse</code> and <code>local_out</code> output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.</p>
 </td>
 </tr>
 <tr id="row_block_sparse_attention"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p10326218132921"><a name="p10326218132921"></a><a name="p10326218132921"></a><a href="torch_npu-npu_block_sparse_attention.md">torch_npu.npu_block_sparse_attention</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p10326218132922"><a name="p10326218132922"></a><a name="p10326218132922"></a>Computes <code>BlockSparseAttention</code>. This sparse attention mechanism supports block-level sparsity. It uses <code>block_sparse_mask</code> to specify the KV blocks selected by each Q block to achieve efficient attention computation.</p>
-</td>
-</tr>
-<tr id="row_chunk_gated_delta_rule"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p10326218132923"><a name="p10326218132923"></a><a name="p10326218132923"></a><a href="torch_npu-npu_chunk_gated_delta_rule.md">torch_npu.npu_chunk_gated_delta_rule</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p10326218132924"><a name="p10326218132924"></a><a name="p10326218132924"></a>Computes Chunked Gated Delta Rule (CGDR), a chunked implementation of GDR. It splits the input sequence into chunks to achieve parallel execution. This operator provides higher computation efficiency than Recurrent Gated Delta Rule in long-context scenarios. It is applicable to the prefill phase.</p>
 </td>
 </tr>
 <tr id="row16527145114477"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1338142581"><a name="p1338142581"></a><a name="p1338142581"></a><a href="torch_npu-npu_convert_weight_to_int4pack.md">torch_npu.npu_convert_weight_to_int4pack</a></p>
@@ -454,7 +448,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p1720095217417"></a><a name="p1720095217417"></a><a href="torch_npu-npu_gelu_mul.md">torch_npu.npu_gelu_mul</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p9269284217"><a name="p9269284217"></a><a name="p9269284217"></a>Performs the fused computation of the Gaussian Error Linear Unit (GELU) and MUL multiplication on the input tensor.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p9269284217"><a name="p9269284217"></a><a name="p9269284217"></a>Performs fused computation of GELU and MUL. When the last axis of <code>input</code> is 32-byte aligned, this API performs fused computation of GELU and MUL to improve performance. When the last axis is not 32-byte aligned, operator concatenation is recommended. That is, it performs computation step by step using the formulas.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p5338134195811"></a><a name="p5338134195811"></a><a href="torch_npu-npu_group_norm_silu.md">torch_npu.npu_group_norm_silu</a></p>
@@ -494,17 +488,17 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog.md">torch_npu.npu_mla_prolog</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs Multi-Head Latent Attention (MLA) preprocessing computations in inference scenarios.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios.</span></p>
 </td>
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog_v2.md">torch_npu.npu_mla_prolog_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs enhanced Multi-Head Latent Attention preprocessing computations in inference scenarios.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios.</span></p>
 </td>
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog_v3.md">torch_npu.npu_mla_prolog_v3</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs enhanced Multi-Head Latent Attention preprocessing computations in inference scenarios.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios.</span></p>
 </td>
 </tr>
 <tr id="row125419366217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18998182119294"><a name="p18998182119294"></a><a name="p18998182119294"></a><a href="torch_npu-npu_mm_all_reduce_base.md">torch_npu.npu_mm_all_reduce_base</a></p>
@@ -529,7 +523,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row11308231313"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p57431312165820"><a name="p57431312165820"></a><a name="p57431312165820"></a><a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14743151275819"><a name="p14743151275819"></a><a name="p14743151275819"></a>Uses the gating mechanism of the Mixture of Experts (MoE) architecture to execute expert routing computations. This API performs Softmax computation on the input <code>x</code> followed by TopK computation to select the top-K experts with the highest weights.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14743151275819"><a name="p14743151275819"></a><a name="p14743151275819"></a>Performs Softmax operation on the gating output during MoE computation to obtain the top-k result.</p>
 </td>
 </tr>
 <tr id="row133111231730"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p147431112105811"><a name="p147431112105811"></a><a name="p147431112105811"></a><a href="torch_npu-npu_moe_init_routing.md">torch_npu.npu_moe_init_routing</a></p>
@@ -549,7 +543,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_quant_lightning_indexer.md">torch_npu.npu_quant_lightning_indexer</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Obtains the Top-$k$ positions for each token.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Performs preprocessing computation for SparseFlashAttention (SFA) in inference scenarios. This API selects key sparse tokens and quantizes the input <code>query</code> and <code>key</code> to implement INT8 storage and INT8 computation to maximize performance gains.</p>
 </td>
 </tr>
 <tr id="row9719124019218"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p14326218132919"><a name="p14326218132919"></a><a name="p14326218132919"></a><a href="torch_npu-npu_quant_matmul.md">torch_npu.npu_quant_matmul</a></p>
@@ -569,7 +563,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row9368201625615"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p432973317361"><a name="p432973317361"></a><a name="p432973317361"></a><a href="torch_npu-npu_quant_scatter.md">torch_npu.npu_quant_scatter</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p133291433113614"><a name="p133291433113614"></a><a name="p133291433113614"></a>Quantizes <code>updates</code>, and then updates the values in <code>self</code> using the values in <code>updates</code> according to the specified <code>axis</code> and <code>indices</code>. The data in <code>self</code> remains unchanged.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p133291433113614"><a name="p133291433113614"></a><a name="p133291433113614"></a>Quantizes <code>updates</code>, and then updates the values in <code>input</code> using the values in <code>updates</code> according to the specified <code>axis</code> and <code>indices</code>. The data in <code>input</code> remains unchanged.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p20338144125814"></a><a name="p20338144125814"></a><a href="torch_npu-npu_recurrent_gated_delta_rule.md">torch_npu.npu_recurrent_gated_delta_rule</a></p>
@@ -579,7 +573,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row159729564415"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p109331430113612"><a name="p109331430113612"></a><a name="p109331430113612"></a><a href="torch_npu-npu_quant_scatter_.md">torch_npu.npu_quant_scatter_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p693315307360"><a name="p693315307360"></a><a name="p693315307360"></a>Quantizes <code>updates</code>, and then updates the values in <code>self</code> using the values in <code>updates</code> based on the specified <code>axis</code> and <code>indices</code>. The data in <code>self</code> is updated in place.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p693315307360"><a name="p693315307360"></a><a name="p693315307360"></a>Quantizes <code>updates</code>, and then updates the values in <code>input</code> using the values in <code>updates</code> based on the specified <code>axis</code> and <code>indices</code>. The data in <code>input</code> is updated in place.</p>
 </td>
 </tr>
 <tr id="row1432501813299"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p20338144125815"><a name="p20338144125815"></a><a name="p20338144125815"></a><a href="torch_npu-npu_quantize.md">torch_npu.npu_quantize</a></p>
@@ -589,7 +583,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row16875125182711"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_scatter_nd_update.md">torch_npu.npu_scatter_nd_update</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863744477_p15682749165813"><a name="en-us_topic_0000001863744477_p15682749165813"></a><a name="en-us_topic_0000001863744477_p15682749165813"></a>Updates the values in <code>self</code> at the specified indices using the values from <code>updates</code>, and saves the result to the output tensor. The data in <code>self</code> remains unchanged.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863744477_p15682749165813"><a name="en-us_topic_0000001863744477_p15682749165813"></a><a name="en-us_topic_0000001863744477_p15682749165813"></a>Updates the values in <code>input</code> at the specified indices using the values from <code>updates</code>, and saves the result to the output tensor. The data in <code>input</code> remains unchanged.</p>
 </td>
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_sparse_flash_attention.md">torch_npu.npu_sparse_flash_attention</a></p>
@@ -619,7 +613,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row9470191314519"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83781723143618"><a name="p83781723143618"></a><a name="p83781723143618"></a><a href="torch_npu-npu_scatter_nd_update_.md">torch_npu.npu_scatter_nd_update_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001816704932_p12276121818501"><a name="en-us_topic_0000001816704932_p12276121818501"></a><a name="en-us_topic_0000001816704932_p12276121818501"></a>Updates the values in <code>self</code> at the specified indices using the values from <code>updates</code>, and saves the result to the output tensor. The data in <code>self</code> is modified.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001816704932_p12276121818501"><a name="en-us_topic_0000001816704932_p12276121818501"></a><a name="en-us_topic_0000001816704932_p12276121818501"></a>Updates the values in <code>input</code> at the specified indices using the values from <code>updates</code>, and saves the result to the output tensor. The data in <code>input</code> is modified.</p>
 </td>
 </tr>
 <tr id="row1243753818365"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1332519186295"><a name="p1332519186295"></a><a name="p1332519186295"></a><a href="torch_npu-npu_trans_quant_param.md">torch_npu.npu_trans_quant_param</a></p>
@@ -644,12 +638,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-empty_with_swapped_memory.md">torch_npu.empty_with_swapped_memory</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a tensor whose device information is NPU while its actual memory resides on the host side.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a special tensor with its device type set to NPU, while its actual memory resides on the host side.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-erase_stream.md">torch_npu.erase_stream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Removes the marker indicating that a tensor has been used by a stream, which was added to the memory pool by using <code>record_stream</code>.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Removes the tensor marker (added by <code>record_stream</code> to the memory pool) after the tensor has been used by the stream.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_gather_sparse_index.md">torch_npu.npu_gather_sparse_index</a></p>
@@ -754,7 +748,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-set_device_limit.md">torch_npu.set_device_limit</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of Cube and Vector cores used for operator execution on a specified device.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of Cube and Vector cores used by the current process for operator execution on the specified device.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-get_device_limit.md">torch_npu.get_device_limit</a></p>
@@ -800,6 +794,11 @@ This section describes common custom APIs, including tensor creation and computa
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm_dynamic_quant.md">torch_npu.npu_add_rms_norm_dynamic_quant</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>The RMSNorm operator is a normalization operation commonly used in foundation models. Compared with the LayerNorm operator, it removes the mean subtraction step. The DynamicQuant operator performs symmetric dynamic quantization on the input tensor. The AddRmsNormDynamicQuant operator fuses the Add operator before RMSNorm and 1 or 2 DynamicQuant operators applied to the RMSNorm normalization output, reducing data transfer operations.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-save_npugraph_tensor.md">torch_npu.save_npugraph_tensor</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Provides a tensor dumping capability similar to the native print feature without affecting <code>aclgraph</code> replay. This API allows the tensor data, data types, and shape information of intermediate nodes within an <code>aclgraph</code> to be saved to a specified <code>.pt</code> or <code>.bin</code> file, enabling users to inspect tensor data during <code>aclgraph</code> execution and quickly locate issues.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_fused_floyd_attention.md">torch_npu.npu_fused_floyd_attention</a></p>

@@ -10,17 +10,14 @@
 
 ## Function
 
-- Description: Performs dequantization on a tensor `x`, converting quantized integers back into floating-point values. Dequantization is the inverse process of quantization and is used to restore low-precision integers (such as `int8`) back to high-precision floating-point numbers.
+- Description: Dequantizes tensor `x`, converting integers back into floating-point values.
+- Formula:
 
-- Formulas: `out` is the output tensor, `x` is the quantized input tensor, `scale` is the scaling factor, and `offset` is the padding offset.
-  
-  - When `offset` is provided:
+  $out$ is the output, and $quant$ is the specified output data type `dst_dtype`.
 
-    $out = (x + offset) * scale$
-  
-  - When `offset` is omitted:
-
-    $out = x * scale$
+  $$
+  out = \text{quant}((x + \text{offset}) * \text{scale}) 
+  $$
 
 ## Prototype
 
@@ -58,7 +55,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 
 `Tensor`
 
-Final computation result of `npu_anti_quant`, $out$ in the formula. Non-contiguous tensors are supported. Empty tensors are supported.
+Computation result of `npu_anti_quant`, $out$ in the formula. Non-contiguous tensors are supported. Empty tensors are supported.
 
 ## Constraints
 
@@ -78,7 +75,7 @@ Final computation result of `npu_anti_quant`, $out$ in the formula. Non-contiguo
     >>> scale = torch.tensor([2.0], dtype=torch.float).npu()
     >>> offset = torch.tensor([2.0], dtype=torch.float).npu()
     >>> out = torch_npu.npu_anti_quant(x_tensor, scale, offset=offset, dst_dtype=torch.float16)
-    >>> print(out)
+    >>> out
     tensor([ 6.,  8., 10., 12.], device='npu:0', dtype=torch.float16)
     ```
 
@@ -113,4 +110,3 @@ Final computation result of `npu_anti_quant`, $out$ in the formula. Non-contiguo
     # Expected output of the preceding code sample:
     tensor([ 6.,  8., 10., 12.], device='npu:0', dtype=torch.float16)
     ```
-    

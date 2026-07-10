@@ -19,26 +19,14 @@
   $$
 
   $$
-  scale =
-  \begin{cases}
-  min(FP8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ = FP8} \\
-  min(HiF8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ = HiF8} \\
-  min(INT8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ = INT8}
-  \end{cases}
+  scale = min(FP8\_MAX(HiF8\_MAX / INT8\_MAX) / input\_max, 1/min\_scale)
   $$
 
   $$
   y = cast\_to\_[FP8/HiF8/INT8](x / scale)
   $$
 
-  $block\_reduce\_max$ represents the maximum value within each individual block. `FP8_MAX`, `HiF8_MAX`, and `INT8_MAX` denote the maximum representable positive values for the FP8, HiF8, and INT8 target quantization types respectively, which are determined by `dst_type`.
-  FP8, HiF8, and INT8 are all 8-bit low-precision target data types representing FP8 floating-point, HiF8 floating-point, and INT8 integer specifications respectively. The following table describes the maximum supported values.
-
-  | Target Type| Maximum Positive Value|
-  | --- | --- |
-  | FP8 | FP8_MAX = 448 |
-  | HiF8 | HiF8_MAX = 32768 |
-  | INT8 | INT8_MAX = 127 |
+  $block\_reduce\_max$ represents the maximum value within each individual block.
 
 ## Prototype
 
@@ -73,11 +61,11 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
   >>> col_block_size = 128
   
   >>> y, scale = torch_npu.npu_dynamic_block_quant(x, min_scale=min_scale, dst_type=dst_type, row_block_size=row_block_size, col_block_size=col_block_size)
-  >>> print(y)
+  >>> y
   tensor([[ 92,  65,  15, 127],
           [100, 127, 116,  64],
           [ 95,  15,  87, 127]], device='npu:0', dtype=torch.int8)
-  >>> print(scale)
+  >>> scale
   tensor([[0.0063],
           [0.0076],
           [0.0073]], device='npu:0')

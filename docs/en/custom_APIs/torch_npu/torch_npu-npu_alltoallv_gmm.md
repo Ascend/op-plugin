@@ -12,11 +12,7 @@
 
 - Routed expert formula:
 
-    $$ata\_out = AlltoAllv(gmm\_x)$$
-
-    $$permute\_out = Permute(ata\_out)$$
-
-    $$gmm\_y = permute\_out \times gmm\_weight$$
+    ![](../../figures/en-us_formulaimage_0000002357766385.png)
 
     - `ata_out` is the output tensor of the `AlltoAllv` communication applied to `gmm_x`, used as the input for `Permute`.
     - `permute_out` is the output tensor of the `Permute` operation, serving as the left matrix in the routed expert GroupedMatMul computation.
@@ -25,29 +21,11 @@
 
 - Shared expert formula:
 
-    $$mm\_y = mm\_x \times mm\_weight$$
+    ![](../../figures/en-us_formulaimage_0000002323547858.png)
+
     - `mm_x` indicates the left matrix for shared expert MatMul.
     - `mm_weight` indicates the right matrix for shared expert MatMul.
     - `mm_y` indicates the output of shared expert MatMul.
-- Glossary
-
-    | Term| Definition|
-    | --- | --- |
-    | **Mixture of Experts** (MoE)| A neural network architecture that replaces standard feed-forward layers with multiple expert sub-networks. A gating mechanism dynamically selects a subset of experts for each input token, increasing model capacity while controlling computational cost.|
-    | **Routed Expert**| An expert sub-network dynamically selected by the gating mechanism in an MoE model. Following TopK routing, only the designated routed experts are activated for computation.|
-    | **Shared Expert**| A fixed expert that all tokens pass through, which does not participate in routing and is used to capture general knowledge. It runs in parallel with routed experts.|
-    | **token** | The fundamental data unit processed by a model. A token is a word or subword in NLP. In MoE contexts, each token is dynamically assigned to specific experts through a gating mechanism.|
-    | **TopK routing**| A gating mechanism that selects the top $K$ highest-scoring experts for each input token, where the range of $K$ is typically [2, 8].|
-    | **Expert Parallelism** (EP)| A parallelism strategy that distributes expert weights across multiple ranks. Each rank stores a subset of experts, and tokens are routed to the target device through cross-node communication.|
-    | **EP communication domain**| A collective communication group consisting of all ranks participating in expert parallelism. The variable `ep_world_size` represents the total rank count in this group.|
-    | **AlltoAllv** | A collective communication operation where each rank sends and receives variable amounts of data to and from all other ranks in the communication group. Unlike standard AlltoAll, the amount of data exchanged between ranks can differ.|
-    | **Permute** | A data reordering operation that groups tokens by expert after MoE communication, ensuring that tokens belonging to the same expert are stored contiguously in memory for batched computation.|
-    | **GroupedMatMul** (GMM)| Grouped matrix multiplication. It executes independent matrix multiplications across multiple tensor pairs simultaneously. Each group can have distinct shapes, making it suitable for uneven token distributions in MoE.|
-    | **MatMul** | Standard matrix multiplication.|
-    | **hidden size** | The dimensionality of the hidden layers (feature vector length). Routed experts and shared experts can have distinct hidden sizes, denoted as $H_1$ and $H_2$ respectively.|
-    | **head\_num** | The number of attention heads. In this operator, it is used to describe the expert output dimensions, denoted as $N_1$ and $N_2$ respectively.|
-    | **Batch sequence size** (BS)| The total batch sequence length, representing the total number of input tokens in a single execution step.|
-    | **Number of experts** (e)| The number of experts deployed per individual rank. The total number of experts across the entire cluster equals `e * ep_world_size`.|
 
 ## Prototype<a name="en-us_topic_0000002282815538_section45077510411"></a>
 
@@ -83,11 +61,11 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - This API supports graph mode.
 - The communication volume per rank must be greater than or equal to `2` MB.
 - Variables used in input parameter tensor shapes:
-    - `BSK`: Number of tokens sent by the current rank (`BS * K = BSK`), equal to the sum of `send_counts`. The range is (0, 52428800)`.
+    - `BSK`: Number of tokens sent by the current rank (`BS * K = BSK`), equal to the sum of `send_counts`. The range is (0, 52428800).
     - `H1`: Hidden layer size of the routed experts. The value range is (0, 65536).
 
     - `H2`: Hidden layer size of the shared experts. The value range is (0, 12288].
-    - `e`: Number of experts on a single rank, which must be less than or equal to 32. The maximum supported value for `e * epWorldSize` is 256.
+    - `e`: Number of experts on a single rank, which must be less than or equal to 32. The maximum supported value for `e * ep_world_size` is 256.
 
     - `N1`: Number of heads for routed experts. The value range is (0, 65536).
     - `N2`: Number of heads for shared experts. The value range is (0, 65536).

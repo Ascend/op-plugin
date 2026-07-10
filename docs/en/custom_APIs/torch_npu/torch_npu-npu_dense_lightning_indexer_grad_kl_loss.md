@@ -22,7 +22,7 @@
         $$
         I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
         $$
-    
+  
         - $W_{t,:}$ is the weights corresponding to the $t$-th token in the $W$ matrix.
         - $\tilde{q}_{t,:}$ is the result after collapsing the $G$ query heads corresponding to the $t$-th token in the $\tilde{Q}$ matrix.
         - $\tilde{K}_{:t,:}$ is the rows up to index $t$ in the $\tilde{K}$ matrix.
@@ -32,7 +32,7 @@
         $$
         p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
         $$
-        
+    
         - $p_{t,:}$ is the Softmax result corresponding to the $t$-th token.
         - $q_{t,:}$ is the result of merging the $G$ query heads along the axis corresponding to the $t$-th token in the $Q$ matrix.
         - $K_{:t,:}$ is the rows up to index $t$ in the $K$ matrix.
@@ -57,11 +57,11 @@
         $$
         dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
         $$
-    
+  
         $$
         d\mathop{{\tilde{q}}}\nolimits_{{t,:}}=dS\mathop{{}}\nolimits_{{t,:}}@\tilde{K}\mathop{{}}\nolimits_{{:t,:}}
         $$
-    
+  
         $$
         d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
         $$

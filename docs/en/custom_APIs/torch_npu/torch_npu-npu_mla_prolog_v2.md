@@ -61,7 +61,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 - **`rmsnorm_gamma_ckv`** (`Tensor`): Required. The $\gamma$ parameter in the `RmsNorm` formula for computing c<sup>KV</sup>. This parameter must be 1D with shape `(Hckv,)`. The data type can be `bfloat16`. The data layout can be ND.
 - **`rope_sin`** (`Tensor`): Required. Sine parameter matrix for rotary positional encoding (`ROPE`) computation. This parameter must be 2D or 3D, with shape `(T, Dr)` or `(B, S, Dr)`. The data type can be `bfloat16`. The data layout can be ND.
 - **`rope_cos`** (`Tensor`): Required. Cosine parameter matrix for rotary positional encoding (`ROPE`) computation. This parameter must be 2D or 3D, with shape `(T, Dr)` or `(B, S, Dr)`. The data type can be `bfloat16`. The data layout can be ND.
-- **`cache_index`** (`Tensor`): Required. Linear page slot index for writing `kv_cache` and `kr_cache`. This parameter must 1D or 2D, with shape `(T)` or `(B, S)`. The data type can be `int64`. The data layout can be ND. The value range of each element is `[0, L)`. Here, `L` represents the product of the lengths of the 0th and 1st dimensions of `kv_cache`. This product must be identical to the product of the first two dimensions of `kr_cache`.
+- **`cache_index`** (`Tensor`): Required. Index for storing `kv_cache` and `kr_cache`. This parameter must be 1D or 2D, with shape `(T)` or `(B, S)`. The data type can be `int64`. The data layout can be ND. The value range of `cache_index` is `[0, BlockNum * BlockSize)`. The validity of input values is not verified internally, and must be ensured by the user.
 - **`kv_cache`** (`Tensor`): Required. Cache tensor for key and value indexing. This parameter must be 4D with shape `(BlockNum, BlockSize, Nkv, Hckv)`. The data type can be `bfloat16` or `int8`. The data layout can be ND.
 - **`kr_cache`** (`Tensor`): Required. Cache tensor for key rotary positional encoding. This parameter must be 4D with shape `(BlockNum, BlockSize, Nkv, Dr)`. The data type can be `bfloat16` or `int8`. The data layout can be ND.
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
@@ -100,14 +100,14 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     - `D`: dimension of query and key without positional encoding. The value must be `128`.
     - `Dr`: dimension of query and key positional encoding. The value must be `64`.
     - `Nkv`: attention head count for key and value. The value must be `1`.
-    - `BlockNum`: Number of blocks in the PagedAttention scenario. That is, the length of the 0th dimension of `kv_cache` and `kr_cache`. Given batch size `B`, key and value sequence length `Skv`, and block size `BlockSize`, the condition $\text{BlockNum} \ge \lceil B * Skv/\text{BlockSize} \rceil$ must be satisfied. Here, `Skv` can be 0.
+    - `BlockNum`: number of blocks in the PagedAttention scenario. The value is calculated by dividing the product of `B` and `Skv` by `BlockSize`, and then rounding up to the nearest integer. Here, `Skv` represents the key and value sequence length. This value can be `0`.
     - `BlockSize`: block size in the PagedAttention scenario. Supported values are `16` and `128`.
     - `T`: size after the fusion of the `B` and `S` axes. The value ranges from 0 to 1048576.
 
 - Shape constraints:
     - When `token_x` uses `B` and `S` axis fusion, the layout is `(T, He)`. In this configuration, the shape of `rope_sin` and `rope_cos` must be `(T, Dr)`. The shape of `cache_index` must be `(T,)`. The shape of `dequant_scale_x` must be `(T, 1)`. The shape of `query` must be `(T, N, Hckv)`. The shape of `query_rope` must be `(T, N, Dr)`. In full KV cache quantization scenarios, the shape of `dequant_scale_q_nope` must be `(T, N, 1)`. In other scenarios, the shape of `dequant_scale_q_nope` must be `(1,)`.
     - When `token_x` does not use `B` and `S` axis fusion, the layout is `(B, S, He)`. In this configuration, the shape of `rope_sin` and `rope_cos` must be `(B, S, Dr)`. The shape of `cache_index` must be `(B, S)`. The shape of `dequant_scale_x` must be `(B * S, 1)`. The shape of `query` must be `(B, S, N, Hckv)`. The shape of `query_rope` must be `(B, S, N, Dr)`. In full KV cache quantization scenarios, the shape of `dequant_scale_q_nope` must be `(B * S, N, 1)`. In other scenarios, the shape of `dequant_scale_q_nope` must be `(1,)`.
-    - One or more of `B`, `S`, `T`, and `Skv` can be `0`. That is, inputs whose shapes depend on these values can be empty tensors. Other inputs must not be empty tensors.
+    - One or more of `B`, `S`, `T`, and `Skv` can be`0`. That is, inputs whose shapes depend on these values can be empty tensors. Other inputs must not be empty tensors.
         - If `B`, `S`, or `T` is set to `0`, `query`, `query_rope`, and `dequant_scale_q_nope` output empty tensors. `kv_cache`, `kr_cache`, `kv_cache_out`, and `kr_cache_out` are not updated.
         - If `Skv` is set to `0`, `query`, `query_rope`, and `dequant_scale_q_nope` are computed normally. `kv_cache`, `kr_cache`, `kv_cache_out`, and `kr_cache_out` are not updated and output empty tensors.
 
@@ -786,10 +786,9 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
     rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
     rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+    cache_index = torch.rand(B, S).to(torch.int64).npu()
     kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
     kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
-    cache_num_slots = kv_cache.size(0) * kv_cache.size(1)
-    cache_index = torch.randint(0, cache_num_slots, (B, S), dtype=torch.int64).npu()
     rmsnorm_epsilon_cq = 1.0e-5
     rmsnorm_epsilon_ckv = 1.0e-5
     cache_mode = "PA_BSND"
@@ -857,10 +856,9 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     rmsnorm_gamma_ckv = torch.rand(Hckv, dtype=torch.bfloat16).npu()
     rope_sin = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
     rope_cos = torch.rand(B, S, Dr, dtype=torch.bfloat16).npu()
+    cache_index = torch.rand(B, S).to(torch.int64).npu()
     kv_cache = torch.rand(BlockNum, BlockSize, Nkv, Hckv, dtype=torch.bfloat16).npu()
     kr_cache = torch.rand(BlockNum, BlockSize, Nkv, Dr, dtype=torch.bfloat16).npu()
-    cache_num_slots = kv_cache.size(0) * kv_cache.size(1)
-    cache_index = torch.randint(0, cache_num_slots, (B, S), dtype=torch.int64).npu()
     rmsnorm_epsilon_cq = 1.0e-5
     rmsnorm_epsilon_ckv = 1.0e-5
     cache_mode = "PA_BSND"

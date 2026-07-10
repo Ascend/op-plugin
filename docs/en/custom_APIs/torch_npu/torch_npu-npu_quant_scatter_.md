@@ -59,7 +59,7 @@ Output tensor representing the results after `input` is updated.
 
 - Single-operator call
 
-   ```python
+    ```python
    >>> import torch
    >>> import torch_npu
    >>> import numpy as np
@@ -85,11 +85,11 @@ Output tensor representing the results after `input` is updated.
    >>> reduce = "update"
    >>>
    >>> out=torch_npu.npu_quant_scatter_(var, indices, updates, quant_scales, quant_zero_points, axis=axis, quant_axis=quant_axis, reduce=reduce)
-   >>> print(out.shape)
+   >>> out.shape
    torch.Size([24, 4096, 128])
-   >>> print(out.dtype)
+   >>> out.dtype
    torch.int8
-   >>> print(out)
+   >>> out
    tensor([[[2, 3, 2,  ..., 3, 6, 1],
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0],
@@ -139,7 +139,7 @@ Output tensor representing the results after `input` is updated.
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0],
             [0, 0, 0,  ..., 0, 0, 0]]], device='npu:0', dtype=torch.int8)
-   ```
+    ```
 
 - Graph mode call
 

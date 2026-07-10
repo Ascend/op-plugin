@@ -4,8 +4,8 @@
 
 | Product                                                        | Supported|
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 inference products</term>        | √  |
-|<term>Atlas A3 inference products</term>        | √  |
+|<term>Atlas A2 inference products</term>  | √  |
+|<term>Atlas A3 inference products</term>  | √  |
 
 ## Function
 
@@ -25,16 +25,16 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 ## Parameters
 
-> [!NOTE]   
+> [!NOTE]  
 >
 > - Dimension definitions for the `query`, `key`, and `weights` parameters:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br>`D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
 > - `S1` indicates the `S` dimension in the shape of `query`.<br>`S2` indicates the `S` dimension in the shape of `key`.<br>`T1` indicates the `T` dimension in the shape of `query`.<br>`T2` indicates the `T` dimension in the shape of `key`.<br>`N1` indicates the `N` dimension in the shape of `query`.<br>`N2` indicates the `N` dimension in the shape of `key`.
 
-- **`query`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout is ND. The data type can be `bfloat16` or `float16`. When `layout_query` is `BSND`, the shape of this parameter is `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape of this parameter is `[T1, N1, D]`. The value of `N1` must be less than or equal to `64`.
+- **`query`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_query` is `BSND`, the shape of this parameter is `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape of this parameter is `[T1, N1, D]`. The value of `N1` must be less than or equal to `64`.
     
-- **`key`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout is ND. The data type can be `bfloat16` or `float16`. When `layout_key` is `PA_BSND`, the shape of this parameter is `[block_count, block_size, N2, D]`, where `block_count` indicates the total number of blocks in PageAttention, and `block_size` represents the token count per block, which must be an integer multiple of 16 and supports a maximum size of `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
+- **`key`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_key` is `PA_BSND`, the shape of this parameter is `[block_count, block_size, N2, D]`, where `block_count` indicates the total number of blocks in PageAttention, and `block_size` represents the token count per block, which must be an integer multiple of 16 and supports a maximum size of `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
     
-- **`weights`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout is ND. The data type can be `bfloat16`, `float16`, or `float32`. The shape of this parameter can be `[B, S1, N1]` or `[T, N1]`.
+- **`weights`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16`, `float16`, or `float32`. The shape of this parameter can be `[B, S1, N1]` or `[T, N1]`.
     
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 
@@ -44,8 +44,8 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - **`actual_seq_lengths_key`** (`Tensor`): Optional. Valid token count of `key` in different batches. The data type can be `int32`. If this parameter is not specified or is set to `None`, its length is identical to the size of the `S` dimension in the shape of `key`.
     - The valid token count for each batch must not exceed the size of the `S` dimension in `key` and must be greater than or equal to 0. This parameter must be a 1D tensor of length `B`. When `layout_key` is set to `TND` or `PA_BSND`, this parameter must be provided. When `layout_key` is set to `TND`, each element indicates the prefix sum of token counts across batches, and the value of each element must be greater than or equal to that of the preceding element.
 
-- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PageAttention. The data layout is ND. The data type can be `int32`.
-    - In page attention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_key` across batches).
+- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PageAttention. The data layout can be ND. The data type can be `int32`.
+    - In PageAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_key` across batches).
 
 - **`layout_query`** (`str`): Optional. Data layout configuration of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
@@ -58,17 +58,17 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
     - `0`: enables `defaultMask` mode.
     - `3`: enables rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
 
-- **`pre_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of preceding tokens with which the attention is associated. The data type can be `int64`. Only the default value `2^63-1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value`2^63-1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of subsequent tokens with which the attention is associated. The data type can be `int64`. Only the default value `2^63-1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value`2^63-1` is supported.
 
-- **`return_value`** (`bool`): Optional. Specifies whether to output `sparse_values`. `True` outputs `sparse_values`, and `False` disables it. The default value is `False`. This parameter is supported only during training and when `layout_key` is not set to `PA_BSND`.
+- **`return_value`** (`bool`): Optional. Specifies whether to output `sparse_values`. Valid values are `True` (enables the output but does not support graph capture mode) or `False` (disables the output). The default value is `False`. This parameter is supported only during training and when `layout_key` is not set to `PA_BSND`.
 
 ## Return Values
 
-- **`sparse_indices`** (`Tensor`): Output $Indices$ in the formula. The data type can be `int32`. The data layout is ND. When `layout_query` is `"BSND"`, the shape of this parameter is `[B, S1, N2, sparse_count]`. When `layout_query` is `"TND"`, the shape of this parameter is `[T1, N2, sparse_count]`.
+- **`sparse_indices`** (`Tensor`): Output $Indices$ in the formula. The data type can be `int32`. The data layout can be ND. When `layout_query` is `"BSND"`, the shape of this parameter is `[B, S1, N2, sparse_count]`. When `layout_query` is `"TND"`, the shape of this parameter is `[T1, N2, sparse_count]`.
 
-- **`sparse_values`** (`Tensor`): Value data corresponding to the $Indices$ output in the formula. The data type can be `bfloat16` or `float16`. The data layout is ND. The shape of this parameter is identical to that of `sparse_indices`.
+- **`sparse_values`** (`Tensor`): Value data corresponding to the $Indices$ output in the formula. The data type can be `bfloat16` or `float16`. The data layout can be ND. The shape of this parameter is identical to that of `sparse_indices`.
 
 ## Constraints
 
@@ -113,7 +113,6 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
             actual_seq_lengths_key=actual_seq_lengths_key, block_table=block_table, layout_query=layout_query, 
             layout_key=layout_key, sparse_count=sparse_count, sparse_mode=sparse_mode)
 
-    print(sparse_indices)
     # Expected sparse_indices output of the preceding code sample:
     tensor([[[[4488, 3926, 1154, ..., 3535, 8031, 8180]]]],
             device='npu:0', dtype=torch.int32)

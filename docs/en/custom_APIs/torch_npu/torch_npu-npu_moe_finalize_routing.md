@@ -13,7 +13,7 @@
 - Formulas:
 
     $$
-    expertid = expertForSourceRow[i,k] \\
+    expertid = exportForSourceRow[i,k] \\
     out(i,j) = skip1_{i,j} + skip2Optional_{i,j} + \sum_{k=0}^{K}(scales_{i,k} * (expandPermutedRows_{expandedSrcToDstRow_{i+k*num\_rows},j} + bias_{expertid,j}))
     $$
 
@@ -94,7 +94,7 @@
 ## Prototype
 
 ```python
-torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode=0) -> Tensor
+torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode=0) -> Tensor
 ```
 
 ## Parameters
@@ -114,7 +114,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 - **`bias`** (`Tensor`): Required. This parameter can be set to `None`. Expert bias, $bias$ in the formula. This parameter must be a 2D tensor. The data type must be identical to that of `expanded_permuted_rows`. The shape can be `(E, H)`.
 - **`scales`** (`Tensor`): Required. This parameter can be set to `None`. Expert weights, $scales$ in the formula. This parameter must be a 2D tensor. The data type must be identical to that of `expanded_permuted_rows`. The shape can be `(NUM_ROWS, K)`.
 - **`expanded_src_to_dst_row`** (`Tensor`): Required. Index of each expert processing result, $expandedSrcToDstRow$ in the formula. This parameter must be a 1D tensor. The data type is `int32`. The shape can be `(NUM_ROWS * K,)`. When `drop_pad_mode` is `0` or `2`, the value range of the tensor is `[0, NUM_ROWS * K - 1]`. When `drop_pad_mode` is `1` or `3`, the value range of the tensor is `[-1, E * C - 1]`.
-- **`expert_for_source_row`** (`Tensor`): Required. This parameter can be set to `None`. Expert ID for each row, $expertForSourceRow$ in the formula. This parameter must be a 2D tensor. The data type is `int32`. The shape can be `(NUM_ROWS, K)`. The value range of the tensor is `[0, E - 1]`.
+- **`export_for_source_row`** (`Tensor`): Required. This parameter can be set to `None`. Expert ID for each row, $exportForSourceRow$ in the formula. This parameter must be a 2D tensor. The data type is `int32`. The shape can be `(NUM_ROWS, K)`. The value range of the tensor is `[0, E - 1]`.
 - **`drop_pad_mode`** (`int`): Optional. Specifies whether to enable drop-pad mode and the layout of `expanded_src_to_dst_row`. Valid values are `0`, `1`, `2`, or `3`. The default value is `0`.
      - `0`: enables dropless mode and `expanded_src_to_dst_row` is arranged in column-major order.
      - `1`: enables drop-pad mode and `expanded_src_to_dst_row` is arranged in column-major order.
@@ -151,13 +151,13 @@ Output parameter `out`, representing the final merged output of the MoE FFN. Thi
         >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
         >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
         >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        >>> expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
         >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
         >>> drop_pad_mode = 0
-        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> print(output.shape)
+        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
+        >>> output.shape
         torch.Size([50, 10])
-        >>> print(output.dtype)
+        >>> output.dtype
         torch.float32
         ```
       
@@ -178,13 +178,13 @@ Output parameter `out`, representing the final merged output of the MoE FFN. Thi
         >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
         >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
         >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        >>> expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        >>> export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
         >>> expanded_src_to_dst_row = torch.randint(low=-1, high=expert_num * expert_capacity - 1, size=(num_rows * top_k,), device=device,dtype=torch.int32)
         >>> drop_pad_mode = 1
-        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> print(output.shape)
+        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
+        >>> output.shape
       torch.Size([50, 10])
-        >>> print(output.dtype)
+        >>> output.dtype
       torch.float32
       ```
 
@@ -204,8 +204,8 @@ Output parameter `out`, representing the final merged output of the MoE FFN. Thi
         def __init__(self):
             super().__init__()
         
-        def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode):
-            return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+        def forward(self, expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode):
+            return torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
 
     def main():
         expert_num = 16
@@ -220,14 +220,14 @@ Output parameter `out`, representing the final merged output of the MoE FFN. Thi
         skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
         bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
         scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        export_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
         expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
         drop_pad_mode = 0
 
         model = GMMModel().npu()
         model = torch.compile(model, backend=npu_backend, dynamic=False)
 
-        custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+        custom_output = model(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, export_for_source_row, drop_pad_mode)
         print(custom_output.shape, custom_output.dtype)
 
     if __name__ == '__main__':

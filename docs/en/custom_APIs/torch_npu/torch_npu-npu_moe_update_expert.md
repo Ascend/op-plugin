@@ -12,8 +12,6 @@ Provides load balancing and expert pruning features, where the mapped expert tab
 
 - Load balancing: Maps the logical rank IDs of the top-K experts assigned to each token to physical rank IDs in redundant expert deployment scenarios. The computation method is as follows:
 
-   The variables used in the code are defined as follows. `F` indicates the number of columns in `eplb_table`, and `ceil(a, b)` indicates ceiling division, $\lceil a/b \rceil$.
-
    For load balancing, the following computation is performed on the i-th value in `expert_ids` (the i-th token).
 
     ```python
@@ -39,8 +37,8 @@ Provides load balancing and expert pruning features, where the mapped expert tab
     ```python
     active_mask_tensor = broadcast(active_mask, (BS, K))
     for i in range(BS):
-        expert_scales_vec[:] = sum(expert_scales[i, :]) * pruning_threshold[:]
-        balanced_active_mask[i, :] = (expert_scales_vec[i, :] < expert_scales[:]) & active_mask_tensor[i, :]
+        expert_scales[:] = sum(expert[i, :]) * pruning_threshold[:]
+        balanced_active_mask[i, :] = (expert_scales[i, :] < expert_scales[:]) & active_mask_tensor[i, :]
     ```
 
 ## Prototype
@@ -52,10 +50,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
 ## Parameters
 
 - **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32` or `int64`. The data layout must be ND. Non-contiguous tensors are supported.
-- **`eplb_table`** (`Tensor`): Required. Mapping table from logical experts to physical experts. The caller must ensure that the values in the input tensor are valid. The first column of each row stores the number of deployed instances (denoted by `count`) for the corresponding logical expert, and the value must be greater than or equal to `1`. Columns `[1, count]` store the physical rank IDs of the corresponding instances, with values in the range `[0, moe_expert_num)`. The shape of this parameter is `(log_expert_num, F)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported.  
-  - **`log_expert_num`**: Number of logical experts, which is equal to the number of rows in `eplb_table`. Each logical expert corresponds to one row in the mapping table. The value range is (0, 1024).
-  - **`F`**: Number of columns in the input mapping table. The value range is [2, `world_size + 1`]. The first column stores the number of deployed instances for the logical expert corresponding to each row (value > 0), and the remaining `F - 1` columns store the physical rank IDs on which the logical expert is deployed.
-  - **`moe_expert_num`**: Total number of physical experts, indicating the total number of replicas deployed for all logical experts. That is, the sum of all `count` values in the first column of `eplb_table`. The value range is (0, 1024]. This parameter plays the same role as `moe_expert_num` in the `torch_npu.npu_moe_distribute_dispatch` and `torch_npu.npu_moe_distribute_dispatch_v2` APIs.
+- **`eplb_table`** (`Tensor`): Required. Mapping table from logical experts to physical experts. The caller must ensure that the values in the input tensor are valid. The first column of each row stores the number of deployed instances (denoted by `count`) for the corresponding logical expert, and the value must be greater than or equal to `1`. Columns `[1, count]` store the physical rank IDs of the corresponding instances, with values in the range `[0, moe_expert_num)`. The shape of this parameter is `(moe_expert_num, F)`. The data type can be `int32`. The data layout must be ND. Non-contiguous tensors are supported. `F` indicates the number of columns in the input mapping table. The value range is [2, `world_size + 1`]. The first column stores the number of deployed instances for the Moe expert corresponding to each row (value > 0), and the remaining `F - 1` columns store the physical rank IDs on which the Moe expert is deployed.
 - **`expert_scales`** (`Tensor`): Optional. Scale weights of the top-K experts for each token. Ensure that the scale weights are sorted in descending order within each token. You can provide a valid tensor or a null pointer. When a valid tensor is provided for this parameter, you must also provide a valid tensor for `pruning_threshold`. The shape of this parameter is `(BS, K)`. The data type can be `fp16`, `bf16`, or `float. The data layout must be ND. Non-contiguous tensors are supported.
 - **`pruning_threshold`** (`Tensor`): Optional. Minimum threshold for expert scale weights. If the scale weight of a top-K expert for a token is smaller than the corresponding threshold, that expert is pruned for the token. That is, the token is not dispatched to that expert for processing. A valid tensor or a null pointer can be provided. When a valid tensor is provided for this parameter, a valid tensor must also be provided for `expert_scales`. The shape of this parameter is `(K,)` or `(1, K)`. The data type can be `float`. The data layout must be ND. Non-contiguous tensors are supported.
 - **`active_mask`** (`Tensor`): Optional. Indicates whether a token participates in communication. A valid tensor or a null pointer can be provided. If a valid tensor is provided, a valid tensor must also be provided for `expert_scales` and `pruning_threshold`. The value `true` indicates that the corresponding token participates in communication. All `true` values must appear before any `false` values. For example, `{true, false, true}` is an invalid input. If a null pointer is provided, all tokens participate in communication. The shape of this parameter is `(BS,)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported.
@@ -84,13 +79,12 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
 
 - Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 - The shape-related variables used in the parameter descriptions are defined as follows:
-    - **`BS`**: Batch sequence size, indicating the token count ultimately output by the current rank. For Atlas A3 training products/Atlas A3 inference products, the value range is `0 < BS <= 512`.
-    - **`K`**: Top-K expert selection count. The conditions `0 < K <= 16` and `0 < K <= log_expert_num` must be satisfied.
-    - **`log_expert_num`**: Number of logical experts, representing the number of rows in `eplb_table`. The value range is (0, 1024).
-    - **`moe_expert_num`**: Total number of physical experts, indicating the total number of replicas deployed for all logical experts. That is, the sum of all `count` values in the first column of `eplb_table`. The value range is (0, 1024].
+    - `BS`: Batch sequence size. That is, the number of tokens output by the current rank. Atlas A3 training products/Atlas A3 inference products: The value range is 0 < `BS` <= 512.
+    - `K`: Number of top-K experts selected. The value range is `0 < K ≤ 16`, and the condition `0 < K ≤ moe_expert_num` must be satisfied.
+    - `moe_expert_num`: Number of Moe experts. The value range is (0, 1024].
     - **`F`**: Number of columns in the input mapping table `eplb_table`. The value range is [2, `world_size + 1`].
-    - Number of replicas deployed for each logical expert (the count value in the first column of `eplb_table`). The minimum value is `1` and the maximum value is `world_size`.
-    - Total number of replicas deployed across all logical experts (sum of the count values in the first column of `eplb_table`). The total must be less than or equal to `1024` and be divisible by `world_size`.
+    - Number of replicas deployed for each expert (the `count` value in the first column of `eplb_table`). The minimum value is `1` and the maximum value is `world_size`.
+    - Total number of replicas deployed across all experts (sum of the `count` values in the first column of `eplb_table`). The total must be less than or equal to `1024` and be divisible by `world_size`.
 
 ## Examples
 

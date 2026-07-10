@@ -15,74 +15,74 @@
 
     1. Sort the input `expertIdx` to obtain the sorted expert indices `sortedExpertIdx` and the corresponding row indices `sortedRowIdx`.
 
-    $$
-    sortedExpertIdx, sortedRowIdx=keyValueSort(expertIdx,rowIdx)
-    $$
+        $$
+        sortedExpertIdx, sortedRowIdx=keyValueSort(expertIdx,rowIdx)
+        $$
 
     2. Perform position mapping using `sortedRowIdx` to obtain `expandedRowIdxOut`.
-    - When `rowIdxType` is `1`, the API outputs scatter indices.
-      $$
-      expandedRowIdxOut[i]=sortedRowIdx[i]
-      $$
-    - When `rowIdxType` is `0`, the API outputs gather indices.
-      $$
-      expandedRowIdxOut[sortedRowIdx[i]]=i
-      $$
+        - When `rowIdxType` is `1`, the API outputs scatter indices.
+        $$
+        expandedRowIdxOut[i]=sortedRowIdx[i]
+        $$
+        - When `rowIdxType` is `0`, the API outputs gather indices.
+        $$
+        expandedRowIdxOut[sortedRowIdx[i]]=i
+        $$
       
     3. Compute the histogram of `sortedExpertIdx` for each expert to obtain `expertTokensCountOrCumsumOutOptional`.
 
-    $$
-    expertTokensCountOrCumsumOutOptional[i]=Histogram(sortedExpertIdx)
-    $$
+        $$
+        expertTokensCountOrCumsumOutOptional[i]=Histogram(sortedExpertIdx)
+        $$
 
     4. When `quantMode` is not `-1`, compute the quantization results.
-     - Static quantization:
-     $$
-     quantResult=round((x∗scaleOptional)+offsetOptional)
-     $$
-     
-     - Dynamic quantization:
-        - If `scale` is not specified:
-            $$
-            dynamicQuantScaleOutOptional = row\_max(abs(x)) / 127
-            $$
+        - Static quantization:
+        $$
+        quantResult=round((x∗scaleOptional)+offsetOptional)
+        $$
+        
+        - Dynamic quantization:
+            - If `scale` is not specified:
+                $$
+                dynamicQuantScaleOutOptional = row\_max(abs(x)) / 127
+                $$
 
-            $$
-            quantResult = round(x / dynamicQuantScaleOutOptional)
-            $$
-        - If `scale` is specified:
-            $$
-            dynamicQuantScaleOutOptional = row\_max(abs(x * scaleOptional)) / 127
-            $$
+                $$
+                quantResult = round(x / dynamicQuantScaleOutOptional)
+                $$
+            - If `scale` is specified:
+                $$
+                dynamicQuantScaleOutOptional = row\_max(abs(x * scaleOptional)) / 127
+                $$
 
-            $$
-            quantResult = round(x / dynamicQuantScaleOutOptional)
-            $$
+                $$
+                quantResult = round(x / dynamicQuantScaleOutOptional)
+                $$
   
     5. Tokens are rearranged using scatter indices when the active expert range covers all experts. In other configurations, tokens are rearranged using gather indices. When `dropPadMode` is set to `1`, the number of tokens processed by each expert is padded to `expertCapacity`. Tokens exceeding `expertCapacity` are dropped, and insufficient tokens are padded with zeros. The resulting output `expandedXOut` is obtained as follows:
-    - Non-quantization scenarios:
-      - Rearrangement using scatter indices:
-      $$
-      expandedXOut[i]=x[scatterRowIdx[i]//K]
-      $$
-      - Rearrangement using gather indices:
-      $$
-      expandedXOut[gatherRowIdx[i]]=x[i//K]
-      $$
-    - Quantization scenarios:
-      - Rearrangement using scatter indices:
-      $$
-      expandedXOut[i]=quantResult[scatterRowIdx[i]//K]
-      $$
-      - Rearrangement using gather indices:
-      $$
-      expandedXOut[gatherRowIdx[i]]=quantResult[i//K]
-      $$
+        - Non-quantization scenarios:
+        - Rearrangement using scatter indices:
+        $$
+        expandedXOut[i]=x[scatterRowIdx[i]//K]
+        $$
+        - Rearrangement using gather indices:
+        $$
+        expandedXOut[gatherRowIdx[i]]=x[i//K]
+        $$
+        - Quantization scenarios:
+        - Rearrangement using scatter indices:
+        $$
+        expandedXOut[i]=quantResult[scatterRowIdx[i]//K]
+        $$
+        - Rearrangement using gather indices:
+        $$
+        expandedXOut[gatherRowIdx[i]]=quantResult[i//K]
+        $$
 
     6. The valid element count of `expandedRowIdxOut`, denoted by `availableIdxNum`, is calculated as the number of elements in `expertIdx` that fall within the range specified by `activeExpertRangeOptional`.
-    $$
-    availableIdxNum = |\{x\in expertIdx| expert\_start \le x<expert\_end \ \}|
-    $$
+        $$
+        availableIdxNum = |\{x\in expertIdx| expert\_start \le x<expert\_end \ \}|
+        $$
 
 - Equivalent computation logic:
 

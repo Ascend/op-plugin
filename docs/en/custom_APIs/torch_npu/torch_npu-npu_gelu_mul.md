@@ -56,21 +56,15 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 `Tensor`
 
-Output tensor, $\text{out}$ in the formulas. The data type can be `bfloat16`, `float16`, or `float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is identical to that of `input`. The last dimension length is half that of the input, and other dimensions remain unchanged. For example, when `input.shape` is `(100, 400)`, `output.shape` is `(100, 200)`.
+Output tensor, $\text{out}$ in the formulas. The data type can be `bfloat16`, `float16`, or `float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is the same as that of `input`. The output shape is identical to the input shape except that the size of its last dimension is half that of the input shape.
 
-## Examples
+## Example
 
 ```python
 >>> import torch, torch_npu
 >>> shape = [100, 400]
 >>> input = torch.rand(shape, dtype=torch.float16).npu()
-
-# Configure high-precision mode with approximate="none": Use error function (erf) mode.
-# This mode is applicable to scenarios with strict precision requirements.
->>> output_high_precision = torch_npu.npu_gelu_mul(input, approximate="none")
-
-# Configure high-efficiency mode with approximate="tanh": Use hyperbolic tangent (tanh) approximation mode.
-# It is applicable to large-scale training or inference acceleration.
->>> output_high_efficiency = torch_npu.npu_gelu_mul(input, approximate="tanh")
+>>> mode = "tanh"
+>>> output = torch_npu.npu_gelu_mul(input, approximate=mode)
 
 ```

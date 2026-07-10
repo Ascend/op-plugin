@@ -45,32 +45,17 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## Parameters<a name="en-us_topic_0000002168254826_section112637109429"></a>
 
-### Parameter Overview
-
-| Group| Parameter List|
-| ---- | -------- |
-| **Core data parameters**| `expand_x` (required), `expert_ids` (required), `expert_scales` (required), `ori_x` (optional)|
-| **Communication auxiliary parameters**| `assist_info_for_combine` (required), `ep_send_counts` (required), `tp_send_counts` (optional), `expand_scales` (optional), `x_active_mask` (optional)|
-| **EP communication domain parameters**| `group_ep` (required), `ep_world_size` (required), `ep_rank_id` (required)|
-| **TP communication domain parameters**| `group_tp` (optional), `tp_world_size` (optional), `tp_rank_id` (optional)|
-| **Expert configuration parameters**| `moe_expert_num` (required), `expert_shard_type` (optional), `shared_expert_num` (optional), `shared_expert_rank_num` (optional), `shared_expert_x` (optional)|
-| **Special expert parameters**| `zero_expert_num` (optional), `copy_expert_num` (optional), `const_expert_num` (optional), `const_expert_alpha_1` (optional), `const_expert_alpha_2` (optional), `const_expert_v` (optional)|
-| **Communication parameters**| `global_bs` (optional), `comm_quant_mode` (optional), `comm_alg` (optional)|
-| **Other parameters**| `*` (required), `elastic_info` (optional), `performance_info` (optional)|
-
-### Detailed Parameter Description
-
-- **`expand_x`** (`Tensor`): Required. Token features expanded according to `expert_ids`. This parameter must be 2D with shape `(max(tp_world_size, 1) * A, H)`. The data type can be `bfloat16`. The data layout is ND. Non-contiguous tensors are supported.
+- **`expand_x`** (`Tensor`): Required. Token features expanded according to `expert_ids`. This parameter must be 2D with shape `(max(tp_world_size, 1) * A, H)`. The data type can be `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
     - Atlas A2 training products/Atlas A2 inference products: Shared-expert scenarios is not supported.
 
-- **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md). The value range of elements inside the tensor is `[0, moe_expert_num)`, and the top-K values within the identical row must be unique.
-- **`assist_info_for_combine`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `assist_info_for_combine` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
+- **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md). The value range of elements inside the tensor is `[0, moe_expert_num)`, and the top-K values within the identical row must be unique.
+- **`assist_info_for_combine`** (`Tensor`): Required. Number of tokens dispatched to each expert. This parameter must be 1D with shape `(A * 128,)`. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `assist_info_for_combine` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
 
-- **`ep_send_counts`** (`Tensor`): Required. Number of tokens sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain, where token counts are represented as prefix sums. This parameter must be a 1D tensor. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
+- **`ep_send_counts`** (`Tensor`): Required. Number of tokens sent from each expert on the current rank to each rank within the Expert Parallelism (EP) communication domain, where token counts are represented as prefix sums. This parameter must be a 1D tensor. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. This parameter corresponds to the `ep_recv_counts` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
     - Atlas A2 training products/Atlas A2 inference products: The shape must be `(moe_expert_num + 2 * global_bs * K * server_num,)`. The first `moe_expert_num` elements indicate the token counts received by each expert on the current rank from other ranks within the EP communication domain, represented as prefix sums. The remaining `2 * global_bs * K * server_num` elements are used to store the token counts that can be reduced in advance during the combine operation and the communication buffer offsets before executing inter-server and intra-server communication. When the value of `global_bs` is `0`, the value is calculated as `bs * ep_world_size`.
     - Atlas A3 training products/Atlas A3 inference products: The shape must be `(ep_world_size * max(tp_world_size, 1) * local_expert_num,)`.
 
-- **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported.
+- **`expert_scales`** (`Tensor`): Required. Weights of the top-K experts for each token. This parameter must be 2D with shape `(BS, K)`. Shared-expert configurations do not require a weight factor and are summed directly. The data type can be `float32`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length range is [1, 128). On Atlas A3 training products/Atlas A3 inference products, the value of this parameter must differ from `group_tp`.
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain.
     - Atlas A2 training products/Atlas A2 inference products: The valid values are as follows:
@@ -93,8 +78,8 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - Atlas A3 training products/Atlas A3 inference products: This parameter must be a 1D or 2D tensor. When the input is 1D, the shape of this parameter is `(BS,)`. When the input is 2D, the shape of this parameter is `(BS, K)`. The data type can be `bool`. The data layout must be ND. Non-contiguous tensors are supported. When the input is 1D, the value `True` indicates that the corresponding token participates in communication, and all `True` values must precede any `False` values. For example, `{True, False, True}` is an invalid input. When the input is 2D, the value `True` indicates that the `expert_ids` entry corresponding to the current token participates in communication. If all $K$ Boolean values for a token are `False`, the token does not participate in communication. By default, all tokens participate in communication. When the `BS` values differ across ranks, all tokens must be valid.
 
 - `expand_scales` (`Tensor`): Optional. This parameter corresponds to the `expand_scales` output of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
-    - Atlas A2 training products/Atlas A2 inference products: Required. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported.
-    - Atlas A3 training products/Atlas A3 inference products: When `comm_alg` is set to `"hierarchy"`, this parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout is ND. Non-contiguous tensors are supported. When `comm_alg` is set to `""`, this parameter is not supported. Use the default value.
+    - Atlas A2 training products/Atlas A2 inference products: Required. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout can be ND. Non-contiguous tensors are supported.
+    - Atlas A3 training products/Atlas A3 inference products: When `comm_alg` is set to `"hierarchy"`, this parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout can be ND. Non-contiguous tensors are supported. When `comm_alg` is set to `""`, this parameter is not supported. Use the default value.
 
 - **`shared_expert_x`** (`Tensor`): Optional. The data type must be identical to that of `expand_x`. This parameter is the shared-expert token data that must be added after `combine_v2`. Use it only when the number of shared-expert devices `shared_expert_rank_num` is `0`.
     - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
@@ -140,10 +125,10 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 - **`shared_expert_num`** (`int`): Optional. Number of shared experts, where a shared expert can be replicated and deployed across multiple ranks.
     - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
-    - Atlas A3 training products/Atlas A3 inference products : The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
 
 - **`shared_expert_rank_num`** (`int`): Optional. Number of shared-expert ranks.
-    - Atlas A2 training products/Atlas A2 inference products : Expert sharing is not supported. Retain the default value.
+    - Atlas A2 training products/Atlas A2 inference products: Expert sharing is not supported. Retain the default value.
     - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `ep_world_size`). If the value is not 0, the condition `shared_expert_rank_num % shared_expert_num == 0` must be satisfied.
 
 - **`global_bs`** (`int`): Optional. Global batch size within the EP communication domain. When the batch sizes differ across ranks, passing `max_bs * ep_world_size` is supported, where `max_bs` indicates the maximum batch size of a single rank. When the batch sizes are identical across ranks, passing `0` or `BS * ep_world_size` is supported.
@@ -181,7 +166,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 `Tensor`
 
-Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type can be `bfloat16` or `float16`. The data type must be identical to that of the input `expand_x`. The data layout is ND. Non-contiguous tensors are not supported.
+Processed tokens. This parameter must be 2D with shape `(BS, H)`. The data type can be `bfloat16` or `float16`. The data type must be identical to that of the input `expand_x`. The data layout can be ND. Non-contiguous tensors are not supported.
 
 ## Constraints<a name="en-us_topic_0000002168254826_section12345537164214"></a>
 

@@ -10,15 +10,6 @@
 ## Function<a name="en-us_topic_0000002236535552_section1023311522369"></a>
 
 - Description: Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-head Latent Attention (MLA) structure.
-    - **MLA**
-      An efficient attention mechanism proposed in DeepSeek-V2 that compresses keys and values using low-rank latent representations. This mechanism reduces KV cache usage and computational overhead while maintaining long-sequence modeling capability.
-
-    - **RoPE**
-      A positional encoding method that injects positional information by applying rotational transformations to vectors. This method models relative positional relationships, makes it well-suited for long-context scenarios, and implements vector rotation through the RotateHalf operation.
-
-    - **RMSNorm**
-      A normalization method that scales inputs using the root mean square. This method is computationally efficient with low overhead and is widely used in foundation model training.
-
 - Formulas:
     - **Input tensor `kv` splitting**: The input tensor `kv` is split into two parts, where `B` indicates the batch size and `T` indicates the sequence length.
 
@@ -55,7 +46,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 ## Parameters<a name="en-us_topic_0000002236535552_section1723416525369"></a>
 
-> [!NOTE]   
+> [!NOTE]  
 > Variables used in tensor shapes:
 >
 > - `batch_size`: batch size.
@@ -68,17 +59,17 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 > - `block_size`: block size, which is valid only in PageAttention mode.
 
 - **`kv`** (`Tensor`): Required. Input feature tensor. The data type can be `bfloat16` or `float16`. The data layout is `BNSD`. This parameter must be 4D with shape `[batch_size, 1, seq_len, hidden_size]`, where `hidden_size` = `rms_size` (RMS) + `rope_size` (RoPE).
-- `gamma` (`Tensor`): Required. Scaling parameter for RMSNorm. The data type can be `bfloat16` or `float16`. The data layout is ND. This parameter must be 1D with shape `[rms_size]`.
-- **`cos`** (`Tensor`): Required. Cosine component of RoPE. The data type can be `bfloat16` or `float16`. The data layout is ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
-- **`sin`** (`Tensor`): Required. Sine component of RoPE. The data type can be `bfloat16` or `float16`. The data layout is ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
-- **`index`** (`Tensor`): Required. Cache index tensor used to locate the write positions in `k_cache` and `ckv_cache`. The data type can be `int64`. The data layout is ND. The shape depends on `cache_mode`.
-- **`k_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized key vectors. The data type can be `bfloat16`, `float16`, or `int8`. The data layout is ND. The shape depends on `cache_mode`.
-- **`ckv_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized compressed KV vectors. The data type can be `bfloat16`, `float16`, or `int8`. The data layout is ND. The shape depends on `cache_mode`.
+- `gamma` (`Tensor`): Required. Scaling parameter for RMSNorm. The data type can be `bfloat16` or `float16`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
+- **`cos`** (`Tensor`): Required. Cosine component of RoPE. The data type can be `bfloat16` or `float16`. The data layout can be ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
+- **`sin`** (`Tensor`): Required. Sine component of RoPE. The data type can be `bfloat16` or `float16`. The data layout can be ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
+- **`index`** (`Tensor`): Required. Cache index tensor used to locate the write positions in `k_cache` and `ckv_cache`. The data type can be `int64`. The data layout can be ND. The shape depends on `cache_mode`.
+- **`k_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized key vectors. The data type can be `bfloat16`, `float16`, or `int8`. The data layout can be ND. The shape depends on `cache_mode`.
+- **`ckv_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized compressed KV vectors. The data type can be `bfloat16`, `float16`, or `int8`. The data layout can be ND. The shape depends on `cache_mode`.
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
-- **`k_rope_scale`** (`Tensor`): Optional. Quantization scaling factor for `key` RoPE. The default value is `None`. The data type can be `float32`. The data layout is ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
-- **`c_kv_scale`** (`Tensor`): Optional. Quantization scaling factor for compressed KV. The default value is `None`. The data type can be `float32`. The data layout is ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
-- **`k_rope_offset`** (`Tensor`): Optional. Quantization offset for the key Rotary Position Embedding (RoPE). The default value is `None`. The data type can be `float32`. The data layout is ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
-- **`c_kv_offset`** (`Tensor`): Optional. Quantization offset for compressed KV. The default value is `None`. The data type can be `float32`. The data layout is ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
+- **`k_rope_scale`** (`Tensor`): Optional. Quantization scaling factor for `key` RoPE. The default value is `None`. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
+- **`c_kv_scale`** (`Tensor`): Optional. Quantization scaling factor for compressed KV. The default value is `None`. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
+- **`k_rope_offset`** (`Tensor`): Optional. Quantization offset for the key Rotary Position Embedding (RoPE). The default value is `None`. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
+- **`c_kv_offset`** (`Tensor`): Optional. Quantization offset for compressed KV. The default value is `None`. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
 - `epsilon` (`float`): Optional. Small constant used in Root Mean Square Normalization (RMSNorm) to prevent division by zero. The default value is `1e-5`.
 - `cache_mode` (`str`): Optional. Cache mode. The supported modes are described in the following table. The default value is `'Norm'`.
 
@@ -146,9 +137,8 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
-- Quantization mode: When `k_rope_scale` and `c_kv_scale` are provided, the data type of `k_cache` and `ckv_cache` is `int8`. The size of the last dimension of the cache shape must be `32` (applicable when the cache data layout is FRACTAL_NZ mode). `k_rope_scale` and `c_kv_scale` must both be provided.
+- Quantization mode: When `k_rope_scale` and `c_kv_scale` are provided, the data type of `k_cache` and `ckv_cache` is `int8`. The size of the last dimension of the cache shape must be `32` (applicable when the cache data layout is FRACTAL_NZ mode). `k_rope_scale` and `c_kv_scale` must both be provided. `k_rope_offset` and `c_kv_offset` must either both be `None` or both have non-`None` values.
 - Non-quantization mode: When `k_rope_scale` and `c_kv_scale` are not provided, the data type of `k_cache` and `ckv_cache` is `bfloat16` or `float16`.
-- Asymmetric quantization parameters: `k_rope_offset` and `c_kv_offset` are currently not supported.
 - Index mapping: In all `cache_mode` configurations, the values inside `index` must be unique. If duplicate values are provided, the operator behavior is undefined and unpredictable.
     - `Norm`: The values inside `index` indicate the offset within each batch.
     - `PA/PA_BNSD/PA_NZ`: The values inside `index` indicate the global offset.
@@ -163,7 +153,6 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - Single-operator call
 
     ```python
-    # Example 1: Basic example (non-quantization, cache_mode="PA_BNSD")
     import torch
     import torch_npu
     
@@ -180,11 +169,11 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     
     k_cache = torch.ones(page_num, page_size, 1, 64, dtype = input_dtype).npu()
     ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
+    index_shape = (batch_size * seq_len,)
+    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     k_rope_scale = None
     c_kv_scale = None
     cache_mode="PA_BNSD"
-    index_shape = (batch_size * seq_len,)
-    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     is_output_kv = True
     
     
@@ -209,35 +198,6 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     model = Model().npu()
     _, _, k_rope, c_kv = model(kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, None, None, 1e-5, cache_mode, is_output_kv)
     
-    # Example 2: Quantization mode
-    ## 1. Create an int8 cache (quantization).
-    k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
-    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
-    ## 2. Prepare quantization parameters.
-    k_rope_scale = torch.randn([64], dtype=torch.float32).npu() # Quantization scaling factor for key RoPE
-    c_kv_scale = torch.randn([512], dtype=torch.float32).npu() # Quantization scaling factor for compressed KV
-    # Other code remains unchanged.
-
-    # Example 3: Norm
-    cache_mode = "Norm"
-    index_shape = (batch_size, seq_len)
-    index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
-    is_output_kv = False
-    # Other code remains unchanged.
-
-    # Example 4: PA_NZ
-    cache_mode = "PA_NZ"
-    # Other code remains unchanged.
-
-    # Example 5: PA_BLK_BNSD
-    cache_mode = "PA_BLK_BNSD"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
-    # Other code remains unchanged.
-
-    # Example 5: PA_BLK_NZ
-    cache_mode = "PA_BLK_NZ"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
-    # Other code remains unchanged.
     ```
 
 - Graph mode call
@@ -264,11 +224,11 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     
     k_cache = torch.ones(page_num, page_size, 1, 64, dtype = input_dtype).npu()
     ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
+    index_shape = (batch_size * seq_len,)
+    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     k_rope_scale = None
     c_kv_scale = None
     cache_mode="PA_BNSD"
-    index_shape = (batch_size * seq_len,)
-    index = torch.arange(start=0, end=index_shape[0], step=1, dtype=torch.int64).npu()
     is_output_kv = True
     
     
@@ -293,34 +253,4 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     model = Model().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     _, _, k_rope, c_kv = model(kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, None, None, 1e-5, cache_mode, is_output_kv)
-
-    # Example 2: Quantization mode
-    ## 1. Create an int8 cache (quantization).
-    k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
-    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
-    ## 2. Prepare quantization parameters.
-    k_rope_scale = torch.randn([64], dtype=torch.float32).npu() # Quantization scaling factor for key RoPE
-    c_kv_scale = torch.randn([512], dtype=torch.float32).npu() # Quantization scaling factor for compressed KV
-    # Other code remains unchanged.
-
-    # Example 3: Norm
-    cache_mode = "Norm"
-    index_shape = (batch_size, seq_len)
-    index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
-    is_output_kv = False
-    # Other code remains unchanged.
-
-    # Example 4: PA_NZ
-    cache_mode = "PA_NZ"
-    # Other code remains unchanged.
-
-    # Example 5: PA_BLK_BNSD
-    cache_mode = "PA_BLK_BNSD"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
-    # Other code remains unchanged.
-
-    # Example 5: PA_BLK_NZ
-    cache_mode = "PA_BLK_NZ"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
-    # Other code remains unchanged.
     ```

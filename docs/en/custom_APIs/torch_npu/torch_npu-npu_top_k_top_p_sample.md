@@ -22,24 +22,26 @@
   |qSample sampling|×|×|×|qSample|Performs exponential sampling on each batch in `logits` using `q[i]`, and sets the maximum value and its index as `logits_select_idx[batch, 1]`.|
   |Top-K-Top-P sampling|√|√|×|None|None|
   |Top-K-qSample sampling|√|×|×|qSample|None|
-  |Top-K-multiNomial sampling|√|×|×|multiNomial|None|
-  |top-K-min-P-multiNomial sampling|√|×|√|multiNomial|None|
+  |Top-K-multiNomial sampling|√|×|×|multiNomial|None| 
+  |top-K-min-P-multiNomial sampling|√|×|√|multiNomial|None| 
   |top-P-qSample sampling|×|√|×|qSample|None|
   |top-K-top-P-qSample sampling|√|√|×|qSample|Standard configuration used by the vLLM framework.|
   |top-K-top-P-multiNomial sampling|√|√|×|multiNomial|`min_ps` is an invalid value, but multinomial sampling is still performed.|
   |top-K-top-P-min-P-multiNomial sampling|√|√|√|multiNomial|Standard configuration used by the SGLang framework.|
 
 - Formulas:
-  The input `logits` is a logit tensor of shape `[batch, voc_size]`, where each batch corresponds to one input sequence and `voc_size` represents the uniform vocabulary size of each batch.<br>
-  Each row in `logits` (`logits[batch][:]`), undergoes a different computation scenario determined by the corresponding `top_k[batch]`, `top_p[batch]`, `q[batch, :]`, and `min_ps[batch]`.<br>
+  The input `logits` is a logit tensor of shape `[batch, voc_size]`, where each batch corresponds to one input sequence and `voc_size` represents the uniform vocabulary size of each batch.
+  
+  Each row in `logits` (`logits[batch][:]`) undergoes a different computation scenario determined by the corresponding `top_k[batch]`, `top_p[batch]`, `q[batch, :]`, and `min_ps[batch]`.
+
   In the following descriptions, `b` and `v` represent the indices along the `batch` and `voc_size` dimensions, respectively.
 
   Top-K sampling
   1. A segmented top-K merge sort is performed based on the segment length `v`. The top-K results of block `{s-1}` are used to pre-filter the input of block `{s}`, progressively updating the top-K results for each batch and reducing redundant data and computation.
   2. `top_k[batch]` specifies the `k` value used for sampling the current batch. The valid range is $1 \le top\_k[batch] \le \min(voc\_size[batch], 1024)$. If `top_k[batch]` falls outside this range, the top-K sampling stage is skipped for that batch. Sorting is also skipped, and the input `logits[batch]` is passed directly to the next stage.<br>
-
+  
   * The detailed computation process is as follows:
-
+  
   * Determine whether to perform top-K sampling based on the relationship between the input `top_k[b]` and `ks_max`.
 
   | Parameter| ≤ | Valid Range| Invalid Range|
@@ -62,13 +64,13 @@
     v=8*ks\_max
     $$
     The value range of `ks_max` is [1, 1024] with a default value of `1024`, and it must be rounded up to a multiple of 8.
-
+  
   * Generate the mask required for top-K filtering:
 
     $$
     top\_k\_mask = sorted\_value>top\_k\_value
     $$
-
+  
   * Set the values smaller than the threshold to the default invalid value `defLogit` based on the mask:
 
     $$
@@ -78,8 +80,9 @@
     sorted\_value[b][v] & \text{top\_k\_mask[b][v]=false} &
     \end{cases}
     $$
-
+ 
   * `defLogit` depends on the input attribute property `Attr.optional.Bool.input_is_logits`, which controls the normalization of the input `logits` and the output `logits_top_kp_select`:
+
     $$
     \text{defLogit} =
       \begin{cases}
@@ -87,19 +90,19 @@
       0, & \text{inputIsLogits} = \text{False}
       \end{cases}
     $$
-
+  
   Top-P sampling
 
   * Normalize the sorted results if the input constraint attribute `Attr.optional.Bool.input_is_logits` is set to `True`, which is `False` by default.
 
     $$
-    \text{logit\_sortProb} =
+    \text{logit\_sortProb} = 
     \begin{cases}
     \text{softmax}(\text{logits\_sort}), & \text{inputIsLogits} = \text{True} \\
     \text{logits\_sort}, & \text{inputIsLogits} = \text{False}
     \end{cases}
     $$
-
+ 
   * The processing strategy of this module varies depending on the value of the input `top_p[b]`:
 
   | Parameter| ≤ | Valid Range| Invalid Range|
@@ -115,7 +118,7 @@
     1, & \sum_{\text{topKMask}[b]}^{} \text{logits\_sortProb}[b][*] \leq p[b]
     \end{cases}
     $$
-
+  
   * If regular top-P sampling is performed but the preceding top-K stage is skipped, the top-P mask is computed.
 
     $$
@@ -125,7 +128,7 @@
     probSum[b][v] \le 1 - p[b], & \text{others}
     \end{cases}
     $$
-
+  
   * Set the positions to be filtered to the default invalid value `defLogit` to obtain `logits_sort`, represented as $sortedValue[b][v]$.
 
     $$
@@ -135,13 +138,13 @@
     logit\_sortProb[b][v] & \quad \text{topPMask}[b][v] = \text{true}
     \end{cases}
     $$
-
+  
   * Select the top-K elements from each row of $sortedValue[b][v]$ after filtering, locate their original indices in the input, and combine them into `logits_idx`.
 
     $$
     logitsIdx[b][v] = Index(sortedValue[b][v] \in Logits)
     $$
-
+  
   * Traverse the input `logits` according to the order of `logits_idx` to extract elements, and fill the remaining positions with `defLogit` to obtain `logitsSortMasked`.
 
     $$
@@ -156,7 +159,7 @@
     $$
     logitsSortMasked[b,:] = sortedValue[b]
     $$
-
+  
   min-P sampling
 
   * If `min_ps[b] ∈ (0, 1)`, perform min-P sampling.
@@ -168,15 +171,15 @@
     \text{minPThd} = \text{logitsMax}[b] * \text{minPs}[b]
     $$
     $$
-    \text{minPMask}[b] =
-    \begin{cases}
+    \text{minPMask}[b] = 
+    \begin{cases} 
     0, & \text{logitsSortMasked}[b] < \text{minPThd} \\
     1, & \text{logitsSortMasked}[b] \geq \text{minPThd}
     \end{cases}
     $$
     $$
-    \text{logitsSortMasked}[b,:] =
-    \begin{cases}
+    \text{logitsSortMasked}[b,:] = 
+    \begin{cases} 
     \text{defLogit}, & \text{minPMask}[b] = 0 \\
     \text{logitsSortMasked}[b,:], & \text{minPMask}[b] = 1
     \end{cases}
@@ -185,7 +188,7 @@
   * In other cases:
 
     $$
-    \text{logitsSortMasked}[b, :] =
+    \text{logitsSortMasked}[b, :] = 
     \begin{cases}
         \text{logitsSortMasked}[b, :], & \text{if } minPs[b] \leq 0 \\
         \max(\text{logitsSortMasked}[b, :]), & \text{if } minPs[b] \geq 1
@@ -208,21 +211,21 @@
   * `logitsIndexMasked` is then used to perform a select operation on the input `logits`, extracting the high-frequency tokens to generate the `logits_top_kp_select` output.
 
     $$
-    \text{logitsTopKpSelect}[b][v] =
-    \begin{cases}
+    \text{logitsTopKpSelect}[b][v] = 
+    \begin{cases} 
     \text{logits}[b][v], & \text{if } logitsIndexMasked[b,v] = \text{True} \\
     \text{defLogit}, & \text{if } logitsIndexMasked[b,v] = \text{False}
     \end{cases}
     $$
 
-  Subsequent processing
+  Subsequent Processing
 
   * The input to this stage is `logitsSortMasked`, which is the combined result of the preceding top-K, top-P, and min-P sampling stages.
 
   * `logitsSortMasked` must satisfy $\text{logitsSortMasked} \in (0,1)$. Configure the input constraint attribute `Attr.optional.Bool.input_is_logits` according to the actual input `logits`:
 
     $$
-    \text{inputIsLogits} =
+    \text{inputIsLogits} = 
     \begin{cases}
     True, & \text{Logits} \notin [0,1] \\
     False, & \text{Logits} \in [0,1]
@@ -234,13 +237,14 @@
     $$
     Three modes are supported in this stage: `None`, `qSample`, and `multiNomial`, which are controlled by the input constraint attribute `attr.optional.Str.post_sample`.
 
-  * None
+  * None 
 
   * For each batch, apply `Argmax` directly to obtain the maximum element and its index, and the result is output through `gatherOut`.
+
     $$
     \text{logitsSelectIdx}[b] = \text{LogitsIdx}[b]\left[\text{ArgMax}(\text{probs}[b][:])\right]
     $$
-
+  
   * qSample
 
   * First, perform exponential-distribution sampling on `probs`: 
@@ -257,7 +261,7 @@
     $$
     \text{logitsSelectIdx}[b] = \text{LogitsIdx}[b][\text{ArgMax}(\text{probsOpt}[b][:])]
     $$
-
+  
   * multiNomial
 
   * Perform multiNomial random sampling without replacement based on the probability values in `logitsSortMasked`. One sample is selected for each batch, and the sampled result is used as the output of the current batch:
@@ -287,7 +291,7 @@
     \end{cases}
     $$
 
-  * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/9.0.0/random/dsa_random_uniform/docs/aclnnMultinomial.md>.
+  * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>.
 
   * When called through Ascend Extension for PyTorch, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/26.0.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
 
@@ -363,6 +367,6 @@ npu_out_index, logits_top_kp_select = torch_npu.npu_top_k_top_p_sample(logits, t
 
 print(npu_out_index)
 print(logits_top_kp_select)
-```
+``` 
 
 #
