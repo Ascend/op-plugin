@@ -120,7 +120,7 @@
 ## 函数原型
 
 ```python
-npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20) -> (Tensor, Tensor, Tensor)
+npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20) -> (Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
@@ -132,6 +132,10 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
  
 - **bias**（`Tensor`）：可选参数，表示与输入`x`进行计算的bias值。要求是1D的Tensor，要求shape值与`x`的最后一维相等。数据类型支持`float16`、`bfloat16`、`float32`，数据类型需要与`x`保持一致，数据格式要求为ND。支持非连续`Tensor`。
+
+- **input_ids**（`Tensor`）：可选参数，表示Hash模式的输入索引，用于从`tid2eid`中查找专家索引。要求是1D的Tensor，要求shape值与`x`的第一维相等。数据类型支持`int32`、`int64`，数据格式要求为ND。支持非连续`Tensor`。
+
+- **tid2eid**（`Tensor`）：可选参数，表示Hash映射表，存储预计算的专家索引。要求是2D的Tensor，要求shape值的最后一维与`k`相等。数据类型支持`int32`、`int64`，数据格式要求为ND。支持非连续`Tensor`。
 
 - **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 

@@ -6574,7 +6574,7 @@ custom:
     op_api: all_version
     exposed: all_version
 
-  - func: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)
+  - func: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, Tensor? input_ids=None, Tensor? tid2eid=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)
     op_api: all_version
 
   - func: npu_moe_gating_top_k_backward(Tensor x_norm, Tensor grad_y, Tensor expertIdx, *, int renorm=0, int norm_type=0, float routed_scaling_factor=1.0, float eps=1e-20) -> Tensor

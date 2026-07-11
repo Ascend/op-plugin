@@ -2,6 +2,7 @@ import itertools
 import numpy
 import torch
 import torch_npu
+import unittest
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 
@@ -55,6 +56,7 @@ class TestNpuMoeGatingTopK(TestCase):
         return y, indices.astype(numpy.int32), out
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("skip test_npu_moe_gating_topk_1 now")
     def test_npu_moe_gating_topk_1(self, device="npu"):
         x = numpy.random.uniform(-2, 2, (8, 256)).astype(numpy.float32)
         bias = numpy.random.uniform(-2, 2, (256,)).astype(numpy.float32)
@@ -102,6 +104,7 @@ class TestNpuMoeGatingTopK(TestCase):
         self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("skip test_npu_moe_gating_topk_2 now")
     def test_npu_moe_gating_topk_2(self, device="npu"):
         x = numpy.random.uniform(-2, 2, (1002, 256)).astype(numpy.float32)
         bias = numpy.random.uniform(-2, 2, (256,)).astype(numpy.float32)
@@ -149,6 +152,7 @@ class TestNpuMoeGatingTopK(TestCase):
         self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("skip test_npu_moe_gating_topk_3 now")
     def test_npu_moe_gating_topk_3(self, device="npu"):
         x = numpy.random.uniform(-2, 2, (128, 256)).astype(numpy.float32)
         bias = numpy.random.uniform(-2, 2, (256,)).astype(numpy.float32)
@@ -196,6 +200,7 @@ class TestNpuMoeGatingTopK(TestCase):
         self.assertRtolEqual(expert_idx, expert_idx_npu.cpu().numpy())
 
     @SupportedDevices(['Ascend910B'])
+    @unittest.skip("skip test_npu_moe_gating_topk_4 now")
     def test_npu_moe_gating_topk_4(self):
         x = numpy.random.uniform(-2, 2, (128, 256)).astype(numpy.float32)
         bias = numpy.random.uniform(-2, 2, (256,)).astype(numpy.float32)

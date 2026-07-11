@@ -811,7 +811,7 @@
   "func: npu_moe_distribute_combine(Tensor expand_x, Tensor expert_ids, Tensor expand_idx, Tensor ep_send_counts, Tensor expert_scales, str group_ep, int ep_world_size, int ep_rank_id, int moe_expert_num, *, Tensor? tp_send_counts=None, Tensor? x_active_mask=None, Tensor? activation_scale=None, Tensor? weight_scale=None, Tensor? group_list=None, Tensor? expand_scales=None, Tensor? shared_expert_x=None, str group_tp=\"\", int tp_world_size=0, int tp_rank_id=0, int expert_shard_type=0, int shared_expert_num=1, int shared_expert_rank_num=0, int global_bs=0, int out_dtype=0, int comm_quant_mode=0, int group_list_type=0) -> Tensor": {
     "version": ["all_version"]
   },
-  "func: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)": {
+  "func: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, Tensor? input_ids=None, Tensor? tid2eid=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },
   "func: npu_add_rms_norm_quant(Tensor x1, Tensor x2, Tensor gamma, Tensor scales1, Tensor? zero_points1, Tensor? beta=None, Tensor? scales2=None, Tensor? zero_points2=None, *, int axis=-1, float epsilon=1e-06, bool div_mode=True) -> (Tensor, Tensor, Tensor)": {

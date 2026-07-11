@@ -1787,7 +1787,7 @@ def npu_moe_gating_top_k_softmax_v2_meta(x, *, k=1, finished=None, renorm=0, out
 
 
 @impl(m, "npu_moe_gating_top_k")
-def npu_moe_gating_top_k_meta(x, k=1, bias=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20):
+def npu_moe_gating_top_k_meta(x, k=1, bias=None, input_ids=None, tid2eid=None, k_group=1, group_count=1, group_select_mode=0, renorm=0, norm_type=0, out_flag=False, routed_scaling_factor=1.0, eps=1e-20):
     x_dim = x.dim()
     torch._check(
         x_dim == 2,
@@ -1799,6 +1799,30 @@ def npu_moe_gating_top_k_meta(x, k=1, bias=None, k_group=1, group_count=1, group
             bias_dim == 1,
             lambda: "the bias shape support only 1d)" + ops_error(ErrCode.VALUE),
         )
+    torch._check((input_ids is None) == (tid2eid is None),
+        lambda: "input_ids and tid2eid must be both provided or both omitted)" + ops_error(ErrCode.VALUE),
+    )
+    if input_ids is not None:
+        input_ids_dim = input_ids.dim()
+        torch._check(
+            input_ids_dim == 1,
+            lambda: "the input_ids shape support only 1d)" + ops_error(ErrCode.VALUE),
+        )
+        torch._check(
+            input_ids.shape[0] == x.shape[0],
+            lambda: "The input_ids first dim should be same as x first dim)" + ops_error(ErrCode.VALUE),
+        )
+    if tid2eid is not None:
+        tid2eid_dim = tid2eid.dim()
+        torch._check(
+            tid2eid_dim == 2,
+            lambda: "the tid2eid shape support only 2d)" + ops_error(ErrCode.VALUE),
+        )
+        torch._check(
+            tid2eid.shape[1] == k,
+            lambda: "The tid2eid second dim should be same as k)" + ops_error(ErrCode.VALUE),
+        )
+
     y_dim_list = [x.size(0), k]
     expert_idx_dim_list = [x.size(0), k]
     y2_dim_list = [x.size(0), x.size(1)]

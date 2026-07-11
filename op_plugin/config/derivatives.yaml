@@ -364,7 +364,7 @@ backward:
   x, h_res, h_out, h_post: npu_mhc_post_backward(grad, x, h_res, h_out, h_post)
   version: all_version
 
-- name: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)
+- name: npu_moe_gating_top_k(Tensor x, int k, *, Tensor? bias=None, Tensor? input_ids=None, Tensor? tid2eid=None, int k_group=1, int group_count=1, int group_select_mode=0, int renorm=0, int norm_type=0, bool out_flag=False, float routed_scaling_factor=1.0, float eps=1e-20) -> (Tensor, Tensor, Tensor)
   output_differentiability: [true, false, false]
   x: npu_moe_gating_top_k_backward(result2, grad, result1, renorm, norm_type, routed_scaling_factor, eps)
   version: all_version
