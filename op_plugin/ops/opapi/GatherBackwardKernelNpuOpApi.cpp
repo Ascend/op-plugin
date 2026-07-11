@@ -1,4 +1,5 @@
 // Copyright (c) 2023 Huawei Technologies Co., Ltd
+// Copyright (c) The Pytorch Contributors.
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
