@@ -55,7 +55,7 @@ import torch
 import torch_npu
 import numpy as np
 data = torch.tensor([[[[1,1,1,1,1,1,1,1],[2,2,2,2,2,2,2,2]]]], dtype=torch.float32).npu()
-indices = torch.tensor ([1],dtype=torch.int64).npu()
+indices = torch.tensor([1],dtype=torch.int64).npu()
 updates = torch.tensor([[[[3,3,3,3,3,3,3,3]]]] , dtype=torch.float32).npu()
 out = torch_npu.scatter_update(data, indices, updates, axis=-2)
 ```

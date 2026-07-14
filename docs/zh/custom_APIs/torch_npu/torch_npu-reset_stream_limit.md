@@ -19,7 +19,7 @@ torch.npu.reset_stream_limit(stream) -> None
 
 ## 参数说明
 
-**stream** (`torch_npu.npu.Stream`)：必选参数，设置控核的流。
+**stream** (`torch_npu.npu.Stream`)：必选参数，指定要重置资源限制的Stream。
 
 ## 返回值说明
 

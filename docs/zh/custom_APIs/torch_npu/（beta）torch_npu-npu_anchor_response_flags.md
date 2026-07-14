@@ -54,7 +54,7 @@ torch_npu.npu_anchor_response_flags(self, featmap_size, stride, num_base_anchors
 
 - **self** (`Tensor`)：真值框，shape为`[batch, 4]`的2D张量。
 - **featmap_size** (`List[int]`)：特征图大小，长度为2。
-- **stride** (`List[int]`)：当前轴的步长，长度为2。
+- **stride** (`List[int]`)：特征图对于原图的采样步长[stride_h, stride_w]，长度为2。
 - **num_base_anchors** (`int`)：base anchors的数量。
 
 ## 返回值说明

@@ -27,7 +27,7 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 - **boxes** (`Tensor`)：必选参数，shape为[num_boxes, 4]的2维浮点张量。
 - **scores** (`Tensor`)：必选参数，shape为[num_boxes]的1维浮点张量，表示每个框对应的一个分数。
 - **max_output_size** (`Scalar`)：必选参数，表示non-max suppression下要选择的最大框数的标量。
-- **iou_threshold** (`Tensor`)：必选参数，0维浮点张量，表示框与IoU重叠上限的阈值。
+- **iou_threshold** (`Tensor`)：必选参数，0维浮点张量，表示框间IoU阈值上限。
 - **scores_threshold** (`Tensor`)：必选参数，0维浮点张量，表示决定何时删除框的分数阈值。
 - **pad_to_max_output_size** (`bool`)：可选参数，如果为True，则输出的selected_indices将填充为max_output_size长度。默认值为False。
 

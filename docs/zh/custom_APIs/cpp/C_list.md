@@ -71,7 +71,7 @@
 </tr>
 <tr id="row11822183742111"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p145511016377"><a name="p145511016377"></a><a name="p145511016377"></a><a href="（beta）c10_npu-getDefaultNPUStream.md">（beta）c10_npu::getDefaultNPUStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p245530143713"><a name="p245530143713"></a><a name="p245530143713"></a>获取默认NPU流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::getDefaultCUDAStream(c10::DeviceIndex <em id="i1692521216432"><a name="i1692521216432"></a><a name="i1692521216432"></a>device_index</em> = -1)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p245530143713"><a name="p245530143713"></a><a name="p245530143713"></a>获取默认NPU流，返回值类型NPUStream，其功能和使用方式与c10::cuda::CUDAStream c10::cuda::getDefaultCUDAStream(c10::DeviceIndex <em id="i1692521216432"><a name="i1692521216432"></a><a name="i1692521216432"></a>device_index</em> = -1)相同。</p>
 </td>
 </tr>
 <tr id="row6822103772114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2455402378"><a name="p2455402378"></a><a name="p2455402378"></a><a href="（beta）c10_npu-getCurrentNPUStream.md">（beta）c10_npu::getCurrentNPUStream</a></p>
@@ -226,7 +226,7 @@
 PyTorch原生社区已提供LibTorch Stable ABI能力，提供一组稳定的二进制接口，让自定义算子和C++扩展无需绑定特定PyTorch版本也能跨版本兼容。TorchNPU在此基础上补充NPU侧能力，对外提供以下接口：
 
 - [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/c/shim.h)：补充NPU设备类型及NPU相关Stable ABI接口。
-- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h)：提供NPU算子的Stable ABI声明，接口名形如`aoti_torch_npu_*`。
+- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/generated/v2r13/c_shim_npu.h)：提供NPU算子的Stable ABI声明，接口名形如`aoti_torch_npu_*`。
 - `libtorch_npu.so`：导出上述NPU新增Stable ABI接口符号。
 
 ## ATB C++接口说明

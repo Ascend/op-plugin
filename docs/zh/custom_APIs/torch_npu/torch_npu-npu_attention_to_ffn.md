@@ -22,7 +22,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 - **session\_id** (`Tensor`)：必选参数，Attention域本卡ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
 - **micro\_batch\_id** (`Tensor`)：必选参数，当前microBatch组的ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
 - **layer\_id** (`Tensor`)：必选参数，模型层数ID，要求为1维张量，shape为\(X, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
-- **expert\_ids** (`Tensor`)：必选参数，每个micro batch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+- **expert\_ids** (`Tensor`)：必选参数，每个micro batch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行（同一个token）中的K个value不能重复。
 - **expert\_rank\_table** (`Tensor`)：必选参数，每个micro batch组中专家ID到FFN卡专家部署的映射表，外部需保证值正确。要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, M\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
 - **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
 - **world\_size**(`int`)：必选参数，通信域size。取值支持\[2, 768\]。

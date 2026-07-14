@@ -14,7 +14,7 @@
 
    代码中符号说明：`F`表示`eplb_table`的列数；`ceil(a, b)`表示向上取整除法，即$\lceil a/b \rceil$。
 
-   负载均衡对于`expert_ids`中的第i个值，即第i个token：
+   负载均衡对于`expert_ids`的第i行，即第i个token的topK个专家索引：
 
     ```python
     new_expert_id = eplb_table[table_offset + 1]
@@ -34,7 +34,7 @@
 
 - 专家剪枝：支持根据阈值对token发送的topK个专家进行剪枝。计算方法如下所示：
    
-   将shape为$(BS,)$的`active_mask`进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中BS对应为False的专家会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
+   将shape为$(BS,)$的`active_mask`进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中`active_mask`中值为False的token会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
 
     ```python
     active_mask_tensor = broadcast(active_mask, (BS, K))

@@ -19,7 +19,7 @@ reshape张量。仅更改张量shape，其数据不变。
 ## 函数原型
 
 ```python
-torch_npu.npu_reshape(self, shape, bool can_refresh=False) -> Tensor
+torch_npu.npu_reshape(self, shape, can_refresh:bool=False) -> Tensor
 ```
 
 ## 参数说明

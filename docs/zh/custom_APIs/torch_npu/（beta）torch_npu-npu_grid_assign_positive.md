@@ -31,7 +31,7 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **argmax_overlaps** (`Tensor`)：必选参数，支持`int32`数据类型。
 - **gt_max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
 - **gt_argmax_overlaps** (`Tensor`)：必选参数，支持`int32`数据类型。
-- **num_gts** (`Tensor`)：必选参数，支持`int32`数据类型，real k，shape为(1, )。
+- **num_gts** (`Tensor`)：必选参数，支持`int32`数据类型，表示真实GT数量，shape为(1, )。
 - **pos_iou_thr** (`float`)：必选参数，正检测框的IoU阈值。
 - **min_pos_iou** (`float`)：必选参数，检测框被视为正检测框的最小IoU。
 - **gt_max_assign_all** (`bool`)：必选参数，是否将与某个gt有相同最高重叠的所有检测框分配给该gt。
@@ -49,12 +49,12 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 >>> assigned_gt_inds = torch.rand(4).npu()
 >>> overlaps = torch.rand(2,4).npu()
 >>> box_responsible_flags = torch.tensor([1, 1, 1, 0], dtype=torch.uint8).npu()
->>> max_overlap = torch.rand(4).npu()
+>>> max_overlaps = torch.rand(4).npu()
 >>> argmax_overlaps = torch.tensor([1, 0, 1, 0], dtype=torch.int32).npu()
 >>> gt_max_overlaps = torch.rand(2).npu()
 >>> gt_argmax_overlaps = torch.tensor([1, 0],dtype=torch.int32).npu()
 >>> num_gts = torch.tensor([128], dtype=torch.int32).npu()
->>> output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlap, argmax_overlaps, gt_max_overlaps, gt_argmax_overlaps, num_gts, 0.5, 0., True)
+>>> output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlaps, argmax_overlaps, gt_max_overlaps, gt_argmax_overlaps, num_gts, 0.5, 0., True)
 >>> print(output.shape)
 torch.Size([4])
 ```

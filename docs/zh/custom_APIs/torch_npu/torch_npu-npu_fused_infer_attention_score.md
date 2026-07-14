@@ -131,7 +131,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - 如果Q\_S、KV\_S非16或32对齐，可以取到向上对齐的值。综合约束请见[约束说明](#zh-cn_topic_0000001832267082_section12345537164214)。
     - `sparse_mode`为2、3、4时，shape输入支持(2048,2048)或(1,2048,2048)或(1,1,2048,2048)。
 
-- **actual_seq_lengths** (`List[int]`)：可选参数。代表不同Batch中`query`的有效seqlen，数据类型支持`int64`。默认值为None，表示和`query`的shape的s长度相同。
+- **actual_seq_lengths** (`List[int]`)：可选参数。代表不同Batch中`query`的有效seqlen，数据类型支持`int64`。默认值为None，表示和`query`的shape的S长度相同。
 
     限制：该入参中每个Batch的有效seqlen应该不大于`query`中对应Batch的seqlen。seqlen的传入长度为1时，每个Batch使用相同seqlen；传入长度大于等于Batch时取seqlen的前Batch个数。其他长度不支持。当`query`的input\_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 
@@ -293,7 +293,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     - `key_antiquant_scale`和`value_antiquant_scale`的shape：perchannel模式下，当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[KV\_N,1,D]；输出为BSND时，必须传入[KV\_N, D]；pertoken模式下，必须传入[B,KV_S]，S需要大于等于block_table的第二维*block_size；
     - 仅支持KV分离；
     - 仅支持高性能模式；
-    - 当MTP等于0时，支持`sparse_mode`为0且不传mask；当MTP大于0、小于16时，支持`sparse_mode`w为3且传入优化后的`atten_mask`矩阵，`atten_mask`矩阵shape必须传入（2048\*2048）；
+    - 当MTP等于0时，支持`sparse_mode`为0且不传mask；当MTP大于0、小于16时，支持`sparse_mode`为3且传入优化后的`atten_mask`矩阵，`atten_mask`矩阵shape必须传入（2048\*2048）；
     - 不支持配置`key_antiquant_offset`和`value_antiquant_offset`;
     - 不支持配置`query_rope`和`key_rope`；
     - 不支持左padding、tensorlist、pse、prefix、后量化；
@@ -628,7 +628,6 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     config = CompilerConfig()
     config.debug.graph_dump.type = "pbtxt"
     npu_backend = tng.get_npu_backend(compiler_config=config)
-    from torch.library import Library, impl
     
     # 数据生成
     q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()

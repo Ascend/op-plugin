@@ -47,7 +47,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持`float16`、`bfloat16`。
   - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
 
-- **scale** (`Tensor`)：必选参数，表示量化过程中得到`y`进行的`scale`张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持`ND`，支持非连续的`Tensor`，不支持空`Tensor`。该参数的值不能为0。
+- **scale** (`Tensor`)：必选参数，量化阶段的缩放张量，shape为\(1,\)的1维张量，对应公式中的$scale$。数据格式支持`ND`，支持非连续的`Tensor`，不支持空`Tensor`。该参数的值不能为0。
   - Atlas 推理系列产品、Atlas 200I/500 A2 推理产品：数据类型支持`float16`。
   - Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件、Atlas A3 训练系列产品/Atlas A3 推理系列产品：数据类型支持 `float16`、`bfloat16`。
   - Ascend 950DT：数据类型支持 `float16`、`bfloat16`、`float32`。
