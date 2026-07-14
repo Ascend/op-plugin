@@ -51,11 +51,12 @@ inline void check_mhc_pre_supported()
  *
  * @param x:   输入张量，要求为 3 维或 4 维。
  * @param phi: 输入张量，其第 0 维大小用于确定 outHmix 的最后一维。
+ * @param hasResi: 是否有残差输出（alpha 元素数为 3 时为 true，为 2 时为 false）。
  * @return 返回 6 个输出张量：
  * (outHin, outHpost, outHres, outInvRms, outHmix, outHpre)
  */
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> construct_mhc_pre_outputs(
-    const at::Tensor &x, const at::Tensor &phi, int64_t out_flag)
+    const at::Tensor &x, const at::Tensor &phi, int64_t out_flag, bool hasResi)
 {
     c10::TensorOptions hInOptions = x.options().dtype(x.dtype());
     c10::TensorOptions hOptions = x.options().dtype(at::kFloat);
@@ -97,10 +98,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         outHpostSize.push_back(sequence);
         outHpostSize.push_back(numResidual);
 
-        outHresSize.push_back(batch);
-        outHresSize.push_back(sequence);
-        outHresSize.push_back(numResidual);
-        outHresSize.push_back(numResidual);
+        if (hasResi) {
+            outHresSize.push_back(batch);
+            outHresSize.push_back(sequence);
+            outHresSize.push_back(numResidual);
+            outHresSize.push_back(numResidual);
+        } else {
+            outHresSize.push_back(1);
+        }
 
         outInvRmsSize.push_back(batch);
         outInvRmsSize.push_back(sequence);
@@ -147,9 +152,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
         outHpostSize.push_back(t);
         outHpostSize.push_back(numResidual);
 
-        outHresSize.push_back(t);
-        outHresSize.push_back(numResidual);
-        outHresSize.push_back(numResidual);
+        if (hasResi) {
+            outHresSize.push_back(t);
+            outHresSize.push_back(numResidual);
+            outHresSize.push_back(numResidual);
+        } else {
+            outHresSize.push_back(1);
+        }
 
         outInvRmsSize.push_back(t);
 
@@ -195,7 +204,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 
     check_mhc_pre_supported();
 
-    auto mhcPreOutput = construct_mhc_pre_outputs(x, phi, out_flag);
+    bool hasResi = (alpha.numel() == ALPHA_NUMEL);
+    auto mhcPreOutput = construct_mhc_pre_outputs(x, phi, out_flag, hasResi);
 
     at::Tensor outHin = std::get<0>(mhcPreOutput);
     at::Tensor outHpost = std::get<1>(mhcPreOutput);

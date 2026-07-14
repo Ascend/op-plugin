@@ -42,6 +42,40 @@ class TestNpuMhcPre(TestCase):
 
         return (h_in, h_post, h_res, inv_rms[:, 0], h_mix, h_pre)
 
+    def cpu_op_exec_hy(
+        self,
+        x: torch.Tensor,
+        phi: torch.Tensor,
+        alpha: torch.Tensor,
+        bias: torch.Tensor,
+        gamma: torch.Tensor = None,
+        norm_eps: float = 1e-6,
+        hc_eps: float = 1e-6,
+    ):
+        T, N, D = x.shape
+        ND = N * D
+
+        x = x.reshape(T, ND).float()
+        inv_rms = torch.rsqrt(x.square().mean(-1, keepdim=True) + norm_eps)
+
+        if gamma is not None:
+            gamma = gamma.reshape(ND).float()
+            h_mix = F.linear(x * gamma, phi.float())
+            weight = h_mix * inv_rms
+        else:
+            h_mix = F.linear(x, phi.float())
+            weight = h_mix * inv_rms
+
+        h_pre, h_post = weight.split([N, N], dim=-1)
+        h_pre = torch.sigmoid(h_pre * alpha[0] + bias[:N].unsqueeze(0)) + hc_eps
+        h_post = 2 * torch.sigmoid(h_post * alpha[1] + bias[N:2 * N].unsqueeze(0))
+        h_in = torch.sum(
+            h_pre.unsqueeze(-1) * x.unflatten(dim=-1, sizes=(N, -1)),
+            dim=1
+        ).bfloat16()
+
+        return (h_in, h_post, inv_rms[:, 0], h_mix, h_pre)
+
     def custom_op_exec(self, x, phi, alpha, bias, gamma, out_flag):
         return torch_npu.npu_mhc_pre(
             x,
@@ -103,10 +137,12 @@ class TestNpuMhcPre(TestCase):
         with torch.no_grad():
             x, phi, alpha, bias, gamma = self.build_hy_input_tensors(T, n, D)
 
-            expected_output = self.cpu_op_exec(x, phi, alpha, bias, gamma)[:len(output_names)]
-            actual_output = self.custom_op_exec(
+            expected_output = self.cpu_op_exec_hy(x, phi, alpha, bias, gamma)
+            actual_all = self.custom_op_exec(
                 x.npu(), phi.npu(), alpha.npu(), bias.npu(), gamma.npu(), out_flag=out_flag
-            )[:len(output_names)]
+            )
+            # alpha=[2] 时 h_res(index 2) 为空，跳过
+            actual_output = [actual_all[i] for i in [0, 1, 3, 4, 5]]
 
             for name, exp, act in zip(output_names, expected_output, actual_output):
                 try:
@@ -165,14 +201,13 @@ class TestNpuMhcPre(TestCase):
 
     @SupportedDevices(['Ascend950'])
     def test_npu_mhc_pre_prefill_hy(self, device="npu"):
-        # hy场景的 prefill 模式: T >= 512, out_flag=1, 有效输出 h_in, h_post, h_res, inv_rms, h_mix, h_pre
+        # hy场景的 prefill 模式: T >= 512, out_flag=1, alpha=[2] 无 h_res, 有效输出 h_in, h_post, inv_rms, h_mix, h_pre
         T, n, D = (1024, 4, 2560)
         out_flag = 1
-        output_names = ["h_in", "h_post", "h_res", "inv_rms", "h_mix", "h_pre"]
+        output_names = ["h_in", "h_post", "inv_rms", "h_mix", "h_pre"]
         tol_map = {
             "h_in": 2 ** -7,
             "h_post": 1e-3,
-            "h_res": 1e-3,
             "inv_rms": 1e-3,
             "h_mix": 1e-3,
             "h_pre": 1e-3,
@@ -181,14 +216,13 @@ class TestNpuMhcPre(TestCase):
 
     @SupportedDevices(['Ascend950'])
     def test_npu_mhc_pre_decode_hy(self, device="npu"):
-        # hy场景的 decode 模式: T < 512, out_flag=1，有效输出 h_in, h_post, h_res, inv_rms, h_mix, h_pre
+        # hy场景的 decode 模式: T < 512, out_flag=1, alpha=[2] 无 h_res, 有效输出 h_in, h_post, inv_rms, h_mix, h_pre
         T, n, D = (64, 4, 2560)
         out_flag = 1
-        output_names = ["h_in", "h_post", "h_res", "inv_rms", "h_mix", "h_pre"]
+        output_names = ["h_in", "h_post", "inv_rms", "h_mix", "h_pre"]
         tol_map = {
             "h_in": 2 ** -7,
             "h_post": 1e-3,
-            "h_res": 1e-3,
             "inv_rms": 1e-3,
             "h_mix": 1e-3,
             "h_pre": 1e-3,
