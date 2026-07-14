@@ -869,7 +869,7 @@
 </tr>
 <tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_post_desc"><a name="p_npu_mhc_post_desc"></a><a name="p_npu_mhc_post_desc"></a><span>对mHC(Manifold-Constrained Hyper-Connections)架构中第l层输出h<sub>l</sub><sup>out</sup>进行Post Mapping，对第l层的输入x<sub>l</sub>进行Res Mapping，然后对二者进行残差连接，得到第(l+1)层的输入x<sub>l+1</sub>。</span></p></td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_post_desc"><a name="p_npu_mhc_post_desc"></a><a name="p_npu_mhc_post_desc"></a><span>对mHC(Manifold-Constrained Hyper-Connections)架构中第l层输出h<sub>l</sub><sup>out</sup>进行Post Mapping，对第l层的输入x<sub>l</sub>进行Res Mapping，然后对二者进行残差连接，得到第(l+1)层的输入x<sub>l+1</sub>。当`h_res`传入`None`时，跳过Res Mapping，直接进行残差相加。</span></p></td>
 </tr>
 <tr id="npu_mhc_sinkhorn"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_sinkhorn"><a name="p_npu_mhc_sinkhorn"></a><a name="p_npu_mhc_sinkhorn"></a><a href="torch_npu-npu_mhc_sinkhorn.md">torch_npu.npu_mhc_sinkhorn</a></p>
 </td>

@@ -8,11 +8,17 @@
 
 ## 功能说明
 
-- API功能：对mHC\(Manifold-Constrained Hyper-Connections\)架构中第$l$层输出$h_l^{out}$进行Post Mapping，对第$l$层的输入$x_l$进行Res Mapping，然后对二者进行残差连接，得到第$(l+1)$层的输入$x_{l+1}$。
+- API功能：对mHC\(Manifold-Constrained Hyper-Connections\)架构中第$l$层输出$h_l^{out}$进行Post Mapping，对第$l$层的输入$x_l$进行Res Mapping，然后对二者进行残差连接，得到第$(l+1)$层的输入$x_{l+1}$。当`h_res`传入`None`时，跳过Res Mapping，直接进行残差相加。
 - 计算公式：
 
+    当`h_res`提供时：
+
     $$ x_{l+1} = (H_l^{res}) \times x_l + h_l^{out} \otimes H_l^{post} $$
-    
+
+    当`h_res`缺省（传入`None`）时：
+
+    $$ x_{l+1} = x_l + h_l^{out} \otimes H_l^{post} $$
+
 ## 函数原型
 
 ```python
@@ -22,7 +28,7 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
 ## 参数说明
 
 - **x**（`Tensor`）：必选参数，待计算的张量，表示网络中mHC层的输入数据，数据类型支持`bfloat16`、`float16`，shape为\(B, S, n, D\)或\(T, n, D\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
-- **h\_res**（`Tensor`）：必选参数，mHC的hRes变换矩阵，是做完sinkhorn变换后的双随机矩阵，数据类型支持`float32`，shape为\(B, S, n, n\)或\(T, n, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
+- **h\_res**（`Tensor`）：可选参数，默认值为`None`，mHC的hRes变换矩阵，是做完sinkhorn变换后的双随机矩阵，数据类型支持`float32`，shape为\(B, S, n, n\)或\(T, n, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。传入`None`时跳过Res Mapping，计算公式退化为$x_{l+1} = x_l + h_l^{out} \otimes H_l^{post}$。
 - **h\_out**（`Tensor`）：必选参数，Atten/MLP层的输出，数据类型与x相同，shape为\(B, S, D\)或\(T, D\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
 - **h\_post**（`Tensor`）：必选参数，mHC的hPost变换矩阵，数据类型支持`float32`，shape为\(B, S, n\)或\(T, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
 
@@ -62,6 +68,8 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
     h_out_npu = h_out.npu()
     h_post_npu = h_post.npu()
     y_npu = torch_npu.npu_mhc_post(x_npu, h_res_npu, h_out_npu, h_post_npu)
+    # h_res缺省时:
+    # y_npu = torch_npu.npu_mhc_post(x_npu, None, h_out_npu, h_post_npu)
     ```
 
 - TorchAir图模式调用（aclgraph）
