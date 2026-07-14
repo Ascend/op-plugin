@@ -43,6 +43,8 @@ torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, 
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu
 >>> from torch_npu.contrib.function import npu_ciou
 >>> box1 = torch.randn(4, 32).npu()
 >>> box1.requires_grad = True

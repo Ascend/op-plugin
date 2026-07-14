@@ -13,7 +13,7 @@
 </thead>
 <tbody><tr id="row27761152102014"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p12776752192011"><a name="p12776752192011"></a><a name="p12776752192011"></a><a href="（beta）torch_npu-utils-save_async.md">（beta）torch_npu.utils.save_async</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p193131582206"><a name="p193131582206"></a><a name="p193131582206"></a>异步保存一个对象到一个硬盘文件上。</p>
+<td class="cellrowborder" valign="top" width="60.86%" headers="mcps1.2.3.1.2 "><p id="p193131582206"><a name="p193131582206"></a><a name="p193131582206"></a>异步将对象保存到指定文件。</p>
 </td>
 </tr>
 <tr id="row848935494011"><td class="cellrowborder" valign="top" width="39.14%" headers="mcps1.2.3.1.1 "><p id="p64891454164016"><a name="p64891454164016"></a><a name="p64891454164016"></a><a href="（beta）torch_npu-utils-npu_combine_tensors.md">（beta）torch_npu.utils.npu_combine_tensors</a></p>

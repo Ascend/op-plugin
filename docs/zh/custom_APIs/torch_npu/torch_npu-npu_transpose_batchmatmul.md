@@ -38,7 +38,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 - **perm\_x1**（`List[int]`）：可选参数，表示矩阵乘的第一个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，支持\[0, 1, 2\]、\[1, 0, 2\]。
 - **perm\_x2**（`List[int]`）：可选参数，表示矩阵乘的第二个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[0, 1, 2\]。
 - **perm\_y**（`List[int]`）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[1, 0, 2\]。
-- **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中N维的切分大小。数据类型支持`int32`。取值范围为\[1, N\]且能被N整除，默认值为1。注：当scale有值时，batch\_split\_factor只能为1。
+- **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中N维的切分大小。数据类型支持`int32`。取值范围为\[1, N\]且N须能被该值整除，默认值为1。注：当scale有值时，batch\_split\_factor只能为1。
 
 ## 返回值说明<a name="zh-cn_topic_0000002319693140_section22231435517"></a>
 

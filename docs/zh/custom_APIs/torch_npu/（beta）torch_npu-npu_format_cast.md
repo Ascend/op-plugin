@@ -80,6 +80,7 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
     ```python
     >>> import torch
     >>> import torch_npu
+    >>> x = torch.rand(2, 3, 4, 5).npu()
     >>> x2 = torch_npu.npu_format_cast(x, torch_npu.Format.NHWC)
     >>> torch_npu.get_npu_format(x2)
     1

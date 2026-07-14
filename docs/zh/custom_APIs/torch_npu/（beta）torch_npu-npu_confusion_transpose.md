@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-混淆reshape和transpose运算。
+融合reshape和transpose运算。
 
 ## 函数原型
 

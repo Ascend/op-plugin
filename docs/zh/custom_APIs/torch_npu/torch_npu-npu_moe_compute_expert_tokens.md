@@ -23,7 +23,7 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 
 ## 参数说明
 
-- **sorted_expert_for_source_row** (`Tensor`)：必选参数，经过专家处理过的结果，对应公式中的$sortedExpertForSourceRow$，要求是一个1维变量，数据类型支持int32，数据格式要求为$ND$。shape需小于2147483647。
+- **sorted_expert_for_source_row** (`Tensor`)：必选参数，每个source row经过排序后对应的专家索引，对应公式中的$sortedExpertForSourceRow$，要求是一个1维变量，数据类型支持int32，数据格式要求为$ND$。shape需小于2147483647。
 
 - **num_expert** (`int`)：必选参数，表示总专家数。对应公式中的$numExpert$。
 

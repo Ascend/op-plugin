@@ -9,7 +9,7 @@
 
 ## 功能说明
 
-- API功能：计算输入张量`input`按组归一化的结果，包括张量out、均值meanOut、标准差的倒数rstdOut以及silu的输出。
+- API功能：对输入张量`input`依次执行GroupNorm和SiLU激活，返回三个张量：out（SiLU激活后的输出）、meanOut（归一化均值）、rstdOut（归一化标准差的倒数）。
 - 计算公式：
     - GroupNorm：$x$为输入`input`，$\gamma$和$\beta$分别代表输入`weight`和`bias`，$E[x] = \bar{x}$代表$x$的均值，$ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$x$的方差，则
     $$
@@ -36,11 +36,11 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
-- **weight** (`Tensor`)：可选参数，索引张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
+- **weight** (`Tensor`)：可选参数，缩放张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 
-- **bias** (`Tensor`)：可选参数，更新数据张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
+- **bias** (`Tensor`)：可选参数，偏移张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
 

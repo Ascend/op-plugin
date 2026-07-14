@@ -22,7 +22,7 @@ torch_npu.utils.FlopsCounter()
 
 ## 参数说明
 
-以下为初始化时此类的参数说明，用户可通过成员函数对参数进行修改。
+以下为该类的内部状态参数说明，用户可通过成员函数对参数进行修改。
 
 - 开关标志位（isEnabled_）：默认值False。
 - 暂停标志位（isPaused_）：默认值False。
@@ -42,7 +42,7 @@ torch_npu.utils.FlopsCounter()
 
 - **torch_npu.utils.FlopsCounter.stop()**
 
-    关闭Flops统计。`FlopsCounter.stop()`设置开关标志位（isEnabled_）和暂停标志位（isPaused_）为False，不进行Flops计算，含重计算的Flops（traversedCount）和不含重计算的Flops（recordedCount）均不统计。且重置含重计算的Flops和不含重计算的Flops为0。
+    关闭Flops统计。`FlopsCounter.stop()`设置开关标志位（isEnabled_）和暂停标志位（isPaused_）为False，不进行Flops计算，含重计算的Flops（traversedCount）和不含重计算的Flops（recordedCount）均不统计，同时将含重计算的Flops和不含重计算的Flops重置为0。
 
 - **torch_npu.utils.FlopsCounter.pause()**
 

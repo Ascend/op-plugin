@@ -50,9 +50,9 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
 - **antiquant\_scale** (`Tensor`)：必选参数。反量化的缩放因子，用于weight矩阵反量化，对应反量化公式中的$antiquantScale$，数据格式支持$ND$。支持带transpose的非连续的Tensor。`antiquant_scale`支持的shape与量化方式相关：
 
-    - per\_tensor模式：输入shape为\(1,\)或\(1, 1\)。
-    - per\_channel模式：输入shape为\(1, N\)或\(N,\)。
-    - per\_group模式：输入shape为\(ceil\(K, antiquant\_group\_size\),  N\)。
+    - pertensor模式：输入shape为\(1,\)或\(1, 1\)。
+    - perchannel模式：输入shape为\(1, N\)或\(N,\)。
+    - pergroup模式：输入shape为\(ceil\(K, antiquant\_group\_size\),  N\)。
 
     `antiquant_scale`支持的dtype如下：
 

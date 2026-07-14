@@ -26,7 +26,7 @@ class torch_npu.optim.NpuFusedLamb(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-6
 - **eps** (`float`)：可选参数，分母防止除0项，提高数值稳定性，默认值为1e-6。`eps`小于0时，系统会抛出“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。
 - **adam** (`bool`)：可选参数，是否通过将trust ratio设置为1，退化为Adam，默认值为False。
-- **use_global_grad_norm** (`bool`)：可选参数，是否使用全局梯度正则，默认值为False。
+- **use_global_grad_norm** (`bool`)：可选参数，是否使用全局梯度范数，默认值为False。
 
 ## 返回值说明
 
