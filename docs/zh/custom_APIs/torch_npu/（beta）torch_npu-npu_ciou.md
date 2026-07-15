@@ -15,12 +15,12 @@
 
 ## 功能说明
 
-应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。
+基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）损失。
 
 ## 函数原型
 
 ```python
-torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_flag=False) -> Tensor
+torch_npu.npu_ciou(boxes1, boxes2, trans=False, is_cross=True, mode=0, atan_sub_flag=False) -> Tensor
 ```
 
 ## 参数说明
@@ -28,7 +28,7 @@ torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_f
 - **boxes1** (`Tensor`)：必选参数，格式为xywh、shape为(4, n)的预测检测框。
 - **boxes2** (`Tensor`)：必选参数，相应的gt检测框，shape为(4, n)。
 - **trans** (`bool`)：可选参数，是否有偏移。默认值为False。
-- **is_cross** (`bool`)：可选参数，box1和box2之间是否有交叉操作。默认值为True。
+- **is_cross** (`bool`)：可选参数，boxes1和boxes2之间是否有交叉操作。默认值为True。
 - **mode** (`int`)：可选参数，选择CIoU的计算方式。0表示IoU，1表示IoF。默认值为0。
 - **atan_sub_flag** (`bool`)：可选参数，是否将正向的第二个值传递给反向。默认值为False。
 
@@ -36,7 +36,7 @@ torch_npu.npu_ciou(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_f
 
 `Tensor`
 
-mask操作的结果。
+CIoU计算结果。
 
 ## 约束说明
 

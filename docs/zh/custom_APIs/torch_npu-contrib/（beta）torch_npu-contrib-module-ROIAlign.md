@@ -55,7 +55,6 @@ ROIAlign计算结果。
 >>> sampling_ratio = 2
 >>> aligned = False
 >>> input1.requires_grad = True
->>> roi.requires_grad = True
 >>> model = ROIAlign(output_size, spatial_scale, sampling_ratio, aligned=aligned).npu()
 >>> output = model(input1, roi)
 >>> output.sum().backward()

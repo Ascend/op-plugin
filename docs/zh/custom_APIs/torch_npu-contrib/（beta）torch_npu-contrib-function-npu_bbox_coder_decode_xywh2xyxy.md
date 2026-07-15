@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-应用基于NPU的bbox格式解码操作，将格式从xywh解码为xyxy。
+该函数基于NPU实现bbox格式解码操作，将格式从xywh转换为xyxy。
 
 ## 函数原型
 
@@ -23,7 +23,7 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 
 - **bboxes** (`Tensor`)：基础框，shape为(N, 4)。支持的数据类型为`float`，`half`。
 - **pred_bboxes** (`Tensor`)：编码框，shape为(N, 4)。支持的数据类型为`float`，`half`。
-- **means** (`List[float]`)：对delta坐标的目标去归一化的方法，默认值为None。该参数需要与编码参数对齐。
+- **means** (`List[float]`)：对delta坐标的目标去归一化的均值参数，默认值为None。该参数需要与编码参数对齐。
 - **stds** (`List[float]`)：对delta坐标的目标去归一化的标准差，默认值为None。该参数需要与编码参数对齐。
 - **max_shape** (`Tuple[int]`)：可选参数，最大框shape(H, W)，一般对应bbox所在的真实图片的大小，默认为[9999,9999]，不受限制。
 - **wh_ratio_clip** (`float`)：可选参数，可允许的宽高比，默认值为16/1000。
@@ -41,7 +41,7 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 >>> from torch_npu.contrib.function import npu_bbox_coder_decode_xywh2xyxy
 >>> A = 1024
 >>> max_shape = 512
->>> bboxes = torch.randint(0, max_shape, size=(A, 4)).npu()
+>>> bboxes = (torch.rand(A, 4) * max_shape).npu()
 >>> pred_bboxes = torch.randn(A, 4).npu()
 >>> out = npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, max_shape=(max_shape, max_shape))
 >>> torch.npu.synchronize()

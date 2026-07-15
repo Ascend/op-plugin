@@ -37,7 +37,7 @@ torch_npu.npu.obfuscation_calculate(fd, x, param, obf_coefficient) -> Tensor
 ## 参数说明
 
 - **fd**（`Tensor`）：必选参数，socket连接符，数据类型为`int32`，填写调用[obfuscation_initialize](（beta）torch_npu-npu-obfuscation_initialize.md)接口的返回值。
-- **x**（`Tensor`）：必选参数，待混淆处理的`Tensor`输入，对`Tensor`维度不作限制，shape为( , *, ... , hiddenSize)，即最后一维的size是[obfuscation_initialize](（beta）torch_npu-npu-obfuscation_initialize.md)的入参`hiddenSize`。数据格式支持ND。
+- **x**（`Tensor`）：必选参数，待混淆处理的`Tensor`输入，对`Tensor`维度不作限制，shape为(*, ..., hiddenSize)，即最后一维的size是[obfuscation_initialize](（beta）torch_npu-npu-obfuscation_initialize.md)的入参`hiddenSize`。数据格式支持ND。
     * <term>Atlas 推理系列产品</term>: 数据类型支持`float16` 、`float32`、`int8`。
     * <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>: 数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
 - **param**（`Tensor`）：必选参数，张量`x`的最后一维的维度，数据类型为`int32`。

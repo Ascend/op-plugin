@@ -19,7 +19,7 @@ torch.npu.set_device_limit(device, cube_num=-1, vector_num=-1) -> None
 
 ## 参数说明
 
-- **device** (`Device`)：必选参数，设置的卡号。
+- **device** (`int`)：必选参数，设置的卡号。
 - **cube_num** (`int`)：可选参数，设置的cube的核数，默认为-1不设置分核。
 - **vector_num** (`int`)：可选参数，设置的vector的核数，默认为-1不设置分核。
 
