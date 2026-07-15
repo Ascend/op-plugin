@@ -18,6 +18,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "torch_npu/csrc/core/npu/NPUGraphsUtils.h"
 
 namespace op_api {
@@ -26,14 +27,11 @@ static const int64_t BIT_NUMBER = 128;
 static const int64_t UINT8_BIT_NUMBER = 8;
 static const double NUMBER_ZERO = 0.0;
 static const double NUMBER_ONE = 1.0;
-static const int64_t BLOCK_SIZE = 256;
-static const int64_t MAX_THREADS_PER_MULTI_PROCESSOR = 2048;
-static const int64_t MAX_PROCESSOR_COUNT = 78;
-static const int UNROLL = 4;
 
 std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p)
 {
-    if (!c10_npu::IsAclnnOnly()) {
+    const bool is_aclnn_only = c10_npu::IsAclnnOnly();
+    if (!is_aclnn_only) {
         DO_COMPATIBILITY(aclnnDropoutGenMaskV2, acl_op::_npu_dropout(self, p));
         DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::_npu_dropout(self, p));
     }
@@ -42,17 +40,18 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self);
     at::Tensor mask;
 
-    if (c10_npu::IsAclnnOnly()) {
+    if (is_aclnn_only) {
         mask = at_npu::native::OpPreparation::apply_tensor_without_format({length}, self.options().dtype(at::kByte));
         const auto gen = at_npu::detail::getDefaultNPUGenerator();
         const int64_t nelem = self.numel();
         if (nelem == 0) {
             return std::tie(result, mask);
         }
-        unsigned int blocksPerSm = MAX_THREADS_PER_MULTI_PROCESSOR / BLOCK_SIZE;
-        unsigned int gridX = (nelem + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        gridX = std::min((unsigned int)MAX_PROCESSOR_COUNT * blocksPerSm, gridX);
-        int64_t counterOffset = ((nelem - 1) / (BLOCK_SIZE * gridX * UNROLL) + 1) * UNROLL;
+        // Remove false after aclnnDropoutV3 supports aclnnSetPytorchRandom.
+        const bool randomness_compatible = op_plugin::utils::PrepareRandomnessCompatible(false);
+        int64_t counterOffset = randomness_compatible
+            ? op_plugin::utils::calc_counter_offset(nelem, op_plugin::utils::UNROLL_4)
+            : op_plugin::utils::LEGACY_RAND_COUNTER_OFFSET;
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(counterOffset);
         const uint64_t seed = pair.first;
         const uint64_t offset = pair.second;
@@ -80,7 +79,8 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
             c10_npu::SecondaryStreamGuard guard(secondary_stream);
             mask = at_npu::native::OpPreparation::apply_tensor_without_format({length}, self.options().dtype(at::kByte));
             at::IntArrayRef shapeArray(self.sizes());
-            auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
+            auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(
+                op_plugin::utils::LEGACY_RAND_COUNTER_OFFSET);
             // At present, the default value of random number may be very large,
             // which will cause overflow in graph mode, so we set seed = 0 to avoid it.
             const uint64_t seed = pair.first;
@@ -89,7 +89,8 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
             EXEC_NPU_CMD(aclnnDropoutGenMaskV2, shapeArray, p, seed, offset, dataType, mask);
         } else {
 #if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
-            auto gen_state_ = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_npu_state(10);
+            auto gen_state_ = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_npu_state(
+                op_plugin::utils::LEGACY_RAND_COUNTER_OFFSET);
             const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
             const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
             const uint64_t offset_intragraph = gen_state_.offset_intragraph_;

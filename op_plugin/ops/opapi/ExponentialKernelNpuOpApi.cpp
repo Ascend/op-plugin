@@ -36,7 +36,8 @@ at::Tensor& exponential_(at::Tensor& self, double lambd, c10::optional<at::Gener
         }
 
         auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-        auto counter_offset = op_plugin::utils::calc_final_counter_offset(self);
+        // Remove false after aclnnSimThreadExponential supports aclnnSetPytorchRandom.
+        auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, false);
         auto pair = gen->philox_engine_inputs(counter_offset);
         int64_t seed = static_cast<int64_t>(pair.first);
         int64_t offset = static_cast<int64_t>(pair.second);
@@ -52,7 +53,7 @@ at::Tensor& exponential_(at::Tensor& self, double lambd, c10::optional<at::Gener
         self.zero_();
         return self;
     }
-    
+
     self.uniform_(0.0, 1.0, generator);
 
     if (self.dtype() == at::kDouble) {
