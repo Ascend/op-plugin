@@ -94,7 +94,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
     }
     // call HostAPI function
     static auto layer_sc = at_npu::native::env::CheckCompatibleImpl();
-    if (!layer_sc) {
+    if (!layer_sc || c10_npu::IsAclnnOnly()) {
         EXEC_NPU_CMD(aclnnLayerNorm, input, normalized_shape, input_weight, input_bias, eps, output, mean_out, rstd_out);
     } else {
         EXEC_NPU_CMD(aclnnFastLayerNorm, input, normalized_shape, input_weight, input_bias, eps, output, mean_out, rstd_out);

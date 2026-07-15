@@ -113,6 +113,43 @@ class TestLayerNorm(TestCase):
         self.assertTrue("Given normalized_shape=[2, 3, 3], expected input with shape [*, 2, 3, 3], but got input of size[10, 5]" in str(exception))
 
 
+    @SkipIfNotGteCANNVersion("9.0.0")
+    def test_layer_norm_compatible_impl_switch(self):
+        shape_format = [
+            [np.float32, 0, (64, 10)],
+            [np.float32, 0, (256, 2048, 7, 7)],
+            [np.float16, 0, (10, 128)],
+            [np.float16, 0, (46, 16)],
+        ]
+
+        try:
+            for item in shape_format:
+                cpu_input, npu_input = create_common_tensor(item, 1, 100)
+                normalized_shape = cpu_input.size()[1:]
+
+                cpu_output = torch.nn.functional.layer_norm(
+                    cpu_input.float(), normalized_shape)
+                if item[0] == np.float16:
+                    cpu_output = cpu_output.to(torch.float16)
+
+                torch_npu.npu.use_compatible_impl(False)
+                npu_out_no_compat = torch.nn.functional.layer_norm(
+                    npu_input, normalized_shape)
+                self.assertRtolEqual(
+
+                    cpu_output.detach().numpy(),
+                    npu_out_no_compat.cpu().detach().numpy())
+
+                torch_npu.npu.use_compatible_impl(True)
+                npu_out_with_compat = torch.nn.functional.layer_norm(
+                    npu_input, normalized_shape)
+                self.assertRtolEqual(
+                    cpu_output.detach().numpy(),
+                    npu_out_with_compat.cpu().detach().numpy())
+        finally:
+            torch_npu.npu.use_compatible_impl(True)
+
+
 if __name__ == "__main__":
     torch_npu.npu.use_compatible_impl(True)
     run_tests()
