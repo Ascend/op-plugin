@@ -53,10 +53,12 @@ std::tuple<at::Tensor, at::Tensor> npu_rotate_quant(const at::Tensor &x, const a
         "Param (axis) is out of input dimension range" + OPS_ERROR(ErrCode::PARAM));
 
     bool is_int4_packed = (dst_dtype_val == DTYPE_NUM_FOR_QUINT4X2);
-    bool is_fp4 = (dst_dtype_val == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
-    bool is_mx_type = (dst_dtype_val == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
-        dst_dtype_val == static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2) ||
-        dst_dtype_val == static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN));
+    aclDataType dst_acl_dtype = is_int4_packed ? aclDataType::ACL_DT_UNDEFINED
+                                               : c10_npu::GetAclDataType(dst_dtype_val);
+    bool is_fp4 = (dst_acl_dtype == aclDataType::ACL_FLOAT4_E2M1);
+    bool is_mx_type = (dst_acl_dtype == aclDataType::ACL_FLOAT4_E2M1 ||
+        dst_acl_dtype == aclDataType::ACL_FLOAT8_E5M2 ||
+        dst_acl_dtype == aclDataType::ACL_FLOAT8_E4M3FN);
 
     ASCEND_LOGI("[npu_rotate_quant]: Getting aclTensor y dtype by Parameter(dst_dtype): %ld", dst_dtype_val);
 
@@ -79,7 +81,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rotate_quant(const at::Tensor &x, const a
         output_size[dim_num - 1] /= FP4_IN_UINT8_NUM;
         output_y = npu_preparation::apply_tensor_without_format(output_size, c10::ScalarType::Byte);
     } else {
-        y_acltype = c10_npu::GetAclDataType(dst_dtype_val);
+        y_acltype = dst_acl_dtype;
         TORCH_CHECK(y_acltype != aclDataType::ACL_DT_UNDEFINED, "Unsupported dst_dtype value: ", dst_dtype_val,
             OPS_ERROR(ErrCode::PARAM));
         at::ScalarType scalar_dtype = npu_preparation::convert_to_scalar_type(y_acltype);
