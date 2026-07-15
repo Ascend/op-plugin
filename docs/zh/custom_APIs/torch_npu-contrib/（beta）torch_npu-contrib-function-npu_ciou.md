@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty term，并propose CIoU。
+基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）损失。
 
 ## 函数原型
 

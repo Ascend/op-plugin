@@ -136,7 +136,7 @@
 </tr>
 <tr id="row36118212415"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p76215262419"><a name="p76215262419"></a><a name="p76215262419"></a><a href="（beta）at_npu-native-get_npu_format.md">（beta）at_npu::native::get_npu_format</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p49191458195"><a name="p49191458195"></a><a name="p49191458195"></a>获取NPU tensor格式信息，返回值类型int64_t。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p49191458195"><a name="p49191458195"></a><a name="p49191458195"></a>获取NPU tensor的格式信息，返回值为int64_t类型。</p>
 </td>
 </tr>
 <tr id="row395820517240"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1495814522412"><a name="p1495814522412"></a><a name="p1495814522412"></a><a href="（beta）at_npu-native-get_npu_storage_sizes.md">（beta）at_npu::native::get_npu_storage_sizes</a></p>

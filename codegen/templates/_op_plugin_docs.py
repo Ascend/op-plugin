@@ -724,22 +724,22 @@ tensor([[1, 1, 1, 1],
 _add_torch_npu_docstr(
     "npu_ciou",
     """
-torch_npu.npu_ciou(Tensor self, Tensor gtboxes, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
+torch_npu.npu_ciou(Tensor boxes1, Tensor boxes2, bool trans=False, bool is_cross=True, int mode=0, bool atan_sub_flag=False) -> Tensor
 功能描述
-应用基于NPU的CIoU操作。在DIoU的基础上增加了penalty item，并propose CIoU。
+基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）损失。
 
 参数说明
 boxes1 (Tensor)：格式为xywh、shape为(4, n)的预测检测框。
 boxes2 (Tensor)：相应的gt检测框，shape为(4, n)。
 trans (Bool，默认值为False)：是否有偏移。
-is_cross (Bool，默认值为True)：box1和box2之间是否有交叉操作。
+is_cross (Bool，默认值为True)：boxes1和boxes2之间是否有交叉操作。
 mode (Int，默认值为0)：选择CIoU的计算方式。0表示IoU，1表示IoF。
 atan_sub_flag (Bool，默认值为False)：是否将正向的第二个值传递给反向。
 输出说明
-torch.Tensor：mask操作的结果。
+torch.Tensor：CIoU计算结果。
 
 约束说明
-到目前为止，CIoU向后只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+到目前为止，CIoU反向传播只支持trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
 
 示例
     >>> box1 = torch.randn(4, 32).npu()
@@ -967,7 +967,7 @@ y=x1+ self *alpha
 
 Softmax(xi)= exp(xi)/∑jexp(xj)
 
-output = 根据mask舍弃x中的元素，留下来的元素乘(1/prob)
+output = 根据mask舍弃self中的元素，留下来的元素乘(1/prob)
 
 参数说明
 Tensor self：4维张量，shape为(N, C, H, W)。
@@ -7692,7 +7692,7 @@ page attention使能场景下, 支持kv cache排布格式为(blocknum, numKvHead
 page attention使能场景下, 当输入kv cache排布格式为(blocknum, blocksize, H), 且H(H=numKvHeads * headDims)超过64k时, 受硬件指令约束, 会被拦截报错.
 page attention场景下, 必须传入输入actual_seq_lengths, 每个batch的actualSeqLength表示每个batch对sequence真实长度, 该值除以属性输入blocksize即表示每个batch所需block数量.
 page attention场景下, block_table必须为二维Tensor, 第一维长度需等于batch数, 第二维长度不能小于maxBlockNumPerSeq(maxBlockNumPerSeq为每个batch中最大actual_seq_lengths对应的block数量). 例如, batch数为2, 属性blocksize=128, 当每个batch的actualSeqLength为512时, 表明每个batch至少需要4个block, 因此block_table的排布可以为(2, 4).
-page attention使能场景下, block_size是用户自定义的参数, 该参数的取值会影响page attention的性能, 通常为128或256. key、value输入类型为float16、bfloat16时block_size需要16对齐; key、value输入类型为int8时block_size需要32对齐. 通常情况下, page attention可以提高吞吐量, 但会带来性能上的下降.
+page attention使能场景下, block_size是用户自定义的参数, 该参数的取值会影响page attention的性能, 通常为128或256. key、value输入类型为float16、bfloat16时block_size需要16对齐; key、value输入类型为int8时block_size需要32对齐. 通常情况下, page attention可以提高吞吐量, 但可能会增加单个token的解码时延.
 quant_scale2、quant_offset2为一组参数, 其中quant_offset2可选, 传入该组参数后算子输出数据类型会推导为int8, 若不期望int8输出, 请勿传入该组参数.
 kv左padding场景使用限制:
 kvCache的搬运起点计算公式为: Smax-kv_padding_size-actual_seq_lengths. kvCache的搬运终点计算公式为: Smax-kv_padding_size. 其中kvCache的搬运起点或终点小于0时, 返回数据结果为全0.
@@ -7738,8 +7738,9 @@ import math
 import torchair as tng
 from torchair.configs.compiler_config import CompilerConfig
 import torch._dynamo
-TORCHDYNAMO_VERBOSE=1
-TORCH_LOGS="+dynamo"
+import os
+os.environ["TORCHDYNAMO_VERBOSE"] = "1"
+os.environ["TORCH_LOGS"] = "+dynamo"
 
 # 支持入图的打印宏
 import logging
@@ -14485,7 +14486,7 @@ torch_npu.npu.obfuscation_calculate(fd, x, param, obf_coefficient) -> Tensor
 
 参数说明:
 - fd（`Tensor`）：必选参数，socket连接符，数据类型为`int32`，填写调用[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)接口的返回值。
-- x（`Tensor`）：必选参数，待混淆处理的`Tensor`输入，对`Tensor`维度不作限制，shape为( , *, ... , hiddenSize)，即最后一维的size是[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)的入参`hiddenSize`。数据格式支持ND。
+- x（`Tensor`）：必选参数，待混淆处理的`Tensor`输入，对`Tensor`维度不作限制，shape为(*, ..., hiddenSize)，即最后一维的size是[obfuscation_initialize](./torch_npu-npu-obfuscation_initialize.md)的入参`hiddenSize`。数据格式支持ND。
     * <term>Atlas 推理系列产品</term>: `Tensor`数据类型支持`float16` 、`float32`、`int8`。
     * <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品/A200I A2 Box 异构组件</term>: `Tensor`数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
 - param（`Tensor`）：必选参数，张量`x`的最后一维的维度，数据类型为`int32`。

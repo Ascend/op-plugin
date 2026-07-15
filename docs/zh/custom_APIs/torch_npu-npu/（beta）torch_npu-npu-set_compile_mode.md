@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-设置是否开启二进制编译。
+设置是否开启JIT编译。
 
 ## 函数原型
 
@@ -21,12 +21,12 @@ torch_npu.npu.set_compile_mode(jit_compile = bool)
 
 ## 参数说明
 
-**jit_compile**（`bool`）：设置为True时表示非二进制模式，设置为False时表示二进制模式。
+**jit_compile**（`bool`）：设置为True时表示开启JIT编译，设置为False时表示关闭JIT编译。
 
 > [!NOTE]  
 >
->- Atlas 训练系列产品/Atlas 推理系列产品默认为jit_compile=True，即非二进制模式。
->- Atlas A2 训练系列产品/Atlas A3 训练系列产品默认为jit_compile=False，即二进制模式。
+>- Atlas 训练系列产品/Atlas 推理系列产品默认为jit_compile=True，即开启JIT编译。
+>- Atlas A2 训练系列产品/Atlas A3 训练系列产品默认为jit_compile=False，即关闭JIT编译。
 
 ## 调用示例
 

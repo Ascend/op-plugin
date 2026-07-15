@@ -110,7 +110,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - page attention场景下，`block_table`必须为二维`Tensor`，shape为`(B, maxBlockNumPerSeq)`，其中`B`表示batch数，`maxBlockNumPerSeq`表示各batch中所需block数量的最大值。`block_table[i][j]`表示第`i`个batch的第`j`个逻辑block映射到kv cache中的物理block索引。
     - page attention场景下，`block_table`第一维长度需等于batch数，第二维长度不能小于`maxBlockNumPerSeq`（`maxBlockNumPerSeq`为每个batch中最大`actual_seq_lengths`对应的block数量）。例如，batch数为2，属性`block_size=128`，当每个batch的`actual_seq_length`为512时，表明每个batch至少需要4个block，因此`block_table`的排布可以为`(2, 4)`。
     - page attention场景下，`block_table`中的有效值表示物理block编号，取值范围应在`[0, blocknum - 1]`内。
-    - page attention场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
+    - page attention场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能，通常为128或256。`key`、`value`输入类型为`float16`、`bfloat16`时，`block_size`需要16对齐；`key`、`value`输入类型为`int8`时，`block_size`需要32对齐。通常情况下，page attention可以提高吞吐量，但可能会增加单个token的解码时延。
 
 - `quant_scale2`、`quant_offset2`为一组参数，其中`quant_offset2`可选，传入该组参数后算子输出数据类型会推导为`int8`，若不期望`int8`输出，请勿传入该组参数。
 - KV左`padding`场景使用限制：
@@ -154,8 +154,9 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     import torchair as tng
     from torchair.configs.compiler_config import CompilerConfig
     import torch._dynamo
-    TORCHDYNAMO_VERBOSE=1
-    TORCH_LOGS="+dynamo"
+    import os
+    os.environ["TORCHDYNAMO_VERBOSE"] = "1"
+    os.environ["TORCH_LOGS"] = "+dynamo"
     
     # 支持入图的打印宏
     import logging
