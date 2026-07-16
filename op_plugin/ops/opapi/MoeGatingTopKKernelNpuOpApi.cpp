@@ -68,7 +68,11 @@ tensor_list npu_moe_gating_top_k(const at::Tensor &x, int64_t k, const c10::opti
     at::Tensor y = npu_preparation::apply_tensor_without_format(x, {rows, k});
     at::Tensor expert_idx = npu_preparation::apply_tensor_without_format({rows, k}, x.options().dtype(at::kInt));
     at::Tensor out = npu_preparation::apply_tensor_without_format({rows, expert_num}, x.options().dtype(at::kFloat));
-    EXEC_NPU_CMD(aclnnMoeGatingTopKV2, x, bias, input_ids, tid2eid, k, k_group, group_count, group_select_mode, renorm, norm_type, out_flag, routed_scaling_factor, eps, y, expert_idx, out);
+    if(input_ids.defined() && tid2eid.defined()) {
+        EXEC_NPU_CMD(aclnnMoeGatingTopKV2, x, bias, input_ids, tid2eid, k, k_group, group_count, group_select_mode, renorm, norm_type, out_flag, routed_scaling_factor, eps, y, expert_idx, out);
+    } else {
+        EXEC_NPU_CMD(aclnnMoeGatingTopK, x, bias, k, k_group, group_count, group_select_mode, renorm, norm_type, out_flag, routed_scaling_factor, eps, y, expert_idx, out);
+    }
     return std::tie(y, expert_idx, out);
 }
 
