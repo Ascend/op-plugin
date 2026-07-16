@@ -25,8 +25,10 @@ namespace op_api {
                                              const c10::optional<at::Tensor> &finished_opt,
                                              int64_t k)
     {
-        TORCH_CHECK(!is_ascend950_path(), "Interface npu_moe_gating_top_k_softmax is no longer supported on Ascend950, "
-			"you can use the interface npu_moe_gating_top_k_softmax_v2 instead.");
+        if (is_ascend950_path()) {
+            ASCEND_LOGW("Interface npu_moe_gating_top_k_softmax will no longer be supported on Ascend950, "
+                        "you can use the interface npu_moe_gating_top_k_softmax_v2 instead.");
+        }
         TORCH_CHECK(x.dim() == 2 or x.dim() == 3, "The x should be 2D or 3D", OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(
             x.scalar_type() == at::kHalf || x.scalar_type() == at::kFloat || x.scalar_type() == at::kBFloat16,
