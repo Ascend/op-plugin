@@ -6906,7 +6906,7 @@ def npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_state=No
     state_shape = (initial_state.size(0), initial_state.size(1), initial_state.size(2), initial_state.size(3))
     out_shape = (value.size(0), value.size(1), value.size(2))
 
-    finalState = torch.empty(state_shape, dtype=torch.bfloat16, device=state.device)
+    finalState = torch.empty(state_shape, dtype=initial_state.dtype, device=initial_state.device)
     out = torch.empty(out_shape, dtype=torch.bfloat16, device=value.device)
     return out, finalState
 
