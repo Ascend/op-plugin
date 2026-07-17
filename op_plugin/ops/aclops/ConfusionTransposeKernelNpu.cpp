@@ -80,15 +80,15 @@ at::Tensor npu_confusion_transpose_backward_symint(const at::Tensor &grad, at::I
             svec_shape.emplace_back(shape[perm[i]]);
         }
     }
-    std::vector<int64_t> vec_perm;
+
     int64_t perm_len = perm.size();
-    int64_t temp_perm[perm_len] = {0};
+    std::vector<int64_t> vec_perm(perm_len, 0);
     for (int64_t i = 0; i < perm_len; i++) {
         TORCH_CHECK(perm[i] >= 0 && perm[i] < perm_len,
             "perm value out of range: ", perm[i], OPS_ERROR(ErrCode::PARAM));
-        temp_perm[perm[i]] = i;
+        vec_perm[perm[i]] = i;
     }
-    vec_perm = std::vector<int64_t>(temp_perm, temp_perm + perm_len);
+
     perm = at::IntArrayRef(vec_perm);
     at::Tensor result = npu_preparation::apply_tensor(grad, shape);
 

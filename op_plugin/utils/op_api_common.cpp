@@ -1732,7 +1732,7 @@ int ExecuteApiFunc(
     aclOpExecutor* executor
 )
 {
-    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
+    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(const_cast<void*>(opApiFuncAddr));
     auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
 
     return api_ret;
@@ -1757,7 +1757,7 @@ int ExecuteApiFuncV2(
 )
 {
     auto workspace_addr = GetWorkSpaceAddrV2(workspace_size, acl_stream);
-    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);
+    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(const_cast<void*>(opApiFuncAddr));
     auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
 
     return api_ret;
