@@ -34,7 +34,8 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
     - 2：在线精度检测不通过，硬件故障。
 
-- 若出现如下异常，则表示电压恢复失败，需参见[LINK](https://www.hiascend.com/document/detail/zh/canncommercial/900/maintenref/troubleshooting/troubleshooting_0505.html)手动恢复电压或reboot。
+- 若出现如下异常，则表示电压恢复失败，需参见《CANN 故障处理》中的“综合检查”章节手动恢复电压或reboot。
+    <!-- (https://www.hiascend.com/document/detail/zh/canncommercial/900/maintenref/troubleshooting/troubleshooting_0505.html) -->
 
     ```shell
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.

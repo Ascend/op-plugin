@@ -11,7 +11,8 @@
 
 ## 功能说明
 
-查询aclnn算子版本信息。aclnn算子详情可参考《CANN 算子库》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/900/API/aolapi/operatorlist_00001.html">简介</a>”章节。
+查询aclnn算子版本信息。aclnn算子详情可参考《CANN 算子库》中的“简介”章节。
+<!-- 《CANN 算子库》中的“<a href="https://www.hiascend.com/document/detail/zh/canncommercial/900/API/aolapi/operatorlist_00001.html">简介</a>” -->
 
 ## 函数原型
 
