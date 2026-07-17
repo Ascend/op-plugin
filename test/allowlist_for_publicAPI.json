@@ -92,18 +92,31 @@
       "npu_renorm_backward"
     ],
     "v2.13": [
- 	    "npu_gelu_mul",
- 	    "npu_clipped_swiglu",
- 	    "npu_sim_exponential_",
- 	    "npu_fused_floyd_attention",
- 	    "npu_fused_floyd_attention_backward",
- 	    "npu_fused_causal_conv1d",
+ 	  "npu_gelu_mul",
+ 	  "npu_clipped_swiglu",
+ 	  "npu_sim_exponential_",
+ 	  "npu_fused_floyd_attention",
+ 	  "npu_fused_floyd_attention_backward",
+ 	  "npu_fused_causal_conv1d",
       "npu_masked_causal_conv1d",
       "npu_masked_causal_conv1d_backward",
       "npu_apply_rotary_pos_emb",
       "npu_ring_attention_update",
       "npu_renorm_backward"
- 	  ],
+ 	],
+    "v2.14": [
+      "npu_gelu_mul",
+      "npu_clipped_swiglu",
+      "npu_sim_exponential_",
+      "npu_fused_floyd_attention",
+      "npu_fused_floyd_attention_backward",
+      "npu_fused_causal_conv1d",
+      "npu_masked_causal_conv1d",
+      "npu_masked_causal_conv1d_backward",
+      "npu_apply_rotary_pos_emb",
+      "npu_ring_attention_update",
+      "npu_renorm_backward"
+    ],
     "all_version": [
       "_npu_dropout",
       "copy_memory_",
