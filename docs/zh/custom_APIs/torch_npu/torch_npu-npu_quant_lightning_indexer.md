@@ -35,13 +35,13 @@ query_dtype=None, key_dtype=None) -> Tensor
 >
 - **query**（`Tensor`）：必选参数，表示输入Index Query，对应公式中的$Q_{index}^{INT8}\in\R^{g\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`int8`、`float8_e4m3fn`、`hifloat8`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1支持[1, 64]。
 
-- **key**（`Tensor`）：必选参数，表示输入Index Key，对应公式中的$K_{index}^{INT8}\in\R^{S_{k}\times d}$。支持非连续，数据格式支持$ND$，数据类型支持`int8`、`float8_e4m3fn`、`hifloat8`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
+- **key**（`Tensor`）：必选参数，表示输入Index Key，对应公式中的$K_{index}^{INT8}\in\R^{S_{k}\times d}$。在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`int8`、`float8_e4m3fn`、`hifloat8`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
 
 - **weights**（`Tensor`）：必选参数，表示权重系数，对应公式中的$W$。不支持非连续，数据格式支持$ND$，数据类型支持`float16`、`bfloat16`，支持输入shape[B,S1,N1]、[T,N1]。
 
 - **query_dequant_scale**（`Tensor`）：必选参数，表示Index Query的反量化系数$Scale_Q$ 。不支持非连续，数据格式支持$ND$，数据类型支持`float16`、`float32`，支持输入shape[B,S1,N1]、[T,N1]。
 
-- **key_dequant_scale**（`Tensor`）：必选参数，表示Index Key的反量化系数，对应公式中的$Scale_K^T$。支持非连续，数据格式支持$ND$，数据类型支持`float16`、`float32`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数。
+- **key_dequant_scale**（`Tensor`）：必选参数，表示Index Key的反量化系数，对应公式中的$Scale_K^T$。在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`float16`、`float32`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数。
 
 - **query\_quant\_mode**（`int`）：可选参数，用于标识输入`query`的量化模式，当前仅支持Per-Token-Head量化模式，且仅支持传入0。
 
@@ -85,6 +85,7 @@ query_dtype=None, key_dtype=None) -> Tensor
 - Atlas A3 推理系列产品：
     - query和key的数据类型支持`int8`。
     - 仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
+    - key和key_dequant_scale不支持非连续。
 - Ascend 950PR/Ascend 950DT：
     - query N1仅支持8、16、24、32、64。
     - query和key的数据类型支持`float8_e4m3fn、hifloat8、int8`。
