@@ -120,7 +120,7 @@ at::Tensor& random_op_api_(at::Tensor& self, int64_t from, int64_t to, c10::opti
     check_random_bounds(self.dtype(), from, to);
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, from, to, true);
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, true, from, to, true);
     if (is_capture == c10_npu::CaptureStatus::None) {
         auto pair = gen->philox_engine_inputs(counter_offset);
         EXEC_NPU_CMD(aclnnInplaceRandom, self, from, to, pair.first, pair.second);
@@ -140,7 +140,8 @@ at::Tensor& random_without_from_to_op_api_(at::Tensor& self, c10::optional<at::G
 {
     auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self);
+    // Remove false after aclnnInplaceRandomWithoutFromTo supports aclnnSetPytorchRandom.
+    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, false);
     if (is_capture == c10_npu::CaptureStatus::None) {
         auto pair = gen->philox_engine_inputs(counter_offset);
         EXEC_NPU_CMD(aclnnInplaceRandomWithoutFromTo, self, pair.first, pair.second);
