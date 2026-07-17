@@ -89,7 +89,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **mm\_x\_scale\_dtype** (`int`)：可选参数，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。当存在共享专家计算时，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **mm\_weight\_scale\_dtype** (`int`)：可选参数，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。当存在共享专家计算时，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **mm\_y\_dtype** (`int`)：可选参数，表示共享专家输出张量`mm_y`的数据类型。当存在共享专家计算时，需要指定该参数取值。数据类型支持`float16`、`bfloat16`。
-- **comm\_mode** (`str`)：可选参数，表示通信模式。默认值为None。支持`"ai_cpu"`、`"ccu"`、None、空字符串。当为None或空字符串时，world_size≤8卡走CCU通信，world_size>8卡走AI\_CPU通信。AI\_CPU模式仅支持基础场景，CCU模式支持基础场景和量化场景。
+- **comm\_mode** (`str`)：可选参数，表示通信模式。默认值为None。支持`"ai_cpu"`、`"ccu"`和None。当为None时，默认走AI\_CPU通信。
 
 ## 返回值说明
 
@@ -100,7 +100,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 ## 约束说明
 
 - 该接口支持训练、推理场景下使用。
-- **通信引擎约束**：支持CCU和AI\_CPU通信，通过`comm_mode`参数配置。当`comm_mode`为None或空字符串时，world\_size≤8卡走CCU通信，world\_size>8卡走AI\_CPU通信。AI\_CPU模式仅支持基础场景，CCU模式支持基础场景和量化场景。
+- **通信引擎约束**：支持CCU和AI\_CPU通信，通过`comm_mode`参数配置。当`comm_mode`为None时，走AI\_CPU通信。
 - 该接口支持单算子模式调用和T-T量化场景的图模式调用。
 - 参数说明中Shape涉及的变量说明：
     - BS表示batch sequence size。
