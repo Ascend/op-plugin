@@ -929,66 +929,6 @@ def npu_quant_mm_reduce_scatter_meta(self, x2, hcom, world_size, reduce_op='sum'
     return (self.new_empty(out_m, x2.size(1), dtype=torch_dtype), self.new_empty(0, dtype=torch.float32))
 
 
-@impl(m, "npu_quant_reduce_scatter")
-def npu_quant_reduce_scatter_meta(x, scales, hcom_name, world_size, reduce_op='sum',
-                                  output_dtype=None, x_dtype=None, scales_dtype=None):
-    torch._check(
-        x is not None,
-        lambda: "x cannot be None, please input some value" + ops_error(ErrCode.TYPE),
-    )
-    torch._check(
-        scales is not None,
-        lambda: "scales cannot be None, please input some value" + ops_error(ErrCode.TYPE),
-    )
-
-    world_size_list = [2, 4, 8]
-    torch._check(
-        world_size in world_size_list,
-        lambda: "world_size must be in " + str(world_size_list) + ", but actual value is: " + str(world_size) + ops_error(ErrCode.VALUE),
-    )
-
-    if x.dim() == 2:
-        size = [x.size(0) // world_size, x.size(1)]
-    if x.dim() == 3:
-        size = [x.size(0) * x.size(1) // world_size, x.size(2)]
-
-    dtype = x.dtype
-    if output_dtype is not None:
-        dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[output_dtype]
-    else:
-        dtype = torch.bfloat16
-
-    return torch.empty(size, dtype=dtype, device='meta')
-
-
-@impl(m, "npu_quant_all_reduce")
-def npu_quant_all_reduce_meta(x, scales, hcom_name, world_size, reduce_op='sum',
-                              output_dtype=None, x_dtype=None, scales_dtype=None):
-    torch._check(
-        x is not None,
-        lambda: "x cannot be None, please input some value" + ops_error(ErrCode.TYPE),
-    )
-    torch._check(
-        scales is not None,
-        lambda: "scales cannot be None, please input some value" + ops_error(ErrCode.TYPE),
-    )
-
-    world_size_list = [2, 4, 8]
-    torch._check(
-        world_size in world_size_list,
-        lambda: "world_size must be in " + str(world_size_list) + ", but actual value is: " + str(world_size) + ops_error(ErrCode.VALUE),
-    )
-
-    size = x.size()
-    dtype = x.dtype
-    if output_dtype is not None:
-        dtype = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[output_dtype]
-    else:
-        dtype = torch.bfloat16
-
-    return torch.empty(size, dtype=dtype, device='meta')
-
-
 @impl(m, "npu_gmm_alltoallv")
 def npu_gmm_alltoallv_meta(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         recv_counts, *, send_counts_tensor=None,
