@@ -32,7 +32,7 @@ cpp_extension_structured/
 
 > [!NOTE]
 >
-> Structured adaptation does not support forward and backward binding. You can bind the operator using Python by referring to [cpp_extension_full/module](../cpp_extension_full/module/README.md).
+> Structured adaptation does not support forward and backward binding. You can bind the operator using Python by referring to [cpp_extension_full/module](../cpp_extension_full/module/README_en.md).
 
 1. In the operator adaptation layer C++ directory (`csrc`), structured adaptation configuration is defined in the `npu_custom.yaml` file.
 
