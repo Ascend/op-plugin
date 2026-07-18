@@ -1,7 +1,7 @@
 # (beta) torch_npu.contrib.module.SiLU
 
-> [!NOTICE]  
->This API is planned for deprecation. Use `torch.nn.SiLU` instead.
+> [!NOTICE]
+> This API is planned for deprecation. Use `torch.nn.SiLU` instead.
 
 ## Supported Products
 

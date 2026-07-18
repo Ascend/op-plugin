@@ -81,7 +81,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
     The default value is `False`.
 
-- **`gc_detect_threshold`** (`float`): Optional. GC detection threshold. The value must be greater than or equal to 0, in milliseconds (ms). When a numeric value is specified, GC detection is enabled and only GC events whose duration exceeds the threshold are collected. Configuring this parameter to `0` collects all GC events. This can cause excessive collection data volume, use with caution). The recommended value is `1` ms.
+- **`gc_detect_threshold`** (`float`): Optional. GC detection threshold. The value must be greater than or equal to 0, in milliseconds (ms). When a numeric value is specified, GC detection is enabled and only GC events whose duration exceeds the threshold are collected. Configuring this parameter to `0` collects all GC events. This can cause excessive collection data volume, use with caution. The recommended value is `1` ms.
 
     The default value is `None`, which disables the GC detection function.
 

@@ -39,7 +39,7 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 - **`expert_token_num_per_rank`** (`Tensor`): Required. Two-dimensional matrix, where `[i, j]` represents the token count received from rank `i` that is processed by expert `j` on the current rank. This parameter must be 2D with shape `(N, E)`. The data type can be `int32` or `int64`. The data layout must be ND. All values must be greater than 0.
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`per_token_scales`** (`Tensor`): Optional. Scale corresponding to each token, which must be rearranged along with the tokens. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout must be ND.
-- **`expert_token_num_type`** (`int`): Optional. Output mode of `expert_token_num`. The value `0` enables cumsum mode, and the value `1` (default)enables count mode. Currently, only the value `1` is supported.
+- **`expert_token_num_type`** (`int`): Optional. Output mode of `expert_token_num`. The value `0` enables cumsum mode, and the value `1` (default) enables count mode. Currently, only the value `1` is supported.
 - **`idx_type`** (`int`): Optional. Index type of the output `permute_token_idx`. The value `0` (default) enables gather indices, and the value `1` enables scatter indices. Currently, only the value `0` is supported.
 
 ## Return Values

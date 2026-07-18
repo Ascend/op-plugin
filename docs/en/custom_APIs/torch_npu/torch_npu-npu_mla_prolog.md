@@ -53,7 +53,7 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
         - If `kv_cache` and `kr_cache` are set to `bfloat16`, the outputs `kv_cache_out` and `kr_cache_out` are non-quantized outputs. In this case, `dequant_scale_w_uq_qr` must be provided, and `smooth_scales_cq` is optional. 
         - If `kv_cache` and `kr_cache` are set to `int8`, the outputs `kv_cache_out` and `kr_cache_out` are quantized outputs. In this case, `dequant_scale_w_uq_qr`, `quant_scale_ckv`, and `quant_scale_ckr` must be provided, and `smooth_scales_cq` is optional.   
     - When `weight_uq_qr` is set to `bfloat16`, a non-quantized scenario is specified.  
-        In this configuration, `dequant_scale_w_uq_qr`, `quant_scale_ckv`, and `quant_scale_ckr`, and `smooth_scales_cq` cannot be provided and must be `None`.
+        In this configuration, `dequant_scale_w_uq_qr`, `quant_scale_ckv`, `quant_scale_ckr`, and `smooth_scales_cq` cannot be provided and must be `None`.
   
 - **`weight_uk`** (`Tensor`): Required. Upsampling weight matrix for key computation, corresponding to W<sup>UK</sup> in the formulas. This parameter must be 3D with shape `(N, D, Hckv)`. The data type can be `bfloat16`. The data layout can be ND.
 - **`weight_dkv_kr`** (`Tensor`): Required. Combined downsampling weight matrix and positional encoding weight matrix for key computation, W<sup>DKV</sup> and W<sup>KR</sup> in the formulas. This parameter must be 2D with shape `(He, Hckv + Dr)`. The data type can be `bfloat16`. The data layout can be FRACTAL\_NZ.

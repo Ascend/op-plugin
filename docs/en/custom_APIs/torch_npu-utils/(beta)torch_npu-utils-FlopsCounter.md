@@ -38,7 +38,7 @@ Initialization parameters for this class are as follows. They can be modified us
 
 - **`torch_npu.utils.FlopsCounter.start()`**
 
-    Enables FLOPs tracking. `FlopsCounter.start()` sets the switch flag `isEnabled_` to `True`. This function performs FLOPs counting and tracks FLOPs with recomputation or FLOPs without recomputation.
+    Enables FLOPs tracking. `FlopsCounter.start()` sets the switch flag `isEnabled_` to `True`. This function performs FLOPs counting, tracks FLOPs with recomputation and FLOPs without recomputation.
 
 - **`torch_npu.utils.FlopsCounter.stop()`**
 

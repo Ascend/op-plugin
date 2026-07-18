@@ -31,7 +31,7 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 
 `Tensor`
 
- $expertTokens$ in the formula. This parameter must be a 1D tensor. The data type must be identical to that of `sorted_expert_for_source_row`.
+$expertTokens$ in the formula. This parameter must be a 1D tensor. The data type must be identical to that of `sorted_expert_for_source_row`.
 
 ## Constraints
 

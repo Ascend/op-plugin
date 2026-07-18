@@ -29,7 +29,7 @@ torch_npu.contrib.module.Focus(c1, c2, k=1, s=1, p=None, g=1, act=True)
 - **`s`** (`int`): Optional. Convolution stride. The default value is `1`.
 - **`p`** (`int`): Optional. Padding size. The default value is `None`.
 - **`g`** (`int`): Number of groups from the input channels to the output channels. The default value is `1`.
-- **`act`** (`bool`):Specifies whether to use an activation function. The default value is `True`.
+- **`act`** (`bool`): Specifies whether to use an activation function. The default value is `True`.
 
 **Computation Input**
 

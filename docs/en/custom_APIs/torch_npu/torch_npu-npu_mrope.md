@@ -93,7 +93,7 @@
         $$
 
         $$
-        cos [..., 1:mropeSection[1] * 3:3] = cosTmp[1, ..., 1:mropeSection[1] * 3:3]
+        cos[..., 1:mropeSection[1] * 3:3] = cosTmp[1, ..., 1:mropeSection[1] * 3:3]
         $$
 
         $$

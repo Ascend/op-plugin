@@ -93,7 +93,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## Parameters<a name="en-us_topic_0000002203575833_section112637109429"></a>
 
-- **`x`** (`Tensor`): Required. Token data used for computation and dispatched to other ranks based on `session_ids`. This parameter must be 2D with shape `(BS, H)`, indicating that there are `BS` tokens. The data type can be `bfloat16` or `float16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`x`** (`Tensor`): Required. Token data used for computation and dispatched to other ranks based on `expert_ids`. This parameter must be 2D with shape `(BS, H)`, indicating that there are `BS` tokens. The data type can be `bfloat16` or `float16`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`expert_ids`** (`Tensor`): Required. Top-K expert indices for each token, determining the experts to which each token is dispatched. This parameter must be 2D with shape `(BS, K)`. The data type can be `int32`. The data layout is ND. Non-contiguous tensors are supported. This parameter corresponds to the `expert_ids` input of [torch_npu.npu_moe_distribute_combine_v2](torch_npu-npu_moe_distribute_combine_v2.md). The value range of elements inside the tensor is `[0, moe_expert_num)`, and the top-K values within the identical row must be unique.
 - **`group_ep`** (`str`): Required. EP communication domain name used for expert parallelism. The string length range is [1, 128). On Atlas A3 training products/Atlas A3 inference products, the value of this parameter must differ from `group_tp`.
 - **`ep_world_size`** (`int`): Required. Size of the EP communication domain.
@@ -140,10 +140,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - **`shared_expert_num`** (`int`): Optional. Number of shared experts, where a shared expert can be replicated and deployed across multiple ranks.
     - Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Retain the default value.
-    - Atlas A3 training products/Atlas A3 inference products : The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, 4]. Passing `0` indicates that no shared experts are used, and the default value is `1`.
 
 - **`shared_expert_rank_num`** (`int`): Optional. Number of shared-expert ranks.
-    - Atlas A2 training products/Atlas A2 inference products : Expert sharing is not supported. Retain the default value.
+    - Atlas A2 training products/Atlas A2 inference products: Expert sharing is not supported. Retain the default value.
     - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `ep_world_size`). If the value is not 0, the condition `shared_expert_rank_num % shared_expert_num == 0` must be satisfied.
 
 - **`quant_mode`** (`int`): Optional. Quantization mode. Valid values are `0` (non-quantization mode, default) or `2` (dynamic quantization mode). When the value of `quant_mode` is 2, `dynamic_scales` must not be `None`. When the value of `quant_mode` is `0`, `dynamic_scales` must be `None`.
@@ -224,7 +224,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             - When `comm_alg` is set to `""` or `"fullmesh_v1"`: 0 < `BS` <= 512.
             - When `comm_alg` is set to `"fullmesh_v2"` or `"hierarchy"`: 0 < `BS` <= 256.
 
-    - `K`: Number of top-K experts selected. The value range is 0 < `K` <= 16, and the condition 0 < `K` <= `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num` must be satisfied. When `comm_alg` is set to `""` or `"fullmesh_v2"`, the value range is 0 < `BS` <= 12.
+    - `K`: Number of top-K experts selected. The value range is 0 < `K` <= 16, and the condition 0 < `K` <= `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num` must be satisfied. When `comm_alg` is set to `""` or `"fullmesh_v2"`, the value range is 0 < `K` <= 12.
 
     - `server_num`: Number of server nodes. Valid values are `2`, `4`, or `8`.
         - Atlas A2 training products/Atlas A2 inference products: This variable is used only in shapes for this scenario.
@@ -248,7 +248,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - Within the EP communication domain, when `comm_alg` is set to `"fullmesh_v1"` or `""`: The configured size must be greater than or equal to `2 * (local_expert_num * max_bs * ep_world_size * Align512(Align32(2 * H) + 64) + (K + shared_expert_num) * max_bs * Align512(2 * H))`.
         - Within the EP communication domain, when `comm_alg` is set to `"fullmesh_v2"`: The configured size must be greater than or equal to `2 * (local_expert_num * max_bs * ep_world_size * 480Align512(Align32(2 * H) + 64) + (K + shared_expert_num) * max_bs * Align512(2 * H))`.
         - When `comm_alg` is set to `"hierarchy"`, the configured size must be identical to `moe_expert_num * BS * (H * sizeof(dtype_x) + 4 * ((K + 7)/8 * 8) * sizeof(uint32)) + 4MB + 400MB`. 
-        - Within the TP communication domain: The value must be grater than or equal to `(A * Align512(Align32(h * 2) + 44) + A * Align512(h * 2)) * 2`.
+        - Within the TP communication domain: The value must be greater than or equal to `(A * Align512(Align32(h * 2) + 44) + A * Align512(h * 2)) * 2`.
         - The alignment functions are defined as follows: $Align480(x) = ((x + 480 - 1)/480) * 512$, $Align512(x) = ((x + 512 - 1)/512) * 512$, $Align32(x) = ((x + 32 - 1)/32) * 32$.
 
 - `HCCL_INTRA_PCIE_ENABLE` and `HCCL_INTRA_ROCE_ENABLE`:

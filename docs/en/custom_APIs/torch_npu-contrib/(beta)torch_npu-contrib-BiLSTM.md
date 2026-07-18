@@ -1,7 +1,7 @@
 # (beta) torch_npu.contrib.BiLSTM
 
 > [!NOTICE]  
->This API is planned for deprecation. For details about the replacement, see [Small Operator Concatenation Solution](https://gitee.com/ascend/ModelZoo-PyTorch/blob/732cb7fc5ab59249ae62a905c0d43400a8250da7/PyTorch/contrib/audio/deepspeech/deepspeech_pytorch/bidirectional_lstm.py#L18).
+> This API is planned for deprecation. For details about the replacement, see [Small Operator Concatenation Solution](https://gitee.com/ascend/ModelZoo-PyTorch/blob/732cb7fc5ab59249ae62a905c0d43400a8250da7/PyTorch/contrib/audio/deepspeech/deepspeech_pytorch/bidirectional_lstm.py#L18).
 
 ## Supported Products
 

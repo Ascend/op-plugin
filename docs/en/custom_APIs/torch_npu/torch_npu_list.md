@@ -138,7 +138,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row457855012117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p557813506114"><a name="p557813506114"></a><a name="p557813506114"></a><a href="(beta)torch_npu-npu_format_cast_.md">(beta)torch_npu.npu_format_cast_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p125789503117"><a name="p125789503117"></a><a name="p125789503117"></a> Modifies the data layout format of the <code>self</code> tensor in place, matching the format of <code>src</code>.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p125789503117"><a name="p125789503117"></a><a name="p125789503117"></a>Modifies the data layout format of the <code>self</code> tensor in place, matching the format of <code>src</code>.</p>
 </td>
 </tr>
 <tr id="row1757895091111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17578195010114"><a name="p17578195010114"></a><a name="p17578195010114"></a><a href="(beta)torch_npu-npu_get_float_status.md">(beta)torch_npu.npu_get_float_status</a></p>
@@ -773,7 +773,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_sim_exponential_.md">torch_npu.npu_sim_exponential_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p> Performs in-place sampling from an exponential distribution for elements in the input tensor, modifying the input tensor in-place.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs in-place sampling from an exponential distribution for elements in the input tensor, modifying the input tensor in-place.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_dense_lightning_indexer_softmax_lse.md">torch_npu.npu_dense_lightning_indexer_softmax_lse</a></p>

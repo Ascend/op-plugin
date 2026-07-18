@@ -139,7 +139,7 @@ npu_moe_gating_top_k(x, k, *, bias=None, k_group=1, group_count=1, group_select_
 
 - **`group_select_mode`** (`int`): Optional. Score calculation method for each expert group. Valid values: `0` (uses the maximum value within the group as the group score) or `1` (uses the sum of the scores of the top two experts within the group as the group score). The default value is `0`. 
 
-- **`renorm`** (`int`): Optional. Renormalisation flag. The default value is `0` (performs normalization before the TopK computation). Currently, only the value `0` is supported.
+- **`renorm`** (`int`): Optional. Renormalization flag. The default value is `0` (performs normalization before the TopK computation). Currently, only the value `0` is supported.
 - **`norm_type`** (`int`): Optional. Type of the normalization function. Valid values: `1` (enables the Softmax function) or `0` (enables the Sigmoid function). The default value is `0`.
 
 - **`out_flag`** (`bool`): Optional. Specifies whether to output the intermediate result of the normalization operation. The default value is `False`.

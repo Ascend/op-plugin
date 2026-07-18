@@ -56,11 +56,11 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `int32`. Valid values:
     
     - `0`: enables `defaultMask` mode.
-    - `3`: enables rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
+    - `3`: enables `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value`2^63-1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63-1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value`2^63-1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63-1` is supported.
 
 - **`return_value`** (`bool`): Optional. Specifies whether to output `sparse_values`. Valid values are `True` (enables the output but does not support graph capture mode) or `False` (disables the output). The default value is `False`. This parameter is supported only during training and when `layout_key` is not set to `PA_BSND`.
 

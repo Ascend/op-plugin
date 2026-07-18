@@ -28,7 +28,7 @@ Acts as a class encapsulating low-level operator calls and implements underlying
 
     Sets a custom handling method for `OpCommand`. The return value type is `OpCommand`.
 
-    **func`** (`PROC_FUNC`): Custom handling method to be set.
+    **`func`** (`PROC_FUNC`): Custom handling method to be set.
 
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::DynamicInputReg(DynamicInputRegFunc func, DyNumAndIndex num_and_index)**
 

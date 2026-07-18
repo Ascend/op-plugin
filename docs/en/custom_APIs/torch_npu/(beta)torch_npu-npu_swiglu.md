@@ -27,7 +27,7 @@ torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
 
 **`input`** (`Tensor`): Required. Input data to be computed, $x$ in the formula. The shape can have 1 to 8 dimensions and must be divisible by 2 along the dimension corresponding to the input parameter `dim`. Non-contiguous tensors and empty tensors are not supported. The data type can be `float32`, `float16`, or `bfloat16`.
 
-**`dim`** (`int`): Optional. Sequence number of the dimension to be split. The corresponding axis of `input` is split in half. The default value is `-1`. The value range is `[–input.dim(), input.dim()–1]`.
+**`dim`** (`int`): Optional. Sequence number of the dimension to be split. The corresponding axis of `input` is split in half. The default value is `-1`. The value range is `[-input.dim(), input.dim()-1]`.
 
 ## Return Values
 

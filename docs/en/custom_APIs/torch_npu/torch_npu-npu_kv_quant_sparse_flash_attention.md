@@ -73,7 +73,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **`attention_mode`** (`int`): Optional. Attention mode. The data type can be `int64`. Only the value `2` is supported, indicating `MLA-absorb` mode, where the D dimension of `query` and `key` contains both the RoPE and non-RoPE components, and `key` and `value` shares the same data segment. The default value is `0`.
 
-- **`quant_scale_repo_mode`** (`int`): Optional. Storage arrangement mode of quantization parameters. The data type can be `int64`. Only the default value `1` is supported. It indicates `combine` mode, where quantization parameters and data are stored together in a mixed arrangement).
+- **`quant_scale_repo_mode`** (`int`): Optional. Storage arrangement mode of quantization parameters. The data type can be `int64`. Only the default value `1` is supported. It indicates `combine` mode, where quantization parameters and data are stored together in a mixed arrangement.
 
 - **`tile_size`** (`int`): Optional. Data block size corresponding to each parameter during `per_tile` quantization, which is valid only in `per_tile` mode. The data type can be `int64`. Only the default value `128` is supported.
 

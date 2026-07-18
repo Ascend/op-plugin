@@ -29,7 +29,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - **`pertoken_scale`** (`bool`): Optional. Specifies whether to include `pertoken_scale` parameters in the computation. If set to `False`, `pertoken_scale` is excluded from the quantized matrix multiplication computation. Atlas inference products: Currently, this parameter is not supported.
 - **`device`**: The default value is `None`. **Reserved parameter, currently not used.**
 - **`dtype`**: The default value is `None`. **Reserved parameter, currently not used.**
-- **`output_dtype`** (`ScalarType`):Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
+- **`output_dtype`** (`ScalarType`): Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
     - Atlas inference products: The input data type can be `int8` or `float16`.
     - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The input data type can be `int8`, `float16`, `bfloat16`, or `int32`.
 
@@ -48,7 +48,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
 - **`scale`** (`Tensor`): Scale for quantized computation. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t = 1` or `t = n`, and `n` matches the `n` dimension of `weight`. If an `int64` `scale` is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `scale`.
     - Atlas inference products: The data type can be `float32` or `int64`.
-    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `int64,` or `bfloat16`.
+    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `int64`, or `bfloat16`.
 
 - **`offset`** (`Tensor`): Optional. Offset for quantized computation. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t = 1` or `t = n`, and `n` matches the `n` dimension of `weight`.
 - **`pertoken_scale`** (`Tensor`): Optional. Per-token scale tensor for quantized computation. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(m,)`, where `m` matches the `m` dimension of `weight`. Atlas inference products: Currently, this parameter is not supported.

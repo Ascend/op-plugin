@@ -147,7 +147,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
     Before calling this API, ensure that the `HCCL_BUFFSIZE` environment variable is configured appropriately. This variable specifies the memory size occupied by a single communication domain, in MB. If not specified, the default value `200` MB is used. The buffer size can be configured through either the `HCCL_BUFFSIZE` environment variable or the `hccl_buffer_size` parameter. For details, see section "hccl_buffer_size" in [PyTorch Training Model Porting and Tuning](https://hiascend.com/document/redirect/canncommercial-ptmigr) (path: **Performance Profiling** > **Performance Profiling Methods** > **Communication Optimization** > **Optimization Methods** > **hccl_buffer_size**).
     - Within the EP communication domain: The value must be greater than or equal to 2 and be greater than or equal to `2 * (local_expert_num * max_bs * ep_world_size * Align512(Align32(2 * H) + 64) + (K + shared_expert_num) * max_bs * Align512(2 * H))`, where `local_expert_num` is the number of experts on a local MoE expert rank.
-    - Within the TP communication domain: The value must be grater than or equal to `(A * Align512(Align32(h * 2) + 44) + A * Align512(h * 2)) * 2`.
+    - Within the TP communication domain: The value must be greater than or equal to `(A * Align512(Align32(h * 2) + 44) + A * Align512(h * 2)) * 2`.
     - The alignment functions are defined as follows: $Align480(x) = ((x + 480 - 1) / 480) * 512$, $Align512(x) = ((x + 512 - 1) / 512) * 512$, $Align32(x) = ((x + 32 - 1) / 32) * 32$.
 
 - Communication domain usage constraints:

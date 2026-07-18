@@ -30,7 +30,7 @@ This member function can be called only on NPU `Event` objects.
 ## Constraints
 
 When an `Event` object is created, the `enable_timing` parameter must be set to `True`.
- 
+
 ## Example
 
 ```python

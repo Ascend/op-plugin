@@ -21,7 +21,7 @@ torch_npu.npu.set_autocast_dtype(dtype)
 
 ## Parameters
 
- **`dtype`**: Data type.
+**`dtype`**: Data type.
 
 ## Example
 

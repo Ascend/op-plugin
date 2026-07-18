@@ -187,7 +187,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - This API can be used in inference scenarios.
 - This API supports graph mode.
 - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The inner dimension limit `InnerLimit` is fixed at `65536`.
-- For each tensor group in `x` and `weight`, the size of the last dimension must be less than `InnerLimit`. The last dimension of <code>x<sub>i</sub></code> indicates the K-axis of <code>x<sub>i</sub></code> when `x` is not transposed, or the M-axis of <code>x<sub>i</sub></code> when `x` is transposed. The last dimension of <code>weight<sub>i</sub></code> indicates the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed.
+- For each tensor group in `x` and `weight`, the size of the last dimension must be less than `InnerLimit`. The last dimension of <code>x<sub>i</sub></code> indicates the K-axis of <code>x<sub>i</sub></code> when `x` is not transposed, or the M-axis of <code>x<sub>i</sub></code> when `x` is transposed. The last dimension of <code>weight<sub>i</sub></code> indicates the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed.
 
 - Usage scenario constraints for `tuning_config`:
 

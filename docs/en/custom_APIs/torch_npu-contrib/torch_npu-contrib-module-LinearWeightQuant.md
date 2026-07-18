@@ -33,7 +33,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **`quant_scale`** (`bool`): Optional. Specifies whether to include the `quant_scale` parameter in the computation. The default value is `False`. If set to `False`, the fake-quantization output is not quantized.
 - **`quant_offset`** (`bool`): Optional. Specifies whether to include the `quant_offset` parameter in the computation. The default value is `False`. If set to `False`, no offset is required during quantization of the fake-quantization output.
 - **`antiquant_group_size`** (`int`): Optional. Controls the group size in `pergroup` scenarios. The default value is 0. The value must be divisible by 32 in the range of `[32, K-1]`. Atlas inference products: This parameter is not supported currently.
-- **`inner_precise`** (`int`):Computation mode. The default value is `0`. Valid values are `0` (high-precision mode) or `1` (high-performance mode, which may affect precision). In `pergroup` scenarios where `weight` is of `int32` type and in `FRACTAL_NZ` layout, and `M` is not greater than 16, this parameter can be set to `1` to improve performance. High-performance mode is not recommended in other scenarios.
+- **`inner_precise`** (`int`): Computation mode. The default value is `0`. Valid values are `0` (high-precision mode) or `1` (high-performance mode, which may affect precision). In `pergroup` scenarios where `weight` is of `int32` type and in `FRACTAL_NZ` layout, and `M` is not greater than 16, this parameter can be set to `1` to improve performance. High-performance mode is not recommended in other scenarios.
 
 **Computation Input**
 

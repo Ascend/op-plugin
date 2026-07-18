@@ -39,7 +39,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **`hcom`** (`str`): Required. Communicator handle name obtained by calling the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
     - Atlas A2 training products: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
-    - Atlas A3 training products/Atlas A3 inference products Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
+    - Atlas A3 training products/Atlas A3 inference products: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
 
 - **`*`**: Required. Positional argument separator. Arguments before this symbol are positional-only and must be passed in sequence. Arguments after this symbol are keyword-only, position-independent options that require key-value assignments (default values are used if no value is assigned).
 - **`reduce_op`** (`str`): Optional. Type of the reduce operation. Only the default value `'sum'` is supported.
