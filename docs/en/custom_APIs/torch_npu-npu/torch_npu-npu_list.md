@@ -48,7 +48,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </tr>
 <tr id="row196641378158"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36640731519"><a name="p36640731519"></a><a name="p36640731519"></a><a href="(beta)torch_npu-npu-set_option.md">(beta) torch_npu.npu.set_option</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>For details about the usage, see <a href="https://gitcode.com/Ascend/docs/blob/master/FrameworkPTAdapter/26.0.0/en/pytorch_model_migration_fine_tuning/config_op_comp_opts.md">Configuring Operator Compilation Options</a> in <span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a><i>PyTorch Training Model Porting and Tuning Guide</i></span>.</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p566467161517"><a name="p566467161517"></a><a name="p566467161517"></a>For details about the usage, see <a href="https://gitcode.com/Ascend/docs/blob/master/FrameworkPTAdapter/26.0.0/en/pytorch_model_migration_fine_tuning/config_op_comp_opts.md">Configuring Operator Compilation Options</a> in <span id="ph4356918191716"><a name="ph4356918191716"></a><a name="ph4356918191716"></a><i>PyTorch Model Migration and Tuning Guide</i></span>.</p>
 </td>
 </tr>
 <tr id="row14664573152"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1366415716151"><a name="p1366415716151"></a><a name="p1366415716151"></a><a href="(beta)torch_npu-npu-config-allow_internal_format.md">(beta) torch_npu.npu.config.allow_internal_format</a></p>

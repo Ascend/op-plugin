@@ -43,7 +43,7 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
     |torch_npu.Format.NCL|47|3D data layout format. The corresponding AscendCL data layout format is `ACL_FORMAT_NCL`.|
     
     > [!NOTE]  
-    > For details about the data layout format, see <a href="https://www.hiascend.com/document/detail/en/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html">Data Layout Formats</a> in *CANN Ascend C Operator Development*.
+    > For details about the data layout format, see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html">Data Layout Formats</a> in *CANN Ascend C Operator Development*.
 
 ## Return Values
 

@@ -11,7 +11,7 @@
 
 ## Function
 
-Queries the ACLNN operator version information. For details about the ACLNN operators, see "<a href="https://www.hiascend.com/document/detail/en/canncommercial/900/API/aolapi/operatorlist_00001.html">Overview</a>" in the <i>CANN Operator Library</i>.
+Queries the ACLNN operator version information. For details about the ACLNN operators, see "<a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/API/aolapi/operatorlist_00001.html">Introduction</a>" in the <i>CANN Operator Library</i>.
 
 ## Prototype
 

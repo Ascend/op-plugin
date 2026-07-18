@@ -22,7 +22,7 @@ torch_npu.profiler.ProfilerLevel
 
 - **`torch_npu.profiler.ProfilerLevel.Level_none`**: Optional. Disables collection of all level-controlled data, which disables `profiler_level`.
 
-- **`torch_npu.profiler.ProfilerLevel.Level0`**: Optional. Collects upper-layer application data, lower-layer NPU data, or information about operators executed on the NPU. If this parameter is provided, the tool collects only partial data and omits some operator information. For details, see <a href="https://www.hiascend.com/document/detail/en/canncommercial/900/devaids/Profiling/atlasprofiling_16_0067.html">op_summary (Operator Details)</a> in the *CANN Profiling*.
+- **`torch_npu.profiler.ProfilerLevel.Level0`**: Optional. Collects upper-layer application data, lower-layer NPU data, or information about operators executed on the NPU. If this parameter is provided, the tool collects only partial data and omits some operator information. For details, see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/devaids/Profiling/atlasprofiling_16_0067.html">op_summary (Operator Details)</a> in the *CANN Performance Tuning Tool*.
 - **`torch_npu.profiler.ProfilerLevel.Level1`**: Optional. Compared with `torch_npu.profiler.ProfilerLevel.Level0`, this level additionally collects CANN layer AscendCL data, AI Core performance metrics executed on the NPU, and HCCL `communication.json` and `communication_matrix.json` files. This level also enables `aic_metrics=torch_npu.profiler.AiCMetrics.PipeUtilization`.
 - **torch_npu.profiler.ProfilerLevel.Level2**: Optional. Compared with `torch_npu.profiler.ProfilerLevel.Level1`, this level additionally collects CANN layer runtime data and AI CPU data (`data_preprocess.csv` file).
 

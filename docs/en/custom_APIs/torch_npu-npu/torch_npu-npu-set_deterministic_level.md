@@ -13,7 +13,7 @@
 
 ## Function
 
-Controls the strong consistency feature on the CANN side by reconfiguring CANN parameters. For detailed parameter descriptions, see [aclSysParamOpt](https://www.hiascend.com/document/detail/en/canncommercial/900/API/runtimeapi/aclcppdevg_03_1393.html).
+Controls the strong consistency feature on the CANN side by reconfiguring CANN parameters. For detailed parameter descriptions, see [aclSysParamOpt](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/API/runtimeapi/aclcppdevg_03_1393.html).
 
 The following table describes the mapping between configuration levels and their actual behaviors:
 

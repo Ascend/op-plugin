@@ -22,7 +22,7 @@ torch_npu.profiler.dynamic_profile.start(config_path: str = None)
 
 **`config_path`** (`str`): Optional. Path to the `profiler_config.json` file. You must manually create the `profiler_config.json` configuration file and configure parameters as needed. A specific file name must be specified, such as `start("./home/xx/start_config_path/profiler_config.json")`. The paths `profiler_config_path` and `start_config_path` can contain only letters, digits, underscores, and hyphens. Symbolic links are not supported.
 
-For details about the `profiler_config.json` file, see section "<a href="https://www.hiascend.com/document/detail/en/canncommercial/900/devaids/Profiling/atlasprofiling_16_0033.html">Ascend PyTorch Profiler</a>" in *CANN Profiling*.
+For details about the `profiler_config.json` file, see section "<a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/devaids/Profiling/atlasprofiling_16_0033.html">Ascend PyTorch Profiler</a>" in *CANN Performance Tuning Tool*.
 
 ## Return Values
 

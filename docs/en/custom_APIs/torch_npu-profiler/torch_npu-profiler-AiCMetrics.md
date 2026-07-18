@@ -20,7 +20,7 @@ torch_npu.profiler.AiCMetrics
 
 ## Parameters
 
-For details about result data of the following collection items, see <a href="https://www.hiascend.com/document/detail/en/canncommercial/900/devaids/Profiling/atlasprofiling_16_0067.html">op_summary (Operator Details)</a> in *CANN Profiling*. The actual collection results prevail.
+For details about result data of the following collection items, see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/900/devaids/Profiling/atlasprofiling_16_0067.html">op_summary (Operator Details)</a> in *CANN Performance Tuning Tool*. The actual collection results prevail.
 
 - **`torch_npu.profiler.AiCMetrics.AiCoreNone`**: Optional. Disables the collection of AI Core performance metrics.
 - **`torch_npu.profiler.AiCMetrics.PipeUtilization`**: Optional. Execution duration percentage of computation units and data transfer units.
