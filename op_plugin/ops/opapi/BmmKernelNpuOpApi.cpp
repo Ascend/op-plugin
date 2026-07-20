@@ -126,7 +126,7 @@ at::Tensor &bmm_out(
     TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
     DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
-    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
     npu_preparation::check_tensor({self, mat2}, result, output_dtype, output_size);
 
     // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
@@ -163,7 +163,7 @@ at::Tensor &bmm_out(
     TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
     DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
-    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
     npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
 
     // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
@@ -199,7 +199,7 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2, const at::ScalarT
     DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
 
     // calculate the output size
-    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
 
     // construct the output tensor of the NPU
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_dtype));
@@ -235,7 +235,7 @@ at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2)
     DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
 
     // calculate the output size
-    auto output_size = {self.size(0), self.size(1), mat2.size(2)};
+    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
 
     // construct the output tensor of the NPU
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());

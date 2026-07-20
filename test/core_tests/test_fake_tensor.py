@@ -3409,6 +3409,18 @@ class TestGMMFinalizeRouting(TestCase):
             self.assertTrue(result.shape == expect_ret.shape)
             self.assertTrue(result.dtype == expect_ret.dtype)
 
+class TestBatchMatmulWeightNZ(TestCase):
+    @unittest.skip("skip test_npu_batchmatmul_weightNZ")
+    def test_npu_batchmatmul_weightNZ_meta_1(self):
+        with FakeTensorMode():
+            M, K, N, Batchx1, Batchx2 = 39, 404, 43000, 1, 128
+            x1 = torch.randn((Batchx1, M, K), dtype=torch.float16)
+            x2 = torch.randn((Batchx2, K, N), dtype=torch.float16)
+            x2_nz = torch_npu.npu_format_cast(x2.npu(), acl_format=29)
+            result = torch.bmm(x1.npu(), x2.npu())
+            expect_ret = torch.randn((Batchx2, M, N), dtype=torch.float16)
+            self.assertTrue(result.shape == expect_ret.shape)
+            self.assertTrue(result.dtype == expect_ret.dtype)
 
 class TestTransposeBatchMatmul(TestCase):
     @unittest.skip("skip test_npu_transpose_batchmatmul")
