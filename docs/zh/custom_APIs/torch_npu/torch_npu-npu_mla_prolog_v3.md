@@ -78,7 +78,7 @@
         k^R = Cache(ROPE(x \cdot W^{KR}))
         $$
 
-  - ROPE操作补充说明
+- ROPE操作补充说明
 
     torch_npu.npu_mla_prolog_v3算子实现中融合rotary操作的interleave-half模式，该模式会先将奇数位的输入抽取到前半部分，将偶数位的输入抽取到后半部分，再进行half处理。
 
