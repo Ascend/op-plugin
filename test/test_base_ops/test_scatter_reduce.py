@@ -5,8 +5,18 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor
 
-@unittest.skip("temporarily skip scatter_reduce UT due to outdated CANN version")
 class TestScatterReduce(TestCase):
+    def _map_cpu_reduce(self, reduce):
+        if reduce == "add":
+            return "sum"
+        if reduce == "mul":
+            return "prod"
+        if reduce == "min":
+            return "amin"
+        if reduce == "max":
+            return "amax"
+        return reduce
+
     def _scatter_reduce_exec(self, input1, dim, index, src, reduce, include_self):
         if hasattr(torch, "scatter_reduce"):
             return torch.scatter_reduce(
@@ -37,7 +47,9 @@ class TestScatterReduce(TestCase):
         if reduce == "none":
             output = self._run_scatter_reduce_none(input1, dim, index, src, include_self)
         else:
-            output = self._scatter_reduce_exec(input1, dim, index, src, reduce, include_self)
+            output = self._scatter_reduce_exec(
+                input1, dim, index, src, self._map_cpu_reduce(reduce), include_self
+            )
         return output.numpy()
 
     def npu_op_exec(self, input1, dim, index, src, reduce, include_self):
@@ -51,7 +63,9 @@ class TestScatterReduce(TestCase):
         if reduce == "none":
             self._run_scatter_reduce_none_out(input1, dim, index, src, include_self, output)
         else:
-            self._scatter_reduce_exec_out(input1, dim, index, src, reduce, include_self, output)
+            self._scatter_reduce_exec_out(
+                input1, dim, index, src, self._map_cpu_reduce(reduce), include_self, output
+            )
         return output.numpy()
 
     def npu_op_exec_out(self, input1, dim, index, src, reduce, include_self, output):
@@ -65,7 +79,9 @@ class TestScatterReduce(TestCase):
         if reduce == "none":
             self._run_scatter_reduce_none_inp(input1, dim, index, src, include_self)
         else:
-            self._scatter_reduce_exec_inp(input1, dim, index, src, reduce, include_self)
+            self._scatter_reduce_exec_inp(
+                input1, dim, index, src, self._map_cpu_reduce(reduce), include_self
+            )
         return input1.numpy()
 
     def npu_op_exec_inp(self, input1, dim, index, src, reduce, include_self):
@@ -111,6 +127,7 @@ class TestScatterReduce(TestCase):
         finally:
             torch.use_deterministic_algorithms(old_flag)
 
+    @unittest.skip("skip until gate CANN is updated to support scatter_reduce")
     def test_scatter_reduce_float32_shape_format(self):
         shape_format = [
             [0, [np.int64, 0, [10, 20]], [np.float32, 0, [10, 20]], [np.float32, 0, [10, 20]]],
@@ -121,7 +138,7 @@ class TestScatterReduce(TestCase):
             [1, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
             [2, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
         ]
-        reduce_list = ["none", "sum", "amin", "amax", "prod", "mean"]
+        reduce_list = ["none", "sum", "add", "amin", "min", "amax", "max", "prod", "mul", "mean"]
         include_self_list = [True, False]
 
         for item in shape_format:
@@ -153,25 +170,28 @@ class TestScatterReduce(TestCase):
                     )
                     self.assertRtolEqual(cpu_inp_output, npu_inp_output)
 
+    @unittest.skip("skip until gate CANN is updated to support scatter_reduce")
     def test_scatter_reduce_float16_shape_format(self):
         def cpu_op_exec_fp16(input1, dim, index, src, reduce, include_self):
             if reduce == "none":
                 output = self._run_scatter_reduce_none(input1, dim, index, src, include_self)
             elif hasattr(torch, "scatter_reduce"):
                 output = torch.scatter_reduce(
-                    input1, dim, index, src, reduce=reduce, include_self=include_self
+                    input1, dim, index, src, reduce=self._map_cpu_reduce(reduce), include_self=include_self
                 )
             else:
-                output = input1.scatter_reduce(dim, index, src, reduce=reduce, include_self=include_self)
+                output = input1.scatter_reduce(
+                    dim, index, src, reduce=self._map_cpu_reduce(reduce), include_self=include_self
+                )
             return output.float().numpy().astype(np.float16)
 
         def cpu_op_exec_inp_fp16(input1, dim, index, src, reduce, include_self):
             if reduce == "none":
                 self._run_scatter_reduce_none_inp(input1, dim, index, src, include_self)
             elif hasattr(input1, "scatter_reduce_"):
-                input1.scatter_reduce_(dim, index, src, reduce=reduce, include_self=include_self)
+                input1.scatter_reduce_(dim, index, src, reduce=self._map_cpu_reduce(reduce), include_self=include_self)
             else:
-                torch.ops.aten.scatter_reduce_(input1, dim, index, src, reduce, include_self)
+                torch.ops.aten.scatter_reduce_(input1, dim, index, src, self._map_cpu_reduce(reduce), include_self)
             return input1.float().numpy().astype(np.float16)
 
         shape_format = [
@@ -183,15 +203,15 @@ class TestScatterReduce(TestCase):
             [1, [np.int64, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]]],
             [2, [np.int64, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]]],
         ]
-        reduce_list = ["none", "amin", "amax"]
+        reduce_list = ["none", "amin", "min", "amax", "max", "add", "mul"]
         include_self_list = [True, False]
 
         for item in shape_format:
             for reduce in reduce_list:
                 for include_self in include_self_list:
-                    cpu_src, npu_src = create_common_tensor(item[2], 1, 100)
+                    cpu_src, npu_src = create_common_tensor(item[2], 0.8, 1.0)
                     cpu_index, npu_index = create_common_tensor(item[1], 0, (item[1][2][item[0]] - 1))
-                    cpu_input, npu_input = create_common_tensor(item[3], 1, 100)
+                    cpu_input, npu_input = create_common_tensor(item[3], 0.8, 1.0)
 
                     cpu_output = cpu_op_exec_fp16(cpu_input, item[0], cpu_index, cpu_src, reduce, include_self)
                     npu_output = self.npu_op_exec(npu_input, item[0], npu_index, npu_src, reduce, include_self)
@@ -205,6 +225,7 @@ class TestScatterReduce(TestCase):
                     )
                     self.assertRtolEqual(cpu_inp_output, npu_inp_output)
 
+    @unittest.skip("skip until gate CANN is updated to support scatter_reduce")
     def test_scatter_reduce_deterministic_case(self):
         dim = 0
         input_data = np.array(
@@ -229,7 +250,7 @@ class TestScatterReduce(TestCase):
             dtype=np.float32,
         )
 
-        reductions = ["none", "sum", "prod", "amin", "amax", "mean"]
+        reductions = ["none", "sum", "add", "prod", "mul", "amin", "min", "amax", "max", "mean"]
         include_self_list = [True, False]
 
         def run_once(reduce, include_self):
@@ -304,6 +325,23 @@ class TestScatterReduce(TestCase):
         for reduce in reductions:
             for include_self in include_self_list:
                 self._run_with_deterministic(lambda r=reduce, i=include_self: run_once(r, i))
+
+    def test_scatter_reduce_invalid_reduce(self):
+        input1 = torch.ones(2, 3).npu()
+        index = torch.tensor([[0, 1, 0], [1, 0, 1]], dtype=torch.int64).npu()
+        src = torch.full((2, 3), 2.0).npu()
+
+        for reduce in ["multiply", "invalid", ""]:
+            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
+                torch.scatter_reduce(input1, 0, index, src, reduce=reduce, include_self=True)
+
+            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
+                torch.scatter_reduce(
+                    input1, 0, index, src, reduce=reduce, include_self=True, out=torch.empty_like(input1)
+                )
+
+            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
+                input1.clone().scatter_reduce_(0, index, src, reduce=reduce, include_self=True)
 
 
 if __name__ == "__main__":
