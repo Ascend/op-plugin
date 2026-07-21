@@ -121,7 +121,7 @@ inline int64_t calc_split_counter_offset(const TensorIterInfo& iter) {
     return calc_split_counter_offset(left) + calc_split_counter_offset(cur);
 }
 
-inline bool ConfigureCannRandomnessOnce(bool legacy_impl)
+inline bool configure_cann_randomness_once(bool legacy_impl)
 {
     static std::once_flag cann_randomness_compat_flag;
     static bool cann_randomness_compat_configured = false;
@@ -141,19 +141,19 @@ inline bool ConfigureCannRandomnessOnce(bool legacy_impl)
     return cann_randomness_compat_configured;
 }
 
-inline bool IsRandomnessLegacyImpl()
+inline bool is_randomness_legacy_impl()
 {
     static const bool legacy_impl = at_npu::native::env::CheckCompatibleImplBlackListFor(
         at_npu::native::env::CompatibleKey::Randomness);
     return legacy_impl;
 }
 
-inline bool PrepareRandomnessCompatible(bool support_cann_random_switch = true)
+inline bool prepare_randomness_compatible(bool support_cann_random_switch = true)
 {
     const bool is_aclnn_only = c10_npu::IsAclnnOnly();
     if (support_cann_random_switch && is_aclnn_only) {
-        const bool legacy_impl = IsRandomnessLegacyImpl();
-        bool cann_randomness_configured = ConfigureCannRandomnessOnce(legacy_impl);
+        const bool legacy_impl = is_randomness_legacy_impl();
+        bool cann_randomness_configured = configure_cann_randomness_once(legacy_impl);
         if (!cann_randomness_configured) {
             return true;
         }
@@ -165,7 +165,7 @@ inline bool PrepareRandomnessCompatible(bool support_cann_random_switch = true)
 inline int64_t calc_final_counter_offset(at::Tensor& self, bool support_cann_random_switch = true,
                                          int64_t from = 0, int64_t to = 0, bool use_from_to = false)
 {
-    if (!PrepareRandomnessCompatible(support_cann_random_switch)) {
+    if (!prepare_randomness_compatible(support_cann_random_switch)) {
         return LEGACY_RAND_COUNTER_OFFSET;
     }
     TensorIterInfo iter_info;

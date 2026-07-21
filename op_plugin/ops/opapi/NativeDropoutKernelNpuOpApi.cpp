@@ -48,7 +48,7 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
             return std::tie(result, mask);
         }
         // Remove false after aclnnDropoutV3 supports aclnnSetPytorchRandom.
-        const bool randomness_compatible = op_plugin::utils::PrepareRandomnessCompatible(false);
+        const bool randomness_compatible = op_plugin::utils::prepare_randomness_compatible(false);
         int64_t counterOffset = randomness_compatible
             ? op_plugin::utils::calc_counter_offset(nelem, op_plugin::utils::UNROLL_4)
             : op_plugin::utils::LEGACY_RAND_COUNTER_OFFSET;
