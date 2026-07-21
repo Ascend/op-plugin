@@ -332,7 +332,7 @@ backward:
   permuted_tokens, probs: npu_moe_token_unpermute_grad(permuted_tokens, grad, sorted_indices, probs, padded_mode, restore_shape)
   version: [v2.1, newest]
 
-- name: npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, int sparse_block_size=1, str layout_query="BSND", str layout_kv="BSND", int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, int attention_mode=0, bool return_softmax_lse=False) -> (Tensor, Tensor, Tensor)
+- name: npu_sparse_flash_attention(Tensor query, Tensor key, Tensor value, Tensor sparse_indices, float scale_value, *, Tensor? block_table=None, Tensor? actual_seq_lengths_query=None, Tensor? actual_seq_lengths_kv=None, Tensor? query_rope=None, Tensor? key_rope=None, int sparse_block_size=1, str layout_query="BSND", str layout_kv="BSND", int sparse_mode=3, int pre_tokens=9223372036854775807, int next_tokens=9223372036854775807, int attention_mode=0, bool return_softmax_lse=False, Tensor? sinks=None) -> (Tensor, Tensor, Tensor)
   query, key, value, query_rope, key_rope: npu_sparse_flash_attention_grad(query, key, value, sparse_indices, grad, result0, result1, result2, scale_value, sparse_block_size, query_rope, key_rope, actual_seq_lengths_query, actual_seq_lengths_kv, layout_query, sparse_mode, pre_tokens, next_tokens, attention_mode)
   version: all_version
 

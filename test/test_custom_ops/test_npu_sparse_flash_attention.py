@@ -53,12 +53,18 @@ class TestSparseFlashAttention(TestCase):
 
         return res
 
-    def softmax(self, x):
+    def softmax(self, x, sinks=None):
         x = x.astype(np.float32)
-        x_max = x.max(axis=-1, keepdims=True)
+        if sinks is not None:
+            sinks = sinks.astype(np.float32)[:, np.newaxis]
+            x_max = np.max(np.concatenate([x, sinks], axis=-1), axis=-1, keepdims=True)
+        else:
+            x_max = x.max(axis=-1, keepdims=True)
         x_sub = x - x_max
         y = np.exp(x_sub)
         x_sum = y.sum(axis=-1, keepdims=True)
+        if sinks is not None:
+            x_sum = x_sum + np.exp(sinks - x_max)
         ans = y / x_sum
         return ans
 
@@ -123,7 +129,7 @@ class TestSparseFlashAttention(TestCase):
         self, query, key, value, sparse_indices, scale_value, sparse_block_size,
         actual_seq_lengths_query, actual_seq_lengths_kv,
         query_rope=None, key_rope=None,
-        layout_query='BSND', layout_kv='BSND', sparse_mode=3, block_table=None):
+        layout_query='BSND', layout_kv='BSND', sparse_mode=3, block_table=None, sinks=None):
         query = query.cpu().to(torch.float32).numpy()
         if layout_kv == 'PA_BSND':
             key = self.pa_to_bsnd(key, block_table, actual_seq_lengths_kv)
@@ -135,6 +141,8 @@ class TestSparseFlashAttention(TestCase):
         actual_seq_lengths_kv = actual_seq_lengths_kv.cpu().numpy()
         query_rope = query_rope.cpu().to(torch.float32).numpy()
         key_rope = key_rope.cpu().to(torch.float32).numpy()
+        if sinks is not None:
+            sinks = sinks.cpu().to(torch.float32).numpy()
         batch_size = actual_seq_lengths_query.shape[0]
         num_heads = query.shape[2]
         num_kv_heads = key.shape[2]
@@ -172,7 +180,8 @@ class TestSparseFlashAttention(TestCase):
                                         cur_sparse_indices, s1_idx, sparse_block_size)
                     else:
                         mask_res = scale_res
-                    softmax_res = self.softmax(mask_res)
+                    cur_sinks = None if sinks is None else sinks[n2_idx * g: (n2_idx + 1) * g]
+                    softmax_res = self.softmax(mask_res, cur_sinks)
                     mm2_res = np.matmul(softmax_res, v_sparse, dtype=matmul_dtype)
                     y[batch, n2_idx * g: (n2_idx + 1) * g, s1_idx, :] = mm2_res
 
@@ -306,6 +315,74 @@ class TestSparseFlashAttention(TestCase):
             layout_query='BSND', layout_kv='BSND', sparse_mode=3, block_table=None)
         npu_out = npu_out.cpu().to(torch.float32).numpy()
         self.assertRtolEqual(cpu_out, npu_out, prec=0.01)
+
+    @SupportedDevices(['Ascend950'])
+    def test_sfa_with_sinks(self, device = "npu"):
+        scale_value = 0.041666666666666664
+        sparse_block_size = 1
+        query_type = torch.float16
+        scale_value = 0.041666666666666664
+        sparse_block_size = 1
+        sparse_block_count = 2048
+        t = 10
+        b = 4
+        s1 = 1
+        s2 = 8192
+        n1 = 128
+        n2 = 1
+        dn = 512
+        dr = 64
+        tile_size = 128
+        block_size = 256
+        s2_act = 4096
+        attention_mode = 2
+        return_softmax_lse = False
+
+        query = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dn))).to(query_type)
+        key = torch.tensor(np.random.uniform(-5, 10, (b, s2, n2, dn))).to(query_type)
+        value = key.clone()
+        idxs = random.sample(range(s2_act - s1 + 1), sparse_block_count)
+        sparse_indices = torch.tensor([idxs for _ in range(b * s1 * n2)]).reshape(b, s1, n2, sparse_block_count). \
+            to(torch.int32)
+        query_rope = torch.tensor(np.random.uniform(-10, 10, (b, s1, n1, dr))).to(query_type)
+        key_rope = torch.tensor(np.random.uniform(-10, 10, (b, s2, n2, dr))).to(query_type)
+        sinks = torch.tensor(np.random.uniform(-1, 1, (n1,))).to(torch.float32)
+        act_seq_q = [s1] * b
+        act_seq_kv = [s2_act] * b
+
+        query = query.npu()
+        key = key.npu()
+        value = value.npu()
+        sparse_indices = sparse_indices.npu()
+        query_rope = query_rope.npu()
+        key_rope = key_rope.npu()
+        sinks = sinks.npu()
+        act_seq_q = torch.tensor(act_seq_q).to(torch.int32).npu()
+        act_seq_kv = torch.tensor(act_seq_kv).to(torch.int32).npu()
+
+        # start run custom ops
+        npu_out, npu_softmax_max, npu_softmax_sum = torch_npu.npu_sparse_flash_attention(
+            query, key, value, sparse_indices, scale_value, block_table=None,
+            actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
+            query_rope=query_rope, key_rope=key_rope, sparse_block_size=sparse_block_size,
+            layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=(1<<63)-1, next_tokens=(1<<63)-1,
+            attention_mode = attention_mode, return_softmax_lse = return_softmax_lse, sinks=sinks)
+
+        # compare result
+        cpu_out = self.cpu_sparse_flash_attention(
+            query, key, value, sparse_indices, scale_value, sparse_block_size,
+            actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
+            query_rope=query_rope, key_rope=key_rope,
+            layout_query='BSND', layout_kv='BSND', sparse_mode=3, block_table=None, sinks=sinks)
+        npu_out = npu_out.cpu().to(torch.float32).numpy()
+
+        res = np.isclose(npu_out, cpu_out, rtol=0.005, atol=0.0001, equal_nan=False)
+        true_ratio = np.mean(res)
+        if true_ratio < 0.99:
+            print("npu output:\n", npu_out, npu_out.shape)
+            print("cpu output:\n", cpu_out, cpu_out.shape)
+            print("correct ratio of cpu vs npu is:", true_ratio * 100, "%")
+        self.assertTrue(true_ratio > 0.99, "precision compare fail")
 
 if __name__ == "__main__":
     run_tests()

@@ -278,7 +278,7 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
                                          actual_seq_lengths_query=None, actual_seq_lengths_kv=None, query_rope=None,
                                          key_rope=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND",
                                          sparse_mode=3, pre_tokens=(1 << 63) - 1, next_tokens=(1 << 63) - 1,
-                                         attention_mode=0, return_softmax_lse=False):
+                                         attention_mode=0, return_softmax_lse=False, sinks=None):
     require_param = {"query": query, "key": key, "value": value, "sparse_indices": sparse_indices}
 
     for item_name, item in require_param.items():
