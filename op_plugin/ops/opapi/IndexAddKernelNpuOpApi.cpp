@@ -49,7 +49,8 @@ at::Tensor& index_add_out(
         result.copy_(self);
     }
 
-    if (at::globalContext().deterministicAlgorithms()) {
+    if (at::globalContext().deterministicAlgorithms() &&
+    c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         auto wrapped_dim = at::maybe_wrap_dim(dim, self.dim());
         c10::List<c10::optional<at::Tensor>> indices;
         indices.reserve(self.dim());
@@ -91,7 +92,8 @@ at::Tensor index_add(
                 OPS_ERROR(ErrCode::PARAM));
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), self.options());
 
-    if (at::globalContext().deterministicAlgorithms()) {
+    if (at::globalContext().deterministicAlgorithms() &&
+    c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
         auto wrapped_dim = at::maybe_wrap_dim(dim, self.dim());
         result.copy_(self);
         c10::List<c10::optional<at::Tensor>> indices;
