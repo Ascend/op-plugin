@@ -54,6 +54,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x1.size(0) % world_size == 0, "The x1 first-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
 
     bool is_w4 = x2.dtype() == at::kInt;
     // 处理group_sizes
@@ -66,10 +67,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(const at::Tensor 
     at::ScalarType output_scalar_type = npu_preparation::convert_to_scalar_type(output_acl_type);
     // 推导输出output_tensor的shape
     // 不允许转置，因此可以确定直接确定m和n的值
-    int64_t out_m = x1.size(0);
-    if (world_size != 0) {
-        out_m = x1.size(0) / world_size;
-    }
+    int64_t out_m = x1.size(0) / world_size;
     int64_t out_n;
     if (is_w4) {
         out_n = x2.size(1) * INT4_NUMS_IN_INT32;

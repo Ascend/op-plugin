@@ -52,6 +52,7 @@ at::Tensor npu_quant_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x2.size(1) % world_size == 0, "The x2 second-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
 
     // 处理group_sizes
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});

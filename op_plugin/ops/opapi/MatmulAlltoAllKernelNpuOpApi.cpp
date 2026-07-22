@@ -39,6 +39,7 @@ at::Tensor npu_matmul_all_to_all(const at::Tensor &x1, const at::Tensor &x2, c10
     // 校验world_size
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "The world_size should be in [2, 4, 8, 16], but the actual value is ", world_size, "." + OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(x2.size(1) % world_size == 0, "The x2 second-axis should be divisible by world_size.", OPS_ERROR(ErrCode::PARAM));
 
     // pta主要是为了推导output的shape和dtype，非量化matmulalltoall的output_dtype和输入x1一致
     aclDataType output_acl_type = npu_preparation::convert_to_acl_data_type(x1.scalar_type());

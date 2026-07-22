@@ -3727,6 +3727,10 @@ def npu_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, all2all_axes
         world_size != 0,
         lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
     )
+    torch._check(
+        x2.size(1) % world_size == 0,
+        lambda: "The x2 second-axis should be divisible by world_size." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) * world_size
     out_n = x2.size(1) // world_size
     size = [out_m, out_n]
@@ -3777,6 +3781,10 @@ def npu_quant_matmul_all_to_all_meta(x1, x2, hcom, world_size, bias=None, x1_sca
         world_size != 0,
         lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
     )
+    torch._check(
+        x2.size(1) % world_size == 0,
+        lambda: "The x2 second-axis should be divisible by world_size." + ops_error(ErrCode.VALUE),
+    )
     out_m = x1.size(0) * world_size
     out_n = x2.size(1) // world_size
     size = [out_m, out_n]
@@ -3820,6 +3828,10 @@ def npu_all_to_all_matmul_meta(x1, x2, hcom, world_size, bias=None, all2all_axes
     torch._check(
         world_size != 0,
         lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x1.size(0) % world_size == 0,
+        lambda: "The x1 first-axis should be divisible by world_size." + ops_error(ErrCode.VALUE),
     )
     out_m = x1.size(0) // world_size
     out_n = x2.size(1)
@@ -3874,6 +3886,10 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
     torch._check(
         world_size != 0,
         lambda: "world_size should not be 0." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        x1.size(0) % world_size == 0,
+        lambda: "The x1 first-axis should be divisible by world_size." + ops_error(ErrCode.VALUE),
     )
     INT4_IN_INT32 = 8
     is_w4 = x2.dtype == torch.int32
