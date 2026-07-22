@@ -222,7 +222,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - `comm_alg`配置为"hierarchy": 设置大小要求 \>= \(moe\_expert\_num + ep\_world\_size / 4\) \* Align512\(max_bs \* \(H \* sizeof\(dtype_x\) + 4 \* Align8\(K\) \* sizeof\(uint32\)\)\) \* 1B + 8MB，其中Align512\(x\) = \(\(x+512-1\)/512\)\*512，Align8\(x\) = \(\(x+8-1\)/8\)\*8。
 
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
-        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过[hccl_buffer_size](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size)配置。
+        该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过[hccl_buffer_size](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/zh/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size)配置。
         - ep通信域内：设置大小要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* h\) + 64\) + \(k + shared\_expert\_num\) \* max\_bs\* Align512\(2 \* h\)\)。
         - tp通信域内：设置大小要求 \>= (A \* Align512(Align32(h \* 2) + 44) + A \* Align512(h \* 2)) \* 2。
         - 其中 480Align512(x) = ((x+480-1)/480)\*512,Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。

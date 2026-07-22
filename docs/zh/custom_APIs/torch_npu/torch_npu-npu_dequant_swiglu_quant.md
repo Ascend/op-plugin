@@ -89,7 +89,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **weight\_scale** (`Tensor`)：可选参数，表示权重量化对应的反量化系数。要求为2维张量，shape为\[groupNum, 2H\]，数据类型支持`float32`，数据格式为$ND$。当`x`为`int32`时，建议提供weight_scale以进行反量化。
 - **activation\_scale** (`Tensor`)：可选参数，表示pertoken激活量化对应的反量化系数。shape为\[TokensNum, 1\]，最后一维为1， 其余与x保持一致。数据类型支持`float32`，数据格式为$ND$。当`x`为`int32`时，要求该参数非None，表示需要做反量化。
-- **bias** (`Tensor`)：可选参数，表示`x`的偏置变量。数据类型支持`int32`，数据格式为$ND$。group_index为2维的场景下bias必须为None。
+- **bias** (`Tensor`)：可选参数，表示`x`的偏置变量。数据类型支持`int32`，数据格式为$ND$。当group_index非None时，bias必须为None。
 - **quant\_scale** (`Tensor`)：可选参数，表示smooth量化系数。要求为2维张量，shape为\[groupNum, H\]，数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。
   > **注意：**静态量化下，quant\_scale仅支持float32类型。
 - **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。`group_index`场景下（非None），该参数不生效，需为None。

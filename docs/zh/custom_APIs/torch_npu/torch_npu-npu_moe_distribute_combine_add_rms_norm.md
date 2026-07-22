@@ -130,7 +130,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32，其中MAX_INT32值为2147483647。
 - 参数里Shape使用的变量如下：
     - A：表示本卡需要分发的最大token数量，取值范围如下：
-        - 当`global_bs`为0时，要满足A >= Bs \* epWorldSize \* min(localExpertNum, K)；
+        - 当`global_bs`为0时，要满足A >= bs \* ep_world_size \* min(local_expert_num, K)；
         - 当`global_bs`非0时，要满足A >= globalBs * min(localExpertNum, K)。
 
     - H：表示hidden size隐藏层大小。
@@ -146,7 +146,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 - HCCL通信域缓存区大小:
 
-    调用本接口前需检查`HCCL_BUFFSIZE`环境变量取值是否合理，该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。该场景通信域缓存区大小支持通过环境变量HCCL\_BUFFSIZE配置，也支持通过[hccl_buffer_size](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size)配置。
+    调用本接口前需检查`HCCL_BUFFSIZE`环境变量取值是否合理，该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。该场景通信域缓存区大小支持通过环境变量HCCL\_BUFFSIZE配置，也支持通过[hccl_buffer_size](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/zh/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size)配置。
     - ep通信域内：设置大小要求 \>= 2且满足\>= 2 \* \(local\_expert\_num \* max\_bs \* ep\_world\_size \* Align512\(Align32\(2 \* H\) + 64\) + \(K + shared\_expert\_num\) \* max\_bs \* Align512\(2 \* H\)\)，local\_expert\_num表示需使用MoE专家卡的本卡专家数。
     - tp通信域内：设置大小要求 \>= (A \* Align512(Align32(h \* 2) + 44) + A \* Align512(h \* 2)) \* 2。
     - 其中 480Align512(x) = ((x+480-1)/480)\*512,Align512(x) = ((x+512-1)/512)\*512,Align32(x) = ((x+32-1)/32)\*32。

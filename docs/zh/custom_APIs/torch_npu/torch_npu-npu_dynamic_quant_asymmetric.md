@@ -39,7 +39,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
     - 在非MoE场景shape必须是1维，和`x`的最后一维相等。
     - 在MoE场景shape是2维[E, H]。其中E是专家数，取值范围在[1, 1024]且与group_index的第一维相同；H是x的最后一维。
     - 单算子模式下`smooth_scales`的dtype必须和`x`保持一致，图模式下可以不一致。
-- **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组下标（代表`x`的行数索引），仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`的shape为[E,]，E的取值范围在[1, 1024]且与smooth_scales第一维相同。tensor的取值必须递增且范围为[1, S]，最后一个值必须等于S（S代表输入`x`的行数，是`x`的shape除最后一维度外的乘积）。
+- **group_index** (`Tensor`)：可选参数，用于对`smooth_scales`进行分组的下标张量（代表`x`的行数索引），仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`的shape为[E,]，E的取值范围在[1, 1024]且与smooth_scales第一维相同。tensor的取值必须递增且范围为[1, S]，最后一个值必须等于S（S代表输入`x`的行数，是`x`的shape除最后一维度外的乘积）。
 - **dst_type** (`ScalarType`)：可选参数，指定量化输出的类型，传None时当作`int8`处理。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`quint4x2`。
