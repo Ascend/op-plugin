@@ -7274,3 +7274,18 @@ def npu_ciou_meta(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_fl
     else:
         output_size = [1, self.size(1)]
     return torch.empty(output_size, dtype=self.dtype, device=self.device)
+
+@impl(m, "npu_weight_quant_preprocess")
+def npu_weight_quant_preprocess_meta(weight, weight_scale, x_dtype, weight_dtype, weight_scale_dtype,
+                                     weight_offset=None, bias=None, x_scale_dtype=None, k_group_size=0):
+    out_weight = torch.empty_like(weight)
+    out_weight_scale = torch.empty_like(weight_scale)
+    if weight_offset is not None:
+        out_weight_offset = torch.empty_like(weight_offset)
+    else:
+        out_weight_offset = torch.empty([0], dtype=weight.dtype, device='meta')
+    if bias is not None:
+        out_bias = torch.empty_like(bias)
+    else:
+        out_bias = torch.empty([0], dtype=weight.dtype, device='meta')
+    return (out_weight, out_weight_scale, out_weight_offset, out_bias)

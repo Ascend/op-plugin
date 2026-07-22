@@ -5069,6 +5069,9 @@
   "func: _fused_sgd_.tensor_lr(Tensor(a!)[] self, Tensor(b!)[] grads, Tensor(c!)[] momentum_buffer_list, *, float weight_decay, float momentum, Tensor lr, float dampening, bool nesterov, bool maximize, bool is_first_step, Tensor? grad_scale=None, Tensor? found_inf=None) -> ()": {
     "version": ["v2.7", "newest"]
   },
+  "func: npu_weight_quant_preprocess(Tensor weight, Tensor weight_scale, int x_dtype, int weight_dtype, int weight_scale_dtype, Tensor? weight_offset=None, Tensor? bias=None, int? x_scale_dtype=None, int? k_group_size=0) -> (Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
   "func: npu_renorm_backward(Tensor grad, Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor": {
     "version": ["v2.7", "newest"]
   }

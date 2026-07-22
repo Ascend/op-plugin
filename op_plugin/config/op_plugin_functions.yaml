@@ -7095,6 +7095,10 @@ custom:
     exposed: all_version
     internal_format_opapi: all_version
 
+  - func: npu_weight_quant_preprocess(Tensor weight, Tensor weight_scale, int x_dtype, int weight_dtype, int weight_scale_dtype, Tensor? weight_offset=None, Tensor? bias=None, int? x_scale_dtype=None, int? k_group_size=0) -> (Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    internal_format_opapi: all_version
+
   - func: npu_transpose_batchmatmul(Tensor input, Tensor weight, *, Tensor? bias=None, Tensor? scale=None, int[]? perm_x1=None, int[]? perm_x2=None, int[]? perm_y=None, int? batch_split_factor=1) -> Tensor
     op_api: all_version
     exposed: all_version
