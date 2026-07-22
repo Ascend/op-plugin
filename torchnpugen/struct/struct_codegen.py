@@ -490,19 +490,14 @@ def gen_op_api(fm: FileManager, struct_functions: Sequence[StructInfo], env_acln
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h" """
 
-    def struct_kernel_template_env():
-        return {
-            'includes': includes,
-            'op_api_definition': list(
-                concatMap(
-                    lambda f: compute_op_api_definition(f, env_aclnn_extension_switch),
-                    struct_functions,
-                )
-            ),
-        }
-
-    fm.write_with_template(
+    fm.write_sharded(
         'StructKernelNpuOpApi.cpp',
-        'StructKernelNpuOpApi.cpp',
-        struct_kernel_template_env,
+        struct_functions,
+        key_fn=lambda s: str(s.func.func),
+        base_env={'includes': includes},
+        env_callable=lambda s: {
+            'op_api_definition': compute_op_api_definition(s, env_aclnn_extension_switch),
+        },
+        num_shards=32,  # Empirical value; reduces compilation time from ~10min to ~40s+ per file after sharding
+        sharded_keys={'op_api_definition'},
     )

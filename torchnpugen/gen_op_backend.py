@@ -111,14 +111,17 @@ def main() -> None:
 #include "op_plugin/OpInterface.h"
 '''
 
-    fm.write_with_template(
+    fm.write_sharded(
         "OpInterface.cpp",
-        "OpInterface.cpp",
-        lambda: {
+        dispatch_registrations_body,
+        key_fn=lambda decl: decl,
+        base_env={
             "namespace": "op_plugin",
-            "declarations": dispatch_registrations_body,
             "includes_block": includes_block,
         },
+        env_callable=lambda decl: {"declarations": [decl]},
+        num_shards=32,  # Empirical value; reduces compilation time from ~150s to ~20s+ per file after sharding
+        sharded_keys={"declarations"},
     )
 
 
