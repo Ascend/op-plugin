@@ -2137,6 +2137,27 @@ c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_probs_out_size(cons
     }
 }
 
+c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_v2_permuted_tokens_out_size(const int64_t permuted_tokens_size_0, const at::Tensor &grad_unpermuted_tokens, const at::Tensor &sorted_indices, const c10::optional<at::Tensor> &probs)
+{
+    TORCH_CHECK(grad_unpermuted_tokens.dim() == DIM_2,
+                "grad_unpermuted_tokens should be 2D (got ", grad_unpermuted_tokens.dim(), "D)." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(sorted_indices.dim() == DIM_1,
+                "sorted_indices should be 1D (got ", sorted_indices.dim(), "D)." + OPS_ERROR(ErrCode::PARAM));
+    return {permuted_tokens_size_0, grad_unpermuted_tokens.size(1)};
+}
+
+c10::SmallVector<int64_t, SIZE> npu_moe_token_unpermute_grad_v2_probs_out_size(const at::Tensor &grad_unpermuted_tokens, const at::Tensor &sorted_indices, const c10::optional<at::Tensor> &probs)
+{
+    if (probs.has_value() && probs.value().defined()) {
+        TORCH_CHECK(probs.value().dim() == DIM_2,
+                    "The dims of input probs should be 2 dimensional, but got ", probs.value().dim(), "-dimensional." + OPS_ERROR(ErrCode::PARAM));
+        auto& probs_tensor = probs.value();
+        return {probs_tensor.size(0), probs_tensor.size(1)};
+    } else {
+        return {};
+    }
+}
+
 
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> triangular_solve_output_size(const at::Tensor& self, const at::Tensor& A)
 {

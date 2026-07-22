@@ -7464,13 +7464,11 @@ custom:
 
   - func: npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> Tensor
     op_api: [v2.1, newest]
-    gen_opapi:
-      unpermuted_tokens:
-        size: 'npu_moe_token_unpermute_out_size(permuted_tokens, sorted_indices, probs)'
-        dtype: permuted_tokens
-      new_params:
-        restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
-      exec: aclnnMoeTokenUnpermute, permuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, unpermuted_tokens
+    dispatch:
+      AutogradPrivateUse1: npu_moe_token_unpermute
+
+  - func: _npu_moe_token_unpermute(Tensor permuted_tokens, Tensor sorted_indices, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None) -> (Tensor unpermuted_tokens, Tensor permuted_tokens_for_backward)
+    op_api: [v2.1, newest]
 
   - func: npu_attention_to_ffn(Tensor x, Tensor session_id, Tensor micro_batch_id, Tensor layer_id, Tensor expert_ids, Tensor expert_rank_table, str group, int world_size, int[] ffn_token_info_table_shape, int[] ffn_token_data_shape, int[] attn_token_info_table_shape, int moe_expert_num, *, Tensor? scales=None, Tensor? active_mask=None, int quant_mode=0, int sync_flag=0, int ffn_start_rank_id=0) -> ()
     op_api: all_version
@@ -7512,6 +7510,19 @@ custom:
         dtype: permuted_tokens
       grad_probs:
         size: 'npu_moe_token_unpermute_grad_probs_out_size(permuted_tokens, grad_unpermuted_tokens, sorted_indices, probs)'
+        dtype: 'probs.has_value() && probs->defined() ? probs->scalar_type() : grad_unpermuted_tokens.scalar_type()'
+      new_params:
+        restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
+      exec: aclnnMoeTokenUnpermuteGrad, permuted_tokens, grad_unpermuted_tokens, sorted_indices, probs, padded_mode, restore_shape_value, grad_permuted_tokens, grad_probs
+
+  - func: npu_moe_token_unpermute_grad_v2(Tensor grad_unpermuted_tokens, Tensor sorted_indices, int permuted_tokens_size_0, ScalarType permuted_tokens_dtype, Tensor? probs=None, bool padded_mode=False, int[]? restore_shape=None, Tensor? permuted_tokens=None) -> (Tensor, Tensor)
+    op_api: [v2.1, newest]
+    gen_opapi:
+      grad_permuted_tokens:
+        size: 'npu_moe_token_unpermute_grad_v2_permuted_tokens_out_size(permuted_tokens_size_0, grad_unpermuted_tokens, sorted_indices, probs)'
+        dtype: permuted_tokens_dtype
+      grad_probs:
+        size: 'npu_moe_token_unpermute_grad_v2_probs_out_size(grad_unpermuted_tokens, sorted_indices, probs)'
         dtype: 'probs.has_value() && probs->defined() ? probs->scalar_type() : grad_unpermuted_tokens.scalar_type()'
       new_params:
         restore_shape_value: 'restore_shape.value_or(at::IntArrayRef{1})'
