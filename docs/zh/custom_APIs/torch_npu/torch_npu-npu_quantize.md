@@ -45,7 +45,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当数据格式为$NZ$时，`scales`的所有元素值为1。
 
 - **zero_points** (`Tensor`)：必选参数，允许为None，对`input`进行偏移的张量，对应公式中的`zero_points`。支持空Tensor，支持非连续的Tensor。
-    - `div_mode`为`True`时
+    - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：数据类型支持`int8`、`uint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`uint8`、`int32`、`bfloat16`。
 
@@ -54,7 +54,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当`input`的数据格式为$NZ$时，值为空。
 
 - **dtype** (`int`)：必选参数，指定输出参数的类型。
-    - `div_mode`为`True`时，
+    - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
 
@@ -76,7 +76,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e, k, n\), k为256倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
+- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e，k，n\), k为256倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。

@@ -256,7 +256,7 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 - **head_size**（`int`）：必选参数，单头维度大小，即每个注意力头的特征维长度。
 - **mrope_section**（`int[]`）：可选参数，MRoPE各段在half旋转维度上的长度配置，对应公式中的$mropeSection$。不传或`[0, 0, 0]`表示RoPE模式；传`[16, 24, 24]`、`[24, 20, 20]`、`[8, 12, 12]`、`[16, 16, 16, 16]`表示MRoPE模式，MRoPE时需与`positions`的行数一致。
 - **rotary_mode**（`str`）：可选参数，`half`表示NeoX风格，`interleaved`表示GPT-J风格。默认值为`half`。
-- **cache_mode**（`str`）：可选参数，`default`对应分段式cos/sin拼接；`interleave`对应交错式拼接。默认值为`default`。RoPE下仅支持`default`;MRoPE下支持`default`与`interleave`.
+- **cache_mode**（`str`）：可选参数，`default`对应分段式cos/sin拼接；`interleave`对应交错式拼接。默认值为`default`。RoPE下仅支持`default`;MRoPE下支持`default`与`interleave`。
 
 ## 返回值说明
 

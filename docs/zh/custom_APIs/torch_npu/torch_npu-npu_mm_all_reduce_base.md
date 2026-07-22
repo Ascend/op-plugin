@@ -67,7 +67,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - 该接口支持图模式。
 - 输入`x1`可为2维或者3维、`x2`必须是2维，分别为$(b, s, k)/(m, k)$, $(k, n)$，$k$轴满足mm算子入参要求，$k$轴相等。`bias`当前仅支持一维，且维度大小与`output`的最后一维大小相同。`x3`的shape与`output`的shape相同。
 - `x1`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`x1`的最后一维相同，满足matmul的计算条件。
-- `antiquant_group_size`中$k$值的范围与matmul一致，为`[1,65535]`，`INT_MAX`大于$(k-1)$。
+- `antiquant_group_size`中$k$值的范围与matmul一致，为`[1, 65535]`，`INT_MAX`大于$(k-1)$。
 - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
     - 数据类型支持`bfloat16`。
     - `x1`、`x2`不支持为空tensor。
@@ -105,7 +105,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     |Atlas A2 训练系列产品/Atlas A2 推理系列产品|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
 
     > [!NOTE]  
-    > 全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。
+    > 全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用`torch_npu.npu_mm_all_reduce_base`前，需通过`torch_npu.npu_trans_quant_param`接口对`dequant_scale`进行处理为`int64`类型（处理方法请参见对应的接口使用说明）。
 
 ## 调用示例
 
