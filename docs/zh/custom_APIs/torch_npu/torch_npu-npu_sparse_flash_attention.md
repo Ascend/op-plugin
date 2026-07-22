@@ -50,7 +50,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_value, *, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, query_rope=None, key_rope=None, sparse_block_size=1, layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0, return_softmax_lse=False) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_value, *, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, query_rope=None, key_rope=None, sparse_block_size=1, layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0, return_softmax_lse=False, sinks=None) -> (Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
@@ -100,6 +100,8 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **attention\_mode**（`int`）：可选参数，表示attention的模式，数据类型支持`int64`，仅支持传入2，表示MLA-absorb模式，即计算过程中会将query和key的nope部分分别和query_rope和key_rope的rope部分沿头维度（D）拼接，合并形成最终的query和key用于后续计算，且key和value共享同一份底层张量数据。
 
 - **return\_softmax\_lse**（`bool`）：可选参数，用于表示是否返回softmax_max和softmax_sum。True表示返回，但图模式下不支持，False表示不返回；默认值为False。该参数仅在训练且`layout_kv`不为PA_BSND场景支持。
+
+- **sinks**（`Tensor`）：可选参数，表示attention结构中的sinks信息。传入该参数时调用`aclnnSparseFlashAttentionV2`接口；不传入时调用原`aclnnSparseFlashAttention`接口。数据格式支持ND，数据类型支持`float32`，shape为[N1]。
 
 ## 返回值说明
 
