@@ -4249,6 +4249,7 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
             self.assertEqual(grad_permuted_tokens.shape, permuted_tokens.shape)
             self.assertIsNone(grad_probs)
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
     def test_npu_moe_token_unpermute_internal_meta(self):
         """Test _npu_moe_token_unpermute hidden output metadata"""
         num_tokens = 100
@@ -4275,6 +4276,7 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
             self.assertEqual(permuted_tokens_for_backward.dtype, permuted_tokens.dtype)
             self.assertEqual(permuted_tokens_for_backward.shape, permuted_tokens.shape)
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
     def test_npu_moe_token_unpermute_grad_v2_probs_none(self):
         """Test npu_moe_token_unpermute_grad_v2 accepts empty permuted_tokens"""
         num_tokens = 100
@@ -4303,6 +4305,7 @@ class TestNpuMoeTokenPermuteAndUnpermute(TestCase):
             self.assertEqual(grad_permuted_tokens.shape, permuted_tokens.shape)
             self.assertIsNone(grad_probs)
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
     def test_npu_moe_token_unpermute_grad_v2_mixed_dtype(self):
         """Test npu_moe_token_unpermute_grad_v2 keeps grad_probs dtype from probs"""
         num_tokens = 100

@@ -1,8 +1,10 @@
 # Copyright (c) 2024, Huawei Technologies Co., Ltd.  All rights reserved.
 # Copyright (c) 2024, NVIDIA CORPORATION. All rights reserved.
+# Copyright (c) Microsoft Corporation.
 from typing import Dict, List
 import torch
 import torch_npu
+from torch_npu.testing.common_utils import SupportedDevices
 from torch_npu.contrib import transfer_to_npu
 import pytest
 
@@ -304,6 +306,7 @@ class TestNpuFusedPermuteAndUnpermute():
             "probs_storage_ptr": None if probs is None else self._storage_data_ptr(probs),
         }
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
     def test_unpermute_backward_saved_tensors_probs_none(self):
         saved = self._run_unpermute_saved_tensor_case(
             num_tokens=64, hidden_size=128, topk=1, num_experts=8, use_probs=False)
@@ -311,6 +314,7 @@ class TestNpuFusedPermuteAndUnpermute():
         assert saved["permuted_storage_ptr"] not in saved["saved_storage_ptrs"], \
             "permuted_tokens should not be saved for backward when probs is None"
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
     def test_unpermute_backward_saved_tensors_with_probs(self):
         saved = self._run_unpermute_saved_tensor_case(
             num_tokens=32, hidden_size=64, topk=4, num_experts=8, use_probs=True)
