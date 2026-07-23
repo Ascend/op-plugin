@@ -27,6 +27,8 @@ atb::Tensor AtTensor2AtbTensor(const at::Tensor at_tensor)
     };
 
     TORCH_CHECK(at_tensor.is_contiguous(), "at_tensor is not contiguous");
+    TORCH_CHECK(at_tensor.dim() <= atb::MAX_DIM, "ATB tensor supports at most ", atb::MAX_DIM,
+                " dimensions, but got ", at_tensor.dim());
     atb::Tensor tensor;
     tensor.desc.format = atb::utils::GetFormatForAtb(at_tensor);
     if (at_tensor.device().type() == at::kCPU) {

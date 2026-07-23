@@ -12,8 +12,8 @@ class TestElewiseQuantOperation(TestCase):
         os.environ["ASCEND_LAUNCH_BLOCKING"] = "0"
 
     def calculate_benchmark(self, input_x, input_scale, input_offset):
-        input_x_np = input_x.cpu().numpy()
-        input_scale_np = input_scale.cpu().numpy()
+        input_x_np = input_x.float().cpu().numpy()
+        input_scale_np = input_scale.float().cpu().numpy()
         input_offset_np = input_offset.cpu().numpy()
 
         if len(input_offset_np) == 0:
@@ -25,10 +25,10 @@ class TestElewiseQuantOperation(TestCase):
 
     @SupportedDevices(['Ascend910B'])
     def test_quantpertensor(self):
-        torch.manual_seed(6)
-        input_x = torch.rand(1, 16, 16, dtype=torch.float16)
-        input_scale = torch.rand(16, 16, dtype=torch.float16)
-        input_offset = torch.randint(-10, 10, size=(16, 16), dtype=torch.int8)
+        quantized = (torch.arange(256, dtype=torch.int16) % 32).reshape(1, 16, 16)
+        input_scale = torch.tensor([0.25, 0.5, 1.0, 2.0], dtype=torch.float16).repeat(64).reshape(16, 16)
+        input_x = quantized.to(torch.float16) * input_scale.unsqueeze(0)
+        input_offset = ((torch.arange(256, dtype=torch.int16).reshape(16, 16) % 20) - 10).to(torch.int8)
         y = torch.zeros(size=(1, 16, 16), dtype=torch.int8).npu()
         out = self.calculate_benchmark(input_x, input_scale, input_offset)
 
@@ -37,6 +37,16 @@ class TestElewiseQuantOperation(TestCase):
         input_offset = input_offset.npu()
         torch_npu._npu_quantize_per_tensor(input_x, input_scale, input_offset, y)
         self.assertEqual(out, y)
+
+    @SupportedDevices(['Ascend910B'])
+    def test_quantpertensor_exceed_max_dim(self):
+        input_x = torch.ones((1,), dtype=torch.float16).npu()
+        input_scale = torch.ones((1,) * 9, dtype=torch.float16)
+        input_offset = torch.ones((1,), dtype=torch.int8).npu()
+        y = torch.zeros((1,), dtype=torch.int8).npu()
+
+        with self.assertRaisesRegex(RuntimeError, "ATB tensor supports at most 8 dimensions, but got 9"):
+            torch_npu._npu_quantize_per_tensor(input_x, input_scale, input_offset, y)
 
     @SupportedDevices(['Ascend910B'])
     def test_quantpertensor_aclgraph(self):
