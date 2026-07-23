@@ -13,4 +13,4 @@ TorchNPU项目采用C++和Python联合开发，当前正式对外接口仅包括
 所有自定义API默认支持TorchNPU版本匹配的全量PyTorch版本，若非全量支持会在各API的约束说明进行标注。
 
 > [!NOTE]  
-> TorchNPU部分功能可以通过环境变量实现，具体可参考《[环境变量参考](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/environment_variable_reference/env_variable_list.md)》。
+> TorchNPU部分功能可以通过环境变量实现，具体可参考《[环境变量](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/environment_variable_reference/env_variable_list.md)》。

@@ -44,7 +44,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`（`int32`含义同`x1`，表示`int4`类型计算）。
 
-- **scale** (`Tensor`)：必选参数，量化缩放因子。该参数支持1维shape $(t, )$（其中$t=1$或$n$，其中$n$表示`x2`的最后一维）。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
+- **scale** (`Tensor`)：必选参数，量化缩放因子。该参数支持1维shape $(t, )$（其中$t=1$或$n$，$n$表示`x2`的最后一维）。如需传入`int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`int64`数据类型的`scale`。
     - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float32`、`int64`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
