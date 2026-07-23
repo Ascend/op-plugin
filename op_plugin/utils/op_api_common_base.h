@@ -43,6 +43,7 @@
 #include "torch_npu/csrc/flopcount/FlopCounter.h"
 #include "torch_npu/csrc/custom_dtype/Init.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
+#include "torch_npu/csrc/framework/OpParamMaker.h"
 
 typedef struct aclOpExecutor aclOpExecutor;
 typedef struct aclTensor aclTensor;
@@ -386,12 +387,10 @@ template <typename Tuple> auto ConvertToOpApiFunc(const Tuple &params, void *opA
 
 struct CacheParams {
 public:
-    bool GetDeterministicStatus() const;
     uint32_t GetAicNum() const;
     uint32_t GetAivNum() const;
 
 private:
-    bool deterministic_status_ = false;
     uint32_t aic_num_ = UINT32_MAX;
     uint32_t aiv_num_ = UINT32_MAX;
     friend CacheParams GetCacheParams();
@@ -401,11 +400,11 @@ TORCH_NPU_API CacheParams GetCacheParams();
 
 TORCH_NPU_API bool CheckAndInitFunc(const char* aclnn_api);
 TORCH_NPU_API void AddCacheConfigParams(aclrtStream acl_stream, const CacheParams& cache_params);
-TORCH_NPU_API bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2);
 
+TORCH_NPU_API bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, const c10_npu::DeterministicSnapshot& snapshot);
 TORCH_NPU_API bool CheckAndInitFuncV2(const char* aclnn_api);
 TORCH_NPU_API void AddCacheConfigParamsV2(aclrtStream acl_stream, const CacheParams& cache_params, const char* aclnn_api);
-TORCH_NPU_API bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret);
+TORCH_NPU_API bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret, const c10_npu::DeterministicSnapshot& snapshot);
 
 template <typename... Args>
 void BuildCacheHashParams(aclrtStream acl_stream, const char* aclnn_api, Args&&... args)
@@ -423,32 +422,34 @@ void BuildCacheHashParamsV2(aclrtStream acl_stream, const CacheParams& cache_par
 }
 
 template <typename... Args>
-bool hit_cache_ext(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, Args&&... args)
+bool hit_cache_ext(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, Args&&... args, const c10_npu::DeterministicSnapshot& snapshot)
 {
     // 步骤1：检查缓存功能是否可用
     if (!CheckAndInitFunc(aclnn_api)) {
         return false;
     }
     // 步骤2：加入缓存
+    add_param_to_buf(snapshot.effective_level);
     BuildCacheHashParams(acl_stream, aclnn_api, std::forward<Args>(args)...);
     // 步骤3：执行缓存的算子
-    return ExecuteCachedOp(acl_stream, aclnn_api, phrase2);
+    return ExecuteCachedOp(acl_stream, aclnn_api, phrase2, snapshot);
 }
 
 
 template <typename ...Ts>
 bool hit_cache_v2_ext(
     aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret,
-    const CacheParams& cache_params)
+    const CacheParams& cache_params, const c10_npu::DeterministicSnapshot& snapshot)
 {
     // 步骤1：检查缓存功能并初始化
     if (!CheckAndInitFuncV2(aclnn_api)) {
         return false;
     }
+    add_param_to_buf_v2(snapshot.effective_level);
     // 步骤2：加入缓存
     BuildCacheHashParamsV2(acl_stream, cache_params, aclnn_api, args);
     // 步骤3：执行缓存的算子
-    return ExecuteCachedOpV2(acl_stream, aclnn_api, phrase2, api_ret);
+    return ExecuteCachedOpV2(acl_stream, aclnn_api, phrase2, api_ret, snapshot);
 }
 
 TORCH_NPU_API void GetApiFunc(
@@ -461,8 +462,6 @@ TORCH_NPU_API void InitExecCommonCtx();
 TORCH_NPU_API void UnInitExecCommonCtx();
 TORCH_NPU_API void ReleaseExecCommonCtx();
 TORCH_NPU_API aclrtStream GetAclStream();
-TORCH_NPU_API void SetExecConfig();
-TORCH_NPU_API void SetExecConfigV2(const CacheParams& cache_params);
 TORCH_NPU_API int ExecuteApiFunc(
     const void* opApiFuncAddr,
     aclrtStream acl_stream,
@@ -498,12 +497,13 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
         /* 3.获取NPU流 */                                                                                               \
         auto acl_stream = GetAclStream();                                                                              \
         /* 4.缓存查询 */                                                                                                \
-        if (hit_cache_ext(acl_stream, #aclnn_api, opApiFuncAddr, __VA_ARGS__)) {                                       \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
+        if (hit_cache_ext(acl_stream, #aclnn_api, opApiFuncAddr, __VA_ARGS__, snapshot)) {                                       \
             break;                                                                                                     \
         }                                                                                                              \
         /* 5.设置执行配置：确定性算法 */                                                                                   \
-        SetExecConfig();                                                                                               \
         /* 6.参数转换、获取workspace_size和executor（涉及可变参数未封装） */                                                  \
+        at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                                 \
         uint64_t workspace_size = 0;                                                                                   \
         uint64_t *workspace_size_addr = &workspace_size;                                                               \
         aclOpExecutor *executor = nullptr;                                                                             \
@@ -539,19 +539,20 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
         /* 3.拷贝参数列表 */                                                                                             \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         /* 4.获取查询缓存所需参数（部分参数需要在主线程获取） */                                                                \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
         CacheParams cache_params = GetCacheParams();                                                                   \
         /* 5.定义子线程执行函数 */                                                                                        \
-        auto acl_call = [copied_params, acl_stream, cache_params]()->int {                                             \
+        auto acl_call = [copied_params, acl_stream, cache_params, snapshot]()->int {                                    \
             /* 5.1.初始化子进程上下文 */                                                                                  \
             InitExecSubTheadCtx(acl_stream);                                                                           \
             int api_ret = 0;                                                                                           \
             /* 5.2.缓存查询 */                                                                                          \
-            if (hit_cache_v2_ext(acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, cache_params))        \
+            if (hit_cache_v2_ext(acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, cache_params, snapshot))        \
             {                                                                                                          \
                 return api_ret;                                                                                        \
             }                                                                                                          \
             /* 5.3.设置执行配置 */                                                                                       \
-            SetExecConfigV2(cache_params);                                                                             \
+            at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                                 \
             /* 5.4.初始化执行上下文：内存管理相关 */                                                                         \
             InitExecCommonCtx();                                                                                       \
             /* 5.5.参数转换、获取workspace_size和executor（涉及可变参数未封装） */                                            \

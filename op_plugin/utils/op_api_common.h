@@ -17,6 +17,8 @@
 #define TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
 
 #include "op_api_common_base.h"
+#include "torch_npu/csrc/framework/OpParamMaker.h"
+#include "torch_npu/csrc/core/npu/NPUFunctions.h"
 
 constexpr int g_hash_buf_size = 8192;
 constexpr int g_hash_buf_max_size = g_hash_buf_size + 1024;
@@ -142,7 +144,7 @@ inline void CheckNpuTensorValid(const at::Tensor& at_tensor)
         OPS_ERROR(ErrCode::VALUE));
 }
 
-template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *aclnn_api, void *phrase2, Args &&...args)
+template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const c10_npu::DeterministicSnapshot& snapshot, Args &&...args)
 {
     static const auto ptaGetExecCacheAddr = GetOpApiFuncAddr("PTAGetExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
@@ -155,6 +157,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     CanUsePTACache canUsePTACacheFunc = reinterpret_cast<CanUsePTACache>(canUsePTACacheAddr);
     bool has_func = ptaGetExecCacheFunc && initPTACacheThreadLocalFunc && setPTAHashKeyFunc;
     bool can_use = canUsePTACacheFunc && canUsePTACacheFunc(aclnn_api);
+    at_npu::native::ApplyDeterministicSnapshot(snapshot, true);
     if (!has_func || !can_use) {
         return false;
     }
@@ -162,7 +165,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
     uint64_t *workspace_size_addr = &workspace_size;
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
-    auto deterministic = at::globalContext().deterministicAlgorithms();
+    auto deterministic_level = snapshot.effective_level;
     if (c10_npu::is_core_control_enabled()) {
         auto aic_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_CUBE_CORE);
         auto aiv_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_VECTOR_CORE);
@@ -170,7 +173,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
         add_param_to_buf(aiv_num);
     }
     auto device = c10_npu::current_device();
-    add_param_to_buf(deterministic);
+    add_param_to_buf(deterministic_level);
     add_param_to_buf(std::string(aclnn_api), args...);
     add_param_to_buf(device);
     add_param_to_buf((uintptr_t)acl_stream);
@@ -200,7 +203,7 @@ template <typename... Args> bool hit_cache(aclrtStream acl_stream, const char *a
 template <typename ...Ts>
 bool hit_cache_v2(
     aclrtStream acl_stream, const char *aclnn_api, void *phrase2, const std::tuple<Ts...> &args, int* api_ret,
-    bool deterministic_status, uint32_t aic_num, uint32_t aiv_num)
+    uint32_t aic_num, uint32_t aiv_num, const c10_npu::DeterministicSnapshot& snapshot)
 {
     static const auto ptaFindExecCacheAddr = GetOpApiFuncAddr("PTAFindExecCache");
     static const auto initPTACacheThreadLocalAddr = GetOpApiFuncAddr("InitPTACacheThreadLocal");
@@ -213,6 +216,7 @@ bool hit_cache_v2(
     CanUsePTACache canUsePTACacheFunc = reinterpret_cast<CanUsePTACache>(canUsePTACacheAddr);
     bool has_func = ptaFindExecCacheFunc && initPTACacheThreadLocalFunc && setPTACacheHashKeyFunc;
     bool can_use = canUsePTACacheFunc && canUsePTACacheFunc(aclnn_api);
+    at_npu::native::ApplyDeterministicSnapshot(snapshot, true);
     if (!has_func || !can_use) {
         return false;
     }
@@ -220,7 +224,8 @@ bool hit_cache_v2(
     uint64_t *workspace_size_addr = &workspace_size;
     initPTACacheThreadLocalFunc();
     g_hash_offset = 0;
-    add_param_to_buf_v2(deterministic_status);
+    uint32_t deterministic_level = snapshot.effective_level;
+    add_param_to_buf_v2(deterministic_level);
     if (aic_num != UINT32_MAX && aiv_num != UINT32_MAX) {
         add_param_to_buf_v2(aic_num);
         add_param_to_buf_v2(aiv_num);
@@ -324,10 +329,10 @@ auto DecodeDevice(Ts&... args) -> at::Device
         aclOpExecutor **executor_addr = &executor;                                                                     \
         InitHugeMemThreadLocal initMemFunc = reinterpret_cast<InitHugeMemThreadLocal>(initMemAddr);                    \
         UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);            \
-        if (hit_cache(acl_stream, #aclnn_api, opApiFuncAddr, __VA_ARGS__)) {                                           \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
+        if (hit_cache(acl_stream, #aclnn_api, opApiFuncAddr, snapshot, __VA_ARGS__)) {                                           \
             break;                                                                                                     \
         }                                                                                                              \
-        at_npu::native::SetDeterministic();                                                                            \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
@@ -378,14 +383,14 @@ auto DecodeDevice(Ts&... args) -> at::Device
         }                                                                                                              \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_CMD", "2", acl_stream, __VA_ARGS__);                         \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
-        auto deterministic_status = at::globalContext().deterministicAlgorithms();                                     \
         uint32_t aic_num = UINT32_MAX;                                                                                  \
         uint32_t aiv_num = UINT32_MAX;                                                                                  \
         if (c10_npu::is_core_control_enabled()) {                                                            \
             aic_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_CUBE_CORE);                           \
             aiv_num = c10_npu::GetResInCurrentThread(c10_npu::acl::ACL_RT_DEV_RES_VECTOR_CORE);                         \
         }                                                                                                              \
-        auto acl_call = [copied_params, acl_stream, deterministic_status, aic_num, aiv_num]()->int {                     \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
+        auto acl_call = [copied_params, acl_stream, aic_num, aiv_num, snapshot]()->int {                     \
             if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
                 c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
             }                                                                                                          \
@@ -397,11 +402,10 @@ auto DecodeDevice(Ts&... args) -> at::Device
             UnInitHugeMemThreadLocal unInitMemFunc = reinterpret_cast<UnInitHugeMemThreadLocal>(unInitMemAddr);        \
             int api_ret = 0;                                                                                           \
             if (hit_cache_v2(                                                                                          \
-               acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, deterministic_status, aic_num, aiv_num))  \
+               acl_stream, #aclnn_api, opApiFuncAddr, copied_params, &api_ret, aic_num, aiv_num, snapshot))            \
             {                                                                                                          \
                 return api_ret;                                                                                        \
             }                                                                                                          \
-            at_npu::native::SetDeterministicOps(deterministic_status);                                                 \
             if (initMemFunc) {                                                                                         \
                 initMemFunc(nullptr, false);                                                                           \
             }                                                                                                          \
@@ -472,10 +476,11 @@ auto DecodeDevice(Ts&... args) -> at::Device
             initPTACacheThreadLocalFunc();                                                                             \
             setPTAHashKeyFunc(0);                                                                                      \
         }                                                                                                              \
-        at_npu::native::SetDeterministic();                                                                            \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
+        at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                \
         auto converted_params = ConvertTypes(__VA_ARGS__, workspace_size_addr, executor_addr);                         \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
@@ -486,7 +491,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
             workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
-        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {              \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor]()->int {    \
             if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
                 c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
             }                                                                                                          \
@@ -524,8 +529,9 @@ auto DecodeDevice(Ts&... args) -> at::Device
             c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
         }                                                                                                              \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_NPU_NO_FORMAT_CHECK_CMD", "2", acl_stream, __VA_ARGS__);         \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
-        auto acl_call = [copied_params, acl_stream]()->int {                                                           \
+        auto acl_call = [copied_params, acl_stream, snapshot]()->int {                                                 \
             if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
                 c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
             }                                                                                                          \
@@ -542,10 +548,10 @@ auto DecodeDevice(Ts&... args) -> at::Device
                 initPTACacheThreadLocalFunc();                                                                         \
                 setPTAHashKeyFunc(nullptr, 0);                                                                         \
             }                                                                                                          \
-            at_npu::native::SetDeterministic();                                                                        \
             if (initMemFunc) {                                                                                         \
                 initMemFunc(nullptr, false);                                                                           \
             }                                                                                                          \
+            at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                \
             auto converted_params = ConvertTypesV2(copied_params, workspace_size_addr, executor_addr);                 \
             auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);                \
             auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                      \
@@ -710,10 +716,11 @@ private:
                 setPTACacheHashKeyFunc(nullptr, 0);                                                                    \
             }                                                                                                          \
         }                                                                                                              \
-        at_npu::native::SetDeterministic();                                                                            \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                    \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
+        at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                    \
         auto converted_params = ConvertTypes(args..., workspace_size_addr, executor_addr);                             \
         static auto getWorkspaceSizeFunc = ConvertToOpApiFunc(converted_params, getWorkspaceSizeFuncAddr);             \
         auto workspace_status = call(getWorkspaceSizeFunc, converted_params);                                          \
@@ -724,7 +731,7 @@ private:
             workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size);                  \
             workspace_addr = const_cast<void *>(workspace_tensor.storage().data());                                    \
         }                                                                                                              \
-        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName]()->int {     \
+        auto acl_call = [converted_params, workspace_addr, workspace_size, acl_stream, executor, apiName, snapshot]()->int {     \
             OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(opApiFuncAddr);                                          \
             auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);                            \
             NPU_CHECK_ERROR(api_ret, "call " #aclnn_api " failed");                                                    \

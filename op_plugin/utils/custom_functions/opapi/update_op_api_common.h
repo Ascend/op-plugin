@@ -17,6 +17,8 @@
 #define TORCHNPU_TORCH_NPU_CUSTOM_OPS_OP_API_PTA_COMMON_H_
 
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/OpParamMaker.h"
+#include "torch_npu/csrc/core/npu/NPUFunctions.h"
 
 #define EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD_V1(aclnn_api, workspace_addr, workspace_size, ...)                         \
     do {                                                                                                               \
@@ -46,10 +48,10 @@
             initPTACacheThreadLocalFunc();                                                                             \
             setPTAHashKeyFunc(0);                                                                                      \
         }                                                                                                              \
-        at_npu::native::SetDeterministic();                                                                            \
         if (initMemFunc) {                                                                                             \
             initMemFunc(nullptr, false);                                                                               \
         }                                                                                                              \
+        at_npu::native::SetDeterministic();                                                                            \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
         uint64_t fake_workspace_size = 0;                                                                              \
         uint64_t *workspace_size_addr = &fake_workspace_size;                                                          \
@@ -94,12 +96,14 @@
         if (c10_npu::check_enqueue_need_use(acl_stream)) {                                                             \
             c10_npu::UseStreamResInCurrentThread(acl_stream);                                                          \
         }                                                                                                              \
+        auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                    \
         OP_EXEC_LOG_WITH_TASK_QUEUE(#aclnn_api, "EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD", "2", acl_stream, __VA_ARGS__);  \
         auto copied_params = CopyTypesV2(__VA_ARGS__);                                                                 \
-        auto acl_call = [workspace_addr, workspace_size, copied_params, acl_stream]()->int {                           \
+        auto acl_call = [workspace_addr, workspace_size, copied_params, acl_stream, snapshot]()->int {                           \
             if (c10_npu::check_dequeue_need_use(acl_stream)) {                                                         \
                 c10_npu::UseStreamResInCurrentThread(acl_stream);                                                      \
             }                                                                                                          \
+            at_npu::native::ApplyDeterministicSnapshot(snapshot, true);                                                          \
             uint64_t fake_workspace_size = 0;                                                                          \
             uint64_t *workspace_size_addr = &fake_workspace_size;                                                      \
             aclOpExecutor *executor = nullptr;                                                                         \
@@ -113,7 +117,6 @@
                 initPTACacheThreadLocalFunc();                                                                         \
                 setPTAHashKeyFunc(nullptr, 0);                                                                         \
             }                                                                                                          \
-            at_npu::native::SetDeterministic();                                                                        \
             if (initMemFunc) {                                                                                         \
                 initMemFunc(nullptr, false);                                                                           \
             }                                                                                                          \
