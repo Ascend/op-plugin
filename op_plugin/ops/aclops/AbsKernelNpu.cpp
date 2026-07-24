@@ -21,19 +21,14 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& abs_out_nocheck(at::Tensor& result, const at::Tensor& self)
-{
+at::Tensor &abs_out_nocheck(at::Tensor &result, const at::Tensor &self) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("Abs")
-        .Input(self)
-        .Output(result)
-        .Run();
+    cmd.Name("Abs").Input(self).Output(result).Run();
     return result;
 }
 }
 
-at::Tensor& abs_out(const at::Tensor& self, at::Tensor& out)
-{
+at::Tensor &abs_out(const at::Tensor &self, at::Tensor &out) {
     npu_preparation::CheckOut({self}, out, self);
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
@@ -45,16 +40,14 @@ at::Tensor& abs_out(const at::Tensor& self, at::Tensor& out)
     return out;
 }
 
-at::Tensor abs(const at::Tensor& self)
-{
+at::Tensor abs(const at::Tensor &self) {
     auto output_size = op_infer::infershape_for_elewise(self);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     abs_out_nocheck(result, self);
     return result;
 }
 
-at::Tensor& abs_(at::Tensor& self)
-{
+at::Tensor &abs_(at::Tensor &self) {
     return acl_op::abs_out(self, self);
 }
 } // namespace acl_op

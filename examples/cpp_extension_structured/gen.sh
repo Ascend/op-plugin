@@ -25,12 +25,12 @@ export PYTORCH_CUSTOM_DERIVATIVES_PATH="${CDIR}/op_plugin/config/${PYTORCH_VERSI
 export ACLNN_EXTENSION_PATH="${CDIR}"
 export ACLNN_EXTENSION_SWITCH="TRUE"
 
-ATRN_DIR="$CDIR/torch_npu/csrc/aten" 
+ATRN_DIR="$CDIR/torch_npu/csrc/aten"
 if [ ! -d "${ATRN_DIR}" ]; then
     mkdir -p "${ATRN_DIR}"
 fi
 
-UTILS_DIR="$CDIR/torch_npu/utils" 
+UTILS_DIR="$CDIR/torch_npu/utils"
 if [ ! -d "${UTILS_DIR}" ]; then
     mkdir -p "${UTILS_DIR}"
 fi

@@ -21,15 +21,11 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
 #if VERSION_BETWEEN(V2R1, V2R1)
-std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
-    at::Tensor& y,
-    at::Tensor& y_inverse,
-    const at::Tensor& self,
-    bool sorted,
-    bool return_inverse)
-{
+std::tuple<at::Tensor &, at::Tensor &> _unique_out_npu(
+    at::Tensor &y, at::Tensor &y_inverse, const at::Tensor &self, bool sorted, bool return_inverse) {
     c10::SmallVector<int64_t, N> output_sync_idx = {0, 1, 2};
-    at::Tensor y_counts = npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+    at::Tensor y_counts =
+        npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
     at_npu::native::OpCommand cmd;
     cmd.Sync(output_sync_idx)
         .Name("UniqueWithCountsAndSorting")
@@ -42,20 +38,16 @@ std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
         .Attr("return_counts", false)
         .Run();
 
-    return std::tuple<at::Tensor&, at::Tensor&>(y, y_inverse);
+    return std::tuple<at::Tensor &, at::Tensor &>(y, y_inverse);
 }
 #endif
 
 #if VERSION_BETWEEN(V2R2, VERSION_NEWEST)
-std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
-    at::Tensor& y,
-    at::Tensor& y_inverse,
-    const at::Tensor& self,
-    bool sorted,
-    bool return_inverse)
-{
+std::tuple<at::Tensor &, at::Tensor &> _unique_out_npu(
+    at::Tensor &y, at::Tensor &y_inverse, const at::Tensor &self, bool sorted, bool return_inverse) {
     c10::SmallVector<int64_t, N> output_sync_idx = {0, 1, 2};
-    at::Tensor y_counts = npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
+    at::Tensor y_counts =
+        npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND);
     at_npu::native::OpCommand cmd;
     cmd.Sync(output_sync_idx)
         .Name("UniqueWithCountsAndSorting")
@@ -68,29 +60,25 @@ std::tuple<at::Tensor&, at::Tensor&> _unique_out_npu(
         .Attr("return_counts", false)
         .Run();
 
-    return std::tuple<at::Tensor&, at::Tensor&>(y, y_inverse);
+    return std::tuple<at::Tensor &, at::Tensor &>(y, y_inverse);
 }
 #endif
 } // namespace
 
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
-std::tuple<at::Tensor, at::Tensor> _unique(
-    const at::Tensor& self,
-    bool sorted,
-    bool return_inverse)
-{
+std::tuple<at::Tensor, at::Tensor> _unique(const at::Tensor &self, bool sorted, bool return_inverse) {
     if (self.numel() == 0) {
         at::Tensor result = npu_preparation::apply_tensor(self, {0});
         at::Tensor y_inverse = npu_preparation::apply_tensor({0}, self.options().dtype(at::kLong), self);
         return std::tie(result, y_inverse);
     }
     at::Tensor y = npu_preparation::apply_tensor(self, self.numel());
-    at::Tensor y_inverse = !return_inverse ?
-        npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND) :
-        npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
+    at::Tensor y_inverse = !return_inverse
+        ? npu_preparation::apply_tensor_with_format({1}, self.options().dtype(at::kLong), ACL_FORMAT_ND)
+        : npu_preparation::apply_tensor_with_format(self.sizes(), self.options().dtype(at::kLong), ACL_FORMAT_ND);
 
     _unique_out_npu(y, y_inverse, self, sorted, return_inverse);
     return std::tuple<at::Tensor, at::Tensor>(y, y_inverse);
 }
 #endif
-}  // namespace acl_op
+} // namespace acl_op

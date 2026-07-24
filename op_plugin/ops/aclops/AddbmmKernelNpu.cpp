@@ -22,10 +22,8 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-
-at::Tensor &addbmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &batch1,
-                                   const at::Tensor &batch2)
-{
+at::Tensor &addbmm_out_npu_nocheck(
+    at::Tensor &result, const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2) {
     bool is_batch1_t = op_plugin::utils::is_transpose_last_two_dims(batch1);
     bool is_batch2_t = op_plugin::utils::is_transpose_last_two_dims(batch2);
     at::Tensor contiguous_batch1 = is_batch1_t ? batch1 : npu_utils::format_contiguous_add_copy_optimize(batch1);
@@ -43,17 +41,11 @@ at::Tensor &addbmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, c
     return result;
 }
 
-at::Tensor& addbmm_out(
-    const at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha,
-    at::Tensor& out)
-{
+at::Tensor &addbmm_out(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2,
+    const at::Scalar &beta, const at::Scalar &alpha, at::Tensor &out) {
     TORCH_CHECK(batch1.dim() >= 2 && batch2.dim() >= 3,
-        "batch1 is expected to be at least 2D and batch2 is expected to be at least 3D, but got batch1: ",
-        batch1.dim(), "D, batch2: ", batch2.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
+        "batch1 is expected to be at least 2D and batch2 is expected to be at least 3D, but got batch1: ", batch1.dim(),
+        "D, batch2: ", batch2.dim(), "D" + OPS_ERROR(ErrCode::PARAM));
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     bool check_bias_shape = ((self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1)) && batch1.size(0) == 1);
     std::vector<int64_t> dims = {batch1.size(1), batch2.size(2)};
@@ -79,26 +71,16 @@ at::Tensor& addbmm_out(
     return out;
 }
 
-at::Tensor addbmm(
-    const at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha)
-{
+at::Tensor addbmm(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
+    const at::Scalar &alpha) {
     auto output_size = op_infer::addbmm_npu_output_size(self, batch1, batch2);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);
     acl_op::addbmm_out(self, batch1, batch2, beta, alpha, result);
     return result;
 }
 
-at::Tensor& addbmm_(
-    at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha)
-{
+at::Tensor &addbmm_(at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
+    const at::Scalar &alpha) {
     npu_preparation::CheckMemory({self, batch1, batch2}, {self});
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);

@@ -20,43 +20,33 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-namespace{
-at::Tensor& cos_out_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self) {
-  at_npu::native::OpCommand cmd;
-  cmd.Name("Cos")
-      .Input(self)
-      .Output(result)
-      .Run();
-  return result;
+namespace {
+at::Tensor &cos_out_npu_nocheck(at::Tensor &result, const at::Tensor &self) {
+    at_npu::native::OpCommand cmd;
+    cmd.Name("Cos").Input(self).Output(result).Run();
+    return result;
 }
 } // namespace
 
-at::Tensor& cos_out(
-    const at::Tensor& self,
-    at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
-  if (!npu_utils::check_match(&result)) {
-    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-    cos_out_npu_nocheck(contiguous_result, self);
-    npu_utils::format_fresh_view(result, contiguous_result);
-  } else {
+at::Tensor &cos_out(const at::Tensor &self, at::Tensor &result) {
+    npu_preparation::CheckOut({self}, result, self);
+    if (!npu_utils::check_match(&result)) {
+        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+        cos_out_npu_nocheck(contiguous_result, self);
+        npu_utils::format_fresh_view(result, contiguous_result);
+    } else {
+        cos_out_npu_nocheck(result, self);
+    }
+    return result;
+}
+
+at::Tensor cos(const at::Tensor &self) {
+    at::Tensor result = npu_preparation::apply_tensor(self);
     cos_out_npu_nocheck(result, self);
-  }
-  return result;
+    return result;
 }
 
-at::Tensor cos(const at::Tensor& self) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
-  cos_out_npu_nocheck(result, self);
-  return result;
-}
-
-at::Tensor& cos_(at::Tensor& self) {
-  return acl_op::cos_out(self, self);
+at::Tensor &cos_(at::Tensor &self) {
+    return acl_op::cos_out(self, self);
 }
 } // namespace acl_op

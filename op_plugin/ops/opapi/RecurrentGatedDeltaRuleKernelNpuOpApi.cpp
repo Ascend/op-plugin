@@ -23,19 +23,11 @@ constexpr int INITIAL_STATE_DIM_NUM = 4;
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_recurrent_gated_delta_rule(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &value,
-    at::Tensor &state,
-    const c10::optional<at::Tensor> &beta,
-    const c10::optional<double> scale,
-    const c10::optional<at::Tensor> &actual_seq_lengths,
-    const c10::optional<at::Tensor> &ssm_state_indices,
-    const c10::optional<at::Tensor> &num_accepted_tokens,
-    const c10::optional<at::Tensor> &g,
-    const c10::optional<at::Tensor> &gk)
-{
+at::Tensor npu_recurrent_gated_delta_rule(const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
+    at::Tensor &state, const c10::optional<at::Tensor> &beta, const c10::optional<double> scale,
+    const c10::optional<at::Tensor> &actual_seq_lengths, const c10::optional<at::Tensor> &ssm_state_indices,
+    const c10::optional<at::Tensor> &num_accepted_tokens, const c10::optional<at::Tensor> &g,
+    const c10::optional<at::Tensor> &gk) {
     TORCH_CHECK(value.dim() == VALUE_DIM_NUM, "value dim should be ", VALUE_DIM_NUM, OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(scale.has_value(), "scale cannot be empty", OPS_ERROR(ErrCode::PARAM));
 
@@ -53,27 +45,20 @@ at::Tensor npu_recurrent_gated_delta_rule(
 
     float scale_real = static_cast<float>(scale.value());
 
-    EXEC_NPU_CMD(aclnnRecurrentGatedDeltaRule, query, key, value, beta, state, actual_seq_lengths, ssm_state_indices,
-                 g, gk, num_accepted_tokens, scale_real, outResult);
+    EXEC_NPU_CMD(aclnnRecurrentGatedDeltaRule, query, key, value, beta, state, actual_seq_lengths, ssm_state_indices, g,
+        gk, num_accepted_tokens, scale_real, outResult);
 
     return outResult;
 }
 
-std::tuple<at::Tensor, at::Tensor> npu_recurrent_gated_delta_rule_functional(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &value,
-    const at::Tensor &state,
-    const c10::optional<at::Tensor> &beta,
-    const c10::optional<double> scale,
-    const c10::optional<at::Tensor> &actual_seq_lengths,
-    const c10::optional<at::Tensor> &ssm_state_indices,
-    const c10::optional<at::Tensor> &num_accepted_tokens,
-    const c10::optional<at::Tensor> &g,
-    const c10::optional<at::Tensor> &gk)
-{
+std::tuple<at::Tensor, at::Tensor> npu_recurrent_gated_delta_rule_functional(const at::Tensor &query,
+    const at::Tensor &key, const at::Tensor &value, const at::Tensor &state, const c10::optional<at::Tensor> &beta,
+    const c10::optional<double> scale, const c10::optional<at::Tensor> &actual_seq_lengths,
+    const c10::optional<at::Tensor> &ssm_state_indices, const c10::optional<at::Tensor> &num_accepted_tokens,
+    const c10::optional<at::Tensor> &g, const c10::optional<at::Tensor> &gk) {
     TORCH_CHECK(value.dim() == VALUE_DIM_NUM, "value dim should be ", VALUE_DIM_NUM, OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(state.dim() == INITIAL_STATE_DIM_NUM, "initial_state dim should be ", INITIAL_STATE_DIM_NUM, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(state.dim() == INITIAL_STATE_DIM_NUM, "initial_state dim should be ", INITIAL_STATE_DIM_NUM,
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(scale.has_value(), "scale cannot be empty", OPS_ERROR(ErrCode::PARAM));
 
     auto t_dim = value.size(0);
@@ -91,10 +76,10 @@ std::tuple<at::Tensor, at::Tensor> npu_recurrent_gated_delta_rule_functional(
     at::Tensor state_inplace = state.clone();
     float scale_real = static_cast<float>(scale.value());
 
-    EXEC_NPU_CMD(aclnnRecurrentGatedDeltaRule, query, key, value, beta, state_inplace, actual_seq_lengths, ssm_state_indices,
-                 g, gk, num_accepted_tokens, scale_real, outResult);
+    EXEC_NPU_CMD(aclnnRecurrentGatedDeltaRule, query, key, value, beta, state_inplace, actual_seq_lengths,
+        ssm_state_indices, g, gk, num_accepted_tokens, scale_real, outResult);
 
     return std::tuple<at::Tensor, at::Tensor>(outResult, state_inplace);
 }
 
-}  // namespace op_api
+} // namespace op_api

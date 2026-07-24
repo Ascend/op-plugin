@@ -21,16 +21,14 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &ior_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor &ior_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &other) {
     string real_op_name = (self.dtype() == at::ScalarType::Bool) ? "LogicalOr" : "BitwiseOr";
     at_npu::native::OpCommand cmd;
     cmd.Name(real_op_name).Input(self).Input(other).Output(result).Run();
     return result;
 }
 
-at::Tensor &ior_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, at::Scalar other)
-{
+at::Tensor &ior_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, at::Scalar other) {
     string real_op_name = (self.dtype() == at::kBool) ? "LogicalOr" : "BitwiseOr";
     at_npu::native::OpCommand cmd;
     cmd.Name(real_op_name).Input(self).Input(other, self.scalar_type()).Output(result).Run();
@@ -38,8 +36,7 @@ at::Tensor &ior_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, at::
 }
 } // namespace
 
-at::Tensor &__ior__(at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor &__ior__(at::Tensor &self, const at::Tensor &other) {
     npu_preparation::CheckMemory({self, other}, {self});
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
@@ -51,8 +48,7 @@ at::Tensor &__ior__(at::Tensor &self, const at::Tensor &other)
     return self;
 }
 
-at::Tensor &__ior__(at::Tensor &self, const at::Scalar &other)
-{
+at::Tensor &__ior__(at::Tensor &self, const at::Scalar &other) {
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
         ior_out_npu_nocheck(contiguous_self, contiguous_self, other);

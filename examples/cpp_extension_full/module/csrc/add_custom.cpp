@@ -17,8 +17,7 @@ using torch::autograd::AutogradContext;
 using variable_list = std::vector<at::Tensor>;
 
 // 为NPU设备注册前向实现
-at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_npu(const at::Tensor &self, const at::Tensor &other) {
     const c10::OptionalDeviceGuard device_guard(device_of(self));
     // 创建输出内存
     at::Tensor result = at::empty_like(self);
@@ -31,8 +30,7 @@ at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
 }
 
 // 为NPU设备注册反向实现
-std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor& grad)
-{
+std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor &grad) {
     const c10::OptionalDeviceGuard device_guard(device_of(grad));
     at::Tensor result = grad; // 创建输出内存
 
@@ -40,14 +38,12 @@ std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor
 }
 
 // 为Meta设备注册前向实现
-at::Tensor add_custom_impl_meta(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_meta(const at::Tensor &self, const at::Tensor &other) {
     return at::empty_like(self);
 }
 
 // 为Meta设备注册反向实现
-std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tensor& self)
-{
+std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tensor &self) {
     auto result = at::empty_like(self);
     return std::make_tuple(result, result);
 }

@@ -20,8 +20,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-int64_t adaptive_avg_pool2d_backward_safe_size(const at::Tensor &self)
-{
+int64_t adaptive_avg_pool2d_backward_safe_size(const at::Tensor &self) {
     c10::SmallVector<int64_t, N> dims = {-2, -1};
 
     int64_t size = 1;
@@ -37,11 +36,9 @@ int64_t adaptive_avg_pool2d_backward_safe_size(const at::Tensor &self)
     return size;
 }
 
-at::Tensor &adaptive_avg_pool2d_backward_out_nocheck(at::Tensor &result, const at::Tensor &grad_output,
-                                                     const at::Tensor &self)
-{
-    TORCH_CHECK(grad_output.dim() >= 2, "The grad_output should be at least 2D"
-        + OPS_ERROR(ErrCode::PARAM));
+at::Tensor &adaptive_avg_pool2d_backward_out_nocheck(
+    at::Tensor &result, const at::Tensor &grad_output, const at::Tensor &self) {
+    TORCH_CHECK(grad_output.dim() >= 2, "The grad_output should be at least 2D" + OPS_ERROR(ErrCode::PARAM));
     if (grad_output.size(grad_output.dim() - 2) == 1 && grad_output.size(grad_output.dim() - 1) == 1) {
         result.fill_(1.0 / adaptive_avg_pool2d_backward_safe_size(self));
         result.mul_(grad_output);
@@ -57,8 +54,7 @@ at::Tensor &adaptive_avg_pool2d_backward_out_nocheck(at::Tensor &result, const a
 }
 } // namespace
 
-at::Tensor _adaptive_avg_pool2d_backward(const at::Tensor &grad_output, const at::Tensor &self)
-{
+at::Tensor _adaptive_avg_pool2d_backward(const at::Tensor &grad_output, const at::Tensor &self) {
     at::Tensor result = npu_preparation::apply_tensor(self);
     adaptive_avg_pool2d_backward_out_nocheck(result, grad_output, self);
     return result;

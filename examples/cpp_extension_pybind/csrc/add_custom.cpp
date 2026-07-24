@@ -17,8 +17,7 @@ using torch::autograd::AutogradContext;
 using variable_list = std::vector<at::Tensor>;
 
 // 为NPU设备注册前向实现
-at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_npu(const at::Tensor &self, const at::Tensor &other) {
     const c10::OptionalDeviceGuard device_guard(device_of(self));
     // 创建输出内存
     at::Tensor result = at::empty_like(self);
@@ -31,8 +30,6 @@ at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
 }
 
 // expose Ascend custom ops to Python
-PYBIND11_MODULE(custom_ops_lib, m)
-{
+PYBIND11_MODULE(custom_ops_lib, m) {
     m.def("add_custom", &add_custom_impl_npu, "");
 }
-

@@ -20,17 +20,22 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias, int64_t pad)
-{
+at::Tensor conv_tbc(const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias, int64_t pad) {
     TORCH_CHECK(self.dim() == 3, "Input must have 3 dims: time, batch, in_channel." + OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(weight.dim() == 3, "Weight tensor must have 3 dims: kernel_width,"
-        " in_channels, out_channels." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.dim() == 3,
+        "Weight tensor must have 3 dims: kernel_width,"
+        " in_channels, out_channels." +
+            OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(bias.dim() == 1, "Bias must be 1-D." + OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(self.size(2) == weight.size(1), "Input dim 2 (input channels) "
-        "is not == dim 1 in the weight tenso." + OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(weight.size(2) == bias.size(0), "Bias size must equal dim 2 in "
-        "the weight tensor (output channels)." + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(self.size(2) == weight.size(1),
+        "Input dim 2 (input channels) "
+        "is not == dim 1 in the weight tenso." +
+            OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(weight.size(2) == bias.size(0),
+        "Bias size must equal dim 2 in "
+        "the weight tensor (output channels)." +
+            OPS_ERROR(ErrCode::PARAM));
 
     int64_t C = weight.size(2);
     int64_t W = (self.size(0) + 2 * pad - (weight.size(0) - 1) - 1) + 1;

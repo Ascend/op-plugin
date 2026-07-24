@@ -21,8 +21,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, at::Scalar other)
-{
+at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, at::Scalar other) {
     at::Tensor other_tensor = npu_preparation::apply_tensor(self);
     at::Tensor other_broadcast = acl_op::fill_(other_tensor, other);
     at_npu::native::OpCommand cmd;
@@ -30,8 +29,7 @@ at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, at::Scalar oth
     return result;
 }
 
-at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, const at::Tensor &other) {
     at::Tensor other_broadcast = other.expand(self.sizes());
     at_npu::native::OpCommand cmd;
     cmd.Name("LeftShift").Input(self).Input(other_broadcast).Output(result).Run();
@@ -39,8 +37,7 @@ at::Tensor &ilshift_out_npu(at::Tensor &result, at::Tensor &self, const at::Tens
 }
 } // namespace
 
-at::Tensor &__ilshift__(at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor &__ilshift__(at::Tensor &self, const at::Tensor &other) {
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
         ilshift_out_npu(contiguous_self, contiguous_self, other);
@@ -51,8 +48,7 @@ at::Tensor &__ilshift__(at::Tensor &self, const at::Tensor &other)
     return self;
 }
 
-at::Tensor &__ilshift__(at::Tensor &self, const at::Scalar &other)
-{
+at::Tensor &__ilshift__(at::Tensor &self, const at::Scalar &other) {
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);
         ilshift_out_npu(contiguous_self, contiguous_self, other);

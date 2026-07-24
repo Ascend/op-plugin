@@ -21,23 +21,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& cosh_out_npu_nocheck(at::Tensor& out, const at::Tensor& self)
-{
+at::Tensor &cosh_out_npu_nocheck(at::Tensor &out, const at::Tensor &self) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("Cosh")
-        .Input(self)
-        .Output(out)
-        .Run();
+    cmd.Name("Cosh").Input(self).Output(out).Run();
     return out;
 }
 } // namespace
 
-at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& out)
-{
-    npu_preparation::CheckOut(
-        {self},
-        out,
-        self);
+at::Tensor &cosh_out(const at::Tensor &self, at::Tensor &out) {
+    npu_preparation::CheckOut({self}, out, self);
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         cosh_out_npu_nocheck(contiguous_result, self);
@@ -48,15 +40,13 @@ at::Tensor& cosh_out(const at::Tensor& self, at::Tensor& out)
     return out;
 }
 
-at::Tensor cosh(const at::Tensor& self)
-{
+at::Tensor cosh(const at::Tensor &self) {
     at::Tensor out = npu_preparation::apply_tensor(self);
     cosh_out_npu_nocheck(out, self);
     return out;
 }
 
-at::Tensor& cosh_(at::Tensor& self)
-{
+at::Tensor &cosh_(at::Tensor &self) {
     return acl_op::cosh_out(self, self);
 }
 

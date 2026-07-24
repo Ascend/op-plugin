@@ -17,8 +17,7 @@ using torch::autograd::AutogradContext;
 using variable_list = std::vector<at::Tensor>;
 
 // 为NPU设备注册前向实现
-at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_npu(const at::Tensor &self, const at::Tensor &other) {
     // 创建输出内存
     at::Tensor result = at::empty_like(self);
 
@@ -30,55 +29,49 @@ at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
 }
 
 // 为NPU设备注册反向实现
-std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor& grad)
-{
+std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor &grad) {
     at::Tensor result = grad; // 创建输出内存
 
     return {result, result};
 }
 
 // 为Meta设备注册前向实现
-at::Tensor add_custom_impl_meta(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_meta(const at::Tensor &self, const at::Tensor &other) {
     return at::empty_like(self);
 }
 
 // 为Meta设备注册反向实现
-std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tensor& self)
-{
+std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_meta(const at::Tensor &self) {
     auto result = at::empty_like(self);
     return std::make_tuple(result, result);
 }
 
 // 通过继承torch::autograd::Function类实现前反向绑定
 class AddCustomFunction : public torch::autograd::Function<AddCustomFunction> {
-public:
-    static at::Tensor forward(AutogradContext *ctx, at::Tensor self, at::Tensor other)
-    {
+  public:
+    static at::Tensor forward(AutogradContext *ctx, at::Tensor self, at::Tensor other) {
         at::AutoDispatchBelowADInplaceOrView guard;
         static auto op = torch::Dispatcher::singleton()
-                        .findSchemaOrThrow("myops::add_custom", "")
-                        .typed<decltype(add_custom_impl_npu)>();
+                             .findSchemaOrThrow("myops::add_custom", "")
+                             .typed<decltype(add_custom_impl_npu)>();
 
         auto result = op.call(self, other);
         return result;
     }
 
-    static variable_list backward(AutogradContext *ctx, variable_list grad_outputs)
-    {
+    static variable_list backward(AutogradContext *ctx, variable_list grad_outputs) {
         auto grad_output = grad_outputs[0];
 
         static auto op = torch::Dispatcher::singleton()
-                                        .findSchemaOrThrow("myops::add_custom_backward", "")
-                        .typed<decltype(add_custom_backward_impl_npu)>();
+                             .findSchemaOrThrow("myops::add_custom_backward", "")
+                             .typed<decltype(add_custom_backward_impl_npu)>();
         auto result = op.call(grad_output);
         return {std::get<0>(result), std::get<1>(result)};
     }
 };
 
 // 使用的时候调用apply()方法
-at::Tensor add_custom_autograd(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_autograd(const at::Tensor &self, const at::Tensor &other) {
     return AddCustomFunction::apply(self, other);
 }
 

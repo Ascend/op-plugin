@@ -14,11 +14,14 @@ UseTab: Never
 PointerAlignment: Right
 ReferenceAlignment: Right
 
-# ====================== if/for/while语句必须加大括号 ======================
-InsertBraces: true
+# ====================== if/for/while语句格式（不自动加大括号，避免破坏宏结构）======================
+# InsertBraces: true                # 已屏蔽：自动给单行 if/for 加 {}，在宏/条件编译中有风险
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty  # 仅允许空函数体 {} 合并到一行，防止短函数被压成单行
+AllowShortLambdasOnASingleLine: Empty    # 同上，防止短 lambda 被压成单行
+AllowShortEnumsOnASingleLine: false      # enum 不允许单行
 
 # ====================== 表达式换行保持一致性，运算符放行末 ======================
 BreakBeforeBinaryOperators: None

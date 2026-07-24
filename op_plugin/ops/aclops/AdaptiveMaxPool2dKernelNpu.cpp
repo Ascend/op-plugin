@@ -25,37 +25,30 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-inline void adaptive_max_pool2d_check(const at::Tensor& self, at::IntArrayRef output_size)
-{
+inline void adaptive_max_pool2d_check(const at::Tensor &self, at::IntArrayRef output_size) {
     for (int64_t i = 0; i < self.dim(); i++) {
-        TORCH_CHECK(
-            self.size(i) > 0,
+        TORCH_CHECK(self.size(i) > 0,
             "adaptive_max_pooling2d(): expected input to have non-empty spatial dimensions, "
             "but input has sizes ",
-            self.sizes(),
-            " with dimension ",
-            i,
+            self.sizes(), " with dimension ", i,
             " being "
-            "empty" + OPS_ERROR(ErrCode::PARAM));
+            "empty" +
+                OPS_ERROR(ErrCode::PARAM));
     }
-    TORCH_CHECK(
-        (self.dim() == DIMENSION_3D || self.dim() == DIMENSION_4D),
+    TORCH_CHECK((self.dim() == DIMENSION_3D || self.dim() == DIMENSION_4D),
         "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(
-        (output_size.size() == OUTPUT_SIZE),
+    TORCH_CHECK((output_size.size() == OUTPUT_SIZE),
         "adaptive_max_pool2d: internal error: output_size.size() must be 2" + OPS_ERROR(ErrCode::PARAM));
 }
 
 std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> adaptive_max_pool2d_infer_size(
-    const at::Tensor& self,
-    at::IntArrayRef output_size)
-{
+    const at::Tensor &self, at::IntArrayRef output_size) {
     int64_t n = (self.dim() == DIMENSION_4D) ? self.size(0) : 1;
     int64_t c = (self.dim() == DIMENSION_4D) ? self.size(1) : self.size(0);
     int64_t h = (self.dim() == DIMENSION_4D) ? self.size(2) : self.size(1);
     int64_t w = (self.dim() == DIMENSION_4D) ? self.size(3) : self.size(2);
-    TORCH_CHECK(output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero"
-        + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(
+        output_size[0] != 0 && output_size[1] != 0, "out put size cannot not be Zero" + OPS_ERROR(ErrCode::PARAM));
     int64_t stride_h = h / output_size[0];
     int64_t stride_w = w / output_size[1];
     int64_t kernel_size_h = h - (output_size[0] - 1) * stride_h;
@@ -71,12 +64,8 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ada
     return std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>>(output_sizes, indices_size);
 }
 
-std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
-    at::Tensor& output,
-    at::Tensor& indices,
-    const at::Tensor& self,
-    at::IntArrayRef output_size)
-{
+std::tuple<at::Tensor &, at::Tensor &> adaptive_max_pool2d_out_nocheck(
+    at::Tensor &output, at::Tensor &indices, const at::Tensor &self, at::IntArrayRef output_size) {
     npu_preparation::CheckMemory({self}, {output, indices});
     auto inputsize = self.sizes();
     c10::SmallVector<int64_t, N> input_size;
@@ -122,31 +111,18 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out_nocheck(
         .Attr("ceil_mode", ceil_mode)
         .Run();
 
-    return std::tuple<at::Tensor&, at::Tensor&>(output, indices);
+    return std::tuple<at::Tensor &, at::Tensor &>(output, indices);
 }
 } // namespace
 
-std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
-    const at::Tensor& self,
-    at::IntArrayRef output_size,
-    at::Tensor& out,
-    at::Tensor& indices)
-{
+std::tuple<at::Tensor &, at::Tensor &> adaptive_max_pool2d_out(
+    const at::Tensor &self, at::IntArrayRef output_size, at::Tensor &out, at::Tensor &indices) {
     adaptive_max_pool2d_check(self, output_size);
     c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
     c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
 
-    npu_preparation::CheckOut(
-        {self},
-        out,
-        self,
-        output_sizes);
-    npu_preparation::CheckOut(
-        {self},
-        indices,
-        ACL_FORMAT_NC1HWC0,
-        at::ScalarType::Long,
-        indices_size);
+    npu_preparation::CheckOut({self}, out, self, output_sizes);
+    npu_preparation::CheckOut({self}, indices, ACL_FORMAT_NC1HWC0, at::ScalarType::Long, indices_size);
 
     bool out_match = npu_utils::check_match(&out);
     bool indices_match = npu_utils::check_match(&indices);
@@ -164,19 +140,16 @@ std::tuple<at::Tensor&, at::Tensor&> adaptive_max_pool2d_out(
         adaptive_max_pool2d_out_nocheck(out, indices, self, output_size);
     }
 
-    return std::tuple<at::Tensor&, at::Tensor&>(out, indices);
+    return std::tuple<at::Tensor &, at::Tensor &>(out, indices);
 }
 
-std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(
-    const at::Tensor& self,
-    at::IntArrayRef output_size)
-{
+std::tuple<at::Tensor, at::Tensor> adaptive_max_pool2d(const at::Tensor &self, at::IntArrayRef output_size) {
     adaptive_max_pool2d_check(self, output_size);
     c10::SmallVector<int64_t, SIZE> output_sizes = std::get<0>(adaptive_max_pool2d_infer_size(self, output_size));
     c10::SmallVector<int64_t, SIZE> indices_size = std::get<1>(adaptive_max_pool2d_infer_size(self, output_size));
     at::Tensor output = npu_preparation::apply_tensor(self, output_sizes);
-    at::Tensor indices = npu_preparation::apply_tensor_with_format(indices_size,
-        self.options().dtype(at::kShort), ACL_FORMAT_NC1HWC0);
+    at::Tensor indices =
+        npu_preparation::apply_tensor_with_format(indices_size, self.options().dtype(at::kShort), ACL_FORMAT_NC1HWC0);
     adaptive_max_pool2d_out_nocheck(output, indices, self, output_size);
 
     return std::tuple<at::Tensor, at::Tensor>(output, indices);

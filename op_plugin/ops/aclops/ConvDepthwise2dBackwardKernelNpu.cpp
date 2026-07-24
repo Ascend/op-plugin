@@ -20,16 +20,9 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-void _conv_depthwise2d_backward_input_out_nocheck(
-    at::Tensor& grad_input,
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef dilation)
-{
+void _conv_depthwise2d_backward_input_out_nocheck(at::Tensor &grad_input, const at::Tensor &grad_output,
+    const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size, at::IntArrayRef stride,
+    at::IntArrayRef padding, at::IntArrayRef dilation) {
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};
@@ -44,20 +37,13 @@ void _conv_depthwise2d_backward_input_out_nocheck(
         .Attr("strides", strides_size)
         .Attr("pads", paddings)
         .Attr("dilations", dilations)
-        .Attr("data_format", (string)"NCHW")
+        .Attr("data_format", (string) "NCHW")
         .Run();
 }
 
-void _conv_depthwise2d_backward_weight_out_nocheck(
-    at::Tensor& grad_weight,
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef dilation)
-{
+void _conv_depthwise2d_backward_weight_out_nocheck(at::Tensor &grad_weight, const at::Tensor &grad_output,
+    const at::Tensor &self, const at::Tensor &weight, at::IntArrayRef kernel_size, at::IntArrayRef stride,
+    at::IntArrayRef padding, at::IntArrayRef dilation) {
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
     c10::SmallVector<int64_t, N> paddings = {padding[0], padding[0], padding[1], padding[1]};
     c10::SmallVector<int64_t, N> dilations = {1, 1, dilation[0], dilation[1]};
@@ -72,21 +58,14 @@ void _conv_depthwise2d_backward_weight_out_nocheck(
         .Attr("strides", strides_size)
         .Attr("pads", paddings)
         .Attr("dilations", dilations)
-        .Attr("data_format", (string)"NCHW")
+        .Attr("data_format", (string) "NCHW")
         .Run();
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor> _conv_depthwise2d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    at::IntArrayRef kernel_size,
-    at::IntArrayRef stride,
-    at::IntArrayRef padding,
-    at::IntArrayRef dilation,
-    std::array<bool, 2> output_mask)
-{
+std::tuple<at::Tensor, at::Tensor> _conv_depthwise2d_backward(const at::Tensor &grad_output, const at::Tensor &self,
+    const at::Tensor &weight, at::IntArrayRef kernel_size, at::IntArrayRef stride, at::IntArrayRef padding,
+    at::IntArrayRef dilation, std::array<bool, 2> output_mask) {
     at::Tensor grad_input;
     at::Tensor grad_weight;
     if (output_mask[0]) {
@@ -107,6 +86,6 @@ std::tuple<at::Tensor, at::Tensor> _conv_depthwise2d_backward(
             grad_weight, grad_output, self, weight_ex, kernel_size, stride, padding, dilation);
     }
 
-    return std::make_tuple<at::Tensor&, at::Tensor&>(grad_input, grad_weight);
+    return std::make_tuple<at::Tensor &, at::Tensor &>(grad_input, grad_weight);
 }
 } // namespace acl_op

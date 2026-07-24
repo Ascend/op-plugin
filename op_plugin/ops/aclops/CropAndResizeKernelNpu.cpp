@@ -19,13 +19,8 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor crop_and_resize(
-    const at::Tensor& self,
-    c10::optional<c10::ArrayRef<double>> boxes,
-    at::IntArrayRef box_index,
-    at::IntArrayRef crop_size,
-    double extrapolation_value,
-    c10::string_view method) {
+at::Tensor crop_and_resize(const at::Tensor &self, c10::optional<c10::ArrayRef<double>> boxes,
+    at::IntArrayRef box_index, at::IntArrayRef crop_size, double extrapolation_value, c10::string_view method) {
     TORCH_CHECK(boxes.has_value(), "[boxes] should be mandatory" + OPS_ERROR(ErrCode::VALUE));
     auto output_size = op_infer::crop_and_resize_npu_output_size(self, box_index, crop_size);
     at::Tensor result = npu_preparation::apply_tensor(self, output_size);

@@ -21,35 +21,28 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor ones_like(const at::Tensor &self,
-                     c10::optional<c10::ScalarType> dtype_opt,
-                     c10::optional<c10::Layout> layout_opt,
-                     c10::optional<c10::Device> device_opt,
-                     c10::optional<bool> pin_memory_opt,
-                     c10::optional<c10::MemoryFormat> optional_memory_format) {
-    DO_COMPATIBILITY(aclnnInplaceOne, acl_op::ones_like(self, dtype_opt, layout_opt, device_opt,
-                                                        pin_memory_opt, optional_memory_format));
+at::Tensor ones_like(const at::Tensor &self, c10::optional<c10::ScalarType> dtype_opt,
+    c10::optional<c10::Layout> layout_opt, c10::optional<c10::Device> device_opt, c10::optional<bool> pin_memory_opt,
+    c10::optional<c10::MemoryFormat> optional_memory_format) {
+    DO_COMPATIBILITY(aclnnInplaceOne,
+        acl_op::ones_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format));
     auto device = c10::device_or_default(device_opt);
     if (!torch_npu::utils::is_npu(device)) {
         auto result = at::empty_like(self, dtype_opt, layout_opt, device_opt, pin_memory_opt, optional_memory_format);
         return result.fill_(1);
     }
-    c10::TensorOptions options_ = c10::TensorOptions().dtype(dtype_opt)
-                                                    .device(device_opt)
-                                                    .layout(layout_opt)
-                                                    .pinned_memory(pin_memory_opt);
-    c10::TensorOptions options = self.options()
-                                 .merge_in(options_)
-                                 .merge_memory_format(optional_memory_format);
+    c10::TensorOptions options_ =
+        c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
+    c10::TensorOptions options = self.options().merge_in(options_).merge_memory_format(optional_memory_format);
     at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), options);
     EXEC_NPU_CMD(aclnnInplaceOne, result);
     at::namedinference::propagate_names(result, self);
     return result;
 }
 
-at::Tensor& one_(at::Tensor &self) {
-  DO_COMPATIBILITY(aclnnInplaceOne, acl_op::one_(self));
-  EXEC_NPU_CMD(aclnnInplaceOne, self);
-  return self;
+at::Tensor &one_(at::Tensor &self) {
+    DO_COMPATIBILITY(aclnnInplaceOne, acl_op::one_(self));
+    EXEC_NPU_CMD(aclnnInplaceOne, self);
+    return self;
 }
 } // namespace op_api

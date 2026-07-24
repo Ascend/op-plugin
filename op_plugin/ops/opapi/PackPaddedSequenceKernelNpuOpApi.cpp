@@ -9,9 +9,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 const int DIMENSION_2D = 2;
-std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input, const at::Tensor &lengths,
-                                                         bool batch_first)
-{
+std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(
+    const at::Tensor &input, const at::Tensor &lengths, bool batch_first) {
     TORCH_CHECK(input.dim() >= DIMENSION_2D, "Input must have two dims.", input.dim(), OPS_ERROR(ErrCode::PARAM));
     // get the size of B and T, the input size is [T, B, *] or [B, T, *]
     auto batchsize = batch_first ? input.size(0) : input.size(1);
@@ -19,18 +18,18 @@ std::tuple<at::Tensor, at::Tensor> _pack_padded_sequence(const at::Tensor &input
 
     TORCH_CHECK(input.numel() > 0, "Cannot pack empty tensors." + OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(input.numel() < std::numeric_limits<int64_t>::max(),
-                "Input tensor contain more than the max number of int64." + OPS_ERROR(ErrCode::PARAM));
+        "Input tensor contain more than the max number of int64." + OPS_ERROR(ErrCode::PARAM));
 
     TORCH_CHECK(lengths.size(0) == batchsize, "Expected 'len(lengths)' to be equal to batch_size, but got ",
-                lengths.size(0), " (batch_size=", batchsize, ")" + OPS_ERROR(ErrCode::PARAM));
+        lengths.size(0), " (batch_size=", batchsize, ")" + OPS_ERROR(ErrCode::PARAM));
 
-    TORCH_CHECK(lengths.device().type() == at::kCPU,
-                "'lengths' argument should be a CPU tensor, but got ",
-                lengths.device().str(), " tensor" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(lengths.device().type() == at::kCPU, "'lengths' argument should be a CPU tensor, but got ",
+        lengths.device().str(), " tensor" + OPS_ERROR(ErrCode::PARAM));
     auto lengths_vec = lengths.contiguous().data_ptr<int64_t>();
     TORCH_CHECK(lengths_vec != nullptr && lengths_vec[batchsize - 1] > 0,
-                "Length of all samples has to be greater than 0, but found an element "
-                "in 'lengths' that is <= 0" + OPS_ERROR(ErrCode::PARAM));
+        "Length of all samples has to be greater than 0, but found an element "
+        "in 'lengths' that is <= 0" +
+            OPS_ERROR(ErrCode::PARAM));
 
     // According to the TMG decision, adaptation avoidance scheme I
     // is temporarily adopted to retain the filling within effective T0,

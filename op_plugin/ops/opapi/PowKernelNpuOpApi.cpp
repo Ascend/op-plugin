@@ -22,9 +22,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type,
-                                        const c10::Device device)
-{
+static at::Tensor self_tensor_to_device(
+    const at::Tensor &tensor, const at::ScalarType result_type, const c10::Device device) {
     if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
         (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
         at::Scalar scalar = tensor.item();
@@ -33,14 +32,12 @@ static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::Scal
     return tensor;
 }
 
-static at::Tensor pow_dest_output(const at::Tensor &self, const at::Tensor &exponent)
-{
+static at::Tensor pow_dest_output(const at::Tensor &self, const at::Tensor &exponent) {
     bool isSelfWrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
     return isSelfWrapped ? exponent : self;
 }
 
-static at::Tensor &pow_out_npu_nocheck(const at::Tensor &self, const at::Tensor &exponent, at::Tensor &out)
-{
+static at::Tensor &pow_out_npu_nocheck(const at::Tensor &self, const at::Tensor &exponent, at::Tensor &out) {
     if (exponent.dim() == 0 && !torch_npu::utils::is_npu(exponent)) {
         c10::Scalar exponent_scalar = exponent.item();
         EXEC_NPU_CMD(aclnnPowTensorScalar, self, exponent_scalar, out);
@@ -50,8 +47,7 @@ static at::Tensor &pow_out_npu_nocheck(const at::Tensor &self, const at::Tensor 
     return out;
 }
 
-static at::Tensor &inplace_pow_out_npu_nocheck(at::Tensor &self, const at::Tensor &exponent)
-{
+static at::Tensor &inplace_pow_out_npu_nocheck(at::Tensor &self, const at::Tensor &exponent) {
     if (exponent.dim() == 0 && !torch_npu::utils::is_npu(exponent)) {
         c10::Scalar exponent_scalar = exponent.item();
         EXEC_NPU_CMD(aclnnInplacePowTensorScalar, self, exponent_scalar);
@@ -61,8 +57,7 @@ static at::Tensor &inplace_pow_out_npu_nocheck(at::Tensor &self, const at::Tenso
     return self;
 }
 
-at::Tensor pow(const at::Tensor &self, const at::Tensor &exponent)
-{
+at::Tensor pow(const at::Tensor &self, const at::Tensor &exponent) {
     DO_COMPATIBILITY(aclnnPowTensorTensor, acl_op::pow(self, exponent));
     std::vector<at::Tensor> tensor_list = {self, exponent};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
@@ -72,16 +67,15 @@ at::Tensor pow(const at::Tensor &self, const at::Tensor &exponent)
     at::ScalarType result_type = at::native::result_type(self, exponent);
     at::Tensor self_cp = self_tensor_to_device(self, result_type, output_tensor.device());
     // construct the output tensor of the NPU
-    at::Tensor out = npu_preparation::apply_tensor_without_format(output_size,
-                                                                  output_tensor.options().dtype(result_type));
+    at::Tensor out =
+        npu_preparation::apply_tensor_without_format(output_size, output_tensor.options().dtype(result_type));
     // calculate the output result of the NPU
     pow_out_npu_nocheck(self_cp, exponent, out);
     at::namedinference::propagate_names_if_nonempty(out, maybe_names);
     return out;
 }
 
-at::Tensor &pow_out(const at::Tensor &self, const at::Tensor &exponent, at::Tensor &out)
-{
+at::Tensor &pow_out(const at::Tensor &self, const at::Tensor &exponent, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnPowTensorTensor, acl_op::pow_out(self, exponent, out));
     std::vector<at::Tensor> tensor_list = {self, exponent};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);
@@ -96,8 +90,7 @@ at::Tensor &pow_out(const at::Tensor &self, const at::Tensor &exponent, at::Tens
     return out;
 }
 
-at::Tensor &pow_(at::Tensor &self, const at::Tensor &exponent)
-{
+at::Tensor &pow_(at::Tensor &self, const at::Tensor &exponent) {
     DO_COMPATIBILITY(aclnnInplacePowTensorTensor, acl_op::pow_(self, exponent));
     std::vector<at::Tensor> tensor_list = {self, exponent};
     auto maybe_names = op_plugin::utils::compute_names_npu(tensor_list);

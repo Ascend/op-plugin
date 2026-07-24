@@ -12,6 +12,6 @@
 
 #include <ATen/ATen.h>
 
-at::Tensor add_custom_autograd(const at::Tensor& self, const at::Tensor& other);
+at::Tensor add_custom_autograd(const at::Tensor &self, const at::Tensor &other);
 
 #endif //  FUNCTION_H

@@ -21,9 +21,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 #if VERSION_BETWEEN(V2R1, V2R6)
 const at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor &weight, c10::IntArrayRef kernel_size,
-                                        const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride,
-                                        c10::IntArrayRef padding, c10::IntArrayRef dilation, const at::Tensor &result)
-{
+    const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride, c10::IntArrayRef padding,
+    c10::IntArrayRef dilation, const at::Tensor &result) {
     TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
@@ -33,7 +32,9 @@ const at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor
     TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
 
-    const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
+    const at::Tensor &bias = c10::value_or_else(bias_opt, [] {
+        return at::Tensor();
+    });
     const at::Tensor &weight_modify = weight.permute({1, 0, 2, 3});
 
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
@@ -58,9 +59,8 @@ const at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor
 
 #if VERSION_BETWEEN(V2R7, VERSION_NEWEST)
 at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor &weight, c10::IntArrayRef kernel_size,
-                                  const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride,
-                                  c10::IntArrayRef padding, c10::IntArrayRef dilation, at::Tensor &result)
-{
+    const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride, c10::IntArrayRef padding,
+    c10::IntArrayRef dilation, at::Tensor &result) {
     TORCH_CHECK(weight.dim() >= 4, "weight has to be more than 4D, but got Tensor of dimension ", weight.dim(),
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2, "stride has to contain more than 2 elements, but got ", stride.size(),
@@ -70,7 +70,9 @@ at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor &weig
     TORCH_CHECK(dilation.size() >= 2, "dilation has to contain more than 2 elements, but got ", dilation.size(),
         OPS_ERROR(ErrCode::PARAM));
 
-    const at::Tensor &bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
+    const at::Tensor &bias = c10::value_or_else(bias_opt, [] {
+        return at::Tensor();
+    });
     const at::Tensor &weight_modify = weight.permute({1, 0, 2, 3});
 
     c10::SmallVector<int64_t, N> strides_size = {1, 1, stride[0], stride[1]};
@@ -94,9 +96,8 @@ at::Tensor &_conv_depthwise2d_out(const at::Tensor &self, const at::Tensor &weig
 #endif
 
 at::Tensor _conv_depthwise2d(const at::Tensor &self, const at::Tensor &weight, c10::IntArrayRef kernel_size,
-                             const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride,
-                             c10::IntArrayRef padding, c10::IntArrayRef dilation)
-{
+    const c10::optional<at::Tensor> &bias_opt, c10::IntArrayRef stride, c10::IntArrayRef padding,
+    c10::IntArrayRef dilation) {
     TORCH_CHECK(self.dim() >= 4, "self has to be more than 4D, but got Tensor of dimension ", self.dim(),
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() >= 2, "kernel_size has to contain more than 2 elements, but got ",
@@ -115,10 +116,8 @@ at::Tensor _conv_depthwise2d(const at::Tensor &self, const at::Tensor &weight, c
     int64_t Ho = (H + 2 * padding[0] - dilation[0] * (kernel_size[0] - 1) - 1) / stride[0] + 1;
     int64_t Wo = (W + 2 * padding[1] - dilation[1] * (kernel_size[1] - 1) - 1) / stride[1] + 1;
 
-    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho,
-        OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo,
-        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Ho > 0, "Ho has to be positive, but got ", Ho, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(Wo > 0, "Wo has to be positive, but got ", Wo, OPS_ERROR(ErrCode::VALUE));
 
     c10::SmallVector<int64_t, SIZE> output_size = {N, Co, Ho, Wo};
     int64_t result_format = self.dtype() == at::kHalf ? ACL_FORMAT_NC1HWC0 : ACL_FORMAT_ND;

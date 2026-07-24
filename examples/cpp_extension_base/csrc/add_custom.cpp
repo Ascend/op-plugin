@@ -17,8 +17,7 @@ using torch::autograd::AutogradContext;
 using variable_list = std::vector<at::Tensor>;
 
 // 为NPU设备注册前向实现
-at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor add_custom_impl_npu(const at::Tensor &self, const at::Tensor &other) {
     // 加device_guard保障在正常的device上访问
     const c10::OptionalDeviceGuard device_guard(device_of(self));
     // 创建输出内存
@@ -30,7 +29,6 @@ at::Tensor add_custom_impl_npu(const at::Tensor& self, const at::Tensor& other)
     EXEC_NPU_CMD_EXT(aclnnAdd, self, other, alpha, result);
     return result;
 }
-
 
 // 为NPU设备注册前反向实现
 // NPU设备在pytorch 2.1及以上版本使用的设备名称是PrivateUse1，在2.1以下版本用的是XLA，如果是2.1以下版本PrivateUse1需要改成XLA

@@ -22,9 +22,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &adaptive_max_pool2d_backward_out_nocheck(at::Tensor &grad_input, const at::Tensor &grad_output,
-                                                     const at::Tensor &self, const at::Tensor &indices)
-{
+at::Tensor &adaptive_max_pool2d_backward_out_nocheck(
+    at::Tensor &grad_input, const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices) {
     auto inputsize = self.sizes();
     c10::SmallVector<int64_t, N> input_size;
     if (inputsize.size() == 3) {
@@ -35,8 +34,8 @@ at::Tensor &adaptive_max_pool2d_backward_out_nocheck(at::Tensor &grad_input, con
         input_size = at::IntArrayRef(size);
     }
     TORCH_CHECK(grad_output.dim() >= 2, "The grad_output should be at least 2D" + OPS_ERROR(ErrCode::PARAM));
-    c10::SmallVector<int64_t, N> output_size = {grad_output.size(grad_output.dim() - 2),
-                                                grad_output.size(grad_output.dim() - 1)};
+    c10::SmallVector<int64_t, N> output_size = {
+        grad_output.size(grad_output.dim() - 2), grad_output.size(grad_output.dim() - 1)};
 
     // H and W can not be divided, temporarily reported error processing
     TORCH_CHECK(input_size[0] % output_size[0] == 0 && input_size[1] % output_size[1] == 0,
@@ -75,13 +74,12 @@ at::Tensor &adaptive_max_pool2d_backward_out_nocheck(at::Tensor &grad_input, con
 }
 } // namespace
 
-at::Tensor &adaptive_max_pool2d_backward_out(const at::Tensor &grad_output, const at::Tensor &self,
-                                             const at::Tensor &indices, at::Tensor &grad_input)
-{
-    TORCH_CHECK((self.dim() == 3 || self.dim() == 4), "non-empty 3D or 4D (batch mode) tensor expected for input"
-        + OPS_ERROR(ErrCode::PARAM));
-    npu_preparation::CheckOut({grad_output, self, indices}, grad_input, ACL_FORMAT_NC1HWC0, self.scalar_type(),
-                              self.sizes());
+at::Tensor &adaptive_max_pool2d_backward_out(
+    const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices, at::Tensor &grad_input) {
+    TORCH_CHECK((self.dim() == 3 || self.dim() == 4),
+        "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
+    npu_preparation::CheckOut(
+        {grad_output, self, indices}, grad_input, ACL_FORMAT_NC1HWC0, self.scalar_type(), self.sizes());
     if (!npu_utils::check_match(&grad_input)) {
         at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);
         adaptive_max_pool2d_backward_out_nocheck(contiguous_grad_input, grad_output, self, indices);
@@ -93,11 +91,10 @@ at::Tensor &adaptive_max_pool2d_backward_out(const at::Tensor &grad_output, cons
     return grad_input;
 }
 
-at::Tensor adaptive_max_pool2d_backward(const at::Tensor &grad_output, const at::Tensor &self,
-                                        const at::Tensor &indices)
-{
-    TORCH_CHECK((self.dim() == 3 || self.dim() == 4), "non-empty 3D or 4D (batch mode) tensor expected for input"
-        + OPS_ERROR(ErrCode::PARAM));
+at::Tensor adaptive_max_pool2d_backward(
+    const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices) {
+    TORCH_CHECK((self.dim() == 3 || self.dim() == 4),
+        "non-empty 3D or 4D (batch mode) tensor expected for input" + OPS_ERROR(ErrCode::PARAM));
     at::Tensor grad_input = npu_preparation::apply_tensor_with_format(self, ACL_FORMAT_NC1HWC0);
     adaptive_max_pool2d_backward_out_nocheck(grad_input, grad_output, self, indices);
     return grad_input;
