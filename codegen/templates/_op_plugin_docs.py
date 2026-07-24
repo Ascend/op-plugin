@@ -15625,7 +15625,7 @@ _add_torch_npu_docstr(
 
  约束说明:
  该接口支持推理和训练场景下使用。
- 该接口支持图模式。
+ 该接口仅在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上支持图模式。
  对于输入数据的shape，存在以下约束：
     - 当前在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，rotation的shape仅支持[K, K]一种形式，K的取值范围为[16, 1024]；在Ascend 950PR/Ascend 950DT平台上，rotation的shape支持[K, K]和[block_num, K, K]两种形式，K仅支持32、64、128三种取值, 其中block_num = N/K，N为x最后一维的大小。
     - 输入x的最后一维需要能被K整除。在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，x的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR/Ascend 950DT平台上，x的shape支持1~7维，且当dst_dtype为torch_npu.float4_e2m1fn_x2时，输入x的最后一维必须同时可被2整除。
@@ -15661,7 +15661,10 @@ _add_torch_npu_docstr(
 
 
  def main():
+     # int8 quantization, only supported on Atlas A2/A3
      output, output_scale = test_rotate_quant_int8()
+     # mxfp4 quantization, only supported on Ascend 950PR/Ascend 950DT
+     output, output_scale = test_rotate_quant_mxfp4()
 
  if __name__ == "__main__":
      main()
