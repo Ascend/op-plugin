@@ -52,7 +52,7 @@ torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=N
 - **x1\_scale** (`Tensor`)：可选参数，mm左矩阵反量化参数。数据类型支持`float32`，数据格式支持$ND$格式。数据维度为\(m, 1\)，支持pertoken量化。
 - **x2\_scale** (`Tensor`)：可选参数，mm右矩阵反量化参数。数据类型支持`float32`、`int64`，数据格式支持$ND$格式。数据维度为\(1, n\)，支持perchannel量化。如需传入`int64`数据类型，需要提前调用torch_npu.npu_trans_quant_param来获取`int64`数据类型的`x2_scale`。
 - **gather\_index** (`int`)：可选参数，表示gather操作对象，0表示对`x1`做gather，1表示对`x2`做gather。默认值0。**当前版本仅支持输入0。**
-- **gather\_output** (`bool`)：可选参数，表示是否需要gather输出。默认值True。
+- **gather\_output** (`bool`)：可选参数，表示是否需要gather输出。默认值True。`comm_mode`为`ai_cpu`时，gather_output支持True和False；`comm_mode`为`aiv`时，gather_output仅支持True。
 - **comm\_turn** (`int`)：可选参数，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
 - **output_dtype** (`ScalarType`)：可选参数，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
 - **comm\_mode** (`string`)：可选参数，表示通信模式，支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅支持基础场景。`aiv`模式支持基础场景和量化场景。默认值为`ai_cpu`。
