@@ -80,11 +80,11 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **struct c10::StreamData3 c10_npu::NPUStream::pack3()**
 
-    NPUStream流压缩，返回值类型StreamData3，与struct c10::StreamData3 c10::cuda::CUDAStream::pack3()相同。
+    NPUStream流打包，返回值类型StreamData3，与struct c10::StreamData3 c10::cuda::CUDAStream::pack3()相同。
 
 - **c10_npu::NPUStream c10_npu::NPUStream::unpack3(c10::StreamId stream_id, c10::DeviceIndex device_index, c10::DeviceType device_type)**
 
-    NPUStream流解压，从struct StreamData3中解压出流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::CUDAStream::unpack3(c10::StreamId  _stream_id_, c10::DeviceIndex  _device_index_, c10::DeviceType  _device_type_)相同。
+    NPUStream流解包，从struct StreamData3中解包出流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::CUDAStream::unpack3(c10::StreamId  _stream_id_, c10::DeviceIndex  _device_index_, c10::DeviceType  _device_type_)相同。
 
     stream_id：StreamId类型，struct StreamData3中的流ID。
 
