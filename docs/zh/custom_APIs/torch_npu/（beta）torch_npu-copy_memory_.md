@@ -35,6 +35,9 @@ copy_memory_仅支持NPU张量。copy_memory_的输入张量应具有相同的dt
 ## 调用示例
 
 ```python
+import torch
+import torch_npu
+
 >>> a=torch.IntTensor([0,  0, -1]).npu()
 >>> b=torch.IntTensor([1, 1, 1]).npu()
 >>> torch_npu.copy_memory_(a, b)
