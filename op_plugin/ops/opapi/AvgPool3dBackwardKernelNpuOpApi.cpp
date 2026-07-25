@@ -23,58 +23,45 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor &avg_pool3d_backward_out_npu_nocheck_api(const at::Tensor &grad_output, const at::Tensor &self,
-                                                    at::IntArrayRef kernel_size, at::IntArrayRef stride,
-                                                    at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
-                                                    c10::optional<int64_t> divisor_override, at::Tensor &grad_input)
-{
+    at::IntArrayRef kernel_size, at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode,
+    bool count_include_pad, c10::optional<int64_t> divisor_override, at::Tensor &grad_input) {
     int64_t new_divisor_override = divisor_override.has_value() ? divisor_override.value() : 0;
-    EXEC_NPU_CMD(aclnnAvgPool3dBackward, grad_output, self, kernel_size, stride, padding, ceil_mode,
-                 count_include_pad, new_divisor_override, grad_input);
+    EXEC_NPU_CMD(aclnnAvgPool3dBackward, grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
+        new_divisor_override, grad_input);
     return grad_input;
 }
 
-at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_output,
-                                    const at::Tensor &self,
-                                    at::IntArrayRef kernel_size,
-                                    at::IntArrayRef stride,
-                                    at::IntArrayRef padding,
-                                    bool ceil_mode,
-                                    bool count_include_pad,
-                                    c10::optional<int64_t> divisor_override,
-                                    at::Tensor &grad_input)
-{
+at::Tensor &avg_pool3d_backward_out(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef kernel_size,
+    at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
+    c10::optional<int64_t> divisor_override, at::Tensor &grad_input) {
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
         return acl_op::avg_pool3d_backward_out(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                               count_include_pad, divisor_override, grad_input);
+            count_include_pad, divisor_override, grad_input);
     }
-    DO_COMPATIBILITY(aclnnAvgPool3dBackward, acl_op::avg_pool3d_backward_out(grad_output, self, kernel_size, stride, padding, ceil_mode,
-        count_include_pad, divisor_override, grad_input));
+    DO_COMPATIBILITY(aclnnAvgPool3dBackward,
+        acl_op::avg_pool3d_backward_out(grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
+            divisor_override, grad_input));
     auto input_size = self.sizes();
     npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
-    avg_pool3d_backward_out_npu_nocheck_api(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                            count_include_pad, divisor_override, grad_input);
+    avg_pool3d_backward_out_npu_nocheck_api(
+        grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override, grad_input);
     return grad_input;
 }
 
-at::Tensor avg_pool3d_backward(const at::Tensor &grad_output,
-                               const at::Tensor &self,
-                               at::IntArrayRef kernel_size,
-                               at::IntArrayRef stride,
-                               at::IntArrayRef padding,
-                               bool ceil_mode,
-                               bool count_include_pad,
-                               c10::optional<int64_t> divisor_override)
-{
+at::Tensor avg_pool3d_backward(const at::Tensor &grad_output, const at::Tensor &self, at::IntArrayRef kernel_size,
+    at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
+    c10::optional<int64_t> divisor_override) {
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
-        return acl_op::avg_pool3d_backward(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                           count_include_pad, divisor_override);
+        return acl_op::avg_pool3d_backward(
+            grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
     }
-    DO_COMPATIBILITY(aclnnAvgPool3dBackward, acl_op::avg_pool3d_backward(grad_output, self, kernel_size, stride, padding, ceil_mode,
-        count_include_pad, divisor_override));
+    DO_COMPATIBILITY(aclnnAvgPool3dBackward,
+        acl_op::avg_pool3d_backward(
+            grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override));
     auto input_size = self.sizes();
     at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
-    avg_pool3d_backward_out_npu_nocheck_api(grad_output, self, kernel_size, stride, padding, ceil_mode,
-                                            count_include_pad, divisor_override, grad_input);
+    avg_pool3d_backward_out_npu_nocheck_api(
+        grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override, grad_input);
     return grad_input;
 }
 }

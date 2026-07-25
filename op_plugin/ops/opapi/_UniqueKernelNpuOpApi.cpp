@@ -21,17 +21,12 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 #if VERSION_BETWEEN(V2R1, V2R1)
-std::tuple<at::Tensor, at::Tensor> _unique(
-    const at::Tensor& self,
-    bool sorted,
-    bool return_inverse)
-{
+std::tuple<at::Tensor, at::Tensor> _unique(const at::Tensor &self, bool sorted, bool return_inverse) {
     DO_COMPATIBILITY(aclnnUnique, acl_op::_unique(self, sorted, return_inverse));
     at::Tensor y = npu_preparation::apply_tensor_without_format(self, self.numel());
     at::Tensor y_inverse = return_inverse
-                               ? npu_preparation::apply_tensor_without_format(self.sizes(),
-                                                                              self.options().dtype(at::kLong))
-                               : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
+        ? npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong))
+        : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
 
     static auto opApiFuncAddr = []() {
         auto ret = GetOpApiFuncAddr("aclGetViewShape");
@@ -56,17 +51,12 @@ std::tuple<at::Tensor, at::Tensor> _unique(
 #endif
 
 #if VERSION_BETWEEN(V2R2, VERSION_NEWEST)
-std::tuple<at::Tensor, at::Tensor> _unique(
-    const at::Tensor& self,
-    bool sorted,
-    bool return_inverse)
-{
+std::tuple<at::Tensor, at::Tensor> _unique(const at::Tensor &self, bool sorted, bool return_inverse) {
     DO_COMPATIBILITY(aclnnUnique, acl_op::_unique(self, sorted, return_inverse));
     at::Tensor y = npu_preparation::apply_tensor_without_format(self, self.numel());
     at::Tensor y_inverse = return_inverse
-                               ? npu_preparation::apply_tensor_without_format(self.sizes(),
-                                                                              self.options().dtype(at::kLong))
-                               : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
+        ? npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong))
+        : npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::kLong));
 
     static auto opApiFuncAddr = []() {
         auto ret = GetOpApiFuncAddr("aclGetViewShape");

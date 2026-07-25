@@ -65,5 +65,7 @@ at::Tensor ceil(const at::Tensor &self) {
     return result;
 }
 
-at::Tensor &ceil_(at::Tensor &self) { return acl_op::ceil_out(self, self); }
+at::Tensor &ceil_(at::Tensor &self) {
+    return acl_op::ceil_out(self, self);
+}
 } // namespace acl_op

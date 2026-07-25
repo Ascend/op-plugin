@@ -19,17 +19,11 @@
 
 namespace op_api {
 
-at::Tensor count_nonzero(
-    const at::Tensor& self,
-    c10::IntArrayRef dim)
-{
+at::Tensor count_nonzero(const at::Tensor &self, c10::IntArrayRef dim) {
     return op_api::sum((self != 0), dim, false, at::ScalarType::Long);
 }
 
-at::Tensor count_nonzero(
-    const at::Tensor& self,
-    c10::optional<int64_t> dim)
-{
+at::Tensor count_nonzero(const at::Tensor &self, c10::optional<int64_t> dim) {
     if (dim.has_value()) {
         return op_api::count_nonzero(self, at::IntArrayRef{dim.value()});
     }

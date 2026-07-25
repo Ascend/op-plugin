@@ -21,23 +21,15 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& atan_out_npu_nocheck(at::Tensor& result, const at::Tensor& self)
-{
+at::Tensor &atan_out_npu_nocheck(at::Tensor &result, const at::Tensor &self) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("Atan")
-        .Input(self)
-        .Output(result)
-        .Run();
+    cmd.Name("Atan").Input(self).Output(result).Run();
     return result;
 }
 } // namespace
 
-at::Tensor& atan_out(const at::Tensor& self, at::Tensor& out)
-{
-    npu_preparation::CheckOut(
-        {self},
-        out,
-        self);
+at::Tensor &atan_out(const at::Tensor &self, at::Tensor &out) {
+    npu_preparation::CheckOut({self}, out, self);
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         atan_out_npu_nocheck(contiguous_result, self);
@@ -48,15 +40,13 @@ at::Tensor& atan_out(const at::Tensor& self, at::Tensor& out)
     return out;
 }
 
-at::Tensor atan(const at::Tensor& self)
-{
+at::Tensor atan(const at::Tensor &self) {
     at::Tensor result = npu_preparation::apply_tensor(self);
     atan_out_npu_nocheck(result, self);
     return result;
 }
 
-at::Tensor& atan_(at::Tensor& self)
-{
+at::Tensor &atan_(at::Tensor &self) {
     return acl_op::atan_out(self, self);
 }
 } // namespace acl_op

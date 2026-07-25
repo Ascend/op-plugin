@@ -17,8 +17,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor __lshift__(const at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor __lshift__(const at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnLeftShift, acl_op::__lshift__(self, other));
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
     at::ScalarType high_type = at::native::result_type(self, other);
@@ -27,8 +26,7 @@ at::Tensor __lshift__(const at::Tensor &self, const at::Tensor &other)
     return result;
 }
 
-at::Tensor __lshift__(const at::Tensor &self, const at::Scalar &other)
-{
+at::Tensor __lshift__(const at::Tensor &self, const at::Scalar &other) {
     at::Tensor result = npu_preparation::apply_tensor(self);
     DO_COMPATIBILITY(aclnnLeftShifts, acl_op::__lshift__(self, other));
     EXEC_NPU_CMD(aclnnLeftShifts, self, other, result);

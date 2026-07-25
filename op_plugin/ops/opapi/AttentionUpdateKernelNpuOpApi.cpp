@@ -19,20 +19,17 @@ namespace op_api {
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> npu_attention_update(at::TensorList lse, at::TensorList local_out, int64_t update_type)
-{
+std::tuple<at::Tensor, at::Tensor> npu_attention_update(
+    at::TensorList lse, at::TensorList local_out, int64_t update_type) {
     auto output_size_0 = local_out[0].sizes();
     auto output_dtype_0 = local_out[0].scalar_type();
 
-    at::Tensor out = npu_preparation::apply_tensor_without_format(
-        output_size_0,
-        local_out[0].options().dtype(output_dtype_0)
-    );
+    at::Tensor out =
+        npu_preparation::apply_tensor_without_format(output_size_0, local_out[0].options().dtype(output_dtype_0));
     at::Tensor lse_out;
     if (update_type == 1) {
-        lse_out = npu_preparation::apply_tensor_without_format(
-            lse[0].sizes(),
-            lse[0].options().dtype(lse[0].scalar_type()));
+        lse_out =
+            npu_preparation::apply_tensor_without_format(lse[0].sizes(), lse[0].options().dtype(lse[0].scalar_type()));
     }
 
     EXEC_NPU_CMD(aclnnAttentionUpdate, lse, local_out, update_type, out, lse_out);

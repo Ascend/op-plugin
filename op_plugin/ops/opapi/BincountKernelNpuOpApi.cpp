@@ -20,8 +20,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor bincount(const at::Tensor& self, const c10::optional<at::Tensor>& weight, int64_t minlength)
-{
+at::Tensor bincount(const at::Tensor &self, const c10::optional<at::Tensor> &weight, int64_t minlength) {
     DO_COMPATIBILITY(aclnnBincount, acl_op::bincount(self, weight, minlength));
     // null tensor
     if (self.dim() == 1 && self.numel() == 0) {
@@ -29,7 +28,8 @@ at::Tensor bincount(const at::Tensor& self, const c10::optional<at::Tensor>& wei
         if (minlength <= 0) {
             result = npu_preparation::apply_tensor_without_format({0}, self.options().dtype(at::ScalarType::Long));
         } else {
-            result = npu_preparation::apply_tensor_without_format({minlength}, self.options().dtype(at::ScalarType::Long));
+            result =
+                npu_preparation::apply_tensor_without_format({minlength}, self.options().dtype(at::ScalarType::Long));
             EXEC_NPU_CMD(aclnnBincount, self, weight, minlength, result);
         }
         return result;

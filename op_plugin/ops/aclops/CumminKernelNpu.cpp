@@ -19,14 +19,12 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-void cummin_out_npu_nocheck(at::Tensor &values, at::Tensor &indices, const at::Tensor &self, int64_t dim)
-{
+void cummin_out_npu_nocheck(at::Tensor &values, at::Tensor &indices, const at::Tensor &self, int64_t dim) {
     at_npu::native::OpCommand cmd;
     cmd.Name("Cummin").Input(self).Output(values).Output(indices).Attr("axis", dim).Run();
 }
 
-void _cummin_helper(const at::Tensor &self, at::Tensor &values, at::Tensor &indices, int64_t dim)
-{
+void _cummin_helper(const at::Tensor &self, at::Tensor &values, at::Tensor &indices, int64_t dim) {
     // process aicpu
     if (self.scalar_type() == at::kLong) {
         at::Tensor values_temp = npu_preparation::apply_tensor(self);

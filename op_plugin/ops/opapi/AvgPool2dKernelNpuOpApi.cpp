@@ -22,9 +22,8 @@ namespace op_api {
 using small_vector = c10::SmallVector<int64_t, op_infer::SIZE>;
 
 at::Tensor &avg_pool2d_out_npu_nocheck_opapi(at::Tensor &result, const at::Tensor &self, at::IntArrayRef kernel,
-                                             at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode,
-                                             bool count_include_pad, c10::optional<int64_t> divisor_override)
-{
+    at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
+    c10::optional<int64_t> divisor_override) {
     int64_t s_divisor_override = 0;
     if (divisor_override.has_value()) {
         s_divisor_override = divisor_override.value();
@@ -33,15 +32,14 @@ at::Tensor &avg_pool2d_out_npu_nocheck_opapi(at::Tensor &result, const at::Tenso
 
     const int8_t cube_math_type = at_npu::native::OpPreparation::get_cube_math_type(false);
     EXEC_NPU_CMD(aclnnAvgPool2d, self, kernel, stride, padding, ceil_mode, count_include_pad, s_divisor_override,
-                 cube_math_type, result);
+        cube_math_type, result);
 
     return result;
 }
 
 small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at::IntArrayRef kernel_size,
-                                                     at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode,
-                                                     bool count_include_pad, c10::optional<int64_t> divisor_override)
-{
+    at::IntArrayRef stride, at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
+    c10::optional<int64_t> divisor_override) {
     // generalize kernels, strides and paddings to 2D-shape
     TORCH_CHECK(!kernel_size.empty(), "kernel_size must either be a single int, or a tuple of two ints",
         OPS_ERROR(ErrCode::PARAM));
@@ -70,36 +68,34 @@ small_vector calc_output_size_with_generalized_attrs(const at::Tensor &self, at:
 }
 
 at::Tensor &avg_pool2d_out(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef stride,
-                           at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
-                           c10::optional<int64_t> divisor_override, at::Tensor &out)
-{
+    at::IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override,
+    at::Tensor &out) {
     c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(
         self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
     at_npu::native::OpPreparation::check_tensor({self}, out, self, output_size);
 
-    DO_COMPATIBILITY(aclnnAvgPool2d, acl_op::avg_pool2d_out(self, kernel_size, stride, padding, ceil_mode,
-                                                            count_include_pad, divisor_override, out));
+    DO_COMPATIBILITY(aclnnAvgPool2d,
+        acl_op::avg_pool2d_out(
+            self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override, out));
 
-    avg_pool2d_out_npu_nocheck_opapi(out, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
-                                     divisor_override);
+    avg_pool2d_out_npu_nocheck_opapi(
+        out, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 
     return out;
 }
 
 at::Tensor avg_pool2d(const at::Tensor &self, at::IntArrayRef kernel_size, at::IntArrayRef stride,
-                      at::IntArrayRef padding, bool ceil_mode, bool count_include_pad,
-                      c10::optional<int64_t> divisor_override)
-{
+    at::IntArrayRef padding, bool ceil_mode, bool count_include_pad, c10::optional<int64_t> divisor_override) {
     c10::SmallVector<int64_t, op_infer::SIZE> output_size = calc_output_size_with_generalized_attrs(
         self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self, output_size);
 
-    DO_COMPATIBILITY(aclnnAvgPool2d, acl_op::avg_pool2d(self, kernel_size, stride, padding, ceil_mode,
-                                                        count_include_pad, divisor_override));
+    DO_COMPATIBILITY(aclnnAvgPool2d,
+        acl_op::avg_pool2d(self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override));
 
-    avg_pool2d_out_npu_nocheck_opapi(result, self, kernel_size, stride, padding, ceil_mode, count_include_pad,
-                                     divisor_override);
+    avg_pool2d_out_npu_nocheck_opapi(
+        result, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
 
     return result;
 }

@@ -21,14 +21,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& baddbmm_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& tensor1,
-    const at::Tensor& tensor2,
-    at::Scalar beta,
-    at::Scalar alpha)
-{
+at::Tensor &baddbmm_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &tensor1,
+    const at::Tensor &tensor2, at::Scalar beta, at::Scalar alpha) {
     auto output_size = op_infer::baddbmm_npu_output_size(tensor1, tensor2);
     at::Tensor batch_matmul_tensor = npu_preparation::apply_tensor(self, output_size);
     bool is_self_t = op_plugin::utils::is_transpose_last_two_dims(tensor1);
@@ -52,18 +46,9 @@ at::Tensor& baddbmm_nocheck(
 }
 } // namespace
 
-at::Tensor& baddbmm_out(
-    const at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha,
-    at::Tensor& out)
-{
-    npu_preparation::CheckOut(
-        {self, batch1, batch2},
-        out,
-        self);
+at::Tensor &baddbmm_out(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2,
+    const at::Scalar &beta, const at::Scalar &alpha, at::Tensor &out) {
+    npu_preparation::CheckOut({self, batch1, batch2}, out, self);
     if (!out.is_contiguous()) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
         baddbmm_nocheck(contiguous_result, self, batch1, batch2, beta, alpha);
@@ -74,25 +59,15 @@ at::Tensor& baddbmm_out(
     return out;
 }
 
-at::Tensor baddbmm(
-    const at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha)
-{
+at::Tensor baddbmm(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
+    const at::Scalar &alpha) {
     at::Tensor result = npu_preparation::apply_tensor(self);
     baddbmm_nocheck(result, self, batch1, batch2, beta, alpha);
     return result;
 }
 
-at::Tensor& baddbmm_(
-    at::Tensor& self,
-    const at::Tensor& batch1,
-    const at::Tensor& batch2,
-    const at::Scalar& beta,
-    const at::Scalar& alpha)
-{
+at::Tensor &baddbmm_(at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
+    const at::Scalar &alpha) {
     return acl_op::baddbmm_out(self, batch1, batch2, beta, alpha, self);
 }
 } // namespace acl_op

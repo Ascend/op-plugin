@@ -23,8 +23,7 @@ using format_helper = at_npu::native::FormatHelper;
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
-{
+bool is_transpose_last_two_dims_flex(const at::Tensor &tensor) {
     if (tensor.dim() != 2) {
         return false;
     }
@@ -39,8 +38,7 @@ bool is_transpose_last_two_dims_flex(const at::Tensor &tensor)
 }
 
 // Pick out strict-transpose tensors from flex-transpose tensors.
-bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpose_flex)
-{
+bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpose_flex) {
     auto base_sizes = torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->get_npu_desc().base_sizes_;
     if (is_transpose_flex && base_sizes.size() == static_cast<uint64_t>(tensor.dim()) &&
         tensor.size(-1) == base_sizes[tensor.dim() - 2] && tensor.size(-2) == base_sizes[tensor.dim() - 1]) {
@@ -50,14 +48,12 @@ bool is_transpose_last_two_dims_strict(const at::Tensor &tensor, bool is_transpo
 }
 
 // Refresh storage desc of view-transpose tensor.
-void set_transposed_npu_desc(at::Tensor &tensor)
-{
+void set_transposed_npu_desc(at::Tensor &tensor) {
     at::Tensor temp_transpose_Tensor = tensor.transpose(-1, -2);
     at_npu::native::StorageDescHelper::SetDesc(tensor, temp_transpose_Tensor.sizes(), temp_transpose_Tensor.strides());
 }
 
-void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict)
-{
+void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bool &is_tensor_trans_strict) {
     if (is_tensor_trans_flex) {
         if (!is_tensor_trans_strict) {
             // Matmul cannot directly deal with view+transposed tensor with NZ format,
@@ -72,8 +68,7 @@ void mm_set_format_contiguous(at::Tensor &tensor, bool &is_tensor_trans_flex, bo
     }
 }
 
-bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2)
-{
+bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2) {
     const static int64_t kInnerAxisMaxLimit = 65535;
     int64_t self_inner_axis = self.size(self.dim() - 1);
     int64_t self_outer_axis = self.size(self.dim() - 2);
@@ -88,12 +83,11 @@ bool is_transpose_both_inner_axis(const at::Tensor &self, const at::Tensor &mat2
         mat2_outer_axis = mat2.size(mat2.dim() - 1);
     }
     return self_inner_axis > kInnerAxisMaxLimit && self_outer_axis <= kInnerAxisMaxLimit &&
-           mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
+        mat2_inner_axis > kInnerAxisMaxLimit && mat2_outer_axis <= kInnerAxisMaxLimit;
 }
 
-at::Tensor &addmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &mat1,
-                                  const at::Tensor &mat2)
-{
+at::Tensor &addmm_out_npu_nocheck(
+    at::Tensor &result, const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2) {
     const auto mat1_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat1)->npu_desc_;
     const auto mat2_desc = torch_npu::NPUBridge::GetNpuStorageImpl(mat2)->npu_desc_;
     bool is_mat1_t_flex = is_transpose_last_two_dims_flex(mat1);
@@ -138,8 +132,7 @@ at::Tensor &addmm_out_npu_nocheck(at::Tensor &result, const at::Tensor &self, co
 }
 
 at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
-                      const at::Scalar &alpha, at::Tensor &result)
-{
+    const at::Scalar &alpha, at::Tensor &result) {
     static const bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     bool check_bias_shape = (self.dim() == 1 || (self.dim() == 2 && self.size(0) == 1));
     if (check_bias_shape && is_support_nd_out) {
@@ -160,8 +153,7 @@ at::Tensor &addmm_out(const at::Tensor &self, const at::Tensor &mat1, const at::
 }
 
 at::Tensor addmm(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
-                 const at::Scalar &alpha)
-{
+    const at::Scalar &alpha) {
     auto output_size = op_infer::addmm_npu_output_size(self, mat1, mat2);
     at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
 
@@ -169,9 +161,8 @@ at::Tensor addmm(const at::Tensor &self, const at::Tensor &mat1, const at::Tenso
     return result;
 }
 
-at::Tensor &addmm_(at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta,
-                   const at::Scalar &alpha)
-{
+at::Tensor &addmm_(
+    at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2, const at::Scalar &beta, const at::Scalar &alpha) {
     npu_preparation::CheckMemory({self, mat1, mat2}, {self});
     if (!npu_utils::check_match(&self)) {
         at::Tensor contiguous_self = npu_utils::format_contiguous(self);

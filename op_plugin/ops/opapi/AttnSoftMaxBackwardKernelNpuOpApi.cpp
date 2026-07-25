@@ -20,8 +20,7 @@ namespace op_api {
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &npu_attn_softmax_backward_(at::Tensor &self, const at::Tensor &grad_output, const at::Tensor &values)
-{
+at::Tensor &npu_attn_softmax_backward_(at::Tensor &self, const at::Tensor &grad_output, const at::Tensor &values) {
     // allow dicrease precision
     int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
     at::Tensor values_tmp = values;

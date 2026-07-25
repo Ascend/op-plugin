@@ -29,20 +29,17 @@ constexpr int OFFSET_H_INDEX = 2;
 constexpr int OFFSET_W_INDEX = 3;
 
 std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d_out(const at::Tensor &input, const at::Tensor &weight,
-                                                             const at::Tensor &offset,
-                                                             const c10::optional<at::Tensor> &bias,
-                                                             at::IntArrayRef kernel_size, at::IntArrayRef stride,
-                                                             at::IntArrayRef padding, at::IntArrayRef dilation,
-                                                             int64_t groups, int64_t deformable_groups, bool modulated)
-{
-    TORCH_CHECK(input.dim() >= TENSORS_DIM, "input has to be more than 4D, but got Tensor of dimension ",
-                input.dim(), OPS_ERROR(ErrCode::PARAM));
+    const at::Tensor &offset, const c10::optional<at::Tensor> &bias, at::IntArrayRef kernel_size,
+    at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups,
+    int64_t deformable_groups, bool modulated) {
+    TORCH_CHECK(input.dim() >= TENSORS_DIM, "input has to be more than 4D, but got Tensor of dimension ", input.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(weight.dim() >= TENSORS_DIM, "weight has to be more than 4D, but got Tensor of dimension ",
-                weight.dim(), OPS_ERROR(ErrCode::PARAM));
+        weight.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(offset.dim() >= TENSORS_DIM, "offset has to be more than 4D, but got Tensor of dimension ",
-                offset.dim(), OPS_ERROR(ErrCode::PARAM));
+        offset.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() >= ATTRS_DIM, "kernel_size has to contain more than 2 elements, but got ",
-                kernel_size.size(), OPS_ERROR(ErrCode::PARAM));
+        kernel_size.size(), OPS_ERROR(ErrCode::PARAM));
 
     int64_t n = input.size(0);
     int64_t ci = input.size(1);
@@ -55,36 +52,33 @@ std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d_out(const at::Tensor &i
     c10::SmallVector<int64_t, SIZE> deformable_offset_size = {n, ci, ho * kh, wo * kw};
     c10::SmallVector<int64_t, SIZE> conv_output_size = {n, co, ho, wo};
 
-    auto deformable_offset = npu_preparation::apply_tensor_without_format(deformable_offset_size,
-        input.options().dtype(input.dtype()));
-    auto conv_output = npu_preparation::apply_tensor_without_format(conv_output_size,
-        input.options().dtype(input.dtype()));
+    auto deformable_offset =
+        npu_preparation::apply_tensor_without_format(deformable_offset_size, input.options().dtype(input.dtype()));
+    auto conv_output =
+        npu_preparation::apply_tensor_without_format(conv_output_size, input.options().dtype(input.dtype()));
 
-    EXEC_NPU_CMD(aclnnDeformableConv2d, input, weight, offset, bias, kernel_size, stride, padding, dilation,
-        groups, deformable_groups, modulated, conv_output, deformable_offset);
+    EXEC_NPU_CMD(aclnnDeformableConv2d, input, weight, offset, bias, kernel_size, stride, padding, dilation, groups,
+        deformable_groups, modulated, conv_output, deformable_offset);
 
     return std::make_tuple(conv_output, deformable_offset);
 }
 
 std::tuple<at::Tensor, at::Tensor> npu_deformable_conv2d(const at::Tensor &input, const at::Tensor &weight,
-                                                         const at::Tensor &offset,
-                                                         const c10::optional<at::Tensor> &bias,
-                                                         at::IntArrayRef kernel_size, at::IntArrayRef stride,
-                                                         at::IntArrayRef padding, at::IntArrayRef dilation,
-                                                         int64_t groups, int64_t deformable_groups, bool modulated)
-{
+    const at::Tensor &offset, const c10::optional<at::Tensor> &bias, at::IntArrayRef kernel_size,
+    at::IntArrayRef stride, at::IntArrayRef padding, at::IntArrayRef dilation, int64_t groups,
+    int64_t deformable_groups, bool modulated) {
     // If aclnn interface is not implemented, call aclop
     DO_COMPATIBILITY(aclnnDeformableConv2d,
-                     acl_op::npu_deformable_conv2d(input, weight, offset, bias, kernel_size, stride, padding, dilation,
-                                                   groups, deformable_groups, modulated));
+        acl_op::npu_deformable_conv2d(
+            input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated));
 
     if (c10_npu::IsAclnnOnly()) {
-        return npu_deformable_conv2d_out(input, weight, offset, bias, kernel_size, stride, padding, dilation,
-                                         groups, deformable_groups, modulated);
+        return npu_deformable_conv2d_out(
+            input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
     }
 
-    return acl_op::npu_deformable_conv2d(input, weight, offset, bias, kernel_size, stride, padding, dilation,
-                                         groups, deformable_groups, modulated);
+    return acl_op::npu_deformable_conv2d(
+        input, weight, offset, bias, kernel_size, stride, padding, dilation, groups, deformable_groups, modulated);
 }
 
 } // namespace op_api

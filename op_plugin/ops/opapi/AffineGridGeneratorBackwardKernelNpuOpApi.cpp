@@ -25,8 +25,7 @@ const int AXIS_TWO = 2;
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor _linspace_from_neg_one(const at::Tensor& grad, int64_t num_steps, bool align_corners)
-{
+at::Tensor _linspace_from_neg_one(const at::Tensor &grad, int64_t num_steps, bool align_corners) {
     if (num_steps <= 1) {
         return at::tensor(0, grad.options());
     }
@@ -38,13 +37,9 @@ at::Tensor _linspace_from_neg_one(const at::Tensor& grad, int64_t num_steps, boo
 }
 } // namespace
 
-at::Tensor affine_grid_generator_backward(
-    const at::Tensor& grad,
-    at::IntArrayRef size,
-    bool align_corners)
-{
-    TORCH_CHECK(size.size() == FOUR_DIM, "AffineGridGeneratorBackward needs 4d (spatial) input."
-        + OPS_ERROR(ErrCode::PARAM));
+at::Tensor affine_grid_generator_backward(const at::Tensor &grad, at::IntArrayRef size, bool align_corners) {
+    TORCH_CHECK(
+        size.size() == FOUR_DIM, "AffineGridGeneratorBackward needs 4d (spatial) input." + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, SIZE> output_size = {size[0], 3, 2};
     at::Tensor result = npu_preparation::apply_tensor_with_format(grad, output_size, ACL_FORMAT_ND);
     c10::SmallVector<int64_t, SIZE> assist_size = {size[0], size[2], size[3], 3};

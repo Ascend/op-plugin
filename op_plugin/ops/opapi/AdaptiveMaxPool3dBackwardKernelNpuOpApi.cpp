@@ -20,9 +20,9 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 namespace {
-bool is_npu_supported(at::ScalarType dtype)
-{
-    static const bool is_adaptive_max_pool_3d_backward_available = check_aclnn_kernel_available("aclnnAdaptiveMaxPool3dBackward");
+bool is_npu_supported(at::ScalarType dtype) {
+    static const bool is_adaptive_max_pool_3d_backward_available =
+        check_aclnn_kernel_available("aclnnAdaptiveMaxPool3dBackward");
     if (!is_adaptive_max_pool_3d_backward_available || dtype == at::kDouble) {
         return false;
     }
@@ -30,16 +30,14 @@ bool is_npu_supported(at::ScalarType dtype)
 }
 } // namespace
 
-at::Tensor& adaptive_max_pool3d_backward_out(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& indices,
-    at::Tensor& grad_input)
-{
+at::Tensor &adaptive_max_pool3d_backward_out(
+    const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices, at::Tensor &grad_input) {
     if (!is_npu_supported(self.scalar_type())) {
-        TORCH_WARN_ONCE("adaptive_max_pool3d_backward.grad_input is not supported by NPU currently. Now this kernel is running on CPU.");
+        TORCH_WARN_ONCE("adaptive_max_pool3d_backward.grad_input is not supported by NPU currently. Now this kernel is "
+                        "running on CPU.");
         auto grad_input_cpu = grad_input.cpu();
-        auto cpuout = at::adaptive_max_pool3d_backward_out(grad_input_cpu, grad_output.cpu(), self.cpu(), indices.cpu());
+        auto cpuout =
+            at::adaptive_max_pool3d_backward_out(grad_input_cpu, grad_output.cpu(), self.cpu(), indices.cpu());
         grad_input.copy_(cpuout);
         return grad_input;
     }
@@ -51,12 +49,10 @@ at::Tensor& adaptive_max_pool3d_backward_out(
 }
 
 at::Tensor adaptive_max_pool3d_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Tensor& indices)
-{
+    const at::Tensor &grad_output, const at::Tensor &self, const at::Tensor &indices) {
     if (!is_npu_supported(self.scalar_type())) {
-        TORCH_WARN_ONCE("adaptive_max_pool3d_backward is not supported by NPU currently. Now this kernel is running on CPU.");
+        TORCH_WARN_ONCE(
+            "adaptive_max_pool3d_backward is not supported by NPU currently. Now this kernel is running on CPU.");
         auto grad_input_cpu = at::adaptive_max_pool3d_backward(grad_output.cpu(), self.cpu(), indices.cpu());
         auto grad_input_npu = grad_input_cpu.to(grad_output.device());
         return grad_input_npu;

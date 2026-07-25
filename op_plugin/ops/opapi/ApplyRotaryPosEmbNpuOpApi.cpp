@@ -22,24 +22,13 @@ constexpr int64_t LAYOUT_SBND = 2;
 constexpr int64_t LAYOUT_BNSD = 3;
 constexpr int64_t LAYOUT_TND = 4;
 std::tuple<at::Tensor, at::Tensor> _apply_rotary_pos_emb_v1(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &cos,
-    const at::Tensor &sin,
-    int64_t lay_out)
-{
+    const at::Tensor &query, const at::Tensor &key, const at::Tensor &cos, const at::Tensor &sin, int64_t lay_out) {
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnApplyRotaryPosEmb, query, key, cos, sin, lay_out);
     return std::tie(query, key);
 }
 
-std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &cos,
-    const at::Tensor &sin,
-    c10::string_view layout,
-    c10::string_view rotary_mode)
-{
+std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(const at::Tensor &query, const at::Tensor &key,
+    const at::Tensor &cos, const at::Tensor &sin, c10::string_view layout, c10::string_view rotary_mode) {
     std::string layout_str = std::string(layout);
     std::string rotary_mode_str = std::string(rotary_mode);
     TORCH_CHECK(rotary_mode_str == "half" || rotary_mode_str == "quarter" || rotary_mode_str == "interleave",
@@ -54,7 +43,7 @@ std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(
     }
     DO_COMPATIBILITY(aclnnApplyRotaryPosEmbV2, _apply_rotary_pos_emb_v1(query, key, cos, sin, lay_out));
 
-    char* rotary_mode_ptr = const_cast<char *>(rotary_mode_str.c_str());
+    char *rotary_mode_ptr = const_cast<char *>(rotary_mode_str.c_str());
     EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnApplyRotaryPosEmbV2, query, key, cos, sin, lay_out, rotary_mode_ptr);
     return std::tie(query, key);
 }

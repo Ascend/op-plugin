@@ -23,11 +23,8 @@ using tensor_list2 = std::tuple<at::Tensor, at::Tensor>;
 
 namespace {
 tensor_list1 batch_norm_gather_stats_with_counts_npu_impl(at::Tensor &mean_all, at::Tensor &invstd_all,
-                                                          const at::Tensor &self, const at::Tensor &mean,
-                                                          const at::Tensor &invstd, const at::Tensor &running_mean,
-                                                          const at::Tensor &running_var, double momentum, double eps,
-                                                          const at::Tensor &counts)
-{
+    const at::Tensor &self, const at::Tensor &mean, const at::Tensor &invstd, const at::Tensor &running_mean,
+    const at::Tensor &running_var, double momentum, double eps, const at::Tensor &counts) {
     auto options = self.options();
     TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));
     auto dim_c = self.size(1);
@@ -103,13 +100,14 @@ tensor_list1 batch_norm_gather_stats_with_counts_npu_impl(at::Tensor &mean_all, 
 } // namespace
 
 tensor_list2 batch_norm_gather_stats_with_counts(const at::Tensor &input, const at::Tensor &mean,
-                                                 const at::Tensor &invstd,
-                                                 const c10::optional<at::Tensor> &running_mean,
-                                                 const c10::optional<at::Tensor> &running_var, double momentum,
-                                                 double eps, const at::Tensor &counts)
-{
-    const at::Tensor &running_mean_opt = c10::value_or_else(running_mean, [] { return at::Tensor(); });
-    const at::Tensor &running_var_opt = c10::value_or_else(running_var, [] { return at::Tensor(); });
+    const at::Tensor &invstd, const c10::optional<at::Tensor> &running_mean,
+    const c10::optional<at::Tensor> &running_var, double momentum, double eps, const at::Tensor &counts) {
+    const at::Tensor &running_mean_opt = c10::value_or_else(running_mean, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_var_opt = c10::value_or_else(running_var, [] {
+        return at::Tensor();
+    });
     bool is_fully_fp16 = false;
     if (input.scalar_type() == mean.scalar_type() && input.scalar_type() == at::kHalf) {
         is_fully_fp16 = true;
@@ -118,8 +116,8 @@ tensor_list2 batch_norm_gather_stats_with_counts(const at::Tensor &input, const 
     at::Tensor mean_all = npu_preparation::apply_tensor({1, input.size(1)}, input.options().dtype(at::kFloat), input);
     at::Tensor invstd_all = npu_preparation::apply_tensor({1, input.size(1)}, input.options().dtype(at::kFloat), input);
 
-    batch_norm_gather_stats_with_counts_npu_impl(mean_all, invstd_all, input, mean, invstd, running_mean_opt, running_var_opt,
-                                                 momentum, eps, counts);
+    batch_norm_gather_stats_with_counts_npu_impl(
+        mean_all, invstd_all, input, mean, invstd, running_mean_opt, running_var_opt, momentum, eps, counts);
 
     if (is_fully_fp16) {
         mean_all = at_npu::native::custom_ops::_npu_dtype_cast(mean_all, at::kHalf);

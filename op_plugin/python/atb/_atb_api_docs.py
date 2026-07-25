@@ -33,7 +33,7 @@ kv_headnum：int类型，kv头数量。
 return_lse：bool类型，是否返回lse输出。
 关键字参数：
 mask: 可选Device Tensor,  mask_type为默认场景时，可不传。
-qseqlen: 可选Device Tensor, cache_mode为默认场景时不传，cache_mode为'int8_nzcache'时需要传入，shape为[num_heads]，数据类型为float。  
+qseqlen: 可选Device Tensor, cache_mode为默认场景时不传，cache_mode为'int8_nzcache'时需要传入，shape为[num_heads]，数据类型为float。
 qk_descale: 可选Device Tensor,  cache_mode为默认场景时不传，cache_mode为'int8_nzcache'时需要传入，shape为[num_heads]，数据类型为float。
 qk_descale: 可选Device Tensor,  cache_mode为默认场景时不传，cache_mode为'int8_nzcache'时需要传入，shape为[num_heads]，数据类型为float。
 mask_type：可选字符串，设置mask类型，缺省值为'undefined', 当前支持'undefined'，无mask.
@@ -80,7 +80,7 @@ MLA场景，使用分页管理的kvcache计算attention score，额外支持分�
 位置参数：
 query: Device Tensor, query矩阵, 支持float16/bf16， shape为[batch*qSeqLen, qHiddenSize]和[batch*qSeqLen, headNum, headSize]
 key: Device Tensor, key矩阵, 支持float16/bf16， shape为[numBlocks, blockSize, kvHiddenSize]和[numBlocks, blockSize, headNum, headSize]
-value: Device Tensor, 无位置编码ctkv, 支持float16/bf16数据类型，shape为[numBlocks, blockSize, kvHiddenSize]和[numBlocks, blockSize, headNum, headSize]	
+value: Device Tensor, 无位置编码ctkv, 支持float16/bf16数据类型，shape为[numBlocks, blockSize, kvHiddenSize]和[numBlocks, blockSize, headNum, headSize]
 block_tables: Device Tensor, 必选，每个query的kvcache的block table，第一维是token索引，第二维表示block索引
 seqlen：int类型数组，query对应的每个batch的序列长度
 kv_seqlen：int类型，key, value对应的每个batch的序列长度
@@ -467,7 +467,7 @@ slopes = torch.rand((headSize), dtype=torch.float16).npu()
 out = torch.rand((batch*qSeqLen, headNum, headSize), dtype=torch.float16).npu()
 
 torch_npu.atb._npu_flash_attention_prefix_v2(query, key_cache, value_cache, block_table,
-                                             mask, seq_len, context_lens, 
+                                             mask, seq_len, context_lens,
                                              slopes=slopes.to(torch.float32), kernel_type=1, mask_type=5,
                                              num_kv_heads=kv_head, num_heads=headNum, scale_value=scale_value, out=out)
     """
@@ -540,7 +540,7 @@ torch_npu.atb.npu_fused_add_topk_div(x, add_num, mapping_num=mapping_num, mappin
         """
 torch_npu.atb.npu_ring_mla(q_nope, q_rope, k_nope, k_rope, value, mask, seqlen, int head_num, int kv_head_num, *, pre_out=None, prev_lse=None, float qk_scale=1, str? kernel_type=None, str? mask_type=None, str? input_layout=None, str? calc_type=None, out=None) -> (Tensor, Tensor)
 功能描述：
-在长序列场景中，计算QK会产生O(seq_len)的显存开销，为了支持长序列的计算，ringAttention 提出了新的计算方式，将QKV沿序列长度切分，分块计算，合并分块计算结果时需要使用前一块计算的中间结果（prev_out，prev_lse）。- chunked prefill 在prefill阶段，将长的prefill分为多个小的chunk，顺序计算并合并结果。第一个chunk时，ringMLA支持calcType=CALC_TYPE_FISRT_RING，不接收lse，输出lse。非第一个chunk时，ringMLA支持calcType=CALC_TYPE_DEFAULT，接收并合并上一次计算的中间结果lse。
+在长序列场景中，计算QK会产生O(seq_len)的显存开销，为了支持长序列的计算，ringAttention 提出了新的计算方式，将QKV沿序列长度切分，分块计算，合并分块计算结果时需要使用前一块计算的中间结果（prev_out，prev_lse）。- chunked prefill 在prefill阶段，将长的prefill分为多个小的chunk，顺序计算并合并结果。第一个chunk时，ringMLA支持calcType=CALC_TYPE_FISRT_RING，不接收lse，输出lse。非第一个chunk时，ringMLA支持calcType=CALC_TYPE_DEFAULT，接收并合并上一次计算的中间结果lse。
 首卡场景
 开启方式：calc_type = calc_type_first_ring
 区别：无prevLse，prevOut传入，生成softmaxLse输出
@@ -608,7 +608,7 @@ softmaxLse = torch.empty(head_num, qn_tokens, dtype=torch.float32).npu()
 
 torch_npu.atb.npu_ring_mla(
     q_nope, q_rope, k_nope, k_rope, value,
-    mask, seqLen, head_num=head_num, kv_head_num=kv_head_num, 
+    mask, seqLen, head_num=head_num, kv_head_num=kv_head_num,
     pre_out=prevOut, prev_lse=prevLse, qk_scale=qkScale,
     kernel_type='kernel_type_high_precision', mask_type='mask_type_triu', input_layout='type_bsnd', calc_type='calc_type_default',
     output=output, softmax_lse=softmaxLse)

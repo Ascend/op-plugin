@@ -20,20 +20,10 @@ namespace acl_op {
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> apply_adam_out_npu_nocheck(
-    at::Tensor& var_out,
-    at::Tensor& m_out,
-    at::Tensor& v_out,
-    at::Scalar beta1_power,
-    at::Scalar beta2_power,
-    at::Scalar lr,
-    at::Scalar beta1,
-    at::Scalar beta2,
-    at::Scalar epsilon,
-    const at::Tensor& grad,
-    c10::optional<bool> use_locking,
-    c10::optional<bool> use_nesterov)
-{
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> apply_adam_out_npu_nocheck(at::Tensor &var_out, at::Tensor &m_out,
+    at::Tensor &v_out, at::Scalar beta1_power, at::Scalar beta2_power, at::Scalar lr, at::Scalar beta1,
+    at::Scalar beta2, at::Scalar epsilon, const at::Tensor &grad, c10::optional<bool> use_locking,
+    c10::optional<bool> use_nesterov) {
     at_npu::native::OpCommand cmd;
     auto var_out_dtype = var_out.scalar_type();
     cmd.Name("ApplyAdamD")
@@ -61,35 +51,17 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> apply_adam_out_npu_nocheck(
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam(
-    const at::Scalar& beta1_power,
-    const at::Scalar& beta2_power,
-    const at::Scalar& lr,
-    const at::Scalar& beta1,
-    const at::Scalar& beta2,
-    const at::Scalar& epsilon,
-    const at::Tensor& grad,
-    c10::optional<bool> use_locking,
-    c10::optional<bool> use_nesterov)
-{
-    TORCH_CHECK(false, "npu_apply_adam is not implemented for Tensor"
-        + OPS_ERROR(ErrCode::PARAM));
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_apply_adam(const at::Scalar &beta1_power,
+    const at::Scalar &beta2_power, const at::Scalar &lr, const at::Scalar &beta1, const at::Scalar &beta2,
+    const at::Scalar &epsilon, const at::Tensor &grad, c10::optional<bool> use_locking,
+    c10::optional<bool> use_nesterov) {
+    TORCH_CHECK(false, "npu_apply_adam is not implemented for Tensor" + OPS_ERROR(ErrCode::PARAM));
 }
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(
-    const at::Scalar& beta1_power,
-    const at::Scalar& beta2_power,
-    const at::Scalar& lr,
-    const at::Scalar& beta1,
-    const at::Scalar& beta2,
-    const at::Scalar& epsilon,
-    const at::Tensor& grad,
-    c10::optional<bool> use_locking,
-    c10::optional<bool> use_nesterov,
-    at::Tensor& var,
-    at::Tensor& m,
-    at::Tensor& v)
-{
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> npu_apply_adam_out(const at::Scalar &beta1_power,
+    const at::Scalar &beta2_power, const at::Scalar &lr, const at::Scalar &beta1, const at::Scalar &beta2,
+    const at::Scalar &epsilon, const at::Tensor &grad, c10::optional<bool> use_locking,
+    c10::optional<bool> use_nesterov, at::Tensor &var, at::Tensor &m, at::Tensor &v) {
     bool var_match = npu_utils::check_match(&var);
     bool m_match = npu_utils::check_match(&m);
     bool v_match = npu_utils::check_match(&v);
@@ -97,19 +69,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(
         at::Tensor contiguous_var = var_match ? var : npu_utils::format_contiguous(var);
         at::Tensor contiguous_m = m_match ? m : npu_utils::format_contiguous(m);
         at::Tensor contiguous_v = v_match ? v : npu_utils::format_contiguous(v);
-        apply_adam_out_npu_nocheck(
-            contiguous_var,
-            contiguous_m,
-            contiguous_v,
-            beta1_power,
-            beta2_power,
-            lr,
-            beta1,
-            beta2,
-            epsilon,
-            grad,
-            use_locking,
-            use_nesterov);
+        apply_adam_out_npu_nocheck(contiguous_var, contiguous_m, contiguous_v, beta1_power, beta2_power, lr, beta1,
+            beta2, epsilon, grad, use_locking, use_nesterov);
         if (!var_match) {
             npu_utils::format_fresh_view(var, contiguous_var);
         }
@@ -121,18 +82,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> npu_apply_adam_out(
         }
     } else {
         apply_adam_out_npu_nocheck(
-            var,
-            m,
-            v,
-            beta1_power,
-            beta2_power,
-            lr,
-            beta1,
-            beta2,
-            epsilon,
-            grad,
-            use_locking,
-            use_nesterov);
+            var, m, v, beta1_power, beta2_power, lr, beta1, beta2, epsilon, grad, use_locking, use_nesterov);
     }
     return std::tie(var, m, v);
 }

@@ -16,17 +16,10 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
-    const at::Tensor& input,
-    const c10::optional<at::Tensor>& weight,
-    const c10::optional<at::Tensor>& bias,
-    at::Tensor& running_mean,
-    at::Tensor& running_var,
-    bool training,
-    double momentum,
-    double eps)
-{
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(const at::Tensor &input,
+    const c10::optional<at::Tensor> &weight, const c10::optional<at::Tensor> &bias, at::Tensor &running_mean,
+    at::Tensor &running_var, bool training, double momentum, double eps) {
     return at::native_batch_norm(input, weight, bias, running_mean, running_var, training, momentum, eps);
 }
 
-}  // namespace op_api
+} // namespace op_api

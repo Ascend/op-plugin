@@ -18,4 +18,4 @@
 
 #include "op_plugin/include/AtbOpsInterface.h"
 
-#endif  // OP_PLUGIN_INCLUDE_ATB_OPS_H
+#endif // OP_PLUGIN_INCLUDE_ATB_OPS_H

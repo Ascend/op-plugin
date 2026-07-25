@@ -20,8 +20,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
-{
+at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending) {
     if (self.dtype() == at::kInt || self.dtype() == at::kLong) {
         TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
                             "is running on AiCpu."
@@ -31,14 +30,12 @@ at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
 }
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending)
-{
+at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending) {
     return op_api::argsort(self, dimname_to_position(self, dim), descending);
 }
 #endif
 
-at::Tensor argsort(const at::Tensor &self, bool stable, int64_t dim, bool descending)
-{
+at::Tensor argsort(const at::Tensor &self, bool stable, int64_t dim, bool descending) {
     if (self.dtype() == at::kInt || self.dtype() == at::kLong) {
         TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
                             "is running on AiCpu."

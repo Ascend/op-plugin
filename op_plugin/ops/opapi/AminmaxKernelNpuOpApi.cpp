@@ -18,18 +18,14 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-std::tuple<at::Tensor, at::Tensor> aminmax(const at::Tensor &self,
-                                           c10::optional<int64_t> dim,
-                                           bool keepdim)
-{
+std::tuple<at::Tensor, at::Tensor> aminmax(const at::Tensor &self, c10::optional<int64_t> dim, bool keepdim) {
     at::IntArrayRef dims;
     c10::SmallVector<int64_t, N> dimlist;
     if (dim.has_value()) {
         dims = dim.value();
     } else {
-        TORCH_CHECK(
-        self.numel() > 0,
-        "aminmax(): cannot compute aminmax over an empty dimension as the operation has no identity.");
+        TORCH_CHECK(self.numel() > 0,
+            "aminmax(): cannot compute aminmax over an empty dimension as the operation has no identity.");
         dimlist = op_plugin::utils::get_dimlist_for_tensor(self);
         dims = dimlist;
     }
@@ -40,12 +36,8 @@ std::tuple<at::Tensor, at::Tensor> aminmax(const at::Tensor &self,
     return std::tie(min, max);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> aminmax_out(const at::Tensor &self,
-                                                   c10::optional<int64_t> dim,
-                                                   bool keepdim,
-                                                   at::Tensor &min,
-                                                   at::Tensor &max)
-{
+std::tuple<at::Tensor &, at::Tensor &> aminmax_out(
+    const at::Tensor &self, c10::optional<int64_t> dim, bool keepdim, at::Tensor &min, at::Tensor &max) {
     DO_COMPATIBILITY(aclnnAminmax, acl_op::aminmax_out(self, dim, keepdim, min, max));
     at::IntArrayRef dims;
     c10::SmallVector<int64_t, N> dimlist;

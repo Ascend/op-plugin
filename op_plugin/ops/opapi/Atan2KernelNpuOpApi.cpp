@@ -16,13 +16,11 @@
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
 
-
 namespace op_api {
 
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& atan2_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out)
-{
+at::Tensor &atan2_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnAtan2, acl_op::atan2_out(self, other, out));
     at::Tensor cp_self = self;
     if (npu_preparation::IsCPUScalar(self)) {
@@ -43,8 +41,7 @@ at::Tensor& atan2_out(const at::Tensor &self, const at::Tensor &other, at::Tenso
     return out;
 }
 
-at::Tensor atan2(const at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor atan2(const at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnAtan2, acl_op::atan2(self, other));
     at::Tensor cp_self = self;
     if (npu_preparation::IsCPUScalar(self)) {
@@ -70,8 +67,7 @@ at::Tensor atan2(const at::Tensor &self, const at::Tensor &other)
     return out;
 }
 
-at::Tensor& atan2_(at::Tensor &self, const at::Tensor &other)
-{
+at::Tensor &atan2_(at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnInplaceAtan2, acl_op::atan2_(self, other));
     at::Tensor cp_other = other;
     if (npu_preparation::IsCPUScalar(other)) {

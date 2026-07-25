@@ -21,9 +21,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 using tensor_list = std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
 
 tensor_list npu_batch_nms(const at::Tensor &self, const at::Tensor &scores, double score_threshold,
-                          double iou_threshold, int64_t max_size_per_class, int64_t max_total_size,
-                          bool change_coordinate_frame, bool transpose_box)
-{
+    double iou_threshold, int64_t max_size_per_class, int64_t max_total_size, bool change_coordinate_frame,
+    bool transpose_box) {
     TORCH_CHECK(self.numel() > 0, "The input tensor [self] is an empty tensor." + OPS_ERROR(ErrCode::PARAM));
     at::Tensor nmsed_boxes = npu_preparation::apply_tensor({self.size(0), max_total_size, 4}, self.options(), self);
     at::Tensor nmsed_scores = npu_preparation::apply_tensor({self.size(0), max_total_size}, self.options(), self);

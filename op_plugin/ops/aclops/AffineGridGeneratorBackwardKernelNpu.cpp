@@ -20,8 +20,7 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor _linspace_from_neg_one(const at::Tensor& grid, int64_t num_steps, bool align_corners)
-{
+at::Tensor _linspace_from_neg_one(const at::Tensor &grid, int64_t num_steps, bool align_corners) {
     if (num_steps <= 1) {
         return at::tensor(0, grid.options());
     }
@@ -32,12 +31,8 @@ at::Tensor _linspace_from_neg_one(const at::Tensor& grid, int64_t num_steps, boo
     return range;
 }
 
-at::Tensor& affine_grid_generator_backward_nocheck(
-    at::Tensor& result,
-    const at::Tensor& grad,
-    at::IntArrayRef size,
-    bool align_corners)
-{
+at::Tensor &affine_grid_generator_backward_nocheck(
+    at::Tensor &result, const at::Tensor &grad, at::IntArrayRef size, bool align_corners) {
     c10::SmallVector<int64_t, SIZE> output_size = {size[0], size[2], size[3], 3};
     at::Tensor assist = npu_preparation::apply_tensor(grad, output_size);
     assist.select(-1, 0).copy_(_linspace_from_neg_one(grad, size[3], align_corners));
@@ -62,22 +57,13 @@ at::Tensor& affine_grid_generator_backward_nocheck(
 }
 } // namespace
 
-at::Tensor affine_grid_generator_backward(
-    const at::Tensor& grad,
-    at::IntArrayRef size,
-    bool align_corners)
-{
-    TORCH_CHECK(size.size() == 4, "AffineGridGeneratorBackward needs 4d (spatial) input."
-        + OPS_ERROR(ErrCode::PARAM));
+at::Tensor affine_grid_generator_backward(const at::Tensor &grad, at::IntArrayRef size, bool align_corners) {
+    TORCH_CHECK(size.size() == 4, "AffineGridGeneratorBackward needs 4d (spatial) input." + OPS_ERROR(ErrCode::PARAM));
 
     c10::SmallVector<int64_t, SIZE> output_size = {size[0], 3, 2};
     at::Tensor result = npu_preparation::apply_tensor_with_format(grad, output_size, ACL_FORMAT_ND);
 
-    affine_grid_generator_backward_nocheck(
-        result,
-        grad,
-        size,
-        align_corners);
+    affine_grid_generator_backward_nocheck(result, grad, size, align_corners);
     auto fresult = result.transpose(1, 2);
     return fresult;
 }

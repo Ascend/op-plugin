@@ -20,13 +20,12 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_dequant_bias(const at::Tensor& x,
-                            const at::Tensor& weight_scale,
-                            const c10::optional<at::Tensor>& activation_scale,
-                            const c10::optional<at::Tensor>& bias,
-                            c10::optional<at::ScalarType> output_dtype)
-{
-    at::ScalarType dst_type = c10::value_or_else(output_dtype, [] {return at::ScalarType::Half;});
+at::Tensor npu_dequant_bias(const at::Tensor &x, const at::Tensor &weight_scale,
+    const c10::optional<at::Tensor> &activation_scale, const c10::optional<at::Tensor> &bias,
+    c10::optional<at::ScalarType> output_dtype) {
+    at::ScalarType dst_type = c10::value_or_else(output_dtype, [] {
+        return at::ScalarType::Half;
+    });
     TORCH_CHECK(dst_type == at::ScalarType::Half || dst_type == at::ScalarType::BFloat16,
         "The dtype should be half or bfloat16", OPS_ERROR(ErrCode::PARAM));
 

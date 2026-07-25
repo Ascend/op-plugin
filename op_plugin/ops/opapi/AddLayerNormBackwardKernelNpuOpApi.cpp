@@ -19,17 +19,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>npu_add_layer_norm_backward(const c10::optional<at::Tensor> &dy_opt,
-                                                                                      const at::Tensor &x1,
-                                                                                      const at::Tensor &x2,
-                                                                                      const at::Tensor &rstd,
-                                                                                      const at::Tensor &mean,
-                                                                                      const at::Tensor &gamma,
-                                                                                      const c10::optional<at::Tensor> &dsum_opt)
-{
-    DO_COMPATIBILITY(aclnnAddLayerNormGrad, acl_op::npu_add_layer_norm_backward(dy_opt, x1, x2, rstd, mean, gamma, dsum_opt));
-    const at::Tensor& dy = c10::value_or_else(dy_opt, [] {return at::Tensor();});
-    const at::Tensor& dsum = c10::value_or_else(dsum_opt, [] {return at::Tensor();});
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm_backward(
+    const c10::optional<at::Tensor> &dy_opt, const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &rstd,
+    const at::Tensor &mean, const at::Tensor &gamma, const c10::optional<at::Tensor> &dsum_opt) {
+    DO_COMPATIBILITY(
+        aclnnAddLayerNormGrad, acl_op::npu_add_layer_norm_backward(dy_opt, x1, x2, rstd, mean, gamma, dsum_opt));
+    const at::Tensor &dy = c10::value_or_else(dy_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &dsum = c10::value_or_else(dsum_opt, [] {
+        return at::Tensor();
+    });
     auto d_y = dy.defined() ? dy : at::zeros(x1.sizes(), x1.options());
     auto d_sum = dsum.defined() ? dsum : at::zeros(x1.sizes(), x1.options());
 

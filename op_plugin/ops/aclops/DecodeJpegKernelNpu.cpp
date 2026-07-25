@@ -20,16 +20,10 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor decode_jpeg(
-    const at::Tensor& self,
-    at::IntArrayRef image_shape,
-    int64_t channels,
-    bool try_recover_truncated)
-{
+    const at::Tensor &self, at::IntArrayRef image_shape, int64_t channels, bool try_recover_truncated) {
     auto output_size = op_infer::decode_jpeg_npu_output_size(image_shape, channels);
-    at::Tensor result = npu_preparation::apply_tensor_with_format(
-        output_size,
-        self.options().dtype(at::kByte),
-        ACL_FORMAT_ND);
+    at::Tensor result =
+        npu_preparation::apply_tensor_with_format(output_size, self.options().dtype(at::kByte), ACL_FORMAT_ND);
 
     at_npu::native::OpCommand cmd;
     cmd.Name("DecodeJpeg")

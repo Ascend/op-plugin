@@ -19,8 +19,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, double eps)
-{
+std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor &self, double eps) {
     TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));
     auto output_size = {self.size(1)};
     at::Tensor sum = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
@@ -32,11 +31,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_reduce(const at::Tensor& self, dou
     }
 
     at_npu::native::OpCommand cmd;
-    cmd.Name("BNTrainingReduce")
-        .Input(self_copy)
-        .Output(sum)
-        .Output(square_sum)
-        .Run();
+    cmd.Name("BNTrainingReduce").Input(self_copy).Output(sum).Output(square_sum).Run();
 
     return std::tie(sum, square_sum);
 }

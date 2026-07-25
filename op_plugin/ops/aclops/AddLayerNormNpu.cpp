@@ -20,8 +20,8 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm(const at::Tensor &x1, const at::Tensor &x2, const at::Tensor &gamma, const at::Tensor &beta, double epsilon, bool additional_output)
-{
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_add_layer_norm(const at::Tensor &x1,
+    const at::Tensor &x2, const at::Tensor &gamma, const at::Tensor &beta, double epsilon, bool additional_output) {
     at::SmallVector<int64_t, SIZE> shape;
     for (int64_t index = 0; index < x1.dim() - gamma.dim(); index++) {
         shape.emplace_back(x1.size(index));

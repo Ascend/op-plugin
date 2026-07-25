@@ -19,12 +19,8 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, double eps)
-{
-    TORCH_CHECK(
-        self.ndimension() >= 2,
-        "Expected 2D+ Tensor, but got tensor with ",
-        self.ndimension(),
+std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor &self, double eps) {
+    TORCH_CHECK(self.ndimension() >= 2, "Expected 2D+ Tensor, but got tensor with ", self.ndimension(),
         " Dimension" + OPS_ERROR(ErrCode::PARAM));
     auto output_size = {self.size(1)};
     at::Tensor mean = npu_preparation::apply_tensor(output_size, self.options().dtype(at::kFloat), self);
@@ -45,12 +41,7 @@ std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& self, doub
     }
 
     at_npu::native::OpCommand cmd_mean;
-    cmd_mean.Name("ReduceMean")
-        .Input(self_copy)
-        .Input(dim, at::kInt)
-        .Output(mean)
-        .Attr("keep_dims", (bool) false)
-        .Run();
+    cmd_mean.Name("ReduceMean").Input(self_copy).Input(dim, at::kInt).Output(mean).Attr("keep_dims", (bool)false).Run();
 
     at::Tensor mean_copy = mean;
     if (mean.dim() != 0) {

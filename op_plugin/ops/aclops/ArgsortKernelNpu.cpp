@@ -21,9 +21,8 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor &argsort_out_npu_nocheck(at::Tensor &values, at::Tensor &indices, const at::Tensor &self, int64_t dim,
-                                    bool descending)
-{
+at::Tensor &argsort_out_npu_nocheck(
+    at::Tensor &values, at::Tensor &indices, const at::Tensor &self, int64_t dim, bool descending) {
     at_npu::native::OpCommand cmd;
     if (values.dtype() == at::kInt || values.dtype() == at::kLong) {
         TORCH_NPU_WARN_ONCE("Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
@@ -35,8 +34,7 @@ at::Tensor &argsort_out_npu_nocheck(at::Tensor &values, at::Tensor &indices, con
 }
 } // namespace
 
-at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
-{
+at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending) {
     dim = op_infer::make_wrap_dim(dim, self.dim());
     int64_t last_dim = op_infer::make_wrap_dim(-1, self.dim());
 
@@ -59,8 +57,7 @@ at::Tensor argsort(const at::Tensor &self, int64_t dim, bool descending)
 }
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending)
-{
+at::Tensor argsort(const at::Tensor &self, at::Dimname dim, bool descending) {
     return acl_op::argsort(self, dimname_to_position(self, dim), descending);
 }
 #endif

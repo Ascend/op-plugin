@@ -22,11 +22,8 @@ using tensor_list = std::tuple<at::Tensor &, at::Tensor &>;
 
 namespace {
 tensor_list batch_norm_gather_stats_update_npu_impl(at::Tensor &mean_all, at::Tensor &invstd_all,
-                                                    const at::Tensor &self, const at::Tensor &sum,
-                                                    const at::Tensor &square_sum, const at::Tensor &running_mean,
-                                                    const at::Tensor &running_var, double momentum, double eps,
-                                                    const at::Tensor &counts)
-{
+    const at::Tensor &self, const at::Tensor &sum, const at::Tensor &square_sum, const at::Tensor &running_mean,
+    const at::Tensor &running_var, double momentum, double eps, const at::Tensor &counts) {
     at::Tensor counts_cp =
         counts.scalar_type() == at::kInt ? counts : at_npu::native::custom_ops::_npu_dtype_cast(counts, at::kInt);
 
@@ -68,22 +65,23 @@ tensor_list batch_norm_gather_stats_update_npu_impl(at::Tensor &mean_all, at::Te
 } // namespace
 
 std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_update(const at::Tensor &self, const at::Tensor &sum,
-                                                                  const at::Tensor &square_sum,
-                                                                  const c10::optional<at::Tensor> &running_mean_opt,
-                                                                  const c10::optional<at::Tensor> &running_var_opt,
-                                                                  double momentum, double eps, const at::Tensor &counts)
-{
+    const at::Tensor &square_sum, const c10::optional<at::Tensor> &running_mean_opt,
+    const c10::optional<at::Tensor> &running_var_opt, double momentum, double eps, const at::Tensor &counts) {
     TORCH_CHECK(self.dim() > 1, "The dim input tensor [self] must more than 1." + OPS_ERROR(ErrCode::PARAM));
     c10::SmallVector<int64_t, N> output_size = {self.size(1)};
 
-    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
-    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
+    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] {
+        return at::Tensor();
+    });
 
     at::Tensor mean_all = npu_preparation::apply_tensor(sum, output_size);
     at::Tensor invstd_all = npu_preparation::apply_tensor(sum, output_size);
 
-    batch_norm_gather_stats_update_npu_impl(mean_all, invstd_all, self, sum, square_sum, running_mean, running_var,
-                                            momentum, eps, counts);
+    batch_norm_gather_stats_update_npu_impl(
+        mean_all, invstd_all, self, sum, square_sum, running_mean, running_var, momentum, eps, counts);
     return std::make_tuple(mean_all, invstd_all);
 }
 } // namespace acl_op

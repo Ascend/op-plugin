@@ -19,8 +19,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &complex_out(const at::Tensor &real, const at::Tensor &imag, at::Tensor &out)
-{
+at::Tensor &complex_out(const at::Tensor &real, const at::Tensor &imag, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnComplex, acl_op::complex_out(real, imag, out));
     auto outputSize = op_infer::broadcast_ops_npu_output_size(real, imag);
     npu_preparation::check_tensor({real}, out, out.scalar_type(), outputSize);
@@ -29,8 +28,7 @@ at::Tensor &complex_out(const at::Tensor &real, const at::Tensor &imag, at::Tens
     return out;
 }
 
-at::Tensor complex(const at::Tensor &real, const at::Tensor &imag)
-{
+at::Tensor complex(const at::Tensor &real, const at::Tensor &imag) {
     DO_COMPATIBILITY(aclnnComplex, acl_op::complex(real, imag));
     at::ScalarType high_type = at::native::result_type(real, imag);
     if (high_type == at::ScalarType::Float) {

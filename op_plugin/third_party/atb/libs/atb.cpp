@@ -3,23 +3,19 @@
 #include "operation.h"
 
 namespace atb {
-Status CreateContext(Context **context)
-{
+Status CreateContext(Context **context) {
     return 0;
 }
 
-Status DestroyContext(Context *context)
-{
+Status DestroyContext(Context *context) {
     return 0;
 }
 
-template <typename OpParam> Status CreateOperation(const OpParam &opParam, Operation **operation)
-{
+template <typename OpParam> Status CreateOperation(const OpParam &opParam, Operation **operation) {
     return 0;
 }
 
-Status DestroyOperation(Operation *operation)
-{
+Status DestroyOperation(Operation *operation) {
     return 0;
 }
 } // namespace atb

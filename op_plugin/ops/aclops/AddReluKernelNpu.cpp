@@ -21,32 +21,16 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& add_relu_out_nocheck(
-    at::Tensor& out,
-    const at::Tensor& self,
-    const at::Tensor& other,
-    at::Scalar alpha)
-{
+at::Tensor &add_relu_out_nocheck(at::Tensor &out, const at::Tensor &self, const at::Tensor &other, at::Scalar alpha) {
     at::Tensor add_result = acl_op::add(self, other, alpha);
     at_npu::native::OpCommand cmd;
-    cmd.Name("Relu")
-        .Input(add_result)
-        .Output(out)
-        .Run();
+    cmd.Name("Relu").Input(add_result).Output(out).Run();
     return out;
 }
 } // namespace
 
-at::Tensor& _add_relu_out(
-    const at::Tensor& self,
-    const at::Tensor& other,
-    const at::Scalar& alpha,
-    at::Tensor& out)
-{
-    npu_preparation::CheckOut(
-        {self, other},
-        out,
-        self);
+at::Tensor &_add_relu_out(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor &out) {
+    npu_preparation::CheckOut({self, other}, out, self);
 
     if (!npu_utils::check_match(&out)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(out);
@@ -58,15 +42,13 @@ at::Tensor& _add_relu_out(
     return out;
 }
 
-at::Tensor _add_relu(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha)
-{
+at::Tensor _add_relu(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha) {
     at::Tensor out = npu_preparation::apply_tensor(self);
     add_relu_out_nocheck(out, self, other, alpha);
     return out;
 }
 
-at::Tensor& _add_relu_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha)
-{
+at::Tensor &_add_relu_(at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha) {
     return acl_op::_add_relu_out(self, other, alpha, self);
 }
 } // namespace acl_op

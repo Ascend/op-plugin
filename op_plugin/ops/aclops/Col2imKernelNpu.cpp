@@ -21,12 +21,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor &col2im_out_nocheck(at::Tensor &grad_input, const at::Tensor &grad_output, at::IntArrayRef input_size,
-                               at::IntArrayRef kernel_size, at::IntArrayRef dilation, at::IntArrayRef padding,
-                               at::IntArrayRef stride)
-{
+    at::IntArrayRef kernel_size, at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride) {
     at::Tensor grad_output_cp = grad_output;
     grad_output_cp = grad_output_cp.view({grad_output.size(0), grad_output.size(1) / (kernel_size[0] * kernel_size[1]),
-                                          kernel_size[0] * kernel_size[1], grad_output.size(2)});
+        kernel_size[0] * kernel_size[1], grad_output.size(2)});
     c10::SmallVector<int64_t, N> input_sizes = {input_size[0], input_size[1]};
     c10::SmallVector<int64_t, N> kernel_sizes = {kernel_size[0], kernel_size[1]};
     c10::SmallVector<int64_t, N> dilations = {dilation[0], dilation[1]};
@@ -46,55 +44,44 @@ at::Tensor &col2im_out_nocheck(at::Tensor &grad_input, const at::Tensor &grad_ou
 }
 
 inline void check_func(const at::Tensor &grad_output, at::IntArrayRef input_size, at::IntArrayRef kernel_size,
-                       at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride)
-{
+    at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride) {
     TORCH_CHECK(grad_output.dim() >= 2,
         "col2im expected grad_output greater than or equal to 2D, "
         "but input grad_output has sizes ",
-        grad_output.dim(),
-        OPS_ERROR(ErrCode::PARAM));
+        grad_output.dim(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(input_size.size() >= 2,
         "col2im expected input_size greater than or equal to 2D, "
         "but input input_size has sizes ",
-        input_size.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        input_size.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(kernel_size.size() >= 2,
         "col2im expected kernel_size greater than or equal to 2D, "
         "but input kernel_size has sizes ",
-        kernel_size.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        kernel_size.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(dilation.size() >= 2,
         "col2im expected dilation greater than or equal to 2D, "
         "but input dilation has sizes ",
-        dilation.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        dilation.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(padding.size() >= 2,
         "col2im expected padding greater than or equal to 2D, "
         "but input padding has sizes ",
-        padding.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        padding.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(stride.size() >= 2,
         "col2im expected stride greater than or equal to 2D, "
         "but input stride has sizes ",
-        stride.size(),
-        OPS_ERROR(ErrCode::PARAM));
+        stride.size(), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK((kernel_size[0] * kernel_size[1]) > 0,
         "col2im expected kernel_size valid, "
         "but input kernel_size has value ",
-        kernel_size[0], kernel_size[1],
-        OPS_ERROR(ErrCode::PARAM));
+        kernel_size[0], kernel_size[1], OPS_ERROR(ErrCode::PARAM));
 }
 } // namespace
 
 at::Tensor &col2im_out(const at::Tensor &grad_output, at::IntArrayRef input_size, at::IntArrayRef kernel_size,
-                       at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride,
-                       at::Tensor &grad_input)
-{
+    at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride, at::Tensor &grad_input) {
     check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
     at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
     c10::SmallVector<int64_t, SIZE> output_size = {grad_output_cp.size(0),
-                                                   grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]),
-                                                   input_size[0], input_size[1]};
+        grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
 
     npu_preparation::CheckOut({grad_output_cp}, grad_input, grad_output_cp, output_size);
 
@@ -113,13 +100,11 @@ at::Tensor &col2im_out(const at::Tensor &grad_output, at::IntArrayRef input_size
 }
 
 at::Tensor col2im(const at::Tensor &grad_output, at::IntArrayRef input_size, at::IntArrayRef kernel_size,
-                  at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride)
-{
+    at::IntArrayRef dilation, at::IntArrayRef padding, at::IntArrayRef stride) {
     check_func(grad_output, input_size, kernel_size, dilation, padding, stride);
     at::Tensor grad_output_cp = grad_output.dim() == 2 ? at::unsqueeze(grad_output, 0) : grad_output;
     c10::SmallVector<int64_t, SIZE> output_size = {grad_output_cp.size(0),
-                                                   grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]),
-                                                   input_size[0], input_size[1]};
+        grad_output_cp.size(1) / (kernel_size[0] * kernel_size[1]), input_size[0], input_size[1]};
 
     at::Tensor grad_input = npu_preparation::apply_tensor(grad_output_cp, output_size);
     col2im_out_nocheck(grad_input, grad_output_cp, input_size, kernel_size, dilation, padding, stride);

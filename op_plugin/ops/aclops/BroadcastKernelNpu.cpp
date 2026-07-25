@@ -22,32 +22,19 @@ using npu_utils = at_npu::native::NpuUtils;
 using npu_format_helper = at_npu::native::FormatHelper;
 
 namespace {
-at::Tensor& npu_broadcast_out_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    at::IntArrayRef size)
-{
+at::Tensor &npu_broadcast_out_nocheck(at::Tensor &result, const at::Tensor &self, at::IntArrayRef size) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("BroadcastTo")
-        .Input(self)
-        .Input(size)
-        .Output(result)
-        .Run();
+    cmd.Name("BroadcastTo").Input(self).Input(size).Output(result).Run();
     return result;
 }
 } // namespace
 
-at::Tensor& npu_broadcast_out(
-    const at::Tensor& self,
-    at::IntArrayRef size,
-    at::Tensor& result)
-{
+at::Tensor &npu_broadcast_out(const at::Tensor &self, at::IntArrayRef size, at::Tensor &result) {
     npu_broadcast_out_nocheck(result, self, size);
     return result;
 }
 
-at::Tensor npu_broadcast(const at::Tensor& self, at::IntArrayRef size)
-{
+at::Tensor npu_broadcast(const at::Tensor &self, at::IntArrayRef size) {
     at::Tensor result;
     at::Tensor self_cp;
     if (self.dtype() == at::kBool) {

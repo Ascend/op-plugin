@@ -24,19 +24,10 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-std::tuple<at::Tensor&, at::Tensor&> batch_norm_backward_training_update_nocheck(
-    at::Tensor& grad_weight,
-    at::Tensor& grad_bias,
-    const at::Tensor& grad_out,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    const at::Tensor& save_mean,
-    const at::Tensor& save_invstd,
-    bool train,
-    double eps)
-{
+std::tuple<at::Tensor &, at::Tensor &> batch_norm_backward_training_update_nocheck(at::Tensor &grad_weight,
+    at::Tensor &grad_bias, const at::Tensor &grad_out, const at::Tensor &self, const at::Tensor &weight,
+    const at::Tensor &running_mean, const at::Tensor &running_var, const at::Tensor &save_mean,
+    const at::Tensor &save_invstd, bool train, double eps) {
     at_npu::native::OpCommand cmd;
 
     string name = (self.dim() == 5) ? "BN3DTrainingUpdateGrad" : "BNTrainingUpdateGrad";
@@ -50,23 +41,13 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_backward_training_update_nocheck
         .Attr("epsilon", static_cast<float>(eps))
         .Run();
 
-    return std::tuple<at::Tensor&, at::Tensor&>(grad_weight, grad_bias);
+    return std::tuple<at::Tensor &, at::Tensor &>(grad_weight, grad_bias);
 }
 
-at::Tensor& batch_norm_backward_training_reduce_nocheck(
-    at::Tensor& grad_input,
-    const at::Tensor& grad_weight,
-    const at::Tensor& grad_bias,
-    const at::Tensor& grad_out,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    const at::Tensor& save_mean,
-    const at::Tensor& save_invstd,
-    bool train,
-    double eps)
-{
+at::Tensor &batch_norm_backward_training_reduce_nocheck(at::Tensor &grad_input, const at::Tensor &grad_weight,
+    const at::Tensor &grad_bias, const at::Tensor &grad_out, const at::Tensor &self, const at::Tensor &weight,
+    const at::Tensor &running_mean, const at::Tensor &running_var, const at::Tensor &save_mean,
+    const at::Tensor &save_invstd, bool train, double eps) {
     at_npu::native::OpCommand cmd;
 
     string name = (self.dim() == 5) ? "BN3DTrainingReduceGrad" : "BNTrainingReduceGrad";
@@ -95,20 +76,10 @@ at::Tensor& batch_norm_backward_training_reduce_nocheck(
     return grad_input;
 }
 
-at::Tensor& batch_norm_backward_infer_nocheck(
-    at::Tensor& grad_input,
-    const at::Tensor& grad_weight,
-    const at::Tensor& grad_bias,
-    const at::Tensor& grad_out,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    const at::Tensor& save_mean,
-    const at::Tensor& save_invstd,
-    bool train,
-    double eps)
-{
+at::Tensor &batch_norm_backward_infer_nocheck(at::Tensor &grad_input, const at::Tensor &grad_weight,
+    const at::Tensor &grad_bias, const at::Tensor &grad_out, const at::Tensor &self, const at::Tensor &weight,
+    const at::Tensor &running_mean, const at::Tensor &running_var, const at::Tensor &save_mean,
+    const at::Tensor &save_invstd, bool train, double eps) {
     at_npu::native::OpCommand cmd;
     cmd.Name("BNInferGrad")
         .Input(grad_out, "grads")
@@ -121,27 +92,17 @@ at::Tensor& batch_norm_backward_infer_nocheck(
     return grad_input;
 }
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_backward_impl(
-    at::Tensor& grad_input,
-    at::Tensor& grad_weight,
-    at::Tensor& grad_bias,
-    const at::Tensor& grad_out,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    const at::Tensor& save_mean,
-    const at::Tensor& save_invstd,
-    bool train,
-    double eps,
-    std::array<bool, 3> grad_input_mask)
-{
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> batch_norm_backward_impl(at::Tensor &grad_input,
+    at::Tensor &grad_weight, at::Tensor &grad_bias, const at::Tensor &grad_out, const at::Tensor &self,
+    const at::Tensor &weight, const at::Tensor &running_mean, const at::Tensor &running_var,
+    const at::Tensor &save_mean, const at::Tensor &save_invstd, bool train, double eps,
+    std::array<bool, 3> grad_input_mask) {
     // note: when not train, save_mean/save_invstd replaced by running_mean/running_var
     at::Tensor mean = train ? save_mean : running_mean;
     at::Tensor invstd = train ? save_invstd : running_var;
 
-    batch_norm_backward_training_update_nocheck(grad_weight, grad_bias, grad_out, self, weight, running_mean, running_var,
-        mean, invstd, train, eps);
+    batch_norm_backward_training_update_nocheck(
+        grad_weight, grad_bias, grad_out, self, weight, running_mean, running_var, mean, invstd, train, eps);
 
     if (grad_input_mask[0]) {
         if (!train) {
@@ -153,27 +114,30 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_backward_impl(
         }
     }
 
-    return std::tuple<at::Tensor&, at::Tensor&, at::Tensor&>(grad_input, grad_weight, grad_bias);
+    return std::tuple<at::Tensor &, at::Tensor &, at::Tensor &>(grad_input, grad_weight, grad_bias);
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
-    const at::Tensor& grad_out,
-    const at::Tensor& self,
-    const c10::optional<at::Tensor>& weight_opt,
-    const c10::optional<at::Tensor>& running_mean_opt,
-    const c10::optional<at::Tensor>& running_var_opt,
-    const c10::optional<at::Tensor>& save_mean_opt,
-    const c10::optional<at::Tensor>& save_invstd_opt,
-    bool train,
-    double eps,
-    std::array<bool, 3> grad_input_mask)
-{
-    const at::Tensor& weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
-    const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
-    const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
-    const at::Tensor& save_mean = c10::value_or_else(save_mean_opt, [] { return at::Tensor(); });
-    const at::Tensor& save_invstd = c10::value_or_else(save_invstd_opt, [] { return at::Tensor(); });
+std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(const at::Tensor &grad_out,
+    const at::Tensor &self, const c10::optional<at::Tensor> &weight_opt,
+    const c10::optional<at::Tensor> &running_mean_opt, const c10::optional<at::Tensor> &running_var_opt,
+    const c10::optional<at::Tensor> &save_mean_opt, const c10::optional<at::Tensor> &save_invstd_opt, bool train,
+    double eps, std::array<bool, 3> grad_input_mask) {
+    const at::Tensor &weight = c10::value_or_else(weight_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &save_mean = c10::value_or_else(save_mean_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &save_invstd = c10::value_or_else(save_invstd_opt, [] {
+        return at::Tensor();
+    });
 
     at::Tensor self_reshape;
     at::Tensor grad_out_reshape;
@@ -194,8 +158,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
         self_reshape = self.permute({0, 2, 1, 3, 4});
         grad_out_reshape = grad_out.permute({0, 2, 1, 3, 4});
         // nchw=(n*d, c, h, w)
-        c10::SmallVector<int64_t, N> nchw_shape =
-            {self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
+        c10::SmallVector<int64_t, N> nchw_shape = {
+            self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
         // ndchw -> nchw
         self_reshape = self_reshape.reshape(nchw_shape);
         grad_out_reshape = grad_out_reshape.reshape(nchw_shape);
@@ -213,14 +177,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
     at::Tensor running_var_tensor = running_var.defined() ? running_var_cp : at::ones({dim_c}, options);
 
     at::Tensor grad_input = npu_preparation::apply_tensor(self_reshape.sizes(), self_reshape.options(), self_reshape);
-    at::Tensor grad_weight = (grad_out.dim() == 5) ?
-        npu_preparation::apply_tensor(weight_tensor, weight_tensor.options().dtype(at::ScalarType::Float)) :
-        npu_preparation::apply_tensor(
-            weight_tensor.sizes(), weight_tensor.options().dtype(at::ScalarType::Float), grad_out);
-    at::Tensor grad_bias = (grad_out.dim() == 5) ?
-        npu_preparation::apply_tensor(weight_tensor, weight_tensor.options().dtype(at::ScalarType::Float)) :
-        npu_preparation::apply_tensor(
-            weight_tensor.sizes(), weight_tensor.options().dtype(at::ScalarType::Float), grad_out);
+    at::Tensor grad_weight = (grad_out.dim() == 5)
+        ? npu_preparation::apply_tensor(weight_tensor, weight_tensor.options().dtype(at::ScalarType::Float))
+        : npu_preparation::apply_tensor(
+              weight_tensor.sizes(), weight_tensor.options().dtype(at::ScalarType::Float), grad_out);
+    at::Tensor grad_bias = (grad_out.dim() == 5)
+        ? npu_preparation::apply_tensor(weight_tensor, weight_tensor.options().dtype(at::ScalarType::Float))
+        : npu_preparation::apply_tensor(
+              weight_tensor.sizes(), weight_tensor.options().dtype(at::ScalarType::Float), grad_out);
 
     batch_norm_backward_impl(grad_input, grad_weight, grad_bias, grad_out_reshape, self_reshape, weight_tensor,
         running_mean_tensor, running_var_tensor, save_mean, save_invstd, train, eps, grad_input_mask);

@@ -24,17 +24,9 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor& batch_norm_infer_nocheck(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    bool train,
-    double momentum,
-    double eps)
-{
+at::Tensor &batch_norm_infer_nocheck(at::Tensor &result, const at::Tensor &self, const at::Tensor &weight,
+    const at::Tensor &bias, const at::Tensor &running_mean, const at::Tensor &running_var, bool train, double momentum,
+    double eps) {
     at_npu::native::OpCommand cmd;
     cmd.Name("BNInfer")
         .Input(self, "x")
@@ -49,18 +41,9 @@ at::Tensor& batch_norm_infer_nocheck(
     return result;
 }
 
-std::tuple<at::Tensor&, at::Tensor&> batch_norm_training_reduce_nocheck(
-    at::Tensor& sum,
-    at::Tensor& square_sum,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    bool train,
-    double momentum,
-    double eps)
-{
+std::tuple<at::Tensor &, at::Tensor &> batch_norm_training_reduce_nocheck(at::Tensor &sum, at::Tensor &square_sum,
+    const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias, const at::Tensor &running_mean,
+    const at::Tensor &running_var, bool train, double momentum, double eps) {
     at_npu::native::OpCommand cmd;
     string name = (self.dim() == 5) ? "BN3DTrainingReduce" : "BNTrainingReduce";
     cmd.Name(name)
@@ -73,21 +56,10 @@ std::tuple<at::Tensor&, at::Tensor&> batch_norm_training_reduce_nocheck(
     return std::tie(sum, square_sum);
 }
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_training_update_nocheck(
-    at::Tensor& result,
-    at::Tensor& save_mean,
-    at::Tensor& save_invstd,
-    const at::Tensor& self,
-    const at::Tensor& sum,
-    const at::Tensor& square_sum,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    bool train,
-    double momentum,
-    double eps)
-{
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> batch_norm_training_update_nocheck(at::Tensor &result,
+    at::Tensor &save_mean, at::Tensor &save_invstd, const at::Tensor &self, const at::Tensor &sum,
+    const at::Tensor &square_sum, const at::Tensor &weight, const at::Tensor &bias, const at::Tensor &running_mean,
+    const at::Tensor &running_var, bool train, double momentum, double eps) {
     at_npu::native::OpCommand cmd;
     string name = (self.dim() == 5) ? "BN3DTrainingUpdate" : "BNTrainingUpdate";
     cmd.Name(name)
@@ -99,8 +71,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_training_update_noc
         .Input(running_mean, "mean")
         .Input(running_var, "variance")
         .Output(result, "y")
-        .Output(const_cast<at::Tensor&>(running_mean), "mean")
-        .Output(const_cast<at::Tensor&>(running_var), "variance")
+        .Output(const_cast<at::Tensor &>(running_mean), "mean")
+        .Output(const_cast<at::Tensor &>(running_var), "variance")
         .Output(save_mean, "batch_mean")
         .Output(save_invstd, "batch_variance")
         .Attr("epsilon", static_cast<float>(eps))
@@ -110,30 +82,20 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_training_update_noc
     return std::tie(result, save_mean, save_invstd);
 }
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
-    at::Tensor& result,
-    at::Tensor& save_mean,
-    at::Tensor& save_invstd,
-    const at::Tensor& self,
-    const at::Tensor& weight,
-    const at::Tensor& bias,
-    const at::Tensor& running_mean,
-    const at::Tensor& running_var,
-    bool train,
-    double momentum,
-    double eps)
-{
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> batch_norm_impl(at::Tensor &result, at::Tensor &save_mean,
+    at::Tensor &save_invstd, const at::Tensor &self, const at::Tensor &weight, const at::Tensor &bias,
+    const at::Tensor &running_mean, const at::Tensor &running_var, bool train, double momentum, double eps) {
     if (!train) {
         batch_norm_infer_nocheck(result, self, weight, bias, running_mean, running_var, train, momentum, eps);
         return std::tie(result, save_mean, save_invstd);
     }
 
-    at::Tensor sum = (self.dim() == 5) ?
-        npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), running_mean) :
-        npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), self);
-    at::Tensor square_sum = (self.dim() == 5) ?
-        npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), running_mean) :
-        npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), self);
+    at::Tensor sum = (self.dim() == 5)
+        ? npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), running_mean)
+        : npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), self);
+    at::Tensor square_sum = (self.dim() == 5)
+        ? npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), running_mean)
+        : npu_preparation::apply_tensor(running_mean.sizes(), running_mean.options().dtype(at::kFloat), self);
 
     batch_norm_training_reduce_nocheck(
         sum, square_sum, self, weight, bias, running_mean, running_var, train, momentum, eps);
@@ -167,9 +129,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
         npu_format_helper::unsafe_format_cast(running_var_fp32, ACL_FORMAT_ND, ACL_FORMAT_NC1HWC0);
     }
 
-    batch_norm_training_update_nocheck(
-        result, save_mean, save_invstd, self, sum, square_sum, weight_fp32, bias_cp, running_mean_fp32, running_var_fp32,
-        train, momentum, eps);
+    batch_norm_training_update_nocheck(result, save_mean, save_invstd, self, sum, square_sum, weight_fp32, bias_cp,
+        running_mean_fp32, running_var_fp32, train, momentum, eps);
 
     if (check_bn_5hd) {
         npu_format_helper::unsafe_format_cast(weight_fp32, ACL_FORMAT_NC1HWC0, ACL_FORMAT_ND);
@@ -182,20 +143,18 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
 }
 } // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
-    const at::Tensor& self,
-    const c10::optional<at::Tensor>& weight_opt,
-    const c10::optional<at::Tensor>& bias_opt,
-    const c10::optional<at::Tensor>& running_mean_opt,
-    const c10::optional<at::Tensor>& running_var_opt,
-    bool train,
-    double momentum,
-    double eps)
-{
+std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(const at::Tensor &self,
+    const c10::optional<at::Tensor> &weight_opt, const c10::optional<at::Tensor> &bias_opt,
+    const c10::optional<at::Tensor> &running_mean_opt, const c10::optional<at::Tensor> &running_var_opt, bool train,
+    double momentum, double eps) {
     int64_t dim_c = self.size(1);
     at::TensorOptions options = self.options().dtype(at::kFloat);
-    const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] {return at::Tensor();});
-    const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] {return at::Tensor();});
+    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] {
+        return at::Tensor();
+    });
     const at::Tensor running_mean_tensor = running_mean.defined() ? running_mean : at::zeros({dim_c}, options);
     const at::Tensor running_var_tensor = running_var.defined() ? running_var : at::ones({dim_c}, options);
 
@@ -203,16 +162,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
     at::Tensor save_mean;
     at::Tensor save_invstd;
     if (train) {
-        save_mean = (self.dim() == 5) ?
-            npu_preparation::apply_tensor(
-                running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor) :
-            npu_preparation::apply_tensor(
-                running_mean_tensor.sizes(), running_mean_tensor.options().dtype(at::kFloat), self);
-        save_invstd = (self.dim() == 5) ?
-            npu_preparation::apply_tensor(
-                running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), running_var_tensor) :
-            npu_preparation::apply_tensor(
-                running_var_tensor.sizes(), running_var_tensor.options().dtype(at::kFloat), self);
+        save_mean = (self.dim() == 5) ? npu_preparation::apply_tensor(running_mean_tensor.sizes(),
+                                            running_mean_tensor.options().dtype(at::kFloat), running_mean_tensor)
+                                      : npu_preparation::apply_tensor(running_mean_tensor.sizes(),
+                                            running_mean_tensor.options().dtype(at::kFloat), self);
+        save_invstd = (self.dim() == 5) ? npu_preparation::apply_tensor(running_var_tensor.sizes(),
+                                              running_var_tensor.options().dtype(at::kFloat), running_var_tensor)
+                                        : npu_preparation::apply_tensor(running_var_tensor.sizes(),
+                                              running_var_tensor.options().dtype(at::kFloat), self);
     } else {
         // Inference: BNInfer does not fill batch_mean/batch_variance outputs; shapes must still match
         // PyTorch meta and CUDA ([num_features]), not empty ([0]), so run_meta_crossref / downstream
@@ -221,37 +178,34 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
         save_invstd = at::empty({dim_c}, self.options());
     }
 
-    return acl_op::native_batch_norm_out(self, weight_opt, bias_opt,
-        running_mean_opt, running_var_opt, train, momentum, eps, result, save_mean, save_invstd);
+    return acl_op::native_batch_norm_out(self, weight_opt, bias_opt, running_mean_opt, running_var_opt, train, momentum,
+        eps, result, save_mean, save_invstd);
 }
 
-std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
-    const at::Tensor& self,
-    const c10::optional<at::Tensor>& weight_opt,
-    const c10::optional<at::Tensor>& bias_opt,
-    const c10::optional<at::Tensor>& running_mean_opt,
-    const c10::optional<at::Tensor>& running_var_opt,
-    bool train,
-    double momentum,
-    double eps,
-    at::Tensor& result,
-    at::Tensor& save_mean,
-    at::Tensor& save_invstd)
-{
-    const at::Tensor& weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
-    const at::Tensor& bias = c10::value_or_else(bias_opt, [] { return at::Tensor(); });
-    const at::Tensor& running_mean = c10::value_or_else(running_mean_opt, [] { return at::Tensor(); });
-    const at::Tensor& running_var = c10::value_or_else(running_var_opt, [] { return at::Tensor(); });
+std::tuple<at::Tensor &, at::Tensor &, at::Tensor &> native_batch_norm_out(const at::Tensor &self,
+    const c10::optional<at::Tensor> &weight_opt, const c10::optional<at::Tensor> &bias_opt,
+    const c10::optional<at::Tensor> &running_mean_opt, const c10::optional<at::Tensor> &running_var_opt, bool train,
+    double momentum, double eps, at::Tensor &result, at::Tensor &save_mean, at::Tensor &save_invstd) {
+    const at::Tensor &weight = c10::value_or_else(weight_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &bias = c10::value_or_else(bias_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_mean = c10::value_or_else(running_mean_opt, [] {
+        return at::Tensor();
+    });
+    const at::Tensor &running_var = c10::value_or_else(running_var_opt, [] {
+        return at::Tensor();
+    });
 
     at::Tensor self_reshape;
     c10::SmallVector<int64_t, N> self_shape = op_infer::array_to_small_vector(self.sizes());
 
     int64_t self_npu_format = npu_preparation::get_tensor_npu_format(self);
     // BatchNorm is axis sensitive, the size of mean/var depends on dim_c.
-    TORCH_CHECK(
-        !(self_npu_format == ACL_FORMAT_NDHWC || self_npu_format == ACL_FORMAT_NHWC),
-        "at::Tensor with channel last format (",
-        self_npu_format,
+    TORCH_CHECK(!(self_npu_format == ACL_FORMAT_NDHWC || self_npu_format == ACL_FORMAT_NHWC),
+        "at::Tensor with channel last format (", self_npu_format,
         ") is not supported in BatchNorm." + OPS_ERROR(ErrCode::TYPE));
 
     if (self.dim() <= 4) {
@@ -269,8 +223,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
         // ncdhw -> ndchw
         self_reshape = self.permute({0, 2, 1, 3, 4});
         // nchw=(n*d, c, h, w)
-        c10::SmallVector<int64_t, N> nchw_shape =
-            {self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
+        c10::SmallVector<int64_t, N> nchw_shape = {
+            self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
         // ndchw -> nchw
         self_reshape = self_reshape.reshape(nchw_shape);
         if (result.defined()) {
@@ -315,17 +269,9 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
     return std::tie(result, save_mean, save_invstd);
 }
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
-    const at::Tensor& input,
-    const c10::optional<at::Tensor>& weight,
-    const c10::optional<at::Tensor>& bias,
-    at::Tensor& running_mean,
-    at::Tensor& running_var,
-    bool training,
-    double momentum,
-    double eps)
-{
-    return acl_op::native_batch_norm(
-        input, weight, bias, running_mean, running_var, training, momentum, eps);
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(const at::Tensor &input,
+    const c10::optional<at::Tensor> &weight, const c10::optional<at::Tensor> &bias, at::Tensor &running_mean,
+    at::Tensor &running_var, bool training, double momentum, double eps) {
+    return acl_op::native_batch_norm(input, weight, bias, running_mean, running_var, training, momentum, eps);
 }
 } // namespace acl_op

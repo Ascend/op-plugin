@@ -21,8 +21,7 @@
 
 namespace op_api {
 
-at::Tensor dropout(const at::Tensor& self, double p, bool train)
-{
+at::Tensor dropout(const at::Tensor &self, double p, bool train) {
     if (p == 0 || !train || self.numel() == 0) {
         return self;
     }
@@ -33,8 +32,7 @@ at::Tensor dropout(const at::Tensor& self, double p, bool train)
     return std::get<0>(results);
 }
 
-at::Tensor& dropout_(at::Tensor& self, double p, bool train)
-{
+at::Tensor &dropout_(at::Tensor &self, double p, bool train) {
     if (p == 0 || !train || self.numel() == 0) {
         return self;
     }
@@ -45,4 +43,4 @@ at::Tensor& dropout_(at::Tensor& self, double p, bool train)
     self.copy_(std::get<0>(results));
     return self;
 }
-}  // namespace op_api
+} // namespace op_api

@@ -21,12 +21,10 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 std::tuple<at::Tensor, at::Tensor> _ctc_loss(const at::Tensor &log_probs, const at::Tensor &targets,
-                                             at::IntArrayRef input_lengths_list, at::IntArrayRef target_lengths_list,
-                                             int64_t blank, bool zero_infinity)
-{
+    at::IntArrayRef input_lengths_list, at::IntArrayRef target_lengths_list, int64_t blank, bool zero_infinity) {
     TORCH_CHECK(log_probs.dim() == 2 || log_probs.dim() == 3,
-                "log_probs has to be a 2D or 3D Tensor, but got Tensor of dimension ", log_probs.dim(),
-                OPS_ERROR(ErrCode::PARAM));
+        "log_probs has to be a 2D or 3D Tensor, but got Tensor of dimension ", log_probs.dim(),
+        OPS_ERROR(ErrCode::PARAM));
     at::Tensor log_probs_cast = log_probs;
     if (log_probs.scalar_type() == at::kHalf) {
         log_probs_cast = at_npu::native::custom_ops::_npu_dtype_cast(log_probs_cast, at::kFloat);

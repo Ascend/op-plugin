@@ -20,13 +20,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(const at::Tensor& x,
-                                                             const at::Tensor& gx,
-                                                             const at::Tensor& beta,
-                                                             const at::Tensor& gamma,
-                                                             double alpha,
-                                                             double epsilon)
-{
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(const at::Tensor &x, const at::Tensor &gx,
+    const at::Tensor &beta, const at::Tensor &gamma, double alpha, double epsilon) {
     DO_COMPATIBILITY(aclnnDeepNorm, acl_op::npu_deep_norm(x, gx, beta, gamma, alpha, epsilon));
     at::SmallVector<int64_t, SIZE> shape;
     auto param_dim = x.dim() - gamma.dim();

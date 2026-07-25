@@ -25,23 +25,16 @@ using namespace at_npu::native;
 const int DIMENSION_3D = 3;
 const int DIMENSION_4D = 4;
 
-std::tuple<at::Tensor, at::Tensor> npu_dense_lightning_indexer_softmax_lse_symint(
-    const at::Tensor &query_index,
-    const at::Tensor &key_index,
-    const at::Tensor &weights,
-    c10::OptionalArrayRef<c10::SymInt> actual_seq_qlen,
-    c10::OptionalArrayRef<c10::SymInt> actual_seq_klen,
-    c10::optional<c10::string_view> layout,
-    c10::optional<int64_t> sparse_mode,
-    c10::optional<int64_t> pre_tokens,
-    c10::optional<int64_t> next_tokens)
-{
+std::tuple<at::Tensor, at::Tensor> npu_dense_lightning_indexer_softmax_lse_symint(const at::Tensor &query_index,
+    const at::Tensor &key_index, const at::Tensor &weights, c10::OptionalArrayRef<c10::SymInt> actual_seq_qlen,
+    c10::OptionalArrayRef<c10::SymInt> actual_seq_klen, c10::optional<c10::string_view> layout,
+    c10::optional<int64_t> sparse_mode, c10::optional<int64_t> pre_tokens, c10::optional<int64_t> next_tokens) {
     TORCH_CHECK(query_index.dim() == DIMENSION_3D || query_index.dim() == DIMENSION_4D,
-        "The shapes of the input query should be 3 or 4 dimensional, but got ",
-        query_index.dim(), "-dimensional", OPS_ERROR(ErrCode::PARAM));
+        "The shapes of the input query should be 3 or 4 dimensional, but got ", query_index.dim(), "-dimensional",
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(key_index.dim() == DIMENSION_3D || key_index.dim() == DIMENSION_4D,
-        "The shapes of the input key should be 3 or 4 dimensional, but got ", key_index.dim(),
-        "-dimensional", OPS_ERROR(ErrCode::PARAM));
+        "The shapes of the input key should be 3 or 4 dimensional, but got ", key_index.dim(), "-dimensional",
+        OPS_ERROR(ErrCode::PARAM));
 
     c10::string_view layout_str = layout.value_or("BSND");
     char *layout_ptr = const_cast<char *>(layout_str.data());
@@ -57,13 +50,14 @@ std::tuple<at::Tensor, at::Tensor> npu_dense_lightning_indexer_softmax_lse_symin
         output_size = {query_index.size(0), key_index.size(2), query_index.size(1)};
     }
 
-    at::Tensor softmax_max_out = OpPreparation::apply_tensor_without_format(output_size, query_index.options().dtype(at::kFloat));
-    at::Tensor softmax_sum_out = OpPreparation::apply_tensor_without_format(output_size, query_index.options().dtype(at::kFloat));
+    at::Tensor softmax_max_out =
+        OpPreparation::apply_tensor_without_format(output_size, query_index.options().dtype(at::kFloat));
+    at::Tensor softmax_sum_out =
+        OpPreparation::apply_tensor_without_format(output_size, query_index.options().dtype(at::kFloat));
 
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(
-        aclnnDenseLightningIndexerSoftmaxLse, query_index, key_index, weights,
-        actual_seq_qlen, actual_seq_klen, layout_ptr, sparse_mode_const, pre_tokens_const,
-        next_tokens_const, softmax_max_out, softmax_sum_out);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnDenseLightningIndexerSoftmaxLse, query_index, key_index, weights, actual_seq_qlen,
+        actual_seq_klen, layout_ptr, sparse_mode_const, pre_tokens_const, next_tokens_const, softmax_max_out,
+        softmax_sum_out);
 
     return std::make_tuple(softmax_max_out, softmax_sum_out);
 }

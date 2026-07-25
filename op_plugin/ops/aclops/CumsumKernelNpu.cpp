@@ -24,8 +24,7 @@ using npu_compile_type = at_npu::native::CompileType;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &cumsum_out_nocheck(at::Tensor &result, const at::Tensor &self, int64_t dim)
-{
+at::Tensor &cumsum_out_nocheck(at::Tensor &result, const at::Tensor &self, int64_t dim) {
     at::NoNamesGuard guard;
     at_npu::native::OpCommand cmd;
     // if dim = 0, performance in Aicpu is better than Aicore
@@ -44,8 +43,7 @@ at::Tensor &cumsum_out_nocheck(at::Tensor &result, const at::Tensor &self, int64
 }
 } // namespace
 
-at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor &result)
-{
+at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor &result) {
     at::ScalarType dst_type = self.scalar_type();
     if (dtype.has_value()) {
         dst_type = dtype.value();
@@ -54,8 +52,8 @@ at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::Sc
     }
     at::Tensor self_cp =
         self.scalar_type() == dst_type ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, dst_type);
-    npu_preparation::CheckOut({self_cp}, result, npu_preparation::get_tensor_npu_format(result), dst_type,
-                              self_cp.sizes());
+    npu_preparation::CheckOut(
+        {self_cp}, result, npu_preparation::get_tensor_npu_format(result), dst_type, self_cp.sizes());
     if (!npu_utils::check_match(&result)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);
         cumsum_out_nocheck(contiguous_result, self_cp, dim);
@@ -67,14 +65,13 @@ at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::Sc
 }
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor &cumsum_out(const at::Tensor &self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor &result)
-{
+at::Tensor &cumsum_out(
+    const at::Tensor &self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor &result) {
     return acl_op::cumsum_out(self, dimname_to_position(self, dim), dtype, result);
 }
 #endif
 
-at::Tensor cumsum(const at::Tensor &self, int64_t dim, const c10::optional<at::ScalarType> dtype)
-{
+at::Tensor cumsum(const at::Tensor &self, int64_t dim, const c10::optional<at::ScalarType> dtype) {
     at::Tensor result;
     if (dtype.has_value()) {
         if (dtype.value() == at::kDouble) {

@@ -18,8 +18,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 inline c10::SmallVector<int64_t, SIZE> transpose_shape(
-    at::IntArrayRef ori_shape, at::IntArrayRef perm, bool transpose_first)
-{
+    at::IntArrayRef ori_shape, at::IntArrayRef perm, bool transpose_first) {
     c10::SmallVector<int64_t, SIZE> trans_shape;
     if (transpose_first) {
         trans_shape = op_infer::array_to_small_vector(ori_shape);
@@ -29,10 +28,7 @@ inline c10::SmallVector<int64_t, SIZE> transpose_shape(
             TORCH_CHECK(shape_size > perm[i],
                 "npu_confusion_transpose forward/backward input invalid, "
                 "shape has size ",
-                shape_size,
-                " but perm[i] is, ",
-                perm[i],
-                OPS_ERROR(ErrCode::PARAM));
+                shape_size, " but perm[i] is, ", perm[i], OPS_ERROR(ErrCode::PARAM));
             trans_shape.emplace_back(ori_shape[perm[i]]);
         }
     }
@@ -40,8 +36,7 @@ inline c10::SmallVector<int64_t, SIZE> transpose_shape(
 }
 
 at::Tensor npu_confusion_transpose(
-    const at::Tensor &self, at::IntArrayRef perm, at::IntArrayRef shape, bool transpose_first)
-{
+    const at::Tensor &self, at::IntArrayRef perm, at::IntArrayRef shape, bool transpose_first) {
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::npu_confusion_transpose(self, perm, shape, transpose_first);
     }
@@ -54,8 +49,7 @@ at::Tensor npu_confusion_transpose(
 }
 
 at::Tensor npu_confusion_transpose_backward_symint(
-    const at::Tensor &grad, at::IntArrayRef perm, c10::SymIntArrayRef shape_symint, bool transpose_first)
-{
+    const at::Tensor &grad, at::IntArrayRef perm, c10::SymIntArrayRef shape_symint, bool transpose_first) {
     if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         return acl_op::npu_confusion_transpose_backward_symint(grad, perm, shape_symint, transpose_first);
     }
@@ -77,4 +71,4 @@ at::Tensor npu_confusion_transpose_backward_symint(
     EXEC_NPU_CMD(aclnnConfusionTranspose, grad, backward_perm, backward_shape, transpose_first, y);
     return y;
 }
-}  // namespace op_api
+} // namespace op_api

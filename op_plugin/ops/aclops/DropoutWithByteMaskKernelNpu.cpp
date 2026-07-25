@@ -25,12 +25,8 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
 namespace {
-at::Tensor& dropout_do_mask_with_byte_mask(
-    at::Tensor& result,
-    const at::Tensor& self,
-    const at::Tensor& mask,
-    at::Scalar prob)
-{
+at::Tensor &dropout_do_mask_with_byte_mask(
+    at::Tensor &result, const at::Tensor &self, const at::Tensor &mask, at::Scalar prob) {
     at_npu::native::OpCommand cmd;
     cmd.Name("DropOutDoMaskV3")
         .Input(self)
@@ -41,13 +37,10 @@ at::Tensor& dropout_do_mask_with_byte_mask(
     return result;
 }
 
-at::Tensor dropout_gen_byte_mask(const at::Tensor& self, at::Scalar prob)
-{
+at::Tensor dropout_gen_byte_mask(const at::Tensor &self, at::Scalar prob) {
     at::IntArrayRef self_shape = self.sizes();
-    at::Tensor mask = npu_preparation::apply_tensor_with_format(
-        self_shape,
-        self.options().dtype(at::kByte),
-        ACL_FORMAT_ND);
+    at::Tensor mask =
+        npu_preparation::apply_tensor_with_format(self_shape, self.options().dtype(at::kByte), ACL_FORMAT_ND);
     at_npu::native::OpCommand cmd;
     // If either seed or seed2 are set to be non-zero, the random number generator
     // is seeded by the given seed. Otherwise, it is seeded by a random seed.
@@ -69,18 +62,11 @@ at::Tensor dropout_gen_byte_mask(const at::Tensor& self, at::Scalar prob)
     return mask;
 }
 
-std::tuple<at::Tensor, at::Tensor> dropout_out_nocheck(
-    at::Tensor result,
-    const at::Tensor& self,
-    double p)
-{
+std::tuple<at::Tensor, at::Tensor> dropout_out_nocheck(at::Tensor result, const at::Tensor &self, double p) {
     at::Tensor self_cp = npu_utils::format_contiguous(self);
     TORCH_CHECK(
-        p >= 0 && p <= 1,
-        "dropout probability has to be between 0 and 1, but got ", p,
-        OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(
-        at::isFloatingType(self_cp.scalar_type()),
+        p >= 0 && p <= 1, "dropout probability has to be between 0 and 1, but got ", p, OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(at::isFloatingType(self_cp.scalar_type()),
         "dropout only supports floating-point dtypes" + OPS_ERROR(ErrCode::TYPE));
 
     double retain = 1. - p;
@@ -104,17 +90,11 @@ std::tuple<at::Tensor, at::Tensor> dropout_out_nocheck(
 }
 } // namespace
 
-at::Tensor _dropout_with_byte_mask_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& mask,
-    double p)
-{
-    TORCH_CHECK(
-        at::isFloatingType(grad_output.scalar_type()),
+at::Tensor _dropout_with_byte_mask_backward(const at::Tensor &grad_output, const at::Tensor &mask, double p) {
+    TORCH_CHECK(at::isFloatingType(grad_output.scalar_type()),
         "dropoutbackward only supports floating-point dtypes" + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(
-        mask.scalar_type() == at::ScalarType::Byte,
-        "mask should be torch.uint8 dtype" + OPS_ERROR(ErrCode::TYPE));
+        mask.scalar_type() == at::ScalarType::Byte, "mask should be torch.uint8 dtype" + OPS_ERROR(ErrCode::TYPE));
     double retain = 1. - p;
     at::Tensor result = npu_preparation::apply_tensor(grad_output);
 
@@ -129,18 +109,13 @@ at::Tensor _dropout_with_byte_mask_backward(
     return result;
 }
 
-std::tuple<at::Tensor, at::Tensor> _dropout_with_byte_mask(
-    const at::Tensor& self,
-    double p)
-{
+std::tuple<at::Tensor, at::Tensor> _dropout_with_byte_mask(const at::Tensor &self, double p) {
     at::Tensor result = npu_preparation::apply_tensor(self);
     return dropout_out_nocheck(result, self, p);
 }
 
-at::Tensor dropout_with_byte_mask(const at::Tensor& self, double p, bool train)
-{
-    TORCH_CHECK(
-        torch_npu::utils::is_npu(self),
+at::Tensor dropout_with_byte_mask(const at::Tensor &self, double p, bool train) {
+    TORCH_CHECK(torch_npu::utils::is_npu(self),
         "dropout_with_byte_mask only supports device for NPU!" + OPS_ERROR(ErrCode::NOT_SUPPORT));
     if (p == 0 || !train || self.numel() == 0) {
         return self;

@@ -28,13 +28,8 @@ constexpr int64_t MIN_INPUT_DIM = 2;
 constexpr double DEFAULT_DST_TYPE_MAX = 0.0;
 }; // namespace
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_with_dual_axis(
-    const at::Tensor &input,
-    c10::string_view round_mode,
-    int64_t dst_type,
-    int64_t scale_alg,
-    c10::optional<double> dst_type_max)
-{
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_with_dual_axis(const at::Tensor &input,
+    c10::string_view round_mode, int64_t dst_type, int64_t scale_alg, c10::optional<double> dst_type_max) {
     at::Tensor y1;
     at::Tensor mxscale1;
     at::Tensor y2;
@@ -64,17 +59,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_
 
     aclDataType y_acltype;
     bool special_output_type = (dst_type == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
-                                dst_type == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2));
-    ASCEND_LOGI("[npu_dynamic_mx_quant_with_dual_axis]: Getting aclTensor y1 and y2 dtype by Parameter(dst_type): %ld", dst_type);
+        dst_type == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2));
+    ASCEND_LOGI("[npu_dynamic_mx_quant_with_dual_axis]: Getting aclTensor y1 and y2 dtype by Parameter(dst_type): %ld",
+        dst_type);
     if (special_output_type) {
         int64_t y1_last_dim_val = y1_shape[input.dim() - 1];
         int64_t y2_last_dim_val = y2_shape[input.dim() - 1];
         TORCH_CHECK(y1_last_dim_val % FP4_IN_UINT8_NUM == 0,
-                    "The last dim input shape must be divisible by 2 if "
-                    "y1 dtype is torch_npu.float4_e2m1fn_x2 or torch_npu.float4_e1m2" + OPS_ERROR(ErrCode::PARAM));
+            "The last dim input shape must be divisible by 2 if "
+            "y1 dtype is torch_npu.float4_e2m1fn_x2 or torch_npu.float4_e1m2" +
+                OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(y2_last_dim_val % FP4_IN_UINT8_NUM == 0,
-                    "The last dim input shape must be divisible by 2 if "
-                    "y2 dtype is torch_npu.float4_e2m1fn_x2 or torch_npu.float4_e1m2" + OPS_ERROR(ErrCode::PARAM));
+            "The last dim input shape must be divisible by 2 if "
+            "y2 dtype is torch_npu.float4_e2m1fn_x2 or torch_npu.float4_e1m2" +
+                OPS_ERROR(ErrCode::PARAM));
         y1_shape[input.dim() - 1] = y1_last_dim_val / FP4_IN_UINT8_NUM;
         y2_shape[input.dim() - 1] = y1_last_dim_val / FP4_IN_UINT8_NUM;
         y1 = npu_preparation::apply_tensor_without_format(y1_shape, c10::ScalarType::Byte);
@@ -96,15 +94,19 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_
     static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantWithDualAxisV2");
 
     if (npu_support_v2) {
-        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxisV2, input, round_mode_ptr, y_acltype, scale_alg, dst_type_max_real, y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
+        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxisV2, input, round_mode_ptr, y_acltype, scale_alg, dst_type_max_real,
+            y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
     } else {
         if (dst_type_max.has_value()) {
-                TORCH_NPU_WARN_ONCE("CAUTION: The operator aten::npu_dynamic_mx_quant_with_dual_axis does not support the dst_type_max parameter and this parameter is currently ignored. "
-                    "If you want to use the functionality of this parameter, please try to update your CANN version.");
-            }
-        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxis, input, round_mode_ptr, y_acltype, scale_alg, y1_wrapper, mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
+            TORCH_NPU_WARN_ONCE(
+                "CAUTION: The operator aten::npu_dynamic_mx_quant_with_dual_axis does not support the dst_type_max "
+                "parameter and this parameter is currently ignored. "
+                "If you want to use the functionality of this parameter, please try to update your CANN version.");
+        }
+        EXEC_NPU_CMD(aclnnDynamicMxQuantWithDualAxis, input, round_mode_ptr, y_acltype, scale_alg, y1_wrapper,
+            mxscale1_wrapper, y2_wrapper, mxscale2_wrapper);
     }
-    
+
     return std::make_tuple(y1, mxscale1, y2, mxscale2);
 }
 

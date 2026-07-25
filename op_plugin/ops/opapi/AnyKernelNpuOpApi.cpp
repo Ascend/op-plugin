@@ -20,8 +20,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& any_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tensor& out)
-{
+at::Tensor &any_out(const at::Tensor &self, int64_t dim, bool keepdim, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnAny, acl_op::any_out(self, dim, keepdim, out));
     c10::SmallVector<int64_t, op_infer::N> dim_list = {dim};
 
@@ -35,8 +34,7 @@ at::Tensor& any_out(const at::Tensor& self, int64_t dim, bool keepdim, at::Tenso
     return out;
 }
 
-at::Tensor& any_out(const at::Tensor& self, at::Tensor& out)
-{
+at::Tensor &any_out(const at::Tensor &self, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnAny, acl_op::any_out(self, out));
     at::SmallVector<int64_t, op_infer::N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
     bool keep_dim = false;
@@ -49,8 +47,7 @@ at::Tensor& any_out(const at::Tensor& self, at::Tensor& out)
     return out;
 }
 
-at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim)
-{
+at::Tensor any(const at::Tensor &self, int64_t dim, bool keepdim) {
     DO_COMPATIBILITY(aclnnAny, acl_op::any(self, dim, keepdim));
 
     // calculate the output size
@@ -65,8 +62,7 @@ at::Tensor any(const at::Tensor& self, int64_t dim, bool keepdim)
     return result;
 }
 
-at::Tensor any(const at::Tensor& self)
-{
+at::Tensor any(const at::Tensor &self) {
     DO_COMPATIBILITY(aclnnAny, acl_op::any(self));
     at::SmallVector<int64_t, op_infer::N> dim_list = op_plugin::utils::get_dimlist_for_tensor(self);
     bool keep_dim = false;

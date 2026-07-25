@@ -22,9 +22,8 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                        const at::Scalar& value, at::Tensor& result)
-{
+at::Tensor &addcdiv_out(const at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2,
+    const at::Scalar &value, at::Tensor &result) {
     at::TensorList tensors = {self, tensor1, tensor2};
     auto high_type = at::native::result_type(tensors);
     at::ScalarType result_type = result.scalar_type();
@@ -42,17 +41,13 @@ at::Tensor& addcdiv_out(const at::Tensor& self, const at::Tensor& tensor1, const
     return result;
 }
 
-at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2,
-                   const at::Scalar& value)
-{
+at::Tensor addcdiv(
+    const at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2, const at::Scalar &value) {
     if (isIntegralType(tensor1.scalar_type(), true) && isIntegralType(tensor2.scalar_type(), true)) {
-        TORCH_CHECK(
-            false,
-            "Integer division with addcdiv is no longer supported, and in a future  ",
+        TORCH_CHECK(false, "Integer division with addcdiv is no longer supported, and in a future  ",
             "release addcdiv will perform a true division of tensor1 and tensor2. ",
             "The historic addcdiv behavior can be implemented as ",
-            "(input + value * torch.trunc(tensor1 / tensor2)).to(input.dtype) ",
-            "for integer inputs and as ",
+            "(input + value * torch.trunc(tensor1 / tensor2)).to(input.dtype) ", "for integer inputs and as ",
             "(input + value * tensor1 / tensor2) for float inputs. ",
             "The future addcdiv behavior is just the latter implementation: ",
             "(input + value * tensor1 / tensor2), for all dtypes.");
@@ -73,14 +68,13 @@ at::Tensor addcdiv(const at::Tensor& self, const at::Tensor& tensor1, const at::
     return result;
 }
 
-at::Tensor& addcdiv_(at::Tensor& self, const at::Tensor& tensor1, const at::Tensor& tensor2, const at::Scalar& value)
-{
+at::Tensor &addcdiv_(at::Tensor &self, const at::Tensor &tensor1, const at::Tensor &tensor2, const at::Scalar &value) {
     at::TensorList tensors = {self, tensor1, tensor2};
     auto high_type = at::native::result_type(tensors);
     at::ScalarType self_type = self.scalar_type();
 
-    TORCH_CHECK(canCast(high_type, self_type), "result type ", high_type,
-        " can't be cast to the desired output type ", self_type, OPS_ERROR(ErrCode::TYPE));
+    TORCH_CHECK(canCast(high_type, self_type), "result type ", high_type, " can't be cast to the desired output type ",
+        self_type, OPS_ERROR(ErrCode::TYPE));
 
     DO_COMPATIBILITY(aclnnInplaceAddcdiv, acl_op::addcdiv_(self, tensor1, tensor2, value));
     std::vector<at::Tensor> tensor_list = {self, tensor1, tensor2};

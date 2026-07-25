@@ -20,18 +20,15 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha)
-{
+inline void alpha_check_npu(const at::ScalarType dtype, at::Scalar alpha) {
     TORCH_CHECK(!alpha.isBoolean() || dtype == at::ScalarType::Bool,
-                "Boolean alpha only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
+        "Boolean alpha only supported for Boolean results." + OPS_ERROR(ErrCode::TYPE));
     TORCH_CHECK(isFloatingType(dtype) || isComplexType(dtype) || alpha.isIntegral(true),
-                "For integral input tensors, argument alpha must not be a floating point number."
-                + OPS_ERROR(ErrCode::TYPE));
+        "For integral input tensors, argument alpha must not be a floating point number." + OPS_ERROR(ErrCode::TYPE));
 }
 
-static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::ScalarType result_type,
-                                        const c10::Device device)
-{
+static at::Tensor self_tensor_to_device(
+    const at::Tensor &tensor, const at::ScalarType result_type, const c10::Device device) {
     if (npu_preparation::is_scalar_wrapped_to_tensor(tensor) ||
         (tensor.dim() == 0 && !torch_npu::utils::is_npu(tensor))) {
         at::Scalar scalar = tensor.item();
@@ -41,11 +38,7 @@ static at::Tensor self_tensor_to_device(const at::Tensor &tensor, const at::Scal
 }
 
 static at::Tensor &add_out_npu_nocheck(
-    const at::Tensor &self,
-    const at::Tensor &other,
-    const at::Scalar &alpha,
-    at::Tensor &result)
-{
+    const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor &result) {
     // executing the NPU operator
     if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
         c10::Scalar others = other.item();
@@ -69,8 +62,7 @@ static at::Tensor &add_out_npu_nocheck(
     return result;
 }
 
-static at::Tensor &inplace_add_out_npu_no_check(at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha)
-{
+static at::Tensor &inplace_add_out_npu_no_check(at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha) {
     // check if other scalar tensor
     if (other.dim() == 0 && !torch_npu::utils::is_npu(other)) {
         c10::Scalar other_scalar = other.item();
@@ -81,14 +73,12 @@ static at::Tensor &inplace_add_out_npu_no_check(at::Tensor &self, const at::Tens
     return self;
 }
 
-static at::Tensor add_dest_output(const at::Tensor &self, const at::Tensor &other)
-{
+static at::Tensor add_dest_output(const at::Tensor &self, const at::Tensor &other) {
     bool isSelfWrapped = npu_preparation::is_scalar_wrapped_to_tensor(self);
     return isSelfWrapped ? other : self;
 }
 
-at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha)
-{
+at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnAdd, acl_op::add(self, other, alpha));
     DO_COMPATIBILITY(aclnnAdds, acl_op::add(self, other, alpha));
     std::vector<at::Tensor> tensor_list = {self, other};
@@ -107,8 +97,7 @@ at::Tensor add(const at::Tensor &self, const at::Tensor &other, const at::Scalar
     return result;
 }
 
-at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
-{
+at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnAdds, acl_op::add(self, other, alpha));
     // calculate the output size
     auto output_size = op_infer::input_same_output_size(self);
@@ -122,8 +111,7 @@ at::Tensor add(const at::Tensor &self, const at::Scalar &other, const at::Scalar
     return result;
 }
 
-at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor &result)
-{
+at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor &result) {
     DO_COMPATIBILITY(aclnnAdd, acl_op::add_out(self, other, alpha, result));
     DO_COMPATIBILITY(aclnnAdds, acl_op::add_out(self, other, alpha, result));
     std::vector<at::Tensor> tensor_list = {self, other};
@@ -140,8 +128,7 @@ at::Tensor &add_out(const at::Tensor &self, const at::Tensor &other, const at::S
     return result;
 }
 
-at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha)
-{
+at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnInplaceAdd, acl_op::add_(self, other, alpha));
     DO_COMPATIBILITY(aclnnInplaceAdds, acl_op::add_(self, other, alpha));
     std::vector<at::Tensor> tensor_list = {self, other};
@@ -152,8 +139,7 @@ at::Tensor &add_(at::Tensor &self, const at::Tensor &other, const at::Scalar &al
     return self;
 }
 
-at::Tensor &add_(at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha)
-{
+at::Tensor &add_(at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnInplaceAdds, acl_op::add_(self, other, alpha));
     EXEC_NPU_CMD(aclnnInplaceAdds, self, other, alpha);
     return self;

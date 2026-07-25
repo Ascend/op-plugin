@@ -25,12 +25,11 @@ using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
 
-c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITensorListRef& tensors)
-{
+c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITensorListRef &tensors) {
     auto high_type = at::native::result_type(tensors);
     c10::SmallVector<at::Tensor, N> dst_tensor_list;
     // pytorch supports empty tensors, which needs to be removed from the NPU.
-    for (const at::Tensor& t : tensors) {
+    for (const at::Tensor &t : tensors) {
         at::Tensor tensor = t;
         if (tensor.dim() == 1 && tensor.sizes()[0] == 0) {
             continue;
@@ -43,8 +42,7 @@ c10::SmallVector<at::Tensor, N> cat_dest_tensor_list(const at::MaterializedITens
     return dst_tensor_list;
 }
 
-at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensorListRef& tensors, int64_t dim)
-{
+at::Tensor &cat_output_nocheck(at::Tensor &result, const at::MaterializedITensorListRef &tensors, int64_t dim) {
     if (tensors.size() == 1) {
         return result.copy_(tensors[0].get());
     }
@@ -68,32 +66,26 @@ at::Tensor& cat_output_nocheck(at::Tensor& result, const at::MaterializedITensor
         }
     }
 
-    cmd.Output(result)
-       .Attr("N", input_number)
-       .Attr("concat_dim", dim)
-       .Run();
+    cmd.Output(result).Attr("N", input_number).Attr("concat_dim", dim).Run();
     return result;
 }
 } // namespace
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor& cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor& result)
-{
+at::Tensor &cat_out(at::TensorList tensors, at::Dimname dim, at::Tensor &result) {
     TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty." + OPS_ERROR(ErrCode::PARAM));
     return at::cat_out(result, tensors, dimname_to_position(tensors[0], dim));
 }
 #endif
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor cat(at::TensorList tensors, at::Dimname dim)
-{
+at::Tensor cat(at::TensorList tensors, at::Dimname dim) {
     TORCH_CHECK(tensors.size() > 0, "cat inputs should not be empty." + OPS_ERROR(ErrCode::PARAM));
     return at::cat(tensors, dimname_to_position(tensors[0], dim));
 }
 #endif
 
-at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& result)
-{
+at::Tensor &cat_out(const at::ITensorListRef &tensors, int64_t dim, at::Tensor &result) {
     auto materialized = tensors.materialize();
     c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(materialized);
 
@@ -108,11 +100,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     dim = op_plugin::utils::make_warp_dim(dim, dim_post_expr);
     auto output_size = op_infer::cat_npu_output_size(input_tensors, dim);
     npu_preparation::CheckOut(
-        {materialized[0].get()},
-        result,
-        ACL_FORMAT_ND,
-        materialized[0].get().scalar_type(),
-        output_size);
+        {materialized[0].get()}, result, ACL_FORMAT_ND, materialized[0].get().scalar_type(), output_size);
 
     if (!npu_utils::check_match(&result)) {
         at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -124,8 +112,7 @@ at::Tensor& cat_out(const at::ITensorListRef& tensors, int64_t dim, at::Tensor& 
     return result;
 }
 
-at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim)
-{
+at::Tensor cat(const at::ITensorListRef &tensors, int64_t dim) {
     auto materialized = tensors.materialize();
     c10::SmallVector<at::Tensor, N> input_tensors = cat_dest_tensor_list(materialized);
 
@@ -152,9 +139,9 @@ at::Tensor cat(const at::ITensorListRef& tensors, int64_t dim)
         }
     }
 
-    at::Tensor result = tensors_dim_check ?
-        npu_preparation::apply_tensor(input_tensors[0], output_size) :
-        npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
+    at::Tensor result = tensors_dim_check
+        ? npu_preparation::apply_tensor(input_tensors[0], output_size)
+        : npu_preparation::apply_tensor_with_format(input_tensors[0], output_size, ACL_FORMAT_ND);
     cat_output_nocheck(result, materialized, dim);
     return result;
 }

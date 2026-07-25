@@ -20,17 +20,15 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Scalar& other, at::Tensor& out)
-{
+at::Tensor &bitwise_and_out(const at::Tensor &self, const at::Scalar &other, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnBitwiseAndScalar, acl_op::bitwise_and_out(self, other, out));
     npu_preparation::check_tensor({self}, out, out, self.sizes());
     EXEC_NPU_CMD(aclnnBitwiseAndScalar, self, other, out);
     return out;
 }
 
-static at::Tensor& bitwise_and_op_api_out_npu_nocheck(at::Tensor& result, const at::Tensor& self,
-                                                      const at::Tensor& other)
-{
+static at::Tensor &bitwise_and_op_api_out_npu_nocheck(
+    at::Tensor &result, const at::Tensor &self, const at::Tensor &other) {
     if (!torch_npu::utils::is_npu(other)) {
         const at::Scalar other_value = other.item();
         EXEC_NPU_CMD(aclnnBitwiseAndScalar, self, other_value, result);
@@ -43,8 +41,7 @@ static at::Tensor& bitwise_and_op_api_out_npu_nocheck(at::Tensor& result, const 
     return result;
 }
 
-at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& out)
-{
+at::Tensor &bitwise_and_out(const at::Tensor &self, const at::Tensor &other, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnBitwiseAndScalar, acl_op::bitwise_and_out(self, other, out));
     DO_COMPATIBILITY(aclnnBitwiseAndTensor, acl_op::bitwise_and_out(self, other, out));
     auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
@@ -53,8 +50,7 @@ at::Tensor& bitwise_and_out(const at::Tensor& self, const at::Tensor& other, at:
     return out;
 }
 
-at::Tensor bitwise_and(const at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor bitwise_and(const at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnBitwiseAndScalar, acl_op::bitwise_and(self, other));
     DO_COMPATIBILITY(aclnnBitwiseAndTensor, acl_op::bitwise_and(self, other));
 
@@ -89,8 +85,7 @@ at::Tensor bitwise_and(const at::Tensor& self, const at::Tensor& other)
     return result;
 }
 
-at::Tensor bitwise_and(const at::Tensor& self, const at::Scalar& other)
-{
+at::Tensor bitwise_and(const at::Tensor &self, const at::Scalar &other) {
     DO_COMPATIBILITY(aclnnBitwiseAndScalar, acl_op::bitwise_and(self, other));
     // calculate the output size
     auto output_size = op_infer::input_same_output_size(self);
@@ -108,8 +103,7 @@ at::Tensor bitwise_and(const at::Tensor& self, const at::Scalar& other)
     return result;
 }
 
-at::Tensor& bitwise_and_inplace_op_api_out_npu_nocheck(at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor &bitwise_and_inplace_op_api_out_npu_nocheck(at::Tensor &self, const at::Tensor &other) {
     if (!torch_npu::utils::is_npu(other)) {
         const at::Scalar other_value = other.item();
         EXEC_NPU_CMD(aclnnInplaceBitwiseAndScalar, self, other_value);
@@ -119,16 +113,14 @@ at::Tensor& bitwise_and_inplace_op_api_out_npu_nocheck(at::Tensor& self, const a
     return self;
 }
 
-at::Tensor& bitwise_and_(at::Tensor& self, const at::Tensor& other)
-{
+at::Tensor &bitwise_and_(at::Tensor &self, const at::Tensor &other) {
     DO_COMPATIBILITY(aclnnInplaceBitwiseAndScalar, acl_op::bitwise_and_(self, other));
     DO_COMPATIBILITY(aclnnInplaceBitwiseAndTensor, acl_op::bitwise_and_(self, other));
     bitwise_and_inplace_op_api_out_npu_nocheck(self, other);
     return self;
 }
 
-at::Tensor& bitwise_and_(at::Tensor& self, const at::Scalar& other)
-{
+at::Tensor &bitwise_and_(at::Tensor &self, const at::Scalar &other) {
     DO_COMPATIBILITY(aclnnInplaceBitwiseAndScalar, acl_op::bitwise_and_(self, other));
     EXEC_NPU_CMD(aclnnInplaceBitwiseAndScalar, self, other);
     return self;

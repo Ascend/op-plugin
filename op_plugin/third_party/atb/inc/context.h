@@ -37,7 +37,7 @@ namespace atb {
 //! Context类会管理任务流队列比如Operation执行以及TilingCopy,管理tiling内存的申请与释放.
 //!
 class Context {
-public:
+  public:
     //! \brief 默认构造函数.
     Context() = default;
 

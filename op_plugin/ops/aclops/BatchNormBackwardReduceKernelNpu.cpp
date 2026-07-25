@@ -23,18 +23,16 @@ using tensor_list4 = std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor>;
 
 namespace {
 tensor_list batch_norm_backward_reduce_npu_impl(at::Tensor &sum_dy, at::Tensor &sum_dy_xmu, at::Tensor &grad_weight,
-                                                at::Tensor &grad_bias, const at::Tensor &grad_out,
-                                                const at::Tensor &self, const at::Tensor &mean,
-                                                const at::Tensor &invstd, const at::Tensor &weight, bool input_g,
-                                                bool weight_g, bool bias_g, bool is_fully_fp16 = false)
-{
+    at::Tensor &grad_bias, const at::Tensor &grad_out, const at::Tensor &self, const at::Tensor &mean,
+    const at::Tensor &invstd, const at::Tensor &weight, bool input_g, bool weight_g, bool bias_g,
+    bool is_fully_fp16 = false) {
     at::Tensor sum_dy_sum;
     at::Tensor sum_dy_xmu_sum;
     at::Tensor grad_bias_sum;
 
-    at::Tensor grad_out_scalar = grad_out.scalar_type() == at::kFloat ?
-                                     grad_out :
-                                     at_npu::native::custom_ops::_npu_dtype_cast(grad_out, at::kFloat);
+    at::Tensor grad_out_scalar = grad_out.scalar_type() == at::kFloat
+        ? grad_out
+        : at_npu::native::custom_ops::_npu_dtype_cast(grad_out, at::kFloat);
     at::Tensor self_scalar =
         self.scalar_type() == at::kFloat ? self : at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
     at::Tensor mean_scalar =
@@ -84,10 +82,10 @@ tensor_list batch_norm_backward_reduce_npu_impl(at::Tensor &sum_dy, at::Tensor &
 } // namespace
 
 tensor_list4 batch_norm_backward_reduce(const at::Tensor &grad_out, const at::Tensor &self, const at::Tensor &mean,
-                                        const at::Tensor &invstd, const c10::optional<at::Tensor> &weight_opt,
-                                        bool input_g, bool weight_g, bool bias_g)
-{
-    const at::Tensor &weight = c10::value_or_else(weight_opt, [] { return at::Tensor(); });
+    const at::Tensor &invstd, const c10::optional<at::Tensor> &weight_opt, bool input_g, bool weight_g, bool bias_g) {
+    const at::Tensor &weight = c10::value_or_else(weight_opt, [] {
+        return at::Tensor();
+    });
     TORCH_CHECK(self.scalar_type() == grad_out.scalar_type(), "Expected input's dtype equal grad_out's dtype ",
         grad_out.scalar_type(), "But found ", self.scalar_type(), OPS_ERROR(ErrCode::TYPE));
 
@@ -121,7 +119,7 @@ tensor_list4 batch_norm_backward_reduce(const at::Tensor &grad_out, const at::Te
     }
 
     batch_norm_backward_reduce_npu_impl(sum_dy_val, sum_dy_xmu_val, grad_weight_val, grad_bias_val, grad_out, self,
-                                        mean, invstd, weight, input_g, weight_g, bias_g, is_fully_fp16);
+        mean, invstd, weight, input_g, weight_g, bias_g, is_fully_fp16);
     return std::tie(sum_dy_val, sum_dy_xmu_val, grad_weight_val, grad_bias_val);
 }
 } // namespace acl_op

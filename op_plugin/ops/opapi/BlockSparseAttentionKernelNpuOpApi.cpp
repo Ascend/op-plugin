@@ -23,34 +23,20 @@ using namespace at_npu::native;
 const int DIMENSION_4D = 4;
 using npu_preparation = at_npu::native::OpPreparation;
 
-
 // 入参检查
-static void check_params(const at::Tensor &query,
-                         const at::Tensor &key,
-                         const at::Tensor &value)
-{
+static void check_params(const at::Tensor &query, const at::Tensor &key, const at::Tensor &value) {
     // Q/K/V 数据类型必须一致
     TORCH_CHECK(query.scalar_type() == key.scalar_type() && key.scalar_type() == value.scalar_type(),
-        "query, key, value must have the same dtype, got query=", query.scalar_type(),
-        ", key=", key.scalar_type(), ", value=", value.scalar_type(), OPS_ERROR(ErrCode::PARAM));
+        "query, key, value must have the same dtype, got query=", query.scalar_type(), ", key=", key.scalar_type(),
+        ", value=", value.scalar_type(), OPS_ERROR(ErrCode::PARAM));
 }
 
 // PTA 接口实现
-std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
-    const at::Tensor &query,
-    const at::Tensor &key,
-    const at::Tensor &value,
-    const at::Tensor &block_sparse_mask,
-    const c10::IntArrayRef block_shape,
-    c10::string_view q_input_layout,
-    c10::string_view kv_input_layout,
-    int64_t num_key_value_heads,
-    double scale_value,
-    int64_t inner_precise,
-    const c10::OptionalIntArrayRef actual_seq_lengths,
-    const c10::OptionalIntArrayRef actual_seq_lengths_kv,
-    c10::optional<int64_t> softmax_lse_flag)
-{
+std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(const at::Tensor &query, const at::Tensor &key,
+    const at::Tensor &value, const at::Tensor &block_sparse_mask, const c10::IntArrayRef block_shape,
+    c10::string_view q_input_layout, c10::string_view kv_input_layout, int64_t num_key_value_heads, double scale_value,
+    int64_t inner_precise, const c10::OptionalIntArrayRef actual_seq_lengths,
+    const c10::OptionalIntArrayRef actual_seq_lengths_kv, c10::optional<int64_t> softmax_lse_flag) {
     check_params(query, key, value);
 
     // 分配输出 Tensor
@@ -82,12 +68,10 @@ std::tuple<at::Tensor, at::Tensor> npu_block_sparse_attention(
     char *kv_input_layout_ptr = const_cast<char *>(kv_input_layout.data());
 
     // 调用aclnn接口
-    EXEC_NPU_NO_FORMAT_CHECK_CMD(
-        aclnnBlockSparseAttention, query, key, value, block_sparse_mask, atten_mask,
-        block_shape_value, actual_seq_lengths, actual_seq_lengths_kv, block_table,
-        q_input_layout_ptr, kv_input_layout_ptr, num_key_value_heads, mask_type, scale_value,
-        inner_precise, block_size, pre_tokens, next_tokens, softmax_lse_flag_value,
-        attention_out, softmax_lse_out);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnBlockSparseAttention, query, key, value, block_sparse_mask, atten_mask,
+        block_shape_value, actual_seq_lengths, actual_seq_lengths_kv, block_table, q_input_layout_ptr,
+        kv_input_layout_ptr, num_key_value_heads, mask_type, scale_value, inner_precise, block_size, pre_tokens,
+        next_tokens, softmax_lse_flag_value, attention_out, softmax_lse_out);
 
     // 返回结果
     return std::make_tuple(attention_out, softmax_lse_out);

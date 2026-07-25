@@ -22,8 +22,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor &addbmm_out(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2,
-                       const at::Scalar &beta, const at::Scalar &alpha, at::Tensor &out)
-{
+    const at::Scalar &beta, const at::Scalar &alpha, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnAddbmm, acl_op::addbmm_out(self, batch1, batch2, beta, alpha, out));
     TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim(),
         OPS_ERROR(ErrCode::PARAM));
@@ -38,8 +37,7 @@ at::Tensor &addbmm_out(const at::Tensor &self, const at::Tensor &batch1, const a
 }
 
 at::Tensor addbmm(const at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
-                  const at::Scalar &alpha)
-{
+    const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnAddbmm, acl_op::addbmm(self, batch1, batch2, beta, alpha));
     TORCH_CHECK(batch1.ndimension() >= 3, "Expected least 3D tensor, but got a tensor with sizes ", batch1.dim(),
         OPS_ERROR(ErrCode::PARAM));
@@ -54,8 +52,7 @@ at::Tensor addbmm(const at::Tensor &self, const at::Tensor &batch1, const at::Te
 }
 
 at::Tensor &addbmm_(at::Tensor &self, const at::Tensor &batch1, const at::Tensor &batch2, const at::Scalar &beta,
-                    const at::Scalar &alpha)
-{
+    const at::Scalar &alpha) {
     DO_COMPATIBILITY(aclnnAddbmm, acl_op::addbmm_(self, batch1, batch2, beta, alpha));
 
     op_api::addbmm_out(self, batch1, batch2, beta, alpha, self);

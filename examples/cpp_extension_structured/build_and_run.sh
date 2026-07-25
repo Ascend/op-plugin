@@ -20,4 +20,3 @@ if [ $? -ne 0 ]; then
 else
     echo "[INFO]: Run add_custom test success!"
 fi
-

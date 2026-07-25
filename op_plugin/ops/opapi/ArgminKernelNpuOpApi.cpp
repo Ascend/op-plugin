@@ -20,12 +20,11 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static at::Tensor& argmin_exec(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& result,
-                               bool out_mode)
-{
-    TORCH_CHECK(!(self.numel() == 0 && !(dim.has_value())), "Expected reduction dim to be specified for input.numl()==0"
-                + OPS_ERROR(ErrCode::PARAM))
-        at::Tensor input;
+static at::Tensor &argmin_exec(
+    const at::Tensor &self, at::optional<int64_t> dim, bool keepdim, at::Tensor &result, bool out_mode) {
+    TORCH_CHECK(!(self.numel() == 0 && !(dim.has_value())),
+        "Expected reduction dim to be specified for input.numl()==0" + OPS_ERROR(ErrCode::PARAM))
+    at::Tensor input;
     int64_t real_dim = 0;
     bool real_keep_dim = false;
     if (dim.has_value()) {
@@ -50,16 +49,14 @@ static at::Tensor& argmin_exec(const at::Tensor& self, at::optional<int64_t> dim
     return result;
 }
 
-at::Tensor argmin(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim)
-{
+at::Tensor argmin(const at::Tensor &self, at::optional<int64_t> dim, bool keepdim) {
     DO_COMPATIBILITY(aclnnArgMin, acl_op::argmin(self, dim, keepdim));
 
     at::Tensor result;
     return argmin_exec(self, dim, keepdim, result, false);
 }
 
-at::Tensor& argmin_out(const at::Tensor& self, at::optional<int64_t> dim, bool keepdim, at::Tensor& out)
-{
+at::Tensor &argmin_out(const at::Tensor &self, at::optional<int64_t> dim, bool keepdim, at::Tensor &out) {
     DO_COMPATIBILITY(aclnnArgMin, acl_op::argmin_out(self, dim, keepdim, out));
 
     return argmin_exec(self, dim, keepdim, out, true);

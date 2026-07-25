@@ -27,22 +27,21 @@ static const int DIM_THRESHOLD = 8;
 
 namespace {
 
-void check_negetive(const at::Tensor &self, at::IntArrayRef pad, std::vector<int64_t> &out_shape, int &sign_symbol)
-{
+void check_negetive(const at::Tensor &self, at::IntArrayRef pad, std::vector<int64_t> &out_shape, int &sign_symbol) {
     auto self_dim = self.dim();
     auto pad_cover = static_cast<int64_t>(pad.size()) / 2;
     bool hasZero = false;
     // pad中每个值都不能让out的shape小于0, 如果pad中存在正数, 则out的shape中不能有0
     for (auto i = 0; i < pad_cover; ++i) {
-        auto cur_shape = self.sizes()[self_dim - i -1];
+        auto cur_shape = self.sizes()[self_dim - i - 1];
         auto begin = pad[SIZE_T_TWICE * i];
         auto end = pad[SIZE_T_TWICE * i + 1];
         auto newShape = cur_shape + begin + end;
         auto min = std::min(begin, end);
         min = std::min(min, begin + end);
         TORCH_CHECK(cur_shape + min >= 0, "The input size ", cur_shape, "plus padding ", begin, " and ", end,
-                    " resluted in a negative output size, which is invalid. Check dimension ",
-                    self_dim - i - 1, " of yout input." + OPS_ERROR(ErrCode::PARAM));
+            " resluted in a negative output size, which is invalid. Check dimension ", self_dim - i - 1,
+            " of yout input." + OPS_ERROR(ErrCode::PARAM));
         if (begin > 0 || end > 0) {
             sign_symbol |= POSITIVE;
         }
@@ -54,13 +53,13 @@ void check_negetive(const at::Tensor &self, at::IntArrayRef pad, std::vector<int
         }
     }
     if (hasZero && ((sign_symbol & POSITIVE) == POSITIVE)) {
-        TORCH_CHECK(false, "The output size with zero element is invalid, please check your input." + OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(false,
+            "The output size with zero element is invalid, please check your input." + OPS_ERROR(ErrCode::PARAM));
     }
-    return ;
+    return;
 }
 
-void check_params(int l_pad, int l_diff,  at::IntArrayRef input_sizes, at::IntArrayRef pad)
-{
+void check_params(int l_pad, int l_diff, at::IntArrayRef input_sizes, at::IntArrayRef pad) {
     for (int64_t i = 0; i < l_pad; i++) {
         auto pad_idx = static_cast<int64_t>(pad.size()) - ((i + 1) * 2);
         auto new_dim = input_sizes[l_diff + i] + pad[pad_idx] + pad[pad_idx + 1];
@@ -72,14 +71,13 @@ void check_params(int l_pad, int l_diff,  at::IntArrayRef input_sizes, at::IntAr
     }
 }
 
-at::Tensor do_indexing(const at::Tensor &self, at::IntArrayRef pad)
-{
+at::Tensor do_indexing(const at::Tensor &self, at::IntArrayRef pad) {
     TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size(),
         OPS_ERROR(ErrCode::PARAM));
 
     int64_t max_pad_size = 2 * self.dim();
     auto pad_vec = op_infer::array_to_small_vector(pad);
-    for (auto i = 0 ; i < pad_vec.size(); i++) {
+    for (auto i = 0; i < pad_vec.size(); i++) {
         pad_vec[i] = pad_vec[i] >= 0 ? 0 : pad_vec[i];
     }
     if (static_cast<int64_t>(pad.size()) < max_pad_size) {
@@ -112,8 +110,7 @@ at::Tensor do_indexing(const at::Tensor &self, at::IntArrayRef pad)
 
 } // namespace
 
-at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at::Scalar &value)
-{
+at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at::Scalar &value) {
     TORCH_CHECK(pad.size() % 2 == 0, "Length of pad must be even but instead it equals ", pad.size(),
         OPS_ERROR(ErrCode::PARAM));
 
@@ -125,8 +122,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
     TORCH_CHECK(l_inp >= l_pad,
         "Length of pad should be no more than twice the number of "
         "dimensions of the input. Pad length is ",
-        pad.size(), "while the input has ", l_inp, "dimensions."
-        + OPS_ERROR(ErrCode::PARAM));
+        pad.size(), "while the input has ", l_inp, "dimensions." + OPS_ERROR(ErrCode::PARAM));
 
     std::vector<int64_t> new_shape;
     for (size_t i = 0; i < (size_t)l_diff; i++) {
@@ -154,7 +150,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
     }
     check_negetive(self, pad, new_shape, sign_symbol);
     at::Tensor result = npu_preparation::apply_tensor(self, new_shape);
-    if (sign_symbol != NEGETIVE) {   // pad参数中包含正数.
+    if (sign_symbol != NEGETIVE) { // pad参数中包含正数.
         if (self.numel() == 0) {
             acl_op::fill_(result, value);
             return result;
@@ -185,7 +181,7 @@ at::Tensor constant_pad_nd(const at::Tensor &self, at::IntArrayRef pad, const at
                 .Run();
         }
     }
-    if ((sign_symbol & NEGETIVE) != 0) {     // pad参数中存在负数.
+    if ((sign_symbol & NEGETIVE) != 0) { // pad参数中存在负数.
         if (sign_symbol == NEGETIVE) {
             return do_indexing(self, pad);
         } else {

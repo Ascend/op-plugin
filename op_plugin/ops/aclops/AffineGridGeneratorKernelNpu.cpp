@@ -21,38 +21,20 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-at::Tensor& affine_grid_generator_npu_nocheck(
-    at::Tensor& result,
-    const at::Tensor& theta,
-    at::IntArrayRef size,
-    bool align_corners)
-{
+at::Tensor &affine_grid_generator_npu_nocheck(
+    at::Tensor &result, const at::Tensor &theta, at::IntArrayRef size, bool align_corners) {
     at_npu::native::OpCommand cmd;
-    cmd.Name("AffineGrid")
-        .Input(theta)
-        .Input(size, at::kInt)
-        .Output(result)
-        .Attr("align_corners", align_corners)
-        .Run();
+    cmd.Name("AffineGrid").Input(theta).Input(size, at::kInt).Output(result).Attr("align_corners", align_corners).Run();
     return result;
 }
 } // namespace
 
-at::Tensor affine_grid_generator(
-    const at::Tensor& theta,
-    at::IntArrayRef size,
-    bool align_corners)
-{
+at::Tensor affine_grid_generator(const at::Tensor &theta, at::IntArrayRef size, bool align_corners) {
     TORCH_CHECK(size.size() == 4 || size.size() == 5,
-                "AffineGridGenerator needs 4d or 5d size(input)."
-                + OPS_ERROR(ErrCode::PARAM));
+        "AffineGridGenerator needs 4d or 5d size(input)." + OPS_ERROR(ErrCode::PARAM));
     auto output_size = op_infer::infersize_affine_grid_generator(size);
     at::Tensor result = npu_preparation::apply_tensor(theta, output_size);
-    affine_grid_generator_npu_nocheck(
-        result,
-        theta,
-        size,
-        align_corners);
+    affine_grid_generator_npu_nocheck(result, theta, size, align_corners);
 
     if (size.size() == 4) {
         result = result.view({size[0], size[2], size[3], 2});
