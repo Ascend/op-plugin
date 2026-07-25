@@ -5278,7 +5278,7 @@ def npu_dynamic_dual_level_mx_quant(input_dummy, *, smooth_scale=None, round_mod
 
 
 @impl(m, "npu_grouped_dynamic_mx_quant")
-def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=23, blocksize=32, scale_alg=0):
+def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=23, blocksize=32, scale_alg=0, dst_type_max=0.0):
     if x is None or group_index is None:
         raise RuntimeError("Input x and group_index should must not be None" + ops_error(ErrCode.VALUE))
     if x.dim() != 2:
@@ -5287,13 +5287,11 @@ def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=
     if group_index.dim() != 1:
         raise RuntimeError("Input group_index must be 1-dimensional, got dimNum " +
                             str(group_index.dim()) + ops_error(ErrCode.VALUE))
-    # zero division protection
     if blocksize != 32:
         raise RuntimeError("Parameter blocksize only supports 32,  got " +
                             str(blocksize) + ops_error(ErrCode.PARAM))
-
-    if scale_alg != 0 and scale_alg != 1:
-        raise RuntimeError("Parameter scale_alg only supports 0 or 1, got " +
+    if scale_alg != 0 and scale_alg != 1 and scale_alg != 2:
+        raise RuntimeError("Parameter scale_alg only supports 0, 1 or 2, got " +
                             str(scale_alg) + ops_error(ErrCode.PARAM))
 
     mxscale_shape = [x.shape[0] // 2 // blocksize + group_index.shape[0], x.shape[-1], 2]
@@ -5303,8 +5301,15 @@ def npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst_type=
     elif TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dst_type) == torch.float8_e4m3fn:
         output = torch.empty_like(x, dtype=torch.float8_e4m3fn)
     else:
-        raise RuntimeError("Parameter dst_type only supports torch.float8_e5m2(23), torch.float8_e4m3fn(24), "
-                           "got " + str(dst_type) + ops_error(ErrCode.PARAM))
+        if x.size(x.dim() - 1) % 2:
+            raise RuntimeError("If output dtype is float4_e2m1 or float4_e1m2, " \
+                               "the last dime of input x must be divisible by 2, " +
+                               ops_error(ErrCode.PARAM))
+        output_shape = []
+        for dim in range(x.dim() - 1):
+            output_shape.append(x.size(dim))
+        output_shape.append(x.size(x.dim() - 1) // 2)
+        output = x.new_empty(output_shape, dtype=torch.uint8)
     mxscale = x.new_empty(mxscale_shape, dtype=torch.uint8)
     return (output, mxscale)
 

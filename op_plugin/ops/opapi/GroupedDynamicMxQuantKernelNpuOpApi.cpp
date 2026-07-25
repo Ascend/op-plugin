@@ -25,56 +25,68 @@ constexpr int64_t X_DIM_NUM = 2;
 constexpr int64_t NUM_TWO = 2;
 constexpr int64_t DEFAULT_SCALE_ALG = 0;
 constexpr double DEFAULT_DST_TYPE_MAX = 0.0;
+constexpr int64_t FP4_IN_UINT8_NUM = 2;
 }; // namespace
 
-std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(
-    const at::Tensor &x,
-    const at::Tensor &group_index,
-    c10::string_view round_mode,
-    int64_t dst_type,
-    int64_t blocksize,
-    c10::optional<int64_t> scale_alg)
-{
+std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(const at::Tensor &x, const at::Tensor &group_index,
+    c10::string_view round_mode, int64_t dst_type, int64_t blocksize, c10::optional<int64_t> scale_alg,
+    c10::optional<double> dst_type_max) {
     // input x and group_index dim check
-    TORCH_CHECK(x.sizes().size() == X_DIM_NUM,
-                "X dimNum should be 2, got ", x.sizes().size(), OPS_ERROR(ErrCode::VALUE));
-    TORCH_CHECK(group_index.sizes().size() == 1,
-                "Group_index dimNum should be 1, got ", group_index.sizes().size(), OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(
+        x.sizes().size() == X_DIM_NUM, "X dimNum should be 2, got ", x.sizes().size(), OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(group_index.sizes().size() == 1, "Group_index dimNum should be 1, got ", group_index.sizes().size(),
+        OPS_ERROR(ErrCode::VALUE));
+    auto y_shape = op_infer::array_to_small_vector(x.sizes());
     at::Tensor y;
     at::Tensor mxscale;
-    ASCEND_LOGI("[npu_grouped_dynamic_mx_quant]: Getting aclTensor y dtype by Parameter(dst_type): %ld", dst_type);
-    aclDataType y_acltype = c10_npu::GetAclDataType(dst_type);
-    auto y_shape = op_infer::array_to_small_vector(x.sizes());
-    auto mxscale_shape = op_infer::array_to_small_vector(x.sizes());
-    mxscale_shape.emplace_back(NUM_TWO);
 
-    TORCH_CHECK(blocksize == BLOCKSIZE_BASE_NUM,
-        "Parameter blocksize must be 32, got ", blocksize, OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(scale_alg == 0 || scale_alg == 1,
-        "Parameter scale_alg must be 0 or 1, got ", scale_alg, OPS_ERROR(ErrCode::PARAM));
+    aclDataType y_acltype = c10_npu::GetAclDataType(dst_type);
+    int64_t y_last_dim_val = y_shape[x.dim() - 1];
+    ASCEND_LOGI("[npu_grouped_dynamic_mx_quant]: Getting aclTensor y dtype by Parameter(dst_type): %ld", dst_type);
+    bool special_output_type = (y_acltype == aclDataType::ACL_FLOAT4_E2M1 || y_acltype == aclDataType::ACL_FLOAT4_E1M2);
+    if (special_output_type) {
+        TORCH_CHECK(y_last_dim_val % FP4_IN_UINT8_NUM == 0,
+            "The last dim of input x must be divisible by 2 if "
+            "y dtype is torch_npu.float4_e2m1fn_x2 or torch_npu.float4_e1m2" +
+                OPS_ERROR(ErrCode::PARAM));
+        y_shape[x.dim() - 1] = y_last_dim_val / FP4_IN_UINT8_NUM;
+        y = npu_preparation::apply_tensor_without_format(y_shape, c10::ScalarType::Byte);
+    } else {
+        at::ScalarType scalar_dtype = npu_preparation::convert_to_scalar_type(y_acltype);
+        y = npu_preparation::apply_tensor_without_format(y_shape, c10::dtype(scalar_dtype));
+    }
+
+    TORCH_CHECK(
+        blocksize == BLOCKSIZE_BASE_NUM, "Parameter blocksize must be 32, got ", blocksize, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(scale_alg == 0 || scale_alg == 1 || scale_alg == 2, "Parameter scale_alg must be 0, 1 or 2, got ",
+        scale_alg, OPS_ERROR(ErrCode::PARAM));
+
     // if x shape is [m, n], group_index shape is [g] (without initial 0 and ends with m),
     // then mxscale shape is [m / (blocksize * 2) + g, n, 2]
+    auto mxscale_shape = op_infer::array_to_small_vector(x.sizes());
+    mxscale_shape.emplace_back(NUM_TWO);
     mxscale_shape[0] = mxscale_shape[0] / blocksize / NUM_TWO + group_index.sizes()[0];
-
-    char *round_mode_ptr = const_cast<char *>(round_mode.data());
-    // prepare for empty output tensor
-    at::ScalarType scalar_dtype = npu_preparation::convert_to_scalar_type(y_acltype);
-    y = npu_preparation::apply_tensor_without_format(y_shape, c10::dtype(scalar_dtype));
     mxscale = npu_preparation::apply_tensor_without_format(mxscale_shape, c10::dtype(at::ScalarType::Byte));
 
-    ASCEND_LOGI("[npu_grouped_dynamic_mx_quant]: Setting aclTensor y dtype to: %s", at_npu::native::AclDataTypeToString(y_acltype).c_str());
+    char *round_mode_ptr = const_cast<char *>(round_mode.data());
+    ASCEND_LOGI("[npu_grouped_dynamic_mx_quant]: Setting aclTensor y dtype to: %s",
+        at_npu::native::AclDataTypeToString(y_acltype).c_str());
     TensorWrapper y_wrapper = {y, y_acltype};
     TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
     int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
+    double dst_type_max_optional = dst_type_max.has_value() ? dst_type_max.value() : DEFAULT_DST_TYPE_MAX;
 
     static bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicMxQuantV2");
     if (npu_support_v2) {
-        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuantV2, x, group_index, round_mode_ptr, y_acltype, blocksize, scale_alg_optional, DEFAULT_DST_TYPE_MAX, y_wrapper, mxscale_wrapper);
+        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuantV2, x, group_index, round_mode_ptr, y_acltype, blocksize,
+            scale_alg_optional, dst_type_max_optional, y_wrapper, mxscale_wrapper);
     } else {
-        TORCH_CHECK(!scale_alg.has_value(),
-            "The current CANN version does not support the parameter scale_alg. It is recommended to upgrade the CANN package.",
+        TORCH_CHECK(!scale_alg.has_value() && !dst_type_max.has_value(),
+            "The current CANN version does not support the parameter scale_alg and dst_type_max. "
+            "It is recommended to upgrade the CANN package.",
             OPS_ERROR(ErrCode::PARAM));
-        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuant, x, group_index, round_mode_ptr, y_acltype, blocksize, y_wrapper, mxscale_wrapper);
+        EXEC_NPU_CMD(aclnnGroupedDynamicMxQuant, x, group_index, round_mode_ptr, y_acltype, blocksize, y_wrapper,
+            mxscale_wrapper);
     }
 
     return std::make_tuple(y, mxscale);

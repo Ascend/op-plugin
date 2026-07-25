@@ -12,9 +12,9 @@ from torch.testing import assert_close
 
 
 class TestGroupedDynamicMxQuant(TestCase):
-    def custom_op_exec(self, input_tensor, group_index_tensor, round_mode="rint", dst_type=23, blocksize=32, scale_alg=0):
+    def custom_op_exec(self, input_tensor, group_index_tensor, round_mode="rint", dst_type=23, blocksize=32, scale_alg=0, dst_type_max=0.0):
         return torch_npu.npu_grouped_dynamic_mx_quant(
-            input_tensor, group_index_tensor, round_mode=round_mode, dst_type=dst_type, blocksize=32, scale_alg=scale_alg)
+            input_tensor, group_index_tensor, round_mode=round_mode, dst_type=dst_type, blocksize=32, scale_alg=scale_alg, dst_type_max=dst_type_max)
 
     def supported_op_exec(self, input_tensor):
         if torch.all(torch.eq(input_tensor, 0.0)) and input_tensor.shape == torch.Size([1, 2]):
@@ -38,7 +38,7 @@ class TestGroupedDynamicMxQuant(TestCase):
         input_tensor = input_tensor.to(device)
         group_index_tensor = group_index_tensor.to(device)
         supported_output = self.supported_op_exec(input_tensor.clone())
-        custom_output = self.custom_op_exec(input_tensor.clone(), group_index_tensor.clone(), "rint", 23, 32, 0)
+        custom_output = self.custom_op_exec(input_tensor.clone(), group_index_tensor.clone(), "rint", 23, 32, 0, 0.0)
         y = custom_output[0].view([1, 2]).view(torch.uint8)
         mxscale = custom_output[1].view([1, 2, 2]).view(torch.uint8)
 
