@@ -13,7 +13,10 @@
 
 实现“Transformer Attention Score”的融合计算，实现的计算公式如下：
 
-![](../../figures/zh-cn_formulaimage_0000002272066629.png)
+$$
+y=Softmax(Mask(scale*(pse+query*key^{T}),atten\_mask),keep\_prob)\\
+attention\_out=Dropout(y)*value
+$$
 
 该接口为`torch_npu.npu_fusion_attention`支持图模式的版本，aclgraph支持`input_layout`为`BNSD`的场景。
 
