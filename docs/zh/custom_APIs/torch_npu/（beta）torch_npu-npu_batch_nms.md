@@ -22,14 +22,14 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 
 ## 参数说明
 
-- **self** \(`Tensor`)：必填值，输入框的tensor，包含batch大小，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
-- **scores** \(`Tensor`)：必填值，输入tensor，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
-- **score\_threshold** \(`float`)：必填值，指定评分过滤器的阈值，用于筛选框，去除得分较低的框，数据类型为`float32`。
-- **iou\_threshold** \(`float`)：必填值，指定nms的iou\_threshold，用于设定阈值，去除高于阈值的框，数据类型为`float32`。
-- **max\_size\_per\_class** \(`int`)：必填值，指定每个类别的最大可选的框数。
-- **max\_total\_size** \(`int`)：必填值，指定每个batch最大可选的框数。
-- **change\_coordinate\_frame** \(`bool`)：可选值，是否正则化输出框坐标矩阵，默认值为False。
-- **transpose\_box** \(`bool`)：可选值，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。 False表示boxes使用(N, 4)排布。
+- **self** \(`Tensor`)：必选参数，输入框的tensor，包含batch大小，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
+- **scores** \(`Tensor`)：必选参数，输入tensor，数据类型为`float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
+- **score\_threshold** \(`float`)：必选参数，指定评分过滤器的阈值，用于筛选框，去除得分较低的框，数据类型为`float32`。
+- **iou\_threshold** \(`float`)：必选参数，指定nms的iou\_threshold，用于设定阈值，去除高于阈值的框，数据类型为`float32`。
+- **max\_size\_per\_class** \(`int`)：必选参数，指定每个类别的最大可选的框数。
+- **max\_total\_size** \(`int`)：必选参数，指定每个batch最大可选的框数。
+- **change\_coordinate\_frame** \(`bool`)：可选参数，是否正则化输出框坐标矩阵，默认值为False。
+- **transpose\_box** \(`bool`)：可选参数，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。 False表示boxes使用(N, 4)排布。
 
 ## 返回值说明
 

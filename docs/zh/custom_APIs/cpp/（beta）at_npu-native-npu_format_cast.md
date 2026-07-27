@@ -22,7 +22,7 @@ acl_format：int64_t类型，转换后的目标格式。
 
 ## 约束说明
 
-<term>Ascend 950 系列产品</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
+<term>Ascend 950DT</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
 
 - 当`self`的dtype为float16、bfloat16时，若`self`维度表示为[k, n]，则k为1场景暂不支持。
 - 调用本接口转为FRACTAL_NZ格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
@@ -30,7 +30,7 @@ acl_format：int64_t类型，转换后的目标格式。
 
 ## 支持的型号
 
-- <term>Ascend 950 系列产品</term>
+- <term>Ascend 950DT</term>
 - <term>Atlas A3 训练系列产品</term>
 - <term>Atlas A2 训练系列产品</term>
 - <term>Atlas 训练系列产品</term>
