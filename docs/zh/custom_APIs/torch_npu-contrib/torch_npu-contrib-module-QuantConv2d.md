@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-- API功能：QuantConv2d是对torch_npu.npu_quant_conv2d接口的封装类，为用户提供Conv2d算子量化相关功能。
+- API功能：为用户提供Conv2d算子量化相关功能。
 
 - 计算公式：
 
