@@ -28,22 +28,18 @@ torch_npu.npu.set_dump(path_to_json)
 ## 调用示例
 
 ```python
->>> import os
 >>> import torch
 >>> import torch_npu
 >>>
->>> # 1. 设置环境变量（需在启动脚本中设置，或代码中提前设置）
->>> os.environ["NPU_DUMP_ENABLE"] = "1"
->>>
->>> # 2. 指定Dump配置文件路径
->>> torch_npu.npu.set_dump("/home/HwHiAiUser/dump.json")
->>>
->>> # 3. 启用Dump
+>>> # 1. 初始化Dump
 >>> torch_npu.npu.init_dump()
 >>>
->>> # 4. 执行模型推理（示例）
+>>> # 2. 指定Dump 配置文件路径
+>>> torch_npu.npu.set_dump("/home/HwHiAiUser/dump.json")
+>>>
+>>> # 3. 执行模型推理（示例）
 >>> # output = model(input_data)
 >>>
->>> # 5. 结束Dump
+>>> # 4. 结束Dump
 >>> torch_npu.npu.finalize_dump()
 ```

@@ -103,12 +103,12 @@
 </tr>
 <tr id="row18488172715910"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1036734319241"><a name="p1036734319241"></a><a name="p1036734319241"></a><a href="（beta）torch_npu-npu-init_dump.md">（beta）torch_npu.npu.init_dump</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p428393116322"><a name="p428393116322"></a><a name="p428393116322"></a>初始化dump配置。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p428393116322"><a name="p428393116322"></a><a name="p428393116322"></a>初始化dump，是dump流程的起始接口。</p>
 </td>
 </tr>
 <tr id="row262919311295"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p13367154312418"><a name="p13367154312418"></a><a name="p13367154312418"></a><a href="（beta）torch_npu-npu-finalize_dump.md">（beta）torch_npu.npu.finalize_dump</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p8367104315247"><a name="p8367104315247"></a><a name="p8367104315247"></a>结束dump。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p8367104315247"><a name="p8367104315247"></a><a name="p8367104315247"></a>结束dump，并触发dump数据落盘。</p>
 </td>
 </tr>
 <tr id="row1629143112919"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p1936712431249"><a name="p1936712431249"></a><a name="p1936712431249"></a><a href="（beta）torch_npu-npu-set_compile_mode.md">（beta）torch_npu.npu.set_compile_mode</a></p>
