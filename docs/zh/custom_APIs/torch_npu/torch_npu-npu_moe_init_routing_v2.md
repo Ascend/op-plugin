@@ -608,12 +608,12 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **scale** (`Tensor`)：可选参数，默认为None，用于计算量化结果的参数。数据类型支持`float32`，数据格式要求为$ND$。如果不输入表示计算时不使用`scale`，且输出`expanded_scale`中的值无意义。
     - 非量化场景下，如果输入则要求为1维张量，shape为(NUM_ROWS,)。
-    - 静态量化场景必须输入，输入要求为1D的Tensor，shape为(1,)
+    - 静态量化场景必须输入，输入要求为1D的Tensor，shape为(1,)。
     - 动态量化场景下，如果输入则要求为2维张量，shape为(expert_end-expert_start, H)或(1, H)。
 
 - **offset** (`Tensor`)：可选参数，默认为None，用于计算量化结果的偏移值。数据类型支持`float32`，数据格式要求为$ND$。
     - 在非量化场景下不输入。
-    - 静态量化场景必须输入，输入要求为1维张量，shape为(1,)
+    - 静态量化场景必须输入，输入要求为1维张量，shape为(1,)。
     - 动态量化场景下不输入。
 
 - **active_num** (`int`)：可选参数，默认值为-1，表示总的最大处理row数，输出`expanded_x`只有这么多行是有效的。在dropless场景下，取值需大于等于-1；-1和0均表示按全部tokens处理，大于0时表示Active场景，约束所有专家共同处理tokens总量。
