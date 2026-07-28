@@ -22,26 +22,25 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16, 32, 64};
 static const int DIM_TWO = 2;
-std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
-    const at::Tensor& self, const at::Tensor& x2, c10::string_view hcom, int64_t world_size, c10::string_view reduce_op,
-    const c10::optional<at::Tensor>& bias, const c10::optional<at::Tensor>& x1_scale,
-    const c10::optional<at::Tensor>& x2_scale, const c10::optional<at::Tensor>& quant_scale, int64_t block_size,
-    int64_t comm_turn, c10::OptionalIntArrayRef group_sizes, bool amax_output, c10::optional<int64_t> y_dtype,
+std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor &self, const at::Tensor &x2,
+    c10::string_view hcom, int64_t world_size, c10::string_view reduce_op, const c10::optional<at::Tensor> &bias,
+    const c10::optional<at::Tensor> &x1_scale, const c10::optional<at::Tensor> &x2_scale,
+    const c10::optional<at::Tensor> &quant_scale, int64_t block_size, int64_t comm_turn,
+    c10::OptionalIntArrayRef group_sizes, bool amax_output, c10::optional<int64_t> y_dtype,
     c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype, c10::optional<int64_t> x1_scale_dtype,
-    c10::optional<int64_t> x2_scale_dtype, c10::optional<c10::string_view> comm_mode)
-{
+    c10::optional<int64_t> x2_scale_dtype, c10::optional<c10::string_view> comm_mode) {
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
-                "world_size should be in [2, 4, 8, 16, 32, 64], but the actual value is ", world_size,
-                OPS_ERROR(ErrCode::VALUE));
+        "world_size should be in [2, 4, 8, 16, 32, 64], but the actual value is ", world_size,
+        OPS_ERROR(ErrCode::VALUE));
     TORCH_CHECK(self.dim() == DIM_TWO && x2.dim() == DIM_TWO,
-                "Both inputs of mm are required to be 2D, but the actual inputs are ", self.dim(), "D and ", x2.dim(),
-                "D", OPS_ERROR(ErrCode::PARAM));
+        "Both inputs of mm are required to be 2D, but the actual inputs are ", self.dim(), "D and ", x2.dim(), "D",
+        OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(1) == x2.size(0),
-                "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ",
-                self.size(1), " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
+        "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ", self.size(1),
+        " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(world_size != 0, "world_size cannot be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
-                OPS_ERROR(ErrCode::PARAM));
+        OPS_ERROR(ErrCode::PARAM));
     bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
     c10::string_view default_comm_mode = isSocBelowAscend950 ? "aiv" : "ai_cpu";
     c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
@@ -60,27 +59,50 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
             auto selfType = c10::getDtypeNames(self.scalar_type()).first;
             auto yType = c10::getDtypeNames(y_scalar_type).first;
             TORCH_CHECK(y_scalar_type == self.scalar_type(), "When input is float16 or bfloat16, output should ",
-                        "be the same as input dtype. Expected output dtype:", selfType,
-                        ", but got:", yType,
-                        OPS_ERROR(ErrCode::PARAM));
+                "be the same as input dtype. Expected output dtype:", selfType, ", but got:", yType,
+                OPS_ERROR(ErrCode::PARAM));
         }
     } else {
-        TORCH_CHECK(y_dtype.has_value(), "input dtype is not bf16 or fp16, but no input y_dtype",
-                    OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(
+            y_dtype.has_value(), "input dtype is not bf16 or fp16, but no input y_dtype", OPS_ERROR(ErrCode::PARAM));
         auto output_acltype = c10_npu::GetAclDataType(y_dtype.value());
         output_scalar_type = npu_preparation::convert_to_scalar_type(output_acltype);
     }
     c10::TensorOptions options = self.options().dtype(output_scalar_type);
     auto result = npu_preparation::apply_tensor_without_format(output_size, options);
-    char *reduce_op_ptr = const_cast<char*>(reduce_op_str.data());
-    char *hcom_ptr = const_cast<char*>(hcom_str.data());
-    char *comm_mode_ptr = const_cast<char*>(comm_mode_str.data());
-    const at::Tensor& bias_real = bias.value_or(at::Tensor());
-    const at::Tensor& quant_scale_real = quant_scale.value_or(at::Tensor());
+    char *reduce_op_ptr = const_cast<char *>(reduce_op_str.data());
+    char *hcom_ptr = const_cast<char *>(hcom_str.data());
+    char *comm_mode_ptr = const_cast<char *>(comm_mode_str.data());
+    const at::Tensor &bias_real = bias.value_or(at::Tensor());
+    const at::Tensor &quant_scale_real = quant_scale.value_or(at::Tensor());
     int64_t stream_mode = ACL_STOP_ON_FAILURE;
     auto amax_output_result = at::Tensor();
     if (amax_output) {
         amax_output_result = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kFloat));
+    }
+    bool is_check_mxfp4 =
+        (x1_dtype.has_value() && x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+            x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
+    if (is_check_mxfp4) {
+        TORCH_CHECK(x1_dtype.has_value(), "In the mxfp4 scenario, x1_dtype is required pram and cannot be None.",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x2_dtype.has_value(), "In the mxfp4 scenario, x2_dtype is required pram and cannot be None.",
+            OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+                x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+            "In the mxfp4 scenario, both x1_dtype and x2_dtype must be float4_e2m1, but got x1_dtype: [",
+            op_plugin::utils::DTypeToString(x1_dtype.value()), "], x2_dtype: [",
+            op_plugin::utils::DTypeToString(x2_dtype.value()), "].", OPS_ERROR(ErrCode::VALUE));
+        TORCH_CHECK(x1_scale_dtype.has_value(),
+            "In the mxfp4 scenario, x1_scale_dtype is required pram and cannot be None.", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x2_scale_dtype.has_value(),
+            "In the mxfp4 scenario, x2_scale_dtype is required pram and cannot be None.", OPS_ERROR(ErrCode::PARAM));
+        TORCH_CHECK(x1_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0) &&
+                x2_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0),
+            "In the mxfp4 scenario, both x1_scale_dtype and x2_scale_dtype must be float8_e8m0, but got "
+            "x1_scale_dtype: [",
+            op_plugin::utils::DTypeToString(x1_scale_dtype.value()), "], x2_scale_dtype: [",
+            op_plugin::utils::DTypeToString(x2_scale_dtype.value()), "].", OPS_ERROR(ErrCode::VALUE));
     }
     TensorWrapper x1_wrapper = make_wrapper(self, x1_dtype);
     TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
@@ -89,10 +111,10 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(
     TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
     TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
     EXEC_NPU_CMD(aclnnMatmulReduceScatterV2, x1_wrapper, x2_wrapper, bias_real, x1_scale_wrapper, x2_scale_wrapper,
-                 quant_scale_real, block_size, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, group_size, comm_mode_ptr,
-                 result, amax_output_result);
+        quant_scale_real, block_size, hcom_ptr, reduce_op_ptr, comm_turn, stream_mode, group_size, comm_mode_ptr,
+        result, amax_output_result);
 
     FLOP_COUNT(FlopCounter::mm_flop, self, x2);
     return std::tie(result, amax_output_result);
 }
-}  // namespace op_api
+} // namespace op_api
