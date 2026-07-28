@@ -1,65 +1,127 @@
 ---
-Language: Cpp
-Standard: c++17
-
-# ====================== 行宽不超过 120 ======================
-ColumnLimit: 120
-
-# ====================== 空格缩进 ======================
-IndentWidth: 4
-TabWidth: 4
-UseTab: Never
-
-# ====================== &/* 跟随变量名 ======================
-PointerAlignment: Right
-ReferenceAlignment: Right
-
-# ====================== if/for/while语句格式（不自动加大括号，避免破坏宏结构）======================
-# InsertBraces: true                # 已屏蔽：自动给单行 if/for 加 {}，在宏/条件编译中有风险
+AccessModifierOffset: -1
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlinesLeft: true
+AlignOperands:   false
+AlignTrailingComments: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
-AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Empty  # 仅允许空函数体 {} 合并到一行，防止短函数被压成单行
-AllowShortLambdasOnASingleLine: Empty    # 同上，防止短 lambda 被压成单行
-AllowShortEnumsOnASingleLine: false      # enum 不允许单行
-
-# ====================== 表达式换行保持一致性，运算符放行末 ======================
-BreakBeforeBinaryOperators: None
-
-# ====================== 使用 K&R 缩进风格 ======================
-BreakBeforeBraces: Custom
+AlwaysBreakAfterReturnType: None
+AlwaysBreakBeforeMultilineStrings: true
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments: false
+BinPackParameters: false
 BraceWrapping:
-  AfterClass: false
+  AfterClass:      false
   AfterControlStatement: false
-  AfterEnum: false
-  AfterFunction: false
-  AfterNamespace: false
-  AfterStruct: false
-  AfterUnion: false
-  BeforeElse: false
-  IndentBraces: false
-
-# ====================== 合理安排空行，保持代码紧凑 ======================
-MaxEmptyLinesToKeep: 1
+  AfterEnum:       false
+  AfterFunction:   false
+  AfterNamespace:  false
+  AfterObjCDeclaration: false
+  AfterStruct:     false
+  AfterUnion:      false
+  BeforeCatch:     false
+  BeforeElse:      false
+  IndentBraces:    false
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Attach
+BreakBeforeTernaryOperators: true
+BreakConstructorInitializersBeforeComma: false
+BreakAfterJavaFieldAnnotations: false
+BreakStringLiterals: false
+ColumnLimit:     80
+CommentPragmas:  '^ IWYU pragma:'
+CompactNamespaces: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 4
+ContinuationIndentWidth: 4
+Cpp11BracedListStyle: true
+DerivePointerAlignment: false
+DisableFormat:   false
+ForEachMacros:
+  - FOR_EACH_RANGE
+  - FOR_EACH
+IncludeCategories:
+  - Regex:           '^<.*\.h(pp)?>'
+    Priority:        1
+  - Regex:           '^<.*'
+    Priority:        2
+  - Regex:           '.*'
+    Priority:        3
+IndentCaseLabels: true
+IndentWidth:     2
+IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
+MacroBlockBegin: ''
+MacroBlockEnd:   ''
+Macros:
+  - >-
+    PyObject_HEAD_INIT(type)={
+        /* this is not exactly match with PyObject_HEAD_INIT in Python source code
+         * but it is enough for clang-format */
+        { 0xFFFFFFFF },
+        (type)
+    },
+  - >-
+    PyVarObject_HEAD_INIT(type, size)={
+        {
+            /* manually expand PyObject_HEAD_INIT(type) above
+             * because clang-format do not support recursive expansion */
+            { 0xFFFFFFFF },
+            (type)
+        },
+        (size)
+    },
+MaxEmptyLinesToKeep: 1
+NamespaceIndentation: None
+PenaltyBreakBeforeFirstCallParameter: 1
+PenaltyBreakComment: 300
+PenaltyBreakFirstLessLess: 120
+PenaltyBreakString: 1000
+PenaltyExcessCharacter: 1000000
+PenaltyReturnTypeOnItsOwnLine: 2000000
+PointerAlignment: Left
+ReflowComments:  true
+SortIncludes:    false
+SpaceAfterCStyleCast: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeParens: ControlStatements
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 1
+SpacesInAngles:  false
+SpacesInContainerLiterals: true
+SpacesInCStyleCastParentheses: false
+SpacesInParentheses: false
+SpacesInSquareBrackets: false
+Standard:        c++17
+StatementMacros:
+  - C10_DEFINE_bool
+  - C10_DEFINE_int
+  - C10_DEFINE_int32
+  - C10_DEFINE_int64
+  - C10_DEFINE_string
+  - C10_DEFINE_REGISTRY_WITHOUT_WARNING
+  - C10_REGISTER_CREATOR
+  - DEFINE_BINARY
+  - PyObject_HEAD
+  - PyObject_VAR_HEAD
+  - PyException_HEAD
+  - TORCH_DECLARE_bool
 
-# ====================== 注释格式 ======================
-SpacesBeforeTrailingComments: 1  # 代码与注释之间 1 个空格
-
-# ###########################################################
-# 强制关闭所有额外自动行为（无隐藏规则）
-# ###########################################################
-SortIncludes: false                  # 关闭头文件排序
-FixNamespaceComments: false          # 不修改命名空间注释
-ReflowComments: false                # 不自动重排注释换行
-SortUsingDeclarations: false         # 不排序 using
-IndentPPDirectives: None             # 不缩进宏
-AlignAfterOpenBracket: DontAlign     # 不自动对齐括号
-AlignArrayOfStructures: None         # 不自动对齐结构体
-AlignConsecutiveAssignments: false   # 不自动对齐赋值
-AlignConsecutiveBitFields: false
-AlignConsecutiveDeclarations: false
-AlignConsecutiveMacros: false
-AlignEscapedNewlines: DontAlign
-AlignOperands: DontAlign
-AlignTrailingComments: false
+TabWidth:        8
+UseTab:          Never
+---
+Language: ObjC
+ColumnLimit: 120
+AlignAfterOpenBracket: Align
+IndentWidth: 2
+ObjCBlockIndentWidth: 2
+ObjCSpaceAfterProperty: false
+ObjCSpaceBeforeProtocolList: false
+...

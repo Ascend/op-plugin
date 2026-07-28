@@ -84,7 +84,6 @@ repos:
     hooks:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
-        exclude: ^torchnpugen/  # codegen 模板含 ${var} 占位符，不能被 clang-format 处理
         args:
           - "--style=file"  # 读取 .clang-format 文件
           - "--verbose"

@@ -18,15 +18,15 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
-at::Tensor &__ilshift__(at::Tensor &self, const at::Tensor &other) {
-    DO_COMPATIBILITY(aclnnLeftShift, acl_op::__ilshift__(self, other));
-    EXEC_NPU_CMD(aclnnLeftShift, self, other, self);
-    return self;
+at::Tensor& __ilshift__(at::Tensor& self, const at::Tensor& other) {
+  DO_COMPATIBILITY(aclnnLeftShift, acl_op::__ilshift__(self, other));
+  EXEC_NPU_CMD(aclnnLeftShift, self, other, self);
+  return self;
 }
 
-at::Tensor &__ilshift__(at::Tensor &self, const at::Scalar &other) {
-    DO_COMPATIBILITY(aclnnLeftShifts, acl_op::__ilshift__(self, other));
-    EXEC_NPU_CMD(aclnnLeftShifts, self, other, self);
-    return self;
+at::Tensor& __ilshift__(at::Tensor& self, const at::Scalar& other) {
+  DO_COMPATIBILITY(aclnnLeftShifts, acl_op::__ilshift__(self, other));
+  EXEC_NPU_CMD(aclnnLeftShifts, self, other, self);
+  return self;
 }
 } // namespace op_api

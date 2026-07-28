@@ -21,32 +21,32 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
-at::Tensor &asinh_out_npu_nocheck(at::Tensor &result, const at::Tensor &self) {
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Asinh").Input(self).Output(result).Run();
-    return result;
+at::Tensor& asinh_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Asinh").Input(self).Output(result).Run();
+  return result;
 }
 } // namespace
 
-at::Tensor &asinh_out(const at::Tensor &self, at::Tensor &out) {
-    npu_preparation::CheckOut({self}, out, self);
-    if (!npu_utils::check_match(&out)) {
-        at::Tensor contiguous_out = npu_utils::format_contiguous(out);
-        asinh_out_npu_nocheck(contiguous_out, self);
-        npu_utils::format_fresh_view(out, contiguous_out);
-    } else {
-        asinh_out_npu_nocheck(out, self);
-    }
-    return out;
+at::Tensor& asinh_out(const at::Tensor& self, at::Tensor& out) {
+  npu_preparation::CheckOut({self}, out, self);
+  if (!npu_utils::check_match(&out)) {
+    at::Tensor contiguous_out = npu_utils::format_contiguous(out);
+    asinh_out_npu_nocheck(contiguous_out, self);
+    npu_utils::format_fresh_view(out, contiguous_out);
+  } else {
+    asinh_out_npu_nocheck(out, self);
+  }
+  return out;
 }
 
-at::Tensor asinh(const at::Tensor &self) {
-    at::Tensor result = npu_preparation::apply_tensor(self);
-    asinh_out_npu_nocheck(result, self);
-    return result;
+at::Tensor asinh(const at::Tensor& self) {
+  at::Tensor result = npu_preparation::apply_tensor(self);
+  asinh_out_npu_nocheck(result, self);
+  return result;
 }
 
-at::Tensor &asinh_(at::Tensor &self) {
-    return acl_op::asinh_out(self, self);
+at::Tensor& asinh_(at::Tensor& self) {
+  return acl_op::asinh_out(self, self);
 }
 } // namespace acl_op

@@ -16,15 +16,21 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &_addmm_activation_out(const at::Tensor &self, const at::Tensor &mat1, const at::Tensor &mat2,
-    const at::Scalar &beta, const at::Scalar &alpha, bool use_gelu, at::Tensor &result) {
-    op_api::addmm_out(self, mat1, mat2, beta, alpha, result);
-    if (use_gelu) {
-        at::gelu_(result);
-    } else {
-        at::relu_(result);
-    }
-    return result;
+at::Tensor& _addmm_activation_out(
+    const at::Tensor& self,
+    const at::Tensor& mat1,
+    const at::Tensor& mat2,
+    const at::Scalar& beta,
+    const at::Scalar& alpha,
+    bool use_gelu,
+    at::Tensor& result) {
+  op_api::addmm_out(self, mat1, mat2, beta, alpha, result);
+  if (use_gelu) {
+    at::gelu_(result);
+  } else {
+    at::relu_(result);
+  }
+  return result;
 }
 
 } // namespace op_api

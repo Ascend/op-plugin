@@ -20,16 +20,17 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &__irshift__(at::Tensor &self, const at::Tensor &other) {
-    DO_COMPATIBILITY(aclnnRightShift, acl_op::__irshift__(self, other));
-    EXEC_NPU_CMD(aclnnRightShift, self, other, self);
-    return self;
+at::Tensor& __irshift__(at::Tensor& self, const at::Tensor& other) {
+  DO_COMPATIBILITY(aclnnRightShift, acl_op::__irshift__(self, other));
+  EXEC_NPU_CMD(aclnnRightShift, self, other, self);
+  return self;
 }
 
-at::Tensor &__irshift__(at::Tensor &self, const at::Scalar &other) {
-    DO_COMPATIBILITY(aclnnRightShift, acl_op::__irshift__(self, other));
-    at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(other, self.scalar_type(), self.device());
-    EXEC_NPU_CMD(aclnnRightShift, self, scalar_tensor, self);
-    return self;
+at::Tensor& __irshift__(at::Tensor& self, const at::Scalar& other) {
+  DO_COMPATIBILITY(aclnnRightShift, acl_op::__irshift__(self, other));
+  at::Tensor scalar_tensor = npu_preparation::copy_scalar_to_device(
+      other, self.scalar_type(), self.device());
+  EXEC_NPU_CMD(aclnnRightShift, self, scalar_tensor, self);
+  return self;
 }
 } // namespace op_api

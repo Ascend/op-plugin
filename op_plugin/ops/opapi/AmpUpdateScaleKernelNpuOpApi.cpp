@@ -18,10 +18,23 @@
 
 namespace op_api {
 
-at::Tensor &_amp_update_scale_(at::Tensor &current_scale, at::Tensor &growth_tracker, const at::Tensor &found_inf,
-    double growth_factor, double backoff_factor, int64_t growth_interval) {
-    EXEC_NPU_CMD(aclnnAmpUpdateScale, current_scale, growth_tracker, found_inf, growth_factor, backoff_factor,
-        growth_interval, current_scale, growth_tracker);
-    return current_scale;
+at::Tensor& _amp_update_scale_(
+    at::Tensor& current_scale,
+    at::Tensor& growth_tracker,
+    const at::Tensor& found_inf,
+    double growth_factor,
+    double backoff_factor,
+    int64_t growth_interval) {
+  EXEC_NPU_CMD(
+      aclnnAmpUpdateScale,
+      current_scale,
+      growth_tracker,
+      found_inf,
+      growth_factor,
+      backoff_factor,
+      growth_interval,
+      current_scale,
+      growth_tracker);
+  return current_scale;
 }
 } // namespace op_api
