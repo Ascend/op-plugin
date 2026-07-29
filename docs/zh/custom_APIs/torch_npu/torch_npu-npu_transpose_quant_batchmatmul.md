@@ -64,6 +64,11 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
   - `x1_scale`、`x2_scale`仅支持4维输入，`x1_scale`要求shape为\(m, b, k/64, 2\)；`perm_x2`为\[0,1,2\]时，`x2_scale`要求shape为\(b, k/64, n, 2\)，`perm_x2`为\[0,2,1\]时，`x2_scale`要求shape为\(b, n, k/64, 2\)。
   - 支持将`x2`转为昇腾亲和的数据排布以提高搬运效率。需要调用`torch_npu.npu_format_cast`完成输入`x2`（weight）为昇腾亲和的数据排布功能。
 
+- T-C量化场景下：
+  - `x1`、`x2`仅支持torch_npu.hifloat8输入。
+  - `x2`仅支持ND格式输入。
+  - `x1_scale`、`x2_scale`仅支持1维输入；`x1_scale`支持为空，非空时要求shape为\(1, \)，`x2_scale`要求shape为\(n, \)。
+
 ## 调用示例
 
 - 单算子模式调用
@@ -86,7 +91,7 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
 
 - 图模式调用
   - K-C量化场景：
-  
+
     ```python
     import torch
     import torch_npu
@@ -115,4 +120,3 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     output = model(x1.npu(), x2.npu(), x1_scale.npu(), x2_scale.npu(), torch.float16, (1, 0, 2), (0, 1, 2), (1, 0, 2)).to("cpu")
     ```
-    
