@@ -24,47 +24,42 @@ at::Tensor& var_out(
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
     bool keepdim,
-    at::Tensor& result)
-{
-    if (!correction_fits_aclnn_int64(correction)) {
-        at::Tensor cpu_out = result.cpu();
-        at::var_out(cpu_out, self.cpu(), dim, correction, keepdim);
-        result.copy_(cpu_out);
-        return result;
-    }
-    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
-    return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
+    at::Tensor& result) {
+  if (!correction_fits_aclnn_int64(correction)) {
+    at::Tensor cpu_out = result.cpu();
+    at::var_out(cpu_out, self.cpu(), dim, correction, keepdim);
+    result.copy_(cpu_out);
+    return result;
+  }
+  bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+  int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+  return cal_var_out(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim, result);
 }
 
 at::Tensor var(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
-    bool keepdim)
-{
-    if (!correction_fits_aclnn_int64(correction)) {
-        return at::var(self.cpu(), dim, correction, keepdim).to(self.options());
-    }
-    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
-    return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
+    bool keepdim) {
+  if (!correction_fits_aclnn_int64(correction)) {
+    return at::var(self.cpu(), dim, correction, keepdim).to(self.options());
+  }
+  bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+  int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+  return cal_var(self, dim.value_or(at::IntArrayRef{}), real_correction, unbiased, keepdim);
 }
 
 std::tuple<at::Tensor, at::Tensor> var_mean(
     const at::Tensor& self,
     at::OptionalIntArrayRef dim,
     const c10::optional<c10::Scalar>& correction,
-    bool keepdim)
-{
-    if (!correction_fits_aclnn_int64(correction)) {
-        auto cpu_tup = at::var_mean(self.cpu(), dim, correction, keepdim);
-        return std::make_tuple(
-            std::get<0>(cpu_tup).to(self.options()),
-            std::get<1>(cpu_tup).to(self.options()));
-    }
-    bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
-    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
-    return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
+    bool keepdim) {
+  if (!correction_fits_aclnn_int64(correction)) {
+    auto cpu_tup = at::var_mean(self.cpu(), dim, correction, keepdim);
+    return std::make_tuple(std::get<0>(cpu_tup).to(self.options()), std::get<1>(cpu_tup).to(self.options()));
+  }
+  bool unbiased = !(correction.has_value() && correction.value().toLong() == 0);
+  int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+  return cal_var_mean(self, dim.value_or(at::IntArrayRef{}), unbiased, real_correction, keepdim);
 }
 } // namespace acl_op

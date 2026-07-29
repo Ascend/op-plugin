@@ -20,39 +20,33 @@ using namespace std;
 namespace atb {
 
 using LinearParam = atb::infer::LinearParam;
-void _npu_matmul_add_fp32(const at::Tensor &x, const at::Tensor &weight, at::Tensor & C)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(x));
-    OpParamCache<LinearParam>& linearParamCache = OpParamCache<LinearParam>::getInstance();
-    LinearParam  linearParam;
-    linearParam.transposeA = true;                    // 是否转置A矩阵
-    linearParam.transposeB = false;                     // 是否转置B矩阵
-    linearParam.hasBias = false;
-    linearParam.enAccum = true;
+void _npu_matmul_add_fp32(const at::Tensor& x, const at::Tensor& weight, at::Tensor& C) {
+  const c10::OptionalDeviceGuard device_guard(device_of(x));
+  OpParamCache<LinearParam>& linearParamCache = OpParamCache<LinearParam>::getInstance();
+  LinearParam linearParam;
+  linearParam.transposeA = true; // 是否转置A矩阵
+  linearParam.transposeB = false; // 是否转置B矩阵
+  linearParam.hasBias = false;
+  linearParam.enAccum = true;
 
-    auto opLinear = linearParamCache.getOperation(linearParam, "LinearOperation");
-    ParamSetter paramsetter;
-    paramsetter.Input(x)
-                .Input(weight)
-                .Input(C)
-                .Output(C);
+  auto opLinear = linearParamCache.getOperation(linearParam, "LinearOperation");
+  ParamSetter paramsetter;
+  paramsetter.Input(x).Input(weight).Input(C).Output(C);
 
-    RunAtbCmd(opLinear, paramsetter, "LinearOperation");
-    return ;
+  RunAtbCmd(opLinear, paramsetter, "LinearOperation");
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_matmul_add_fp32(Tensor x, Tensor weight, Tensor(a!) C) -> ()");
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def("_npu_matmul_add_fp32(Tensor x, Tensor weight, Tensor(a!) C) -> ()");
 }
-}
+} // namespace
 
 namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_matmul_add_fp32", TORCH_FN(atb::_npu_matmul_add_fp32));
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_matmul_add_fp32", TORCH_FN(atb::_npu_matmul_add_fp32));
 }
-}
+} // namespace
 
 } // namespace atb

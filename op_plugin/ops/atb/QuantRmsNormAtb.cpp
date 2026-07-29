@@ -20,45 +20,39 @@ using namespace std;
 namespace atb {
 
 using RmsNormParam = atb::infer::RmsNormParam;
-void _npu_quant_rms_norm(const at::Tensor &x,
-                         const at::Tensor &gamma,
-                         const at::Tensor &beta,
-                         const at::Tensor &scale,
-                         const at::Tensor &offset,
-                         at::Tensor & output,
-                         double eps)
-{
-    OpParamCache<RmsNormParam>& rmsnormParamCache = OpParamCache<RmsNormParam>::getInstance();
-    RmsNormParam  rmsnormParam;
-    rmsnormParam.layerType = atb::infer::RmsNormParam::RMS_NORM_NORM;
-    rmsnormParam.normParam.quantType = atb::infer::QUANT_INT8;
-    rmsnormParam.normParam.epsilon = eps;
+void _npu_quant_rms_norm(
+    const at::Tensor& x,
+    const at::Tensor& gamma,
+    const at::Tensor& beta,
+    const at::Tensor& scale,
+    const at::Tensor& offset,
+    at::Tensor& output,
+    double eps) {
+  OpParamCache<RmsNormParam>& rmsnormParamCache = OpParamCache<RmsNormParam>::getInstance();
+  RmsNormParam rmsnormParam;
+  rmsnormParam.layerType = atb::infer::RmsNormParam::RMS_NORM_NORM;
+  rmsnormParam.normParam.quantType = atb::infer::QUANT_INT8;
+  rmsnormParam.normParam.epsilon = eps;
 
-    ParamSetter paramsetter;
-    paramsetter.Input(x, true)
-                .Input(gamma, true)
-                .Input(beta, true)
-                .Input(scale, true)
-                .Input(offset, true)
-                .Output(output);
+  ParamSetter paramsetter;
+  paramsetter.Input(x, true).Input(gamma, true).Input(beta, true).Input(scale, true).Input(offset, true).Output(output);
 
-    auto opRmsNorm = rmsnormParamCache.getOperation(rmsnormParam, "QuantRmsNormOperation");
-    RunAtbCmd(opRmsNorm, paramsetter, "QuantRmsNormOperation");
-    return;
+  auto opRmsNorm = rmsnormParamCache.getOperation(rmsnormParam, "QuantRmsNormOperation");
+  RunAtbCmd(opRmsNorm, paramsetter, "QuantRmsNormOperation");
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_quant_rms_norm(Tensor self, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, Tensor(a!) output, float eps=1e-05) -> ()");
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def(
+      "_npu_quant_rms_norm(Tensor self, Tensor gamma, Tensor beta, Tensor scale, Tensor offset, Tensor(a!) output, float eps=1e-05) -> ()");
 }
-}
+} // namespace
 
 namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_quant_rms_norm", TORCH_FN(atb::_npu_quant_rms_norm));
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_quant_rms_norm", TORCH_FN(atb::_npu_quant_rms_norm));
 }
-}
+} // namespace
 
 } // namespace atb

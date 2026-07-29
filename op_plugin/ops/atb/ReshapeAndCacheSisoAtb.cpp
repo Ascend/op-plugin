@@ -17,37 +17,31 @@
 using namespace std;
 namespace atb {
 using ReshapeAndCacheParam = atb::infer::ReshapeAndCacheParam;
-void _npu_reshape_and_cache_siso(const at::Tensor &key, at::Tensor &key_cache, const at::Tensor &slot_indices)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(key));
-    OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
-    ReshapeAndCacheParam reshapeparam;
-    reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;
-    reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_BYPASS;
-    
-    ParamSetter parametter;
-    parametter.Input(key, true)
-        .Input(key_cache, true)
-        .Input(slot_indices, true)
-        .Output(key_cache);
+void _npu_reshape_and_cache_siso(const at::Tensor& key, at::Tensor& key_cache, const at::Tensor& slot_indices) {
+  const c10::OptionalDeviceGuard device_guard(device_of(key));
+  OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
+  ReshapeAndCacheParam reshapeparam;
+  reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;
+  reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_BYPASS;
 
-    auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");
-    RunAtbCmd(opReshape, parametter, "ReshapeCacheOperation");
+  ParamSetter parametter;
+  parametter.Input(key, true).Input(key_cache, true).Input(slot_indices, true).Output(key_cache);
 
-    return;
+  auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");
+  RunAtbCmd(opReshape, parametter, "ReshapeCacheOperation");
+
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_reshape_and_cache_siso(Tensor key, Tensor(a!) key_cache, Tensor slot_indices) -> ()");
-}
-}
-
-namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_reshape_and_cache_siso", TORCH_FN(atb::_npu_reshape_and_cache_siso));
-}
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def("_npu_reshape_and_cache_siso(Tensor key, Tensor(a!) key_cache, Tensor slot_indices) -> ()");
 }
 } // namespace
+
+namespace {
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_reshape_and_cache_siso", TORCH_FN(atb::_npu_reshape_and_cache_siso));
+}
+} // namespace
+} // namespace atb

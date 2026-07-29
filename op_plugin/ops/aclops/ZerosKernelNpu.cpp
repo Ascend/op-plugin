@@ -18,10 +18,9 @@
 #include "op_plugin/utils/custom_functions/aclops/inner_compute.h"
 
 namespace acl_op {
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out)
-{
-    out.resize_(size);
-    return out.zero_();
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out) {
+  out.resize_(size);
+  return out.zero_();
 }
 
 at::Tensor zeros_symint(
@@ -29,11 +28,9 @@ at::Tensor zeros_symint(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return zeros_common_nocheck(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory);
+    c10::optional<bool> pin_memory) {
+  return zeros_common_nocheck(c10::asIntArrayRefUnchecked(size), dtype, layout, device, pin_memory);
 }
-
 
 at::Tensor zeros(
     at::IntArrayRef size,
@@ -41,8 +38,7 @@ at::Tensor zeros(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
+    c10::optional<bool> pin_memory) {
+  return zeros_common_nocheck(size, dtype, layout, device, pin_memory);
 }
 } // namespace acl_op

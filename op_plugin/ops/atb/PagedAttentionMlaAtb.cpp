@@ -18,50 +18,53 @@ using namespace std;
 
 namespace atb {
 using PagedAttentionParam = atb::infer::PagedAttentionParam;
-void _npu_paged_attention_mla(const at::Tensor &query, const at::Tensor &key_cache, int64_t num_kv_heads, int64_t num_heads, double scale_value, const at::Tensor &block_table, const at::Tensor &context_lens, int64_t mla_vheadsize, at::Tensor &out)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(query));
-    OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
-    PagedAttentionParam pagedparam;
-    pagedparam.headNum = num_heads;
-    pagedparam.qkScale = scale_value;
-    pagedparam.kvHeadNum = num_kv_heads;
-    auto mlavHeadSize = static_cast<uint32_t>(mla_vheadsize);
-    pagedparam.mlaVHeadSize = mlavHeadSize;
+void _npu_paged_attention_mla(
+    const at::Tensor& query,
+    const at::Tensor& key_cache,
+    int64_t num_kv_heads,
+    int64_t num_heads,
+    double scale_value,
+    const at::Tensor& block_table,
+    const at::Tensor& context_lens,
+    int64_t mla_vheadsize,
+    at::Tensor& out) {
+  const c10::OptionalDeviceGuard device_guard(device_of(query));
+  OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
+  PagedAttentionParam pagedparam;
+  pagedparam.headNum = num_heads;
+  pagedparam.qkScale = scale_value;
+  pagedparam.kvHeadNum = num_kv_heads;
+  auto mlavHeadSize = static_cast<uint32_t>(mla_vheadsize);
+  pagedparam.mlaVHeadSize = mlavHeadSize;
 
-    pagedparam.maskType = PagedAttentionParam::UNDEFINED;
-    pagedparam.batchRunStatusEnable = false;
-    pagedparam.quantType = PagedAttentionParam::TYPE_QUANT_UNDEFINED;
-    pagedparam.outDataType = ACL_DT_UNDEFINED;
-    pagedparam.hasQuantOffset = false;
-    pagedparam.compressType = PagedAttentionParam::COMPRESS_TYPE_UNDEFINED;
-    pagedparam.calcType = PagedAttentionParam::CALC_TYPE_UNDEFINED;
-    pagedparam.scaleType = PagedAttentionParam::SCALE_TYPE_TOR;
-    pagedparam.inputLayout = atb::infer::TYPE_BSND;
+  pagedparam.maskType = PagedAttentionParam::UNDEFINED;
+  pagedparam.batchRunStatusEnable = false;
+  pagedparam.quantType = PagedAttentionParam::TYPE_QUANT_UNDEFINED;
+  pagedparam.outDataType = ACL_DT_UNDEFINED;
+  pagedparam.hasQuantOffset = false;
+  pagedparam.compressType = PagedAttentionParam::COMPRESS_TYPE_UNDEFINED;
+  pagedparam.calcType = PagedAttentionParam::CALC_TYPE_UNDEFINED;
+  pagedparam.scaleType = PagedAttentionParam::SCALE_TYPE_TOR;
+  pagedparam.inputLayout = atb::infer::TYPE_BSND;
 
-    ParamSetter paramsetter;
-    paramsetter.Input(query, true)
-        .Input(key_cache)
-        .Input(block_table, true)
-        .Input(context_lens, true)
-        .Output(out);
-    auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
-    RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");
+  ParamSetter paramsetter;
+  paramsetter.Input(query, true).Input(key_cache).Input(block_table, true).Input(context_lens, true).Output(out);
+  auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
+  RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");
 
-    return;
-}
-
-namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_paged_attention_mla(Tensor query, Tensor key_cache, int num_kv_heads, int num_heads, float scale_value, Tensor block_table, Tensor context_lens, int mla_vheadsize, Tensor(a!) out) -> ()");
-}
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_paged_attention_mla", TORCH_FN(atb::_npu_paged_attention_mla));
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def(
+      "_npu_paged_attention_mla(Tensor query, Tensor key_cache, int num_kv_heads, int num_heads, float scale_value, Tensor block_table, Tensor context_lens, int mla_vheadsize, Tensor(a!) out) -> ()");
 }
+} // namespace
+
+namespace {
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_paged_attention_mla", TORCH_FN(atb::_npu_paged_attention_mla));
 }
-}
+} // namespace
+} // namespace atb

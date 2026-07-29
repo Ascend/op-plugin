@@ -18,52 +18,61 @@ using namespace std;
 
 namespace atb {
 using PagedAttentionParam = atb::infer::PagedAttentionParam;
-void _npu_paged_attention_splitfuse(const at::Tensor &query, const at::Tensor &key_cache, const at::Tensor &value_cache, const at::Tensor &block_table, const at::Tensor &context_lens, const at::Tensor &mask, const at::Tensor &seq_len, int64_t num_kv_heads, int64_t num_heads, double scale_value, at::Tensor &out)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(query));
-    OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
-    PagedAttentionParam pagedparam;
-    pagedparam.headNum = num_heads;
-    pagedparam.qkScale = scale_value;
-    pagedparam.kvHeadNum = num_kv_heads;
-    pagedparam.maskType = PagedAttentionParam::MASK_TYPE_SPEC;
-    pagedparam.batchRunStatusEnable = false;
-    pagedparam.quantType = PagedAttentionParam::TYPE_QUANT_UNDEFINED;
-    pagedparam.outDataType = ACL_DT_UNDEFINED;
-    pagedparam.hasQuantOffset = false;
-    pagedparam.compressType = PagedAttentionParam::COMPRESS_TYPE_UNDEFINED;
-    pagedparam.calcType = PagedAttentionParam::CALC_TYPE_SPEC;
-    pagedparam.scaleType = PagedAttentionParam::SCALE_TYPE_TOR;
-    pagedparam.inputLayout = atb::infer::TYPE_BSND;
-    pagedparam.mlaVHeadSize = 0;
+void _npu_paged_attention_splitfuse(
+    const at::Tensor& query,
+    const at::Tensor& key_cache,
+    const at::Tensor& value_cache,
+    const at::Tensor& block_table,
+    const at::Tensor& context_lens,
+    const at::Tensor& mask,
+    const at::Tensor& seq_len,
+    int64_t num_kv_heads,
+    int64_t num_heads,
+    double scale_value,
+    at::Tensor& out) {
+  const c10::OptionalDeviceGuard device_guard(device_of(query));
+  OpParamCache<PagedAttentionParam>& pagedAttentionParamCache = OpParamCache<PagedAttentionParam>::getInstance();
+  PagedAttentionParam pagedparam;
+  pagedparam.headNum = num_heads;
+  pagedparam.qkScale = scale_value;
+  pagedparam.kvHeadNum = num_kv_heads;
+  pagedparam.maskType = PagedAttentionParam::MASK_TYPE_SPEC;
+  pagedparam.batchRunStatusEnable = false;
+  pagedparam.quantType = PagedAttentionParam::TYPE_QUANT_UNDEFINED;
+  pagedparam.outDataType = ACL_DT_UNDEFINED;
+  pagedparam.hasQuantOffset = false;
+  pagedparam.compressType = PagedAttentionParam::COMPRESS_TYPE_UNDEFINED;
+  pagedparam.calcType = PagedAttentionParam::CALC_TYPE_SPEC;
+  pagedparam.scaleType = PagedAttentionParam::SCALE_TYPE_TOR;
+  pagedparam.inputLayout = atb::infer::TYPE_BSND;
+  pagedparam.mlaVHeadSize = 0;
 
-    ParamSetter paramsetter;
-    paramsetter.Input(query, true)
-        .Input(key_cache)
-        .Input(value_cache)
-        .Input(block_table, true)
-        .Input(context_lens, true)
-        .Input(mask)
-        .Input(seq_len, true)
-        .Output(out);
-    auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
-    RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");
+  ParamSetter paramsetter;
+  paramsetter.Input(query, true)
+      .Input(key_cache)
+      .Input(value_cache)
+      .Input(block_table, true)
+      .Input(context_lens, true)
+      .Input(mask)
+      .Input(seq_len, true)
+      .Output(out);
+  auto opPaged = pagedAttentionParamCache.getOperation(pagedparam, "PagedAttentionOperation");
+  RunAtbCmd(opPaged, paramsetter, "PagedAttentionOperation");
 
-    return;
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_paged_attention_splitfuse(Tensor query, Tensor key_cache, Tensor value_cache, Tensor block_table, Tensor context_lens, Tensor mask, Tensor seq_len, int num_kv_heads, int num_heads, float scale_value, Tensor(a!) out) -> ()");
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def(
+      "_npu_paged_attention_splitfuse(Tensor query, Tensor key_cache, Tensor value_cache, Tensor block_table, Tensor context_lens, Tensor mask, Tensor seq_len, int num_kv_heads, int num_heads, float scale_value, Tensor(a!) out) -> ()");
 }
-}
+} // namespace
 
 namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_paged_attention_splitfuse", TORCH_FN(atb::_npu_paged_attention_splitfuse));
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_paged_attention_splitfuse", TORCH_FN(atb::_npu_paged_attention_splitfuse));
 }
-}
+} // namespace
 
-}
+} // namespace atb

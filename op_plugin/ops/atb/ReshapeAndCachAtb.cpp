@@ -18,49 +18,52 @@
 using namespace std;
 namespace atb {
 using ReshapeAndCacheParam = atb::infer::ReshapeAndCacheParam;
-void _npu_reshape_and_cache(const at::Tensor &key, const at::Tensor &value, at::Tensor &key_cache, at::Tensor &value_cache, const at::Tensor &slot_indices)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(key));
-    OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
-    ReshapeAndCacheParam reshapeparam;
-    reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;
+void _npu_reshape_and_cache(
+    const at::Tensor& key,
+    const at::Tensor& value,
+    at::Tensor& key_cache,
+    at::Tensor& value_cache,
+    const at::Tensor& slot_indices) {
+  const c10::OptionalDeviceGuard device_guard(device_of(key));
+  OpParamCache<ReshapeAndCacheParam>& reshapeAndCacheParamCache = OpParamCache<ReshapeAndCacheParam>::getInstance();
+  ReshapeAndCacheParam reshapeparam;
+  reshapeparam.compressType = ReshapeAndCacheParam::COMPRESS_TYPE_UNDEFINED;
 
-    auto key_cache_format = at_npu::native::get_npu_format(key_cache);
-    auto value_cache_format = at_npu::native::get_npu_format(value_cache);
-    bool is_key_cache_nz = (key_cache_format == ACL_FORMAT_FRACTAL_NZ);
-    bool is_value_cache_nz = (value_cache_format == ACL_FORMAT_FRACTAL_NZ);
+  auto key_cache_format = at_npu::native::get_npu_format(key_cache);
+  auto value_cache_format = at_npu::native::get_npu_format(value_cache);
+  bool is_key_cache_nz = (key_cache_format == ACL_FORMAT_FRACTAL_NZ);
+  bool is_value_cache_nz = (value_cache_format == ACL_FORMAT_FRACTAL_NZ);
 
-    if (is_key_cache_nz && is_value_cache_nz) {
-        reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE_NZ;
-    } else {
-        reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE;
-    }
-    
-    ParamSetter parametter;
-    parametter.Input(key, true)
-        .Input(value, true)
-        .Input(key_cache)
-        .Input(value_cache)
-        .Input(slot_indices, true)
-        .Output(key_cache)
-        .Output(value_cache);
-    auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");
-    RunAtbCmd(opReshape, parametter, "ReshapeCacheOperation");
+  if (is_key_cache_nz && is_value_cache_nz) {
+    reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE_NZ;
+  } else {
+    reshapeparam.kvCacheCfg = ReshapeAndCacheParam::K_CACHE_V_CACHE;
+  }
 
-    return;
+  ParamSetter parametter;
+  parametter.Input(key, true)
+      .Input(value, true)
+      .Input(key_cache)
+      .Input(value_cache)
+      .Input(slot_indices, true)
+      .Output(key_cache)
+      .Output(value_cache);
+  auto opReshape = reshapeAndCacheParamCache.getOperation(reshapeparam, "ReshapeCacheOperation");
+  RunAtbCmd(opReshape, parametter, "ReshapeCacheOperation");
+
+  return;
 }
 
 namespace {
-TORCH_LIBRARY_FRAGMENT(atb, m)
-{
-    m.def("_npu_reshape_and_cache(Tensor key, Tensor value, Tensor(a!) key_cache, Tensor(b!) value_cache, Tensor slot_indices) -> ()");
-}
-}
-
-namespace {
-TORCH_LIBRARY_IMPL(atb, PrivateUse1, m)
-{
-    m.impl("_npu_reshape_and_cache", TORCH_FN(atb::_npu_reshape_and_cache));
-}
+TORCH_LIBRARY_FRAGMENT(atb, m) {
+  m.def(
+      "_npu_reshape_and_cache(Tensor key, Tensor value, Tensor(a!) key_cache, Tensor(b!) value_cache, Tensor slot_indices) -> ()");
 }
 } // namespace
+
+namespace {
+TORCH_LIBRARY_IMPL(atb, PrivateUse1, m) {
+  m.impl("_npu_reshape_and_cache", TORCH_FN(atb::_npu_reshape_and_cache));
+}
+} // namespace
+} // namespace atb

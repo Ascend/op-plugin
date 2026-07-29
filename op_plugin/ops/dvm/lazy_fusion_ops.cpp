@@ -34,25 +34,30 @@ inline float RoundScalarToInputDtype(float scalar, at::ScalarType self_dtype) {
   return scalar;
 }
 
-bool IsFloat16_32(const at::ScalarType &type) {
+bool IsFloat16_32(const at::ScalarType& type) {
   return type == at::ScalarType::Half || type == at::ScalarType::Float;
 }
 
-bool IsFloatType(const at::ScalarType &type) {
+bool IsFloatType(const at::ScalarType& type) {
   return type == at::ScalarType::Half || type == at::ScalarType::Float || type == at::ScalarType::BFloat16;
 }
 
-bool IsFloatIntType(const at::ScalarType &type) { return IsFloatType(type) || type == at::ScalarType::Int; }
+bool IsFloatIntType(const at::ScalarType& type) {
+  return IsFloatType(type) || type == at::ScalarType::Int;
+}
 
-bool IsSupportType(const at::ScalarType &type) { return IsFloatIntType(type) || type == at::ScalarType::Bool; }
+bool IsSupportType(const at::ScalarType& type) {
+  return IsFloatIntType(type) || type == at::ScalarType::Bool;
+}
 
-bool InputCheck(const at::Tensor &x, const std::function<bool(const at::ScalarType &type)> &type_check = IsFloatType,
-                bool allow_non_contig = false) {
+bool InputCheck(
+    const at::Tensor& x,
+    const std::function<bool(const at::ScalarType& type)>& type_check = IsFloatType,
+    bool allow_non_contig = false) {
   if (!x.is_contiguous()) {
     // ViewLoad on non-contig inputs is an O2-level optimization
     // (same gating as the historical enable_all switch).
-    bool can_viewload = g_lazy_fusion_manager.flags_.level >= Level::kO2 &&
-                        allow_non_contig && IsViewLoadable(x);
+    bool can_viewload = g_lazy_fusion_manager.flags_.level >= Level::kO2 && allow_non_contig && IsViewLoadable(x);
     if (!can_viewload) {
       return false;
     }
@@ -60,7 +65,7 @@ bool InputCheck(const at::Tensor &x, const std::function<bool(const at::ScalarTy
   return torch_npu::utils::is_npu(x) && type_check(x.scalar_type());
 }
 
-bool IsCPUScalar(const at::Tensor &x) {
+bool IsCPUScalar(const at::Tensor& x) {
   return x.defined() && x.dim() == 0 && x.device().type() == c10::DeviceType::CPU;
 }
 
@@ -70,24 +75,24 @@ bool IsCPUScalar(const at::Tensor &x) {
 // enforces. This includes optional tensor inputs when they are present. Do not
 // open-code partial device checks at call sites, otherwise a non-NPU tensor can
 // slip into k->Input/k->Output and cause an invalid execution path.
-bool NpuCheck(const at::Tensor &x) {
+bool NpuCheck(const at::Tensor& x) {
   return x.defined() && torch_npu::utils::is_npu(x);
 }
 
-bool NpuCheck(const c10::optional<at::Tensor> &x) {
+bool NpuCheck(const c10::optional<at::Tensor>& x) {
   return !x.has_value() || NpuCheck(x.value());
 }
 
 template <typename T, typename... Args>
-bool NpuCheck(const T &x, const Args &...xs) {
+bool NpuCheck(const T& x, const Args&... xs) {
   return NpuCheck(x) && NpuCheck(xs...);
 }
 
-bool OutputCheck(const at::Tensor &out) {
+bool OutputCheck(const at::Tensor& out) {
   return NpuCheck(out) && out.is_contiguous();
 }
 
-bool GetScalarValue(const at::Scalar &scalar, float *v) {
+bool GetScalarValue(const at::Scalar& scalar, float* v) {
   auto scalar_type = scalar.type();
   if (scalar_type == at::ScalarType::Long) {
     *v = static_cast<float>(scalar.toLong());
@@ -102,7 +107,7 @@ bool GetScalarValue(const at::Scalar &scalar, float *v) {
 constexpr float kTanhClampMin = -8.8f;
 constexpr float kTanhClampMax = 8.8f;
 
-dvm::NDObject *BuildClampedTanhFp32(dvm::Kernel *k, dvm::NDObject *input_f32) {
+dvm::NDObject* BuildClampedTanhFp32(dvm::Kernel* k, dvm::NDObject* input_f32) {
   auto clamped = k->Binary<dvm::BinaryType::kMaximum>(input_f32, kTanhClampMin);
   clamped = k->Binary<dvm::BinaryType::kMinimum>(clamped, kTanhClampMax);
   auto two_x = k->Binary<dvm::BinaryType::kMul>(clamped, 2.0f);
@@ -138,26 +143,26 @@ dvm::NDObject *BuildClampedTanhFp32(dvm::Kernel *k, dvm::NDObject *input_f32) {
 // and cannot be rebuilt from GM. The flush must happen before add starts building,
 // otherwise Input(y1) would hit a non-reloadable alias miss after the current op
 // has already mutated the DVM graph.
-void PrepareFusionInput(const at::Tensor &tensor) {
+void PrepareFusionInput(const at::Tensor& tensor) {
   if (tensor.defined() && torch_npu::utils::is_npu(tensor) && g_lazy_fusion_manager.NeedFlushForInput(tensor)) {
     LazyFusionFlush();
   }
 }
 
-void PrepareFusionInput(const c10::optional<at::Tensor> &tensor) {
+void PrepareFusionInput(const c10::optional<at::Tensor>& tensor) {
   if (tensor.has_value()) {
     PrepareFusionInput(tensor.value());
   }
 }
 
 void PrepareFusionInput(at::TensorList tensors) {
-  for (const auto &tensor : tensors) {
+  for (const auto& tensor : tensors) {
     PrepareFusionInput(tensor);
   }
 }
 
 template <typename... Args>
-void PrepareFusionInputs(const Args &... inputs) {
+void PrepareFusionInputs(const Args&... inputs) {
   (PrepareFusionInput(inputs), ...);
 }
 
@@ -184,21 +189,22 @@ void PrepareFusionInputs(const Args &... inputs) {
 // and the new inplace store may overlap in GM and trigger the precision issue seen
 // in DVM. The flush must happen before the inplace op is emitted, not later in
 // Output(), because by then the current op has already been appended to the graph.
-void PrepareWritableOutput(const at::Tensor &tensor) {
-  if (tensor.defined() && torch_npu::utils::is_npu(tensor) && g_lazy_fusion_manager.NeedFlushForWritableOutput(tensor)) {
+void PrepareWritableOutput(const at::Tensor& tensor) {
+  if (tensor.defined() && torch_npu::utils::is_npu(tensor) &&
+      g_lazy_fusion_manager.NeedFlushForWritableOutput(tensor)) {
     LazyFusionFlush();
   }
 }
 
 void PrepareWritableOutput(at::TensorList tensors) {
-  for (const auto &tensor : tensors) {
+  for (const auto& tensor : tensors) {
     PrepareWritableOutput(tensor);
   }
 }
 
-bool AddScalar(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha, at::Tensor *out);
+bool AddScalar(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha, at::Tensor* out);
 
-bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor *out = nullptr) {
+bool Add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha, at::Tensor* out = nullptr) {
   if (IsCPUScalar(other)) {
     return AddScalar(self, other.item(), alpha, out);
   }
@@ -239,7 +245,7 @@ bool Add(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
   return true;
 }
 
-bool Sub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alpha, at::Tensor *out = nullptr) {
+bool Sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha, at::Tensor* out = nullptr) {
   if (!InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true) ||
       !InputCheck(other, IsFloatIntType, /*allow_non_contig=*/true)) {
     return false;
@@ -262,7 +268,8 @@ bool Sub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
   PrepareFusionInputs(self, other);
   auto k = g_lazy_fusion_manager.Get();
   auto result_type = at::native::result_type(self, other);
-  auto compute_type = (result_type == at::ScalarType::BFloat16 || cast_fp32) ? dvm::DType::kFloat32 : k->TransType(result_type);
+  auto compute_type =
+      (result_type == at::ScalarType::BFloat16 || cast_fp32) ? dvm::DType::kFloat32 : k->TransType(result_type);
   auto self_obj = k->Input(self);
   auto other_obj = k->Input(other);
   self_obj = k->Cast(self_obj, compute_type);
@@ -279,9 +286,13 @@ bool Sub(const at::Tensor &self, const at::Tensor &other, const at::Scalar &alph
   return true;
 }
 
-bool BinaryScalar(const at::Tensor &self, const at::Scalar &other, dvm::BinaryOpType op_type,
-            const std::function<bool(const at::ScalarType &type)> &type_check,
-            dvm::DType dst_type = dvm::DType::kDataTypeEnd, at::Tensor *out = nullptr) {
+bool BinaryScalar(
+    const at::Tensor& self,
+    const at::Scalar& other,
+    dvm::BinaryOpType op_type,
+    const std::function<bool(const at::ScalarType& type)>& type_check,
+    dvm::DType dst_type = dvm::DType::kDataTypeEnd,
+    at::Tensor* out = nullptr) {
   if (!InputCheck(self, type_check, true)) {
     return false;
   }
@@ -320,26 +331,36 @@ bool BinaryScalar(const at::Tensor &self, const at::Scalar &other, dvm::BinaryOp
   return true;
 }
 
-bool AddScalar(const at::Tensor &self, const at::Scalar &other, const at::Scalar &alpha, at::Tensor *out) {
+bool AddScalar(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha, at::Tensor* out) {
   auto other_type = other.type();
   auto alpha_type = alpha.type();
   if (other_type == at::ScalarType::Long && alpha_type == at::ScalarType::Long) {
-    return BinaryScalar(self, at::Scalar(other.toLong() * alpha.toLong()), dvm::BinaryOpType::kAdd, IsFloatIntType,
-                        dvm::DType::kDataTypeEnd, out);
+    return BinaryScalar(
+        self,
+        at::Scalar(other.toLong() * alpha.toLong()),
+        dvm::BinaryOpType::kAdd,
+        IsFloatIntType,
+        dvm::DType::kDataTypeEnd,
+        out);
   }
   if ((other_type == at::ScalarType::Long || other_type == at::ScalarType::Double) &&
       (alpha_type == at::ScalarType::Long || alpha_type == at::ScalarType::Double)) {
-    double scaled_other = (other_type == at::ScalarType::Long ? static_cast<double>(other.toLong()) : other.toDouble()) *
-                          (alpha_type == at::ScalarType::Long ? static_cast<double>(alpha.toLong()) : alpha.toDouble());
-    return BinaryScalar(self, at::Scalar(scaled_other), dvm::BinaryOpType::kAdd, IsFloatIntType,
-                        dvm::DType::kDataTypeEnd, out);
+    double scaled_other =
+        (other_type == at::ScalarType::Long ? static_cast<double>(other.toLong()) : other.toDouble()) *
+        (alpha_type == at::ScalarType::Long ? static_cast<double>(alpha.toLong()) : alpha.toDouble());
+    return BinaryScalar(
+        self, at::Scalar(scaled_other), dvm::BinaryOpType::kAdd, IsFloatIntType, dvm::DType::kDataTypeEnd, out);
   }
   return false;
 }
 
-bool BinaryTensor(const at::Tensor &self, const at::Tensor &other, dvm::BinaryOpType op_type,
-            const std::function<bool(const at::ScalarType &type)> &type_check,
-            dvm::DType dst_type = dvm::DType::kDataTypeEnd, at::Tensor *out = nullptr) {
+bool BinaryTensor(
+    const at::Tensor& self,
+    const at::Tensor& other,
+    dvm::BinaryOpType op_type,
+    const std::function<bool(const at::ScalarType& type)>& type_check,
+    dvm::DType dst_type = dvm::DType::kDataTypeEnd,
+    at::Tensor* out = nullptr) {
   if (IsCPUScalar(other)) {
     return BinaryScalar(self, other.item(), op_type, type_check, dst_type, out);
   }
@@ -376,11 +397,11 @@ bool BinaryTensor(const at::Tensor &self, const at::Tensor &other, dvm::BinaryOp
 // Keep the DVM path only when the list is short or every tensor is large enough to be
 // compute/bandwidth-bound; otherwise bail so the caller falls back to native.
 bool ForeachWorthFusing(at::TensorList self) {
-  const auto &flags = g_lazy_fusion_manager.flags_;
+  const auto& flags = g_lazy_fusion_manager.flags_;
   if (self.size() <= flags.foreach_max_tensors) {
     return true;
   }
-  for (const auto &t : self) {
+  for (const auto& t : self) {
     if (static_cast<size_t>(t.numel()) < flags.foreach_min_numel) {
       return false;
     }
@@ -432,8 +453,12 @@ bool ForeachBinaryScalar(at::TensorList self, at::ArrayRef<at::Scalar> scalars, 
   return true;
 }
 
-bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
-                 const at::TensorList tensors2, const at::Scalar &scalar, dvm::BinaryOpType op_type) {
+bool ForeachAddc(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    const at::Scalar& scalar,
+    dvm::BinaryOpType op_type) {
   if (!ForeachWorthFusing(input)) {
     return false;
   }
@@ -442,8 +467,9 @@ bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
     return false;
   }
   for (size_t i = 0; i < input.size(); ++i) {
-    if (!InputCheck(input[i], IsFloat16_32) || !InputCheck(tensors1[i], IsFloat16_32) || !InputCheck(tensors2[i], IsFloat16_32) ||
-        tensors1[i].scalar_type() != input[i].scalar_type() || tensors2[i].scalar_type() != input[i].scalar_type()) {
+    if (!InputCheck(input[i], IsFloat16_32) || !InputCheck(tensors1[i], IsFloat16_32) ||
+        !InputCheck(tensors2[i], IsFloat16_32) || tensors1[i].scalar_type() != input[i].scalar_type() ||
+        tensors2[i].scalar_type() != input[i].scalar_type()) {
       return false;
     }
   }
@@ -464,17 +490,21 @@ bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
   return true;
 }
 
-bool ForeachAddc(const at::TensorList input, const at::TensorList tensors1,
-                 const at::TensorList tensors2, at::ArrayRef<at::Scalar> scalars, dvm::BinaryOpType op_type) {
+bool ForeachAddc(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    at::ArrayRef<at::Scalar> scalars,
+    dvm::BinaryOpType op_type) {
   // op-plugin does NOT group natively (always per-tensor addcdiv_)
   if (tensors1.size() != input.size() || tensors2.size() != input.size() || scalars.size() != input.size()) {
     return false;
   }
   std::vector<float> scalar_values(scalars.size());
   for (size_t i = 0; i < input.size(); ++i) {
-    if (!InputCheck(input[i], IsFloat16_32) || !InputCheck(tensors1[i], IsFloat16_32) || !InputCheck(tensors2[i], IsFloat16_32) ||
-        tensors1[i].scalar_type() != input[i].scalar_type() || tensors2[i].scalar_type() != input[i].scalar_type() ||
-        !GetScalarValue(scalars[i], &scalar_values[i])) {
+    if (!InputCheck(input[i], IsFloat16_32) || !InputCheck(tensors1[i], IsFloat16_32) ||
+        !InputCheck(tensors2[i], IsFloat16_32) || tensors1[i].scalar_type() != input[i].scalar_type() ||
+        tensors2[i].scalar_type() != input[i].scalar_type() || !GetScalarValue(scalars[i], &scalar_values[i])) {
       return false;
     }
   }
@@ -504,7 +534,7 @@ struct MatMulAdapter {
   ShapeVector x_shape;
   ShapeVector y_shape;
 
-  MatMulAdapter(const at::Tensor &x, const at::Tensor &y, bool ta, bool tb, const at::Tensor &bias = at::Tensor())
+  MatMulAdapter(const at::Tensor& x, const at::Tensor& y, bool ta, bool tb, const at::Tensor& bias = at::Tensor())
       : x_tensor(x), y_tensor(y), bias_tensor(bias), trans_a(ta), trans_b(tb) {
     x_shape.assign(x.sizes().begin(), x.sizes().end());
     y_shape.assign(y.sizes().begin(), y.sizes().end());
@@ -514,7 +544,8 @@ struct MatMulAdapter {
     if (!NpuCheck(x_tensor, y_tensor)) {
       return false;
     }
-    if (!at_npu::native::FormatHelper::IsOpInputBaseFormat(x_tensor) || !at_npu::native::FormatHelper::IsOpInputBaseFormat(y_tensor)) {
+    if (!at_npu::native::FormatHelper::IsOpInputBaseFormat(x_tensor) ||
+        !at_npu::native::FormatHelper::IsOpInputBaseFormat(y_tensor)) {
       return false;
     }
     auto data_type = x_tensor.scalar_type();
@@ -524,7 +555,7 @@ struct MatMulAdapter {
     }
     if (bias_tensor.defined() &&
         (!at_npu::native::FormatHelper::IsOpInputBaseFormat(bias_tensor) ||
-         !InputCheck(bias_tensor, [&](const at::ScalarType &type) {
+         !InputCheck(bias_tensor, [&](const at::ScalarType& type) {
            return type == data_type || type == at::ScalarType::Float;
          }))) {
       return false;
@@ -552,9 +583,9 @@ struct MatMulAdapter {
     return x_shape.back() <= kMaxDimSize && y_shape.back() <= kMaxDimSize;
   }
 
-  bool CheckTensorTranspose(const at::Tensor &tensor, bool *transpose, ShapeVector *shape) {
-    const auto &cur_shape = tensor.sizes();
-    const auto &cur_strides = tensor.strides();
+  bool CheckTensorTranspose(const at::Tensor& tensor, bool* transpose, ShapeVector* shape) {
+    const auto& cur_shape = tensor.sizes();
+    const auto& cur_strides = tensor.strides();
     int64_t dim1 = cur_shape.size() - 1;
     int64_t dim2 = dim1 - 1;
     if (cur_strides[dim2] == 1 && cur_strides[dim1] == cur_shape[dim2]) {
@@ -573,7 +604,7 @@ struct MatMulAdapter {
   }
 };
 
-at::Tensor MatMul(const at::Tensor &x_tensor, const at::Tensor &y_tensor, bool trans_a, bool trans_b) {
+at::Tensor MatMul(const at::Tensor& x_tensor, const at::Tensor& y_tensor, bool trans_a, bool trans_b) {
   MatMulAdapter info(x_tensor, y_tensor, trans_a, trans_b);
   if (!info.Check()) {
     return at::Tensor();
@@ -587,17 +618,17 @@ at::Tensor MatMul(const at::Tensor &x_tensor, const at::Tensor &y_tensor, bool t
 }
 
 template <typename... Args>
-void DumpOp(const std::string &op_name, const Args &...inputs) {
+void DumpOp(const std::string& op_name, const Args&... inputs) {
   RECORD_FUNCTION(std::string("Dvm::") + op_name, {});
   if (g_lazy_fusion_manager.flags_.dump_as_text) {
     auto k = g_lazy_fusion_manager.Get();
     k->DumpOp(op_name, inputs...);
   }
 }
-}  // namespace
+} // namespace
 
 // ===================== Cast =====================
-at::Tensor _npu_dtype_cast(const at::Tensor & self, at::ScalarType dtype) {
+at::Tensor _npu_dtype_cast(const at::Tensor& self, at::ScalarType dtype) {
   static auto enable = IsEnabled("cast");
   if (!enable || !InputCheck(self, IsSupportType, /*allow_non_contig=*/true) || !IsSupportType(dtype)) {
     return op_api::_npu_dtype_cast(self, dtype);
@@ -613,7 +644,7 @@ at::Tensor _npu_dtype_cast(const at::Tensor & self, at::ScalarType dtype) {
 }
 
 // ===================== Unary =====================
-at::Tensor abs(const at::Tensor & self) {
+at::Tensor abs(const at::Tensor& self) {
   static auto enable = IsEnabled("abs");
   if (!enable || !InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true)) {
     return op_api::abs(self);
@@ -626,7 +657,7 @@ at::Tensor abs(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor neg(const at::Tensor & self) {
+at::Tensor neg(const at::Tensor& self) {
   static auto enable = IsEnabled("neg");
   if (!enable || !InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true)) {
     return op_api::neg(self);
@@ -639,7 +670,7 @@ at::Tensor neg(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor sqrt(const at::Tensor & self) {
+at::Tensor sqrt(const at::Tensor& self) {
   static auto enable = IsEnabled("sqrt");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::sqrt(self);
@@ -652,7 +683,7 @@ at::Tensor sqrt(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor exp(const at::Tensor & self) {
+at::Tensor exp(const at::Tensor& self) {
   static auto enable = IsEnabled("exp");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::exp(self);
@@ -665,7 +696,7 @@ at::Tensor exp(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor & exp_(at::Tensor & self) {
+at::Tensor& exp_(at::Tensor& self) {
   static auto enable = IsEnabled("exp_");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::exp_(self);
@@ -679,7 +710,7 @@ at::Tensor & exp_(at::Tensor & self) {
   return self;
 }
 
-at::Tensor reciprocal(const at::Tensor & self) {
+at::Tensor reciprocal(const at::Tensor& self) {
   static auto enable = IsEnabled("reciprocal");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::reciprocal(self);
@@ -693,7 +724,7 @@ at::Tensor reciprocal(const at::Tensor & self) {
 }
 
 // ===================== Binary: add/sub/mul/div =====================
-at::Tensor add(const at::Tensor & self, const at::Scalar & other, const at::Scalar & alpha) {
+at::Tensor add(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha) {
   static auto enable = IsEnabled("add");
   at::Tensor out;
   if (!enable || !AddScalar(self, other, alpha, &out)) {
@@ -703,7 +734,7 @@ at::Tensor add(const at::Tensor & self, const at::Scalar & other, const at::Scal
   return out;
 }
 
-at::Tensor add(const at::Tensor & self, const at::Tensor & other, const at::Scalar & alpha) {
+at::Tensor add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
   static auto enable = IsEnabled("add");
   at::Tensor out;
   if (!enable || !Add(self, other, alpha, &out)) {
@@ -713,7 +744,7 @@ at::Tensor add(const at::Tensor & self, const at::Tensor & other, const at::Scal
   return out;
 }
 
-at::Tensor & add_(at::Tensor & self, const at::Tensor & other, const at::Scalar & alpha) {
+at::Tensor& add_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
   static auto enable = IsEnabled("add_");
   if (!enable || !Add(self, other, alpha)) {
     return op_api::add_(self, other, alpha);
@@ -723,7 +754,7 @@ at::Tensor & add_(at::Tensor & self, const at::Tensor & other, const at::Scalar 
   return self;
 }
 
-at::Tensor sub(const at::Tensor & self, const at::Tensor & other, const at::Scalar & alpha) {
+at::Tensor sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
   static auto enable = IsEnabled("sub");
   at::Tensor out;
   if (!enable || !Sub(self, other, alpha, &out)) {
@@ -733,7 +764,7 @@ at::Tensor sub(const at::Tensor & self, const at::Tensor & other, const at::Scal
   return out;
 }
 
-at::Tensor & sub_(at::Tensor & self, const at::Tensor & other, const at::Scalar & alpha) {
+at::Tensor& sub_(at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha) {
   static auto enable = IsEnabled("sub_");
   if (!enable || !Sub(self, other, alpha)) {
     return op_api::sub_(self, other, alpha);
@@ -743,7 +774,7 @@ at::Tensor & sub_(at::Tensor & self, const at::Tensor & other, const at::Scalar 
   return self;
 }
 
-at::Tensor mul(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor mul(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("mul");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kMul, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
@@ -753,7 +784,7 @@ at::Tensor mul(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor mul(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor mul(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("mul");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kMul, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
@@ -763,7 +794,7 @@ at::Tensor mul(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor & mul_(at::Tensor & self, const at::Scalar & other) {
+at::Tensor& mul_(at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("mul_");
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kMul, IsFloatIntType)) {
     return op_api::mul_(self, other);
@@ -773,7 +804,7 @@ at::Tensor & mul_(at::Tensor & self, const at::Scalar & other) {
   return self;
 }
 
-at::Tensor & mul_(at::Tensor & self, const at::Tensor & other) {
+at::Tensor& mul_(at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("mul_");
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kMul, IsFloatIntType)) {
     return op_api::mul_(self, other);
@@ -783,7 +814,7 @@ at::Tensor & mul_(at::Tensor & self, const at::Tensor & other) {
   return self;
 }
 
-at::Tensor div(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor div(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("div");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kDiv, IsFloatType, dvm::DType::kDataTypeEnd, &out)) {
@@ -793,7 +824,7 @@ at::Tensor div(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor div(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("div");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kDiv, IsFloatType, dvm::DType::kDataTypeEnd, &out)) {
@@ -803,7 +834,7 @@ at::Tensor div(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor & div_(at::Tensor & self, const at::Scalar & other) {
+at::Tensor& div_(at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("div_");
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kDiv, IsFloatType)) {
     return op_api::div_(self, other);
@@ -813,7 +844,7 @@ at::Tensor & div_(at::Tensor & self, const at::Scalar & other) {
   return self;
 }
 
-at::Tensor & div_(at::Tensor & self, const at::Tensor & other) {
+at::Tensor& div_(at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("div_");
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kDiv, IsFloatType)) {
     return op_api::div_(self, other);
@@ -824,7 +855,7 @@ at::Tensor & div_(at::Tensor & self, const at::Tensor & other) {
 }
 
 // ===================== Pow =====================
-at::Tensor pow(const at::Tensor & self, const at::Scalar & exponent) {
+at::Tensor pow(const at::Tensor& self, const at::Scalar& exponent) {
   static auto enable = IsEnabled("pow");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, exponent, dvm::BinaryOpType::kPow, IsFloatType, dvm::DType::kDataTypeEnd, &out)) {
@@ -834,7 +865,7 @@ at::Tensor pow(const at::Tensor & self, const at::Scalar & exponent) {
   return out;
 }
 
-at::Tensor pow(const at::Tensor & self, const at::Tensor & exponent) {
+at::Tensor pow(const at::Tensor& self, const at::Tensor& exponent) {
   static auto enable = IsEnabled("pow");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, exponent, dvm::BinaryOpType::kPow, IsFloatType, dvm::DType::kDataTypeEnd, &out)) {
@@ -844,7 +875,7 @@ at::Tensor pow(const at::Tensor & self, const at::Tensor & exponent) {
   return out;
 }
 
-at::Tensor & pow_(at::Tensor & self, const at::Scalar & exponent) {
+at::Tensor& pow_(at::Tensor& self, const at::Scalar& exponent) {
   static auto enable = IsEnabled("pow_");
   if (!enable || !BinaryScalar(self, exponent, dvm::BinaryOpType::kPow, IsFloatType)) {
     return op_api::pow_(self, exponent);
@@ -854,7 +885,7 @@ at::Tensor & pow_(at::Tensor & self, const at::Scalar & exponent) {
   return self;
 }
 
-at::Tensor & pow_(at::Tensor & self, const at::Tensor & exponent) {
+at::Tensor& pow_(at::Tensor& self, const at::Tensor& exponent) {
   static auto enable = IsEnabled("pow_");
   if (!enable || !BinaryTensor(self, exponent, dvm::BinaryOpType::kPow, IsFloatType)) {
     return op_api::pow_(self, exponent);
@@ -865,7 +896,7 @@ at::Tensor & pow_(at::Tensor & self, const at::Tensor & exponent) {
 }
 
 // ===================== FloorDivide =====================
-bool FloorDivideScalar(const at::Tensor &self, const at::Scalar &other, at::Tensor *out) {
+bool FloorDivideScalar(const at::Tensor& self, const at::Scalar& other, at::Tensor* out) {
   if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return false;
   }
@@ -883,8 +914,8 @@ bool FloorDivideScalar(const at::Tensor &self, const at::Scalar &other, at::Tens
   }
   PrepareFusionInput(self);
   auto k = g_lazy_fusion_manager.Get();
-  auto compute_type = self.scalar_type() == at::ScalarType::BFloat16
-                          ? dvm::DType::kFloat32 : k->TransType(self.scalar_type());
+  auto compute_type =
+      self.scalar_type() == at::ScalarType::BFloat16 ? dvm::DType::kFloat32 : k->TransType(self.scalar_type());
   auto self_obj = k->Input(self);
   self_obj = k->Cast(self_obj, compute_type);
   auto div_obj = k->Binary<dvm::BinaryType::kDiv>(self_obj, scalar);
@@ -897,11 +928,12 @@ bool FloorDivideScalar(const at::Tensor &self, const at::Scalar &other, at::Tens
   return true;
 }
 
-bool FloorDivideTensor(const at::Tensor &self, const at::Tensor &other, at::Tensor *out) {
+bool FloorDivideTensor(const at::Tensor& self, const at::Tensor& other, at::Tensor* out) {
   if (IsCPUScalar(other)) {
     return FloorDivideScalar(self, other.item(), out);
   }
-  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
+  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return false;
   }
   if (out == nullptr) {
@@ -914,8 +946,7 @@ bool FloorDivideTensor(const at::Tensor &self, const at::Tensor &other, at::Tens
   auto result_type = self.scalar_type();
   if (other.scalar_type() != result_type) {
     result_type = at::native::result_type(self, other);
-    auto compute_type = result_type == at::ScalarType::BFloat16
-                            ? dvm::DType::kFloat32 : k->TransType(result_type);
+    auto compute_type = result_type == at::ScalarType::BFloat16 ? dvm::DType::kFloat32 : k->TransType(result_type);
     self_obj = k->Cast(self_obj, compute_type);
     other_obj = k->Cast(other_obj, compute_type);
   }
@@ -929,7 +960,7 @@ bool FloorDivideTensor(const at::Tensor &self, const at::Tensor &other, at::Tens
   return true;
 }
 
-at::Tensor floor_divide(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor floor_divide(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("floor_divide");
   at::Tensor out;
   if (!enable || !FloorDivideTensor(self, other, &out)) {
@@ -939,7 +970,7 @@ at::Tensor floor_divide(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor floor_divide(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor floor_divide(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("floor_divide");
   at::Tensor out;
   if (!enable || !FloorDivideScalar(self, other, &out)) {
@@ -949,7 +980,7 @@ at::Tensor floor_divide(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor & floor_divide_(at::Tensor & self, const at::Tensor & other) {
+at::Tensor& floor_divide_(at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("floor_divide_");
   if (!enable || !FloorDivideTensor(self, other, nullptr)) {
     return op_api::floor_divide_(self, other);
@@ -959,7 +990,7 @@ at::Tensor & floor_divide_(at::Tensor & self, const at::Tensor & other) {
   return self;
 }
 
-at::Tensor & floor_divide_(at::Tensor & self, const at::Scalar & other) {
+at::Tensor& floor_divide_(at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("floor_divide_");
   if (!enable || !FloorDivideScalar(self, other, nullptr)) {
     return op_api::floor_divide_(self, other);
@@ -969,10 +1000,10 @@ at::Tensor & floor_divide_(at::Tensor & self, const at::Scalar & other) {
   return self;
 }
 
-at::Tensor & floor_divide_out(const at::Tensor & self, const at::Tensor & other, at::Tensor & out) {
+at::Tensor& floor_divide_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& out) {
   static auto enable = IsEnabled("floor_divide");
-  if (!enable || !OutputCheck(out) || IsCPUScalar(other) ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
+  if (!enable || !OutputCheck(out) || IsCPUScalar(other) || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::floor_divide_out(self, other, out);
   }
   PrepareWritableOutput(out);
@@ -982,8 +1013,7 @@ at::Tensor & floor_divide_out(const at::Tensor & self, const at::Tensor & other,
   auto other_obj = k->Input(other);
   if (self.scalar_type() != other.scalar_type()) {
     auto result_type = at::native::result_type(self, other);
-    auto compute_type = result_type == at::ScalarType::BFloat16
-                            ? dvm::DType::kFloat32 : k->TransType(result_type);
+    auto compute_type = result_type == at::ScalarType::BFloat16 ? dvm::DType::kFloat32 : k->TransType(result_type);
     self_obj = k->Cast(self_obj, compute_type);
     other_obj = k->Cast(other_obj, compute_type);
   }
@@ -996,7 +1026,7 @@ at::Tensor & floor_divide_out(const at::Tensor & self, const at::Tensor & other,
 }
 
 // ===================== Comparison =====================
-at::Tensor eq(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor eq(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("eq");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1006,7 +1036,7 @@ at::Tensor eq(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor eq(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor eq(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("eq");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1016,7 +1046,7 @@ at::Tensor eq(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor ne(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor ne(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("ne");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kNotEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1026,7 +1056,7 @@ at::Tensor ne(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor ne(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor ne(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("ne");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kNotEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1036,7 +1066,7 @@ at::Tensor ne(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor gt(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor gt(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("gt");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kGreater, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1046,7 +1076,7 @@ at::Tensor gt(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor gt(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor gt(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("gt");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kGreater, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1056,7 +1086,7 @@ at::Tensor gt(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor ge(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor ge(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("ge");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kGreaterEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1066,7 +1096,7 @@ at::Tensor ge(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor ge(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor ge(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("ge");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kGreaterEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1076,7 +1106,7 @@ at::Tensor ge(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor lt(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor lt(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("lt");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kLess, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1086,7 +1116,7 @@ at::Tensor lt(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor lt(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor lt(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("lt");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kLess, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1096,7 +1126,7 @@ at::Tensor lt(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor le(const at::Tensor & self, const at::Scalar & other) {
+at::Tensor le(const at::Tensor& self, const at::Scalar& other) {
   static auto enable = IsEnabled("le");
   at::Tensor out;
   if (!enable || !BinaryScalar(self, other, dvm::BinaryOpType::kLessEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1106,7 +1136,7 @@ at::Tensor le(const at::Tensor & self, const at::Scalar & other) {
   return out;
 }
 
-at::Tensor le(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor le(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("le");
   at::Tensor out;
   if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kLessEqual, IsFloatType, dvm::DType::kBool, &out)) {
@@ -1116,20 +1146,22 @@ at::Tensor le(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor maximum(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor maximum(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("maximum");
   at::Tensor out;
-  if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kMaximum, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
+  if (!enable ||
+      !BinaryTensor(self, other, dvm::BinaryOpType::kMaximum, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
     return op_api::maximum(self, other);
   }
   DumpOp("maximum", self, other);
   return out;
 }
 
-at::Tensor minimum(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor minimum(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("minimum");
   at::Tensor out;
-  if (!enable || !BinaryTensor(self, other, dvm::BinaryOpType::kMinimum, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
+  if (!enable ||
+      !BinaryTensor(self, other, dvm::BinaryOpType::kMinimum, IsFloatIntType, dvm::DType::kDataTypeEnd, &out)) {
     return op_api::minimum(self, other);
   }
   DumpOp("minimum", self, other);
@@ -1137,12 +1169,12 @@ at::Tensor minimum(const at::Tensor & self, const at::Tensor & other) {
 }
 
 // ===================== Select =====================
-at::Tensor where(const at::Tensor & condition, const at::Tensor & self, const at::Tensor & other) {
+at::Tensor where(const at::Tensor& condition, const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("where");
   auto cond_ok = condition.defined() && condition.is_contiguous() && torch_npu::utils::is_npu(condition) &&
-                 condition.scalar_type() == at::ScalarType::Bool;
-  if (!enable || !cond_ok ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
+      condition.scalar_type() == at::ScalarType::Bool;
+  if (!enable || !cond_ok || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::where(condition, self, other);
   }
   PrepareFusionInputs(condition, self, other);
@@ -1163,13 +1195,11 @@ at::Tensor where(const at::Tensor & condition, const at::Tensor & self, const at
   return out;
 }
 
-at::Tensor & where_out(const at::Tensor & condition, const at::Tensor & self,
-                       const at::Tensor & other, at::Tensor & out) {
+at::Tensor& where_out(const at::Tensor& condition, const at::Tensor& self, const at::Tensor& other, at::Tensor& out) {
   static auto enable = IsEnabled("where");
   auto cond_ok = condition.defined() && condition.is_contiguous() && torch_npu::utils::is_npu(condition) &&
-                 condition.scalar_type() == at::ScalarType::Bool;
-  if (!enable || !cond_ok ||
-      !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType) || !OutputCheck(out)) {
+      condition.scalar_type() == at::ScalarType::Bool;
+  if (!enable || !cond_ok || !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType) || !OutputCheck(out)) {
     return op_api::where_out(condition, self, other, out);
   }
   PrepareWritableOutput(out);
@@ -1192,7 +1222,7 @@ at::Tensor & where_out(const at::Tensor & condition, const at::Tensor & self,
 }
 
 // ===================== Activation =====================
-at::Tensor sigmoid(const at::Tensor & self) {
+at::Tensor sigmoid(const at::Tensor& self) {
   static auto enable = IsEnabled("sigmoid");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::sigmoid(self);
@@ -1210,10 +1240,9 @@ at::Tensor sigmoid(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor sigmoid_backward(const at::Tensor & grad_output, const at::Tensor & output) {
+at::Tensor sigmoid_backward(const at::Tensor& grad_output, const at::Tensor& output) {
   static auto enable = IsEnabled("sigmoid_backward");
-  if (!enable ||
-      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
+  if (!enable || !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
       !InputCheck(output, IsFloatType, /*allow_non_contig=*/true) ||
       grad_output.scalar_type() != output.scalar_type()) {
     return op_api::sigmoid_backward(grad_output, output);
@@ -1232,7 +1261,7 @@ at::Tensor sigmoid_backward(const at::Tensor & grad_output, const at::Tensor & o
   return out;
 }
 
-at::Tensor tanh(const at::Tensor & self) {
+at::Tensor tanh(const at::Tensor& self) {
   static auto enable = IsEnabled("tanh");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::tanh(self);
@@ -1249,7 +1278,7 @@ at::Tensor tanh(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor & tanh_(at::Tensor & self) {
+at::Tensor& tanh_(at::Tensor& self) {
   static auto enable = IsEnabled("tanh_");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::tanh_(self);
@@ -1265,10 +1294,10 @@ at::Tensor & tanh_(at::Tensor & self) {
   return self;
 }
 
-at::Tensor tanh_backward(const at::Tensor & grad_output, const at::Tensor & output) {
+at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& output) {
   static auto enable = IsEnabled("tanh_backward");
-  if (!enable ||
-      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(output, IsFloatType, /*allow_non_contig=*/true) ||
+  if (!enable || !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(output, IsFloatType, /*allow_non_contig=*/true) ||
       grad_output.scalar_type() != output.scalar_type()) {
     return op_api::tanh_backward(grad_output, output);
   }
@@ -1287,9 +1316,10 @@ at::Tensor tanh_backward(const at::Tensor & grad_output, const at::Tensor & outp
   return out;
 }
 
-at::Tensor & gelu_out(const at::Tensor & self, c10::string_view approximate, at::Tensor & out) {
+at::Tensor& gelu_out(const at::Tensor& self, c10::string_view approximate, at::Tensor& out) {
   static auto enable = IsEnabled("gelu");
-  if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out) || approximate != "tanh") {
+  if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out) ||
+      approximate != "tanh") {
     return op_api::gelu_out(self, approximate, out);
   }
   PrepareWritableOutput(out);
@@ -1305,8 +1335,8 @@ at::Tensor & gelu_out(const at::Tensor & self, c10::string_view approximate, at:
   auto tanh_param = k->Binary<dvm::BinaryType::kAdd>(x_obj, cubic_term);
   auto y = k->Binary<dvm::BinaryType::kMul>(tanh_param, kGeluCoeffB);
   auto exp_min_y_0 = k->Unary<dvm::UnaryType::kExp>(k->Binary<dvm::BinaryType::kMinimum>(y, 0.0f));
-  auto exp_neg_abs_y = k->Unary<dvm::UnaryType::kExp>(
-      k->Binary<dvm::BinaryType::kMul>(k->Unary<dvm::UnaryType::kAbs>(y), -1.0f));
+  auto exp_neg_abs_y =
+      k->Unary<dvm::UnaryType::kExp>(k->Binary<dvm::BinaryType::kMul>(k->Unary<dvm::UnaryType::kAbs>(y), -1.0f));
   auto denom = k->Binary<dvm::BinaryType::kAdd>(exp_neg_abs_y, 1.0f);
   auto div = k->Binary<dvm::BinaryType::kDiv>(x_obj, denom);
   auto obj = k->Binary<dvm::BinaryType::kMul>(div, exp_min_y_0);
@@ -1315,11 +1345,10 @@ at::Tensor & gelu_out(const at::Tensor & self, c10::string_view approximate, at:
   return out;
 }
 
-at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, c10::string_view approximate) {
+at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, c10::string_view approximate) {
   static auto enable = IsEnabled("gelu_backward");
-  if (!enable ||
-      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
-      grad_output.scalar_type() != self.scalar_type()) {
+  if (!enable || !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || grad_output.scalar_type() != self.scalar_type()) {
     return op_api::gelu_backward(grad_output, self, approximate);
   }
   PrepareFusionInputs(grad_output, self);
@@ -1354,7 +1383,7 @@ at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self
   return out;
 }
 
-at::Tensor relu(const at::Tensor & self) {
+at::Tensor relu(const at::Tensor& self) {
   static auto enable = IsEnabled("relu");
   if (!enable || !InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true)) {
     return op_api::relu(self);
@@ -1367,7 +1396,7 @@ at::Tensor relu(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor & relu_(at::Tensor & self) {
+at::Tensor& relu_(at::Tensor& self) {
   static auto enable = IsEnabled("relu_");
   if (!enable || !InputCheck(self, IsFloatIntType, /*allow_non_contig=*/true)) {
     return op_api::relu_(self);
@@ -1381,10 +1410,9 @@ at::Tensor & relu_(at::Tensor & self) {
   return self;
 }
 
-bool LeakyRelu(const at::Tensor &self, const at::Scalar &negative_slope, at::Tensor *out = nullptr) {
+bool LeakyRelu(const at::Tensor& self, const at::Scalar& negative_slope, at::Tensor* out = nullptr) {
   float slope = 0.0f;
-  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
-      !GetScalarValue(negative_slope, &slope)) {
+  if (!InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !GetScalarValue(negative_slope, &slope)) {
     return false;
   }
   if (out == nullptr) {
@@ -1400,8 +1428,9 @@ bool LeakyRelu(const at::Tensor &self, const at::Scalar &negative_slope, at::Ten
   //   max(x, 0) + negative_slope * min(x, 0)
   auto pos_obj = k->Binary<dvm::BinaryType::kMaximum>(input_obj, 0.0f);
   auto neg_obj = k->Binary<dvm::BinaryType::kMinimum>(input_obj, 0.0f);
-  auto out_obj = slope == 0.0f ? pos_obj :
-    k->Binary<dvm::BinaryType::kAdd>(pos_obj, k->Binary<dvm::BinaryType::kMul>(neg_obj, slope));
+  auto out_obj = slope == 0.0f
+      ? pos_obj
+      : k->Binary<dvm::BinaryType::kAdd>(pos_obj, k->Binary<dvm::BinaryType::kMul>(neg_obj, slope));
   if (out == nullptr) {
     k->Output(self, out_obj, true);
   } else {
@@ -1410,7 +1439,7 @@ bool LeakyRelu(const at::Tensor &self, const at::Scalar &negative_slope, at::Ten
   return true;
 }
 
-at::Tensor leaky_relu(const at::Tensor & self, const at::Scalar & negative_slope) {
+at::Tensor leaky_relu(const at::Tensor& self, const at::Scalar& negative_slope) {
   static auto enable = IsEnabled("leaky_relu");
   at::Tensor out;
   if (!enable || !LeakyRelu(self, negative_slope, &out)) {
@@ -1420,7 +1449,7 @@ at::Tensor leaky_relu(const at::Tensor & self, const at::Scalar & negative_slope
   return out;
 }
 
-at::Tensor & leaky_relu_(at::Tensor & self, const at::Scalar & negative_slope) {
+at::Tensor& leaky_relu_(at::Tensor& self, const at::Scalar& negative_slope) {
   static auto enable = IsEnabled("leaky_relu_");
   if (!enable || !LeakyRelu(self, negative_slope)) {
     return op_api::leaky_relu_(self, negative_slope);
@@ -1430,7 +1459,7 @@ at::Tensor & leaky_relu_(at::Tensor & self, const at::Scalar & negative_slope) {
   return self;
 }
 
-at::Tensor silu(const at::Tensor & self) {
+at::Tensor silu(const at::Tensor& self) {
   static auto enable = IsEnabled("silu");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::silu(self);
@@ -1448,12 +1477,10 @@ at::Tensor silu(const at::Tensor & self) {
   return out;
 }
 
-at::Tensor silu_backward(const at::Tensor & grad_output, const at::Tensor & self) {
+at::Tensor silu_backward(const at::Tensor& grad_output, const at::Tensor& self) {
   static auto enable = IsEnabled("silu_backward");
-  if (!enable ||
-      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
-      grad_output.scalar_type() != self.scalar_type()) {
+  if (!enable || !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
+      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || grad_output.scalar_type() != self.scalar_type()) {
     return op_api::silu_backward(grad_output, self);
   }
   PrepareFusionInputs(grad_output, self);
@@ -1477,18 +1504,23 @@ at::Tensor silu_backward(const at::Tensor & grad_output, const at::Tensor & self
 }
 
 // ===================== BatchNorm =====================
-bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t channels) {
+bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t channels) {
   if (!tensor.has_value()) {
     return true;
   }
-  const auto &value = tensor.value();
+  const auto& value = tensor.value();
   return value.dim() == 1 && value.numel() == channels && value.scalar_type() == at::ScalarType::Float;
 }
 
-::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_batch_norm(
-  const at::Tensor & input, const c10::optional<at::Tensor> & weight, const c10::optional<at::Tensor> & bias,
-  const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var,
-  bool training, double momentum, double eps) {
+::std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm(
+    const at::Tensor& input,
+    const c10::optional<at::Tensor>& weight,
+    const c10::optional<at::Tensor>& bias,
+    const c10::optional<at::Tensor>& running_mean,
+    const c10::optional<at::Tensor>& running_var,
+    bool training,
+    double momentum,
+    double eps) {
   static auto enable = IsEnabled("native_batch_norm");
   if (!enable || training || input.scalar_type() != at::ScalarType::Float || input.dim() < 2 || input.dim() > 4 ||
       !NpuCheck(input, weight, bias, running_mean, running_var)) {
@@ -1503,10 +1535,10 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   auto x = input.contiguous();
   auto weight_tensor = weight.has_value() ? weight.value().contiguous() : at::Tensor();
   auto bias_tensor = bias.has_value() ? bias.value().contiguous() : at::Tensor();
-  auto running_mean_tensor = running_mean.has_value() ?
-    running_mean.value().contiguous() : at::zeros({channels}, input.options().dtype(at::kFloat));
-  auto running_var_tensor = running_var.has_value() ?
-    running_var.value().contiguous() : at::ones({channels}, input.options().dtype(at::kFloat));
+  auto running_mean_tensor = running_mean.has_value() ? running_mean.value().contiguous()
+                                                      : at::zeros({channels}, input.options().dtype(at::kFloat));
+  auto running_var_tensor = running_var.has_value() ? running_var.value().contiguous()
+                                                    : at::ones({channels}, input.options().dtype(at::kFloat));
   auto save_mean = at::zeros({channels}, input.options().dtype(at::kFloat));
   auto save_invstd = at::zeros({channels}, input.options().dtype(at::kFloat));
 
@@ -1523,52 +1555,54 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   auto new_shape_ref = k->GetShapeRef(new_shape);
   auto mean_obj = k->Cast(k->Input(running_mean_tensor, true, new_shape_ref), input_dtype);
   auto var_obj = k->Cast(k->Input(running_var_tensor, true, new_shape_ref), input_dtype);
-  auto invstd_obj =
-    k->Unary<dvm::UnaryType::kReciprocal>(
+  auto invstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(
       k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(var_obj, static_cast<float>(eps))));
   out_obj = k->Binary<dvm::BinaryType::kSub>(out_obj, mean_obj);
   out_obj = k->Binary<dvm::BinaryType::kMul>(out_obj, invstd_obj);
   if (weight.has_value()) {
-    out_obj = k->Binary<dvm::BinaryType::kMul>(
-      out_obj, k->Cast(k->Input(weight_tensor, true, new_shape_ref), input_dtype));
+    out_obj =
+        k->Binary<dvm::BinaryType::kMul>(out_obj, k->Cast(k->Input(weight_tensor, true, new_shape_ref), input_dtype));
   }
   if (bias.has_value()) {
-    out_obj = k->Binary<dvm::BinaryType::kAdd>(
-      out_obj, k->Cast(k->Input(bias_tensor, true, new_shape_ref), input_dtype));
+    out_obj =
+        k->Binary<dvm::BinaryType::kAdd>(out_obj, k->Cast(k->Input(bias_tensor, true, new_shape_ref), input_dtype));
   }
   auto out = k->Output(out_obj, k->GetShape(out_obj), input.options().dtype(input.scalar_type()));
   DumpOp("native_batch_norm", input, weight, bias, running_mean, running_var, training, momentum, eps);
   return std::make_tuple(std::move(out), std::move(save_mean), std::move(save_invstd));
 }
 
-::std::tuple<at::Tensor,at::Tensor,at::Tensor> native_batch_norm_backward(
-  const at::Tensor & grad_out, const at::Tensor & input, const c10::optional<at::Tensor> & weight,
-  const c10::optional<at::Tensor> & running_mean, const c10::optional<at::Tensor> & running_var,
-  const c10::optional<at::Tensor> & save_mean, const c10::optional<at::Tensor> & save_invstd,
-  bool train, double eps, ::std::array<bool,3> output_mask) {
+::std::tuple<at::Tensor, at::Tensor, at::Tensor> native_batch_norm_backward(
+    const at::Tensor& grad_out,
+    const at::Tensor& input,
+    const c10::optional<at::Tensor>& weight,
+    const c10::optional<at::Tensor>& running_mean,
+    const c10::optional<at::Tensor>& running_var,
+    const c10::optional<at::Tensor>& save_mean,
+    const c10::optional<at::Tensor>& save_invstd,
+    bool train,
+    double eps,
+    ::std::array<bool, 3> output_mask) {
   static auto enable = IsEnabled("native_batch_norm_backward", Level::kO2);
   if (!enable || grad_out.scalar_type() != at::ScalarType::Float || input.scalar_type() != at::ScalarType::Float ||
       grad_out.scalar_type() != input.scalar_type() || input.dim() < 2 || input.dim() > 4 ||
       !NpuCheck(grad_out, input, weight, running_mean, running_var)) {
     return op_api::native_batch_norm_backward(
-      grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
+        grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
   }
   auto channels = input.size(1);
 
   if (train) {
     // === Training BatchNorm backward ===
     if (!save_mean.has_value() || !save_invstd.has_value() || channels == 0 ||
-        !BatchNormVectorCheck(weight, channels) ||
-        !BatchNormVectorCheck(save_mean, channels) ||
-        !BatchNormVectorCheck(save_invstd, channels) ||
-        !NpuCheck(save_mean.value(), save_invstd.value())) {
+        !BatchNormVectorCheck(weight, channels) || !BatchNormVectorCheck(save_mean, channels) ||
+        !BatchNormVectorCheck(save_invstd, channels) || !NpuCheck(save_mean.value(), save_invstd.value())) {
       return op_api::native_batch_norm_backward(
-        grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
+          grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
     }
     bool need_input_reduce = output_mask[0] || output_mask[1];
     auto reduce_res = op_api::batch_norm_backward_reduce(
-      grad_out, input, save_mean.value(), save_invstd.value(), weight,
-      need_input_reduce, false, output_mask[2]);
+        grad_out, input, save_mean.value(), save_invstd.value(), weight, need_input_reduce, false, output_mask[2]);
     at::Tensor grad_input;
     at::Tensor grad_weight;
     at::Tensor grad_bias = output_mask[2] ? std::get<3>(reduce_res) : at::Tensor();
@@ -1576,10 +1610,8 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
       at::Tensor sum_dy = std::get<0>(reduce_res);
       at::Tensor sum_dy_xmu = std::get<1>(reduce_res);
       auto k = g_lazy_fusion_manager.Get();
-      auto rstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(
-        k->Unary<dvm::UnaryType::kSqrt>(
-          k->Binary<dvm::BinaryType::kAdd>(k->Input(save_invstd.value().contiguous()),
-                                           static_cast<float>(eps))));
+      auto rstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(k->Unary<dvm::UnaryType::kSqrt>(
+          k->Binary<dvm::BinaryType::kAdd>(k->Input(save_invstd.value().contiguous()), static_cast<float>(eps))));
       at::Tensor rstd;
       if (output_mask[0]) {
         rstd = k->Output(rstd_obj, k->GetShape(rstd_obj), input.options().dtype(at::kFloat));
@@ -1589,30 +1621,28 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
         grad_weight = k->Output(gw_obj, k->GetShape(gw_obj), input.options().dtype(at::kFloat));
       }
       if (output_mask[0]) {
-        auto count = at::full({1},
-          static_cast<double>(input.numel() / channels), input.options().dtype(at::kFloat));
+        auto count = at::full({1}, static_cast<double>(input.numel() / channels), input.options().dtype(at::kFloat));
         grad_input = lazy_fusion::batch_norm_backward_elemt(
-          grad_out, input, save_mean.value(), rstd, weight, sum_dy, sum_dy_xmu, count);
+            grad_out, input, save_mean.value(), rstd, weight, sum_dy, sum_dy_xmu, count);
       }
     }
     DumpOp("native_batch_norm_backward", grad_out, input, weight, save_mean, save_invstd, train, eps);
     return std::make_tuple(std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
   }
-  if (!BatchNormVectorCheck(weight, channels) ||
-      !BatchNormVectorCheck(running_mean, channels) ||
+  if (!BatchNormVectorCheck(weight, channels) || !BatchNormVectorCheck(running_mean, channels) ||
       !BatchNormVectorCheck(running_var, channels)) {
     return op_api::native_batch_norm_backward(
-      grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
+        grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
   }
 
   auto x = input.contiguous();
   auto dy = grad_out.contiguous();
-  auto weight_tensor = weight.has_value() ?
-    weight.value().contiguous() : at::ones({channels}, input.options().dtype(at::kFloat));
-  auto running_mean_tensor = running_mean.has_value() ?
-    running_mean.value().contiguous() : at::zeros({channels}, input.options().dtype(at::kFloat));
-  auto running_var_tensor = running_var.has_value() ?
-    running_var.value().contiguous() : at::ones({channels}, input.options().dtype(at::kFloat));
+  auto weight_tensor =
+      weight.has_value() ? weight.value().contiguous() : at::ones({channels}, input.options().dtype(at::kFloat));
+  auto running_mean_tensor = running_mean.has_value() ? running_mean.value().contiguous()
+                                                      : at::zeros({channels}, input.options().dtype(at::kFloat));
+  auto running_var_tensor = running_var.has_value() ? running_var.value().contiguous()
+                                                    : at::ones({channels}, input.options().dtype(at::kFloat));
 
   // Inference BatchNorm backward:
   //   grad_input = grad_out * weight / sqrt(running_var + eps)
@@ -1636,11 +1666,9 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   auto reduce_axis_ref = k->GetShapeRef(reduce_axis);
   auto mean_obj = k->Cast(k->Input(running_mean_tensor, true, broadcast_shape_ref), input_dtype);
   auto var_obj = k->Cast(k->Input(running_var_tensor, true, broadcast_shape_ref), input_dtype);
-  auto invstd_obj =
-    k->Unary<dvm::UnaryType::kReciprocal>(
+  auto invstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(
       k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(var_obj, static_cast<float>(eps))));
-  auto scale_obj =
-    k->Binary<dvm::BinaryType::kMul>(
+  auto scale_obj = k->Binary<dvm::BinaryType::kMul>(
       invstd_obj, k->Cast(k->Input(weight_tensor, true, broadcast_shape_ref), input_dtype));
 
   at::Tensor grad_input;
@@ -1653,8 +1681,8 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   if (output_mask[1]) {
     auto centered_obj = k->Binary<dvm::BinaryType::kSub>(x_obj, mean_obj);
     auto norm_obj = k->Binary<dvm::BinaryType::kMul>(centered_obj, invstd_obj);
-    auto grad_weight_obj = k->Reduce<dvm::ReduceType::kSum>(
-      k->Binary<dvm::BinaryType::kMul>(dy_obj, norm_obj), reduce_axis_ref, false);
+    auto grad_weight_obj =
+        k->Reduce<dvm::ReduceType::kSum>(k->Binary<dvm::BinaryType::kMul>(dy_obj, norm_obj), reduce_axis_ref, false);
     grad_weight = k->Output(grad_weight_obj, k->GetShape(grad_weight_obj), input.options().dtype(at::kFloat));
   }
   if (output_mask[2]) {
@@ -1665,7 +1693,7 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   return std::make_tuple(std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
 }
 
-::std::tuple<at::Tensor,at::Tensor> batch_norm_stats(const at::Tensor & input, double eps) {
+::std::tuple<at::Tensor, at::Tensor> batch_norm_stats(const at::Tensor& input, double eps) {
   static auto enable = IsEnabled("batch_norm_stats");
   if (!enable || input.scalar_type() != at::ScalarType::Float || !NpuCheck(input)) {
     return op_api::batch_norm_stats(input, eps);
@@ -1690,13 +1718,12 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   auto axis_ref = k->GetShapeRef(axis);
   auto input_obj = k->Input(x);
   float coef = 1.0f / static_cast<float>(count);
-  auto input_mean =
-    k->Reduce<dvm::ReduceType::kSum>(k->Binary<dvm::BinaryType::kMul>(input_obj, coef), axis_ref, true);
+  auto input_mean = k->Reduce<dvm::ReduceType::kSum>(k->Binary<dvm::BinaryType::kMul>(input_obj, coef), axis_ref, true);
   auto input_sub_mean = k->Binary<dvm::BinaryType::kSub>(input_obj, input_mean);
   auto input_var = k->Binary<dvm::BinaryType::kMul>(input_sub_mean, input_sub_mean);
   input_var = k->Reduce<dvm::ReduceType::kSum>(k->Binary<dvm::BinaryType::kMul>(input_var, coef), axis_ref, false);
   auto invstd = k->Unary<dvm::UnaryType::kReciprocal>(
-                  k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(input_var, static_cast<float>(eps))));
+      k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(input_var, static_cast<float>(eps))));
   auto out1 = k->Output(input_mean, k->GetShape(invstd), input.options().dtype(input.scalar_type()));
   auto out2 = k->Output(invstd, k->GetShape(invstd), input.options().dtype(input.scalar_type()));
   DumpOp("batch_norm_stats", input, eps);
@@ -1704,16 +1731,24 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   return std::make_tuple(std::move(out1), std::move(out2));
 }
 
-::std::tuple<at::Tensor,at::Tensor> batch_norm_gather_stats_with_counts(const at::Tensor & input,
-  const at::Tensor & mean, const at::Tensor & invstd, const c10::optional<at::Tensor> & running_mean,
-  const c10::optional<at::Tensor> & running_var, double momentum, double eps, const at::Tensor & counts) {
+::std::tuple<at::Tensor, at::Tensor> batch_norm_gather_stats_with_counts(
+    const at::Tensor& input,
+    const at::Tensor& mean,
+    const at::Tensor& invstd,
+    const c10::optional<at::Tensor>& running_mean,
+    const c10::optional<at::Tensor>& running_var,
+    double momentum,
+    double eps,
+    const at::Tensor& counts) {
   static auto enable = IsEnabled("batch_norm_gather_stats_with_counts");
   if (!enable || input.scalar_type() != at::ScalarType::Float || !NpuCheck(input, mean, invstd, counts)) {
-    return op_api::batch_norm_gather_stats_with_counts(input, mean, invstd, running_mean, running_var, momentum, eps, counts);
+    return op_api::batch_norm_gather_stats_with_counts(
+        input, mean, invstd, running_mean, running_var, momentum, eps, counts);
   }
   if ((running_mean.has_value() && !InputCheck(running_mean.value())) ||
       (running_var.has_value() && !InputCheck(running_var.value()))) {
-    return op_api::batch_norm_gather_stats_with_counts(input, mean, invstd, running_mean, running_var, momentum, eps, counts);
+    return op_api::batch_norm_gather_stats_with_counts(
+        input, mean, invstd, running_mean, running_var, momentum, eps, counts);
   }
   auto x = input.contiguous();
   auto mean_all = mean.contiguous();
@@ -1741,34 +1776,35 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   auto global_counts = k->Reduce<dvm::ReduceType::kSum>(count_all_obj, count_axis_ref, false);
   auto mean_all_obj = k->Cast(k->Input(mean_all), x_dtype);
   auto global_mean = k->Reduce<dvm::ReduceType::kSum>(
-    k->Binary<dvm::BinaryType::kDiv>(k->Binary<dvm::BinaryType::kMul>(mean_all_obj, count_all_obj), global_counts),
-    mean_axis_ref, false);
+      k->Binary<dvm::BinaryType::kDiv>(k->Binary<dvm::BinaryType::kMul>(mean_all_obj, count_all_obj), global_counts),
+      mean_axis_ref,
+      false);
   auto global_mean_tensor = k->Output(global_mean, k->GetShape(global_mean), x.options().dtype(x.scalar_type()));
   auto mean_sub_all = k->Binary<dvm::BinaryType::kSub>(mean_all_obj, global_mean);
   auto std_all = k->Unary<dvm::UnaryType::kReciprocal>(k->Cast(k->Input(invstd_all), x_dtype));
-  auto var_all = k->Binary<dvm::BinaryType::kAdd>(k->Binary<dvm::BinaryType::kMul>(std_all, std_all), static_cast<float>(-eps));
+  auto var_all =
+      k->Binary<dvm::BinaryType::kAdd>(k->Binary<dvm::BinaryType::kMul>(std_all, std_all), static_cast<float>(-eps));
   var_all = k->Binary<dvm::BinaryType::kAdd>(var_all, k->Binary<dvm::BinaryType::kMul>(mean_sub_all, mean_sub_all));
   var_all = k->Binary<dvm::BinaryType::kMul>(var_all, count_all_obj);
   auto global_var_sum = k->Reduce<dvm::ReduceType::kSum>(var_all, mean_axis_ref, false);
   auto global_var = k->Binary<dvm::BinaryType::kDiv>(global_var_sum, global_counts);
-  auto global_invstd =
-    k->Unary<dvm::UnaryType::kReciprocal>(
+  auto global_invstd = k->Unary<dvm::UnaryType::kReciprocal>(
       k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(global_var, static_cast<float>(eps))));
   auto global_invstd_tensor = k->Output(global_invstd, k->GetShape(global_invstd), x.options().dtype(x.scalar_type()));
   if (running_mean.has_value()) {
     auto running_mean_tensor = running_mean.value();
     auto running_mean_new = k->Binary<dvm::BinaryType::kAdd>(
-      k->Binary<dvm::BinaryType::kMul>(k->Cast(k->Input(running_mean_tensor), x_dtype), momentum_reverse),
-      k->Binary<dvm::BinaryType::kMul>(global_mean, static_cast<float>(momentum)));
+        k->Binary<dvm::BinaryType::kMul>(k->Cast(k->Input(running_mean_tensor), x_dtype), momentum_reverse),
+        k->Binary<dvm::BinaryType::kMul>(global_mean, static_cast<float>(momentum)));
     k->Output(running_mean_tensor, running_mean_new, true);
   }
   if (running_var.has_value()) {
     auto running_var_tensor = running_var.value();
     auto unbiased_global_var =
-      k->Binary<dvm::BinaryType::kDiv>(global_var_sum, k->Binary<dvm::BinaryType::kAdd>(global_counts, -1.0f));
+        k->Binary<dvm::BinaryType::kDiv>(global_var_sum, k->Binary<dvm::BinaryType::kAdd>(global_counts, -1.0f));
     auto running_var_new = k->Binary<dvm::BinaryType::kAdd>(
-      k->Binary<dvm::BinaryType::kMul>(k->Cast(k->Input(running_var_tensor), x_dtype), momentum_reverse),
-      k->Binary<dvm::BinaryType::kMul>(unbiased_global_var, static_cast<float>(momentum)));
+        k->Binary<dvm::BinaryType::kMul>(k->Cast(k->Input(running_var_tensor), x_dtype), momentum_reverse),
+        k->Binary<dvm::BinaryType::kMul>(unbiased_global_var, static_cast<float>(momentum)));
     k->Output(running_var_tensor, running_var_new, true);
   }
   DumpOp("batch_norm_gather_stats_with_counts", input, mean, invstd, running_mean, running_var, momentum, eps, counts);
@@ -1776,9 +1812,13 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor> &tensor, int64_t chann
   return std::make_tuple(std::move(global_mean_tensor), std::move(global_invstd_tensor));
 }
 
-at::Tensor batch_norm_elemt(const at::Tensor & input, const c10::optional<at::Tensor> & weight,
-                            const c10::optional<at::Tensor> & bias, const at::Tensor & mean, const at::Tensor & invstd,
-                            double eps) {
+at::Tensor batch_norm_elemt(
+    const at::Tensor& input,
+    const c10::optional<at::Tensor>& weight,
+    const c10::optional<at::Tensor>& bias,
+    const at::Tensor& mean,
+    const at::Tensor& invstd,
+    double eps) {
   static auto enable = IsEnabled("batch_norm_elemt");
   if (!enable || input.scalar_type() != at::ScalarType::Float || !NpuCheck(input, mean, invstd, weight, bias)) {
     return op_api::batch_norm_elemt(input, weight, bias, mean, invstd, eps);
@@ -1796,28 +1836,34 @@ at::Tensor batch_norm_elemt(const at::Tensor & input, const c10::optional<at::Te
   new_shape[1] = x.size(1);
   auto new_shape_ref = k->GetShapeRef(new_shape);
   input_obj =
-    k->Binary<dvm::BinaryType::kSub>(input_obj, k->Cast(k->Input(mean_tensor, true, new_shape_ref), input_dtype));
+      k->Binary<dvm::BinaryType::kSub>(input_obj, k->Cast(k->Input(mean_tensor, true, new_shape_ref), input_dtype));
   input_obj =
-    k->Binary<dvm::BinaryType::kMul>(input_obj, k->Cast(k->Input(invstd_tensor, true, new_shape_ref), input_dtype));
+      k->Binary<dvm::BinaryType::kMul>(input_obj, k->Cast(k->Input(invstd_tensor, true, new_shape_ref), input_dtype));
   if (weight.has_value()) {
     input_obj =
-      k->Binary<dvm::BinaryType::kMul>(input_obj, k->Cast(k->Input(weight_tensor, true, new_shape_ref), input_dtype));
+        k->Binary<dvm::BinaryType::kMul>(input_obj, k->Cast(k->Input(weight_tensor, true, new_shape_ref), input_dtype));
   }
   if (bias.has_value()) {
     input_obj =
-      k->Binary<dvm::BinaryType::kAdd>(input_obj, k->Cast(k->Input(bias_tensor, true, new_shape_ref), input_dtype));
+        k->Binary<dvm::BinaryType::kAdd>(input_obj, k->Cast(k->Input(bias_tensor, true, new_shape_ref), input_dtype));
   }
   auto out = k->Output(input_obj, k->GetShape(input_obj), input.options().dtype(input.scalar_type()));
   DumpOp("batch_norm_elemt", input, weight, bias, mean, invstd, eps);
   return out;
 }
 
-at::Tensor batch_norm_backward_elemt(const at::Tensor & grad_out, const at::Tensor & input, const at::Tensor & mean,
-  const at::Tensor & invstd, const c10::optional<at::Tensor> & weight, const at::Tensor & sum_dy,
-  const at::Tensor & sum_dy_xmu, const at::Tensor & count) {
+at::Tensor batch_norm_backward_elemt(
+    const at::Tensor& grad_out,
+    const at::Tensor& input,
+    const at::Tensor& mean,
+    const at::Tensor& invstd,
+    const c10::optional<at::Tensor>& weight,
+    const at::Tensor& sum_dy,
+    const at::Tensor& sum_dy_xmu,
+    const at::Tensor& count) {
   static auto enable = IsEnabled("batch_norm_backward_elemt");
-  if (!enable || input.scalar_type() != at::ScalarType::Float ||
-      !weight.has_value() || !NpuCheck(grad_out, input, mean, invstd, weight.value(), sum_dy, sum_dy_xmu, count)) {
+  if (!enable || input.scalar_type() != at::ScalarType::Float || !weight.has_value() ||
+      !NpuCheck(grad_out, input, mean, invstd, weight.value(), sum_dy, sum_dy_xmu, count)) {
     return op_api::batch_norm_backward_elemt(grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count);
   }
   auto dout_tensor_c = grad_out.contiguous();
@@ -1842,32 +1888,33 @@ at::Tensor batch_norm_backward_elemt(const at::Tensor & grad_out, const at::Tens
   }
   auto count_axis_ref = k->GetShapeRef(counts_axis);
   auto global_counts =
-    k->Reduce<dvm::ReduceType::kSum>(k->Cast(k->Input(count_tensor_c), x_dtype), count_axis_ref, false);
+      k->Reduce<dvm::ReduceType::kSum>(k->Cast(k->Input(count_tensor_c), x_dtype), count_axis_ref, false);
   auto invstd_obj = k->Cast(k->Input(invstd_tensor_c, true, new_shape_ref), x_dtype);
-  auto invstd_dy_xmu =
-    k->Binary<dvm::BinaryType::kMul>(k->Binary<dvm::BinaryType::kMul>(invstd_obj, invstd_obj),
-              k->Binary<dvm::BinaryType::kDiv>(k->Cast(k->Input(sum_dy_xmu_tensor_c, true, new_shape_ref), x_dtype),
-                        global_counts));
+  auto invstd_dy_xmu = k->Binary<dvm::BinaryType::kMul>(
+      k->Binary<dvm::BinaryType::kMul>(invstd_obj, invstd_obj),
+      k->Binary<dvm::BinaryType::kDiv>(
+          k->Cast(k->Input(sum_dy_xmu_tensor_c, true, new_shape_ref), x_dtype), global_counts));
   auto x_sub_mean =
-    k->Binary<dvm::BinaryType::kSub>(x_obj, k->Cast(k->Input(mean_tensor_c, true, new_shape_ref), x_dtype));
+      k->Binary<dvm::BinaryType::kSub>(x_obj, k->Cast(k->Input(mean_tensor_c, true, new_shape_ref), x_dtype));
   auto x_invstd = k->Binary<dvm::BinaryType::kMul>(x_sub_mean, invstd_dy_xmu);
-  auto t1 = k->Binary<dvm::BinaryType::kSub>(k->Cast(k->Input(dout_tensor_c), x_dtype),
-                      k->Binary<dvm::BinaryType::kDiv>(
-                                k->Cast(k->Input(sumd_dy_tensor_c, true, new_shape_ref), x_dtype), global_counts));
+  auto t1 = k->Binary<dvm::BinaryType::kSub>(
+      k->Cast(k->Input(dout_tensor_c), x_dtype),
+      k->Binary<dvm::BinaryType::kDiv>(
+          k->Cast(k->Input(sumd_dy_tensor_c, true, new_shape_ref), x_dtype), global_counts));
   auto t2 = k->Binary<dvm::BinaryType::kSub>(t1, x_invstd);
-  auto obj = k->Binary<dvm::BinaryType::kMul>(t2,
-    k->Binary<dvm::BinaryType::kMul>(invstd_obj, k->Cast(k->Input(weight_tensor_c, true, new_shape_ref), x_dtype)));
+  auto obj = k->Binary<dvm::BinaryType::kMul>(
+      t2,
+      k->Binary<dvm::BinaryType::kMul>(invstd_obj, k->Cast(k->Input(weight_tensor_c, true, new_shape_ref), x_dtype)));
   auto out = k->Output(obj, k->GetShape(obj), input.options().dtype(input.scalar_type()));
   DumpOp("batch_norm_backward_elemt", grad_out, input, mean, invstd, weight, sum_dy, sum_dy_xmu, count);
   return out;
 }
 
 // ===================== Reduce =====================
-at::Tensor sum(const at::Tensor & self, c10::optional<at::ScalarType> dtype) {
+at::Tensor sum(const at::Tensor& self, c10::optional<at::ScalarType> dtype) {
   static auto enable = IsEnabled("sum", Level::kO2);
   auto out_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-  if (!enable || out_type != at::ScalarType::Float ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
+  if (!enable || out_type != at::ScalarType::Float || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::sum(self, dtype);
   }
   PrepareFusionInput(self);
@@ -1885,11 +1932,10 @@ at::Tensor sum(const at::Tensor & self, c10::optional<at::ScalarType> dtype) {
   return out;
 }
 
-at::Tensor sum(const at::Tensor & self, at::OptionalIntArrayRef dim, bool keepdim, c10::optional<at::ScalarType> dtype) {
+at::Tensor sum(const at::Tensor& self, at::OptionalIntArrayRef dim, bool keepdim, c10::optional<at::ScalarType> dtype) {
   static auto enable = IsEnabled("sum", Level::kO2);
   auto out_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-  if (!enable || out_type != at::ScalarType::Float ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
+  if (!enable || out_type != at::ScalarType::Float || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true)) {
     return op_api::sum(self, dim, keepdim, dtype);
   }
   PrepareFusionInput(self);
@@ -1915,12 +1961,16 @@ at::Tensor sum(const at::Tensor & self, at::OptionalIntArrayRef dim, bool keepdi
   return out;
 }
 
-at::Tensor & sum_out(const at::Tensor & self, at::OptionalIntArrayRef dim, bool keepdim,
-                     c10::optional<at::ScalarType> dtype, at::Tensor & out) {
+at::Tensor& sum_out(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional<at::ScalarType> dtype,
+    at::Tensor& out) {
   static auto enable = IsEnabled("sum", Level::kO2);
   auto out_type = dtype.has_value() ? dtype.value() : self.scalar_type();
-  if (!enable || out_type != at::ScalarType::Float ||
-      !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out)) {
+  if (!enable || out_type != at::ScalarType::Float || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) ||
+      !OutputCheck(out)) {
     return op_api::sum_out(self, dim, keepdim, dtype, out);
   }
   PrepareWritableOutput(out);
@@ -1948,7 +1998,7 @@ at::Tensor & sum_out(const at::Tensor & self, at::OptionalIntArrayRef dim, bool 
 }
 
 // ===================== MatMul =====================
-at::Tensor matmul(const at::Tensor & self, const at::Tensor & other) {
+at::Tensor matmul(const at::Tensor& self, const at::Tensor& other) {
   static auto enable = IsEnabled("matmul", Level::kO2);
   if (!enable) {
     return op_api::matmul(self, other);
@@ -1961,7 +2011,7 @@ at::Tensor matmul(const at::Tensor & self, const at::Tensor & other) {
   return out;
 }
 
-at::Tensor mm(const at::Tensor & self, const at::Tensor & mat2) {
+at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
   static auto enable = IsEnabled("mm", Level::kO2);
   if (!enable) {
     return op_api::mm(self, mat2);
@@ -1974,7 +2024,7 @@ at::Tensor mm(const at::Tensor & self, const at::Tensor & mat2) {
   return out;
 }
 
-at::Tensor bmm(const at::Tensor & self, const at::Tensor & mat2) {
+at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
   static auto enable = IsEnabled("bmm", Level::kO2);
   if (!enable) {
     return op_api::bmm(self, mat2);
@@ -1987,8 +2037,12 @@ at::Tensor bmm(const at::Tensor & self, const at::Tensor & mat2) {
   return out;
 }
 
-at::Tensor addmm(const at::Tensor & self, const at::Tensor & mat1, const at::Tensor & mat2,
-                 const at::Scalar & beta, const at::Scalar & alpha) {
+at::Tensor addmm(
+    const at::Tensor& self,
+    const at::Tensor& mat1,
+    const at::Tensor& mat2,
+    const at::Scalar& beta,
+    const at::Scalar& alpha) {
   static auto enable = IsEnabled("addmm", Level::kO2);
   float beta_value = 1.0f;
   float alpha_value = 1.0f;
@@ -2115,8 +2169,11 @@ void _foreach_div_(at::TensorList tensors, at::ArrayRef<at::Scalar> scalars) {
   LazyFusionFlush();
 }
 
-void _foreach_addcmul_(const at::TensorList input, const at::TensorList tensors1,
-                       const at::TensorList tensors2, const at::Scalar &scalar) {
+void _foreach_addcmul_(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    const at::Scalar& scalar) {
   static auto enable = IsEnabled("_foreach_addcmul_");
   if (!enable || !ForeachAddc(input, tensors1, tensors2, scalar, dvm::BinaryOpType::kMul)) {
     op_api::_foreach_addcmul_(input, tensors1, tensors2, scalar);
@@ -2126,8 +2183,11 @@ void _foreach_addcmul_(const at::TensorList input, const at::TensorList tensors1
   LazyFusionFlush();
 }
 
-void _foreach_addcdiv_(const at::TensorList input, const at::TensorList tensors1,
-                       const at::TensorList tensors2, const at::Scalar &scalar) {
+void _foreach_addcdiv_(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    const at::Scalar& scalar) {
   static auto enable = IsEnabled("_foreach_addcdiv_");
   if (!enable || !ForeachAddc(input, tensors1, tensors2, scalar, dvm::BinaryOpType::kDiv)) {
     op_api::_foreach_addcdiv_(input, tensors1, tensors2, scalar);
@@ -2137,8 +2197,11 @@ void _foreach_addcdiv_(const at::TensorList input, const at::TensorList tensors1
   LazyFusionFlush();
 }
 
-void _foreach_addcdiv_(const at::TensorList input, const at::TensorList tensors1,
-                       const at::TensorList tensors2, at::ArrayRef<at::Scalar> scalars) {
+void _foreach_addcdiv_(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    at::ArrayRef<at::Scalar> scalars) {
   static auto enable = IsEnabled("_foreach_addcdiv_");
   if (!enable || !ForeachAddc(input, tensors1, tensors2, scalars, dvm::BinaryOpType::kDiv)) {
     op_api::_foreach_addcdiv_(input, tensors1, tensors2, scalars);
@@ -2149,7 +2212,7 @@ void _foreach_addcdiv_(const at::TensorList input, const at::TensorList tensors1
 }
 
 // ===================== SwiGLU =====================
-at::Tensor npu_swiglu(const at::Tensor &self, int64_t dim) {
+at::Tensor npu_swiglu(const at::Tensor& self, int64_t dim) {
   static auto enable = IsEnabled("npu_swiglu", Level::kO2);
   if (!enable || !InputCheck(self)) {
     return op_api::npu_swiglu(self, dim);
@@ -2184,7 +2247,7 @@ at::Tensor npu_swiglu(const at::Tensor &self, int64_t dim) {
 
   // Load x1 with stride (view of second half, offset by half * dim_stride * element_size)
   auto elem_size = self.element_size();
-  auto x1_data_ptr = static_cast<void *>(static_cast<char *>(self.data_ptr()) + half * dim_stride * elem_size);
+  auto x1_data_ptr = static_cast<void*>(static_cast<char*>(self.data_ptr()) + half * dim_stride * elem_size);
   auto x1_shape_ref = k->GetShapeRef(x1_sizes);
   auto x1_stride_ref = k->GetShapeRef(x1_strides);
   auto x1_obj = k->ViewInput(self, x1_data_ptr, x1_shape_ref, x1_stride_ref);
@@ -2211,4 +2274,4 @@ at::Tensor npu_swiglu(const at::Tensor &self, int64_t dim) {
   DumpOp("npu_swiglu", self, dim);
   return out;
 }
-}  // namespace lazy_fusion
+} // namespace lazy_fusion

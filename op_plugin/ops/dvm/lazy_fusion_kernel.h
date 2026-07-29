@@ -30,7 +30,7 @@
 #include "torch_npu/csrc/core/NPUBridge.h"
 
 namespace lazy_fusion {
-bool IsViewLoadable(const at::Tensor &x);
+bool IsViewLoadable(const at::Tensor& x);
 
 class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
  public:
@@ -42,27 +42,33 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     stream_ = stream;
     id_ = id;
   }
-  size_t id() const { return id_; }
+  size_t id() const {
+    return id_;
+  }
 
-  dvm::NDObject *Input(const at::Tensor &x, bool enable_cast = true, dvm::ShapeRef *shape = nullptr);
-  dvm::NDObject *ViewInput(const at::Tensor &base, void *data_ptr, dvm::ShapeRef *shape,
-                            dvm::ShapeRef *stride, bool enable_cast = true);
-  void Output(const at::Tensor &tensor, dvm::NDObject *obj, bool inplace = false);
-  bool NeedFlushForInput(const at::Tensor &x, dvm::ShapeRef *shape = nullptr) const;
-  bool NeedFlushForWritableOutput(const at::Tensor &tensor) const;
-  at::Tensor Output(dvm::NDObject *obj, c10::IntArrayRef shape, const c10::TensorOptions &options) {
+  dvm::NDObject* Input(const at::Tensor& x, bool enable_cast = true, dvm::ShapeRef* shape = nullptr);
+  dvm::NDObject* ViewInput(
+      const at::Tensor& base,
+      void* data_ptr,
+      dvm::ShapeRef* shape,
+      dvm::ShapeRef* stride,
+      bool enable_cast = true);
+  void Output(const at::Tensor& tensor, dvm::NDObject* obj, bool inplace = false);
+  bool NeedFlushForInput(const at::Tensor& x, dvm::ShapeRef* shape = nullptr) const;
+  bool NeedFlushForWritableOutput(const at::Tensor& tensor) const;
+  at::Tensor Output(dvm::NDObject* obj, c10::IntArrayRef shape, const c10::TensorOptions& options) {
     at::Tensor tensor = at_npu::native::OpPreparation::apply_tensor_without_format(shape, options);
     Output(tensor, obj);
     return tensor;
   }
 
-  c10::IntArrayRef GetShape(dvm::NDObject *obj) {
+  c10::IntArrayRef GetShape(dvm::NDObject* obj) {
     auto shape_ref = dvm::Kernel::GetShape(obj);
     return c10::IntArrayRef(shape_ref->data, shape_ref->size);
   }
 
   template <typename T>
-  dvm::ShapeRef *GetShapeRef(const T &shape) {
+  dvm::ShapeRef* GetShapeRef(const T& shape) {
     if (cache_shape_used_ == cached_shape_.size()) {
       cached_shape_.push_back(new ShapeWithRef());
     }
@@ -89,7 +95,7 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   }
 
   // dvm::WsAllocator interface
-  void *Alloc(size_t size) override;
+  void* Alloc(size_t size) override;
 
   struct Op {
     std::string name;
@@ -98,8 +104,8 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   };
 
   template <typename... Args>
-  void DumpOp(const std::string &op_name, const Args &... inputs) {
-    auto &op = dump_ops_.emplace_back();
+  void DumpOp(const std::string& op_name, const Args&... inputs) {
+    auto& op = dump_ops_.emplace_back();
     op.name = op_name;
     op.output_num = outputs_.size() - dump_idx_;
     (DumpOpInput(&op, inputs), ...);
@@ -116,10 +122,10 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
       }
       inputs_[i]->tensor = at::Tensor();
     }
-    for (auto &output : outputs_) {
+    for (auto& output : outputs_) {
       auto p = output.storage.lock();
       if (p) {
-        auto storage = static_cast<torch_npu::NPUStorageImpl *>(p.get());
+        auto storage = static_cast<torch_npu::NPUStorageImpl*>(p.get());
         storage->lazy_fusion_data_ = nullptr;
       }
     }
@@ -141,22 +147,30 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   int Launch();
 
   template <typename T>
-  std::string ToString(T t) { return std::to_string(t); }
-  std::string ToString(bool t) { return t ? "True" : "False"; }
-  std::string ToString(c10::string_view t) { return std::string(t); }
-  std::string ToString(const c10::ScalarType &t) { return c10::toString(t); }
-  std::string ToString(const at::OptionalIntArrayRef &t);
-  std::string ToString(const at::Scalar &t);
-  std::string ToString(const at::Tensor &t);
-  std::string ToString(const at::Tensor &t, bool verbose);
+  std::string ToString(T t) {
+    return std::to_string(t);
+  }
+  std::string ToString(bool t) {
+    return t ? "True" : "False";
+  }
+  std::string ToString(c10::string_view t) {
+    return std::string(t);
+  }
+  std::string ToString(const c10::ScalarType& t) {
+    return c10::toString(t);
+  }
+  std::string ToString(const at::OptionalIntArrayRef& t);
+  std::string ToString(const at::Scalar& t);
+  std::string ToString(const at::Tensor& t);
+  std::string ToString(const at::Tensor& t, bool verbose);
 
   template <typename T>
-  void DumpOpInput(Op *op, const T &t) {
+  void DumpOpInput(Op* op, const T& t) {
     op->inputs.push_back(ToString(t));
   }
 
   template <typename T>
-  void DumpOpInput(Op *op, const c10::optional<T> &t) {
+  void DumpOpInput(Op* op, const c10::optional<T>& t) {
     if (!t.has_value()) {
       op->inputs.push_back("None");
     } else {
@@ -164,11 +178,11 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     }
   }
 
-  void DumpOpInput(Op *op, const at::Tensor &t) {
+  void DumpOpInput(Op* op, const at::Tensor& t) {
     op->inputs.push_back(ToString(t, false));
   }
 
-  void DumpOpInput(Op *op, const at::TensorList tensors) {
+  void DumpOpInput(Op* op, const at::TensorList tensors) {
     std::stringstream ss;
     ss << "[";
     for (size_t i = 0; i < tensors.size(); ++i) {
@@ -181,7 +195,7 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     op->inputs.push_back(ss.str());
   }
 
-  void DumpOpInput(Op *op, at::ArrayRef<at::Scalar> scalars) {
+  void DumpOpInput(Op* op, at::ArrayRef<at::Scalar> scalars) {
     std::stringstream ss;
     ss << "[";
     for (size_t i = 0; i < scalars.size(); ++i) {
@@ -198,8 +212,8 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
 
   // Cache the tensor identity and metadata needed by the exact-match fast path.
   struct TensorMeta {
-    c10::TensorImpl *tensor_impl{nullptr};
-    void *data_ptr{nullptr};
+    c10::TensorImpl* tensor_impl{nullptr};
+    void* data_ptr{nullptr};
     int64_t storage_offset{0};
     at::ScalarType dtype{at::ScalarType::Undefined};
     int64_t dim{0};
@@ -209,22 +223,21 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
 
   struct Load {
     dvm::ShapeRef shape;
-    dvm::ShapeRef stride;             // populated when has_stride=true
-    bool has_stride{false};           // true → strided Load form (Input non-contig path / ViewInput)
-    void *data_ptr{nullptr};
+    dvm::ShapeRef stride; // populated when has_stride=true
+    bool has_stride{false}; // true → strided Load form (Input non-contig path / ViewInput)
+    void* data_ptr{nullptr};
     at::Tensor tensor;
   };
 
   struct Store {
     Store() = delete;
-    Store(dvm::NDObject *p, bool is_inplace, const at::Tensor &t)
-        : op(p), inplace(is_inplace),
-          storage(t.storage().getWeakStorageImpl()) {}
-    dvm::NDObject *op;
+    Store(dvm::NDObject* p, bool is_inplace, const at::Tensor& t)
+        : op(p), inplace(is_inplace), storage(t.storage().getWeakStorageImpl()) {}
+    dvm::NDObject* op;
     TensorMeta tensor_meta;
     bool inplace{false};
     bool skip{false};
-    bool has_stride{false};           // true → strided (view) Store for non-contiguous output
+    bool has_stride{false}; // true → strided (view) Store for non-contiguous output
     c10::weak_intrusive_ptr<c10::StorageImpl> storage;
   };
 
@@ -235,7 +248,7 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
     }
 
     template <typename T>
-    void Update(const T &shape) {
+    void Update(const T& shape) {
       size_t idx = 0;
       for (auto i = shape.begin(); i != shape.end(); ++i) {
         shape_data[idx++] = *i;
@@ -248,28 +261,33 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
 
   // Track whether the cached NDObject may be rebuilt from GM on an exact-match miss.
   struct DvmOp {
-    dvm::NDObject *op{nullptr};
+    dvm::NDObject* op{nullptr};
     TensorMeta tensor_meta;
     at::DimVector dvm_shape;
     bool reloadable_from_gm{false};
     bool has_shape_override{false};
   };
 
-  static void CacheTensorMeta(TensorMeta *meta, const at::Tensor &tensor);
-  static bool MatchTensorMeta(const TensorMeta &meta, const at::Tensor &tensor);
-  static void CacheDvmShape(DvmOp *dvm_op, dvm::ShapeRef *shape);
-  static bool MatchDvmShape(const DvmOp *dvm_op, dvm::ShapeRef *shape);
+  static void CacheTensorMeta(TensorMeta* meta, const at::Tensor& tensor);
+  static bool MatchTensorMeta(const TensorMeta& meta, const at::Tensor& tensor);
+  static void CacheDvmShape(DvmOp* dvm_op, dvm::ShapeRef* shape);
+  static bool MatchDvmShape(const DvmOp* dvm_op, dvm::ShapeRef* shape);
   // Exact reuse requires both tensor metadata and logical DVM shape to match.
-  static bool MatchDvmOp(const DvmOp *dvm_op, const at::Tensor &tensor, dvm::ShapeRef *shape);
+  static bool MatchDvmOp(const DvmOp* dvm_op, const at::Tensor& tensor, dvm::ShapeRef* shape);
 
-  void CacheDvmOp(torch_npu::NPUStorageImpl *storage, const at::Tensor &tensor, const TensorMeta *tensor_meta,
-                  dvm::NDObject *obj, dvm::ShapeRef *shape, bool reloadable_from_gm);
+  void CacheDvmOp(
+      torch_npu::NPUStorageImpl* storage,
+      const at::Tensor& tensor,
+      const TensorMeta* tensor_meta,
+      dvm::NDObject* obj,
+      dvm::ShapeRef* shape,
+      bool reloadable_from_gm);
 
-  std::vector<Load *> inputs_;
+  std::vector<Load*> inputs_;
   std::vector<Store> outputs_;
   std::vector<at::Tensor> workspace_;
-  std::vector<DvmOp *> dvm_ops_;
-  std::vector<ShapeWithRef *> cached_shape_;
+  std::vector<DvmOp*> dvm_ops_;
+  std::vector<ShapeWithRef*> cached_shape_;
   std::vector<Op> dump_ops_;
   size_t input_used_{0};
   size_t dvm_ops_used_{0};
@@ -286,10 +304,10 @@ class Manager {
   Manager() = default;
   ~Manager();
 
-  LazyFusionKernel *Get() {
+  LazyFusionKernel* Get() {
     static bool runtime_init = false;
     if (!runtime_init) {
-      auto &conf = dvm::Config::Instance();
+      auto& conf = dvm::Config::Instance();
       bool enable_tuning = flags_.online_tuning;
       if (enable_tuning) {
         conf.SetLazyTuner();
@@ -303,7 +321,7 @@ class Manager {
       static int dvm_determ_oldstatus = -1;
       int determ = at::globalContext().deterministicAlgorithms() ? 1 : 0;
       if (dvm_determ_oldstatus != determ) {
-        auto &conf = dvm::Config::Instance();
+        auto& conf = dvm::Config::Instance();
         if (determ) {
           conf.SetDeterm();
         } else {
@@ -337,17 +355,19 @@ class Manager {
     }
   }
 
-  bool Empty() { return current_ == nullptr; }
-  bool NeedFlushForInput(const at::Tensor &x, dvm::ShapeRef *shape = nullptr) {
+  bool Empty() {
+    return current_ == nullptr;
+  }
+  bool NeedFlushForInput(const at::Tensor& x, dvm::ShapeRef* shape = nullptr) {
     auto k = current_;
     return k != nullptr && k->NeedFlushForInput(x, shape);
   }
-  bool NeedFlushForWritableOutput(const at::Tensor &tensor) {
+  bool NeedFlushForWritableOutput(const at::Tensor& tensor) {
     auto k = current_;
     return k != nullptr && k->NeedFlushForWritableOutput(tensor);
   }
 
-  void FreeKernel(LazyFusionKernel *k) {
+  void FreeKernel(LazyFusionKernel* k) {
     std::lock_guard<std::mutex> guard(mutex_);
     pool_.push(k);
   }
@@ -355,10 +375,10 @@ class Manager {
   LazyFusionFlags flags_;
 
  private:
-  LazyFusionKernel *NewKernel();
+  LazyFusionKernel* NewKernel();
 
-  std::queue<LazyFusionKernel *> pool_;
-  LazyFusionKernel *current_{nullptr};
+  std::queue<LazyFusionKernel*> pool_;
+  LazyFusionKernel* current_{nullptr};
   aclrtStream current_stream_{nullptr};
   std::mutex mutex_;
   std::atomic<size_t> id_{0};
@@ -366,12 +386,13 @@ class Manager {
 
 extern Manager g_lazy_fusion_manager;
 
-inline void LazyFusionFlush() { g_lazy_fusion_manager.Flush(); }
+inline void LazyFusionFlush() {
+  g_lazy_fusion_manager.Flush();
+}
 
 inline bool IsEnabled() {
   static const bool global_enabled =
-      g_lazy_fusion_manager.flags_.enabled &&
-      c10_npu::option::OptionsManager::GetTaskQueueEnable();
+      g_lazy_fusion_manager.flags_.enabled && c10_npu::option::OptionsManager::GetTaskQueueEnable();
   if (!global_enabled) {
     return false;
   }
@@ -390,6 +411,6 @@ inline bool IsEnabled() {
 
 // Per-op enable check. `required` declares the minimum optimization level the
 // op needs (defaults to kO1; ops with workload-sensitive payoff pass kO2).
-bool IsEnabled(const std::string &op, Level required = Level::kO1);
-}  // namespace lazy_fusion
-#endif  // DVM_LAZY_FUSION_KERNEL_H
+bool IsEnabled(const std::string& op, Level required = Level::kO1);
+} // namespace lazy_fusion
+#endif // DVM_LAZY_FUSION_KERNEL_H
