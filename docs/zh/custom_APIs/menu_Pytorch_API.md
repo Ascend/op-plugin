@@ -170,7 +170,7 @@
         -   [torch_npu.npu_rotate_quant](./torch_npu/torch_npu-npu_rotate_quant.md)
         -   [torch_npu.save_npugraph_tensor](./torch_npu/torch_npu-save_npugraph_tensor.md)
         -   [torch_npu.print_npugraph_tensor](./torch_npu/torch_npu-print_npugraph_tensor.md)
-        -   [torch_npu.apply_rotary_pos_emb](./torch_npu/torch_npu-apply_rotary_pos_emb.md)
+        -   [torch_npu.npu_apply_rotary_pos_emb](./torch_npu/torch_npu-apply_rotary_pos_emb.md)
         -   [torch_npu.npu_add_quant_matmul_](torch_npu/torch_npu-npu_add_quant_matmul_.md)	 
         -   [torch_npu.npu_dynamic_dual_level_mx_quant](torch_npu/torch_npu-npu_dynamic_dual_level_mx_quant.md) 
         -   [torch_npu.npu_fused_causal_conv1d](torch_npu/torch_npu-npu_fused_causal_conv1d.md) 
