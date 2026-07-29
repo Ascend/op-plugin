@@ -20,15 +20,15 @@
 
 namespace acl_op {
 
-at::Tensor count_nonzero(const at::Tensor &self, c10::IntArrayRef dim) {
-    return acl_op::sum((self != 0), dim, false, at::ScalarType::Long);
+at::Tensor count_nonzero(const at::Tensor& self, c10::IntArrayRef dim) {
+  return acl_op::sum((self != 0), dim, false, at::ScalarType::Long);
 }
 
-at::Tensor count_nonzero(const at::Tensor &self, c10::optional<int64_t> dim) {
-    if (dim.has_value()) {
-        return acl_op::count_nonzero(self, at::IntArrayRef{dim.value()});
-    }
-    return acl_op::count_nonzero(self, at::IntArrayRef{});
+at::Tensor count_nonzero(const at::Tensor& self, c10::optional<int64_t> dim) {
+  if (dim.has_value()) {
+    return acl_op::count_nonzero(self, at::IntArrayRef{dim.value()});
+  }
+  return acl_op::count_nonzero(self, at::IntArrayRef{});
 }
 
 } // namespace acl_op

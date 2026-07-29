@@ -20,33 +20,38 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(const at::Tensor &x, const at::Tensor &gx,
-    const at::Tensor &beta, const at::Tensor &gamma, double alpha, double epsilon) {
-    at::SmallVector<int64_t, SIZE> shape;
-    auto param_dim = x.dim() - gamma.dim();
-    for (int64_t index = 0; index < x.dim(); index++) {
-        if (index < param_dim) {
-            shape.emplace_back(x.size(index));
-        } else {
-            shape.emplace_back(1);
-        }
+std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_deep_norm(
+    const at::Tensor& x,
+    const at::Tensor& gx,
+    const at::Tensor& beta,
+    const at::Tensor& gamma,
+    double alpha,
+    double epsilon) {
+  at::SmallVector<int64_t, SIZE> shape;
+  auto param_dim = x.dim() - gamma.dim();
+  for (int64_t index = 0; index < x.dim(); index++) {
+    if (index < param_dim) {
+      shape.emplace_back(x.size(index));
+    } else {
+      shape.emplace_back(1);
     }
-    at::Tensor y = npu_preparation::apply_tensor(x);
-    at::Tensor mean = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);
-    at::Tensor rstd = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);
-    at_npu::native::OpCommand cmd;
-    cmd.Name("DeepNorm")
-        .Input(x, "x")
-        .Input(gx, "gx")
-        .Input(beta, "beta")
-        .Input(gamma, "gamma")
-        .Output(mean, "mean")
-        .Output(rstd, "rstd")
-        .Output(y, "y")
-        .Attr("alpha", static_cast<float>(alpha))
-        .Attr("epsilon", static_cast<float>(epsilon))
-        .Run();
+  }
+  at::Tensor y = npu_preparation::apply_tensor(x);
+  at::Tensor mean = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);
+  at::Tensor rstd = npu_preparation::apply_tensor(shape, x.options().dtype(at::kFloat), x);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("DeepNorm")
+      .Input(x, "x")
+      .Input(gx, "gx")
+      .Input(beta, "beta")
+      .Input(gamma, "gamma")
+      .Output(mean, "mean")
+      .Output(rstd, "rstd")
+      .Output(y, "y")
+      .Attr("alpha", static_cast<float>(alpha))
+      .Attr("epsilon", static_cast<float>(epsilon))
+      .Run();
 
-    return std::make_tuple(mean, rstd, y);
+  return std::make_tuple(mean, rstd, y);
 }
 } // namespace acl_op
