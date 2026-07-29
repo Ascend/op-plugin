@@ -3620,7 +3620,9 @@ class TestMoeDistributeDispatch(TestCase):
 
 
 class TestMoeDistributeDispatchV2(TestCase):
-    def _run_dispatch_v2(self, tp_world_size, quant_mode, scales=None, y_dtype=None):
+    def _run_dispatch_v2(
+            self, tp_world_size, quant_mode, scales=None, y_dtype=None,
+            use_expert_scales=False):
         with FakeTensorMode():
             ep_world_size = 16
             bs = 8
@@ -3634,10 +3636,13 @@ class TestMoeDistributeDispatchV2(TestCase):
 
             x = torch.randn(bs, h).to(torch.bfloat16)
             expert_ids = torch.randn(bs, k).to(torch.int32)
+            expert_scales = (
+                torch.randn(bs, k).to(torch.float32)
+                if use_expert_scales else None)
 
             result = torch_npu.npu_moe_distribute_dispatch_v2(
                 x, expert_ids, "group_ep", ep_world_size, 0, moeExpertNum,
-                scales=scales, x_active_mask=None, expert_scales=None,
+                scales=scales, x_active_mask=None, expert_scales=expert_scales,
                 group_tp="", tp_world_size=tp_world_size, tp_rank_id=0,
                 expert_shard_type=0, shared_expert_num=0, shared_expert_rank_num=0,
                 quant_mode=quant_mode, global_bs=global_bs, expert_token_nums_type=1,
@@ -3702,6 +3707,15 @@ class TestMoeDistributeDispatchV2(TestCase):
         self.assertEqual(result[0].shape, torch.Size([a, h]))
         self.assertEqual(result[0].dtype, torch.bfloat16)
         self.assertEqual(result[1].shape, torch.Size([a]))
+
+    @SupportedDevices(['Ascend950'])
+    def test_expert_scales(self):
+        result, a, _, local_moe_expert_num = self._run_dispatch_v2(
+            tp_world_size=0, quant_mode=0, use_expert_scales=True)
+        self.assertEqual(result[4].shape, torch.Size([16 * local_moe_expert_num]))
+        self.assertEqual(result[4].dtype, torch.int32)
+        self.assertEqual(result[6].shape, torch.Size([a]))
+        self.assertEqual(result[6].dtype, torch.float32)
 
 
 class TestMoeDistributeCombineAddRmsNorm(TestCase):

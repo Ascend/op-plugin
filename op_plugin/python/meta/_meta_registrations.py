@@ -3310,8 +3310,9 @@ def npu_moe_distribute_dispatch_v2_meta(x, expert_ids, group_ep, ep_world_size, 
     tp_recv_counts = x.new_empty((tp_world_size), dtype=torch.int32)
     expand_scales = x.new_empty((0), dtype=torch.float32)
     if expert_scales is not None:
-        ep_recv_cnt_num = ep_world_size * local_moe_expert_num + global_bs_real * 2 * k * (ep_world_size // 8)
-        ep_recv_counts = x.new_empty((ep_recv_cnt_num), dtype=torch.int32)
+        if get_soc_version() < _ASCEND950_SOC_VERSION:
+            ep_recv_cnt_num = ep_world_size * local_moe_expert_num + global_bs_real * 2 * k * (ep_world_size // 8)
+            ep_recv_counts = x.new_empty((ep_recv_cnt_num), dtype=torch.int32)
         expand_scales = x.new_empty((a), dtype=torch.float32)
     return (expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts, expand_scales)
 
