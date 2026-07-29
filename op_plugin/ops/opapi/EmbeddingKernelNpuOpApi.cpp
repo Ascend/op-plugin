@@ -26,22 +26,25 @@ at::Tensor embedding_symint(
     const at::Tensor& indices,
     c10::SymInt padding_idx,
     bool scale_grad_by_freq,
-    bool sparse)
-{
-    DO_COMPATIBILITY(aclnnEmbedding, acl_op::embedding_symint(weight, indices, padding_idx,
-                                                              scale_grad_by_freq, sparse));
-    TORCH_CHECK(weight.device() == indices.device(),
-        "Expected all tensors to be on the same device, but "
-        "found at least two devices, ", weight.device(), " and ", indices.device(), "! "
-        "(when checking argument for argument indices in method opapi::embedding_symint)",
-        OPS_ERROR(ErrCode::PARAM));
-    // calculate the output size
-    auto output_size = op_infer::array_to_small_vector(indices.sizes());
-    output_size.emplace_back(weight.size(weight.dim() - 1));
-    // construct the output tensor of the NPU
-    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, weight.options());
-    // calculate the output resugt of the NPU
-    EXEC_NPU_CMD(aclnnEmbedding, weight, indices, result);
-    return result;
+    bool sparse) {
+  DO_COMPATIBILITY(aclnnEmbedding, acl_op::embedding_symint(weight, indices, padding_idx, scale_grad_by_freq, sparse));
+  TORCH_CHECK(
+      weight.device() == indices.device(),
+      "Expected all tensors to be on the same device, but "
+      "found at least two devices, ",
+      weight.device(),
+      " and ",
+      indices.device(),
+      "! "
+      "(when checking argument for argument indices in method opapi::embedding_symint)",
+      OPS_ERROR(ErrCode::PARAM));
+  // calculate the output size
+  auto output_size = op_infer::array_to_small_vector(indices.sizes());
+  output_size.emplace_back(weight.size(weight.dim() - 1));
+  // construct the output tensor of the NPU
+  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, weight.options());
+  // calculate the output resugt of the NPU
+  EXEC_NPU_CMD(aclnnEmbedding, weight, indices, result);
+  return result;
 }
 } // namespace op_api

@@ -18,21 +18,21 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::vector<at::Tensor> _foreach_addcdiv(const at::TensorList input,
-                                         const at::TensorList tensors1,
-                                         const at::TensorList tensors2,
-                                         at::ArrayRef<at::Scalar> scalars)
-{
-    at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars);
-    return at::native::foreach_tensor_addcdiv_scalarlist_slow(input, tensors1, tensors2, scalars);
+std::vector<at::Tensor> _foreach_addcdiv(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    at::ArrayRef<at::Scalar> scalars) {
+  at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars);
+  return at::native::foreach_tensor_addcdiv_scalarlist_slow(input, tensors1, tensors2, scalars);
 }
 
-void _foreach_addcdiv_(const at::TensorList input,
-                       const at::TensorList tensors1,
-                       const at::TensorList tensors2,
-                       at::ArrayRef<at::Scalar> scalars)
-{
-    at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars);
-    return at::native::foreach_tensor_addcdiv_scalarlist_slow_(input, tensors1, tensors2, scalars);
+void _foreach_addcdiv_(
+    const at::TensorList input,
+    const at::TensorList tensors1,
+    const at::TensorList tensors2,
+    at::ArrayRef<at::Scalar> scalars) {
+  at::native::check_foreach_api_restrictions(input, tensors1, tensors2, scalars);
+  return at::native::foreach_tensor_addcdiv_scalarlist_slow_(input, tensors1, tensors2, scalars);
 }
-}
+} // namespace op_api

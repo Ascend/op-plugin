@@ -21,22 +21,18 @@ namespace op_api {
 #if VERSION_BETWEEN(V2R1, VERSION_NEWEST)
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor fft_c2r_backward(
-    const at::Tensor& grad,
-    at::IntArrayRef dim,
-    int64_t normalization)
-{
-    TORCH_CHECK(!dim.empty(), "dim must not be empty", OPS_ERROR(ErrCode::PARAM));
-    auto gI = at::_fft_r2c(grad, dim, normalization, true);
-    auto double_length = grad.sym_size(dim.back()) - gI.sym_size(dim.back());
-    if (double_length > 0) { // also covers case when signal size is zero
-        auto gI_ = gI.narrow_symint(dim.back(), 1, double_length);
-        gI_ = at::view_as_real(gI_);
-        gI_.mul_(2);
-    }
-    return gI;
+at::Tensor fft_c2r_backward(const at::Tensor& grad, at::IntArrayRef dim, int64_t normalization) {
+  TORCH_CHECK(!dim.empty(), "dim must not be empty", OPS_ERROR(ErrCode::PARAM));
+  auto gI = at::_fft_r2c(grad, dim, normalization, true);
+  auto double_length = grad.sym_size(dim.back()) - gI.sym_size(dim.back());
+  if (double_length > 0) { // also covers case when signal size is zero
+    auto gI_ = gI.narrow_symint(dim.back(), 1, double_length);
+    gI_ = at::view_as_real(gI_);
+    gI_.mul_(2);
+  }
+  return gI;
 }
 
 #endif
 
-}  // namespace op_api
+} // namespace op_api
