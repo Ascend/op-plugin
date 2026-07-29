@@ -65,6 +65,11 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
   - `x1`、`x2`仅支持float8\_e4m3fn输入。k仅支持64的倍数。
   - `x1_scale`、`x2_scale`仅支持4维输入，`x1_scale`要求shape为\(m, b, k/64, 2\)；`perm_x2`为\[0,1,2\]时，`x2_scale`要求shape为\(b, k/64, n, 2\)，`perm_x2`为\[0,2,1\]时，`x2_scale`要求shape为\(b, n, k/64, 2\)。
 
+- T-C量化场景下：
+  - `x1`、`x2`仅支持torch_npu.hifloat8输入。
+  - `x2`仅支持ND格式输入。
+  - `x1_scale`、`x2_scale`仅支持1维输入；`x1_scale`支持为空，非空时要求shape为\(1, \)，`x2_scale`要求shape为\(n, \)。
+
 ## 调用示例
 
 单算子模式调用
