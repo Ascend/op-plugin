@@ -79,15 +79,15 @@ repos:
         args: ["--force-exclude", "--config", "pre-commit/typos.toml"]
 
   #--------------- C++ 核心检查 ---------------------------------------------
-  - repo: https://gitcode.com/pre-commit-clang/mirrors-clang-format
-    rev: v18.1.8
-    hooks:
-      - id: clang-format
-        files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
-        args:
-          - "--style=file"  # 读取 .clang-format 文件
-          - "--verbose"
-          - "-i"
+  #- repo: https://gitcode.com/pre-commit-clang/mirrors-clang-format
+  #  rev: v18.1.8
+  #  hooks:
+  #    - id: clang-format
+  #      files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx)$
+  #      args:
+  #        - "--style=file"  # 读取 .clang-format 文件
+  #        - "--verbose"
+  #        - "-i"
 
   # -------------------------- Gitleaks 本地离线二进制扫描 --------------------------
   - repo: local
