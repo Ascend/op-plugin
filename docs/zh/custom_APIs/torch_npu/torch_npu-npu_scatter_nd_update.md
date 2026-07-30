@@ -43,7 +43,7 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
 ## 约束说明
 
 - 该接口支持图模式。
-- `indices`至少是2维，其最后1维的大小不能超过`input`的维度大小。
+- `indices`至少是2维，其最后1维的大小不能超过`input`的维度数。
 - 假设`indices`最后1维的大小是a，则`updates`的shape等于`indices`除最后1维外的shape加上`input`除前a维外的shape。举例：`input`的shape是$(4, 5, 6)$，`indices`的shape是$(3, 2)$，则`updates`的shape必须是$(3, 6)$。
 
 ## 调用示例
@@ -136,3 +136,4 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
         [0.2910, 0.2468, 0.5488, 0.9761, 0.9785]], device='npu:0',
        dtype=torch.float16)
     ```
+    

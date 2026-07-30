@@ -196,7 +196,7 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
         model = GMM_ALLTOALLV_GRAPH_Model()
         npu_backend = torchair.get_npu_backend(compiler_config=None)
         # 静态图：dynamic=False；动态图：dynamic=True
-        model = torch.compile(GMM_ALLTOALLV_GRAPH_Model(), backend=npu_backend, dynamic=False)
+        model = torch.compile(model, backend=npu_backend, dynamic=False)
         print(model(gmm_x=input,
                         gmm_weight=weight,
                         send_counts_tensor=None,
@@ -226,3 +226,4 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     
         mp.spawn(run_npu_gmm_alltoallv, args=(epWorkSize, master_ip, master_port, gmm_x_shape, gmm_weight_shape, send_counts, recv_counts, dtype), nprocs=epWorkSize)
     ```
+    
