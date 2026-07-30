@@ -25,7 +25,7 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 
 ## 参数说明
 
- **allocator** (`torch_npu.npu.memory._NPUAllocator`)：要设置为使用的内存分配器。
+**allocator** (`torch_npu.npu.memory._NPUAllocator`)：要设置为使用的内存分配器。
 
 ## 约束说明
 

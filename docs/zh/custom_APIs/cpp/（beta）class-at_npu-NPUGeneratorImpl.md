@@ -12,7 +12,7 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 - **at_npu::NPUGeneratorImpl::NPUGeneratorImpl(c10::DeviceIndex device_index = -1)**
 
-    NPUGeneratorImpl构造函数，指定NPU设备id构造生成器，与at::CUDAGeneratorImpl::CUDAGeneratorImpl(c10::DeviceIndex  _device_index_)相同。
+    NPUGeneratorImpl构造函数，指定NPU设备id构造生成器，与at::CUDAGeneratorImpl::CUDAGeneratorImpl(c10::DeviceIndex _device_index_)相同。
 
     device_index：DeviceIndex类型，指定npu设备id。
 
@@ -22,13 +22,13 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 - **void at_npu::NPUGeneratorImpl::set_current_seed(uint64_t seed)**
 
-    NPUGeneratorImpl随机种子设置，设置当前的随机种子，与at::CUDAGeneratorImpl::set_current_seed(uint64_t  _seed_)相同。
+    NPUGeneratorImpl随机种子设置，设置当前的随机种子，与at::CUDAGeneratorImpl::set_current_seed(uint64_t _seed_)相同。
 
     seed：uint64_t类型，待设置的随机种子。
 
 - **void at_npu::NPUGeneratorImpl::set_offset(uint64_t offset)**
 
-    NPUGeneratorImpl offset设置，与at::CUDAGeneratorImpl::set_offset(uint64_t  _offset_)相同。
+    NPUGeneratorImpl offset设置，与at::CUDAGeneratorImpl::set_offset(uint64_t _offset_)相同。
 
     offset：uint64_t类型，待设置的offset。
 
@@ -46,7 +46,7 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 - **void at_npu::NPUGeneratorImpl::set_state(const c10::TensorImpl& new_state)**
 
-    NPUGeneratorImpl状态设置，设置指定状态，与void at::CUDAGeneratorImpl::set_state(const c10::TensorImpl&  _new_state_)相同。
+    NPUGeneratorImpl状态设置，设置指定状态，与void at::CUDAGeneratorImpl::set_state(const c10::TensorImpl& _new_state_)相同。
 
     new_state：TensorImpl类型，待设置的状态，需要通过at::detail::check_rng_state检测。
 
@@ -56,7 +56,7 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 - **void at_npu::NPUGeneratorImpl::set_philox_offset_per_thread(uint64_t offset)**
 
-    NPUGeneratorImpl设置每条线程的philox offset，用于curandStatePhilox4_32_10，与void at::CUDAGeneratorImpl::set_philox_offset_per_thread(uint64_t  _offset_)相同。
+    NPUGeneratorImpl设置每条线程的philox offset，用于curandStatePhilox4_32_10，与void at::CUDAGeneratorImpl::set_philox_offset_per_thread(uint64_t _offset_)相同。
 
     offset：uint64_t类型，待设置的philox offset。
 
@@ -66,13 +66,13 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 - **at_npu::PhiloxNpuState at_npu::NPUGeneratorImpl::philox_npu_state(uint64_t increment)**
 
-    NPUGeneratorImpl philox npu state捕获，返回值类型PhiloxNpuState，与at::PhiloxCudaState at::CUDAGeneratorImpl::philox_cuda_state(uint64_t  _increment_)相同。
+    NPUGeneratorImpl philox npu state捕获，返回值类型PhiloxNpuState，与at::PhiloxCudaState at::CUDAGeneratorImpl::philox_cuda_state(uint64_t _increment_)相同。
 
     increment：uint64_t类型，philox offset增量。
 
 - **std::pair<uint64_t, uint64_t> at_npu::NPUGeneratorImpl::philox_engine_inputs(uint64_t increment)**
 
-    NPUGeneratorImpl philox_engine输入获取，返回值类型pair<uint64_t, uint64_t>，包含随机种子和philox offset值，与std::pair<uint64_t, uint64_t> at::CUDAGeneratorImpl::philox_engine_inputs(uint64_t  _increment_)相同。
+    NPUGeneratorImpl philox_engine输入获取，返回值类型pair<uint64_t, uint64_t>，包含随机种子和philox offset值，与std::pair<uint64_t, uint64_t> at::CUDAGeneratorImpl::philox_engine_inputs(uint64_t _increment_)相同。
 
     increment：uint64_t类型，philox offset增量。
 

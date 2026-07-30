@@ -36,7 +36,7 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 
 **计算输入**
 
-- **x**(`Tensor`): 输入张量。
+- **x**(`Tensor`)：输入张量。
 
 ## 返回值说明
 

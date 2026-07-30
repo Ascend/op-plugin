@@ -126,7 +126,7 @@
 </tr>
 <tr id="row746723920415"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p104671339184114"><a name="p104671339184114"></a><a name="p104671339184114"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_ptiou.md">torch_npu.contrib.npu_ptiou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p119998332552"><a name="p119998332552"></a><a name="p119998332552"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p119998332552"><a name="p119998332552"></a><a name="p119998332552"></a>该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
 <tr id="row9467103913412"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p1946712394415"><a name="p1946712394415"></a><a name="p1946712394415"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_iou.md">torch_npu.contrib.npu_iou</a></p>

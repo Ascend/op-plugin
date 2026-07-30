@@ -141,7 +141,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
     - K：表示选取topK个专家，取值范围为0<K≤8，同时满足0 < K ≤ moe\_expert\_num + zero_expert_num + copy_expert_num + const_expert_num。
     - local\_expert\_num：表示本卡专家数量。
-        - 对于共享专家卡，local\_expert\_num=1
+        - 对于共享专家卡，local\_expert\_num=1。
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)。
 
 - HCCL通信域缓存区大小:

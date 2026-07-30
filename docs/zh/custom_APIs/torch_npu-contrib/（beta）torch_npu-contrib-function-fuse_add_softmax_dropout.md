@@ -37,7 +37,7 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 ## 参数说明
 
 - **training** (`bool`)：必选参数，是否为训练模式。
-- **dropout** (`nn.Module`): 必选参数，dropout层。
+- **dropout** (`nn.Module`)：必选参数，dropout层。
 - **attn_mask** (`Tensor`)：必选参数，注意力掩码。
 - **attn_scores** (`Tensor`)：必选参数，原始attention分数。
 - **attn_head_size** (`float`)：必选参数，head size。

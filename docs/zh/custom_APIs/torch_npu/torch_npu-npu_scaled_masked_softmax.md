@@ -22,8 +22,8 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，输入的logits。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND，FRACTAL\_NZ]$。
-- **mask**（`Tensor`）：必选参数，输入的掩码。支持数据类型：`bool`。支持格式：$[ND，FRACTAL\_NZ]$。
+- **x**（`Tensor`）：必选参数，输入的logits。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
+- **mask**（`Tensor`）：必选参数，输入的掩码。支持数据类型：`bool`。支持格式：$[ND, FRACTAL\_NZ]$。
 - **scale**（`float`）：可选参数，`x`的缩放系数，默认值为`1.0`。
 - **fixed_triu_mask**（`bool`）：预留参数，功能未完成，默认值为`False`，当前只支持`False`。该功能完成后可支持自动生成上三角`bool`掩码。
 
@@ -31,7 +31,7 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 
 `Tensor`
 
-一个`Tensor`类型的输出，输入`x`经过`mask`后在最后一维的`Softmax`结果，输出shape与`x`一致。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND，FRACTAL\_NZ]$。
+一个`Tensor`类型的输出，输入`x`经过`mask`后在最后一维的`Softmax`结果，输出shape与`x`一致。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
 
 ## 约束说明
 

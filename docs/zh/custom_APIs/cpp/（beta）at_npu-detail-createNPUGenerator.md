@@ -12,7 +12,7 @@ at::Generator at_npu::detail::createNPUGenerator(c10::DeviceIndex device_index =
 
 ## 功能说明
 
-用于创建NPU设备默认生成器，返回值类型Generator，与at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex  _device_index_  = -1)相同。
+用于创建NPU设备默认生成器，返回值类型Generator，与at::Generator at::cuda::detail::createCUDAGenerator(c10::DeviceIndex _device_index_ = -1)相同。
 
 ## 参数说明
 

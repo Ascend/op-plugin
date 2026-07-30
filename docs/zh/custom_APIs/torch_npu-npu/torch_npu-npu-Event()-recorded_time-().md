@@ -30,7 +30,7 @@ torch_npu.npu.Event().recorded_time() -> int
 ## 约束说明
 
 Event对象在创建的时候，需要传入参数enable_timing=True。
- 
+
 ## 调用示例
 
 ```python

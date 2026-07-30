@@ -16,13 +16,13 @@ at::Tensor at_npu::native::empty_with_format(c10::IntArrayRef sizes, const c10::
 
 ## 参数说明
 
-sizes：IntArrayRef类型，获取tensor的size。
+- sizes：IntArrayRef类型，获取tensor的size。
 
-options：TensorOptions类型，获取tensor的可选信息，如dtype、device等。
+- options：TensorOptions类型，获取tensor的可选信息，如dtype、device等。
 
-acl_format：int64_t类型，指定获取的格式。
+- acl_format：int64_t类型，指定获取的格式。
 
-keep_format：bool类型，是否指定格式，true表示指定获取tensor的格式，false表示允许根据算子实际需求调整获取tensor的格式。
+- keep_format：bool类型，是否指定格式，true表示指定获取tensor的格式，false表示允许根据算子实际需求调整获取tensor的格式。
 
 ## 支持的型号
 
