@@ -20,7 +20,7 @@ torch_npu.profiler.supported_export_type()
 
 ## 返回值说明
 
-集合set，表示支持的性能数据结果文件类型。
+返回{'db', 'text'}则表示成功；无返回则表示失败。
 
 ## 调用示例
 

@@ -20,7 +20,7 @@ torch_npu.profiler.supported_profiler_level()
 
 ## 返回值说明
 
-返回一个set，包含当前环境支持的profiler级别，取值可能包含：`Level0`、`Level1`、`Level2`和`Level_none`。
+返回{'Level0', 'Level1', 'Level_none', 'Level2'}则表示成功；无返回则表示失败。
 
 ## 调用示例
 
