@@ -422,7 +422,7 @@ void BuildCacheHashParamsV2(aclrtStream acl_stream, const CacheParams& cache_par
 }
 
 template <typename... Args>
-bool hit_cache_ext(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, Args&&... args, const c10_npu::DeterministicSnapshot& snapshot)
+bool hit_cache_ext(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, const c10_npu::DeterministicSnapshot& snapshot, Args&&... args)
 {
     // 步骤1：检查缓存功能是否可用
     if (!CheckAndInitFunc(aclnn_api)) {
@@ -498,7 +498,7 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
         auto acl_stream = GetAclStream();                                                                              \
         /* 4.缓存查询 */                                                                                                \
         auto snapshot = c10_npu::CaptureDeterministicSnapshot();                                                                \
-        if (hit_cache_ext(acl_stream, #aclnn_api, opApiFuncAddr, __VA_ARGS__, snapshot)) {                                       \
+        if (hit_cache_ext(acl_stream, #aclnn_api, opApiFuncAddr, snapshot,  __VA_ARGS__)) {                                       \
             break;                                                                                                     \
         }                                                                                                              \
         /* 5.设置执行配置：确定性算法 */                                                                                   \

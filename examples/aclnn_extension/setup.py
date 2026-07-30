@@ -35,12 +35,25 @@ def get_sources():
         for root, _, files in os.walk(ops_dir):
             for file in files:
                 if file.endswith(".cpp") or file.endswith(".cc"):
+                    # ========== 新增过滤逻辑：排除会导致重复定义的文件 ==========
+                    # 排除主文件（分片文件中已包含这些函数）
+                    if file == "StructKernelNpuOpApi.cpp":
+                        continue
+                    if file == "OpInterface.cpp":
+                        continue
+                    # 排除 Everything 文件（包含所有函数，导致重复定义）
+                    if file == "StructKernelNpuOpApiEverything.cpp":
+                        continue
+                    if file == "OpInterfaceEverything.cpp":
+                        continue
                     sources.append(os.path.join(root, file))
 
-    BUILD_EXCLUDE_LIST = [f"{aten_dir}/VariableTypeEverything.cpp",
+    BUILD_EXCLUDE_LIST = [
+        f"{aten_dir}/VariableTypeEverything.cpp",
         f"{aten_dir}/ADInplaceOrViewTypeEverything.cpp",
         f"{aten_dir}/python_functionsEverything.cpp",
-        f"{aten_dir}/RegisterFunctionalizationEverything.cpp"]
+        f"{aten_dir}/RegisterFunctionalizationEverything.cpp"
+    ]
 
     sources_new = [cur_file for cur_file in sources if cur_file not in BUILD_EXCLUDE_LIST]
     print("====sources_new:", sources_new)
@@ -71,6 +84,7 @@ def get_include_dirs():
     include_dirs.append(os.path.join(torch_npu_dir, 'include', 'third_party', 'acl', 'inc'))
     include_dirs.append(os.path.join(torch_npu_dir, 'include', 'third_party', 'hccl', 'inc'))
     include_dirs.append(os.path.join(torch_npu_dir, 'include', 'third_party', 'op-plugin'))
+
     return include_dirs
 
 
