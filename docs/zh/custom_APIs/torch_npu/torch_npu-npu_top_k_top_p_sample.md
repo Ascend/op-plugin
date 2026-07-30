@@ -312,7 +312,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
     - post_sample = multiNomial时, multiNomial随机采样参数矩阵，数据类型必须为int64，用于为aclnnMultinomial采样提供控制参数。合法的尺寸为[q_row, 2]，其中q_row≥1：
         - 第1列对应aclnnMultinomial.seed参数：对应当前batch的随机数种子。
         - 第2列对应aclnnMultinomial.offset参数：随机数生成器的偏移量，它影响生成的随机数序列的位置。设置偏移量后，生成的随机数序列会从指定位置开始。
-        - 如果qrow \< batch，则默认使用最后一个batch的采样参数作为后续batch的multiNomial采样参数。
+        - 如果q_row \< batch，则默认使用最后一个batch的采样参数作为后续batch的multiNomial采样参数。
 - **eps**（`float`）：可选参数，在softmax和权重采样中防止除零，默认值为1e-8。
 - **is_need_logits**（`bool`）：可选参数，控制`logits_top_kp_select`的输出条件，默认值为False。
 - **top_k_guess**（`int`）：可选参数，仅在当前batch的top_k为无效值时开启，适用于跳过topK的top_k_guess-TopP加速采样。有效值范围top_k_guess>0，默认为32，用于TopP加速采样中基于top_k_guess的直接索引过滤。如果传入非正数，视为跳过top_k_guess环节，直接使用基于cumsum的标准topP实现，对当前batch做topP全排序采样，保持基准性能。
@@ -364,5 +364,3 @@ npu_out_index, logits_top_kp_select = torch_npu.npu_top_k_top_p_sample(logits, t
 print(npu_out_index)
 print(logits_top_kp_select)
 ```
-
-#

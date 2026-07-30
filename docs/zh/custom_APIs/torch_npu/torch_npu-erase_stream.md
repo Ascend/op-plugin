@@ -43,6 +43,7 @@ torch_npu.erase_stream(tensor, stream) -> None
 >>> import torch_npu
 >>> stream1 = torch_npu.npu.Stream()
 >>> stream2 = torch_npu.npu.Stream()
+>>> event = torch_npu.npu.Event()
 >>> with torch_npu.npu.stream(stream2):
 ...     matrix1 = torch.ones(1000, 1000, device='npu')
 ...     matrix2 = torch.ones(1000, 1000, device='npu')
@@ -50,6 +51,8 @@ torch_npu.erase_stream(tensor, stream) -> None
 ...     data_ptr1 = tensor1.data_ptr()
 ...     print(data_ptr1)
 ...     tensor1.record_stream(stream1)
+...     event.record(stream2)  # 记录事件
+...     event.wait(stream1)    # 等待事件完成，确保算子执行完毕
 ...     torch_npu.erase_stream(tensor1, stream1)
 ...     del tensor1
 ...     tensor2 = torch.ones(1000, 1000, device='npu')

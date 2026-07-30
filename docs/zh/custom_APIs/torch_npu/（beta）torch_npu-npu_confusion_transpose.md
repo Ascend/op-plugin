@@ -26,7 +26,7 @@ torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 
 - **self**（`Tensor`）：数据类型支持`float16`、`float32`、`int8`、`int16`、`int32`、`int64`、`uint8`、`uint16`、`uint32`、`uint64`。
 - **perm**（`List[int]`）：`self`张量的维度排列。
-- **shape**（`List[int]`）：输入shape。
+- **shape**（`List[int]`）：reshape操作后的目标shape。
 - **transpose_first**（`bool`）：如果值为`True`，首先执行transpose，否则先执行reshape。
 
 ## 调用示例
