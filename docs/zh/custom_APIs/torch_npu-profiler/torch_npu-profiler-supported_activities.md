@@ -20,7 +20,7 @@ torch_npu.profiler.supported_activities()
 
 ## 返回值说明
 
-无
+返回{<ProfilerActivity.CPU: 1>, <ProfilerActivity.NPU: 2>}则表示成功；无返回则表示失败。
 
 ## 调用示例
 
