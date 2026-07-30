@@ -59,6 +59,15 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      This parameter takes effect when `torch_npu.profiler.ProfilerActivity.CPU` is enabled.
 
+- **`with_modules`** (`bool`): Optional. Specifies whether to record the module-level Python call stack, which is call information at the framework layer. Valid values are:
+
+  - `True`: enabled
+  - `False`: disabled
+
+  The default value is `False`.
+
+  This parameter takes effect when `torch_npu.profiler.ProfilerActivity.CPU` is enabled.
+
 - **`experimental_config`**: Optional. Extended configuration for profile data collection. For details about the supported collection items, see [torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md).
 
 ## Return Values

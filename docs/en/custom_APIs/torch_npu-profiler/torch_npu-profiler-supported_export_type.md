@@ -20,7 +20,7 @@ torch_npu.profiler.supported_export_type()
 
 ## Return Values
 
-None
+If {'db', 'text'} is returned, the operation is successful. If nothing is returned, the operation fails.
 
 ## Example
 

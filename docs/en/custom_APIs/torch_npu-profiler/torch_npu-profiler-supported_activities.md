@@ -20,7 +20,7 @@ torch_npu.profiler.supported_activities()
 
 ## Return Values
 
-None
+If {<ProfilerActivity.CPU: 1>, <ProfilerActivity.NPU: 2>} is returned, the operation is successful. If nothing is returned, the operation fails.
 
 ## Example
 

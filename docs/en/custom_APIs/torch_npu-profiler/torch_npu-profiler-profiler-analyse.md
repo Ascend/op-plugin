@@ -20,7 +20,7 @@ torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_pro
 
 ## Parameters
 
-- **`profiler_path`** (`str`): Required. PyTorch profile data path. The path can contain only letters, digits, and underscores. Symbolic links are not supported. The specified directory must store the PyTorch profile data directory `{worker_name}_{timestamp}_ascend_pt`.
+- **`profiler_path`** (`str`): Required. PyTorch profile data path. The path can contain only letters, digits, and underscores. Symbolic links are not supported. The specified directory must contain the PyTorch profile data directory `{worker_name}_{timestamp}_ascend_pt`.
 
 - **`max_process_number`** (`int`): Optional. Maximum process number for offline parsing. The value range is `[1, number of CPU cores]`. The default value is half of the number of CPU cores. If the provided value exceeds the number of CPU cores in the environment, the number of CPU cores is automatically used. If an invalid value is provided, the default value is used.
 

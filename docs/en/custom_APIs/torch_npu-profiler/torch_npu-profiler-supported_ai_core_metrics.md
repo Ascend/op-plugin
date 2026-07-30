@@ -20,7 +20,7 @@ torch_npu.profiler.supported_ai_core_metrics()
 
 ## Return Values
 
-None
+If {'ACL_AICORE_MEMORY_ACCESS', 'ACL_AICORE_NONE', 'ACL_AICORE_L0B_AND_WIDTH', 'ACL_AICORE_L2_CACHE', 'ACL_AICORE_MEMORY_BANDWIDTH', 'ACL_AICORE_MEMORY_UB', 'ACL_AICORE_PIPE_UTILIZATION', 'ACL_AICORE_ARITHMETIC_UTILIZATION', 'ACL_AICORE_RESOURCE_CONFLICT_RATIO'} is returned, the operation is successful. If nothing is returned, the operation fails.
 
 ## Example
 

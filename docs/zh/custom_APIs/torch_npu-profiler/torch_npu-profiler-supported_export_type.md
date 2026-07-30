@@ -20,7 +20,7 @@ torch_npu.profiler.supported_export_type()
 
 ## 返回值说明
 
-无
+返回{'db', 'text'}则表示成功；无返回则表示失败。
 
 ## 调用示例
 

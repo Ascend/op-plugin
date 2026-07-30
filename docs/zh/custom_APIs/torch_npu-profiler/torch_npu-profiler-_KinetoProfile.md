@@ -59,6 +59,15 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
      开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
+- **with_modules** (`bool`)：可选参数，modules层级的Python调用栈，即框架层的调用信息。取值为：
+
+  - True：开启。
+  - False：关闭。
+
+  默认值为False。
+
+  开启torch_npu.profiler.ProfilerActivity.CPU时生效。
+
 - **experimental_config**：可选参数，性能数据采集扩展。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
 
 ## 返回值说明

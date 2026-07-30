@@ -23,11 +23,11 @@ torch_npu.npu.mstx.mstx_range(msg: str='None', stream=None, domain: str='default
 
 ## Parameters
 
-- **`msg`** (`str`): Optional. String pointer carrying instrumentation message data. The default value is `None`.
-- **`stream`** (`int`): Optional. Stream used to execute the instrumentation task. The default value is `None`.
+- **`msg`** (`str`): Optional. String pointer carrying instrumentation message data. The default value is 'None'.
+- **`stream`** (`int`): Optional. Stream used to execute the instrumentation task. The default value is None.
   - If set to `None`, only instantaneous events on the host are marked.
   - If set to a valid stream, the instantaneous events on the host and device are marked.
-- **`domain`** (`str`): Optional. Name of the domain where time segment events are marked. The default value is `default`, indicating the default domain. If omitted, the default domain is used.
+- **`domain`** (`str`): Optional. Name of the domain where time segment events are marked. The default value is 'default', indicating the default domain. If omitted, the default domain is used.
 
 ## Return Values
 

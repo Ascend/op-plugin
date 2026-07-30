@@ -18,7 +18,7 @@ Marks the end of instrumentation.
 ## Prototype
 
 ```python
-torch_npu.npu.mstx.range_end(range_id: int, domain: str='default') -> int:
+torch_npu.npu.mstx.range_end(range_id: int, domain: str='default'):
 ```
 
 ## Parameters

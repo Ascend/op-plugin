@@ -23,13 +23,13 @@ torch_npu.npu.mstx.range_start(message: str='None', stream=None, domain: str='de
 
 ## Parameters
 
-- **`message`** (`str`): Optional. String pointer carrying instrumentation message data. The default value is `None`. The length of the passed message string must satisfy the following constraints:
-  - MSPTI scenarios: No more than 255 bytes.
-  - Non-MSPTI scenarios: No more than 156 bytes.
-- **`stream`** (`int`): Optional. Stream used to execute the instrumentation task. The default value is `None`.
+- **`message`** (`str`): Optional. String carrying instrumentation message data. The default value is 'None'. The length of the passed message string must satisfy the following constraints:
+  - MSPTI scenarios: No more than 255B.
+  - Non-MSPTI scenarios: No more than 156B.
+- **`stream`** (`int`): Optional. Stream used to execute the instrumentation task. The default value is None.
   - If set to `None`, only instantaneous events on the host are marked.
   - If set to a valid stream, the instantaneous events on the host and device are marked.
-- **`domain`** (`str`): Optional. Name of the domain where instantaneous events are marked. The default value is `default`, indicating the default domain. If omitted, the default domain is used.
+- **`domain`** (`str`): Optional. Name of the domain where instantaneous events are marked. The default value is 'default', indicating the default domain. If omitted, the default domain is used.
 
 ## Return Values
 

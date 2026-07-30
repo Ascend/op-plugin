@@ -20,7 +20,7 @@ torch_npu.profiler.supported_profiler_level()
 
 ## Return Values
 
-None
+If {'Level0', 'Level1', 'Level_none', 'Level2'} is returned, the operation is successful. If nothing is returned, the operation fails.
 
 ## Example
 
