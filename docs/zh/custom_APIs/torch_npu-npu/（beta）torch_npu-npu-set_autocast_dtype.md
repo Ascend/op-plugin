@@ -21,7 +21,7 @@ torch_npu.npu.set_autocast_dtype(dtype)
 
 ## 参数说明
 
- **dtype** ：数据类型。
+**dtype** ：数据类型。
 
 ## 调用示例
 

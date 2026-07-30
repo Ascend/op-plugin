@@ -32,7 +32,7 @@ torch_npu.npu.graph_task_update_begin(stream, handle) -> None
 
 - 图捕获阶段，提前调用[torch_npu.npu.graph_task_group_begin](torch_npu-npu-graph_task_group_begin.md)与[torch_npu.npu.graph_task_group_end](torch_npu-npu-graph_task_group_end.md)配合使用生成任务组handle。
 - 图更新阶段，与[torch_npu.npu.graph_task_update_end](torch_npu-npu-graph_task_update_end.md)配合使用标记待更新任务的起止。
-- 图更新阶段的流同图捕获阶段的流必须不同。
+- 图更新阶段的流与图捕获阶段的流必须不同。
 
 ## 调用示例
 

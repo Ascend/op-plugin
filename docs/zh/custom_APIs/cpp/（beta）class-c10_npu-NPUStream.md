@@ -12,13 +12,13 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **c10_npu::NPUStream::NPUStream(c10::Stream stream)**
 
-    NPUStream构造函数，从指定流构造NPU流，与c10::cuda::CUDAStream::CUDAStream(c10::Stream  _stream_)相同。
+    NPUStream构造函数，从指定流构造NPU流，与c10::cuda::CUDAStream::CUDAStream(c10::Stream _stream_)相同。
 
     stream：Stream类型，指定输入流，必须为NPU流。
 
 - **c10_npu::NPUStream::NPUStream(Unchecked, c10::Stream stream)**
 
-    NPUStream构造函数，从指定流构造NPU流，不检测是否为NPU流，与c10::cuda::CUDAStream::CUDAStream(Unchecked, c10::Stream  _stream_)相同。
+    NPUStream构造函数，从指定流构造NPU流，不检测是否为NPU流，与c10::cuda::CUDAStream::CUDAStream(Unchecked, c10::Stream _stream_)相同。
 
     stream：Stream类型，指定输入流。
 
@@ -28,13 +28,13 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **bool c10_npu::NPUStream::operator==(const c10_npu::NPUStream& other)**
 
-    NPUStream重载函数，重载==判定，返回true如果转成c10::Stream后二者相等，与bool c10::cuda::CUDAStream::operator==(const c10::cuda::CUDAStream&  _other_)相同。
+    NPUStream重载函数，重载==判定，返回true如果转成c10::Stream后二者相等，与bool c10::cuda::CUDAStream::operator==(const c10::cuda::CUDAStream& _other_)相同。
 
     other：NPUStream类型，待比较的NPU流。
 
 - **bool c10_npu::NPUStream::operator!=(const c10_npu::NPUStream& other)**
 
-    NPUStream重载函数，重载!=判定，返回true如果转成c10::Stream后二者不相等，与bool c10::cuda::CUDAStream::operator!=(const c10::cuda::CUDAStream&  _other_)相同。
+    NPUStream重载函数，重载!=判定，返回true如果转成c10::Stream后二者不相等，与bool c10::cuda::CUDAStream::operator!=(const c10::cuda::CUDAStream& _other_)相同。
 
     other：NPUStream类型，待比较的NPU流。
 
@@ -84,7 +84,7 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
 - **c10_npu::NPUStream c10_npu::NPUStream::unpack3(c10::StreamId stream_id, c10::DeviceIndex device_index, c10::DeviceType device_type)**
 
-    NPUStream流解包，从struct StreamData3中解包出流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::CUDAStream::unpack3(c10::StreamId  _stream_id_, c10::DeviceIndex  _device_index_, c10::DeviceType  _device_type_)相同。
+    NPUStream流解包，从struct StreamData3中解包出流，返回值类型NPUStream，与c10::cuda::CUDAStream c10::cuda::CUDAStream::unpack3(c10::StreamId _stream_id_, c10::DeviceIndex _device_index_, c10::DeviceType _device_type_)相同。
 
     stream_id：StreamId类型，struct StreamData3中的流ID。
 

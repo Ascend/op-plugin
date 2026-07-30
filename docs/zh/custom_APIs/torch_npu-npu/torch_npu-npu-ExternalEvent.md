@@ -27,7 +27,7 @@ torch_npu.npu.ExternalEvent()
 
 ## 约束说明
 
- ExternalEvent创建时，系统内部会在Device上分配32字节的内存，创建数量受芯片硬件规格限制。
+ExternalEvent创建时，系统内部会在Device上分配32字节的内存，创建数量受芯片硬件规格限制。
 
 ## 调用示例
 
