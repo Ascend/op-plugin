@@ -10,7 +10,7 @@
 
 ## 功能说明
 
-- API功能：QuantConv2d是对torch_npu.npu_quant_conv2d接口的封装类，为用户提供Conv2d算子量化相关功能。
+- API功能：为用户提供Conv2d算子量化相关功能。
 
 - 计算公式：
 
@@ -18,7 +18,7 @@
 
 ## 函数原型
 
-```
+```python
 torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, output_dtype, stride=1, padding=0, dilation=1, groups=1, bias=True, offset=False, offset_x=0, round_mode="rint", device=None, dtype=None)
 ```
 
@@ -57,6 +57,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **bias**（`Tensor`）：可选参数。数据类型支持`int32`，数据格式支持$ND$，shape支持1维(n,)，n与`weight`的`out_channels`一致。
 
 ## 输出说明
+
 `Tensor`
 
 代表QuantConv2d的计算结果：
@@ -102,4 +103,3 @@ with torch.no_grad():
     output = static_graph_model(fmap)
 print("static graph result: ", output)
 ```
-
