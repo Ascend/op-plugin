@@ -2260,8 +2260,32 @@ def npu_fusion_attention_forward(query, key, value, head_num, input_layout, pse=
     seed = 0
     offset = 0
     numels = 0
+
+    if input_layout == "BSH":
+        H = query.size(2)
+        D = H / head_num
+        D2 = 0 if D == 0 or key.size(2) == 0 else value.size(2) / (key.size(2) / D)
+        aten_score_shape = [B, S1, int(head_num * D2)]
+    elif input_layout == "SBH":
+        H = query.size(2)
+        D = H / head_num
+        D2 = 0 if D == 0 or key.size(2) == 0 else value.size(2) / (key.size(2) / D)
+        aten_score_shape = [S1, B, int(head_num * D2)]
+    elif input_layout == "BNSD":
+        D2 = value.size(3)
+        aten_score_shape = [B, N, S1, D2]
+    elif input_layout == "BSND":
+        D2 = value.size(3)
+        aten_score_shape = [B, S1, N, D2]
+    elif input_layout == "TND":
+        D2 = value.size(2)
+        T = query.size(0)
+        aten_score_shape = [T, N, D2]
+    else:
+        aten_score_shape = query.shape
+
     attention_score = query.new_empty(
-        query.shape, dtype=query.dtype, device='meta')
+        aten_score_shape, dtype=query.dtype, device='meta')
     if input_layout == "TND":
         softmax_max = torch.empty(
             [B, head_num, 8], dtype=torch.float32, device='meta')
