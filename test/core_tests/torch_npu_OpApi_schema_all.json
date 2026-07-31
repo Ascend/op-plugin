@@ -5024,6 +5024,12 @@
   "func: _lstm_npu_backward(Tensor grad_y, Tensor grad_hy, Tensor grad_cy, Tensor input, Tensor[] hx, Tensor[] params, Tensor i, Tensor j, Tensor f, Tensor o, Tensor h, Tensor c, Tensor tanhc, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor[], Tensor[])": {
     "version": ["all_version"]
   },
+  "func: _gru_npu(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["all_version"]
+  },
+  "func: _gru_npu_backward(Tensor grad_y, Tensor grad_h, Tensor input, Tensor hx, Tensor[] params, Tensor r, Tensor z, Tensor n, Tensor h_n, Tensor h, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor[])": {
+    "version": ["all_version"]
+  },
   "func: npu_dynamic_block_mx_quant(Tensor input, *, str round_mode=\"rint\", int dst_type=296, int scale_alg=0, float dst_type_max=0.0) -> (Tensor, Tensor, Tensor)": {
     "version": ["all_version"]
   },

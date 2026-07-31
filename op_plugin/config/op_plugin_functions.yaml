@@ -2518,6 +2518,12 @@ official:
 
   - func: gru.input(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, bool batch_first) -> (Tensor, Tensor)
     acl_op: all_version
+    op_api: all_version
+
+  # TODO(aclnnGRU): Uncomment this once aclnnGRU supports batchSizes and add case in torch_npu_OpApi_schema_all.json. Currently gru.data fallbacks to the composite implementation.
+  #- func: gru.data(Tensor data, Tensor batch_sizes, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional) -> (Tensor, Tensor)
+  #  op_api: all_version
+  #  device_check: NoCheck
 
   - func: gt.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
@@ -6439,6 +6445,13 @@ custom:
     tags: nondeterministic_seeded
 
   - func: _lstm_npu_backward(Tensor grad_y, Tensor grad_hy, Tensor grad_cy, Tensor input, Tensor[] hx, Tensor[] params, Tensor i, Tensor j, Tensor f, Tensor o, Tensor h, Tensor c, Tensor tanhc, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor[], Tensor[])
+    op_api: all_version
+
+  - func: _gru_npu(Tensor input, Tensor hx, Tensor[] params, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+    op_api: all_version
+    tags: nondeterministic_seeded
+
+  - func: _gru_npu_backward(Tensor grad_y, Tensor grad_h, Tensor input, Tensor hx, Tensor[] params, Tensor r, Tensor z, Tensor n, Tensor h_n, Tensor h, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor[])
     op_api: all_version
 
   - func: npu_masked_fill_range(Tensor self, Tensor start, Tensor end, Tensor value, int axis=-1) -> Tensor
