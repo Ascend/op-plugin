@@ -19,10 +19,8 @@
 
 #include <utility>
 
-
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-
 namespace {
 enum class ScatterReduceType : int64_t {
     REDUCE_NONE = 0,
@@ -59,18 +57,52 @@ int64_t get_reduce(c10::string_view reduce, const char* op_name)
         OPS_ERROR(ErrCode::PARAM));
 }
 
-void exec_scatter_reduce(
+at::Tensor scatter_reduce_cpu_fallback(
+    const at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src,
+    c10::string_view reduce,
+    bool include_self)
+{
+    at::Tensor self_cpu = self.cpu();
+    at::Tensor index_cpu = index.cpu();
+    at::Tensor src_cpu = src.cpu();
+    return at::scatter_reduce(self_cpu, dim, index_cpu, src_cpu, reduce, include_self).to(self.options());
+}
+
+at::Tensor& scatter_reduce_out_cpu_fallback(
     const at::Tensor& self,
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
     c10::string_view reduce,
     bool include_self,
-    at::Tensor& out,
-    const char* op_name)
+    at::Tensor& out)
 {
-    int64_t reduction = get_reduce(reduce, op_name);
-    EXEC_NPU_CMD(aclnnScatterReduce, self, dim, index, src, reduction, include_self, out);
+    at::Tensor self_cpu = self.cpu();
+    at::Tensor index_cpu = index.cpu();
+    at::Tensor src_cpu = src.cpu();
+    at::Tensor out_cpu = out.cpu();
+    at::scatter_reduce_out(out_cpu, self_cpu, dim, index_cpu, src_cpu, reduce, include_self);
+    out.copy_(out_cpu);
+    return out;
+}
+
+at::Tensor& scatter_reduce_inplace_cpu_fallback(
+    at::Tensor& self,
+    int64_t dim,
+    const at::Tensor& index,
+    const at::Tensor& src,
+    c10::string_view reduce,
+    bool include_self)
+{
+    at::Tensor self_cpu = self.cpu();
+    at::Tensor index_cpu = index.cpu();
+    at::Tensor src_cpu = src.cpu();
+    self_cpu.scatter_reduce_(dim, index_cpu, src_cpu, reduce, include_self);
+    self.copy_(self_cpu);
+    return self;
 }
 } // namespace
 
@@ -85,9 +117,12 @@ at::Tensor scatter_reduce(
     if (include_self && (reduce == "sum" || reduce == "add")) {
         DO_COMPATIBILITY(aclnnScatterReduce, acl_op::scatter_add(self, dim, index, src));
     }
+    DO_COMPATIBILITY(
+        aclnnScatterReduce, scatter_reduce_cpu_fallback(self, dim, index, src, reduce, include_self));
     auto result = self.clone(at::MemoryFormat::Contiguous);
     npu_preparation::CheckMemory({result, index, src}, {result});
-    exec_scatter_reduce(result, dim, index, src, reduce, include_self, result, "scatter_reduce()");
+    int64_t reduction = get_reduce(reduce, "scatter_reduce()");
+    EXEC_NPU_CMD(aclnnScatterReduce, result, dim, index, src, reduction, include_self, result);
     return result;
 }
 
@@ -100,8 +135,11 @@ at::Tensor& scatter_reduce_out(
     bool include_self,
     at::Tensor& out)
 {
+    DO_COMPATIBILITY(
+        aclnnScatterReduce, scatter_reduce_out_cpu_fallback(self, dim, index, src, reduce, include_self, out));
     npu_preparation::CheckMemory({self, index, src}, {out});
-    exec_scatter_reduce(self, dim, index, src, reduce, include_self, out, "scatter_reduce()");
+    int64_t reduction = get_reduce(reduce, "scatter_reduce_out()");
+    EXEC_NPU_CMD(aclnnScatterReduce, self, dim, index, src, reduction, include_self, out);
     return out;
 }
 
@@ -113,14 +151,14 @@ at::Tensor& scatter_reduce_(
     c10::string_view reduce,
     bool include_self)
 {
-    npu_preparation::CheckMemory({self, index, src}, {self});
     if (include_self && (reduce == "sum" || reduce == "add")) {
         DO_COMPATIBILITY(aclnnInplaceScatterReduce, acl_op::scatter_add_(self, dim, index, src));
     }
+    DO_COMPATIBILITY(
+        aclnnInplaceScatterReduce, scatter_reduce_inplace_cpu_fallback(self, dim, index, src, reduce, include_self));
+    npu_preparation::CheckMemory({self, index, src}, {self});
     int64_t reduction = get_reduce(reduce, "scatter_reduce_()");
     EXEC_NPU_CMD(aclnnInplaceScatterReduce, self, dim, index, src, reduction, include_self);
     return self;
 }
-
-
 }

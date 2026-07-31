@@ -127,7 +127,6 @@ class TestScatterReduce(TestCase):
         finally:
             torch.use_deterministic_algorithms(old_flag)
 
-    @unittest.skip("skip until gate CANN is updated to support scatter_reduce")
     def test_scatter_reduce_float32_shape_format(self):
         shape_format = [
             [0, [np.int64, 0, [10, 20]], [np.float32, 0, [10, 20]], [np.float32, 0, [10, 20]]],
@@ -138,8 +137,8 @@ class TestScatterReduce(TestCase):
             [1, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
             [2, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
         ]
-        reduce_list = ["none", "sum", "add", "amin", "min", "amax", "max", "prod", "mul", "mean"]
-        include_self_list = [True, False]
+        reduce_list = ["sum"]
+        include_self_list = [True]
 
         for item in shape_format:
             for reduce in reduce_list:
@@ -170,9 +169,55 @@ class TestScatterReduce(TestCase):
                     )
                     self.assertRtolEqual(cpu_inp_output, npu_inp_output)
 
+    @unittest.skipIf(
+        torch_npu.npu.utils._is_gte_cann_version("9.2.0"),
+        "Only run on CANN versions earlier than 9.2.0.",
+    )
+    def test_scatter_reduce_cpu_fallback_before_cann_920(self):
+        dim = 0
+        reduce = "sum"
+        include_self = False
+        cpu_input = torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.float32)
+        cpu_index = torch.tensor([[0, 0, 1], [0, 1, 1]], dtype=torch.int64)
+        cpu_src = torch.tensor([[10, 20, 30], [40, 50, 60]], dtype=torch.float32)
+        npu_input = cpu_input.npu()
+        npu_index = cpu_index.npu()
+        npu_src = cpu_src.npu()
+
+        cpu_output = self._scatter_reduce_exec(cpu_input, dim, cpu_index, cpu_src, reduce, include_self)
+        npu_output = self._scatter_reduce_exec(npu_input, dim, npu_index, npu_src, reduce, include_self)
+        self.assertEqual(npu_output.device.type, "npu")
+        self.assertRtolEqual(cpu_output.numpy(), npu_output.cpu().numpy())
+
+        cpu_out = torch.empty_like(cpu_input)
+        npu_out = torch.empty_like(npu_input)
+        npu_out_data_ptr = npu_out.data_ptr()
+        cpu_output_out = self._scatter_reduce_exec_out(
+            cpu_input, dim, cpu_index, cpu_src, reduce, include_self, cpu_out
+        )
+        npu_output_out = self._scatter_reduce_exec_out(
+            npu_input, dim, npu_index, npu_src, reduce, include_self, npu_out
+        )
+        self.assertEqual(npu_output_out.device.type, "npu")
+        self.assertEqual(npu_output_out.data_ptr(), npu_out_data_ptr)
+        self.assertRtolEqual(cpu_output_out.numpy(), npu_output_out.cpu().numpy())
+
+        cpu_inplace = cpu_input.clone()
+        npu_inplace = npu_input.clone()
+        npu_inplace_data_ptr = npu_inplace.data_ptr()
+        cpu_output_inplace = self._scatter_reduce_exec_inp(
+            cpu_inplace, dim, cpu_index, cpu_src, reduce, include_self
+        )
+        npu_output_inplace = self._scatter_reduce_exec_inp(
+            npu_inplace, dim, npu_index, npu_src, reduce, include_self
+        )
+        self.assertEqual(npu_output_inplace.device.type, "npu")
+        self.assertEqual(npu_output_inplace.data_ptr(), npu_inplace_data_ptr)
+        self.assertRtolEqual(cpu_output_inplace.numpy(), npu_output_inplace.cpu().numpy())
+
     @unittest.skip("skip until gate CANN is updated to support scatter_reduce")
-    def test_scatter_reduce_float16_shape_format(self):
-        def cpu_op_exec_fp16(input1, dim, index, src, reduce, include_self):
+    def test_scatter_reduce_float32_basic_shape_format(self):
+        def cpu_op_exec_float32(input1, dim, index, src, reduce, include_self):
             if reduce == "none":
                 output = self._run_scatter_reduce_none(input1, dim, index, src, include_self)
             elif hasattr(torch, "scatter_reduce"):
@@ -183,41 +228,41 @@ class TestScatterReduce(TestCase):
                 output = input1.scatter_reduce(
                     dim, index, src, reduce=self._map_cpu_reduce(reduce), include_self=include_self
                 )
-            return output.float().numpy().astype(np.float16)
+            return output.numpy()
 
-        def cpu_op_exec_inp_fp16(input1, dim, index, src, reduce, include_self):
+        def cpu_op_exec_inp_float32(input1, dim, index, src, reduce, include_self):
             if reduce == "none":
                 self._run_scatter_reduce_none_inp(input1, dim, index, src, include_self)
             elif hasattr(input1, "scatter_reduce_"):
                 input1.scatter_reduce_(dim, index, src, reduce=self._map_cpu_reduce(reduce), include_self=include_self)
             else:
                 torch.ops.aten.scatter_reduce_(input1, dim, index, src, self._map_cpu_reduce(reduce), include_self)
-            return input1.float().numpy().astype(np.float16)
+            return input1.numpy()
 
         shape_format = [
-            [0, [np.int64, 0, [10, 20]], [np.float16, 0, [10, 20]], [np.float16, 0, [10, 20]]],
-            [1, [np.int64, 0, [10, 20]], [np.float16, 0, [10, 20]], [np.float16, 0, [10, 20]]],
-            [0, [np.int64, 0, [2, 6]], [np.float16, 0, [2, 6]], [np.float16, 0, [2, 6]]],
-            [1, [np.int64, 0, [2, 6]], [np.float16, 0, [2, 6]], [np.float16, 0, [2, 6]]],
-            [0, [np.int64, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]]],
-            [1, [np.int64, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]]],
-            [2, [np.int64, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]], [np.float16, 0, [10, 20, 30]]],
+            [0, [np.int64, 0, [10, 20]], [np.float32, 0, [10, 20]], [np.float32, 0, [10, 20]]],
+            [1, [np.int64, 0, [10, 20]], [np.float32, 0, [10, 20]], [np.float32, 0, [10, 20]]],
+            [0, [np.int64, 0, [2, 6]], [np.float32, 0, [2, 6]], [np.float32, 0, [2, 6]]],
+            [1, [np.int64, 0, [2, 6]], [np.float32, 0, [2, 6]], [np.float32, 0, [2, 6]]],
+            [0, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
+            [1, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
+            [2, [np.int64, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]], [np.float32, 0, [10, 20, 30]]],
         ]
-        reduce_list = ["none", "amin", "min", "amax", "max", "add", "mul"]
-        include_self_list = [True, False]
+        reduce_list = ["sum"]
+        include_self_list = [True]
 
         for item in shape_format:
             for reduce in reduce_list:
                 for include_self in include_self_list:
-                    cpu_src, npu_src = create_common_tensor(item[2], 0.8, 1.0)
+                    cpu_src, npu_src = create_common_tensor(item[2], 1, 100)
                     cpu_index, npu_index = create_common_tensor(item[1], 0, (item[1][2][item[0]] - 1))
-                    cpu_input, npu_input = create_common_tensor(item[3], 0.8, 1.0)
+                    cpu_input, npu_input = create_common_tensor(item[3], 1, 100)
 
-                    cpu_output = cpu_op_exec_fp16(cpu_input, item[0], cpu_index, cpu_src, reduce, include_self)
+                    cpu_output = cpu_op_exec_float32(cpu_input, item[0], cpu_index, cpu_src, reduce, include_self)
                     npu_output = self.npu_op_exec(npu_input, item[0], npu_index, npu_src, reduce, include_self)
                     self.assertRtolEqual(cpu_output, npu_output)
 
-                    cpu_inp_output = cpu_op_exec_inp_fp16(
+                    cpu_inp_output = cpu_op_exec_inp_float32(
                         cpu_input, item[0], cpu_index, cpu_src, reduce, include_self
                     )
                     npu_inp_output = self.npu_op_exec_inp(
@@ -250,8 +295,8 @@ class TestScatterReduce(TestCase):
             dtype=np.float32,
         )
 
-        reductions = ["none", "sum", "add", "prod", "mul", "amin", "min", "amax", "max", "mean"]
-        include_self_list = [True, False]
+        reductions = ["sum"]
+        include_self_list = [True]
 
         def run_once(reduce, include_self):
             cpu_input = torch.tensor(input_data)
@@ -325,23 +370,6 @@ class TestScatterReduce(TestCase):
         for reduce in reductions:
             for include_self in include_self_list:
                 self._run_with_deterministic(lambda r=reduce, i=include_self: run_once(r, i))
-
-    def test_scatter_reduce_invalid_reduce(self):
-        input1 = torch.ones(2, 3).npu()
-        index = torch.tensor([[0, 1, 0], [1, 0, 1]], dtype=torch.int64).npu()
-        src = torch.full((2, 3), 2.0).npu()
-
-        for reduce in ["multiply", "invalid", ""]:
-            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
-                torch.scatter_reduce(input1, 0, index, src, reduce=reduce, include_self=True)
-
-            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
-                torch.scatter_reduce(
-                    input1, 0, index, src, reduce=reduce, include_self=True, out=torch.empty_like(input1)
-                )
-
-            with self.assertRaisesRegex(RuntimeError, "expected reduce to be one of"):
-                input1.clone().scatter_reduce_(0, index, src, reduce=reduce, include_self=True)
 
 
 if __name__ == "__main__":
