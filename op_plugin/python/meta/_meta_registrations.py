@@ -2977,21 +2977,45 @@ def npu_add_rms_norm_cast_meta(x1, x2, gamma, epsilon=1e-6):
 @impl(m, "npu_add_rms_norm_dynamic_quant")
 def npu_add_rms_norm_dynamic_quant_meta(x1, x2, gamma, *, smooth_scale1=None, smooth_scale2=None, beta=None, epsilon=1e-6, output_mask=None, y_dtype=None):
     # y_dtype: None or torch.int8 -> int8 (same shape); torch.quint4x2 -> int4 (int32 packed, last_dim/8)
-    if y_dtype is None or y_dtype == torch.int8:
-        y_shape = x1.size()
+    is_out_y1 = True
+    is_out_y2 = False
+    if output_mask is None:
+        scale1_exists = smooth_scale1 is not None
+        scale2_exists = smooth_scale2 is not None
+        is_out_y2 = scale1_exists and scale2_exists
+    else:
+        if output_mask[0] == False and output_mask[1] == False:
+            raise RuntimeError("When the output_mask is not empty, at least one of y1 and y2 must be output. " + ops_error(ErrCode.NOT_SUPPORT))
+
+        is_out_y1 = output_mask[0]
+        is_out_y2 = output_mask[1]
+
+    y_shape = x1.size()
+    if y_dtype is None:
         y_dtype_actual = torch.int8
     else:
-        # int4: aclnn uses int32 with 8 int4 per int32
-        y_shape = list(x1.size())
-        y_shape[-1] = y_shape[-1] // 8
-        y_dtype_actual = torch.int32
-    # when output_mask[1] is False, y2 has shape [0] (empty, 1-dim size 0)
-    y2_shape = y_shape if (output_mask is None or (len(output_mask) > 1 and output_mask[1])) else (0,)
-    return (torch.empty(y_shape, dtype=y_dtype_actual, device=x1.device),
+        y_dtype_actual = TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(y_dtype)
+        if y_dtype_actual is None:
+             raise RuntimeError("Parameter y_dtype enum value:{} not found in TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP".format(y_dtype) +
+                                ops_error(ErrCode.PARAM))
+
+        if y_dtype == torch_npu.int4 or y_dtype_actual == torch.quint4x2:
+            y_shape_list = list(y_shape)
+            y_shape_list[-1] = y_shape_list[-1] // 8
+            y_shape = torch.Size(y_shape_list)
+            y_dtype_actual = torch.int32
+        elif y_dtype == 290:
+            y_dtype_actual = torch.uint8
+
+    y1_shape = y_shape if is_out_y1 else (0,)
+    y2_shape = y_shape if is_out_y2 else (0,)
+    scale1_shape = x1.size()[:-1] if is_out_y1 else (0,)
+    scale2_shape = x1.size()[:-1] if is_out_y2 else (0,)
+    return (torch.empty(y1_shape, dtype=y_dtype_actual, device=x1.device),
             torch.empty(y2_shape, dtype=y_dtype_actual, device=x1.device),
             torch.empty(x1.size(), dtype=x1.dtype, device=x1.device),
-            torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device),
-            torch.empty(x1.size()[:-1], dtype=torch.float32, device=x1.device))
+            torch.empty(scale1_shape, dtype=torch.float32, device=x1.device),
+            torch.empty(scale2_shape, dtype=torch.float32, device=x1.device))
 
 
 @impl(m, "npu_add_rms_norm_dynamic_mx_quant")
