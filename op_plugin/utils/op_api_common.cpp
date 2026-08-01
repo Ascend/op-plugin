@@ -1867,7 +1867,7 @@ aclOpExecutor* GetCacheExecutor(uint64_t* workspace_size)
     return ptaGetExecCacheFunc(hashId, workspace_size);
 }
 
-bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, const c10_npu::DeterministicSnapshot& snapshot)
+bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase2)
 {
     uint64_t workspace_size = 0;
     aclOpExecutor* executor = GetCacheExecutor(&workspace_size);
@@ -1875,7 +1875,6 @@ bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase
         return false;
     }
 
-    at_npu::native::ApplyDeterministicSnapshot(snapshot, true);
     void* workspace_addr = nullptr;
     at::Tensor workspace_tensor;
     if (workspace_size != 0) {
@@ -1895,7 +1894,7 @@ bool ExecuteCachedOp(aclrtStream acl_stream, const char* aclnn_api, void* phrase
     return true;
 }
 
-bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret, const c10_npu::DeterministicSnapshot& snapshot)
+bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phrase2, int* api_ret)
 {
     uint64_t workspace_size = 0;
     aclOpExecutor* executor = GetCacheExecutorV2(&workspace_size);
@@ -1903,7 +1902,6 @@ bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phra
         return false;
     }
 
-    at_npu::native::ApplyDeterministicSnapshot(snapshot, true);
     void *workspace_addr = nullptr;
     at::Tensor workspace_tensor;
     if (workspace_size != 0) {
