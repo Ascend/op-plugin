@@ -40,6 +40,35 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_gather_out_size(
   return {gather_out.size(0) * world_size, gather_out.size(1)};
 }
 
+static void check_dtype_itemsize_compatible(
+    const at::Tensor& tensor,
+    c10::optional<int64_t> tensor_dtype,
+    const char* param_name) {
+  if (!tensor.defined() || !tensor_dtype.has_value()) {
+    return;
+  }
+  aclDataType tensor_acltype = c10_npu::GetAclDataType(tensor_dtype.value());
+  int acl_item_size = npu_preparation::GetAclDataTypeItemSize(tensor_acltype);
+  TORCH_CHECK(
+      tensor.itemsize() == acl_item_size,
+      "The itemsize of ",
+      param_name,
+      " (dtype:",
+      tensor.dtype(),
+      ", itemsize:",
+      tensor.itemsize(),
+      ") must be equal to the itemsize of ",
+      param_name,
+      "_dtype (",
+      c10_npu::CustomDataTypeToString(tensor_dtype.value()),
+      ", itemsize:",
+      acl_item_size,
+      "). Try use ",
+      param_name,
+      "_dtype=None, or use same itemsize dtype instead.",
+      OPS_ERROR(ErrCode::PARAM));
+}
+
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     const at::Tensor& self,
     const at::Tensor& x2,
@@ -126,12 +155,26 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
       ? npu_preparation::apply_tensor_without_format(
             amax_size, self.options().dtype(amax_dtype))
       : at::Tensor();
+  check_dtype_itemsize_compatible(self, x1_dtype, "x1");
   TensorWrapper x1_wrapper = make_wrapper(self, x1_dtype);
+  check_dtype_itemsize_compatible(x2, x2_dtype, "x2");
   TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
   TensorWrapper gather_out_wrapper = make_wrapper(gather_out, gather_out_dtype);
   const at::Tensor& x1_scale_real = x1_scale.value_or(at::Tensor());
   const at::Tensor& x2_scale_real = x2_scale.value_or(at::Tensor());
+  if (x1_scale_dtype.has_value() && x1_wrapper.dtype == ACL_FLOAT4_E2M1) {
+    TORCH_CHECK(c10_npu::GetAclDataType(x1_scale_dtype.value()) == ACL_FLOAT8_E8M0,
+      "When x1 dtype is float4_e2m1, x1_scale must be float8_e8m0, but got x1_scale_dtype: ",
+      c10_npu::CustomDataTypeToString(x1_scale_dtype.value()), ".", OPS_ERROR(ErrCode::VALUE));
+  }
+  if (x2_scale_dtype.has_value() && x2_wrapper.dtype == ACL_FLOAT4_E2M1) {
+    TORCH_CHECK(c10_npu::GetAclDataType(x2_scale_dtype.value()) == ACL_FLOAT8_E8M0,
+      "When x2 dtype is float4_e2m1, x2_scale must be float8_e8m0, but got x2_scale_dtype: ",
+      c10_npu::CustomDataTypeToString(x2_scale_dtype.value()), ".", OPS_ERROR(ErrCode::VALUE));
+  }
+  check_dtype_itemsize_compatible(x1_scale_real, x1_scale_dtype, "x1_scale");
   TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
+  check_dtype_itemsize_compatible(x2_scale_real, x2_scale_dtype, "x2_scale");
   TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
   c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
   char* comm_mode_ptr = const_cast<char*>(comm_mode_value.data());
