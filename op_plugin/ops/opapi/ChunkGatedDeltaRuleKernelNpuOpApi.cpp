@@ -27,6 +27,7 @@ std::tuple<at::Tensor, at::Tensor> npu_chunk_gated_delta_rule(const at::Tensor &
     const at::Tensor &value, const c10::optional<at::Tensor> &beta, const c10::optional<at::Tensor> &initial_state,
     const c10::optional<at::Tensor> &actual_seq_lengths, const c10::optional<double> scale,
     const c10::optional<at::Tensor> &g) {
+    TORCH_CHECK(value.defined(), "value cannot be empty", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(value.dim() == VALUE_DIM_NUM, "value dim should be ", VALUE_DIM_NUM, OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(beta.has_value(), "beta cannot be empty", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(initial_state.has_value(), "initial_state cannot be empty", OPS_ERROR(ErrCode::PARAM));
