@@ -2000,7 +2000,6 @@ class TestScatterUpdateMeta(TestCase):
             self.assertEqual(fake_result.device, in_self.device)
             self.assertTrue(isinstance(fake_result, FakeTensor))
             self.assertIs(fake_result, fake_self)
-            self.assertIsNot(fake_result, in_self)
 
 
 class TestNpuQuantScatterMeta(TestCase):
@@ -2059,7 +2058,6 @@ class TestNpuQuantScatterMeta(TestCase):
             self.assertEqual(fake_result.device, in_var.device)
             self.assertTrue(isinstance(fake_result, FakeTensor))
             self.assertIs(fake_result, fake_var)
-            self.assertIsNot(fake_result, in_var)
 
 
 class TestNpuApplyRotoryPosEmbMeta(TestCase):

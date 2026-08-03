@@ -43,6 +43,7 @@ F = TypeVar(
 # in 2.14).
 _FORCE_ILISTREF_TENSOR_LIST_OPS = {
     "_scaled_mm_v2",
+    "_scaled_grouped_mm_v2",
 }
 
 
