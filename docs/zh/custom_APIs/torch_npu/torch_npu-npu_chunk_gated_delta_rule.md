@@ -1,8 +1,5 @@
 # torch_npu.npu_chunk_gated_delta_rule
 
-> [!NOTICE]  
-> 此接口为本版本新增功能，具体依赖要求请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/release_notes/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。
-
 ## 产品支持情况
 
 |产品             |  是否支持  |
@@ -42,21 +39,21 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 > $N_k$ 表示key的头数，$N_v$ 表示value的头数。<br>
 > $D_k$ 表示key的hidden size，$D_v$ 表示value的hidden size。
 
-- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
 
-- **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
 
-- **value** (`Tensor`)：必选参数，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。
+- **value** (`Tensor`)：必选参数，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$），不支持空tensor。
 
-- **beta** (`Tensor`)：可选参数，对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。
+- **beta** (`Tensor`)：可选参数，对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
 
-- **initial_state** (`Tensor`)：可选参数，对应公式中的状态矩阵$S_0$，数据类型支持`bfloat16`、`float32`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
+- **initial_state** (`Tensor`)：可选参数，对应公式中的状态矩阵$S_0$，数据类型支持`bfloat16`、`float32`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$），不支持空tensor。
 
 - **actual_seq_lengths** (`Tensor`)：可选参数，表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
 
 - **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$
 
-- **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。
+- **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
 
 ## 返回值说明
 
@@ -73,8 +70,8 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
   - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$
   - $B \gt 0$, $T \gt 0$
 - 由于算法特性，用户需保障以下数值约束，否则计算结果可能出现溢出：
-  - $-1 \le query[i][j][k] \le 1$
-  - $-1 \le key[i][j][k] \le 1$
+  - $-1 \le query[i][j][k] \le 1$，且query需要归一化处理
+  - $-1 \le key[i][j][k] \le 1$，且key需要归一化处理
   - $-1 \le g[i][j] \le 0$
   - $0 < beta[i][j] < 1$
 
