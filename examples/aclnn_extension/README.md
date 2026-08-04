@@ -1,6 +1,6 @@
 # aclnn_extension 样例说明
 
-本样例是 **「自定义算子接入 - 结构化代码生成」** 的示例工程，演示如何通过 YAML 描述 + 代码生成工具，将自定义 aclnn 算子接入 PyTorch NPU 生态，并生成可参与 torch_npu 编译的适配代码。
+本样例是 **「自定义算子接入 - 结构化代码生成」** 的示例工程，演示如何通过 YAML 描述 + 代码生成工具，将自定义 aclnn 算子接入 Ascend for PyTorch 生态，并生成可参与 TorchNPU 编译的适配代码。
 
 ## 适用场景
 
@@ -15,8 +15,8 @@
 
 ## 环境与依赖
 
-- **运行/编译依赖**：PyTorch、torch_npu、CANN。  
-  安装与版本要求见 [torch_npu 安装说明](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)。
+- **运行/编译依赖**：PyTorch、TorchNPU、CANN。  
+  安装与版本要求见 [TorchNPU 安装说明](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)。
 
 ## 目录与文件结构
 
@@ -178,11 +178,11 @@ python test_npu_fast_gelu_custom.py
 | 2 | `torchnpugen.gen_derivatives` | 仅当传入 `$2` 时执行；根据 derivatives YAML 生成前反向绑定文件 `derivatives.yaml` | `--version`、`--output_dir`、`--source_yaml`（传入的 derivatives YAML） |
 | 3 | `torchnpugen.gen_op_backend` | 根据 `op_plugin_functions.yaml` 生成 op_plugin 对外接口与路由（如 OpInterface、OpApiInterface 等） | `--version`、`--output_dir`（`op_plugin/`）、`--source_yaml`（上一步生成的 `op_plugin_functions.yaml`）、`--deprecate_yaml` |
 | 4 | `torchnpugen.struct.gen_struct_opapi` | 根据算子 YAML 与 `op_plugin_functions.yaml` 生成 aclnn 结构化适配实现（如 `StructKernelNpuOpApi.cpp`） | `--output_dir`（`op_plugin/ops/opapi/`）、`--native_yaml`（`op_plugin_functions.yaml`）、`--struct_yaml`（传入的算子 YAML） |
-| 5 | `torchnpugen.gen_backend_stubs` | 根据 `test_native_functions.yaml` 等生成 torch_npu 侧 backend stub 代码到 `csrc/aten` | `--output_dir`、`--source_yaml`（当前为 `./test_native_functions.yaml`）、`--impl_path`、`--op_plugin_impl_path`、`--op_plugin_yaml_path` |
+| 5 | `torchnpugen.gen_backend_stubs` | 根据 `test_native_functions.yaml` 等生成 TorchNPU 侧 backend stub 代码到 `csrc/aten` | `--output_dir`、`--source_yaml`（当前为 `./test_native_functions.yaml`）、`--impl_path`、`--op_plugin_impl_path`、`--op_plugin_yaml_path` |
 | 6 | `torchnpugen.autograd.gen_autograd` | 根据 `test_native_functions.yaml` 生成 autograd 相关代码到 `csrc/aten` 与 `autograd` | `--out_dir`、`--autograd_dir`、`--npu_native_function_dir`（当前为 `./test_native_functions.yaml`） |
 
 - **步骤 1～4** 使用算子 YAML 和生成的 `op_plugin_functions.yaml`，产出在 `op_plugin/` 下，是 aclnn 扩展适配的核心。
-- **步骤 5～6** 使用 `test_native_functions.yaml`，产出在 `csrc/aten`、`autograd`，用于与 torch_npu 侧的注册与求导衔接。
+- **步骤 5～6** 使用 `test_native_functions.yaml`，产出在 `csrc/aten`、`autograd`，用于与 TorchNPU 侧的注册与求导衔接。
 
 ### 自定义时可调整的内容
 

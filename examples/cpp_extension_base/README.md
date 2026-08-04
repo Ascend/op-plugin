@@ -1,6 +1,6 @@
 # 适配开发及调用（基础样例）
 
-本文档基于C++ extensions方式，使用torch_npu单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。
+本文档基于C++ extensions方式，使用TorchNPU单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。
 
 ## 算子适配开发
 
@@ -30,7 +30,7 @@
 1. 在算子适配层C++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。PyTorch提供的TORCH_LIBRARY宏用于定义唯一命名空间（该命名空间的名称必须保证全局唯一性），并在该命名空间中注册算子schema。具体示例如下：
 
     > [!NOTE]
-    > 
+    >
     > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`保障跨device访问。
 
     ```cpp
@@ -112,4 +112,3 @@
     Ran xx tests in xx s
     OK
     ```
-    

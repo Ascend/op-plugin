@@ -1,6 +1,6 @@
 # 适配开发及调用（完整样例-TORCH_LIBRARY_IMPL）
 
-基于C++ extensions方式，通过torch_npu来调用单算子API的适配开发过程，其中前反向绑定通过PyTorch中`TORCH_LIBRARY_IMPL`注册实现。
+基于C++ extensions方式，通过TorchNPU来调用单算子API的适配开发过程，其中前反向绑定通过PyTorch中`TORCH_LIBRARY_IMPL`注册实现。
 
 ## 算子适配开发
 
@@ -30,7 +30,7 @@
 1. 在算子适配层C++代码目录（csrc）中的`add_custom.cpp`完成C++侧算子代码适配、注册自定义算子schema、meta及绑定具体实现。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
 
     > [!NOTE]
-    > 
+    >
     > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`保障跨device访问，单卡场景可不加此代码。
 
     ```cpp
@@ -157,4 +157,3 @@
     Ran xx tests in xx s
     OK
     ```
-    

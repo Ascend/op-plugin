@@ -1,6 +1,6 @@
 # 适配开发及调用（pybind）
 
-本文档基于C++ extensions方式，使用torch_npu单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。区别于常见的TORCH_LIBRARY方式，本用例采用PYBIND进行绑定注册，以获得更灵活的输入类型支持。
+本文档基于C++ extensions方式，使用TorchNPU单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。区别于常见的TORCH_LIBRARY方式，本用例采用PYBIND进行绑定注册，以获得更灵活的输入类型支持。
 
 ## 算子适配开发
 
@@ -31,8 +31,8 @@
 1. 在算子适配层C++代码目录（csrc）中，通过`add_custom.cpp`文件完成C++侧的算子代码适配、注册自定义算子schema及具体实现的绑定。具体示例如下：
 
     > [!NOTE]
-    > 
-    > 以下是基于单卡场景提供的示例代码。在此场景下，`const c10::OptionalDeviceGuard device_guard(device_of(self));`语句是可选的。在多卡场景中，则必须在适配代码中加入此语句。   
+    >
+    > 以下是基于单卡场景提供的示例代码。在此场景下，`const c10::OptionalDeviceGuard device_guard(device_of(self));`语句是可选的。在多卡场景中，则必须在适配代码中加入此语句。
 
     ```cpp
     // 为NPU设备注册前向实现
@@ -96,4 +96,3 @@
     Ran xx tests in xx s
     OK
     ```
-    

@@ -50,8 +50,8 @@
 #### Aten IR实现
 
 根据Aten IR定义适配算子。
-TORCH_NPU的算子下发和执行是异步的，通过TASKQUEUE实现，
-样例中，我们通过`at_npu::native::OpCommand::RunOpApiV2`方法，将算子执行入队到TORCH_NPU的TASKQUEUE。样例如下：
+TorchNPU的算子下发和执行是异步的，通过TASKQUEUE实现，
+样例中，我们通过`at_npu::native::OpCommand::RunOpApiV2`方法，将算子执行入队到TorchNPU的TASKQUEUE。样例如下：
 
   ```c++
 #include "torch_npu/csrc/core/npu/NPUStream.h"
@@ -96,7 +96,7 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 
 ## 运行自定义的算子
 
-  运行依赖torch、torch_npu和CANN。具体安装步骤参考[torch_npu文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)
+  运行依赖PyTorch、TorchNPU和CANN。具体安装步骤参考[TorchNPU文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)
   运行流程：
 
   1. 运行setup脚本，编译生成whl包。
@@ -157,6 +157,6 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
  
 ### 3. 版本兼容性
 
-- 确保 PyTorch、torch_npu 和 CANN 版本兼容
+- 确保 PyTorch、TorchNPU 和 CANN 版本兼容
 - 版本不匹配可能导致编译或运行时错误
-- 参考 [torch_npu 文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85) 获取兼容版本信息
+- 参考 [TorchNPU 文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85) 获取兼容版本信息
