@@ -1,6 +1,6 @@
 import torch
 import torch_npu
-import cpp_extension_acs
+import cpp_extension_asc
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch.library import Library
 
@@ -8,7 +8,7 @@ from torch.library import Library
 # Define a simple model using the custom operation
 class Model(torch.nn.Module):
     def forward(self, x, y):
-        return torch.ops.cpp_extension_acs.ascendc_add(x, y)
+        return torch.ops.cpp_extension_asc.ascendc_add(x, y)
 
 
 length = [8, 2048]
@@ -63,7 +63,7 @@ class TestCustomAdd(TestCase):
     # Test single custom operator call
     def test_add_custom_ops(self):
         x, y = self.get_rand_input()
-        output = torch.ops.cpp_extension_acs.ascendc_add(x.npu(), y.npu()).cpu()
+        output = torch.ops.cpp_extension_asc.ascendc_add(x.npu(), y.npu()).cpu()
         cpuout = torch.add(x, y)
         self.assertEqual(output, cpuout)
 

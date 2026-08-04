@@ -1,13 +1,13 @@
 import torch
 import torch_npu
-import cpp_extension_acs
+import cpp_extension_asc
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
 # Define a simple model using the custom operation
 class Model(torch.nn.Module):
     def forward(self, x, out_sin, out_cos):
-        out_tan = torch.ops.cpp_extension_acs.ascendc_trig(x, out_sin, out_cos)
+        out_tan = torch.ops.cpp_extension_asc.ascendc_trig(x, out_sin, out_cos)
         return out_tan
 
 
@@ -62,7 +62,7 @@ class TestCustomTrig(TestCase):
     # Test single custom operator call
     def test_trig_inplace_ops(self):
         x, out_sin, out_cos = self.get_rand_input()
-        out_tan = torch.ops.cpp_extension_acs.ascendc_trig(x, out_sin, out_cos)
+        out_tan = torch.ops.cpp_extension_asc.ascendc_trig(x, out_sin, out_cos)
         self.check_res(x, out_sin, out_cos, out_tan)
 
     def check_res(self, x, out_sin, out_cos, out_tan):

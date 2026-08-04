@@ -87,13 +87,13 @@ class AscendBuildExtension(build_ext):
 
 
 your_ext = Extension(
-    name="cpp_extension_acs.custom_ops_lib",
+    name="cpp_extension_asc.custom_ops_lib",
     sources=source_files,
     language="asc",
 )
 
 setup(
-    name="cpp_extension_acs",
+    name="cpp_extension_asc",
     version="0.1",
     ext_modules=[your_ext],
     packages=find_packages(),
