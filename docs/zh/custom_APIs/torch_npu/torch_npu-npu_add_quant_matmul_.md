@@ -14,7 +14,7 @@
 
 - 计算公式：
 
-    mx量化场景公式如下，更多关于量化技术的介绍参见[《CANN 算子库》](https://hiascend.com/document/redirect/CannCommunityOplist)中“基本概念 > 量化介绍”。
+    mx量化场景公式如下，更多关于量化技术的介绍参见[《CANN 算子库》](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/API/aolapi/context/common/%E9%87%8F%E5%8C%96%E4%BB%8B%E7%BB%8D.md)中“基本概念 > 量化介绍”。
 
     ![](../../figures/zh-cn_formulaimage_0000002521244910.png)
 
