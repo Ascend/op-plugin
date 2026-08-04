@@ -40,7 +40,9 @@ def get_sources():
     BUILD_EXCLUDE_LIST = [f"{aten_dir}/VariableTypeEverything.cpp",
         f"{aten_dir}/ADInplaceOrViewTypeEverything.cpp",
         f"{aten_dir}/python_functionsEverything.cpp",
-        f"{aten_dir}/RegisterFunctionalizationEverything.cpp"]
+        f"{aten_dir}/RegisterFunctionalizationEverything.cpp",
+        f"{ops_dir}/OpInterfaceEverything.cpp",
+        f"{ops_dir}/ops/opapi/StructKernelNpuOpApiEverything.cpp"]
 
     sources_new = [cur_file for cur_file in sources if cur_file not in BUILD_EXCLUDE_LIST]
 
