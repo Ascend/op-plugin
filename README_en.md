@@ -46,7 +46,7 @@ OpPlugin can be installed by building it from source. For details, see [Installi
 
 ## Quick Start
 
-A complete development guide is provided for calling Ascend C custom operators in PyTorch through OpPlugin. It covers the entire workflow, including environment setup, operator registration, adaptation implementation, and test verification. For details, see [Example](https://gitcode.com/Ascend/pytorch/blob/v2.7.1/docs/zh/framework_feature_guide_pytorch/opplugin_operator_adaptation.md).
+A complete development guide is provided for calling Ascend C custom operators in PyTorch through OpPlugin. It covers the entire workflow, including environment setup, operator registration, adaptation implementation, and test verification. For details, see [Example](https://gitcode.com/Ascend/pytorch/blob/master/docs/zh/developer_notes/custom_operator_adaptation/opplugin_operator_adaptation/_menu_opplugin_operator_adaptation.md).
 
 ## API Reference
 
