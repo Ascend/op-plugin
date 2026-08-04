@@ -1,0 +1,116 @@
+name: Build Job
+
+on:
+  workflow_call:
+    inputs:
+      py_version:
+        required: false
+        type: string
+        default: "3.10"
+      REMOTE_URL:
+        required: false
+        type: string
+        default: ${{ env.ATOMGIT_REPOSITORY_URL }}
+      pr_id:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.number }}
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      pytorch_branch:
+        required: true
+        type: string
+      runs_on_arch:
+        required: false
+        type: string
+        default: "x64"
+      runs_on_spec:
+        required: false
+        type: string
+        default: "large"
+      TARGET_BRANCH:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.base.ref }}
+
+
+jobs:
+  JOB_compile:
+    name: Compile
+    select: selected_by_default
+    runs-on: [ dedicate-hosted,"${{ inputs.runs_on_arch }}", "${{ inputs.runs_on_spec }}" ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+    steps:
+      # TODO 后续将各action composite 化
+      - name: check branch support
+        id: check_support
+        run: |
+          PYTORCH_BRANCH="${{ inputs.pytorch_branch }}"
+          TARGET_BRANCH="${{ inputs.TARGET_BRANCH }}"
+          if [ "${TARGET_BRANCH}" = "master" ]; then
+            echo "master branch, build all versions"
+            echo "need_build=yes" >> "$ATOMGIT_OUTPUT"
+            echo "pytorch_build_branch=${PYTORCH_BRANCH}" >> "$ATOMGIT_OUTPUT"
+            exit 0
+          fi
+          support_730="v2.6.0 v2.7.1 v2.8.0 v2.9.0"
+          support_2600="v2.7.1 v2.8.0 v2.9.0 v2.10.0"
+          support_2610="v2.7.1 v2.9.0 v2.10.0 v2.11.0 v2.12.0"
+          suffix="${TARGET_BRANCH//./}"
+          list="support_${suffix}"
+          if [[ ! " ${!list} " =~ " ${PYTORCH_BRANCH} " ]]; then
+            echo "${TARGET_BRANCH} no need execute ${PYTORCH_BRANCH} build"
+            echo "need_build=no" >> "$ATOMGIT_OUTPUT"
+          else
+            echo "${TARGET_BRANCH} need execute ${PYTORCH_BRANCH} build"
+            echo "need_build=yes" >> "$ATOMGIT_OUTPUT"
+            echo "pytorch_build_branch=${PYTORCH_BRANCH}-${TARGET_BRANCH}" >> "$ATOMGIT_OUTPUT"
+          fi
+
+      - name: checkout pytorch
+        if: ${{ steps.check_support.outputs.need_build == 'yes' && inputs.pytorch_branch == 'master' }}
+        uses: checkout
+        with:
+          repository: https://gitcode.com/Ascend/pytorch.git
+          ref: refs/heads/master
+          path: pytorch
+          fetch-depth: 1
+      - name: install torch
+        if: ${{ steps.check_support.outputs.need_build == 'yes' && inputs.pytorch_branch == 'master' }}
+        run: |
+          ARCH="${{ inputs.runs_on_arch }}"
+          if [ "${ARCH}" = "x64" ]; then
+            TORCH_ARCH="x86_64"
+          elif [ "${ARCH}" = "arm64" ]; then
+            TORCH_ARCH="aarch64"
+          else
+            TORCH_ARCH="${ARCH}"
+          fi
+
+          torch_version=$(cat pytorch/requirements.txt | grep torch== | cut -c 8-25)
+          nightly_date=${torch_version:10:8}
+
+          if [ ${#nightly_date} -ne 8 ]; then
+            ver=${torch_version:0:6}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${ver}"
+          else
+            ver=${torch_version}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}"
+          fi
+
+          torch_url="${url_base}/torch-${ver}%2Bcpu-cp310-cp310-manylinux_2_28_${TORCH_ARCH}.whl"
+          echo "torch_url=${torch_url}"
+          pip3.10 install $torch_url
+
+      - name: checkout
+        if: ${{ steps.check_support.outputs.need_build == 'yes' }}
+        uses: checkout
+        with:
+          ref: refs/merge-requests/${{ inputs.pr_id }}/merge
+          fetch-depth: 0
+      - name: compile
+        if: ${{ steps.check_support.outputs.need_build == 'yes' }}
+        run: |
+          bash ci/build.sh --python=3.10 --pytorch=${{ steps.check_support.outputs.pytorch_build_branch }}

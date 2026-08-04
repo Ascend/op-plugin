@@ -1,0 +1,237 @@
+name: PR-pipeline_op-plugin
+
+concurrency:
+  max: 5
+  exceed-action: QUEUE
+  enable: true
+  preemption:
+    enable: true
+    events: [mr_id]
+
+on:
+  pull_request_comment:
+    types: [created]
+    branches: [ 'master', '26.1.0', '26.0.0', '7.3.0' ]
+    comments: [ 'compile' ]
+
+env:
+  repo: ${{ atomgit.event.repository.name }}
+  pr_id: ${{ atomgit.event.pull_request.number }}
+  org_name: "Ascend"
+  img_master_arm: "pytorch_master_a2_aarch64_builder:20260704"
+  img_2_7_1_arm: "pytorch_2.7.1_a2_aarch64_builder:20260704"
+  img_2_9_0_arm: "pytorch_2.9.0_a2_aarch64_builder:20260704"
+  img_2_10_0_arm: "pytorch_2.10.0_a2_aarch64_builder:20260704"
+  img_2_11_0_arm: "pytorch_2.11.0_a2_aarch64_builder:20260704"
+  img_2_12_0_arm: "pytorch_2.12.0_a2_aarch64_builder:20260704"
+  img_2_13_0_arm: "pytorch_2.13.0_a2_aarch64_builder:20260709"
+  img_master_x86: "pytorch_master_a1_x86_64_builder:20260704"
+  img_2_7_1_x86: "pytorch_2.7.1_a1_x86_64_builder:20260704"
+  img_2_9_0_x86: "pytorch_2.9.0_a1_x86_64_builder:20260704"
+  img_2_10_0_x86: "pytorch_2.10.0_a1_x86_64_builder:20260704"
+  img_2_11_0_x86: "pytorch_2.11.0_a1_x86_64_builder:20260704"
+  img_2_12_0_x86: "pytorch_2.12.0_a1_x86_64_builder:20260704"
+  img_2_13_0_x86: "pytorch_2.13.0_a1_x86_64_builder:20260709"
+
+stages:
+  stage_1:
+    name: CodeCheck
+    select: selected_by_default
+    jobs:
+      CodeCheck_pre_commit:
+        name: CodeCheck_pre_commit
+        runs-on: [ dedicate-hosted, x64, 2xlarge ]
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+        steps:
+          - name: checkout
+            uses: checkout
+            with:
+              ref: refs/merge-requests/${{ env.pr_id }}/merge
+          - name: setup-python310
+            run: |
+              PYTHON310_BIN=$(dirname "$(which python3.10)")
+              ln -sf "$(which python3.10)" "$PYTHON310_BIN/python"
+              echo "$PYTHON310_BIN" >> "$ATOMGIT_PATH"
+              python --version
+          - name: install gitleaks
+            run: |
+              cd ${ATOMGIT_WORKSPACE}
+              # TODO 将gitleaks依赖集成到镜像
+              wget --no-host-directories -c --no-check-certificate https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta-codecheck/gitleaks
+              chmod +x gitleaks
+              cd -
+          - name: pre-commit
+            uses: openlibing-pre-commit-action
+
+      Detect_file_changes:
+        name: Detect_file_changes
+        runs-on: [ dedicate-hosted, x64, 2xlarge ]
+        container:
+          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+        outputs:
+          need_build: ${{ steps.set-skip.outputs.need_build }}
+        steps:
+          - name: checkout
+            uses: checkout
+            with:
+              ref: refs/merge-requests/${{ env.pr_id }}/merge
+              fetch-depth: 0
+          - name: Only_doc_commit
+            id: filter
+            uses: paths-changes-filter
+            with:
+              event-name: 'pull_request'
+              base: ${{ atomgit.event.pull_request.base.ref }}
+              repo: ${{ atomgit.repository }}
+              number: ${{ env.pr_id }}
+              token: ${{ atomgit.ATOMGIT_TOKEN }}
+              list-files: json
+              predicate-quantifier: every
+              filters: |
+                changed:
+                  - '**'
+                non-doc:
+                  - '!**.md'
+                  - '!**.rst'
+                  - '!**.log'
+                  - '!**.png'
+                  - '!**.jpg'
+                  - '!**.doc'
+                  - '!**.eddx'
+                  - '!**.svg'
+          - name: set build skip flag
+            id: set-skip
+            run: |
+              echo "changed: ${{ steps.filter.outputs.changed_files }}"
+              echo "non-doc: ${{ steps.filter.outputs.non-doc }}"
+              if [ "${{ steps.filter.outputs.non-doc }}" = "true" ]; then
+                echo "need_build=yes" >> "$ATOMGIT_OUTPUT"
+              else
+                echo "need_build=no" >> "$ATOMGIT_OUTPUT"
+              fi
+
+  stage_2:
+    name: Build
+    select: selected_by_default
+    # TODO 后续matrix 化
+    jobs:
+      Build_master_x86:
+        name: Build_master_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "master"
+          CP_DOCKER_IMG: ${{ env.img_master_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_7_1_x86:
+        name: Build_v2_7_1_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.7.1"
+          CP_DOCKER_IMG: ${{ env.img_2_7_1_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_9_0_x86:
+        name: Build_v2_9_0_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.9.0"
+          CP_DOCKER_IMG: ${{ env.img_2_9_0_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_10_0_x86:
+        name: Build_v2_10_0_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.10.0"
+          CP_DOCKER_IMG: ${{ env.img_2_10_0_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_11_0_x86:
+        name: Build_v2_11_0_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.11.0"
+          CP_DOCKER_IMG: ${{ env.img_2_11_0_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_12_0_x86:
+        name: Build_v2_12_0_x86
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.12.0"
+          CP_DOCKER_IMG: ${{ env.img_2_12_0_x86 }}
+          runs_on_arch: "x64"
+          runs_on_spec: "2xlarge"
+
+      Build_master_ARM:
+        name: Build_master_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "master"
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_7_1_ARM:
+        name: Build_v2_7_1_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.7.1"
+          CP_DOCKER_IMG: ${{ env.img_2_7_1_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_9_0_ARM:
+        name: Build_v2_9_0_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.9.0"
+          CP_DOCKER_IMG: ${{ env.img_2_9_0_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_10_0_ARM:
+        name: Build_v2_10_0_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.10.0"
+          CP_DOCKER_IMG: ${{ env.img_2_10_0_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_11_0_ARM:
+        name: Build_v2_11_0_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.11.0"
+          CP_DOCKER_IMG: ${{ env.img_2_11_0_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
+
+      Build_v2_12_0_ARM:
+        name: Build_v2_12_0_ARM
+        if : ${{ jobs.Detect_file_changes.outputs.need_build == 'yes' }}
+        uses: .gitcode/workflows/build_job.yml
+        with:
+          pytorch_branch: "v2.12.0"
+          CP_DOCKER_IMG: ${{ env.img_2_12_0_arm }}
+          runs_on_arch: "arm64"
+          runs_on_spec: "2xlarge"
