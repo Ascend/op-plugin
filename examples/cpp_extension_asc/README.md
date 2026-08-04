@@ -8,8 +8,7 @@
 
 在开始之前，请确保您已完成以下环境的安装。
 
-1. 请参考《CANN 软件安装》，安装NPU驱动固件和CANN软件（Toolkit、ops和NNAL）。
-    <!-- (https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/900/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum)》 -->
+1. 请参考《[CANN 软件安装](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum)》，安装NPU驱动固件和CANN软件（Toolkit、ops和NNAL）。
 2. 请参考《[软件安装](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/installation_guide/installation_description.md)》完成PyTorch框架的安装。
 
 ### 适配文件结构
@@ -184,8 +183,7 @@
 
 完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
-1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《CANN Ascend C算子开发指南》。
-    <!-- 《[CANN Ascend C算子开发指南](https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)》。 -->
+1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/programug/Ascendcopdevg/docs/guide/%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/Ascend-C%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84.md)》。
 
 2. 下载示例代码。
 

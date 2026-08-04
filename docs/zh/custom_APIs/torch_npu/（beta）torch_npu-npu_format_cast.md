@@ -44,8 +44,7 @@ torch_npu.npu_format_cast(input, acl_format) -> Tensor
     |torch_npu.Format.NCL|47|3维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NCL。|
     
     > [!NOTE]  
-    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“数据排布格式”章节。
-    <!-- “<a href="https://www.hiascend.com/document/detail/zh/canncommercial/900/programug/Ascendcopdevg/atlas_ascendc_10_0099.html">数据排布格式</a>” -->
+    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/programug/Ascendcopdevg/docs/guide/%E6%8A%80%E6%9C%AF%E9%99%84%E5%BD%95/%E6%A6%82%E5%BF%B5%E5%8E%9F%E7%90%86%E5%92%8C%E6%9C%AF%E8%AF%AD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%92%8C%E7%AE%97%E5%AD%90/%E6%95%B0%E6%8D%AE%E6%8E%92%E5%B8%83%E6%A0%BC%E5%BC%8F.md">数据排布格式</a>”章节。
 
 ## 约束说明
 
