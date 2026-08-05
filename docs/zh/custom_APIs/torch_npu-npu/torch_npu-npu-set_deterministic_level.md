@@ -42,13 +42,13 @@ torch_npu.npu.set_deterministic_level(level)
 
 ## 约束说明
 
-- 该功能当前仅影响`torch.mm`计算结果。
+- 当`level`取值为2时，该功能当前仅影响`torch.mm`计算结果。
 
 - 该接口支持动态修改，后续新下发算子按新的确定性等级生效。
 
 - 调用该接口时，会根据所配置的`torch.use_deterministic_algorithms`的bool值，推导出应该下发的确定性等级。
 
-- `torch.use_deterministic_algorithms(False)`会使`level`配置为0；若`torch_npu.npu.set_deterministic_level(0)`但`torch.use_deterministic_algorithms(True)`，则`level`配置为1。
+- 该接口不支持多线程配置。
 
 - 8.5.0及以上的CANN版本支持配置`level`为0/1/2，仅9.2.0及以上的CANN版本支持配置`level`为3。
 
