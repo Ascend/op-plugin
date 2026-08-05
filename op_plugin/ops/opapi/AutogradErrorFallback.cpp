@@ -7,11 +7,11 @@
 // "derivative for 'npu::xxx' is not implemented" 异常。
 // 该 fallback 是 boxed 内核，对任意算子 schema 通用，无需匹配各自签名。
 TORCH_LIBRARY_IMPL(npu, AutogradPrivateUse1, m) {
-    m.impl("npu_add_rms_norm", torch::autograd::autogradNotImplementedFallback());
-    m.impl("npu_interleave_rope", torch::autograd::autogradNotImplementedFallback());
-    m.impl("npu_moe_gating_top_k_softmax", torch::autograd::autogradNotImplementedFallback());
-    // npu_apply_rotary_pos_emb 仅在 v2.7+ 暴露，低版本未注册该算子，需加版本保护。
+  m.impl("npu_add_rms_norm", torch::autograd::autogradNotImplementedFallback());
+  m.impl("npu_interleave_rope", torch::autograd::autogradNotImplementedFallback());
+  m.impl("npu_moe_gating_top_k_softmax", torch::autograd::autogradNotImplementedFallback());
+  // npu_apply_rotary_pos_emb 仅在 v2.7+ 暴露，低版本未注册该算子，需加版本保护。
 #if VERSION_BETWEEN(V2R7, VERSION_NEWEST)
-    m.impl("npu_apply_rotary_pos_emb", torch::autograd::autogradNotImplementedFallback());
+  m.impl("npu_apply_rotary_pos_emb", torch::autograd::autogradNotImplementedFallback());
 #endif
 }

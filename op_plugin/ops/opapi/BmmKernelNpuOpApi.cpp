@@ -21,26 +21,32 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-static bool is_normal_broadcast_expanded(const at::Tensor &t) {
-    return t.stride(0) == 0 && t.size(0) != 0;
+static bool is_normal_broadcast_expanded(const at::Tensor& t) {
+  return t.stride(0) == 0 && t.size(0) != 0;
 }
 
-static at::Tensor restore_broadcast_tensor(const at::Tensor &t) {
-    // Restore a broadcast-expanded [B, M, K] (stride(0)==0) back to [1, M, K].
-    // stride(0) is set to size(1)*size(2) so that CANN recognizes standard
-    // transpose patterns (e.g. strides [M*K, 1, K]) and handles them natively
-    // via a flag instead of inserting an extra Transpose op.
-    ASCEND_LOGI("[bmm_compatible] restore_broadcast_tensor: "
-                "[%ld,%ld,%ld](stride(0)=0) -> [1,%ld,%ld](stride(0)=%ld) (avoid extra Broadcast)",
-        t.size(0), t.size(1), t.size(2), t.size(1), t.size(2), t.size(1) * t.size(2));
-    auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
-    auto strides = std::array<int64_t, 3>{t.size(1) * t.size(2), t.stride(1), t.stride(2)};
-    return t.as_strided(sizes, strides);
+static at::Tensor restore_broadcast_tensor(const at::Tensor& t) {
+  // Restore a broadcast-expanded [B, M, K] (stride(0)==0) back to [1, M, K].
+  // stride(0) is set to size(1)*size(2) so that CANN recognizes standard
+  // transpose patterns (e.g. strides [M*K, 1, K]) and handles them natively
+  // via a flag instead of inserting an extra Transpose op.
+  ASCEND_LOGI(
+      "[bmm_compatible] restore_broadcast_tensor: "
+      "[%ld,%ld,%ld](stride(0)=0) -> [1,%ld,%ld](stride(0)=%ld) (avoid extra Broadcast)",
+      t.size(0),
+      t.size(1),
+      t.size(2),
+      t.size(1),
+      t.size(2),
+      t.size(1) * t.size(2));
+  auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
+  auto strides = std::array<int64_t, 3>{t.size(1) * t.size(2), t.stride(1), t.stride(2)};
+  return t.as_strided(sizes, strides);
 }
 
 static bool is_compatible_impl_enabled() {
-    static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
-    return compatible_env != nullptr && std::string(compatible_env) == "1";
+  static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
+  return compatible_env != nullptr && std::string(compatible_env) == "1";
 }
 
 // When size(0)==1, stride(0) is semantically irrelevant (batch index is always 0).
@@ -49,42 +55,46 @@ static bool is_compatible_impl_enabled() {
 // tensor), which prevents CANN's aclnnBatchMatMul from recognizing the transpose
 // layout via a flag and forces a redundant physical Transpose op.
 // Here we reset stride(0) to size(1)*size(2) so CANN can handle the layout natively.
-static at::Tensor normalize_batch1_stride(const at::Tensor &t) {
-    if (t.dim() != 3 || t.size(0) != 1) {
-        return t;
-    }
-    int64_t expected = t.size(1) * t.size(2);
-    if (t.stride(0) == expected) {
-        return t;
-    }
-    ASCEND_LOGI("[bmm_compatible] normalize_batch1_stride: "
-                "[1,%ld,%ld] stride(0) %ld -> %ld (avoid extra Transpose)",
-        t.size(1), t.size(2), t.stride(0), expected);
-    auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
-    auto strides = std::array<int64_t, 3>{expected, t.stride(1), t.stride(2)};
-    auto ret = t.as_strided(sizes, strides);
-    return ret;
+static at::Tensor normalize_batch1_stride(const at::Tensor& t) {
+  if (t.dim() != 3 || t.size(0) != 1) {
+    return t;
+  }
+  int64_t expected = t.size(1) * t.size(2);
+  if (t.stride(0) == expected) {
+    return t;
+  }
+  ASCEND_LOGI(
+      "[bmm_compatible] normalize_batch1_stride: "
+      "[1,%ld,%ld] stride(0) %ld -> %ld (avoid extra Transpose)",
+      t.size(1),
+      t.size(2),
+      t.stride(0),
+      expected);
+  auto sizes = std::array<int64_t, 3>{1, t.size(1), t.size(2)};
+  auto strides = std::array<int64_t, 3>{expected, t.stride(1), t.stride(2)};
+  auto ret = t.as_strided(sizes, strides);
+  return ret;
 }
 
 // A dim-1 slice (e.g. t[:, start:end, :]) of a 3D tensor leaves stride(0) untouched
 // while shape(1) shrinks, breaking the contiguity between dim 0 and dim 1:
 //   stride(0) == orig_M * K  !=  M' * K  == stride(1) * shape(1)
 // Stride-based slices (t[:, ::step, :]) scale stride(1) so the product still matches.
-static bool is_dim1_slice_non_contiguous(const at::Tensor &t) {
-    if (t.dim() != 3)
-        return false;
-    if (t.stride(0) == 0)
-        return false; // broadcast-expanded
-    if (t.stride(2) != 1)
-        return false;
-    if (t.stride(1) != t.size(2))
-        return false;
-    if (t.stride(0) == t.stride(1) * t.size(1))
-        return false;
-    // CANN aclnnMatMul optimization requires shape(1) to be a divisor of 16.
-    if (t.size(1) <= 1 || 16 % t.size(1) != 0)
-        return false;
-    return true;
+static bool is_dim1_slice_non_contiguous(const at::Tensor& t) {
+  if (t.dim() != 3)
+    return false;
+  if (t.stride(0) == 0)
+    return false; // broadcast-expanded
+  if (t.stride(2) != 1)
+    return false;
+  if (t.stride(1) != t.size(2))
+    return false;
+  if (t.stride(0) == t.stride(1) * t.size(1))
+    return false;
+  // CANN aclnnMatMul optimization requires shape(1) to be a divisor of 16.
+  if (t.size(1) <= 1 || 16 % t.size(1) != 0)
+    return false;
+  return true;
 }
 
 // TODO: Remove this preprocess when CANN aclnnBatchMatMul supports non-contiguous input.
@@ -98,160 +108,177 @@ static bool is_dim1_slice_non_contiguous(const at::Tensor &t) {
 // When a broadcast-expanded tensor also has a non-contiguous matrix layout (e.g. transposed),
 // aclnnBatchMatMul would additionally insert an extra Transpose op; restoring to batch=1
 // lets it handle the transpose natively via a flag.
-static std::pair<at::Tensor, at::Tensor> maybe_restore_broadcast(const at::Tensor &self, const at::Tensor &mat2) {
-    if (!is_compatible_impl_enabled()) {
-        return {self, mat2};
-    }
-    bool both_broadcast = is_normal_broadcast_expanded(self) && is_normal_broadcast_expanded(mat2);
-    if (both_broadcast) {
-        return {self, mat2};
-    }
-    at::Tensor self_in = is_normal_broadcast_expanded(self) ? restore_broadcast_tensor(self) : self;
-    at::Tensor mat2_in = is_normal_broadcast_expanded(mat2) ? restore_broadcast_tensor(mat2) : mat2;
-    // For batch=1 tensors whose stride(0) was mangled by _matmul_impl's reshape,
-    // normalize stride(0) so CANN recognizes the layout without a Transpose op.
-    self_in = normalize_batch1_stride(self_in);
-    mat2_in = normalize_batch1_stride(mat2_in);
-    return {self_in, mat2_in};
+static std::pair<at::Tensor, at::Tensor> maybe_restore_broadcast(const at::Tensor& self, const at::Tensor& mat2) {
+  if (!is_compatible_impl_enabled()) {
+    return {self, mat2};
+  }
+  bool both_broadcast = is_normal_broadcast_expanded(self) && is_normal_broadcast_expanded(mat2);
+  if (both_broadcast) {
+    return {self, mat2};
+  }
+  at::Tensor self_in = is_normal_broadcast_expanded(self) ? restore_broadcast_tensor(self) : self;
+  at::Tensor mat2_in = is_normal_broadcast_expanded(mat2) ? restore_broadcast_tensor(mat2) : mat2;
+  // For batch=1 tensors whose stride(0) was mangled by _matmul_impl's reshape,
+  // normalize stride(0) so CANN recognizes the layout without a Transpose op.
+  self_in = normalize_batch1_stride(self_in);
+  mat2_in = normalize_batch1_stride(mat2_in);
+  return {self_in, mat2_in};
 }
 
-at::Tensor &bmm_out(
-    const at::Tensor &self, const at::Tensor &mat2, const at::ScalarType output_dtype, at::Tensor &result) {
-    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
-    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+at::Tensor& bmm_out(
+    const at::Tensor& self,
+    const at::Tensor& mat2,
+    const at::ScalarType output_dtype,
+    at::Tensor& result) {
+  TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+  TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
-    DO_MATMUL_COMPATIBILITY(
-        aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
-    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
-    npu_preparation::check_tensor({self, mat2}, result, output_dtype, output_size);
+  DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
+  auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
+  npu_preparation::check_tensor({self, mat2}, result, output_dtype, output_size);
 
-    // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
-    // use and functions such as hfloat32 can be enabled through this switch
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
+  // use and functions such as hfloat32 can be enabled through this switch
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
 
-    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
-        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
-    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
-        is_normal_broadcast_expanded(mat2)) {
-        // aclnnMatmul internally optimizes away the dim-1 slice on self,
-        // avoiding the extra copy that aclnnBatchMatMul would require.
-        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
-                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
-            self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
-        auto mat2_input = mat2[0];
-        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
-    } else {
-        auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
-        EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
-    }
+  if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+    EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+  } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) && is_normal_broadcast_expanded(mat2)) {
+    // aclnnMatmul internally optimizes away the dim-1 slice on self,
+    // avoiding the extra copy that aclnnBatchMatMul would require.
+    ASCEND_LOGI(
+        "[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+        "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+        self.size(1),
+        self.size(2),
+        mat2.size(0),
+        mat2.size(1),
+        mat2.size(2));
+    auto mat2_input = mat2[0];
+    EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
+  } else {
+    auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
+    EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
+  }
 
-    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
-    at::namedinference::propagate_names_if_nonempty(result, outnames);
-    return result;
+  auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+  at::namedinference::propagate_names_if_nonempty(result, outnames);
+  return result;
 }
 
-at::Tensor &bmm_out(const at::Tensor &self, const at::Tensor &mat2, at::Tensor &result) {
-    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
-    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+at::Tensor& bmm_out(const at::Tensor& self, const at::Tensor& mat2, at::Tensor& result) {
+  TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+  TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
-    DO_MATMUL_COMPATIBILITY(
-        aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
-    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
-    npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
+  DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm_out(self, mat2, result));
+  auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
+  npu_preparation::check_tensor({self, mat2}, result, self.scalar_type(), output_size);
 
-    // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
-    // use and functions such as hfloat32 can be enabled through this switch
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  // cube_math_type, an enumeration value of type int8 that determines which calculation logic the CUBE unit should
+  // use and functions such as hfloat32 can be enabled through this switch
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
 
-    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
-        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
-    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
-        is_normal_broadcast_expanded(mat2)) {
-        // aclnnMatmul internally optimizes away the dim-1 slice on self,
-        // avoiding the extra copy that aclnnBatchMatMul would require.
-        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
-                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
-            self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
-        auto mat2_input = mat2[0];
-        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
-    } else {
-        auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
-        EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
-    }
+  if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+    EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+  } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) && is_normal_broadcast_expanded(mat2)) {
+    // aclnnMatmul internally optimizes away the dim-1 slice on self,
+    // avoiding the extra copy that aclnnBatchMatMul would require.
+    ASCEND_LOGI(
+        "[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+        "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+        self.size(1),
+        self.size(2),
+        mat2.size(0),
+        mat2.size(1),
+        mat2.size(2));
+    auto mat2_input = mat2[0];
+    EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
+  } else {
+    auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
+    EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
+  }
 
-    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
-    at::namedinference::propagate_names_if_nonempty(result, outnames);
-    return result;
+  auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+  at::namedinference::propagate_names_if_nonempty(result, outnames);
+  return result;
 }
 
-at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2, const at::ScalarType output_dtype) {
-    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
-    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2, const at::ScalarType output_dtype) {
+  TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+  TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
-    DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
+  DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
 
-    // calculate the output size
-    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
+  // calculate the output size
+  auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
 
-    // construct the output tensor of the NPU
-    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_dtype));
+  // construct the output tensor of the NPU
+  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options().dtype(output_dtype));
 
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
-    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
-        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
-    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
-        is_normal_broadcast_expanded(mat2)) {
-        // aclnnMatmul internally optimizes away the dim-1 slice on self,
-        // avoiding the extra copy that aclnnBatchMatMul would require.
-        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
-                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
-            self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
-        auto mat2_input = mat2[0];
-        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
-    } else {
-        auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
-        EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
-    }
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+    EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+  } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) && is_normal_broadcast_expanded(mat2)) {
+    // aclnnMatmul internally optimizes away the dim-1 slice on self,
+    // avoiding the extra copy that aclnnBatchMatMul would require.
+    ASCEND_LOGI(
+        "[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+        "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+        self.size(1),
+        self.size(2),
+        mat2.size(0),
+        mat2.size(1),
+        mat2.size(2));
+    auto mat2_input = mat2[0];
+    EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
+  } else {
+    auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
+    EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
+  }
 
-    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
-    at::namedinference::propagate_names_if_nonempty(result, outnames);
-    FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
-    return result;
+  auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+  at::namedinference::propagate_names_if_nonempty(result, outnames);
+  FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
+  return result;
 }
 
-at::Tensor bmm(const at::Tensor &self, const at::Tensor &mat2) {
-    TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
-    TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
+at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
+  TORCH_CHECK(self.dim() == 3, "self must be a 3D tensor");
+  TORCH_CHECK(mat2.dim() == 3, "mat2 must be a 3D tensor");
 
-    DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
+  DO_MATMUL_COMPATIBILITY(aclnnBatchMatMulWeightNz, aclnnBatchMatMul, self, mat2, acl_op::bmm(self, mat2));
 
-    // calculate the output size
-    auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
+  // calculate the output size
+  auto output_size = {std::max(self.size(0), mat2.size(0)), self.size(1), mat2.size(2)};
 
-    // construct the output tensor of the NPU
-    at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+  // construct the output tensor of the NPU
+  at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, self.options());
 
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
-    if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
-        EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
-    } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) &&
-        is_normal_broadcast_expanded(mat2)) {
-        // aclnnMatmul internally optimizes away the dim-1 slice on self,
-        // avoiding the extra copy that aclnnBatchMatMul would require.
-        ASCEND_LOGI("[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
-                    "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
-            self.size(1), self.size(2), mat2.size(0), mat2.size(1), mat2.size(2));
-        auto mat2_input = mat2[0];
-        EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
-    } else {
-        auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
-        EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
-    }
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  if (op_plugin::utils::is_nz_format(mat2) && !op_plugin::utils::is_nz_format(self)) {
+    EXEC_NPU_CMD(aclnnBatchMatMulWeightNz, self, mat2, result, cube_math_type);
+  } else if (is_compatible_impl_enabled() && is_dim1_slice_non_contiguous(self) && is_normal_broadcast_expanded(mat2)) {
+    // aclnnMatmul internally optimizes away the dim-1 slice on self,
+    // avoiding the extra copy that aclnnBatchMatMul would require.
+    ASCEND_LOGI(
+        "[bmm_compatible] use aclnnMatmul for dim-1 slice self [1,%ld,%ld] "
+        "+ broadcast mat2 [%ld,%ld,%ld] (avoid extra copy)",
+        self.size(1),
+        self.size(2),
+        mat2.size(0),
+        mat2.size(1),
+        mat2.size(2));
+    auto mat2_input = mat2[0];
+    EXEC_NPU_CMD(aclnnMatmul, self, mat2_input, result, cube_math_type);
+  } else {
+    auto [self_input, mat2_input] = maybe_restore_broadcast(self, mat2);
+    EXEC_NPU_CMD(aclnnBatchMatMul, self_input, mat2_input, result, cube_math_type);
+  }
 
-    auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
-    at::namedinference::propagate_names_if_nonempty(result, outnames);
-    FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
-    return result;
+  auto outnames = at::namedinference::compute_bmm_outnames(result, self, mat2);
+  at::namedinference::propagate_names_if_nonempty(result, outnames);
+  FLOP_COUNT(FlopCounter::bmm_flop, self, mat2);
+  return result;
 }
 
-}
+} // namespace op_api

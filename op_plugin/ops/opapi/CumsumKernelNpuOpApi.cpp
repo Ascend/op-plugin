@@ -20,52 +20,52 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &cumsum_out(const at::Tensor &self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor &out) {
-    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
-    npu_preparation::check_tensor({self}, out, self.sizes());
+at::Tensor& cumsum_out(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
+  npu_preparation::check_tensor({self}, out, self.sizes());
 
-    aclDataType dtype_new = ACL_DT_UNDEFINED;
-    if (!dtype.has_value()) {
-        dtype_new = npu_preparation::convert_to_acl_data_type(out.scalar_type());
-    } else {
-        dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
-    }
+  aclDataType dtype_new = ACL_DT_UNDEFINED;
+  if (!dtype.has_value()) {
+    dtype_new = npu_preparation::convert_to_acl_data_type(out.scalar_type());
+  } else {
+    dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
+  }
 
-    if (self.is_same(out)) {
-        auto tmp = npu_preparation::apply_tensor_without_format(self);
-        EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, tmp);
-        out.copy_(tmp);
-    } else {
-        EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, out);
-    }
-    at::namedinference::propagate_names(out, self);
-    return out;
+  if (self.is_same(out)) {
+    auto tmp = npu_preparation::apply_tensor_without_format(self);
+    EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, tmp);
+    out.copy_(tmp);
+  } else {
+    EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, out);
+  }
+  at::namedinference::propagate_names(out, self);
+  return out;
 }
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor &cumsum_out(const at::Tensor &self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor &out) {
-    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
-    return op_api::cumsum_out(self, dimname_to_position(self, dim), dtype, out);
+at::Tensor& cumsum_out(const at::Tensor& self, at::Dimname dim, c10::optional<at::ScalarType> dtype, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum_out(self, dim, dtype, out));
+  return op_api::cumsum_out(self, dimname_to_position(self, dim), dtype, out);
 }
 #endif
 
-at::Tensor cumsum(const at::Tensor &self, int64_t dim, c10::optional<at::ScalarType> dtype) {
-    DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum(self, dim, dtype));
+at::Tensor cumsum(const at::Tensor& self, int64_t dim, c10::optional<at::ScalarType> dtype) {
+  DO_COMPATIBILITY(aclnnCumsum, acl_op::cumsum(self, dim, dtype));
 
-    at::Tensor result;
-    aclDataType dtype_new = ACL_DT_UNDEFINED;
-    if (dtype.has_value()) {
-        result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(dtype.value()));
-        dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
-    } else {
-        result = at::isFloatingType(self.scalar_type()) || at::isComplexType(self.scalar_type())
-            ? npu_preparation::apply_tensor_without_format(self)
-            : npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
-        dtype_new = npu_preparation::convert_to_acl_data_type(result.scalar_type());
-    }
+  at::Tensor result;
+  aclDataType dtype_new = ACL_DT_UNDEFINED;
+  if (dtype.has_value()) {
+    result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(dtype.value()));
+    dtype_new = npu_preparation::convert_to_acl_data_type(dtype.value());
+  } else {
+    result = at::isFloatingType(self.scalar_type()) || at::isComplexType(self.scalar_type())
+        ? npu_preparation::apply_tensor_without_format(self)
+        : npu_preparation::apply_tensor_without_format(self.sizes(), self.options().dtype(at::kLong));
+    dtype_new = npu_preparation::convert_to_acl_data_type(result.scalar_type());
+  }
 
-    EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, result);
-    at::namedinference::propagate_names(result, self);
-    return result;
+  EXEC_NPU_CMD(aclnnCumsum, self, dim, dtype_new, result);
+  at::namedinference::propagate_names(result, self);
+  return result;
 }
 } // namespace op_api

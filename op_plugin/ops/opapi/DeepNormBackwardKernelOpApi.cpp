@@ -20,18 +20,23 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deep_norm_backward(const at::Tensor &dy,
-    const at::Tensor &x, const at::Tensor &gx, const at::Tensor &gamma, const at::Tensor &mean, const at::Tensor &rstd,
+std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_deep_norm_backward(
+    const at::Tensor& dy,
+    const at::Tensor& x,
+    const at::Tensor& gx,
+    const at::Tensor& gamma,
+    const at::Tensor& mean,
+    const at::Tensor& rstd,
     double alpha) {
-    DO_COMPATIBILITY(aclnnDeepNormGrad, acl_op::npu_deep_norm_backward(dy, x, gx, gamma, mean, rstd, alpha));
+  DO_COMPATIBILITY(aclnnDeepNormGrad, acl_op::npu_deep_norm_backward(dy, x, gx, gamma, mean, rstd, alpha));
 
-    at::Tensor dx = npu_preparation::apply_tensor(x);
-    at::Tensor dgx = npu_preparation::apply_tensor(gx);
-    at::Tensor dbeta = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
-    at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
+  at::Tensor dx = npu_preparation::apply_tensor(x);
+  at::Tensor dgx = npu_preparation::apply_tensor(gx);
+  at::Tensor dbeta = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
+  at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
 
-    EXEC_NPU_CMD(aclnnDeepNormGrad, dy, x, gx, gamma, mean, rstd, alpha, dx, dgx, dbeta, dgamma);
-    return std::make_tuple(dx, dgx, dbeta, dgamma);
+  EXEC_NPU_CMD(aclnnDeepNormGrad, dy, x, gx, gamma, mean, rstd, alpha, dx, dgx, dbeta, dgamma);
+  return std::make_tuple(dx, dgx, dbeta, dgamma);
 }
 
-}
+} // namespace op_api
