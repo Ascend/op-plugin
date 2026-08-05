@@ -16,7 +16,7 @@
 
 - API功能：计算softmax的交叉熵损失。
 
-- 计算公式:
+- 计算公式：
 
 $$
      loss = -\sum_{i=1}^{N}y_i * log(softmax(x_i))

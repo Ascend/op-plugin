@@ -27,12 +27,12 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
 
 - **x1**（`Tensor`）：必选参数，表示矩阵乘的第一个矩阵。数据格式支持ND。仅支持3维输入，shape要求为（m, b, k）。数据类型支持`float8_e5m2`、`float8_e4m3fn`、`hifloat8`。
 - **x2**（`Tensor`）：必选参数，表示矩阵乘的第二个矩阵。数据格式支持ND和NZ。仅支持3维输入，shape要求为（b, k, n）或（b, n, k）。`x2`的k维度需要与`x1`的k维度大小相等。数据类型支持`float8_e5m2`、`float8_e4m3fn`、`hifloat8`。
-- **dtype**（`int`）： 必选参数，表示output的数据类型，支持传值`torch.float16`、`torch.bfloat16`和`torch_npu.hifloat8`。
+- **dtype**（`int`）：必选参数，表示output的数据类型，支持传值`torch.float16`、`torch.bfloat16`和`torch_npu.hifloat8`。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **bias**（`Tensor`）：可选参数，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
 - **x1\_scale**（`Tensor`）：可选参数，表示左矩阵的量化系数。数据格式支持ND。数据类型支持`float32`、`float8_e8m0fnu`和`int64`。shape支持1维或4维。
 - **x2\_scale**（`Tensor`）：可选参数，表示右矩阵的量化系数。数据格式支持ND。数据类型支持`float32`、`float8_e8m0fnu`和`int64`。shape支持1维或4维。
-- **group\_sizes**（List\[int\]）： 可选参数，表示量化分组大小，数据类型为`int32`。默认值为None。
+- **group\_sizes**（List\[int\]）：可选参数，表示量化分组大小，数据类型为`int32`。默认值为None。
   - 仅支持三维列表，形如\[group\_m, group\_n, group\_k\]，其分别表示在m、n、k维度上的量化分组情况。以group\_m为例，其表示在m维度上每group\_m个数对应一个量化参数。
   - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与`x1` shape中的m一致，scale_m与`x1_scale` shape中的m一致。
   - 仅在mx量化模式需要传入，目前\[group\_m, group\_n, group\_k\]仅支持\[0,0,32\]、\[0,1,32\]、\[1,0,32\]、\[1,1,32\]。
@@ -41,8 +41,8 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
 - **perm\_x2**（List\[int\]）：可选参数，表示矩阵乘第二个矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND。支持\[0, 1, 2\]或\[0, 2, 1\]。
 - **perm\_y**（List\[int\]）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`int64`，数据格式支持ND，只支持\[1, 0, 2\]。
 - **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中b维的切分大小。数据类型为`int32`。默认值为1，当前仅支持配置为1。
-- **x1_dtype**（`int`）： 可选参数，表示x1的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
-- **x2_dtype**（`int`）： 可选参数，表示x2的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
+- **x1_dtype**（`int`）：可选参数，表示x1的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
+- **x2_dtype**（`int`）：可选参数，表示x2的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
 
 ## 返回值说明
 

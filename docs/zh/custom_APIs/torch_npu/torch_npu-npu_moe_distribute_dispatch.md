@@ -100,7 +100,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
     - H：表示hidden size隐藏层大小。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围\(0,7168\]，且保证是32的整数倍。
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持 7168。
+        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持7168。
 
     - BS：表示待发送的token数量。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围为0<BS≤256。

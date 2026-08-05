@@ -309,7 +309,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item, group_type=-1)
         ```
 
-    - x为int4输入, weight的数据类型为int4数据排布格式为NZ，调用示例如下：
+    - x为int4输入，weight的数据类型为int4数据排布格式为NZ，调用示例如下：
 
         ```python
         import numpy as np

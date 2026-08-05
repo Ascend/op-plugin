@@ -75,7 +75,7 @@ torch_npu.npu_fused_infer_attention_score(
 | B | Batch Size | ≤ 65536 | ≤ 65536 | — |
 | N (Q_N) | query head数 | ≤ 256 | ≤ 256 | — |
 | N (KV_N) | key/value head数 | ≤ 256 | ≤ 256 | — |
-| D | Head Dim | ≤ 512 | ≤ 512 | `float16`/`bfloat16`: 16字节对齐; `int8`: 32字节对齐; `int4`: 64字节对齐 |
+| D | Head Dim | ≤ 512 | ≤ 512 | `float16`/`bfloat16`： 16字节对齐、 `int8`： 32字节对齐、 `int4`： 64字节对齐 |
 | S (Q_S) | query序列长度 | ≤ 20971520 (20M) | = 1 | — |
 | S (KV_S) | key/value序列长度 | ≤ 20971520 (20M) | ≤ 262144 | — |
 
@@ -489,7 +489,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - `input_layout="BNSD"`：表示输入为(B,N,S,D)。
 >
-> -此场景命中Q_S > 1，走PromptFlashAttention分支。
+> - 此场景命中Q_S > 1，走PromptFlashAttention分支。
 
 ### 示例2：GQA + Decode + PageAttention
 

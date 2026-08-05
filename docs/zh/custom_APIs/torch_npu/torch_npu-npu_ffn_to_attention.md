@@ -50,7 +50,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - K：表示选取topK个专家，取值范围为0 < `K` ≤ 16。
 
-    - ffnRankNum：表示选取ffnRankNum个卡作为FFNWorker,取值范围为0 < `ffnRankNum` < `world_size`。
+    - ffnRankNum：表示选取ffnRankNum个卡作为FFNWorker，取值范围为0 < `ffnRankNum` < `world_size`。
 
     - attnRankNum：表示选取attnRankNum个卡作为AttnWorker，取值范围为0 < `attnRankNum` < `world_size`。
 

@@ -71,7 +71,7 @@
         }
 
         // 为NPU设备注册前反向实现
-        // NPU设备在pytorch 2.1及以上版本使用的设备名称是PrivateUse1，在2.1以下版本用的是XLA，如果是2.1以下版本PrivateUse1需要改成XLA
+        // NPU设备在PyTorch 2.1及以上版本使用的设备名称是PrivateUse1，在2.1以下版本用的是XLA，如果是2.1以下版本PrivateUse1需要改成XLA
         TORCH_LIBRARY_IMPL(cpp_extension_full, PrivateUse1, m) {
             m.impl("add_custom", &add_custom_impl_npu);
             m.impl("add_custom_backward", &add_custom_backward_impl_npu);

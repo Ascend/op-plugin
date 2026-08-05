@@ -41,7 +41,7 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 - 该接口仅在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上支持图模式。
 - 对于输入数据的shape，存在以下约束：
     - 当前在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]；在Ascend 950PR/Ascend 950DT平台上，`rotation`的shape支持`[K, K]`和`[block_num, K, K]`两种形式，`K`仅支持32、64、128三种取值, 其中`block_num = N/K`，`N`为输入`x`最后一维的大小。
-    - 输入`x`的最后一维需要能被`K`整除。在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR/Ascend 950DT平台上，`x`的shape支持1~7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
+    - 输入`x`的最后一维需要能被`K`整除。在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR/Ascend 950DT平台上，`x`的shape支持1～7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
 - 对于输入数据的取值范围，存在以下约束：   
     - `dst_dtype`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持`torch.int8`和`torch.quint4x2`；在Ascend 950PR/Ascend 950DT平台上仅支持`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`和`torch.float8_e4m3fn`。
     - `alpha`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持传入None，无实际功能；在Ascend 950PR/Ascend 950DT平台上取值范围为(0.0, 1.0)，传入None或不在有效取值范围内时不做处理。

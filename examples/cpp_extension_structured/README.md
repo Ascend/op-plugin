@@ -35,7 +35,7 @@ cpp_extension_structured/
 >
 > 结构化适配暂未支持前反向绑定，用户可参考[cpp_extension_full/module](../cpp_extension_full/module/README.md)章节通过Python绑定。
 
-1. 算子适配层c++代码目录（csrc）中，通过`npu_custom.yaml`文件完成结构化适配的配置。
+1. 算子适配层C++代码目录（csrc）中，通过`npu_custom.yaml`文件完成结构化适配的配置。
 
     - `func`：PyTorch侧暴露的算子签名（ATen IR格式）。
 

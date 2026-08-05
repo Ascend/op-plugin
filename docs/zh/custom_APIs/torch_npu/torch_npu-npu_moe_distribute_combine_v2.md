@@ -212,7 +212,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：应满足0 < local\_expert\_num * ep\_world\_size ≤ 2048。
 
-- HCCL通信域缓存区大小:
+- HCCL通信域缓存区大小：
 
     调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
