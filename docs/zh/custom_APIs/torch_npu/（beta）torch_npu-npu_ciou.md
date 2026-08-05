@@ -40,8 +40,8 @@ CIoU计算结果。
 
 ## 约束说明
 
-Ascend 950DT：`boxes1`或`boxes2`的第二维度只支持1024的倍数，`is_cross`只支持False，且暂不支持反向计算。
-Atlas A3 训练系列产品、Atlas A2 训练系列产品、Atlas 推理系列产品、Atlas 训练系列产品：到目前为止，CIoU反向计算只支持trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+- Ascend 950DT：`boxes1`或`boxes2`的第二维度只支持1024的倍数，`is_cross`只支持False，且暂不支持反向计算。
+- Atlas A3 训练系列产品、Atlas A2 训练系列产品、Atlas 推理系列产品、Atlas 训练系列产品：到目前为止，CIoU反向计算只支持trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
 
 ## 调用示例
 

@@ -184,7 +184,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 - moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32。
 - 参数里Shape使用的变量如下：
-    - A：表示本卡接收的最大token数量，取值范围如下
+    - A：表示本卡接收的最大token数量，取值范围如下：
         - 对于共享专家，要满足A=BS\*ep\_world\_size*shared\_expert\_num/shared\_expert\_rank\_num。
         - 对于MoE专家，当global\_bs为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当global\_bs不为0时，要满足A\>=global\_bs\* min\(local\_expert\_num, K\)。
 

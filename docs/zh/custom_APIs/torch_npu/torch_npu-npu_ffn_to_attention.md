@@ -40,7 +40,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - BS：表示各Attention节点上的发送token数，取值范围为0 < `BS` ≤ 512。
 
-    - H：表示hidden size隐藏层大小，取值范围为1152 ≤ `H` ≤ 8320
+    - H：表示hidden size隐藏层大小，取值范围为1152 ≤ `H` ≤ 8320。
 
     - HS：表示hidden与scale 隐藏层大小，取值范围为1024 ≤ `HS` ≤ 8192。
 
@@ -50,7 +50,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - K：表示选取topK个专家，取值范围为0 < `K` ≤ 16。
 
-    - ffnRankNum：表示选取ffnRankNum个卡作为FFNWorker,取值范围为0 < `ffnRankNum` < `world_size`
+    - ffnRankNum：表示选取ffnRankNum个卡作为FFNWorker,取值范围为0 < `ffnRankNum` < `world_size`。
 
     - attnRankNum：表示选取attnRankNum个卡作为AttnWorker，取值范围为0 < `attnRankNum` < `world_size`。
 
