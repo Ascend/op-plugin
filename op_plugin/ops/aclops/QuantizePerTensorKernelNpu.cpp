@@ -25,60 +25,48 @@ at::Tensor& _quantize_per_tensor_impl_out(
     const at::Tensor& scales,
     const at::Tensor& zero_points,
     at::ScalarType dtype,
-    at::Tensor& result)
-{
-    string dtype_str = "torch.qint8";
-    if (dtype == at::ScalarType::QUInt8) {
-        dtype_str = "torch.quint8";
-    } else if (dtype == at::ScalarType::QInt32) {
-        dtype_str = "torch.qint32";
-    }
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Quantize")
-       .Input(self)
-       .Input(scales)
-       .Input(zero_points)
-       .Output(result)
-       .Attr("axis", static_cast<int64_t>(1))
-       .Attr("dtype", dtype_str)
-       .Run();
+    at::Tensor& result) {
+  string dtype_str = "torch.qint8";
+  if (dtype == at::ScalarType::QUInt8) {
+    dtype_str = "torch.quint8";
+  } else if (dtype == at::ScalarType::QInt32) {
+    dtype_str = "torch.qint32";
+  }
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Quantize")
+      .Input(self)
+      .Input(scales)
+      .Input(zero_points)
+      .Output(result)
+      .Attr("axis", static_cast<int64_t>(1))
+      .Attr("dtype", dtype_str)
+      .Run();
 
-    return result;
+  return result;
 }
 
-at::Tensor quantize_per_tensor(
-    const at::Tensor& self,
-    double scale,
-    int64_t zero_point,
-    at::ScalarType dtype)
-{
-    float scale_float = static_cast<float>(scale);
-    auto output_size = op_infer::input_same_output_size(self);
-    auto output_dtype = at::kInt;
-    if (dtype == at::ScalarType::QInt8) {
-        output_dtype = at::kChar;
-    } else if (dtype == at::ScalarType::QUInt8) {
-        output_dtype = at::kByte;
-    } else if (dtype == at::ScalarType::QInt32) {
-        output_dtype = at::kInt;
-    }
-    at::Tensor scale_tensor = npu_preparation::apply_tensor_with_format(
-        {1},
-        self.options().dtype(at::kFloat),
-        npu_preparation::get_tensor_npu_format(self));
-    scale_tensor[0] = scale_float;
-    at::Tensor zp_tensor = npu_preparation::apply_tensor_with_format(
-        {1},
-        self.options().dtype(at::kInt),
-        npu_preparation::get_tensor_npu_format(self));
-    zp_tensor[0] = zero_point;
-    at::Tensor result = npu_preparation::apply_tensor_with_format(
-        output_size,
-        self.options().dtype(output_dtype),
-        npu_preparation::get_tensor_npu_format(self));
-    acl_op::_quantize_per_tensor_impl_out(self, scale_tensor, zp_tensor, dtype, result);
+at::Tensor quantize_per_tensor(const at::Tensor& self, double scale, int64_t zero_point, at::ScalarType dtype) {
+  float scale_float = static_cast<float>(scale);
+  auto output_size = op_infer::input_same_output_size(self);
+  auto output_dtype = at::kInt;
+  if (dtype == at::ScalarType::QInt8) {
+    output_dtype = at::kChar;
+  } else if (dtype == at::ScalarType::QUInt8) {
+    output_dtype = at::kByte;
+  } else if (dtype == at::ScalarType::QInt32) {
+    output_dtype = at::kInt;
+  }
+  at::Tensor scale_tensor = npu_preparation::apply_tensor_with_format(
+      {1}, self.options().dtype(at::kFloat), npu_preparation::get_tensor_npu_format(self));
+  scale_tensor[0] = scale_float;
+  at::Tensor zp_tensor = npu_preparation::apply_tensor_with_format(
+      {1}, self.options().dtype(at::kInt), npu_preparation::get_tensor_npu_format(self));
+  zp_tensor[0] = zero_point;
+  at::Tensor result = npu_preparation::apply_tensor_with_format(
+      output_size, self.options().dtype(output_dtype), npu_preparation::get_tensor_npu_format(self));
+  acl_op::_quantize_per_tensor_impl_out(self, scale_tensor, zp_tensor, dtype, result);
 
-    return result;
+  return result;
 }
 } // namespace acl_op
 #endif
@@ -97,34 +85,28 @@ at::Tensor& _quantize_per_tensor_impl_out(
     const at::Tensor& scales,
     const at::Tensor& zero_points,
     at::ScalarType dtype,
-    at::Tensor& result)
-{
-    string dtype_str = "torch.qint8";
-    if (dtype == at::ScalarType::QUInt8) {
-        dtype_str = "torch.quint8";
-    } else if (dtype == at::ScalarType::QInt32) {
-        dtype_str = "torch.qint32";
-    }
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Quantize")
-       .Input(self)
-       .Input(scales)
-       .Input(zero_points)
-       .Output(result)
-       .Attr("axis", (int64_t)1)
-       .Attr("dtype", dtype_str)
-       .Run();
+    at::Tensor& result) {
+  string dtype_str = "torch.qint8";
+  if (dtype == at::ScalarType::QUInt8) {
+    dtype_str = "torch.quint8";
+  } else if (dtype == at::ScalarType::QInt32) {
+    dtype_str = "torch.qint32";
+  }
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Quantize")
+      .Input(self)
+      .Input(scales)
+      .Input(zero_points)
+      .Output(result)
+      .Attr("axis", (int64_t)1)
+      .Attr("dtype", dtype_str)
+      .Run();
 
-    return result;
+  return result;
 }
 
-at::Tensor quantize_per_tensor(
-    const at::Tensor& self,
-    double scale,
-    int64_t zero_point,
-    at::ScalarType dtype)
-{
-    return at::native::quantize_per_tensor(self, scale, zero_point, dtype);
+at::Tensor quantize_per_tensor(const at::Tensor& self, double scale, int64_t zero_point, at::ScalarType dtype) {
+  return at::native::quantize_per_tensor(self, scale, zero_point, dtype);
 }
 } // namespace acl_op
 #endif

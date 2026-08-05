@@ -25,12 +25,7 @@ namespace {
 at::Tensor& nonzero_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   c10::SmallVector<int64_t, N> output_sync_idx = {0};
   at_npu::native::OpCommand cmd;
-  cmd.Sync(output_sync_idx)
-      .Name("NonZero")
-      .Input(self)
-      .Output(result)
-      .Attr("transpose", false)
-      .Run();
+  cmd.Sync(output_sync_idx).Name("NonZero").Input(self).Output(result).Attr("transpose", false).Run();
   return result;
 }
 } // namespace
@@ -46,11 +41,7 @@ at::Tensor& nonzero_out(const at::Tensor& self, at::Tensor& result) {
   }
 
   npu_preparation::CheckOut(
-      {self},
-      result,
-      npu_preparation::get_tensor_npu_format(self),
-      at::ScalarType::Long,
-      output_size);
+      {self}, result, npu_preparation::get_tensor_npu_format(self), at::ScalarType::Long, output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);

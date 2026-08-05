@@ -24,10 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor& mish_out_npu_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Mish")
-      .Input(self)
-      .Output(result)
-      .Run();
+  cmd.Name("Mish").Input(self).Output(result).Run();
   return result;
 }
 } // namespace

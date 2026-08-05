@@ -20,10 +20,7 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor npu_normalize_batch(
-    const at::Tensor& self,
-    const at::Tensor& seq_len,
-    int64_t normalize_type) {
+at::Tensor npu_normalize_batch(const at::Tensor& self, const at::Tensor& seq_len, int64_t normalize_type) {
   TORCH_CHECK(
       seq_len.dim() == 1,
       "Non-empty 1D seq_len tensor expected but got a tensor with sizes ",

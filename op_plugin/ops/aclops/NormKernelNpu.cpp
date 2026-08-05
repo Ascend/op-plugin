@@ -86,12 +86,7 @@ at::Tensor& norm_out(
     bool keepdim,
     at::Tensor& result) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      self.scalar_type(),
-      output_size);
+  npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, self.scalar_type(), output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -111,12 +106,7 @@ at::Tensor& norm_out(
     at::ScalarType dtype,
     at::Tensor& result) {
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dim, keepdim);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      ACL_FORMAT_ND,
-      dtype,
-      output_size);
+  npu_preparation::CheckOut({self}, result, ACL_FORMAT_ND, dtype, output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
@@ -141,24 +131,15 @@ at::Tensor norm(
   return out;
 }
 
-at::Tensor norm(
-    const at::Tensor& self,
-    const c10::optional<at::Scalar>& p,
-    at::ScalarType dtype) {
+at::Tensor norm(const at::Tensor& self, const c10::optional<at::Scalar>& p, at::ScalarType dtype) {
   return acl_op::norm(self, p, {}, false, dtype);
 }
 
-at::Tensor norm(
-    const at::Tensor& self,
-    const at::Scalar& p) {
+at::Tensor norm(const at::Tensor& self, const at::Scalar& p) {
   return acl_op::norm(self, p, {}, false, self.scalar_type());
 }
 
-at::Tensor norm(
-    const at::Tensor& self,
-    const c10::optional<at::Scalar>& p,
-    at::IntArrayRef dim,
-    bool keepdim) {
+at::Tensor norm(const at::Tensor& self, const c10::optional<at::Scalar>& p, at::IntArrayRef dim, bool keepdim) {
   return acl_op::norm(self, p, dim, keepdim, self.scalar_type());
 }
 

@@ -27,10 +27,7 @@ std::tuple<at::Tensor&, at::Tensor&> log_sigmoid_forward_out_nocheck(
     at::Tensor& buffer,
     const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("LogSigmoid")
-      .Input(self)
-      .Output(output)
-      .Run();
+  cmd.Name("LogSigmoid").Input(self).Output(output).Run();
   return std::tie(output, buffer);
 }
 } // namespace

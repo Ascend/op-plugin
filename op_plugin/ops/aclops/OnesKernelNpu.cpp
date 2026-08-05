@@ -20,10 +20,9 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& out)
-{
-    out.resize_(size);
-    return acl_op::one_(out);
+at::Tensor& ones_out(at::IntArrayRef size, at::Tensor& out) {
+  out.resize_(size);
+  return acl_op::one_(out);
 }
 
 at::Tensor ones(
@@ -31,16 +30,13 @@ at::Tensor ones(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    auto device_value = c10::device_or_default(device);
-    at::TensorOptions option = c10::TensorOptions().dtype(dtype)
-        .layout(layout)
-        .device(device_value)
-        .pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
+    c10::optional<bool> pin_memory) {
+  auto device_value = c10::device_or_default(device);
+  at::TensorOptions option =
+      c10::TensorOptions().dtype(dtype).layout(layout).device(device_value).pinned_memory(pin_memory);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
-    return acl_op::one_(result);
+  return acl_op::one_(result);
 }
 
 at::Tensor ones(
@@ -49,15 +45,12 @@ at::Tensor ones(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    auto device_value = c10::device_or_default(device);
-    at::TensorOptions option = c10::TensorOptions().dtype(dtype)
-        .layout(layout)
-        .device(device_value)
-        .pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
+    c10::optional<bool> pin_memory) {
+  auto device_value = c10::device_or_default(device);
+  at::TensorOptions option =
+      c10::TensorOptions().dtype(dtype).layout(layout).device(device_value).pinned_memory(pin_memory);
+  at::Tensor result = npu_preparation::apply_tensor_with_format(size, option, ACL_FORMAT_ND);
 
-    return acl_op::one_(result);
+  return acl_op::one_(result);
 }
-}  // namespace acl_op
+} // namespace acl_op

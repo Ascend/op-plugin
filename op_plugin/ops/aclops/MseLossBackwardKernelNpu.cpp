@@ -51,10 +51,7 @@ at::Tensor& mse_loss_backward_out(
     return grad_input;
   }
 
-  npu_preparation::CheckOut(
-      {grad_output, self, target},
-      grad_input,
-      self);
+  npu_preparation::CheckOut({grad_output, self, target}, grad_input, self);
 
   string reduction_str(op_plugin::utils::get_reduction_str(reduction));
 
@@ -79,12 +76,7 @@ at::Tensor mse_loss_backward(
     grad_out.view(1);
   }
   at::Tensor grad_input = npu_preparation::apply_tensor(self);
-  acl_op::mse_loss_backward_out(
-      grad_out,
-      self,
-      target,
-      reduction,
-      grad_input);
+  acl_op::mse_loss_backward_out(grad_out, self, target, reduction, grad_input);
   return grad_input;
 }
 } // namespace acl_op

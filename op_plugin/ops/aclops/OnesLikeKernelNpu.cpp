@@ -24,13 +24,10 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor& ones_like_npu_out_nocheck(at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("OnesLike")
-      .Input(self)
-      .Output(self)
-      .Run();
+  cmd.Name("OnesLike").Input(self).Output(self).Run();
   return self;
 }
-}  // namespace
+} // namespace
 
 at::Tensor ones_like(
     const at::Tensor& self,
@@ -45,10 +42,8 @@ at::Tensor ones_like(
     return result.fill_(1);
   }
 
-  c10::TensorOptions option = c10::TensorOptions().dtype(dtype_opt)
-      .device(device_opt)
-      .layout(layout_opt)
-      .pinned_memory(pin_memory_opt);
+  c10::TensorOptions option =
+      c10::TensorOptions().dtype(dtype_opt).device(device_opt).layout(layout_opt).pinned_memory(pin_memory_opt);
   at::Tensor result = npu_preparation::apply_tensor(self, option);
 
   return acl_op::one_(result);
@@ -64,4 +59,4 @@ at::Tensor& one_(at::Tensor& self) {
   }
   return self;
 }
-}  // namespace acl_op
+} // namespace acl_op

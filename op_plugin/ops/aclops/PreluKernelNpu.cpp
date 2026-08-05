@@ -21,6 +21,6 @@ namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor _prelu_kernel(const at::Tensor& self, const at::Tensor& weight) {
-    return prelu_common_nocheck(self, weight);
+  return prelu_common_nocheck(self, weight);
 }
 } // namespace acl_op

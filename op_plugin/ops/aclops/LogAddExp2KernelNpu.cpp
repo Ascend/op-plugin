@@ -25,24 +25,20 @@ namespace {
 at::Tensor& logaddexp2_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, const at::Tensor& other) {
   at_npu::native::OpCommand cmd;
   cmd.Name("LogAddExp")
-    .Input(self)
-    .Input(other)
-    .Output(result)
-    .Attr("base", (float)2.0)
-    .Attr("scale", (float)1.0)
-    .Attr("shift", (float)0.0)
-    .Run();
+      .Input(self)
+      .Input(other)
+      .Output(result)
+      .Attr("base", (float)2.0)
+      .Attr("scale", (float)1.0)
+      .Attr("shift", (float)0.0)
+      .Run();
   return result;
 }
 } // namespace
 
 at::Tensor& logaddexp2_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
   auto output_size = op_infer::broadcast_ops_npu_output_size(self, other);
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self,
-      output_size);
+  npu_preparation::CheckOut({self}, result, self, output_size);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);

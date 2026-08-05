@@ -24,10 +24,7 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 at::Tensor& logical_not_out_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("LogicalNot")
-      .Input(self)
-      .Output(result)
-      .Run();
+  cmd.Name("LogicalNot").Input(self).Output(result).Run();
   return result;
 }
 } // namespace
@@ -35,12 +32,7 @@ at::Tensor& logical_not_out_nocheck(at::Tensor& result, const at::Tensor& self) 
 at::Tensor& logical_not_out(const at::Tensor& self, at::Tensor& result) {
   at::ScalarType result_dtype = result.scalar_type();
   at::ScalarType src_type = self.scalar_type();
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      npu_preparation::get_tensor_npu_format(self),
-      result_dtype,
-      self.sizes());
+  npu_preparation::CheckOut({self}, result, npu_preparation::get_tensor_npu_format(self), result_dtype, self.sizes());
 
   bool self_is_bool = src_type == at::ScalarType::Bool;
   bool result_is_bool = result_dtype == at::ScalarType::Bool;

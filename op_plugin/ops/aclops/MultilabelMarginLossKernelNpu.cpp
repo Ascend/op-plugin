@@ -57,15 +57,8 @@ std::tuple<at::Tensor&, at::Tensor&> multilabel_margin_loss_forward_out(
   if (reduction == at::Reduction::None) {
     output_size = {nframe};
   }
-  npu_preparation::CheckOut(
-      {self, target},
-      output,
-      self,
-      output_size);
-  npu_preparation::CheckOut(
-      {self, target},
-      is_target,
-      target);
+  npu_preparation::CheckOut({self, target}, output, self, output_size);
+  npu_preparation::CheckOut({self, target}, is_target, target);
 
   bool output_match = npu_utils::check_match(&output);
   bool is_target_match = npu_utils::check_match(&is_target);
@@ -102,12 +95,7 @@ std::tuple<at::Tensor, at::Tensor> multilabel_margin_loss_forward(
   auto output = npu_preparation::apply_tensor(self, output_size);
   auto is_target = npu_preparation::apply_tensor(target);
 
-  acl_op::multilabel_margin_loss_forward_out(
-      self,
-      target,
-      reduction,
-      output,
-      is_target);
+  acl_op::multilabel_margin_loss_forward_out(self, target, reduction, output, is_target);
   return std::make_tuple(output, is_target);
 }
 } // namespace acl_op

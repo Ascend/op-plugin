@@ -19,30 +19,26 @@
 
 namespace acl_op {
 
-at::Tensor& polar_out(const at::Tensor& abs, const at::Tensor& angle, at::Tensor& out)
-{
-    TORCH_WARN_ONCE(
-        "Warning: kernel [polar.out] is not supported by NPU currently. Now this kernel is running on CPU.");
-    auto abs_cpu = abs.cpu();
-    auto angle_cpu = angle.cpu();
-    auto result_cpu = out.cpu();
-    result_cpu = at::polar_out(result_cpu, abs_cpu, angle_cpu);
+at::Tensor& polar_out(const at::Tensor& abs, const at::Tensor& angle, at::Tensor& out) {
+  TORCH_WARN_ONCE("Warning: kernel [polar.out] is not supported by NPU currently. Now this kernel is running on CPU.");
+  auto abs_cpu = abs.cpu();
+  auto angle_cpu = angle.cpu();
+  auto result_cpu = out.cpu();
+  result_cpu = at::polar_out(result_cpu, abs_cpu, angle_cpu);
 
-    out.copy_(result_cpu.to(out.device()));
-    return out;
+  out.copy_(result_cpu.to(out.device()));
+  return out;
 }
 
-at::Tensor polar(const at::Tensor& abs, const at::Tensor& angle)
-{
-    TORCH_WARN_ONCE(
-        "Warning: kernel [polar] is not supported by NPU currently. Now this kernel is running on CPU.");
+at::Tensor polar(const at::Tensor& abs, const at::Tensor& angle) {
+  TORCH_WARN_ONCE("Warning: kernel [polar] is not supported by NPU currently. Now this kernel is running on CPU.");
 
-    auto abs_cpu = abs.cpu();
-    auto angle_cpu = angle.cpu();
-    at::Tensor result_cpu = at::polar(abs_cpu, angle_cpu);
+  auto abs_cpu = abs.cpu();
+  auto angle_cpu = angle.cpu();
+  at::Tensor result_cpu = at::polar(abs_cpu, angle_cpu);
 
-    at::Tensor result = result_cpu.to(abs.device());
-    return result;
+  at::Tensor result = result_cpu.to(abs.device());
+  return result;
 }
 
-} // namespace op_api
+} // namespace acl_op

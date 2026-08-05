@@ -25,52 +25,51 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_compile_type = at_npu::native::CompileType;
 
 at::Tensor one_hot(const at::Tensor& self, int64_t num_classes) {
-    auto ks = self.key_set();
-    bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
-        ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) ||
-        self.is_meta();
-    if (is_fake_or_meta) {
-        TORCH_CHECK(num_classes != -1, "FakeTensorMode does not support num_classes == -1.");
+  auto ks = self.key_set();
+  bool is_fake_or_meta = ks.has_all(c10::DispatchKeySet(c10::BackendComponent::MetaBit)) ||
+      ks.has_all(c10::DispatchKeySet(c10::DispatchKey::Python)) || self.is_meta();
+  if (is_fake_or_meta) {
+    TORCH_CHECK(num_classes != -1, "FakeTensorMode does not support num_classes == -1.");
 
 #if VERSION_BETWEEN(V2R9, VERSION_NEWEST)
-        at::DTensorAllowImplicitReplication guard;
+    at::DTensorAllowImplicitReplication guard;
 #endif
 
-        auto options = self.options().dtype(at::kLong);
-        at::Tensor index = at::arange(num_classes, options);
-        return at::eq(self.unsqueeze(-1), index).to(at::kLong);
-    }
-    at::Scalar on_value = 1;
-    at::Scalar off_value = 0;
-    int64_t axis = -1;
-    int64_t depth;
-    auto self_temp = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
+    auto options = self.options().dtype(at::kLong);
+    at::Tensor index = at::arange(num_classes, options);
+    return at::eq(self.unsqueeze(-1), index).to(at::kLong);
+  }
+  at::Scalar on_value = 1;
+  at::Scalar off_value = 0;
+  int64_t axis = -1;
+  int64_t depth;
+  auto self_temp = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kFloat);
 
-    if (self.numel() == 0) {
-        TORCH_CHECK(num_classes > 0, "Can not infer total number of classes from empty tensor."
-            + OPS_ERROR(ErrCode::PARAM));
-        depth = num_classes;
-    }
+  if (self.numel() == 0) {
+    TORCH_CHECK(
+        num_classes > 0, "Can not infer total number of classes from empty tensor." + OPS_ERROR(ErrCode::PARAM));
+    depth = num_classes;
+  }
 
-    if (num_classes == -1) {
-        depth = self_temp.max().item().toLong() + 1;
-    } else {
-        depth = num_classes;
-    }
+  if (num_classes == -1) {
+    depth = self_temp.max().item().toLong() + 1;
+  } else {
+    depth = num_classes;
+  }
 
-    auto output_size = op_infer::array_to_small_vector(self.sizes());
-    output_size.emplace_back(depth);
-    at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
-    at::Scalar depth_copy = depth;
-    at_npu::native::OpCommand cmd;
-    cmd.Name("OneHot")
-        .Input(self)
-        .Input(depth_copy, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
-        .Input(on_value, self.scalar_type())
-        .Input(off_value, self.scalar_type())
-        .Output(result)
-        .Attr("axis", axis)
-        .Run();
-    return result;
+  auto output_size = op_infer::array_to_small_vector(self.sizes());
+  output_size.emplace_back(depth);
+  at::Tensor result = npu_preparation::apply_tensor(output_size, self.options(), self);
+  at::Scalar depth_copy = depth;
+  at_npu::native::OpCommand cmd;
+  cmd.Name("OneHot")
+      .Input(self)
+      .Input(depth_copy, at::kInt, npu_compile_type::MEMORY_HOST_COMPILE_DEPENDENT)
+      .Input(on_value, self.scalar_type())
+      .Input(off_value, self.scalar_type())
+      .Output(result)
+      .Attr("axis", axis)
+      .Run();
+  return result;
 }
 } // namespace acl_op
