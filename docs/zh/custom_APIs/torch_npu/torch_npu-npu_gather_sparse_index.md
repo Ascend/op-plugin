@@ -56,7 +56,7 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 ## 返回值说明
 
 `Tensor`
-接口计算获得的结果，包含按照`index`中的下标序号提取的元素。数据类型与`input`一致，输出维度为$index.dim + input.dim - 1$。例如`input.shape = [16, 32]`, `index.shape = [2, 3]`，则输出张量 `out.shape = [2, 3, 32]`。
+接口计算获得的结果，包含按照`index`中的下标序号提取的元素。数据类型与`input`一致，输出张量的维度数为$index.dim + input.dim - 1$。例如`input.shape = [16, 32]`, `index.shape = [2, 3]`，则输出张量 `out.shape = [2, 3, 32]`。
 
 ## 约束说明
 

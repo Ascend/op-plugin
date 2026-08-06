@@ -20,7 +20,7 @@ torch_npu.profiler.ExportType
 
 ## 参数说明
 
-- **torch_npu.profiler.ExportType.Text**：可选参数，表示解析为.json和.csv格式的timeline和summary文件以及汇总所有性能数据的.db格式文件（ascend_pytorch_profiler_{Rank_ID}.db、analysis.db）。
+- **torch_npu.profiler.ExportType.Text**：可选参数，表示导出为.json和.csv格式的timeline和summary文件以及汇总所有性能数据的.db格式文件（ascend_pytorch_profiler_{Rank_ID}.db、analysis.db）。
 - **torch_npu.profiler.ExportType.Db**：可选参数，表示仅解析为一个汇总所有性能数据的.db格式文件（ascend_pytorch_profiler_{Rank_ID}.db、analysis.db），使用Ascend Insight工具展示。仅支持on_trace_ready接口导出和离线解析导出，需配套安装支持导出db格式的Toolkit软件包。
 
 设置无效值或未配置均取默认值torch_npu.profiler.ExportType.Text。

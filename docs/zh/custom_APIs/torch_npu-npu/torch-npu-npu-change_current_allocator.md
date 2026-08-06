@@ -43,7 +43,7 @@ torch_npu.npu.change_current_allocator(allocator) -> None
 # Load the allocator
 >>> new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
 # Swap the current allocator
->>> torch.npu.change_current_allocator(new_alloc)
+>>> torch_npu.npu.change_current_allocator(new_alloc)
 #This will allocate memory in the device using the new allocator
 >>> npu_tensor = torch.zeros(10, device='npu')
 ```
