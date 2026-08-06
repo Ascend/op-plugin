@@ -117,7 +117,7 @@ at::Tensor scatter_reduce(
     if (include_self && (reduce == "sum" || reduce == "add")) {
         DO_COMPATIBILITY(aclnnScatterReduce, acl_op::scatter_add(self, dim, index, src));
     }
-    DO_COMPATIBILITY(
+    DO_COMPATIBILITY_COMMON(
         aclnnScatterReduce, scatter_reduce_cpu_fallback(self, dim, index, src, reduce, include_self));
     auto result = self.clone(at::MemoryFormat::Contiguous);
     npu_preparation::CheckMemory({result, index, src}, {result});
@@ -135,7 +135,7 @@ at::Tensor& scatter_reduce_out(
     bool include_self,
     at::Tensor& out)
 {
-    DO_COMPATIBILITY(
+    DO_COMPATIBILITY_COMMON(
         aclnnScatterReduce, scatter_reduce_out_cpu_fallback(self, dim, index, src, reduce, include_self, out));
     npu_preparation::CheckMemory({self, index, src}, {out});
     int64_t reduction = get_reduce(reduce, "scatter_reduce_out()");
@@ -154,7 +154,7 @@ at::Tensor& scatter_reduce_(
     if (include_self && (reduce == "sum" || reduce == "add")) {
         DO_COMPATIBILITY(aclnnInplaceScatterReduce, acl_op::scatter_add_(self, dim, index, src));
     }
-    DO_COMPATIBILITY(
+    DO_COMPATIBILITY_COMMON(
         aclnnInplaceScatterReduce, scatter_reduce_inplace_cpu_fallback(self, dim, index, src, reduce, include_self));
     npu_preparation::CheckMemory({self, index, src}, {self});
     int64_t reduction = get_reduce(reduce, "scatter_reduce_()");

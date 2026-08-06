@@ -111,6 +111,18 @@ uint64_t calc_hash_id();
         }                                                                                                              \
     } while (0)
 
+#define DO_COMPATIBILITY_COMMON(aclnn_api, originCallExpression)                                                       \
+    do {                                                                                                               \
+        static const auto getWorkspaceSizeFuncAddr = GetOpApiFuncAddr(#aclnn_api "GetWorkspaceSize");                  \
+        static const auto opApiFuncAddr = GetOpApiFuncAddr(#aclnn_api);                                                \
+        static const auto isAclnnOnly = c10_npu::IsAclnnOnly();                                                        \
+        if (getWorkspaceSizeFuncAddr == nullptr || opApiFuncAddr == nullptr) {                                         \
+            ASCEND_LOGW("%s or %sGetWorkspaceSize not in %s, or %s not found. Will call %s", #aclnn_api, #aclnn_api,   \
+                        GetOpApiLibName(), GetOpApiLibName(), #originCallExpression);                                  \
+            return originCallExpression;                                                                               \
+        }                                                                                                              \
+    } while (0)
+
 typedef int (*InitHugeMemThreadLocal)(void *, bool);
 typedef void (*UnInitHugeMemThreadLocal)(void *, bool);
 typedef void (*ReleaseHugeMem)(void *, bool);
