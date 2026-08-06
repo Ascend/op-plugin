@@ -69,7 +69,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 输出shape为\(m // world_size, n\)。
 基础场景时数据类型和`input`保持一致。
-量化场景下，`x2_scale`为`int64`数据类型时，输出数据类型为`float16`。`x1_scale`和`x2_scale`均为`float32`时, 输出数据类型由`output_dtype`指定，默认为`bfloat16`。
+量化场景下，`x2_scale`为`int64`数据类型时，输出数据类型为`float16`。`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
 
 ## 约束说明
 

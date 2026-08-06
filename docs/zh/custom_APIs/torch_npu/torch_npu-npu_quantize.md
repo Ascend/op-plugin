@@ -62,7 +62,7 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 - **axis** (`int`)：可选参数，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
 
-    `div_mode` 为`False`时，`axis`取值范围是[-2, +∞）且指定的轴不能超过输入`input`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`input`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴。
+    `div_mode` 为`False`时，`axis`取值范围是[-2, +∞)且指定的轴不能超过输入`input`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`input`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴。
 
 - **div_mode** (`bool`)：可选参数，表示计算`scales`模式，对应公式中的`div_mode`。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
@@ -70,13 +70,13 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 `Tensor`
 
-对应公式中的`result`。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是`input`的shape最后一维的1/8，shape其他维度和`input`的shape其他维度保持一致；如果参数`dtype`不为`quint4x2`时，shape与输入`input`的shape保持一致。输出的数据格式与输入`input`的数据格式保持一致，且当数据格式为$NZ$时，数据类型仅支持INT32。支持空Tensor，支持非连续的Tensor。
+对应公式中的`result`。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是`input`的shape最后一维的1/8，shape其他维度和`input`的shape其他维度保持一致；如果参数`dtype`不为`quint4x2`时，shape与输入`input`的shape保持一致。输出的数据格式与输入`input`的数据格式保持一致，且当数据格式为$NZ$时，数据类型仅支持int32。支持空Tensor，支持非连续的Tensor。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e，k，n\), k为256倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
+- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e，k，n\)，k为256的倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。

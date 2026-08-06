@@ -25,7 +25,7 @@
   |topK-multiNomial采样|√|×|×|multiNomial|无|
   |topK-minP-multiNomial采样|√|×|√|multiNomial|无|
   |topP-qSample采样|×|√|×|qSample|无|
-  |topK-topP-qSample采样|√|√|×|qSample|VLLM框架标准完整功能|
+  |topK-topP-qSample采样|√|√|×|qSample|vLLM框架标准完整功能|
   |topK-topP-multiNomial采样|√|√|×|multiNomial|min_ps为无效值，但仍执行多项式采样|
   |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|Sglang框架标准完整功能|
 
@@ -260,7 +260,7 @@
 
   * multiNomial
 
-  * 使用多项式随机采样，根据logitsSortMasked中的概率值，执行无放回的多项式采样，对每个batch取1个样本，将采样结果作为当期batch的输出：
+  * 使用多项式随机采样，根据logitsSortMasked中的概率值，执行无放回的多项式采样，对每个batch取1个样本，将采样结果作为当前batch的输出：
 
     $$
     \text{sampleIdx}[b] = \text{multiNomial}(\text{logitsSortMasked}[b,:], \text{numSamples}=1, \text{seed}[b], \text{offset}[b])

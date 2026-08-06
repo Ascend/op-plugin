@@ -80,7 +80,7 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
     NPUGeneratorImpl设备类型获取，返回值类型DeviceType，与c10::DeviceType at::CUDAGeneratorImpl::device_type()相同。
 
-Pytorch2.5.1及以上版本，移除以下成员函数，Pytorch2.5.1之前版本以下成员函数仍旧存在：
+PyTorch2.5.1及以上版本，移除以下成员函数，PyTorch2.5.1之前版本以下成员函数仍旧存在：
 
 - **void at_npu::NPUGeneratorImpl::capture_prologue()**
 
@@ -90,7 +90,7 @@ Pytorch2.5.1及以上版本，移除以下成员函数，Pytorch2.5.1之前版�
 
     NPUGeneratorImpl结束图捕获，返回值类型uint64_t，关闭图捕获并返回预留区域大小offset_extragraph，与uint64_t at::CUDAGeneratorImpl::capture_epilogue()相同。
 
-Pytorch2.5.1及以上版本，新增以下成员函数：
+PyTorch2.5.1及以上版本，新增以下成员函数：
 
 - **void graphsafe_set_state(const c10::intrusive_ptr& state)**
 

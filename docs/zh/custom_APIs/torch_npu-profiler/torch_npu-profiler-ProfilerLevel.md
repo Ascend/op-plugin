@@ -24,7 +24,7 @@ torch_npu.profiler.ProfilerLevel
 
 - **torch_npu.profiler.ProfilerLevel.Level0**：可选参数，采集上层应用数据、底层NPU数据以及NPU上执行的算子信息。配置该参数时，仅采集部分数据，其中部分算子信息不采集，详细情况请参见《msProf》中的“<a href="https://gitcode.com/Ascend/msprof/blob/master/docs/zh/user_guide/profile_data_file_references.md#op_summary%E7%AE%97%E5%AD%90%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF">op_summary（算子详细信息）</a>”章节。
 - **torch_npu.profiler.ProfilerLevel.Level1**：可选参数，在Level0的基础上多采集CANN层AscendCL数据和NPU上执行的AI Core性能指标信息、开启aic_metrics=torch_npu.profiler.AiCMetrics.PipeUtilization以及HCCL的communication.json和communication_matrix.json文件。
-- **torch_npu.profiler.ProfilerLevel.Level2**：可选参数，在Level1的基础上多采集CANN层Runtime数据以及AI CPU（data_preprocess.csv文件）。
+- **torch_npu.profiler.ProfilerLevel.Level2**：可选参数，在Level1的基础上多采集CANN层Runtime数据以及AI CPU数据（data_preprocess.csv文件）。
 
 默认值为torch_npu.profiler.ProfilerLevel.Level0。
 

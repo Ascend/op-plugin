@@ -74,7 +74,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
 
     默认值为True。
 
-- **record_op_args** (`bool`)：可选参数，控制算子信息统计功能开关。开启后会在\{worker_name\}\_\{时间戳\}_ascend_pt_op_args目录输出采集到算子信息文件。取值为：
+- **record_op_args** (`bool`)：可选参数，控制算子信息统计功能开关。开启后会在\{worker_name\}\_\{时间戳\}_ascend_pt_op_args目录输出采集到的算子信息文件。取值为：
 
     - True：开启。
     - False：关闭。

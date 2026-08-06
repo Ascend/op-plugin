@@ -11,9 +11,9 @@
 | [torch_npu.profiler.schedule](./torch_npu-profiler-schedule.md) | 设置不同step的行为。用于构造torch_npu.profiler.profile的schedule参数。 |
 | [torch_npu.profiler.ProfilerAction](./torch_npu-profiler-ProfilerAction.md) | 用于控制Profiler行为状态，如性能数据采集、性能数据采集预热、性能数据采集并保存，属于Enum类型。                                     |
 | [torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md) | 性能数据采集扩展参数。用于构造torch_npu.profiler.profile的experimental_config参数。 |
-| [torch_npu.profiler.ExportType](./torch_npu-profiler-ExportType.md) | 设置导出的性能数据结果文件格式，作为 _ExperimentalConfig类的export_type参数。 |
-| [torch_npu.profiler.ProfilerLevel](./torch_npu-profiler-ProfilerLevel.md) | 采集等级，作为 _ExperimentalConfig类的profiler_level参数。   |
-| [torch_npu.profiler.AiCMetrics](./torch_npu-profiler-AiCMetrics.md) | AI Core的性能指标采集项，作为 _ExperimentalConfig类的aic_metrics参数。 |
+| [torch_npu.profiler.ExportType](./torch_npu-profiler-ExportType.md) | 设置导出的性能数据结果文件格式，作为_ExperimentalConfig类的export_type参数。 |
+| [torch_npu.profiler.ProfilerLevel](./torch_npu-profiler-ProfilerLevel.md) | 采集等级，作为_ExperimentalConfig类的profiler_level参数。   |
+| [torch_npu.profiler.AiCMetrics](./torch_npu-profiler-AiCMetrics.md) | AI Core的性能指标采集项，作为_ExperimentalConfig类的aic_metrics参数。 |
 | [torch_npu.profiler.supported_activities](./torch_npu-profiler-supported_activities.md) | 查询当前支持采集的activities参数的CPU、NPU事件。             |
 | [torch_npu.profiler.supported_profiler_level](./torch_npu-profiler-supported_profiler_level.md) | 查询当前支持的torch_npu.profiler.ProfilerLevel级别。         |
 | [torch_npu.profiler.supported_ai_core_metrics](./torch_npu-profiler-supported_ai_core_metrics.md) | 查询当前支持的torch_npu.profiler.AiCMetrics的AI Core性能指标采集项。 |

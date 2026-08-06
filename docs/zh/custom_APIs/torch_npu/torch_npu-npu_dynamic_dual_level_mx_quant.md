@@ -63,7 +63,7 @@ torch_npu.npu_dynamic_dual_level_mx_quant(input, *, smooth_scale=None, round_mod
 
 ## 返回值说明
 
-- **y**（`Tensor`）：表示量化结果，对应公式中的y<sub>i。</sub>数据类型支持`float4_e2m1fn_x2`，但实际返回的数据类型为uint8，且y的尾轴为输入input尾轴的一半，查看具体值需自行解包。数据格式支持ND。
+- **y**（`Tensor`）：表示量化结果，对应公式中的y<sub>i</sub>。数据类型支持`float4_e2m1fn_x2`，但实际返回的数据类型为uint8，且y的尾轴为输入input尾轴的一半，查看具体值需自行解包。数据格式支持ND。
 - **level0\_scale**（`Tensor`）：表示第一级量化的scale，对应公式中的$level0\_scale_{i}$。数据类型支持`float32`，shape在尾轴上的值为`input`尾轴的值除以512并向上取整。数据格式支持ND。
 
 - **level1\_scale**（`Tensor`）：表示第二级量化的scale，对应公式中的$level1\_scale_{i}$。数据类型支持`float8_e8m0fnu`，实际返回的数据类型为uint8，查看具体值需自行转换。shape的大小为`input`的dim+1，shape在最后两轴的值为\(\(ceil\(input.shape\[-1\] / 32\) + 2 - 1\) / 2, 2\)，并对其进行偶数pad，pad填充值为0。数据格式支持ND。

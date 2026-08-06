@@ -28,7 +28,7 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
 ## 参数说明
 
 - **x**（`Tensor`）：必选参数，待计算的张量，表示网络中mHC层的输入数据，数据类型支持`bfloat16`、`float16`，shape为\(B, S, n, D\)或\(T, n, D\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
-- **h\_res**（`Tensor`）：可选参数，默认值为`None`，mHC的hRes变换矩阵，是做完sinkhorn变换后的双随机矩阵，数据类型支持`float32`，shape为\(B, S, n, n\)或\(T, n, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。传入`None`时跳过Res Mapping，计算公式退化为$x_{l+1} = x_l + h_l^{out} \otimes H_l^{post}$。
+- **h\_res**（`Tensor`）：可选参数，默认值为`None`，mHC的hRes变换矩阵，是做完Sinkhorn变换后的双随机矩阵，数据类型支持`float32`，shape为\(B, S, n, n\)或\(T, n, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。传入`None`时跳过Res Mapping，计算公式退化为$x_{l+1} = x_l + h_l^{out} \otimes H_l^{post}$。
 - **h\_out**（`Tensor`）：必选参数，Atten/MLP层的输出，数据类型与x相同，shape为\(B, S, D\)或\(T, D\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
 - **h\_post**（`Tensor`）：必选参数，mHC的hPost变换矩阵，数据类型支持`float32`，shape为\(B, S, n\)或\(T, n\)，数据格式支持ND，支持非连续Tensor，支持空Tensor。
 

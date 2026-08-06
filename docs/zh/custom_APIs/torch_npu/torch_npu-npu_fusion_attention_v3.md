@@ -134,7 +134,7 @@ torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse
 
 - **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
 - **sync**（`bool`）：可选参数，在`gen_mask_parallel=True`时控制是否同步等待dropout mask生成完成。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
-- **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。
+- **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在`input_layout="TND"`时进行配置，仅支持传入`TND`。默认情况下，softmax的输出排布为NTD排布；传入`TND`时，softmax的输出排布为`TND`排布。
 - **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>

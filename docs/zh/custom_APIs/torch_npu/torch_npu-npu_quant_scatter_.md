@@ -20,7 +20,7 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
 ## 参数说明
 
 - **input** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，维数只能是3~8维。
-    - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品: 数据类型支持`int8`。
+    - Atlas 推理系列产品、Atlas A2 训练系列产品/Atlas 800I A2 推理产品：数据类型支持`int8`。
 - **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。

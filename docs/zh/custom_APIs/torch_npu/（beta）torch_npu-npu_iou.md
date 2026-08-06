@@ -31,7 +31,7 @@ torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor
 
 ## 约束说明
 
- Ascend 950DT：该API暂不支持反向计算。
+Ascend 950DT：该API暂不支持反向计算。
 
 ## 调用示例
 

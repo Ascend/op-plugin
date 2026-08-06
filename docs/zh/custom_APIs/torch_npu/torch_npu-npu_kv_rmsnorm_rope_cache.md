@@ -234,7 +234,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
     # 其余代码不变
 
-    # 示例5： PA_BLK_NZ
+    # 示例6： PA_BLK_NZ
     cache_mode = "PA_BLK_NZ"
     index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
     # 其余代码不变

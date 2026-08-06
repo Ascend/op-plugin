@@ -11,7 +11,7 @@
 
 - API功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
     - MoE 网络：混合专家（Mixture of Experts）网络，每层包含多个并行“专家”子网络，由路由（Routing）模块决定每个token由哪个或哪些专家处理。
-    - token：模型处理的最小数据单元，通常为词或子词经过嵌入（embedding） 后得到的特征向量。
+    - token：模型处理的最小数据单元，通常为词或子词经过嵌入（embedding）后得到的特征向量。
     - 专家（Expert）：MoE网络中的子网络。在多卡部署时，专家被切分到不同卡上，每张卡承载若干个专家。
     - AlltoAll操作：集合通信原语。每张卡将本地数据按目的卡切分后发送给所有其他卡，同时接收来自所有其他卡的数据。
 
@@ -71,7 +71,7 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 - **tokens** (`Tensor`)：必选参数，表示待重新排布的token。要求为2维，shape为\[A, H\]，数据类型支持`float16`、`bfloat16`、`int8`，数据格式为$ND$。
 - **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，二维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`int32`、`int64`，数据格式为$ND$。取值必须大于0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **per\_token\_scales：** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token同样进行重新排布。要求为1维，shape为\[A\]，数据类型支持`float32`，数据格式为$ND$。
+- **per\_token\_scales** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token同样进行重新排布。要求为1维，shape为\[A\]，数据类型支持`float32`，数据格式为$ND$。
 - **expert\_token\_num\_type** (`int`)：可选参数，表示输出`expert_token_num`的模式。0为cumsum模式，1为count模式，默认值为1。当前只支持为1。
 - **idx\_type** (`int`)：可选参数，表示输出`permute_token_idx`的索引类型。0为gather索引，1为scatter索引，默认值为0。当前只支持为0。
 

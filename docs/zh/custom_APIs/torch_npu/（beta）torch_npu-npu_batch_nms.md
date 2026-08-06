@@ -29,7 +29,7 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 - **max\_size\_per\_class** \(`int`)：必选参数，指定每个类别的最大可选的框数。
 - **max\_total\_size** \(`int`)：必选参数，指定每个batch最大可选的框数。
 - **change\_coordinate\_frame** \(`bool`)：可选参数，是否归一化输出框坐标矩阵，默认值为False。
-- **transpose\_box** \(`bool`)：可选参数，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。 False表示boxes使用(N, 4)排布。
+- **transpose\_box** \(`bool`)：可选参数，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。False表示boxes使用(N, 4)排布。
 
 ## 返回值说明
 
