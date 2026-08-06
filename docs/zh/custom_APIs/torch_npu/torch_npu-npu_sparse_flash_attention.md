@@ -61,10 +61,10 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 >- Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N和N1表示num\_query\_heads，KV\_N和N2表示num\_key\_value\_heads，T1表示query shape中的T，T2表示key shape中的输入样本序列长度的累加和。
 >
 - **query**（`Tensor`）：必选参数，对应公式中的$Q$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，其中Atlas A3 推理系列产品/Atlas A2 推理系列产品的N1支持1/2/4/8/16/32/64/128，Ascend 950PR/Ascend 950DT的N1支持1~128。
-- **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`为PA_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为Paged Attention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
+- **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`为PA_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为Paged Attention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
 
-- **value**（`Tensor`）：必选参数，不支持非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。
-    
+- **value**（`Tensor`）：必选参数，在`layout_kv`为PA_BSND时支持0轴非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。
+
 - **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，该索引通常由稀疏选择算法（如`lightning_indexer`）生成，具体生成流程见[功能说明](#功能说明)中的典型使用流程。不支持非连续，数据格式支持ND，数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
 - **scale\_value**（`double`）：必选参数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
@@ -79,7 +79,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **query\_rope**（`Tensor`）：可选参数，表示MLA结构中的query的rope信息，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`。
 
-- **key\_rope**（`Tensor`）：可选参数，表示MLA结构中的key的rope信息，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`。
+- **key\_rope**（`Tensor`）：可选参数，表示MLA结构中的key的rope信息，数据格式支持ND，数据类型支持`bfloat16`和`float16`。
 
 - **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`，取值范围为[1,128]，且为2的幂次方。
     - sparse_block_size为1时，为Token-wise稀疏化场景，将每个token视为独立单元，在计算重要性分数时，评估每个查询token与每个键值token之间的独立关联程度。
@@ -117,6 +117,15 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - 参数query、key、value的数据类型必须保持一致。
 - 支持sparse\_block\_size整除block\_size。
 - `layout_kv`为PA_BSND时，`layout_query`和`layout_kv`无需一致；`layout_kv`为BSND或TND时，`layout_query`和`layout_kv`需保持一致。
+- Ascend 950PR/Ascend 950DT：
+  - Q\_N支持1~128。
+  - sparse\_block\_size仅支持1。
+  - 仅在`layout_kv`为PA_BSND时，key、value和key_rope支持0轴非连续。
+- Atlas A3 推理系列产品/Atlas A2 推理系列产品：
+  - Q\_N支持1/2/4/8/16/32/64/128。
+  - 参数sparse\_block\_size支持[1,128]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
+  - 不支持sinks。
+  - key、value和key_rope不支持非连续。
 
 ## 调用示例
 

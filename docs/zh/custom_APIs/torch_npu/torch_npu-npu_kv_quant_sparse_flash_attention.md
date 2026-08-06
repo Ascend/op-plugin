@@ -4,8 +4,9 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 推理系列产品</term>   | √  |
-|<term>Atlas A3 推理系列产品</term>   | √  |
+|<term>Ascend 950PR/Ascend 950DT</term>        | √ |
+|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>   | √  |
+|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   | √  |
 
 ## 功能说明
 
@@ -21,23 +22,23 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64) -> Tensor
+torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64, key_dtype=None, value_dtype=None) -> Tensor
 ```
 
 ## 参数说明
 
-> [!NOTE]  
+> [!NOTE]
 >
 > - query、key、value参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
-> - Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N表示num\_query\_heads，KV\_N表示num\_key\_value\_heads，Q\_T表示query shape中的T，KV\_T表示key shape中的T。
+> - Q\_S和S1表示query shape中的S，KV\_S和S2表示key shape中的S，Q\_N表示num\_query\_heads，KV\_N表示num\_key\_value\_heads，Q\_T表示query shape中的T，KV\_T表示key shape中的T，Q_D和KV_D分别表示query和key/value的Head Dim。
 
-- **query**（`Tensor`）：必选参数，表示attention结构的Q输入，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，query由相同dtype的q_nope和q_rope按D维度拼接得到。`layout_query`为BSND时shape为[B,S1,Q\_N,D]，当`layout_query`为TND时shape为[Q\_T,Q\_N,D]，其中Q\_N支持1/2/4/8/16/32/64/128。
+- **query**（`Tensor`）：必选参数，表示attention结构的Q输入，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，query由相同dtype的q_nope和q_rope按D维度拼接得到。`layout_query`为BSND时shape为[B,S1,Q\_N,Q\_D]，当`layout_query`为TND时shape为[Q\_T,Q\_N,Q\_D]，其中Q\_N支持1/2/4/8/16/32/48/64/128，Q\_D值仅支持576，即nope\+rope=512\+64。
 
-- **key**（`Tensor`）：必选参数，表示attention结构的K输入，不支持非连续，数据格式支持$ND$，数据类型支持`int8`，`int8`的k_nope、query相同dtype的k_rope和`float32`的量化参数按D维度拼接得到，layout\_kv为PA\_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为Paged Attention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[KV\_T, KV\_N, D]，其中KV\_N只支持1。
+- **key**（`Tensor`）：必选参数，表示attention结构的K输入，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`int8`、`hifloat8`、`float8_e4m3fn`，k_nope、query相同dtype的k_rope和`float32`的量化参数按D维度拼接得到，layout\_kv为PA\_BSND时shape为[block\_num, block\_size, KV\_N, KV\_D]，其中block\_num为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, KV\_D]，`layout_kv`为TND时shape为[KV\_T, KV\_N, KV\_D]，其中KV\_N只支持1；KV\_D值仅支持656，即nope\+rope\*2\+dequant\_scale\*4=512\+64\*2\+4\*4。
 
-- **value**（`Tensor`）：必选参数，表示attention结构的V输入，不支持非连续，数据格式支持$ND$，数据类型支持`int8`。value的N仅支持1。
+- **value**（`Tensor`）：必选参数，表示attention结构的V输入，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`int8`、`hifloat8`、`float8_e4m3fn`。value的N仅支持1。value的数据类型需与key保持一致。
 
-- **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持$ND$，数据类型支持`int32`，当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
+- **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，不支持非连续，数据格式支持$ND$，数据类型支持`int32`，当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。当key和value的数据类型为`hifloat8`时，sparse\_size仅支持2048。
 
 - **scale\_value**（`double`）：必选参数，公式中$d_k$开根号的倒数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
 
@@ -51,17 +52,17 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **value\_dequant\_scale**（`Tensor`）：可选参数，预留参数，仅支持默认值。
 
-- **block\_table**（`Tensor`）：可选参数，表示Paged Attention中kvCache存储使用的block映射表。数据格式支持$ND$，数据类型支持`int32`，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的s2对应的block数量，即s2\_max / block\_size向上取整。
+- **block\_table**（`Tensor`）：可选参数，表示PageAttention中kvCache存储使用的block映射表。数据格式支持$ND$，数据类型支持`int32`，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的s2对应的block数量，即s2\_max / block\_size向上取整。
 
-- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`int32`。默认值为None，表示和`query`的shape的S长度相同。该参数中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
+- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该参数中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
-- **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`int32`。默认值为None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，当`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
+- **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，当`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
-- **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`，支持范围为[1, 16]，且为2的幂次方。
+- **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`。sparse\_block\_size为1时，为Token-wise稀疏化场景；sparse\_block\_size大于1且小于等于128时，为Block-wise稀疏化场景，块内token共享相同的稀疏化决策。
 
 - **layout\_query**（`str`）：可选参数，用于标识输入`query`的数据排布格式，默认值"BSND"，支持传入BSND和TND。
 
-- **layout\_kv**（`str`）：可选参数，用于标识输入`key`的数据排布格式，默认值"BSND"，支持传入BSND、TND和PA\_BSND，PA\_BSND在开启Paged Attention时使用。
+- **layout\_kv**（`str`）：可选参数，用于标识输入`key`的数据排布格式，默认值"BSND"，支持传入BSND、TND和PA\_BSND，PA\_BSND在开启PageAttention时使用。
 
 - **sparse\_mode**（`int`）：可选参数，表示sparse的模式。数据类型支持`int64`。
     - sparse\_mode为0时，代表全部计算。
@@ -79,20 +80,28 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **rope\_head\_dim**（`int`）：可选参数，表示MLA架构下的rope\_head\_dim大小，仅在attention\_mode为2时有效。数据类型支持`int64`，仅支持默认值64。
 
+- **key\_dtype**（`int`）：可选参数，表示key传入的数据类型，支持传入`hifloat8`数据类型或不传。当传入`hifloat8`时，表示key传入数据类型为`hifloat8`，当不传时，表示key传入数据类型为`int8`或`float8_e4m3fn`，具体数据类型根据key进行推导。
+
+- **value\_dtype**（`int`）：可选参数，表示value传入的数据类型，支持传入`hifloat8`数据类型或不传。当传入`hifloat8`时，表示key传入数据类型为`hifloat8`，当不传时，表示key传入数据类型为`int8`或`float8_e4m3fn`，具体数据类型根据key进行推导，数据类型需要与key\_dtype保持一致。
+
 ## 返回值说明
 
-`Tensor`
-
-代表公式中的输出Attention。数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。输出shape与入参`query`的shape保持一致。
+- **out**（`Tensor`）：代表公式中的输出Attention。数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。输出shape与入参`query`的shape保持一致。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- 参数query中的D值为576，即nope\+rope=512\+64。
-- 参数key、value中的D值为656，即nope\+rope\*2\+dequant\_scale\*4=512\+64\*2\+4\*4。
-- 支持sparse\_block\_size整除block\_size。
-- 非Paged Attention场景layout\_query和layout\_kv需要保持一致。
+- 非PageAttention场景layout\_query和layout\_kv需要保持一致。
+- Ascend 950PR/Ascend 950DT：
+  - 参数key、value数据类型仅支持`int8、hifloat8、float8_e4m3fn`数据类型。
+  - 参数sparse\_block\_size仅支持1。
+  - 仅在`layout_kv`为PA_BSND时，key支持0轴非连续。
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品：
+  - query Q\_N不支持48。
+  - 参数key、value数据类型仅支持`int8`数据类型，不支持`hifloat8、float8_e4m3fn`。
+  - 参数sparse\_block\_size支持[1,16]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
+  - key不支持非连续。
 
 ## 调用示例
 
@@ -138,7 +147,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
     block_table = torch.tensor([range(b * s2 // block_size)], dtype=torch.int32).reshape(b, -1).npu()
 
     # 调用qsfa算子
-    out = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+    out = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
         scale_value=scale_value, sparse_block_size=sparse_block_size,
         actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
@@ -217,7 +226,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
         def __init__(self):
             super().__init__()
         def forward(self):
-            return torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+            return torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
                 scale_value=scale_value, sparse_block_size=sparse_block_size,
                 actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
                 layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
@@ -228,7 +237,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
             model = Model()
             model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
             graph_output = model()
-        single_op = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+        single_op = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
                 scale_value=scale_value, sparse_block_size=sparse_block_size,
                 actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
                 layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
