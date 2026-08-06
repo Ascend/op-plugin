@@ -2,6 +2,7 @@ import os
 import sys
 import sysconfig
 import subprocess
+import re
 from setuptools import setup, Extension, find_packages
 import torch
 import torch_npu
@@ -18,6 +19,17 @@ os.environ["PYTORCH_CUSTOM_DERIVATIVES_PATH"] = os.path.join(os.path.dirname(__f
 os.environ["ACNN_EXTENSION_PATH"] = os.path.dirname(__file__)
 os.environ["ACNN_EXTENSION_SWITCH"] = "TRUE"
 
+# Get PyTorch version macro
+version_macro = os.getenv('CURRENT_VERSION_MACRO')
+if version_macro:
+    current_version_macro = f'-DCURRENT_VERSION={version_macro}'
+else:
+    match = re.match(r'(\d+)\.(\d+)', PYTORCH_VERSION)
+    if match:
+        major, minor = match.groups()
+        current_version_macro = f'-DCURRENT_VERSION=V{major}R{minor}'
+    else:
+        raise RuntimeError(f"无法解析 PyTorch 版本号: {PYTORCH_VERSION}")
 
 # Get all source files that need to be compiled
 def get_sources():
@@ -90,6 +102,7 @@ def get_include_dirs():
 
 def get_compile_args():
     compile_args = ["-std=c++17"]
+    compile_args.append(current_version_macro)
     # for Windows
     if sys.platform == "win32":
         compile_args.append("/MD")

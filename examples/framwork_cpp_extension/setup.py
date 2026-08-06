@@ -1,5 +1,6 @@
 import os
 import glob
+import re
 import torch
 from setuptools import setup, find_packages
 from torch.utils.cpp_extension import BuildExtension
@@ -11,6 +12,17 @@ PYTORCH_NPU_INSTALL_PATH = os.path.dirname(os.path.abspath(torch_npu.__file__))
 USE_NINJA = os.getenv('USE_NINJA') == '1'
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 
+version_macro = os.getenv('CURRENT_VERSION_MACRO')
+if version_macro:
+    current_version_macro = f'-DCURRENT_VERSION={version_macro}'
+else:
+    match = re.match(r'(\d+)\.(\d+)', torch.__version__)
+    if match:
+        major, minor = match.groups()
+        current_version_macro = f'-DCURRENT_VERSION=V{major}R{minor}'
+    else:
+        raise RuntimeError(f"无法解析 PyTorch 版本号: {torch.__version__}")
+
 source_files = glob.glob(os.path.join(BASE_DIR, "csrc", "*.cpp"), recursive=True)
 
 exts = []
@@ -21,6 +33,7 @@ ext = NpuExtension(
         '-I' + os.path.join(PYTORCH_NPU_INSTALL_PATH, "include/third_party/acl/inc"),
         '-I' + os.path.join(PYTORCH_NPU_INSTALL_PATH, "include/third_party/op-plugin"),
         '-I' + os.path.join(PYTORCH_NPU_INSTALL_PATH, "include/third_party/op-plugin/op_plugin/include"),
+        current_version_macro,
     ],
 )
 exts.append(ext)
