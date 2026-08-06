@@ -1,6 +1,6 @@
 # 适配开发及调用（完整样例-module）
 
-基于C++ extensions方式，通过torch_npu来调用单算子API的适配开发过程，其中前反向绑定通过Python类的`forward`和`backward`注册实现。
+基于C++ extensions方式，通过TorchNPU来调用单算子API的适配开发过程，其中前反向绑定通过Python类的`forward`和`backward`注册实现。
 
 ## 算子适配开发
 

@@ -278,7 +278,7 @@ Pytorch的算子自动反向微分依赖于算子的前反向绑定，即前向�
 
 - 适配前向和反向算子： 与上节算子适配开发中一致，分别适配前向算子和反向算子，并在op_plugin_functions.yaml中配置前向和反向算子。
 - 配置前反向绑定，将前向和反向算子进行绑定：
-  Op-plugin与原生PyTorch一致，通过derivatives.yaml，配置算子的前反向绑定关系，如下所示：
+  OpPlugin与原生PyTorch一致，通过derivatives.yaml，配置算子的前反向绑定关系，如下所示：
 
 ```yaml
 # derivatives.yaml

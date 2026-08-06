@@ -4,7 +4,7 @@
 
 ## 项目介绍
 
-OpPlugin 是 Ascend Extension for PyTorch（torch_npu）的算子插件，为使用 PyTorch 框架的开发者提供便捷的 NPU 算子库调用能力。本项目旨在为 torch_npu 提供运行所需要的算子适配文件。
+OpPlugin 是 TorchNPU 的算子插件，为使用 PyTorch 框架的开发者提供便捷的 NPU 算子库调用能力。本项目旨在为 TorchNPU 提供运行所需要的算子适配文件。
 
 ### 项目架构
 
@@ -76,7 +76,7 @@ op-plugin
 
 **Bug Report 格式**：
 
-- **环境信息**：OpPlugin 版本、torch_npu 版本、Python 版本、CANN 版本等
+- **环境信息**：OpPlugin 版本、TorchNPU 版本、Python 版本、CANN 版本等
 - **问题描述**：添加标签以便在问题仪表板上突出显示
 - **复现步骤**：尽可能详细地描述如何重现问题
 - **预期行为**：描述您预期发生的行为

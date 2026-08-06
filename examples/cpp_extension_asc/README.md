@@ -1,6 +1,6 @@
 # 适配开发及调用（AscendC）
 
-基于C++ extensions方式，通过torch_npu框架调用AscendC自定义算子的完整适配开发流程。本样例展示了如何将AscendC算子集成到PyTorch生态中，实现高效的NPU加速计算。
+基于C++ extensions方式，通过TorchNPU框架调用AscendC自定义算子的完整适配开发流程。本样例展示了如何将AscendC算子集成到Ascend for PyTorch生态中，实现高效的NPU加速计算。
 
 ## 算子适配开发
 

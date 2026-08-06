@@ -121,10 +121,10 @@
 
 - 环境安装
   
-1. 请参考与您当前使用的版本配套的[《Ascend Extension for PyTorch
-   软件安装指南》](https://www.hiascend.com/document/detail/zh/Pytorch/720/configandinstg/instg/insg_0001.html)，获取PyTorch和torch_npu详细的安装步骤。
+1. 请参考与您当前使用的版本配套的[《TorchNPU
+   软件安装指南》](https://www.hiascend.com/document/detail/zh/Pytorch/720/configandinstg/instg/insg_0001.html)，获取PyTorch和TorchNPU详细的安装步骤。
    
-   本样例需torch2.6.0及以上版本，支持`backend="npugraph_ex"`需torch_npu 7.3.0及以上版本。
+   本样例需torch2.6.0及以上版本，支持`backend="npugraph_ex"`需TorchNPU 7.3.0及以上版本。
 2. 根据实际环境安装CANN toolkit包，本样例需8.5.0及以上版本，安装指导详见《[CANN 软件安装指南](https://www.hiascend.com/document/redirect/CannCommunityInstSoftware)》。
 3. 根据实际环境安装CANN ops包。根据产品型号和环境架构，下载对应安装包，可参考[下载链接](https://ascend.devcloud.huaweicloud.com/cann/run/software/8.5.0-beta.1)并执行如下命令安装：
    

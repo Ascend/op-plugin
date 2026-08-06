@@ -1,6 +1,6 @@
 # 适配开发及调用（pybind）
 
-本文档基于C++ extensions方式，使用torch_npu单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。区别于常见的TORCH_LIBRARY方式，本用例采用PYBIND进行绑定注册，以获得更灵活的输入类型支持。
+本文档基于C++ extensions方式，使用TorchNPU单算子API进行适配开发的完整流程。流程涵盖了算子定义、算子适配、ATen IR注册绑定，最终实现调用自定义算子。区别于常见的TORCH_LIBRARY方式，本用例采用PYBIND进行绑定注册，以获得更灵活的输入类型支持。
 
 ## 算子适配开发
 
