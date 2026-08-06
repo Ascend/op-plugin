@@ -90,8 +90,8 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
             OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
                 x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
-            "In the mxfp4 scenario, both x1_dtype and x2_dtype must be float4_e2m1, but got x1_dtype: [",
-            op_plugin::utils::DTypeToString(x1_dtype.value()), "], x2_dtype: [",
+            "In the mxfp4 scenario, both x1_dtype and x2_dtype must be torch_npu.float4_e2m1fn_x2, but got "
+            "x1_dtype: [", op_plugin::utils::DTypeToString(x1_dtype.value()), "], x2_dtype: [",
             op_plugin::utils::DTypeToString(x2_dtype.value()), "].", OPS_ERROR(ErrCode::VALUE));
         TORCH_CHECK(x1_scale_dtype.has_value(),
             "In the mxfp4 scenario, x1_scale_dtype is required pram and cannot be None.", OPS_ERROR(ErrCode::PARAM));
@@ -99,9 +99,8 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
             "In the mxfp4 scenario, x2_scale_dtype is required pram and cannot be None.", OPS_ERROR(ErrCode::PARAM));
         TORCH_CHECK(x1_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0) &&
                 x2_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0),
-            "In the mxfp4 scenario, both x1_scale_dtype and x2_scale_dtype must be float8_e8m0, but got "
-            "x1_scale_dtype: [",
-            op_plugin::utils::DTypeToString(x1_scale_dtype.value()), "], x2_scale_dtype: [",
+            "In the mxfp4 scenario, both x1_scale_dtype and x2_scale_dtype must be torch_npu.float8_e8m0fnu, but got "
+            "x1_scale_dtype: [", op_plugin::utils::DTypeToString(x1_scale_dtype.value()), "], x2_scale_dtype: [",
             op_plugin::utils::DTypeToString(x2_scale_dtype.value()), "].", OPS_ERROR(ErrCode::VALUE));
     }
     TensorWrapper x1_wrapper = make_wrapper(self, x1_dtype);
