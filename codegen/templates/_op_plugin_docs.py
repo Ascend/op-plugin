@@ -4003,7 +4003,7 @@ _add_torch_npu_docstr(
     "npu_mhc_pre",
     """
 接口原型：
-torch_npu.npu_mhc_pre(Tensor x, Tensor phi, Tensor alpha, Tensor bias, *, Tensor? gamma=None, float norm_eps=1e-6, float hc_eps=1e-6, int out_flag=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_mhc_pre(Tensor x, Tensor phi, Tensor alpha, Tensor bias, *, Tensor? gamma=None, float norm_eps=1e-6, float hc_eps=1e-6, int out_flag=0, int inner_precise=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
 
 功能描述：
 通过一系列计算，可得到 MHC (流形约束超连接)架构中 hidden 层对应的投影矩阵 Hres 和 Hpost，以及作为 Atten 或 MLP 层输入的矩阵 Hin。
@@ -4017,6 +4017,7 @@ gamma: Tensor类型，可选输入，表示进行 RMSNorm 计算时的缩放因�
 norm_eps: Float类型，可选输入，RMSNorm 的防除零参数。
 hc_eps: Float类型，可选输入，H_pre 经过 sigmoid 运算后的 eps 参数。
 out_flag: Int类型，可选输入，表示是否输出中间结果标识，默认值为0(仅输出最终变换结果)。
+inner_precise: Int类型，可选输入，指定MhcPre算子的计算模式，默认值为0。0表示在Cube中使用FP32模式计算；1表示在Cube中使用HF32模式计算。
 n：shape 中的 n 常取 4、6、8。
 
 输出说明:

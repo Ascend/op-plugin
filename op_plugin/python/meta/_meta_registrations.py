@@ -183,7 +183,7 @@ if os.getenv("TORCH_NPU_USE_COMPATIBLE_IMPL") != "1":
 
 
 @impl(m, "npu_mhc_pre")
-def npu_mhc_pre_meta(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1e-6, out_flag=0):
+def npu_mhc_pre_meta(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1e-6, out_flag=0, inner_precise=0):
     torch._check(
         x.numel() > 0,
         lambda: "Input x should not be empty." + ops_error(ErrCode.VALUE),
@@ -208,6 +208,13 @@ def npu_mhc_pre_meta(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1
     torch._check(
         out_flag == 0 or out_flag == 1,
         lambda: f"Input out_flag must be 0 or 1, but got {out_flag}." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        inner_precise == 0 or inner_precise == 1,
+        lambda: (
+            f"Input inner_precise must be 0 (Cube uses FP32) or 1 (Cube uses HF32), but got {inner_precise}."
+            + ops_error(ErrCode.VALUE)
+        ),
     )
 
     has_resi = alpha.numel() == 3
