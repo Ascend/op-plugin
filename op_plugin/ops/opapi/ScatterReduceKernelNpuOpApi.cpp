@@ -115,7 +115,9 @@ at::Tensor scatter_reduce(
     bool include_self)
 {
     if (include_self && (reduce == "sum" || reduce == "add")) {
-        DO_COMPATIBILITY(aclnnScatterReduce, acl_op::scatter_add(self, dim, index, src));
+        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+            DO_COMPATIBILITY(aclnnScatterReduce, acl_op::scatter_add(self, dim, index, src));
+        }
     }
     DO_COMPATIBILITY_COMMON(
         aclnnScatterReduce, scatter_reduce_cpu_fallback(self, dim, index, src, reduce, include_self));
@@ -152,7 +154,9 @@ at::Tensor& scatter_reduce_(
     bool include_self)
 {
     if (include_self && (reduce == "sum" || reduce == "add")) {
-        DO_COMPATIBILITY(aclnnInplaceScatterReduce, acl_op::scatter_add_(self, dim, index, src));
+        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+            DO_COMPATIBILITY(aclnnInplaceScatterReduce, acl_op::scatter_add_(self, dim, index, src));
+        }
     }
     DO_COMPATIBILITY_COMMON(
         aclnnInplaceScatterReduce, scatter_reduce_inplace_cpu_fallback(self, dim, index, src, reduce, include_self));
