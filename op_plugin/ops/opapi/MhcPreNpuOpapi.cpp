@@ -120,11 +120,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 
         outHin = at::empty(outHinSize, hInOptions);
         outHpost = at::empty(outHpostSize, hOptions);
-        if (hasResi) {
-            outHres = at::empty(outHresSize, hOptions);
-        } else {
-            outHres = at::zeros(outHresSize, hOptions);
-        }
+        outHres = at::empty(outHresSize, hOptions);
         if (out_flag == 1) {
             outInvRms = at::empty(outInvRmsSize, hOptions);
             outHmix = at::empty(outHmixSize, hOptions);
@@ -174,11 +170,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 
         outHin = at::empty(outHinSize, hInOptions);
         outHpost = at::empty(outHpostSize, hOptions);
-        if (hasResi) {
-            outHres = at::empty(outHresSize, hOptions);
-        } else {
-            outHres = at::zeros(outHresSize, hOptions);
-        }
+        outHres = at::empty(outHresSize, hOptions);
         if (out_flag == 1) {
             outInvRms = at::empty(outInvRmsSize, hOptions);
             outHmix = at::empty(outHmixSize, hOptions);
