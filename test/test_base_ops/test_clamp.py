@@ -107,7 +107,7 @@ class TestClamp(TestCase):
                 npu_out_output = self.npu_op_exec_out(input_npu, min_npu, max_npu, out_npu)
                 self.assertRtolEqual(cpu_out_output, npu_out_output)
             else:
-                with self.asserctRaises(RuntimeError) as cpu_err:
+                with self.assertRaises(RuntimeError) as cpu_err:
                     self.cpu_inp_op_exec(input_cpu, min_cpu, max_cpu)
                 self.assertTrue("can't be cast to the desired output" in str(cpu_err.exception))
                 with self.assertRaises(RuntimeError) as npu_err:
@@ -118,7 +118,59 @@ class TestClamp(TestCase):
                 self.assertTrue("can't be cast to the desired output" in str(cpu_err.exception))
                 with self.assertRaises(RuntimeError) as npu_err:
                     self.npu_op_exec_out(input_npu, min_npu, max_npu, out_npu)
-                self.assertTrue("an't be cast to the desired output" in str(npu_err.exception))
+                self.assertTrue("can't be cast to the desired output" in str(npu_err.exception))
+
+    def test_clamp_tensor_empty_broadcast(self):
+        # Regression: clamp_npu_output_size must not short-circuit empty self.
+        # Broadcast with min/max must still apply (expand dims / reject invalid).
+        # case 1: self.ndim < min.ndim, broadcast should expand dims -> (3, 0)
+        input_cpu = torch.tensor([], dtype=torch.float32).reshape(1, 0)
+        input_npu = input_cpu.npu()
+        min_cpu = torch.tensor([[0.0]] * 3, dtype=torch.float32)
+        min_npu = min_cpu.npu()
+        max_cpu = torch.tensor([[1.0]] * 3, dtype=torch.float32)
+        max_npu = max_cpu.npu()
+        cpu_output = self.cpu_op_exec(input_cpu, min_cpu, max_cpu)
+        npu_output = self.npu_op_exec(input_npu, min_npu, max_npu)
+        self.assertEqual(tuple(cpu_output.shape), (3, 0))
+        self.assertEqual(tuple(npu_output.shape), (3, 0))
+        self.assertEqual(npu_output.size, 0)
+
+        # case 2: self.ndim == min.ndim, same dim needs expand -> (3, 0)
+        input_cpu = torch.tensor([], dtype=torch.float32).reshape(1, 0)
+        input_npu = input_cpu.npu()
+        min_cpu = torch.arange(3, dtype=torch.float32).reshape(3, 1)
+        min_npu = min_cpu.npu()
+        max_cpu = torch.full((3, 1), 1.0, dtype=torch.float32)
+        max_npu = max_cpu.npu()
+        cpu_output = self.cpu_op_exec(input_cpu, min_cpu, max_cpu)
+        npu_output = self.npu_op_exec(input_npu, min_npu, max_npu)
+        self.assertEqual(tuple(cpu_output.shape), (3, 0))
+        self.assertEqual(tuple(npu_output.shape), (3, 0))
+
+        # case 3: non-broadcastable empty input should raise (not silently pass)
+        input_cpu = torch.tensor([], dtype=torch.float32)
+        input_npu = input_cpu.npu()
+        min_cpu = torch.arange(3, dtype=torch.float32)
+        min_npu = min_cpu.npu()
+        max_cpu = torch.full((3,), 1.0, dtype=torch.float32)
+        max_npu = max_cpu.npu()
+        with self.assertRaises(RuntimeError):
+            self.cpu_op_exec(input_cpu, min_cpu, max_cpu)
+        with self.assertRaises(RuntimeError):
+            self.npu_op_exec(input_npu, min_npu, max_npu)
+
+        # case 4: scalar min/max with empty self -> (0,) (unchanged, sanity)
+        input_cpu = torch.tensor([], dtype=torch.float32)
+        input_npu = input_cpu.npu()
+        min_cpu = torch.tensor(0.0, dtype=torch.float32)
+        min_npu = min_cpu.npu()
+        max_cpu = torch.tensor(1.0, dtype=torch.float32)
+        max_npu = max_cpu.npu()
+        cpu_output = self.cpu_op_exec(input_cpu, min_cpu, max_cpu)
+        npu_output = self.npu_op_exec(input_npu, min_npu, max_npu)
+        self.assertEqual(tuple(cpu_output.shape), (0,))
+        self.assertEqual(tuple(npu_output.shape), (0,))
 
 
 if __name__ == "__main__":
