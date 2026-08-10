@@ -23,7 +23,7 @@ class TestExponential(TestCase):
         tensor_npu = tensor_npu.exponential_()
         return tensor_npu
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend950'])
     def test_npu_exponential(self, device="npu"):
         N = 100
         alpha = 0.01
@@ -41,18 +41,16 @@ class TestExponential(TestCase):
                 count += 1
 
         reject_num = self.cal_reject_num(alpha, N)
-        if count <= reject_num:
-            return True
-        else:
-            return False
+        self.assertLessEqual(count, reject_num,
+                             f"Reject count {count} exceeds threshold {reject_num}, distribution mismatch")
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend950'])
     def test_exponential_no_zero(self):
         for _ in range(100):
             x = torch.empty(500000000, device="npu", dtype=torch.float32).exponential_()
             self.assertTrue(x.min() > 0)
 
-    @SupportedDevices(['Ascend910B'])
+    @SupportedDevices(['Ascend910B', 'Ascend950'])
     def test_exponential_negative_lambda_fails(self):
         with self.assertRaises(RuntimeError):
             torch.empty((1,), device="npu", dtype=torch.float32).exponential_(-0.5)

@@ -9,7 +9,7 @@ from typing import Optional
 
 
 class TestNPUSimExponential(TestCase):
-    """测试 npu_sim_exponential_ 算子（Ascend910B 专属）"""
+    """测试 npu_sim_exponential_ 算子"""
 
     def cal_reject_num(self, alpha: float, n: int) -> float:
         """计算假设检验的拒绝阈值（复用参考用例的计算逻辑）"""

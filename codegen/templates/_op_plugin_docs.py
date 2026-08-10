@@ -14790,6 +14790,7 @@ out(Tensor)：表示公式中的f(x)，即原地更新后的input张量。
 PyTorch 2.6及更高版本
 
 支持的型号:
+Ascend 950PR/Ascend 950DT
 Atlas A2训练系列产品
 Atlas A3训练系列产品
 
