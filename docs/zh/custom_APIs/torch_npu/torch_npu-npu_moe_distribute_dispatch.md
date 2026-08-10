@@ -114,7 +114,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
 
     - local\_expert\_num：表示本卡专家数量。
-        - 对于共享专家卡，local\_expert\_num=1
+        - 对于共享专家卡，local\_expert\_num=1。
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num)。
 
 - HCCL通信域缓存区大小:

@@ -51,7 +51,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 - **actual_seq_lengths** (`Tensor`)：可选参数，表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
 
-- **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$
+- **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$。
 
 - **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
 
@@ -64,7 +64,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 ## 约束说明
 
 - 该接口仅支持推理场景下使用，当前TND场景，beta、initial_state、actual_seq_lengths必传。
-- initial_state、final_state float32数据类型仅在Ascend 950PR/Ascend 950DT支持
+- initial_state、final_state float32数据类型仅在Ascend 950PR/Ascend 950DT支持。
 - 维度约束：
   - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, 且 $Nv \bmod Nk = 0$
   - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$

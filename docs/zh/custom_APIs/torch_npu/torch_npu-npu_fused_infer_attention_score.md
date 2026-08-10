@@ -833,9 +833,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 
 ### 示例9：ACL Graph模式（torch_npu.npu.NPUGraph）
 
-"""
-通过NPUGraph捕获计算图，实现图模式执行和参数更新
-"""
+通过NPUGraph捕获计算图，实现图模式执行和参数更新。
 
 ```python
 import torch

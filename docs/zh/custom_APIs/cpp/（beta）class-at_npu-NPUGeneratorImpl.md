@@ -102,10 +102,10 @@ PyTorch2.5.1及以上版本，新增以下成员函数：
     在capture状态下为aclgraph查询随机数生成对象，与c10::intrusive_ptr\<c10::GeneratorImpl> at::CUDAGeneratorImpl::graphsafe_get_state()功能相同。
     
     返回值为c10::GeneratorImpl对象。
-- **void register_graph(c10_npu::NPUGraph* graph)**
+- **void register_graph(c10_npu::NPUGraph\* graph)**
 
     为NPUGeneratorImpl对象注册aclgraph图对象，进行统一管理，与void at::CUDAGeneratorImpl::register_graph(CUDAGraph* graph)功能相同。
-- **void unregister_graph(c10_npu::NPUGraph* graph)**
+- **void unregister_graph(c10_npu::NPUGraph\* graph)**
 
     为NPUGeneratorImpl对象移除aclgraph图对象，在图对象的析构时会调用，与void at::CUDAGeneratorImpl::unregister_graph(CUDAGraph* graph)功能相同。
 
