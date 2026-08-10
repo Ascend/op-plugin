@@ -33,7 +33,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **query**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1仅支持小于等于64。
     
-- **key**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
+- **key**（`Tensor`）：必选参数，在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`bfloat16`和`float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
     
 - **weights**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`bfloat16`、`float16`和`float32`，支持输入shape[B,S1,N1]、[T,N1]。
     
@@ -74,7 +74,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 ## 约束说明
 
 - 该接口支持图模式。
-- 参数query中的N支持小于等于64，key中的N支持1。
+- 参数key中的N仅支持为1。
 - 参数query中的D和参数key中的D值相等为128。
 - 参数query、key的数据类型应保持一致。
 - 参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
@@ -82,6 +82,10 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - Ascend 950PR/Ascend 950DT：
     - query中的N仅支持8、16、24、32、64。
     - 参数weights不支持`float32`类型。
+    - 仅在layout_key为PA_BSND时，key支持0轴非连续。
+- <term>Atlas A2 推理系列产品</term>、<term>Atlas A3 推理系列产品</term>：
+    - query中的N必须小于等于64。
+    - key不支持非连续。
 
 ## 调用示例
 
