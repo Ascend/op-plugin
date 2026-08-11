@@ -50,6 +50,17 @@
   \end{aligned}
   $$
 
+  当`x`的数据类型为`int32`时，`quant_mode`仅支持取值`0`。每个`int32`元素作为8个int4数据的打包载体，算子内部按位透传，不进行数值计算；输入`scales`随对应token一起通信：
+
+  $$
+  \begin{aligned}
+  \text{alltoall\_x\_out} &= \operatorname{alltoallv}(x) \\
+  \text{alltoall\_scales\_out} &= \operatorname{alltoallv}(\text{scales}) \\
+  \text{expand\_x} &= \text{alltoall\_x\_out} \\
+  \text{dynamic\_scales} &= \text{alltoall\_scales\_out}
+  \end{aligned}
+  $$
+
   特殊专家场景：
 
   $$
@@ -70,7 +81,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## 参数说明<a name="zh-cn_topic_0000002203575833_section112637109429"></a>
 
-- **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，支持非连续的Tensor。
+- **x** (`Tensor`)：必选参数，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token，数据类型支持`bfloat16`、`float16`。<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>额外支持`int32`，每个`int32`元素作为8个int4数据的打包载体，算子内部按位透传。数据格式为$ND$，支持非连续的Tensor。
 - **expert\_ids** (`Tensor`)：必选参数，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **group\_ep** (`str`)：必选参数，EP通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
 - **ep\_world\_size**(`int`)：必选参数，EP通信域size。
@@ -84,7 +95,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围为\[1, 1024\]。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围为\[1, 1024\]。`comm_alg`设置为"hierarchy"时，取值范围为[1, 512]。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **scales** (`Tensor`)：可选参数，表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)，数据类型支持`float32`，数据格式为$ND$，不支持非连续的Tensor。
+- **scales** (`Tensor`)：可选参数。
+    - 当`x`的数据类型为`int32`时必须传入，表示每个输入token对应的缩放参数。要求为1维张量，shape为\(BS,\)，数据类型支持`float32`，数据格式为$ND$，不支持非连续的Tensor。该参数随对应token一起通信。
+    - 其他场景下表示每个专家的权重，非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)，数据类型支持`float32`，数据格式为$ND$，不支持非连续的Tensor。
 - **x\_active\_mask** (`Tensor`)：可选参数，表示token是否参与通信。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
          - `comm_alg`设置为"fullmesh"时，要求是一个1维或者2维张量。当输入为1维时，shape为\(BS, \); 当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式要求为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：{true, false, true} 为非法输入；当输入为2D时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。支持2维张量属于零计算专家特性，此特性尚在实验阶段，请谨慎使用。
@@ -117,7 +130,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持共享专家，使用默认值即可。
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0需满足shared\_expert\_rank\_num%shared\_expert\_num=0。
 
-- **quant\_mode** (`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当`quant_mode`为2，`dynamic_scales`不为None；当`quant_mode`为0，`dynamic_scales`为None。
+- **quant\_mode** (`int`)：可选参数，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当`x`的数据类型为`int32`时仅支持取值0，此时`dynamic_scales`不为None；其他数据类型下，当`quant_mode`为2时`dynamic_scales`不为None，当`quant_mode`为0时`dynamic_scales`为None。
 - **global\_bs** (`int`)：可选参数，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 
 - **expert\_token\_nums\_type** (`int`)：可选参数，表示输出`expert_token_nums`的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
@@ -151,8 +164,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## 输出说明<a name="zh-cn_topic_0000002203575833_section22231435517"></a>
 
-- **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2维张量，shape为\(A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持`bfloat16`、`float16`、`int8`。量化时类型为`int8`，非量化时与`x`数据类型保持一致。数据格式为$ND$，支持非连续的Tensor。
-- **dynamic\_scales** (`Tensor`)：表示计算得到的动态量化参数。当`quant_mode`不为0时才有该输出，要求为1维张量，shape为\(A,\)，数据类型支持`float32`，数据格式支持$ND$，支持非连续的Tensor。
+- **expand\_x** (`Tensor`)：表示本卡收到的token数据，要求为2维张量，shape为\(A, H\)，A表示在EP通信域可能收到的最大token数，数据类型支持`bfloat16`、`float16`、`int8`、`int32`。量化时类型为`int8`，非量化时与`x`数据类型保持一致。`int32`仅支持<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。数据格式为$ND$，支持非连续的Tensor。
+- **dynamic\_scales** (`Tensor`)：表示动态量化参数或随数据类型为`int32`的token通信的缩放参数。当`quant_mode`为2，或者`x`的数据类型为`int32`且`quant_mode`为0时有该输出，要求为1维张量，shape为\(A,\)，其中前实际接收token数量个元素有效。数据类型支持`float32`，数据格式支持$ND$，支持非连续的Tensor。
 - **assist\_info\_for\_combine** (`Tensor`)：表示给同一专家发送的token个数，要求是一个1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`assist_info_for_combine`输入。
 
 - **expert\_token\_nums** (`Tensor`)：本卡每个专家实际收到的token数量，要求为1维张量，shape为\(local\_expert\_num,\)，数据类型`int64`，数据格式支持$ND$，支持非连续的Tensor。
@@ -181,7 +194,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
     - H：表示hidden size隐藏层大小。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`H`的取值范围如下所示。
-            - `comm_alg`设置为"fullmesh"时，`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
+            - 当`x`的数据类型为`int32`时，仅支持`comm_alg`设置为"fullmesh"，`H`的取值范围\(0, 5120\]，且保证是32的整数倍。
+            - 当`x`的数据类型不为`int32`且`comm_alg`设置为"fullmesh"时，`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
             - `comm_alg`设置为"hierarchy"且驱动版本不低于25.0.RC1.1时，`H`的取值范围\(0, 10 * 1024\]，且保证是32的整数倍。
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值为\[1024, 8192\]。
 
@@ -209,7 +223,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
         该场景支持通过环境变量HCCL\_BUFFSIZE配置。
         - `comm_alg`配置为"": 依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
-        - `comm_alg`配置为"fullmesh": 设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
+        - `comm_alg`配置为"fullmesh"且`x`的数据类型为`int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*\(H\*sizeof\(int32\)+32B\)+2MB\)。
+        - `comm_alg`配置为"fullmesh"且`x`的数据类型不为`int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
         - `comm_alg`配置为"hierarchy": 设置大小要求 \>= \(moe\_expert\_num + ep\_world\_size / 4\) \* Align512\(max_bs \* \(H \* sizeof\(dtype_x\) + 4 \* Align8\(K\) \* sizeof\(uint32\)\)\) \* 1B + 8MB，其中Align512\(x\) = \(\(x+512-1\)/512\)\*512，Align8\(x\) = \(\(x+8-1\)/8\)\*8。
 
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
