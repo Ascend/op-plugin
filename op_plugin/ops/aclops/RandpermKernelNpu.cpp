@@ -44,16 +44,16 @@ at::Tensor& randperm_out_nocheck(at::Tensor& result, int64_t n, c10::optional<at
 } // namespace
 
 at::Tensor& randperm_out(int64_t n, c10::optional<at::Generator> generator, at::Tensor& result) {
-    TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
-    npu_preparation::CheckOut({}, result, result, {n});
-    if (!npu_utils::check_match(&result)) {
-        at::Tensor contiguous_result = npu_utils::format_contiguous(result);
-        randperm_out_nocheck(contiguous_result, n, generator);
-        npu_utils::format_fresh_view(result, contiguous_result);
-    } else {
-        randperm_out_nocheck(result, n, generator);
-    }
-    return result;
+  TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
+  npu_preparation::CheckOut({}, result, result, {n});
+  if (!npu_utils::check_match(&result)) {
+    at::Tensor contiguous_result = npu_utils::format_contiguous(result);
+    randperm_out_nocheck(contiguous_result, n, generator);
+    npu_utils::format_fresh_view(result, contiguous_result);
+  } else {
+    randperm_out_nocheck(result, n, generator);
+  }
+  return result;
 }
 
 at::Tensor& randperm_out(int64_t n, at::Tensor& result) {
@@ -67,15 +67,11 @@ at::Tensor randperm(
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
     c10::optional<bool> pin_memory) {
-    TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
-    at::TensorOptions options = c10::TensorOptions()
-        .dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_with_format(
-        {n},
-        options,
-        ACL_FORMAT_ND);
-    randperm_out_nocheck(result, n, generator);
-    return result;
+  TORCH_CHECK(n >= 0, "n must be non-negative, got", n, OPS_ERROR(ErrCode::VALUE));
+  at::TensorOptions options = c10::TensorOptions().dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
+  at::Tensor result = npu_preparation::apply_tensor_with_format({n}, options, ACL_FORMAT_ND);
+  randperm_out_nocheck(result, n, generator);
+  return result;
 }
 
 at::Tensor randperm(
@@ -84,6 +80,7 @@ at::Tensor randperm(
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
     c10::optional<bool> pin_memory) {
-  return acl_op::randperm(n, static_cast<c10::optional<at::Generator>>(c10::nullopt), dtype, layout, device, pin_memory);
+  return acl_op::randperm(
+      n, static_cast<c10::optional<at::Generator>>(c10::nullopt), dtype, layout, device, pin_memory);
 }
 } // namespace acl_op

@@ -29,12 +29,7 @@ at::Tensor softmax_backward_out_nocheck(
     at::ScalarType input_dtype) {
   c10::SmallVector<int64_t, N> dim_list = {dim};
   at_npu::native::OpCommand cmd;
-  cmd.Name("SoftmaxGrad")
-      .Input(output)
-      .Input(grad_output)
-      .Output(grad_input)
-      .Attr("axes", dim_list)
-      .Run();
+  cmd.Name("SoftmaxGrad").Input(output).Input(grad_output).Output(grad_input).Attr("axes", dim_list).Run();
 
   return grad_input;
 }
@@ -46,10 +41,7 @@ at::Tensor& _softmax_backward_data_out(
     int64_t dim,
     at::ScalarType input_dtype,
     at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {grad_output, output},
-      result,
-      grad_output);
+  npu_preparation::CheckOut({grad_output, output}, result, grad_output);
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     softmax_backward_out_nocheck(contiguous_result, grad_output, output, dim, input_dtype);

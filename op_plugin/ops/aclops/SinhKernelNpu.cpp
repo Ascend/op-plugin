@@ -24,20 +24,14 @@ namespace {
 
 at::Tensor& sinh_out_nocheck(at::Tensor& result, const at::Tensor& self) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Sinh")
-      .Input(self)
-      .Output(result)
-      .Run();
+  cmd.Name("Sinh").Input(self).Output(result).Run();
 
   return result;
 }
 } // namespace
 
 at::Tensor& sinh_out(const at::Tensor& self, at::Tensor& result) {
-  npu_preparation::CheckOut(
-      {self},
-      result,
-      self);
+  npu_preparation::CheckOut({self}, result, self);
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);

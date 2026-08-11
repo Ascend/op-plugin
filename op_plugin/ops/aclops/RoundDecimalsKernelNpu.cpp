@@ -23,20 +23,18 @@ using npu_utils = at_npu::native::NpuUtils;
 namespace {
 
 static void round_decimals_check(const at::Tensor& self, int64_t decimals) {
-    TORCH_CHECK(isFloatingType(self.scalar_type()) ||
-                self.scalar_type() == at::ScalarType::Int ||
-                self.scalar_type() == at::ScalarType::Long,
-                "\"round_npu\" not implemented for '", toString(self.scalar_type()), "'",
-                OPS_ERROR(ErrCode::TYPE));
+  TORCH_CHECK(
+      isFloatingType(self.scalar_type()) || self.scalar_type() == at::ScalarType::Int ||
+          self.scalar_type() == at::ScalarType::Long,
+      "\"round_npu\" not implemented for '",
+      toString(self.scalar_type()),
+      "'",
+      OPS_ERROR(ErrCode::TYPE));
 }
 
 at::Tensor& round_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, int64_t decimals) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("Round")
-      .Input(self)
-      .Output(result)
-      .Attr("decimals", decimals)
-      .Run();
+  cmd.Name("Round").Input(self).Output(result).Attr("decimals", decimals).Run();
 
   return result;
 }

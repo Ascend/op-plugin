@@ -20,21 +20,23 @@
 namespace acl_op {
 using npu_preparation = at_npu::native::OpPreparation;
 
-std::tuple<at::Tensor, at::Tensor> npu_rms_norm_backward(const at::Tensor &dy, const at::Tensor &self,
-                                                         const at::Tensor &gamma, const at::Tensor &rstd)
-{
-    at::Tensor dx = npu_preparation::apply_tensor(self);
-    at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
-    at_npu::native::OpCommand cmd;
-    cmd.Name("RmsNormGrad")
-        .Input(dy, "dy")
-        .Input(self, "x")
-        .Input(rstd, "rstd")
-        .Input(gamma, "gamma")
-        .Output(dx, "dx")
-        .Output(dgamma, "dgamma")
-        .Run();
+std::tuple<at::Tensor, at::Tensor> npu_rms_norm_backward(
+    const at::Tensor& dy,
+    const at::Tensor& self,
+    const at::Tensor& gamma,
+    const at::Tensor& rstd) {
+  at::Tensor dx = npu_preparation::apply_tensor(self);
+  at::Tensor dgamma = npu_preparation::apply_tensor(gamma.sizes(), gamma.options().dtype(at::kFloat), gamma);
+  at_npu::native::OpCommand cmd;
+  cmd.Name("RmsNormGrad")
+      .Input(dy, "dy")
+      .Input(self, "x")
+      .Input(rstd, "rstd")
+      .Input(gamma, "gamma")
+      .Output(dx, "dx")
+      .Output(dgamma, "dgamma")
+      .Run();
 
-    return std::make_tuple(dx, dgamma);
+  return std::make_tuple(dx, dgamma);
 }
 } // namespace acl_op

@@ -47,19 +47,14 @@ at::Tensor& soft_margin_loss_backward_out(
     const at::Tensor& target,
     int64_t reduction,
     at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {grad_output, input, target},
-      grad_input,
-      input);
+  npu_preparation::CheckOut({grad_output, input, target}, grad_input, input);
 
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contiguous_grad_input = npu_utils::format_contiguous(grad_input);
-    soft_margin_loss_backward_out_nocheck(
-        contiguous_grad_input, grad_output, input, target, reduction);
+    soft_margin_loss_backward_out_nocheck(contiguous_grad_input, grad_output, input, target, reduction);
     npu_utils::format_fresh_view(grad_input, contiguous_grad_input);
   } else {
-    soft_margin_loss_backward_out_nocheck(
-        grad_input, grad_output, input, target, reduction);
+    soft_margin_loss_backward_out_nocheck(grad_input, grad_output, input, target, reduction);
   }
 
   return grad_input;
@@ -71,8 +66,7 @@ at::Tensor soft_margin_loss_backward(
     const at::Tensor& target,
     int64_t reduction) {
   at::Tensor grad_input = npu_preparation::apply_tensor(input);
-  soft_margin_loss_backward_out_nocheck(
-      grad_input, grad_output, input, target, reduction);
+  soft_margin_loss_backward_out_nocheck(grad_input, grad_output, input, target, reduction);
   return grad_input;
 }
 } // namespace acl_op

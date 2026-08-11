@@ -27,12 +27,7 @@ at::Tensor& softshrink_backward_out_nocheck(
     const at::Tensor& self,
     at::Scalar lambd) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("SoftShrinkGrad")
-      .Input(grad_output)
-      .Input(self)
-      .Output(grad_input)
-      .Attr("lambd", lambd)
-      .Run();
+  cmd.Name("SoftShrinkGrad").Input(grad_output).Input(self).Output(grad_input).Attr("lambd", lambd).Run();
 
   return grad_input;
 }
@@ -43,10 +38,7 @@ at::Tensor& softshrink_backward_out(
     const at::Tensor& self,
     const at::Scalar& lambd,
     at::Tensor& grad_input) {
-  npu_preparation::CheckOut(
-      {self, grad_output},
-      grad_input,
-      self);
+  npu_preparation::CheckOut({self, grad_output}, grad_input, self);
 
   if (!npu_utils::check_match(&grad_input)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(grad_input);
@@ -59,14 +51,10 @@ at::Tensor& softshrink_backward_out(
   return grad_input;
 }
 
-at::Tensor softshrink_backward(
-    const at::Tensor& grad_output,
-    const at::Tensor& self,
-    const at::Scalar& lambd) {
+at::Tensor softshrink_backward(const at::Tensor& grad_output, const at::Tensor& self, const at::Scalar& lambd) {
   at::Tensor grad_input = npu_preparation::apply_tensor(self);
 
-  softshrink_backward_out_nocheck(
-      grad_input, grad_output, self, lambd);
+  softshrink_backward_out_nocheck(grad_input, grad_output, self, lambd);
 
   return grad_input;
 }

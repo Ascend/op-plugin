@@ -18,48 +18,38 @@
 
 namespace acl_op {
 
-at::Tensor scatter_update(
-    const at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    at::Tensor result = self.clone();
+at::Tensor scatter_update(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t axis) {
+  at::Tensor result = self.clone();
 
-    // Note:
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Scatter")
-        .Input(result)
-        .Input(indices)
-        .Input(updates)
-        .Output(result)
-        .Attr("reduce", static_cast<string>("update"))
-        .Attr("axis", axis)
-        .Run();
+  // Note:
+  // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Scatter")
+      .Input(result)
+      .Input(indices)
+      .Input(updates)
+      .Output(result)
+      .Attr("reduce", static_cast<string>("update"))
+      .Attr("axis", axis)
+      .Run();
 
-    return result;
+  return result;
 }
 
-at::Tensor &scatter_update_(
-    at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    // Note:
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at_npu::native::OpCommand cmd;
-    cmd.Name("Scatter")
-        .Input(self)
-        .Input(indices)
-        .Input(updates)
-        .Output(self)
-        .Attr("reduce", static_cast<string>("update"))
-        .Attr("axis", axis)
-        .Run();
+at::Tensor& scatter_update_(at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t axis) {
+  // Note:
+  // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+  at_npu::native::OpCommand cmd;
+  cmd.Name("Scatter")
+      .Input(self)
+      .Input(indices)
+      .Input(updates)
+      .Output(self)
+      .Attr("reduce", static_cast<string>("update"))
+      .Attr("axis", axis)
+      .Run();
 
-    return self;
+  return self;
 }
 
 } // namespace acl_op

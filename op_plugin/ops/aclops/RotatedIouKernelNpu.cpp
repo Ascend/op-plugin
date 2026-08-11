@@ -28,22 +28,21 @@ at::Tensor& rotated_iou_npu_nocheck(
     int64_t mode,
     bool is_cross,
     double v_threshold,
-    double e_threshold)
-{
-    string mode_str = (mode == 0) ? "iou" : "iof";
+    double e_threshold) {
+  string mode_str = (mode == 0) ? "iou" : "iof";
 
-    at_npu::native::OpCommand cmd;
-    cmd.Name("RotatedIou")
-        .Input(boxes)
-        .Input(query_boxes)
-        .Output(iou)
-        .Attr("trans", trans)
-        .Attr("mode", mode_str)
-        .Attr("is_cross", is_cross)
-        .Attr("value", static_cast<float>(v_threshold))
-        .Attr("value", static_cast<float>(e_threshold))
-        .Run();
-    return iou;
+  at_npu::native::OpCommand cmd;
+  cmd.Name("RotatedIou")
+      .Input(boxes)
+      .Input(query_boxes)
+      .Output(iou)
+      .Attr("trans", trans)
+      .Attr("mode", mode_str)
+      .Attr("is_cross", is_cross)
+      .Attr("value", static_cast<float>(v_threshold))
+      .Attr("value", static_cast<float>(e_threshold))
+      .Run();
+  return iou;
 }
 } // namespace
 
@@ -54,30 +53,29 @@ at::Tensor npu_rotated_iou(
     int64_t mode,
     bool is_cross,
     double v_threshold,
-    double e_threshold)
-{
-    TORCH_CHECK(self.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
+    double e_threshold) {
+  TORCH_CHECK(self.ndimension() == 3 && query_boxes.ndimension() == 3, OPS_ERROR(ErrCode::PARAM));
 
-    auto origin_dtype = self.scalar_type();
+  auto origin_dtype = self.scalar_type();
 
-    at::Tensor boxes_cp = self.permute({0, 2, 1});
-    if (origin_dtype == at::kHalf) {
-        boxes_cp = at_npu::native::custom_ops::_npu_dtype_cast(boxes_cp, at::kFloat);
-    }
-    at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
-    if (query_boxes_cp.scalar_type() == at::kHalf) {
-        query_boxes_cp = at_npu::native::custom_ops::_npu_dtype_cast(query_boxes_cp, at::kFloat);
-    }
+  at::Tensor boxes_cp = self.permute({0, 2, 1});
+  if (origin_dtype == at::kHalf) {
+    boxes_cp = at_npu::native::custom_ops::_npu_dtype_cast(boxes_cp, at::kFloat);
+  }
+  at::Tensor query_boxes_cp = query_boxes.permute({0, 2, 1});
+  if (query_boxes_cp.scalar_type() == at::kHalf) {
+    query_boxes_cp = at_npu::native::custom_ops::_npu_dtype_cast(query_boxes_cp, at::kFloat);
+  }
 
-    int64_t B = boxes_cp.size(0);
-    int64_t N = boxes_cp.size(-1);
-    int64_t K = query_boxes_cp.size(-1);
+  int64_t B = boxes_cp.size(0);
+  int64_t N = boxes_cp.size(-1);
+  int64_t K = query_boxes_cp.size(-1);
 
-    c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
-    at::Tensor iou = npu_preparation::apply_tensor(boxes_cp, output_size);
+  c10::SmallVector<int64_t, SIZE> output_size({B, N, K});
+  at::Tensor iou = npu_preparation::apply_tensor(boxes_cp, output_size);
 
-    rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
-    iou = at_npu::native::custom_ops::_npu_dtype_cast(iou, origin_dtype);
-    return iou;
+  rotated_iou_npu_nocheck(iou, boxes_cp, query_boxes_cp, trans, mode, is_cross, v_threshold, e_threshold);
+  iou = at_npu::native::custom_ops::_npu_dtype_cast(iou, origin_dtype);
+  return iou;
 }
 } // namespace acl_op

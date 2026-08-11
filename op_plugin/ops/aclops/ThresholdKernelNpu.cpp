@@ -27,12 +27,7 @@ at::Tensor& threshold_out_nocheck(
     const at::Scalar& threshold,
     const at::Scalar& value) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("ThresholdV2D")
-      .Input(self)
-      .Output(result)
-      .Attr("threshold", threshold)
-      .Attr("value", value)
-      .Run();
+  cmd.Name("ThresholdV2D").Input(self).Output(result).Attr("threshold", threshold).Attr("value", value).Run();
   return result;
 }
 } // namespace

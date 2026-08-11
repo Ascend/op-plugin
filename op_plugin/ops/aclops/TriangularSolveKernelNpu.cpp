@@ -20,15 +20,19 @@
 #include <ATen/native/LinearAlgebraUtils.h>
 
 namespace acl_op {
-std::tuple<at::Tensor &, at::Tensor &> triangular_solve_out(const at::Tensor &self, const at::Tensor &A, bool upper,
-                                                            bool transpose, bool unitriangular, at::Tensor &X,
-                                                            at::Tensor &M)
-{
-    at::Tensor result_tmp;
-    at::Tensor clone_a_tmp;
-    std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
-    X.resize_as_(result_tmp).copy_(result_tmp);
-    M.resize_as_(clone_a_tmp).copy_(clone_a_tmp);
-    return std::tie(X, M);
+std::tuple<at::Tensor&, at::Tensor&> triangular_solve_out(
+    const at::Tensor& self,
+    const at::Tensor& A,
+    bool upper,
+    bool transpose,
+    bool unitriangular,
+    at::Tensor& X,
+    at::Tensor& M) {
+  at::Tensor result_tmp;
+  at::Tensor clone_a_tmp;
+  std::tie(result_tmp, clone_a_tmp) = triangular_solve_out_common_nocheck(self, A, upper, transpose, unitriangular);
+  X.resize_as_(result_tmp).copy_(result_tmp);
+  M.resize_as_(clone_a_tmp).copy_(clone_a_tmp);
+  return std::tie(X, M);
 }
 } // namespace acl_op
