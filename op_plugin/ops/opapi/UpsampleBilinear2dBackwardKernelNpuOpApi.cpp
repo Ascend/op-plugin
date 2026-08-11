@@ -27,17 +27,24 @@ at::Tensor& upsample_bilinear2d_backward_old_out(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
-                     acl_op::upsample_bilinear2d_backward_out(grad_output, output_size, input_size,
-                                                              align_corners, scales_h, scales_w, grad_input));
-    npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackward, grad_output, output_size, input_size, align_corners,
-                 scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+    at::Tensor& grad_input) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2dBackward,
+      acl_op::upsample_bilinear2d_backward_out(
+          grad_output, output_size, input_size, align_corners, scales_h, scales_w, grad_input));
+  npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
+  EXEC_NPU_CMD(
+      aclnnUpsampleBilinear2dBackward,
+      grad_output,
+      output_size,
+      input_size,
+      align_corners,
+      scales_h_attr,
+      scales_w_attr,
+      grad_input);
+  return grad_input;
 }
 
 at::Tensor upsample_bilinear2d_backward_old(
@@ -46,19 +53,25 @@ at::Tensor upsample_bilinear2d_backward_old(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackward,
-                     acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size,
-                                                          align_corners, scales_h, scales_w));
-    auto outputSize = input_size;
-    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
+    c10::optional<double> scales_w) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2dBackward,
+      acl_op::upsample_bilinear2d_backward(grad_output, output_size, input_size, align_corners, scales_h, scales_w));
+  auto outputSize = input_size;
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
 
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackward, grad_output, output_size, input_size, align_corners,
-                 scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+  EXEC_NPU_CMD(
+      aclnnUpsampleBilinear2dBackward,
+      grad_output,
+      output_size,
+      input_size,
+      align_corners,
+      scales_h_attr,
+      scales_w_attr,
+      grad_input);
+  return grad_input;
 }
 
 at::Tensor upsample_bilinear2d_backward(
@@ -67,19 +80,26 @@ at::Tensor upsample_bilinear2d_backward(
     at::IntArrayRef input_size,
     bool align_corners,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackwardV2,
-                     op_api::upsample_bilinear2d_backward_old(grad_output, output_size, input_size,
-                                                              align_corners, scales_h, scales_w));
-    auto outputSize = input_size;
-    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
+    c10::optional<double> scales_w) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2dBackwardV2,
+      op_api::upsample_bilinear2d_backward_old(
+          grad_output, output_size, input_size, align_corners, scales_h, scales_w));
+  auto outputSize = input_size;
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, outputSize);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
 
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackwardV2, grad_output, output_size, input_size, align_corners,
-                 scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+  EXEC_NPU_CMD(
+      aclnnUpsampleBilinear2dBackwardV2,
+      grad_output,
+      output_size,
+      input_size,
+      align_corners,
+      scales_h_attr,
+      scales_w_attr,
+      grad_input);
+  return grad_input;
 }
 
 at::Tensor& upsample_bilinear2d_backward_out(
@@ -89,16 +109,23 @@ at::Tensor& upsample_bilinear2d_backward_out(
     bool align_corners,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2dBackwardV2,
-                     op_api::upsample_bilinear2d_backward_old_out(grad_output, output_size, input_size,
-                                                                  align_corners, scales_h, scales_w, grad_input));
-    npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2dBackwardV2, grad_output, output_size, input_size, align_corners,
-                 scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+    at::Tensor& grad_input) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2dBackwardV2,
+      op_api::upsample_bilinear2d_backward_old_out(
+          grad_output, output_size, input_size, align_corners, scales_h, scales_w, grad_input));
+  npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
+  EXEC_NPU_CMD(
+      aclnnUpsampleBilinear2dBackwardV2,
+      grad_output,
+      output_size,
+      input_size,
+      align_corners,
+      scales_h_attr,
+      scales_w_attr,
+      grad_input);
+  return grad_input;
 }
-}
+} // namespace op_api

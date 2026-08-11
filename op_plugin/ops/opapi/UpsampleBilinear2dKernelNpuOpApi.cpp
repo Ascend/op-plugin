@@ -20,39 +20,49 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& upsample_bilinear2d_out(const at::Tensor& self_ex, at::IntArrayRef output_size,
-                                    bool align_corners, c10::optional<double> scales_h,
-                                    c10::optional<double> scales_w, at::Tensor &result)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2d, acl_op::upsample_bilinear2d_out(self_ex, output_size, align_corners,
-                                                                              scales_h, scales_w, result));
-    at::Tensor self = self_ex;
-    TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes",
-                OPS_ERROR(ErrCode::TYPE));
-    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, result, self, outputSize);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
+at::Tensor& upsample_bilinear2d_out(
+    const at::Tensor& self_ex,
+    at::IntArrayRef output_size,
+    bool align_corners,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w,
+    at::Tensor& result) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2d,
+      acl_op::upsample_bilinear2d_out(self_ex, output_size, align_corners, scales_h, scales_w, result));
+  at::Tensor self = self_ex;
+  TORCH_CHECK(
+      self.scalar_type() != at::ScalarType::Double,
+      "upsample_binlinear_2d not support torch.fp64 dtypes",
+      OPS_ERROR(ErrCode::TYPE));
+  auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
+  npu_preparation::check_tensor({self}, result, self, outputSize);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
 
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
-    return result;
+  EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
+  return result;
 }
 
-at::Tensor upsample_bilinear2d(const at::Tensor& self_ex, at::IntArrayRef output_size,
-                               bool align_corners, c10::optional<double> scales_h,
-                               c10::optional<double> scales_w)
-{
-    DO_COMPATIBILITY(aclnnUpsampleBilinear2d,
-                     acl_op::upsample_bilinear2d(self_ex, output_size, align_corners, scales_h, scales_w));
-    at::Tensor self = self_ex;
-    TORCH_CHECK(self.scalar_type() != at::ScalarType::Double, "upsample_binlinear_2d not support torch.fp64 dtypes",
-                OPS_ERROR(ErrCode::TYPE));
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-    auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+at::Tensor upsample_bilinear2d(
+    const at::Tensor& self_ex,
+    at::IntArrayRef output_size,
+    bool align_corners,
+    c10::optional<double> scales_h,
+    c10::optional<double> scales_w) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleBilinear2d, acl_op::upsample_bilinear2d(self_ex, output_size, align_corners, scales_h, scales_w));
+  at::Tensor self = self_ex;
+  TORCH_CHECK(
+      self.scalar_type() != at::ScalarType::Double,
+      "upsample_binlinear_2d not support torch.fp64 dtypes",
+      OPS_ERROR(ErrCode::TYPE));
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
+  auto outputSize = op_infer::upsample_bilinear2d_npu_output_size(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
-    EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
-    return result;
+  EXEC_NPU_CMD(aclnnUpsampleBilinear2d, self, output_size, align_corners, scales_h_attr, scales_w_attr, result);
+  return result;
 }
-}
+} // namespace op_api

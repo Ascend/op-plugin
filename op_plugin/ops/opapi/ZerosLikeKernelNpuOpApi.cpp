@@ -20,11 +20,10 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& zero_(at::Tensor& self)
-{
-    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zero_(self));
-    EXEC_NPU_CMD(aclnnInplaceZero, self);
-    return self;
+at::Tensor& zero_(at::Tensor& self) {
+  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zero_(self));
+  EXEC_NPU_CMD(aclnnInplaceZero, self);
+  return self;
 }
 
-}  // namespace op_api
+} // namespace op_api

@@ -26,14 +26,16 @@ at::Tensor& upsample_nearest2d_backward_out(
     at::IntArrayRef input_size,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& grad_input)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearest2dBackward, acl_op::upsample_nearest2d_backward_out(grad_output, output_size, input_size, scales_h, scales_w, grad_input));
-    npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
-    double scales_h_attr = scales_h.value_or(-1);
-    double scales_w_attr = scales_w.value_or(-1);
-    EXEC_NPU_CMD(aclnnUpsampleNearest2dBackward, grad_output, output_size, input_size, scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+    at::Tensor& grad_input) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleNearest2dBackward,
+      acl_op::upsample_nearest2d_backward_out(grad_output, output_size, input_size, scales_h, scales_w, grad_input));
+  npu_preparation::check_tensor({grad_output}, grad_input, grad_output, input_size);
+  double scales_h_attr = scales_h.value_or(-1);
+  double scales_w_attr = scales_w.value_or(-1);
+  EXEC_NPU_CMD(
+      aclnnUpsampleNearest2dBackward, grad_output, output_size, input_size, scales_h_attr, scales_w_attr, grad_input);
+  return grad_input;
 }
 
 at::Tensor upsample_nearest2d_backward(
@@ -41,13 +43,15 @@ at::Tensor upsample_nearest2d_backward(
     at::IntArrayRef output_size,
     at::IntArrayRef input_size,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearest2dBackward, acl_op::upsample_nearest2d_backward(grad_output, output_size, input_size, scales_h, scales_w));
-    at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
-    double scales_h_attr = scales_h.value_or(-1);
-    double scales_w_attr = scales_w.value_or(-1);
-    EXEC_NPU_CMD(aclnnUpsampleNearest2dBackward, grad_output, output_size, input_size, scales_h_attr, scales_w_attr, grad_input);
-    return grad_input;
+    c10::optional<double> scales_w) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleNearest2dBackward,
+      acl_op::upsample_nearest2d_backward(grad_output, output_size, input_size, scales_h, scales_w));
+  at::Tensor grad_input = npu_preparation::apply_tensor_without_format(grad_output, input_size);
+  double scales_h_attr = scales_h.value_or(-1);
+  double scales_w_attr = scales_w.value_or(-1);
+  EXEC_NPU_CMD(
+      aclnnUpsampleNearest2dBackward, grad_output, output_size, input_size, scales_h_attr, scales_w_attr, grad_input);
+  return grad_input;
 }
-}
+} // namespace op_api

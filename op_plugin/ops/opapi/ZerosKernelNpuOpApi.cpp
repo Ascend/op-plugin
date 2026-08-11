@@ -20,11 +20,10 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out)
-{
-    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, out));
-    out.resize_(size);
-    return out.zero_();
+at::Tensor& zeros_out(at::IntArrayRef size, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_out(size, out));
+  out.resize_(size);
+  return out.zero_();
 }
 
 at::Tensor zeros_symint(
@@ -32,17 +31,12 @@ at::Tensor zeros_symint(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_symint(size, dtype, layout, device, pin_memory));
-    at::TensorOptions option = option.dtype(dtype)
-                                    .layout(layout)
-                                    .device(device)
-                                    .pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(c10::asIntArrayRefUnchecked(size), option);
-    return result.zero_();
+    c10::optional<bool> pin_memory) {
+  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros_symint(size, dtype, layout, device, pin_memory));
+  at::TensorOptions option = option.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(c10::asIntArrayRefUnchecked(size), option);
+  return result.zero_();
 }
-
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 at::Tensor zeros(
@@ -51,17 +45,13 @@ at::Tensor zeros(
     c10::optional<at::ScalarType> dtype,
     c10::optional<at::Layout> layout,
     c10::optional<at::Device> device,
-    c10::optional<bool> pin_memory)
-{
-    DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros(size, names, dtype, layout, device, pin_memory));
-    at::TensorOptions option = option.dtype(dtype)
-                                    .layout(layout)
-                                    .device(device)
-                                    .pinned_memory(pin_memory);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
-    auto maybe_name = names.value_or(at::ArrayRef<at::Dimname>{});
-    at::namedinference::propagate_names_if_nonempty(result, maybe_name);
-    return result.zero_();
+    c10::optional<bool> pin_memory) {
+  DO_COMPATIBILITY(aclnnInplaceZero, acl_op::zeros(size, names, dtype, layout, device, pin_memory));
+  at::TensorOptions option = option.dtype(dtype).layout(layout).device(device).pinned_memory(pin_memory);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(size, option);
+  auto maybe_name = names.value_or(at::ArrayRef<at::Dimname>{});
+  at::namedinference::propagate_names_if_nonempty(result, maybe_name);
+  return result.zero_();
 }
 #endif
-}
+} // namespace op_api

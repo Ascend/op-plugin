@@ -25,16 +25,16 @@ at::Tensor upsample_linear1d_backward(
     at::IntArrayRef output_size,
     at::IntArrayRef input_size,
     bool align_corners,
-    c10::optional<double> scales)
-{
-    DO_COMPATIBILITY(aclnnUpsampleLinear1dBackward,
-                     acl_op::upsample_linear1d_backward(grad_output, output_size, input_size, align_corners, scales));
-    double scales_attr = scales.value_or(0);
+    c10::optional<double> scales) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleLinear1dBackward,
+      acl_op::upsample_linear1d_backward(grad_output, output_size, input_size, align_corners, scales));
+  double scales_attr = scales.value_or(0);
 
-    at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, input_size);
+  at::Tensor grad_input = npu_preparation::apply_tensor(grad_output, input_size);
 
-    EXEC_NPU_CMD(aclnnUpsampleLinear1dBackward, grad_output, output_size, input_size, align_corners,
-                 scales_attr, grad_input);
-    return grad_input;
+  EXEC_NPU_CMD(
+      aclnnUpsampleLinear1dBackward, grad_output, output_size, input_size, align_corners, scales_attr, grad_input);
+  return grad_input;
 }
-}
+} // namespace op_api

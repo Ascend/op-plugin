@@ -26,17 +26,16 @@ at::Tensor& upsample_nearest3d_out(
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
     c10::optional<double> scales_w,
-    at::Tensor& out)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearest3d,
-        acl_op::upsample_nearest3d_out(self, output_size, scales_d, scales_h, scales_w, out));
-    auto output_osize = op_infer::upsample_nearest3d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, out, self, output_osize);
-    double scales_d_attr = scales_d.value_or(0);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-    EXEC_NPU_CMD(aclnnUpsampleNearest3d, self, output_size, scales_d_attr, scales_h_attr, scales_w_attr, out);
-    return out;
+    at::Tensor& out) {
+  DO_COMPATIBILITY(
+      aclnnUpsampleNearest3d, acl_op::upsample_nearest3d_out(self, output_size, scales_d, scales_h, scales_w, out));
+  auto output_osize = op_infer::upsample_nearest3d_npu_output_size(self, output_size);
+  npu_preparation::check_tensor({self}, out, self, output_osize);
+  double scales_d_attr = scales_d.value_or(0);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
+  EXEC_NPU_CMD(aclnnUpsampleNearest3d, self, output_size, scales_d_attr, scales_h_attr, scales_w_attr, out);
+  return out;
 }
 
 at::Tensor upsample_nearest3d(
@@ -44,16 +43,14 @@ at::Tensor upsample_nearest3d(
     at::IntArrayRef output_size,
     c10::optional<double> scales_d,
     c10::optional<double> scales_h,
-    c10::optional<double> scales_w)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearest3d,
-        acl_op::upsample_nearest3d(self, output_size, scales_d, scales_h, scales_w));
-    auto output_osize = op_infer::upsample_nearest3d_npu_output_size(self, output_size);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_osize);
-    double scales_d_attr = scales_d.value_or(0);
-    double scales_h_attr = scales_h.value_or(0);
-    double scales_w_attr = scales_w.value_or(0);
-    EXEC_NPU_CMD(aclnnUpsampleNearest3d, self, output_size, scales_d_attr, scales_h_attr, scales_w_attr, result);
-    return result;
+    c10::optional<double> scales_w) {
+  DO_COMPATIBILITY(aclnnUpsampleNearest3d, acl_op::upsample_nearest3d(self, output_size, scales_d, scales_h, scales_w));
+  auto output_osize = op_infer::upsample_nearest3d_npu_output_size(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self, output_osize);
+  double scales_d_attr = scales_d.value_or(0);
+  double scales_h_attr = scales_h.value_or(0);
+  double scales_w_attr = scales_w.value_or(0);
+  EXEC_NPU_CMD(aclnnUpsampleNearest3d, self, output_size, scales_d_attr, scales_h_attr, scales_w_attr, result);
+  return result;
 }
-}
+} // namespace op_api

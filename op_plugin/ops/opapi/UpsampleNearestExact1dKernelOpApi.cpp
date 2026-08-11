@@ -19,48 +19,55 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &upsample_nearest_exact1d_out_slow(const at::Tensor &self, at::IntArrayRef output_size,
-    c10::optional<double> scales, at::Tensor &result)
-{
-    at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
-    result.copy_(result_slow);
-    return result;
+at::Tensor& upsample_nearest_exact1d_out_slow(
+    const at::Tensor& self,
+    at::IntArrayRef output_size,
+    c10::optional<double> scales,
+    at::Tensor& result) {
+  at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
+  result.copy_(result_slow);
+  return result;
 }
 
-at::Tensor upsample_nearest_exact1d_slow(const at::Tensor &self, at::IntArrayRef output_size,
-    c10::optional<double> scales)
-{
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+at::Tensor upsample_nearest_exact1d_slow(
+    const at::Tensor& self,
+    at::IntArrayRef output_size,
+    c10::optional<double> scales) {
+  auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
-    at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
-    result.copy_(result_slow);
-    return result;
+  at::Tensor result_slow = at::_upsample_nearest_exact1d(self.cpu(), output_size, scales);
+  result.copy_(result_slow);
+  return result;
 }
 
-at::Tensor &_upsample_nearest_exact1d_out(const at::Tensor &self, at::IntArrayRef output_size,
-    c10::optional<double> scales, at::Tensor &out)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, out));
+at::Tensor& _upsample_nearest_exact1d_out(
+    const at::Tensor& self,
+    at::IntArrayRef output_size,
+    c10::optional<double> scales,
+    at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_out_slow(self, output_size, scales, out));
 
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
-    npu_preparation::check_tensor({self}, out, self, outputSize);
-    double scalesValue = scales.value_or(0);
+  auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
+  npu_preparation::check_tensor({self}, out, self, outputSize);
+  double scalesValue = scales.value_or(0);
 
-    EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue, out);
-    return out;
+  EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue, out);
+  return out;
 }
 
-at::Tensor _upsample_nearest_exact1d(const at::Tensor &self, at::IntArrayRef output_size, c10::optional<double> scales)
-{
-    DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_slow(self, output_size, scales));
+at::Tensor _upsample_nearest_exact1d(
+    const at::Tensor& self,
+    at::IntArrayRef output_size,
+    c10::optional<double> scales) {
+  DO_COMPATIBILITY(aclnnUpsampleNearestExact1d, upsample_nearest_exact1d_slow(self, output_size, scales));
 
-    double scalesValue = scales.value_or(0);
-    auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
+  double scalesValue = scales.value_or(0);
+  auto outputSize = op_infer::upsample_linear1d_npu_output_size(self, output_size);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options());
 
-    EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue,  result);
-    return result;
+  EXEC_NPU_CMD(aclnnUpsampleNearestExact1d, self, output_size, scalesValue, result);
+  return result;
 }
 
-}  // namespace op_api
+} // namespace op_api

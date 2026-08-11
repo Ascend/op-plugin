@@ -22,10 +22,9 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 #if VERSION_BETWEEN(V2R1, V2R1)
-at::Tensor _unsafe_index(const at::Tensor &self, const torch::List<c10::optional<at::Tensor>> &indices)
-{
-    return at::native::_unsafe_index(self, indices);
+at::Tensor _unsafe_index(const at::Tensor& self, const torch::List<c10::optional<at::Tensor>>& indices) {
+  return at::native::_unsafe_index(self, indices);
 }
 #endif
 
-}
+} // namespace op_api
