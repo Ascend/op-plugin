@@ -881,6 +881,39 @@ class TestGroupedMatmul(TestCase):
         self.assertEqual(out_nz_dim1, golden_dim1)
         self.assertEqual(out_nz[0][:golden_dim0, :], out_golden.npu())
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_a8w4_per_group_weight_nz(self):
+        """A8W4 WeightNz per-group dispatches quantGroupSize=256."""
+        expert_num = 2
+        m = 8
+        k = 512
+        n = 64
+        quant_group_size = 256
+
+        x = torch.zeros((m, k), dtype=torch.int8, device="npu")
+        weight = torch.zeros((expert_num, k, n), dtype=torch.int32, device="npu")
+        weight_nz = torch_npu.npu_format_cast(weight, 29, customize_dtype=torch.int8)
+        weight_int4_nz = torch_npu.npu_convert_weight_to_int4pack(weight_nz)
+
+        scale_fp32 = np.ones((expert_num, k // quant_group_size, n), dtype=np.float32)
+        scale_uint64 = np.zeros(scale_fp32.shape, dtype=np.uint64)
+        scale_uint64 |= scale_fp32.view(np.uint32).astype(np.uint64)
+        scale = torch.from_numpy(scale_uint64.view(np.int64)).npu()
+        bias = torch.zeros((expert_num, n), dtype=torch.float32, device="npu")
+        per_token_scale = torch.ones((m,), dtype=torch.float32, device="npu")
+        group_list = torch.tensor([m // 2, m], dtype=torch.int64, device="npu")
+
+        output = torch_npu.npu_grouped_matmul(
+            [x], [weight_int4_nz], bias=[bias], scale=[scale], offset=None,
+            antiquant_scale=None, antiquant_offset=None, per_token_scale=[per_token_scale],
+            group_list=group_list, activation_input=None, activation_quant_scale=None,
+            activation_quant_offset=None, split_item=3, group_type=0, group_list_type=1,
+            act_type=0, output_dtype=torch.bfloat16)
+
+        torch_npu.npu.synchronize()
+        self.assertEqual(output[0].shape, (m, n))
+        self.assertEqual(output[0], torch.zeros((m, n), dtype=torch.bfloat16, device="npu"))
+
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_group_list_none(self):
         torch.manual_seed(0)

@@ -313,13 +313,15 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
                               (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_2) ||
                               (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_4) ||
                               (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_16);
+    const bool is_a8w4 = x_wrapper.dtype == ACL_INT8 && weight_wrapper.dtype == ACL_INT32 &&
+        (scale_wrapper.dtype == ACL_UINT64 || scale_wrapper.dtype == ACL_INT64) && !scale_real.empty();
     if (is_weight_nz) {
         static const bool is_weight_nz_available = check_aclnn_kernel_available("aclnnGroupedMatmulWeightNz");
         TORCH_CHECK(is_weight_nz_available,
                     "Format of weight in npu_grouped_matmul is FRACTAL_NZ, current CANN version "
                     "do not support with this format. Please try to update the version of CANN."
                     + OPS_ERROR(ErrCode::PARAM));
-        int64_t quant_per_group_size = 0;
+        int64_t quant_per_group_size = is_a8w4 && offset_real.empty() ? 256 : 0;
         EXEC_NPU_CMD(aclnnGroupedMatmulWeightNz, x_wrapper, weight_wrapper, bias_real, scale_wrapper, offset_real, antiquant_scale_wrapper,
             antiquant_offset_real, per_token_scale_wrapper, group_list_real, activation_input_real,
             activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
