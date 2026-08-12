@@ -227,7 +227,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   >
   > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
   > 
-  > - 当前不支持 fp8/hif8/mxfp8 全量化场景
+  > - 当前不支持 fp8/hif8/mxfp8 全量化场景。
 
   <table style="table-layout: auto;" border="1">
     <tr>
