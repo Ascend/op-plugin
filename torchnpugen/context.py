@@ -39,8 +39,6 @@ F = TypeVar(
 # ITensorListRef on those versions and we must match. Since IListRef has an
 # implicit constructor from ArrayRef, this signature is also accepted from
 # older wrappers that still pass TensorList -- so no version gating is needed.
-# See upstream pytorch#185272 for _scaled_mm_v2 (landed 2026-06-15, releasing
-# in 2.14).
 _FORCE_ILISTREF_TENSOR_LIST_OPS = {
     "_scaled_mm_v2",
     "_scaled_grouped_mm_v2",
