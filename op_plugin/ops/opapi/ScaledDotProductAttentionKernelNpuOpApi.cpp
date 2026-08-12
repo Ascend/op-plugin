@@ -156,15 +156,19 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
     const c10::optional<at::Tensor> &attn_mask, double dropout_p, bool is_causal, c10::optional<double> scale) {
     validate_sdpa_input(query, key, value, attn_mask);
 
+    if (query.scalar_type() == at::kFloat &&
+        (query.size(-1) % 4 != 0 || key.size(-1) % 4 != 0 || value.size(-1) % 4 != 0)) {
+        auto atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
+        auto output = at::_scaled_dot_product_attention_math(
+            query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale);
+        return std::get<0>(output);
+    }
+
     static auto compatible_impl = at_npu::native::env::CheckCompatibleImpl();
     bool force_math = false;
     if (compatible_impl) {
         auto &ctx = at::globalContext();
         force_math = ctx.userEnabledMathSDP() && !ctx.userEnabledFlashSDP();
-        if (query.scalar_type() == at::kFloat &&
-            (query.size(-1) % 4 != 0 || key.size(-1) % 4 != 0 || value.size(-1) % 4 != 0)) {
-            force_math = true;
-        }
         if (query.size(-1) > 256 || key.size(-1) > 256 || value.size(-1) > 256) {
             force_math = true;
         }
@@ -260,15 +264,19 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
     bool enable_gqa) {
     validate_sdpa_input(query, key, value, attn_mask);
 
+    if (query.scalar_type() == at::kFloat &&
+        (query.size(-1) % 4 != 0 || key.size(-1) % 4 != 0 || value.size(-1) % 4 != 0)) {
+        auto atten_mask_math = convert_boolean_attn_mask_math(attn_mask, query.dtype());
+        auto output = at::_scaled_dot_product_attention_math(
+            query, key, value, atten_mask_math, dropout_p, is_causal, c10::nullopt, scale, enable_gqa);
+        return std::get<0>(output);
+    }
+
     static auto compatible_impl = at_npu::native::env::CheckCompatibleImpl();
     bool force_math = false;
     if (compatible_impl) {
         auto &ctx = at::globalContext();
         force_math = ctx.userEnabledMathSDP() && !ctx.userEnabledFlashSDP();
-        if (query.scalar_type() == at::kFloat &&
-            (query.size(-1) % 4 != 0 || key.size(-1) % 4 != 0 || value.size(-1) % 4 != 0)) {
-            force_math = true;
-        }
         if (query.size(-1) > 256 || key.size(-1) > 256 || value.size(-1) > 256) {
             force_math = true;
         }
