@@ -1,4 +1,5 @@
 // Copyright (c) 2025 Huawei Technologies Co., Ltd
+// Copyright (c) 2020-2026 Intel Corporation
 // All rights reserved.
 //
 // Licensed under the BSD 3-Clause License  (the "License");
@@ -10,6 +11,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/Resize.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -61,6 +63,58 @@ void split_with_sizes_copy_out(
   if (is_fused_op_optim(self, split_sizes) ||
       (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
        op_plugin::utils::is_gte_cann_version_920())) {
+    if (dim < 0) {
+      dim = at::maybe_wrap_dim(dim, self.dim());
+    }
+    TORCH_CHECK(
+      self.dim() != 0, "split expects at least a 1-dimensional tensor")
+    const int64_t dim_size = self.size(dim);
+    int64_t split_sizes_sum = 0;
+    for (const auto i : c10::irange(split_sizes.size())) {
+      TORCH_CHECK(
+          split_sizes[i] >= 0,
+          "split_with_sizes expects split_sizes have only non-negative ",
+          "entries, but got split_sizes=",
+          split_sizes[i]);
+      split_sizes_sum += split_sizes[i];
+    }
+    TORCH_CHECK(
+        split_sizes_sum == dim_size,
+        "split_with_sizes expects split_sizes to sum exactly to ",
+        dim_size,
+        " (input tensor's size at dimension ",
+        dim,
+        "), ",
+        "but got split_sizes=",
+        split_sizes);
+
+    TORCH_CHECK(
+        out.size() == split_sizes.size(),
+        "split_with_sizes_copy_out() expected an out= argument of size ",
+        split_sizes.size(),
+        ", got size ",
+        out.size());
+    auto out_shape = self.sizes().vec();
+    for (const auto i : c10::irange(split_sizes.size())) {
+      out_shape[dim] = split_sizes[i];
+      if (at::native::resize_output_check(out[i], out_shape)) {
+        out[i].resize_(out_shape);
+      }
+      TORCH_CHECK(
+          out[i].dtype() == self.dtype(),
+          "Expected out tensor to have dtype ",
+          self.dtype(),
+          ", but got ",
+          out[i].dtype(),
+          " instead");
+      TORCH_CHECK(
+          out[i].device() == self.device(),
+          "Expected out tensor to have device ",
+          self.device(),
+          ", but got ",
+          out[i].device(),
+          " instead");
+    }
     EXEC_NPU_CMD(aclnnSplitWithSize, self, split_sizes, dim, out);
   } else {
     at::native::split_with_sizes_copy_out(self, split_sizes, dim, out);
