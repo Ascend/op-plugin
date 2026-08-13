@@ -22,7 +22,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64, key_dtype=None, value_dtype=None) -> Tensor
+torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64, key_dtype=None, value_dtype=None, sinks=None) -> Tensor
 ```
 
 ## 参数说明
@@ -84,6 +84,8 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **value\_dtype**（`int`）：可选参数，表示value传入的数据类型，支持传入`hifloat8`数据类型或不传。当传入`hifloat8`时，表示key传入数据类型为`hifloat8`，当不传时，表示key传入数据类型为`int8`或`float8_e4m3fn`，具体数据类型根据key进行推导，数据类型需要与key\_dtype保持一致。
 
+- **sinks**（`Tensor`）：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`float32`，shape为[Q\_N]。
+
 ## 返回值说明
 
 - **out**（`Tensor`）：代表公式中的输出Attention。数据格式支持$ND$，数据类型支持`bfloat16`和`float16`。输出shape与入参`query`的shape保持一致。
@@ -102,6 +104,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
   - 参数key、value数据类型仅支持`int8`数据类型，不支持`hifloat8、float8_e4m3fn`。
   - 参数sparse\_block\_size支持[1,16]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
   - key不支持非连续。
+  - 不支持sinks。此参数仅允许缺省或显式传入None。传入其他任意值会导致报错。
 
 ## 调用示例
 
