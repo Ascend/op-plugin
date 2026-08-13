@@ -615,11 +615,12 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     import torch_npu
     import math
     import torchair as tng
+    import os
     
     from torchair.configs.compiler_config import CompilerConfig
     import torch._dynamo
-    TORCHDYNAMO_VERBOSE=1
-    TORCH_LOGS="+dynamo"
+    os.environ['TORCHDYNAMO_VERBOSE'] = '1'
+    os.environ['TORCH_LOGS'] = '+dynamo'
     
     # 支持入图的打印宏
     import logging

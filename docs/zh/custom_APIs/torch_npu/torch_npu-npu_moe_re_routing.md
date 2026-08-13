@@ -118,7 +118,6 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
             else:
                 rand_int = tokens_num - tokens_sum
                 rand_num = random.randint(0, rand_int)
-            rand_num = 1
             expert_token_num_per_rank[i][j] = rand_num
             tokens_sum += rand_num
     per_token_scales = torch.randn(tokens_num, dtype = torch.float32)
@@ -164,7 +163,6 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
             else:
                 rand_int = tokens_num - tokens_sum
                 rand_num = random.randint(0, rand_int)
-            rand_num = 1
             expert_token_num_per_rank[i][j] = rand_num
             tokens_sum += rand_num
     per_token_scales = torch.randn(tokens_num, dtype = torch.float32)
