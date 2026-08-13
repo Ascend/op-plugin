@@ -391,7 +391,7 @@ inline void LazyFusionFlush() {
 }
 
 inline bool IsEnabled() {
-  static const bool global_enabled =
+  const bool global_enabled =
       g_lazy_fusion_manager.flags_.enabled && c10_npu::option::OptionsManager::GetTaskQueueEnable();
   if (!global_enabled) {
     return false;

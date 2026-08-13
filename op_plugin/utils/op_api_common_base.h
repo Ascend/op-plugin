@@ -579,7 +579,7 @@ TORCH_NPU_API uint32_t OpApiGetTaskQueueEnable();
 
 #define EXEC_NPU_CMD_EXT(aclnn_api, ...)                                                                               \
     do {                                                                                                               \
-        static const auto task_queue_enable = OpApiGetTaskQueueEnable();                                               \
+        const auto task_queue_enable = OpApiGetTaskQueueEnable();                                               \
         if (task_queue_enable == 2) {                                                                                  \
             EXEC_NPU_CMD_V2_EXT(aclnn_api, __VA_ARGS__);                                                               \
         } else {                                                                                                       \

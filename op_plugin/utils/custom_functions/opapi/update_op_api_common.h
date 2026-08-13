@@ -195,7 +195,7 @@
 
 #define EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, workspace_addr, workspace_size, ...)           \
   do {                                                                                                \
-    static const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();      \
+    const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();      \
     if (task_queue_enable == 2) {                                                                     \
       EXEC_UPDATE_NPU_NO_FORMAT_CHECK_CMD_V2(aclnn_api, workspace_addr, workspace_size, __VA_ARGS__); \
     } else {                                                                                          \

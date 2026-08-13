@@ -450,7 +450,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
 
 #define EXEC_NPU_CMD(aclnn_api, ...)                                                                                   \
     do {                                                                                                               \
-        static const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();                   \
+        const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();                   \
         if (task_queue_enable == 2) {                                                                                  \
             EXEC_NPU_CMD_V2(aclnn_api, __VA_ARGS__);                                                                   \
         } else {                                                                                                       \
@@ -593,7 +593,7 @@ auto DecodeDevice(Ts&... args) -> at::Device
 
 #define EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnn_api, ...)                                                                   \
     do {                                                                                                               \
-        static const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();                   \
+        const auto task_queue_enable = c10_npu::option::OptionsManager::GetTaskQueueEnable();                   \
         if (task_queue_enable == 2) {                                                                                  \
             EXEC_NPU_NO_FORMAT_CHECK_CMD_V2(aclnn_api, __VA_ARGS__);                                                   \
         } else {                                                                                                       \
