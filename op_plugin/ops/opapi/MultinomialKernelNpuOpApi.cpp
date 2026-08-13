@@ -28,40 +28,39 @@ at::Tensor& multinomial_op_api(
     const at::Tensor& self,
     int64_t num_samples,
     bool replacement,
-    c10::optional<at::Generator> generator)
-{
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+    c10::optional<at::Generator> generator) {
+  auto gen =
+      at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
 
-    int64_t counter_offset = 10;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
-        if (!replacement || num_samples == 1) {
-            counter_offset = op_plugin::utils::calc_counter_offset(
-                self.numel(), op_plugin::utils::UNROLL_4);
-        } else {
-            constexpr int64_t MAX_DISTS_PER_LAUNCH = 65535;
-            constexpr int64_t RAND_OFFSET_PER_LAUNCH = 4;
-            int64_t n_dist = (self.dim() == 2) ? self.size(0) : 1;
-            int64_t dists_per_launch = std::min(n_dist, MAX_DISTS_PER_LAUNCH);
-            counter_offset = (n_dist <= 0) ? 0
-                : ((n_dist - 1) / dists_per_launch + 1) * RAND_OFFSET_PER_LAUNCH;
-        }
-    }
-    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    if (is_capture == c10_npu::CaptureStatus::None) {
-        auto pair = gen->philox_engine_inputs(counter_offset);
-        const uint64_t seed = pair.first;
-        const uint64_t offset = pair.second;
-        EXEC_NPU_CMD(aclnnMultinomial, self, num_samples, replacement, seed, offset, result);
+  int64_t counter_offset = 10;
+  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+    if (!replacement || num_samples == 1) {
+      counter_offset = op_plugin::utils::calc_counter_offset(self.numel(), op_plugin::utils::UNROLL_4);
     } else {
-#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
-        auto gen_state_ = gen->philox_npu_state(counter_offset);
-        const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
-        const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
-        const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
-        EXEC_NPU_CMD(aclnnMultinomialTensor, self, num_samples, replacement, *seed_ptr, *offset_ptr, offset_intragraph, result);
-#endif
+      constexpr int64_t MAX_DISTS_PER_LAUNCH = 65535;
+      constexpr int64_t RAND_OFFSET_PER_LAUNCH = 4;
+      int64_t n_dist = (self.dim() == 2) ? self.size(0) : 1;
+      int64_t dists_per_launch = std::min(n_dist, MAX_DISTS_PER_LAUNCH);
+      counter_offset = (n_dist <= 0) ? 0 : ((n_dist - 1) / dists_per_launch + 1) * RAND_OFFSET_PER_LAUNCH;
     }
-    return result;
+  }
+  auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+  if (is_capture == c10_npu::CaptureStatus::None) {
+    auto pair = gen->philox_engine_inputs(counter_offset);
+    const uint64_t seed = pair.first;
+    const uint64_t offset = pair.second;
+    EXEC_NPU_CMD(aclnnMultinomial, self, num_samples, replacement, seed, offset, result);
+  } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+    auto gen_state_ = gen->philox_npu_state(counter_offset);
+    const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+    const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+    const uint64_t offset_intragraph = gen_state_.offset_intragraph_;
+    EXEC_NPU_CMD(
+        aclnnMultinomialTensor, self, num_samples, replacement, *seed_ptr, *offset_ptr, offset_intragraph, result);
+#endif
+  }
+  return result;
 }
 
 at::Tensor& multinomial_out(
@@ -69,34 +68,29 @@ at::Tensor& multinomial_out(
     int64_t num_samples,
     bool replacement,
     c10::optional<at::Generator> generator,
-    at::Tensor& result)
-{
-    DO_COMPATIBILITY(aclnnMultinomial, acl_op::multinomial_out(self, num_samples, replacement, generator, result));
-    auto input_dim = self.dim();
-    auto output_size = op_infer::array_to_small_vector(self.sizes());
-    output_size[input_dim - 1] = num_samples;
-    at_npu::native::OpPreparation::check_tensor(
-        {self},
-        result,
-        at::ScalarType::Long,
-        output_size);
-    multinomial_op_api(result, self, num_samples, replacement, generator);
-    return result;
+    at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnMultinomial, acl_op::multinomial_out(self, num_samples, replacement, generator, result));
+  auto input_dim = self.dim();
+  auto output_size = op_infer::array_to_small_vector(self.sizes());
+  output_size[input_dim - 1] = num_samples;
+  at_npu::native::OpPreparation::check_tensor({self}, result, at::ScalarType::Long, output_size);
+  multinomial_op_api(result, self, num_samples, replacement, generator);
+  return result;
 }
 
 at::Tensor multinomial(
     const at::Tensor& self,
     int64_t num_samples,
     bool replacement,
-    c10::optional<at::Generator> generator)
-{
-    DO_COMPATIBILITY(aclnnMultinomial, acl_op::multinomial(self, num_samples, replacement, generator));
-    auto dim = self.dim();
-    auto shape = op_infer::array_to_small_vector(self.sizes());
-    shape[dim-1] = num_samples;
-    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(shape, self.options().dtype(at::kLong));
-    multinomial_op_api(result, self, num_samples, replacement, generator);
-    return result;
+    c10::optional<at::Generator> generator) {
+  DO_COMPATIBILITY(aclnnMultinomial, acl_op::multinomial(self, num_samples, replacement, generator));
+  auto dim = self.dim();
+  auto shape = op_infer::array_to_small_vector(self.sizes());
+  shape[dim - 1] = num_samples;
+  at::Tensor result =
+      at_npu::native::OpPreparation::apply_tensor_without_format(shape, self.options().dtype(at::kLong));
+  multinomial_op_api(result, self, num_samples, replacement, generator);
+  return result;
 }
 
-}
+} // namespace op_api

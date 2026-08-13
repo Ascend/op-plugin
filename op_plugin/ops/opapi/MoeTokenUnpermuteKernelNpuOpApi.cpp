@@ -27,50 +27,47 @@ using npu_preparation = at_npu::native::OpPreparation;
 using tensor_list = std::tuple<at::Tensor, at::Tensor>;
 
 namespace {
-bool is_ascend950()
-{
-    const static bool result = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
-    return result;
+bool is_ascend950() {
+  const static bool result = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
+  return result;
 }
-}  // namespace
+} // namespace
 
 tensor_list _npu_moe_token_unpermute(
-    const at::Tensor &permuted_tokens,
-    const at::Tensor &sorted_indices,
-    const c10::optional<at::Tensor> &probs,
+    const at::Tensor& permuted_tokens,
+    const at::Tensor& sorted_indices,
+    const c10::optional<at::Tensor>& probs,
     bool padded_mode,
-    c10::OptionalIntArrayRef restore_shape)
-{
-    auto unpermuted_tokens_size = op_infer::npu_moe_token_unpermute_out_size(permuted_tokens, sorted_indices, probs);
-    at::Tensor unpermuted_tokens = npu_preparation::apply_tensor_without_format(
-        unpermuted_tokens_size, permuted_tokens.options().dtype());
+    c10::OptionalIntArrayRef restore_shape) {
+  auto unpermuted_tokens_size = op_infer::npu_moe_token_unpermute_out_size(permuted_tokens, sorted_indices, probs);
+  at::Tensor unpermuted_tokens =
+      npu_preparation::apply_tensor_without_format(unpermuted_tokens_size, permuted_tokens.options().dtype());
 
-    std::array<int64_t, 1> default_restore_shape = {1};
-    at::IntArrayRef restore_shape_value = restore_shape.value_or(default_restore_shape);
-    EXEC_NPU_CMD(aclnnMoeTokenUnpermute,
-        permuted_tokens,
-        sorted_indices,
-        probs,
-        padded_mode,
-        restore_shape_value,
-        unpermuted_tokens);
+  std::array<int64_t, 1> default_restore_shape = {1};
+  at::IntArrayRef restore_shape_value = restore_shape.value_or(default_restore_shape);
+  EXEC_NPU_CMD(
+      aclnnMoeTokenUnpermute,
+      permuted_tokens,
+      sorted_indices,
+      probs,
+      padded_mode,
+      restore_shape_value,
+      unpermuted_tokens);
 
-    bool has_probs = probs.has_value() && probs.value().defined();
-    bool need_save_permuted_tokens =
-        has_probs || !op_plugin::utils::is_gte_cann_version_910() || is_ascend950();
-    at::Tensor permuted_tokens_for_backward = need_save_permuted_tokens ? permuted_tokens : at::Tensor();
-    return std::make_tuple(unpermuted_tokens, permuted_tokens_for_backward);
+  bool has_probs = probs.has_value() && probs.value().defined();
+  bool need_save_permuted_tokens = has_probs || !op_plugin::utils::is_gte_cann_version_910() || is_ascend950();
+  at::Tensor permuted_tokens_for_backward = need_save_permuted_tokens ? permuted_tokens : at::Tensor();
+  return std::make_tuple(unpermuted_tokens, permuted_tokens_for_backward);
 }
 
 at::Tensor npu_moe_token_unpermute(
-    const at::Tensor &permuted_tokens,
-    const at::Tensor &sorted_indices,
-    const c10::optional<at::Tensor> &probs,
+    const at::Tensor& permuted_tokens,
+    const at::Tensor& sorted_indices,
+    const c10::optional<at::Tensor>& probs,
     bool padded_mode,
-    c10::OptionalIntArrayRef restore_shape)
-{
-    tensor_list results = at_npu::native::custom_ops::_npu_moe_token_unpermute(
-        permuted_tokens, sorted_indices, probs, padded_mode, restore_shape);
-    return std::get<0>(results);
+    c10::OptionalIntArrayRef restore_shape) {
+  tensor_list results = at_npu::native::custom_ops::_npu_moe_token_unpermute(
+      permuted_tokens, sorted_indices, probs, padded_mode, restore_shape);
+  return std::get<0>(results);
 }
-}  // namespace op_api
+} // namespace op_api

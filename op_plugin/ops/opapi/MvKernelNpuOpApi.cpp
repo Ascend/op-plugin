@@ -22,35 +22,33 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &mv_out(const at::Tensor &self, const at::Tensor &vec, at::Tensor &out)
-{
-    DO_COMPATIBILITY(aclnnMv, acl_op::mv_out(self, vec, out));
-    auto names = at::namedinference::propagate_names_for_addmv(self, vec, out);
-    npu_preparation::check_tensor({self, vec}, out, out.scalar_type(), {self.size(0)});
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
-    EXEC_NPU_CMD(aclnnMv, self, vec, out, cube_math_type);
-    at::namedinference::propagate_names_if_nonempty(out, names);
-    return out;
+at::Tensor& mv_out(const at::Tensor& self, const at::Tensor& vec, at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnMv, acl_op::mv_out(self, vec, out));
+  auto names = at::namedinference::propagate_names_for_addmv(self, vec, out);
+  npu_preparation::check_tensor({self, vec}, out, out.scalar_type(), {self.size(0)});
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  EXEC_NPU_CMD(aclnnMv, self, vec, out, cube_math_type);
+  at::namedinference::propagate_names_if_nonempty(out, names);
+  return out;
 }
 
-at::Tensor mv(const at::Tensor &self, const at::Tensor &vec)
-{
-    DO_COMPATIBILITY(aclnnMv, acl_op::mv(self, vec));
-    at::Tensor result;
+at::Tensor mv(const at::Tensor& self, const at::Tensor& vec) {
+  DO_COMPATIBILITY(aclnnMv, acl_op::mv(self, vec));
+  at::Tensor result;
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-    if (self.has_names() || vec.has_names()) {
-        result = at::empty({self.size(0)}, vec.options());
-    } else {
-        result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
-    }
-#else
+  if (self.has_names() || vec.has_names()) {
+    result = at::empty({self.size(0)}, vec.options());
+  } else {
     result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
+  }
+#else
+  result = npu_preparation::apply_tensor_without_format({self.size(0)}, vec.options());
 #endif
-    auto names = at::namedinference::propagate_names_for_addmv(self, vec, result);
-    int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
-    EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
-    at::namedinference::propagate_names_if_nonempty(result, names);
-    return result;
+  auto names = at::namedinference::propagate_names_for_addmv(self, vec, result);
+  int8_t cube_math_type = op_plugin::utils::get_cube_math_type_with_passthrough();
+  EXEC_NPU_CMD(aclnnMv, self, vec, result, cube_math_type);
+  at::namedinference::propagate_names_if_nonempty(result, names);
+  return result;
 }
 
-}  // namespace op_api
+} // namespace op_api
