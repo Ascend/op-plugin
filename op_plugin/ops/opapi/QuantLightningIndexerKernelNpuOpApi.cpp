@@ -31,75 +31,131 @@ const int DIM_2 = 2;
 const int DIM_3 = 3;
 
 // 工具函数，推导输出shape
-at::Tensor construct_quant_lightning_indexer_output_tensor(const at::Tensor& query, const at::Tensor& key,
-                                                           int64_t sparse_count, std::string query_layout_str,
-                                                           std::string key_layout_str)
-{
-    at::SmallVector<int64_t, SIZE> output_size;
-    for (size_t i = 0; i < query.sizes().size(); i++) {
-        TORCH_CHECK(query.size(i) > 0, "All values within query's shape should be greater "
-            "than 0, but shape[", i, "] is ", query.size(i));
-    }
-    for (size_t i = 0; i < key.sizes().size(); i++) {
-        TORCH_CHECK(key.size(i) > 0, "All values within key's shape should be greater "
-            "than 0, but shape[", i, "] is ", key.size(i));
-    }
-    TORCH_CHECK(sparse_count > 0, "sparse count should be greater than 0, but now is ", sparse_count);
-    int64_t keyHeadNum = (key_layout_str == "TND")? key.size(DIM_1) : key.size(DIM_2);
-    if (query_layout_str == "BSND") {
-        output_size = {query.size(DIM_0), query.size(DIM_1), keyHeadNum, sparse_count};
-    } else {
-        output_size = {query.size(DIM_0), keyHeadNum, sparse_count};
-    }
-    at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, query.options().dtype(at::kInt));
+at::Tensor construct_quant_lightning_indexer_output_tensor(
+    const at::Tensor& query,
+    const at::Tensor& key,
+    int64_t sparse_count,
+    std::string query_layout_str,
+    std::string key_layout_str) {
+  at::SmallVector<int64_t, SIZE> output_size;
+  for (size_t i = 0; i < query.sizes().size(); i++) {
+    TORCH_CHECK(
+        query.size(i) > 0,
+        "All values within query's shape should be greater "
+        "than 0, but shape[",
+        i,
+        "] is ",
+        query.size(i));
+  }
+  for (size_t i = 0; i < key.sizes().size(); i++) {
+    TORCH_CHECK(
+        key.size(i) > 0,
+        "All values within key's shape should be greater "
+        "than 0, but shape[",
+        i,
+        "] is ",
+        key.size(i));
+  }
+  TORCH_CHECK(sparse_count > 0, "sparse count should be greater than 0, but now is ", sparse_count);
+  int64_t keyHeadNum = (key_layout_str == "TND") ? key.size(DIM_1) : key.size(DIM_2);
+  if (query_layout_str == "BSND") {
+    output_size = {query.size(DIM_0), query.size(DIM_1), keyHeadNum, sparse_count};
+  } else {
+    output_size = {query.size(DIM_0), keyHeadNum, sparse_count};
+  }
+  at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, query.options().dtype(at::kInt));
 
-    return output;
+  return output;
 }
 
 at::Tensor npu_quant_lightning_indexer(
-    const at::Tensor &query, const at::Tensor &key, const at::Tensor &weights,
-    const at::Tensor &query_dequant_scale, const at::Tensor &key_dequant_scale,
-    int64_t query_quant_mode, int64_t key_quant_mode,
-    const c10::optional<at::Tensor> &actual_seq_lengths_query,
-    const c10::optional<at::Tensor> &actual_seq_lengths_key,
-    const c10::optional<at::Tensor> &block_table,
-    c10::string_view layout_query, c10::string_view layout_key, int64_t sparse_count,
-    int64_t sparse_mode, int64_t pre_tokens, int64_t next_tokens,
-    c10::optional<int64_t> query_dtype, c10::optional<int64_t> key_dtype)
-{
-    TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
-    TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
+    const at::Tensor& query,
+    const at::Tensor& key,
+    const at::Tensor& weights,
+    const at::Tensor& query_dequant_scale,
+    const at::Tensor& key_dequant_scale,
+    int64_t query_quant_mode,
+    int64_t key_quant_mode,
+    const c10::optional<at::Tensor>& actual_seq_lengths_query,
+    const c10::optional<at::Tensor>& actual_seq_lengths_key,
+    const c10::optional<at::Tensor>& block_table,
+    c10::string_view layout_query,
+    c10::string_view layout_key,
+    int64_t sparse_count,
+    int64_t sparse_mode,
+    int64_t pre_tokens,
+    int64_t next_tokens,
+    c10::optional<int64_t> query_dtype,
+    c10::optional<int64_t> key_dtype) {
+  TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")
+  TORCH_CHECK(key.numel() > 0, "Tensor key is empty.")
 
-    std::string query_layout_str = std::string(layout_query);
-    std::string key_layout_str = std::string(layout_key);
+  std::string query_layout_str = std::string(layout_query);
+  std::string key_layout_str = std::string(layout_key);
 
-    bool check_qdtype = query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) != aclDataType::ACL_HIFLOAT8;
-    TORCH_CHECK(!check_qdtype, "The query_dtype is only used to support hifloat8, and should be default when the dtype of query tensor is not hifloat8.")
-    bool check_kdtype = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) != aclDataType::ACL_HIFLOAT8;
-    TORCH_CHECK(!check_kdtype, "The key_dtype is only used to support hifloat8, and should be default when the dtype of key tensor is not hifloat8.")
+  bool check_qdtype =
+      query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+  TORCH_CHECK(
+      !check_qdtype,
+      "The query_dtype is only used to support hifloat8, and should be default when the dtype of query tensor is not hifloat8.")
+  bool check_kdtype = key_dtype.has_value() && c10_npu::GetAclDataType(key_dtype.value()) != aclDataType::ACL_HIFLOAT8;
+  TORCH_CHECK(
+      !check_kdtype,
+      "The key_dtype is only used to support hifloat8, and should be default when the dtype of key tensor is not hifloat8.")
 
-    // construct the output tensor
-    at::Tensor quant_lightning_indexer_output = construct_quant_lightning_indexer_output_tensor(
-        query, key, sparse_count, query_layout_str, key_layout_str);
-    // convert str
-    char *query_layout_ptr = const_cast<char *>(query_layout_str.c_str());
-    char *key_layout_ptr = const_cast<char *>(key_layout_str.c_str());
+  // construct the output tensor
+  at::Tensor quant_lightning_indexer_output =
+      construct_quant_lightning_indexer_output_tensor(query, key, sparse_count, query_layout_str, key_layout_str);
+  // convert str
+  char* query_layout_ptr = const_cast<char*>(query_layout_str.c_str());
+  char* key_layout_ptr = const_cast<char*>(key_layout_str.c_str());
 
-    bool is_hifloat8_qk = query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) == aclDataType::ACL_HIFLOAT8;
-    if (is_hifloat8_qk) {
-        TensorWrapper query_wrapper = make_wrapper(query, query_dtype);
-        TensorWrapper key_wrapper = make_wrapper(key, key_dtype);
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnQuantLightningIndexer, query_wrapper, key_wrapper,
-            weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query, actual_seq_lengths_key,
-            block_table, query_quant_mode, key_quant_mode, query_layout_ptr, key_layout_ptr, sparse_count, sparse_mode,
-            pre_tokens, next_tokens, quant_lightning_indexer_output);
-    } else {
-        EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnQuantLightningIndexer, query, key,
-            weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query, actual_seq_lengths_key,
-            block_table, query_quant_mode, key_quant_mode, query_layout_ptr, key_layout_ptr, sparse_count, sparse_mode,
-            pre_tokens, next_tokens, quant_lightning_indexer_output);
-    }
-    return quant_lightning_indexer_output;
+  bool is_hifloat8_qk =
+      query_dtype.has_value() && c10_npu::GetAclDataType(query_dtype.value()) == aclDataType::ACL_HIFLOAT8;
+  if (is_hifloat8_qk) {
+    TensorWrapper query_wrapper = make_wrapper(query, query_dtype);
+    TensorWrapper key_wrapper = make_wrapper(key, key_dtype);
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        aclnnQuantLightningIndexer,
+        query_wrapper,
+        key_wrapper,
+        weights,
+        query_dequant_scale,
+        key_dequant_scale,
+        actual_seq_lengths_query,
+        actual_seq_lengths_key,
+        block_table,
+        query_quant_mode,
+        key_quant_mode,
+        query_layout_ptr,
+        key_layout_ptr,
+        sparse_count,
+        sparse_mode,
+        pre_tokens,
+        next_tokens,
+        quant_lightning_indexer_output);
+  } else {
+    EXEC_NPU_NO_FORMAT_CHECK_CMD(
+        aclnnQuantLightningIndexer,
+        query,
+        key,
+        weights,
+        query_dequant_scale,
+        key_dequant_scale,
+        actual_seq_lengths_query,
+        actual_seq_lengths_key,
+        block_table,
+        query_quant_mode,
+        key_quant_mode,
+        query_layout_ptr,
+        key_layout_ptr,
+        sparse_count,
+        sparse_mode,
+        pre_tokens,
+        next_tokens,
+        quant_lightning_indexer_output);
+  }
+  return quant_lightning_indexer_output;
 }
 
 } // namespace op_api
