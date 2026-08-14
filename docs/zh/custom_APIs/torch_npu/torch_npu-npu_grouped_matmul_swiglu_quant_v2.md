@@ -17,126 +17,194 @@
     <details>
     <summary>量化场景A8W8（A指激活矩阵，W指权重矩阵，8指int8数据类型）：</summary>
 
-      - **输入**：
-        * $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
-        * $W∈\mathbb{Z_8}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
-        * $w\_scale∈\mathbb{R}^{E \times N}$：分组权重矩阵的逐通道缩放因子。
-        * $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
-        * $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
-      - **输出**：
-        * $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
-        * $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
-      - **计算过程**：
-        1. 根据groupList\[i\]确定当前分组的token，$i \in [0,Len(groupList)]$。
-        2. 根据分组确定的入参进行如下计算：
+    - **输入**：
+      - $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
+      - $W∈\mathbb{Z_8}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
+      - $w\_scale∈\mathbb{R}^{E \times N}$：分组权重矩阵的逐通道缩放因子。
+      - $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
+      - $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
+    - **输出**：
+      - $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
+      - $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
+    - **计算过程**：
+      1. 根据groupList\[i\]确定当前分组的token，$i \in [0,Len(groupList)]$。
+      2. 根据分组确定的入参进行如下计算：
 
-          $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}$
+        $$
+        C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}
+        $$
 
-          $C_{i,act}, gate_{i} = split(C_{i})$
+        $$
+        C_{i,act}, gate_{i} = split(C_{i})
+        $$
 
-          $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
-        3. 量化输出结果：
+        $$
+        S_{i}=Swish(C_{i,act})\odot gate_{i}
+        $$
 
-          $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
+        其中$Swish(x)=\frac{x}{1+e^{-x}}$
 
-          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
+      3. 量化输出结果：
+
+        $$
+        Q\_scale_{i} = \frac{max(|S_{i}|)}{127}
+        $$
+
+        $$
+        Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil
+        $$
 
     </details>
 
     <details>
     <summary>MSD场景A8W4（A指激活矩阵，W指权重矩阵，8指int8数据类型，4指int4数据类型）：</summary>
 
-      - **输入**：
-        * $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
-        * $W∈\mathbb{Z_4}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
-        * $weightAssistMatrix∈\mathbb{R}^{E \times N}$：计算矩阵乘时的辅助矩阵（离线生成，非算子内部完成）。
-        * $w\_scale$：分组权重矩阵的缩放因子，perchannel时shape为$\mathbb{R}^{E \times N}$，pergroup时shape为$\mathbb{R}^{E \times K\_group\_num \times N}$。
-        * $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
-        * $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
-      - **输出**：
-        * $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
-        * $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
-      - **计算过程**：
-        1. 根据groupList\[i\]确定当前分组的token，分组逻辑与A8W8相同。
-        2. 将左矩阵int8拆为高低4bit两部分：
+    - **输入**：
+      - $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
+      - $W∈\mathbb{Z_4}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
+      - $weightAssistMatrix∈\mathbb{R}^{E \times N}$：计算矩阵乘时的辅助矩阵（离线生成，非算子内部完成）。
+      - $w\_scale$：分组权重矩阵的缩放因子，perchannel时shape为$\mathbb{R}^{E \times N}$，pergroup时shape为$\mathbb{R}^{E \times K\_group\_num \times N}$。
+      - $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
+      - $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
+    - **输出**：
+      - $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
+      - $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
+    - **计算过程**：
+      1. 根据groupList\[i\]确定当前分组的token，分组逻辑与A8W8相同。
+      2. 将左矩阵int8拆为高低4bit两部分：
 
-          $X\_high\_4bits_{i} = \lfloor \frac{X_{i}}{16} \rfloor$，$X\_low\_4bits_{i} = X_{i}\ \&\ 0x0f - 8$
-        3. 分别与权重做矩阵乘并应用perchannel或pergroup量化缩放，合并高低位结果：
+        $$
+        X\_high\_4bits_{i} = \lfloor \frac{X_{i}}{16} \rfloor
+        $$
 
-          $C_{i} = (C\_high_{i} * 16 + C\_low_{i} + weightAssistMatrix_{i}) \odot x\_scale_{i}$
+        $$
+        X\_low\_4bits_{i} = X_{i}\ \&\ 0x0f - 8
+        $$
 
-          $C_{i,act}, gate_{i} = split(C_{i})$
+      3. 分别与权重做矩阵乘并应用perchannel或pergroup量化缩放，合并高低位结果：
 
-          $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
-        4. 量化输出结果：
+        $$
+        C_{i} = (C\_high_{i} * 16 + C\_low_{i} + weightAssistMatrix_{i}) \odot x\_scale_{i}
+        $$
 
-          $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
+        $$
+        C_{i,act}, gate_{i} = split(C_{i})
+        $$
 
-          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
+        $$
+        S_{i}=Swish(C_{i,act})\odot gate_{i}
+        $$
+
+        $$
+        Swish(x)=\frac{x}{1+e^{-x}}
+        $$
+
+      4. 量化输出结果：
+
+        $$
+        Q\_scale_{i} = \frac{max(|S_{i}|)}{127}
+        $$
+
+        $$
+        Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil
+        $$
 
     </details>
 
     <details>
     <summary>量化场景A4W4（A指激活矩阵，W指权重矩阵，4指int4数据类型）：</summary>
 
-      - **输入**：
-        * $X∈\mathbb{Z_4}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
-        * $W∈\mathbb{Z_4}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
-        * $w\_scale∈\mathbb{R}^{E \times N}$：分组权重矩阵的逐通道缩放因子。
-        * $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
-        * $smoothScale∈\mathbb{R}^{E \times N/2}$：平滑缩放因子，E是专家个数，N是输出维度。支持shape为(E,)时广播。
-        * $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
-      - **输出**：
-        * $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
-        * $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
-      - **计算过程**：
-        1. 根据groupList\[i\]确定当前分组的token，分组逻辑与A8W8相同。
-        2. 根据分组确定的入参进行如下计算：
+    - **输入**：
+      - $X∈\mathbb{Z_4}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
+      - $W∈\mathbb{Z_4}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
+      - $w\_scale∈\mathbb{R}^{E \times N}$：分组权重矩阵的逐通道缩放因子。
+      - $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
+      - $smoothScale∈\mathbb{R}^{E \times N/2}$：平滑缩放因子，E是专家个数，N是输出维度。支持shape为(E,)时广播。
+      - $groupList∈\mathbb{N}^{E}$：cumsum或count的分组索引列表。
+    - **输出**：
+      - $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
+      - $Q\_scale∈\mathbb{R}^{M}$：量化缩放因子。
+    - **计算过程**：
+      1. 根据groupList\[i\]确定当前分组的token，分组逻辑与A8W8相同。
+      2. 根据分组确定的入参进行如下计算：
 
-          $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}$
+        $$
+        C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}
+        $$
 
-          $C_{i,act}, gate_{i} = split(C_{i})$
+        $$
+        C_{i,act}, gate_{i} = split(C_{i})
+        $$
 
-          $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
+        $$
+        S_{i}=Swish(C_{i,act})\odot gate_{i}
+        $$
 
-          $S_{i} = S_{i} \odot smoothScale_{i\ Broadcast}$
+        $$
+        Swish(x)=\frac{x}{1+e^{-x}}
+        $$
 
-          注：当smoothScale形状为(E,)时，会对其进行广播，使其与$S_{i}$的形状匹配。
-        3. 量化输出结果：
+        $$
+        S_{i} = S_{i} \odot smoothScale_{i\ Broadcast}
+        $$
 
-          $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
+        注：当smoothScale形状为(E,)时，会对其进行广播，使其与$S_{i}$的形状匹配。
 
-          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
+      3. 量化输出结果：
+
+        $$
+        Q\_scale_{i} = \frac{max(|S_{i}|)}{127}
+        $$
+
+        $$
+        Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil
+        $$
 
     </details>
-  
-  - <term>Ascend 950PR/Ascend 950DT</term>：  
+
+  - <term>Ascend 950PR/Ascend 950DT</term>：
     <details>
     <summary>MX量化场景：</summary>
 
       1. 根据分组确定的入参进行如下计算：
 
-         $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}$
+         $$
+         C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}
+         $$
 
-         $C_{i,act}, gate_{i} = split(C_{i})$
+         $$
+         C_{i,act}, gate_{i} = split(C_{i})
+         $$
 
-         $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
+         $$
+         S_{i}=Swish(C_{i,act})\odot gate_{i}
+         $$
+
+         $$
+         Swish(x)=\frac{x}{1+e^{-x}}
+         $$
 
       2. 量化输出结果：
 
-         $shared\_exp = \left\lfloor \log_2(max_i(|S_i|)) \right\rceil - emax$
+         $$
+         shared\_exp = \left\lfloor \log_2(max_i(|S_i|)) \right\rceil - emax
+         $$
 
-         $Q\_scale = 2 ^ {shared\_exp}$
+         $$
+         Q\_scale = 2 ^ {shared\_exp}
+         $$
 
-         $Q_i = quantize\_to\_element\_format(S_i/Q\_scale), \space i\space from\space 1\space to\space blocksize$
+         $$
+         Q_i = quantize\_to\_element\_format(S_i/Q\_scale), \space i\space from\space 1\space to\space blocksize
+         $$
 
          其中，$emax$表示对应数据类型的最大正则数的指数位：
 
          |   DataType    | emax |
          | :-----------: | :--: |
-         | FLOAT8_E4M3FN |  8   |
-         |  FLOAT8_E5M2  |  15  |
-         |  FLOAT4_E2M1  |  2   |
+         | float8_e4m3fn |  8   |
+         |  float8_e5m2  |  15  |
+         |  float4_e2m1  |  2   |
 
          其中，$blocksize$表示每次量化的元素个数，仅支持32。
 
@@ -147,19 +215,33 @@
 
       1. 根据分组确定的入参进行如下计算：
 
-         $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i} \odot w\_scale_{i}$
+         $$
+         C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i} \odot w\_scale_{i}
+         $$
 
-         $C_{i,act}, gate_{i} = split(C_{i})$
+         $$
+         C_{i,act}, gate_{i} = split(C_{i})
+         $$
 
-         $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
+         $$
+         S_{i}=Swish(C_{i,act})\odot gate_{i}
+         $$
+
+         $$
+         Swish(x)=\frac{x}{1+e^{-x}}
+         $$
 
          其中，$x\_scale_{i}$表示对应token的量化因子。
 
       2. 量化输出结果：
 
-         $Q\_scale_{i} = \frac{max(|S_{i}|)}{max(type)}$
+         $$
+         Q\_scale_{i} = \frac{max(|S_{i}|)}{max(type)}
+         $$
 
-         $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
+         $$
+         Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil
+         $$
 
     </details>
 
@@ -182,7 +264,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - 数据格式为ND时，shape支持3维，非转置shape\[\[e, k, n\]\]，转置shape\[\[e, n, k\]\]。数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数weight\_dtype为对应类型，此时weight本身的dtype不再生效，但仍需保证weight本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴需为偶数，以保证8bits可以转换为2个float4。
     - 数据格式为FRACTAL\_NZ\(通过接口npu\_format\_cast，可实现格式转换\)时，shape支持5维，非转置shape\[e, n/32, k/16, 16, 32\], 转置shape\[e, k/32, n/16, 16, 32\]；数据类型仅支持torch.float8\_e4m3fn。
-  
+
 - **weight\_scale**（`TensorList`）：必选输入，右矩阵的量化因子，对应公式中的$w_{scale}$。目前仅支持TensorList长度为1。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`weight`数据类型为`int8`时，`weight_scale`的shape支持2维；`weight`数据类型为`int32`时，`weight_scale`的shape支持2维和3维。数据类型支持`float32`、`float16`、`bfloat16`、`uint64`。
   - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持4维，非转置shape\[\[e, ceil\(k / 64\), n, 2\]\]，转置shape\[\[e, n, ceil\(k / 64\), 2\]\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持2维，shape\[\[e, n\]\]，当x为torch.int8时，weightScale需支持torch.bfloat16、torch.float32、torch.float16，当x为torch.float8\_e4m3fn/torch.float8\_e5m2/torch\_npu.hifloat8时，weightScale支持torch.bfloat16、torch.float32。
@@ -212,8 +294,8 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR/Ascend 950DT</term>：默认值为torch.int8，当前支持传入torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8。
 
 - **group\_list\_type**（`int`）：可选输入，参数表示`group_list`的输入类型，数据类型为`int32`，默认值为0。
-    - 取值为0时，表示cumsum模式，`group_list`中的每个元素代表当前分组的累计长度。
-    - 取值为1时，表示count模式，`group_list`中的每个元素代表该分组包含多少元素。
+  - 取值为0时，表示cumsum模式，`group_list`中的每个元素代表当前分组的累计长度。
+  - 取值为1时，表示count模式，`group_list`中的每个元素代表该分组包含多少元素。
 - **tuning\_config**（`List[int]`）：可选输入，参数数组中的第一个元素表示各个专家处理的token数的预期值。从第二个元素开始预留，用户无须填写，未来会进行扩展。默认设置为None。
 
 - **x\_dtype**（int）：可选参数，指定输入x的真实数据类型。当前仅支持默认值None，表示输入x真实的数据类型与输入x的dtype相同。
@@ -257,29 +339,32 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - k：矩阵乘法reduce轴的大小，取值范围为1-2147483647。
 
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
-    - 支持A8W8、A8W4、A4W4量化场景，输入和输出Tensor支持的数据类型组合如下：
 
-        |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
-        |--------|--------|--------|--------|--------|--------|--------|--------|
-        |A8W8|`int8`|`int8`|`float32`、`float16`、`bfloat16`|`float32`|-|`int8`|`float32`|
-        |A8W4|`int8`|`int4`、`int32`|`uint64`|`float32`|-|`int8`|`float32`|
-        |A4W4|`int4`、`int32`|`int4`、`int32`|`float32`|`float32`|`float32`|`int8`|`float32`|
+  - 支持A8W8、A8W4、A4W4量化场景，输入和输出Tensor支持的数据类型组合如下：
 
-    - shape约束如下：
+    |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
+    |--------|--------|--------|--------|--------|--------|--------|--------|
+    |A8W8|`int8`|`int8`|`float32`、`float16`、`bfloat16`|`float32`|-|`int8`|`float32`|
+    |A8W4|`int8`|`int4`、`int32`|`uint64`|`float32`|-|`int8`|`float32`|
+    |A4W4|`int4`、`int32`|`int4`、`int32`|`float32`|`float32`|`float32`|`int8`|`float32`|
 
-        |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
-        |--------|--------|--------|--------|--------|--------|--------|--------|
-        |A8W8|(M, K)|NZ格式shape形如{(E, N/32, K/16, 16, 32)}|{(E, N)}|(M,)|-|(M, N/2)|(M,)|
-        |A8W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|perchannel:{(E, N)}; pergroup:{(E, K\_group\_num, N)}|(M,)|-|(M, N/2)|(M,)|
-        |A4W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|{(E, N)}|(M,)|(E, N/2)或(E,)|(M, N/2)|(M,)|
+  - shape约束如下：
 
-    - A8W8场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于65536。
-    - A8W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
-    - A4W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
+    |量化场景|x|weight|weight\_scale|x\_scale|smooth\_scale|output|output\_scale|
+    |--------|--------|--------|--------|--------|--------|--------|--------|
+    |A8W8|(M, K)|NZ格式shape形如{(E, N/32, K/16, 16, 32)}|{(E, N)}|(M,)|-|(M, N/2)|(M,)|
+    |A8W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|perchannel:{(E, N)}; pergroup:{(E, K\_group\_num, N)}|(M,)|-|(M, N/2)|(M,)|
+    |A4W4|(M, K)|$ND$格式{(E, K, N)}或NZ格式|{(E, N)}|(M,)|(E, N/2)或(E,)|(M, N/2)|(M,)|
+
+  - A8W8场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于65536。
+  - A8W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
+  - A4W4场景下，不支持N轴长度超过10240，不支持`x`的尾轴长度大于等于20000。
+
 - <term>Ascend 950PR/Ascend 950DT</term>：
-    - 输入和输出Tensor支持的数据类型组合如下：
 
-      - MX量化场景：
+  - 输入和输出Tensor支持的数据类型组合如下：
+
+    - MX量化场景：
 
         | 量化模式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
         | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -287,7 +372,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         | MXFP4量化（ND格式） | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.float4_e2m1fn_x2` / `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
         | MXFP8量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` |
 
-      - Pertoken量化场景：
+    - Pertoken量化场景：
 
         | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
         | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -295,7 +380,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` / `torch.float16` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.int8` | `torch.float32` |
         | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.hifloat8` | `torch.float32` |
 
-    - 输入和输出Tensor支持的shape组合如下：
+  - 输入和输出Tensor支持的shape组合如下：
 
       | 量化模式 | x | weight | weight_scale | x_scale | output | output_scale |
       | --- | --- | --- | --- | --- | --- | --- |
@@ -306,6 +391,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 ## 调用示例
 
 - 单算子模式调用：
+
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
 
     ```python
@@ -331,7 +417,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
     output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu())
     ```
-  
+
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp8
 
     ```python
@@ -448,25 +534,25 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     import torchair as tng
     from scipy.special import softmax
     from torchair.configs.compiler_config import CompilerConfig
-    
+
     torch.npu.config.allow_internal_format = True
     config = CompilerConfig()
     npu_backend = tng.get_npu_backend(compiler_config=config)
-     
+
     class Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
         def forward(self, x, weight, weightscale, xscale, group_list, quant_dtype):
             output = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weightscale, xscale, group_list, quant_dtype=quant_dtype, dequant_dtype=5)
-            return output    
-     
+            return output
+
     def gen_input_data(E, M, K, N):
         x = torch.randint(-128, 127, (M, K), dtype=torch.int8)
         weight = torch.randint(-128, 127, (E, K, N), dtype=torch.int8)
         weightScale = torch.randn(E, N)
         xScale = torch.randn(M)
         groupList = torch.tensor([128, 128], dtype=torch.int64)
-        return x, weight, weightScale, xScale, groupList    
+        return x, weight, weightScale, xScale, groupList
     E = 2
     M = 512
     K = 7168
@@ -474,7 +560,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     quant_dtype = 1
     x, weight, weightScale, xScale, groupList = gen_input_data(E, M, K, N)
     weight_npu = torch_npu.npu_format_cast(weight.npu(), 29)
-     
+
     model = Model().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     y = model(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu(), quant_dtype)
@@ -513,7 +599,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
             self.weightScale = nn.Parameter(weightScale, requires_grad=False)
             self.xScale = nn.Parameter(xScale, requires_grad=False)
 
-        def forward(self, x_npu: Torch.Tensor, w: Torch.Tensor, group_list_npu: Torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        def forward(self, x_npu: torch.Tensor, w: torch.Tensor, group_list_npu: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
             with torch.no_grad():
                 weight = self.weight
                 weightScale = self.weightScale.npu()
@@ -704,7 +790,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
             self.weight = nn.Parameter(weight_npu, requires_grad=False)
             self.weightScale = nn.Parameter(weightScale, requires_grad=False)
             self.xScale = nn.Parameter(xScale, requires_grad=False)
-        def forward(self, x_npu: Torch.Tensor, w: Torch.Tensor, group_list_npu: Torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        def forward(self, x_npu: torch.Tensor, w: torch.Tensor, group_list_npu: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
             with torch.no_grad():
                 weight = self.weight
                 weightScale = self.weightScale.npu()
