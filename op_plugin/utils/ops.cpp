@@ -17,11 +17,16 @@
 
 namespace at_npu {
 namespace native {
-at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset,
-                                c10::optional<bool> parallel, c10::optional<bool> sync)
-{
-    const c10::OptionalDeviceGuard device_guard(device_of(self));
-    return op_plugin::_npu_dropout_gen_mask(self, size, p, seed, offset, parallel, sync);
+at::Tensor npu_dropout_gen_mask(
+    const at::Tensor& self,
+    at::IntArrayRef size,
+    double p,
+    int64_t seed,
+    int64_t offset,
+    c10::optional<bool> parallel,
+    c10::optional<bool> sync) {
+  const c10::OptionalDeviceGuard device_guard(device_of(self));
+  return op_plugin::_npu_dropout_gen_mask(self, size, p, seed, offset, parallel, sync);
 }
-}  // namespace native
-}  // namespace at_npu
+} // namespace native
+} // namespace at_npu

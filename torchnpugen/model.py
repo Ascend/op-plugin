@@ -565,8 +565,8 @@ class NativeFunction:
         )
         namespace = namespace_helper.get_cpp_namespace(default="aten")
         func = FunctionSchema.parse(namespace_helper.entity_name)
-        
-        
+
+
         impl_name = e.pop("impl_name", None)
         impl_ns = e.pop("impl_ns", "").split(', ')
         sparse = e.pop("sparse", None)
@@ -911,7 +911,7 @@ class BackendIndex:
             # a class for in-tree kernels. It'll just require carefully
             # updating every kernel definition + callsite of every in-tree aten kernel.
             return None
-        
+
 
 # The function schema is undoubtedly the most important data structure
 # in all of the codegen, as it defines the type signature for operators,
@@ -1079,7 +1079,7 @@ class FunctionSchema:
                     and self.returns[0].annotation == self_a.argument.annotation):
                     raise ValueError("len(self.returns) != 1"
                                      "or self.returns[0].annotation != self_a.argument.annotation)")
-                    
+
             else:
                 # You can't method chain on non-tensor self arguments though (like a List[Tensor])
                 # so in all other cases we expect the return type to be none.
@@ -1360,7 +1360,7 @@ class Annotation:
             raise ValueError(f"alias set larger than 1 is not mutable, got {ann} instead.")
         after_set = tuple(m.group(5).split("|")) if m.group(5) else tuple()
         if len(before_alias) > 1 and len(after_set) > 1:
-            raise ValueError(f"before alias set and after alias set cannot be larger " 
+            raise ValueError(f"before alias set and after alias set cannot be larger "
                               "than 1 at the same time, got {ann} instead.")
         annotation_obj = Annotation(
             alias_set=alias_set, is_write=is_write, alias_set_after=after_set

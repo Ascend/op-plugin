@@ -23,17 +23,12 @@ using npu_preparation = at_npu::native::OpPreparation;
 const static int64_t ROTATE_HALF = 0;
 const static int64_t ROTATE_INTERLEAVED = 1;
 
-static bool isRotaryMulMixDtypeSupport(
-    const at::Tensor& self,
-    const at::Tensor& r1,
-    const at::Tensor& r2)
-{
-    return self.dtype() == r1.dtype() && self.dtype() == r2.dtype() ? false : true;
+static bool isRotaryMulMixDtypeSupport(const at::Tensor& self, const at::Tensor& r1, const at::Tensor& r2) {
+  return self.dtype() == r1.dtype() && self.dtype() == r2.dtype() ? false : true;
 }
 
-static at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarType dtype)
-{
-    return self.dtype() == dtype ? self : self.to(dtype);
+static at::Tensor npu_dtype_cast_impl_op_api(const at::Tensor& self, at::ScalarType dtype) {
+  return self.dtype() == dtype ? self : self.to(dtype);
 }
 
 at::Tensor npu_rotary_mul(
@@ -41,38 +36,39 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& r1,
     const at::Tensor& r2,
     c10::string_view rotary_mode,
-    const c10::optional<at::Tensor>& rotate)
-{
-    static bool notNeedCheck = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
-    TORCH_CHECK((notNeedCheck || (rotary_mode == "half" || rotary_mode == "interleave")),
-        "The rotary_mode of npu_rotary_mul should be half or interleave, but got ", rotary_mode,
-        OPS_ERROR(ErrCode::PARAM));
-    DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, rotary_mode));
+    const c10::optional<at::Tensor>& rotate) {
+  static bool notNeedCheck = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
+  TORCH_CHECK(
+      (notNeedCheck || (rotary_mode == "half" || rotary_mode == "interleave")),
+      "The rotary_mode of npu_rotary_mul should be half or interleave, but got ",
+      rotary_mode,
+      OPS_ERROR(ErrCode::PARAM));
+  DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, rotary_mode));
 
-    int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
-        return acl_op::npu_rotary_mul(self, r1, r2, rotary_mode);
-    }
-    at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
-    static const bool is_v2_available = check_aclnn_kernel_available("aclnnRotaryPositionEmbeddingV2");
-    bool isMixDataType = isRotaryMulMixDtypeSupport(self, r1, r2);
-    if (is_v2_available) {
-        if (isMixDataType) {
-            at::Tensor cosCast = npu_dtype_cast_impl_op_api(r1, self.scalar_type());
-            at::Tensor sinCast = npu_dtype_cast_impl_op_api(r2, self.scalar_type());
-            EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingV2, self, cosCast, sinCast, mode, rotate, result);
-        } else {
-            EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingV2, self, r1, r2, mode, rotate, result);
-        }
+  int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
+  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+    return acl_op::npu_rotary_mul(self, r1, r2, rotary_mode);
+  }
+  at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());
+  static const bool is_v2_available = check_aclnn_kernel_available("aclnnRotaryPositionEmbeddingV2");
+  bool isMixDataType = isRotaryMulMixDtypeSupport(self, r1, r2);
+  if (is_v2_available) {
+    if (isMixDataType) {
+      at::Tensor cosCast = npu_dtype_cast_impl_op_api(r1, self.scalar_type());
+      at::Tensor sinCast = npu_dtype_cast_impl_op_api(r2, self.scalar_type());
+      EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingV2, self, cosCast, sinCast, mode, rotate, result);
     } else {
-        if (isMixDataType) {
-            at::Tensor cosCast = npu_dtype_cast_impl_op_api(r1, self.scalar_type());
-            at::Tensor sinCast = npu_dtype_cast_impl_op_api(r2, self.scalar_type());
-            EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, cosCast, sinCast, mode, result);
-        } else {
-            EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, r1, r2, mode, result);
-        }
+      EXEC_NPU_CMD(aclnnRotaryPositionEmbeddingV2, self, r1, r2, mode, rotate, result);
     }
-    return result;
+  } else {
+    if (isMixDataType) {
+      at::Tensor cosCast = npu_dtype_cast_impl_op_api(r1, self.scalar_type());
+      at::Tensor sinCast = npu_dtype_cast_impl_op_api(r2, self.scalar_type());
+      EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, cosCast, sinCast, mode, result);
+    } else {
+      EXEC_NPU_CMD(aclnnRotaryPositionEmbedding, self, r1, r2, mode, result);
+    }
+  }
+  return result;
 }
-}
+} // namespace op_api

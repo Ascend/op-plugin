@@ -22,9 +22,9 @@
 
 namespace op_api {
 
-    at::Scalar adaptToDouble(const at::Scalar& scalar, const at::TensorList& tensors);
+at::Scalar adaptToDouble(const at::Scalar& scalar, const at::TensorList& tensors);
 
-    at::Scalar adaptToInteger(const at::Scalar& scalar, const at::TensorList& tensors);
+at::Scalar adaptToInteger(const at::Scalar& scalar, const at::TensorList& tensors);
 
 } // namespace op_api
 #endif

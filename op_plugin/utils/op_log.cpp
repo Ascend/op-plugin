@@ -21,5 +21,5 @@ namespace logging {
 std::shared_ptr<npu_logging::Logger> LOGGER = npu_logging::logging().getLogger("torch_npu.op_plugin");
 thread_local int log_depth = 0;
 
-}  // namespace utils
-}  // namespace op_plugin
+} // namespace logging
+} // namespace op_plugin

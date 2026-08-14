@@ -16,10 +16,10 @@
 #ifndef __TORCH_NPU_OP_PLUGIN_UTILS_FOREACHCONSTANTS__
 #define __TORCH_NPU_OP_PLUGIN_UTILS_FOREACHCONSTANTS__
 
-constexpr int SINGLE_FOREACH_OP_TENSOR_COUNT = 48;      // 单动态输入输出最佳切分长度1
-constexpr int SINGLE_FOREACH_SCALAR_OP_TENSOR_COUNT = 50;      // 单动态输入输出最佳切分长度2
-constexpr int DOUBLE_FOREACH_OP_TENSOR_COUNT = 24;      // 双动态输入输出子最佳切分长度
-constexpr int TRIPLE_FOREACH_OP_TENSOR_COUNT = 16;      // 三动态输入输出最佳切分长度
-constexpr int QUADRA_FOREACH_OP_TENSOR_COUNT = 12;  // 四动态输入输出最佳切分长度
+constexpr int SINGLE_FOREACH_OP_TENSOR_COUNT = 48; // 单动态输入输出最佳切分长度1
+constexpr int SINGLE_FOREACH_SCALAR_OP_TENSOR_COUNT = 50; // 单动态输入输出最佳切分长度2
+constexpr int DOUBLE_FOREACH_OP_TENSOR_COUNT = 24; // 双动态输入输出子最佳切分长度
+constexpr int TRIPLE_FOREACH_OP_TENSOR_COUNT = 16; // 三动态输入输出最佳切分长度
+constexpr int QUADRA_FOREACH_OP_TENSOR_COUNT = 12; // 四动态输入输出最佳切分长度
 
 #endif

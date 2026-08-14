@@ -20,26 +20,24 @@
 
 namespace op_api {
 
-    at::Scalar adaptToDouble(const at::Scalar& scalar, const at::TensorList& tensors)
-    {
-        at::Scalar scalar_ = scalar;
-        auto scalar_type = tensors[0].scalar_type();
-        if (at::isFloatingType(scalar_type) && at::isIntegralType(scalar.type(), false)) {
-            scalar_ = at::Scalar(scalar.toDouble());
-        }
+at::Scalar adaptToDouble(const at::Scalar& scalar, const at::TensorList& tensors) {
+  at::Scalar scalar_ = scalar;
+  auto scalar_type = tensors[0].scalar_type();
+  if (at::isFloatingType(scalar_type) && at::isIntegralType(scalar.type(), false)) {
+    scalar_ = at::Scalar(scalar.toDouble());
+  }
 
-        return scalar_;
-    }
+  return scalar_;
+}
 
-    at::Scalar adaptToInteger(const at::Scalar& scalar, const at::TensorList& tensors)
-    {
-        at::Scalar scalar_ = scalar;
-        auto scalar_type = tensors[0].scalar_type();
-        if (at::isIntegralType(scalar_type, false) && at::isFloatingType(scalar.type())) {
-            scalar_ = at::Scalar(scalar.toLong());
-        }
+at::Scalar adaptToInteger(const at::Scalar& scalar, const at::TensorList& tensors) {
+  at::Scalar scalar_ = scalar;
+  auto scalar_type = tensors[0].scalar_type();
+  if (at::isIntegralType(scalar_type, false) && at::isFloatingType(scalar.type())) {
+    scalar_ = at::Scalar(scalar.toLong());
+  }
 
-        return scalar_;
-    }
+  return scalar_;
+}
 
 } // namespace op_api

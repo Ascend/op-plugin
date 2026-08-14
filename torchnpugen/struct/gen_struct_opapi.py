@@ -6,7 +6,7 @@
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-# https://opensource.org/licenses/BSD-3-Clause                                                  
+# https://opensource.org/licenses/BSD-3-Clause
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,7 +44,7 @@ def main() -> None:
         template_dir_fm = os.path.join(script_dir, "templates")
     else:
         template_dir_fm = "torchnpugen/struct/templates"
-    
+
     fm = FileManager(
             install_dir=options.output_dir, template_dir=template_dir_fm, dry_run=False
         )
