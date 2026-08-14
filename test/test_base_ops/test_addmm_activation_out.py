@@ -57,13 +57,13 @@ class TestAddmmActivationOut(TestCase):
             cpu_out = cpu_out.to(torch.float32)
 
         cpu_out_copy = copy.deepcopy(cpu_out)
-        cpu_ref = self.cpu_reference_out(cpu_input1, cpu_input2, cpu_input3, 
+        cpu_ref = self.cpu_reference_out(cpu_input1, cpu_input2, cpu_input3,
                                         beta, alpha, use_gelu, cpu_out_copy)
-        
+
         if dtype == np.float16:
             cpu_ref = cpu_ref.astype(np.float16)
-            
-        npu_res = self.npu_op_exec_out(npu_input1, npu_input2, npu_input3, 
+
+        npu_res = self.npu_op_exec_out(npu_input1, npu_input2, npu_input3,
                                       beta, alpha, use_gelu, npu_out)
         self.assertRtolEqual(cpu_ref, npu_res, prec=1.e-3, prec16=1.e-3)
 
@@ -71,7 +71,7 @@ class TestAddmmActivationOut(TestCase):
         shape_a = (3, 3)
         shape_b = (3, 4)
         shape_c = (4, 3)
-        
+
         # ReLU 测试
         self._run_test(np.float32, shape_a, shape_b, shape_c, 1, (0, 2), False)
         # GeLU 测试
@@ -81,7 +81,7 @@ class TestAddmmActivationOut(TestCase):
         shape_a = (3, 3)
         shape_b = (3, 4)
         shape_c = (4, 3)
-        
+
         # ReLU 测试
         self._run_test(np.float16, shape_a, shape_b, shape_c, 2, (0, 10), False)
         # GeLU 测试

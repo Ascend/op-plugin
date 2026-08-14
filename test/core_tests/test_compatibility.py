@@ -200,7 +200,7 @@ class TestOpApiCompatibility(TestCase):
                     allow_dict["torch_npu"].extend(allow_dict_info["torch_npu"][version_tag])
 
         # load torch_npu_OpApi_schema_all.json
-        base_schema = {}        
+        base_schema = {}
         with open(get_file_path_2(os.path.dirname(__file__), "torch_npu_OpApi_schema_all.json")) as fp:
             base_schema0 = json.load(fp)
             for key, value in base_schema0.items():

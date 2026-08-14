@@ -16,31 +16,30 @@
 #include <c10/core/Scalar.h>
 #include <c10/util/Optional.h>
 
-inline bool correction_fits_aclnn_int64(const c10::optional<c10::Scalar> &correction)
-{
-    if (!correction.has_value()) {
-        return true;
-    }
-    const c10::Scalar &s = correction.value();
-    if (s.isIntegral(true)) {
-        return true;
-    }
-    if (!s.isFloatingPoint()) {
-        return false;
-    }
-    const double v = s.toDouble();
-    if (!std::isfinite(v)) {
-        return false;
-    }
-    const double t = std::trunc(v);
-    if (v != t) {
-        return false;
-    }
-    if (v > static_cast<double>(std::numeric_limits<int64_t>::max()) ||
-        v < static_cast<double>(std::numeric_limits<int64_t>::min())) {
-        return false;
-    }
+inline bool correction_fits_aclnn_int64(const c10::optional<c10::Scalar>& correction) {
+  if (!correction.has_value()) {
     return true;
+  }
+  const c10::Scalar& s = correction.value();
+  if (s.isIntegral(true)) {
+    return true;
+  }
+  if (!s.isFloatingPoint()) {
+    return false;
+  }
+  const double v = s.toDouble();
+  if (!std::isfinite(v)) {
+    return false;
+  }
+  const double t = std::trunc(v);
+  if (v != t) {
+    return false;
+  }
+  if (v > static_cast<double>(std::numeric_limits<int64_t>::max()) ||
+      v < static_cast<double>(std::numeric_limits<int64_t>::min())) {
+    return false;
+  }
+  return true;
 }
 
 #endif // OP_PLUGIN_UTILS_STD_VAR_CORRECTION_UTILS_H_

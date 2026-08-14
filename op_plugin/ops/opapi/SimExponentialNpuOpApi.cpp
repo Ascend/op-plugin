@@ -20,26 +20,26 @@
 
 namespace op_api {
 
-at::Tensor& npu_sim_exponential_(at::Tensor& self, double lambd, c10::optional<at::Generator> generator)
-{
-    TORCH_CHECK(lambd > 0.0, "npu_sim_exponential_ expects lambd > 0.0, but found lambd=",
-        lambd, OPS_ERROR(ErrCode::PARAM));
-    if (std::isinf(lambd)) {
-        self.zero_();
-        return self;
-    }
-
-    auto gen = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-    // Remove false after aclnnSimThreadExponential supports aclnnSetPytorchRandom.
-    auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, false);
-    auto pair = gen->philox_engine_inputs(counter_offset);
-    int64_t seed = static_cast<int64_t>(pair.first);
-    int64_t offset = static_cast<int64_t>(pair.second);
-    int64_t count = self.numel();
-    ASCEND_LOGI("count:%lld, lambd:%lf, seed:%lld, offset:%lld", count, lambd, seed, offset);
-
-    EXEC_NPU_CMD(aclnnSimThreadExponential, self, count, lambd, seed, offset);
+at::Tensor& npu_sim_exponential_(at::Tensor& self, double lambd, c10::optional<at::Generator> generator) {
+  TORCH_CHECK(
+      lambd > 0.0, "npu_sim_exponential_ expects lambd > 0.0, but found lambd=", lambd, OPS_ERROR(ErrCode::PARAM));
+  if (std::isinf(lambd)) {
+    self.zero_();
     return self;
+  }
+
+  auto gen =
+      at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
+  // Remove false after aclnnSimThreadExponential supports aclnnSetPytorchRandom.
+  auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, false);
+  auto pair = gen->philox_engine_inputs(counter_offset);
+  int64_t seed = static_cast<int64_t>(pair.first);
+  int64_t offset = static_cast<int64_t>(pair.second);
+  int64_t count = self.numel();
+  ASCEND_LOGI("count:%lld, lambd:%lf, seed:%lld, offset:%lld", count, lambd, seed, offset);
+
+  EXEC_NPU_CMD(aclnnSimThreadExponential, self, count, lambd, seed, offset);
+  return self;
 }
 
-}   // namespace op_api
+} // namespace op_api

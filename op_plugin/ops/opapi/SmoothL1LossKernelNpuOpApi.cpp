@@ -20,26 +20,28 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor &smooth_l1_loss_out(const at::Tensor &self, const at::Tensor &target, int64_t reduction, double beta,
-                               at::Tensor &out)
-{
-    DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss_out(self, target, reduction, beta, out));
-    auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, reduction);
-    npu_preparation::check_tensor({self, target}, out, out.scalar_type(), outputSize);
-    npu_preparation::check_memory({self, target}, {out});
-    float sigma = static_cast<float>(beta);
-    EXEC_NPU_CMD(aclnnSmoothL1Loss, self, target, reduction, sigma, out);
-    return out;
+at::Tensor& smooth_l1_loss_out(
+    const at::Tensor& self,
+    const at::Tensor& target,
+    int64_t reduction,
+    double beta,
+    at::Tensor& out) {
+  DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss_out(self, target, reduction, beta, out));
+  auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, reduction);
+  npu_preparation::check_tensor({self, target}, out, out.scalar_type(), outputSize);
+  npu_preparation::check_memory({self, target}, {out});
+  float sigma = static_cast<float>(beta);
+  EXEC_NPU_CMD(aclnnSmoothL1Loss, self, target, reduction, sigma, out);
+  return out;
 }
 
-at::Tensor smooth_l1_loss(const at::Tensor &self, const at::Tensor &target, int64_t reduction, double beta)
-{
-    DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss(self, target, reduction, beta));
-    auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, reduction);
-    at::ScalarType high_type = at::native::result_type(self, target);
-    at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(high_type));
-    float sigma = static_cast<float>(beta);
-    EXEC_NPU_CMD(aclnnSmoothL1Loss, self, target, reduction, sigma, result);
-    return result;
+at::Tensor smooth_l1_loss(const at::Tensor& self, const at::Tensor& target, int64_t reduction, double beta) {
+  DO_COMPATIBILITY(aclnnSmoothL1Loss, acl_op::smooth_l1_loss(self, target, reduction, beta));
+  auto outputSize = op_infer::smooth_l1_loss_npu_output_size(self, reduction);
+  at::ScalarType high_type = at::native::result_type(self, target);
+  at::Tensor result = npu_preparation::apply_tensor_without_format(outputSize, self.options().dtype(high_type));
+  float sigma = static_cast<float>(beta);
+  EXEC_NPU_CMD(aclnnSmoothL1Loss, self, target, reduction, sigma, result);
+  return result;
 }
-}
+} // namespace op_api

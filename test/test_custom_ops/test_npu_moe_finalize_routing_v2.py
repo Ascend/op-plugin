@@ -20,12 +20,12 @@ class MoeFinalizeRoutingData:
 
 
 class TestMoeFinalizeRouting(TestCase):
-   
+
     def moe_finalize_routing_np(self, data_struct):
         NK = data_struct.expanded_src_to_dst_row.shape[0]
         K = 1
         if data_struct.scales is not None:
-            K = data_struct.scales.shape[1] 
+            K = data_struct.scales.shape[1]
         num_rows = NK // K
         H = data_struct.expanded_permuted_rows.shape[-1]
         expanded_permuted_rows = data_struct.expanded_permuted_rows.reshape(-1, H)
@@ -45,7 +45,7 @@ class TestMoeFinalizeRouting(TestCase):
                 else:
                     dst_row = expanded_permuted_rows[value, :]
                 expert_id = data_struct.expert_for_source_row[i, k]
-                
+
                 scalesV = 1.0
                 if data_struct.scales is not None:
                     scalesV = data_struct.scales[i, k]
@@ -54,7 +54,7 @@ class TestMoeFinalizeRouting(TestCase):
                 else:
                     out[i, :] += scalesV * dst_row
         return out
-   
+
     def custom_op_exec(self, data_struct):
         scales_npu = None
         if data_struct.scales is not None:
@@ -70,7 +70,7 @@ class TestMoeFinalizeRouting(TestCase):
                                                   torch.tensor(data_struct.expanded_src_to_dst_row).npu(),
                                                   expert_for_source_row_npu,
                                                   data_struct.drop_pad_mode)
-    
+
     def generate_input_data(self, expert_num=16, token_len=10, top_k=4, num_rows=50):
         expanded_permuted_rows = np.random.randn(num_rows * top_k, token_len).astype(np.float32)
         skip1 = np.random.randn(num_rows, token_len).astype(np.float32)
@@ -83,7 +83,7 @@ class TestMoeFinalizeRouting(TestCase):
         data_struct = MoeFinalizeRoutingData(expanded_permuted_rows, skip1, skip2_optional, bias, scales,
                                              expanded_src_to_dst_row, expert_for_source_row, 0)
         return data_struct
-    
+
     def generate_input_data_drop_pad(self, expert_num=16, token_len=10, c=20, top_k=4, num_rows=50):
         expanded_permuted_rows = np.random.randn(expert_num, c, token_len).astype(np.float32)
         skip1 = np.random.randn(num_rows, token_len).astype(np.float32)
@@ -96,7 +96,7 @@ class TestMoeFinalizeRouting(TestCase):
         data_struct = MoeFinalizeRoutingData(expanded_permuted_rows, skip1, skip2_optional, bias, scales,
                                              expanded_src_to_dst_row, expert_for_source_row, 1)
         return data_struct
-    
+
     @SupportedDevices(['Ascend910B'])
     def test_moe_finalize_routing(self, device="npu"):
         data_struct = self.generate_input_data(expert_num=16, token_len=5, top_k=4, num_rows=5)
@@ -114,4 +114,4 @@ class TestMoeFinalizeRouting(TestCase):
         self.assertRtolEqual(expected_output, custom_output.cpu().numpy(), 0.0001)
 
 if __name__ == "__main__":
-    run_tests()        
+    run_tests()

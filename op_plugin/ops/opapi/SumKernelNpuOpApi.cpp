@@ -21,46 +21,41 @@
 namespace op_api {
 
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
-at::Tensor& sum_out(const at::Tensor &self,
-                    at::DimnameList dim,
-                    bool keepdim,
-                    c10::optional<c10::ScalarType> dtype,
-                    at::Tensor &result)
-{
-    DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum_out(self, dim, keepdim, dtype, result));
-    return op_api::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
+at::Tensor& sum_out(
+    const at::Tensor& self,
+    at::DimnameList dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum_out(self, dim, keepdim, dtype, result));
+  return op_api::sum_out(self, dimnames_to_positions(self, dim), keepdim, dtype, result);
 }
 
-at::Tensor sum(const at::Tensor &self,
-               at::DimnameList dim,
-               bool keepdim,
-               c10::optional<c10::ScalarType> dtype)
-{
-    DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum(self, dim, keepdim, dtype));
-    return op_api::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
+at::Tensor sum(const at::Tensor& self, at::DimnameList dim, bool keepdim, c10::optional<c10::ScalarType> dtype) {
+  DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum(self, dim, keepdim, dtype));
+  return op_api::sum(self, dimnames_to_positions(self, dim), keepdim, dtype);
 }
 #endif
 
-at::Tensor sum(const at::Tensor &self, c10::optional<c10::ScalarType> dtype)
-{
-    DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum(self, dtype));
-    return op_api::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
+at::Tensor sum(const at::Tensor& self, c10::optional<c10::ScalarType> dtype) {
+  DO_COMPATIBILITY(aclnnReduceSum, acl_op::sum(self, dtype));
+  return op_api::sum(self, c10::SmallVector<int64_t, N>{}, false, dtype);
 }
 
-at::Tensor& sum_out(const at::Tensor &self,
-                    at::OptionalIntArrayRef dim,
-                    bool keepdim,
-                    c10::optional<c10::ScalarType> dtype,
-                    at::Tensor &result)
-{
-    return op_api::sum_out_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype, result);
+at::Tensor& sum_out(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype,
+    at::Tensor& result) {
+  return op_api::sum_out_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype, result);
 }
 
-at::Tensor sum(const at::Tensor &self,
-               at::OptionalIntArrayRef dim,
-               bool keepdim,
-               c10::optional<c10::ScalarType> dtype)
-{
-    return op_api::sum_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype);
+at::Tensor sum(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    bool keepdim,
+    c10::optional<c10::ScalarType> dtype) {
+  return op_api::sum_common_nocheck(self, dim.value_or(at::IntArrayRef{}), keepdim, dtype);
 }
-}
+} // namespace op_api

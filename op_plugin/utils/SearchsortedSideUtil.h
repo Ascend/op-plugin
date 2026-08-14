@@ -17,11 +17,11 @@ namespace op_plugin {
 
 /// When `side` is set it overrides `right` (see torch.searchsorted(side=...)).
 /// Invalid `side` and side/right conflicts are handled in searchsorted_pre_check_npu; call this after validate.
-inline bool resolve_searchsorted_effective_right(bool right, const c10::optional<c10::string_view> &side_opt) {
-    if (!side_opt.has_value()) {
-        return right;
-    }
-    return *side_opt == "right";
+inline bool resolve_searchsorted_effective_right(bool right, const c10::optional<c10::string_view>& side_opt) {
+  if (!side_opt.has_value()) {
+    return right;
+  }
+  return *side_opt == "right";
 }
 
 } // namespace op_plugin

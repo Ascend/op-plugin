@@ -21,44 +21,49 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor& std_out(const at::Tensor& self, at::OptionalIntArrayRef dim,
-                    const c10::optional<c10::Scalar>& correction, bool keepdim, at::Tensor& out)
-{
-    if (!correction_fits_aclnn_int64(correction)) {
-        at::Tensor cpu_out = out.cpu();
-        at::std_out(cpu_out, self.cpu(), dim, correction, keepdim);
-        out.copy_(cpu_out);
-        return out;
-    }
-    DO_COMPATIBILITY(aclnnStd, acl_op::std_out(self, dim, correction, keepdim, out));
-    c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-    if (dim.has_value()) {
-        real_dim = op_infer::array_to_small_vector(dim.value());
-    }
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
-    auto real_dim_array = at::IntArrayRef(real_dim);
-    npu_preparation::check_tensor({self}, out, self, output_size);
-    EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, out);
+at::Tensor& std_out(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    const c10::optional<c10::Scalar>& correction,
+    bool keepdim,
+    at::Tensor& out) {
+  if (!correction_fits_aclnn_int64(correction)) {
+    at::Tensor cpu_out = out.cpu();
+    at::std_out(cpu_out, self.cpu(), dim, correction, keepdim);
+    out.copy_(cpu_out);
     return out;
+  }
+  DO_COMPATIBILITY(aclnnStd, acl_op::std_out(self, dim, correction, keepdim, out));
+  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+  if (dim.has_value()) {
+    real_dim = op_infer::array_to_small_vector(dim.value());
+  }
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+  int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+  auto real_dim_array = at::IntArrayRef(real_dim);
+  npu_preparation::check_tensor({self}, out, self, output_size);
+  EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, out);
+  return out;
 }
 
-at::Tensor std(const at::Tensor& self, at::OptionalIntArrayRef dim,
-               const c10::optional<c10::Scalar>& correction, bool keepdim)
-{
-    if (!correction_fits_aclnn_int64(correction)) {
-        return at::std(self.cpu(), dim, correction, keepdim).to(self.options());
-    }
-    DO_COMPATIBILITY(aclnnStd, acl_op::std(self, dim, correction, keepdim));
-    c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
-    if (dim.has_value()) {
-        real_dim = op_infer::array_to_small_vector(dim.value());
-    }
-    auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
-    auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
-    int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
-    auto real_dim_array = at::IntArrayRef(real_dim);
-    EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
-    return result;
+at::Tensor std(
+    const at::Tensor& self,
+    at::OptionalIntArrayRef dim,
+    const c10::optional<c10::Scalar>& correction,
+    bool keepdim) {
+  if (!correction_fits_aclnn_int64(correction)) {
+    return at::std(self.cpu(), dim, correction, keepdim).to(self.options());
+  }
+  DO_COMPATIBILITY(aclnnStd, acl_op::std(self, dim, correction, keepdim));
+  c10::SmallVector<int64_t, SIZE> real_dim = op_plugin::utils::get_dimlist_for_tensor(self);
+  if (dim.has_value()) {
+    real_dim = op_infer::array_to_small_vector(dim.value());
+  }
+  auto output_size = op_infer::reduce_ops_npu_output_size(self, real_dim, keepdim);
+  auto result = npu_preparation::apply_tensor_without_format(output_size, self.options());
+  int64_t real_correction = correction.has_value() ? correction.value().toLong() : 1;
+  auto real_dim_array = at::IntArrayRef(real_dim);
+  EXEC_NPU_CMD(aclnnStd, self, real_dim_array, real_correction, keepdim, result);
+  return result;
 }
 } // namespace op_api

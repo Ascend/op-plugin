@@ -22,21 +22,16 @@
 namespace sparse {
 using namespace at::sparse;
 
-inline at::SparseTensorImpl* get_sparse_impl(const SparseTensor& self)
-{
-    TORCH_CHECK(self.is_sparse(), "_internal_get_SparseTensorImpl: not a sparse tensor", OPS_ERROR(ErrCode::VALUE));
-    return static_cast<at::SparseTensorImpl*>(self.unsafeGetTensorImpl());
+inline at::SparseTensorImpl* get_sparse_impl(const SparseTensor& self) {
+  TORCH_CHECK(self.is_sparse(), "_internal_get_SparseTensorImpl: not a sparse tensor", OPS_ERROR(ErrCode::VALUE));
+  return static_cast<at::SparseTensorImpl*>(self.unsafeGetTensorImpl());
 }
 
-inline void alias_into_sparse(
-    const SparseTensor& self,
-    const at::Tensor& indices,
-    const at::Tensor& values)
-{
-    get_sparse_impl(self)->set_indices_and_values_unsafe(indices, values);
+inline void alias_into_sparse(const SparseTensor& self, const at::Tensor& indices, const at::Tensor& values) {
+  get_sparse_impl(self)->set_indices_and_values_unsafe(indices, values);
 }
 
 SparseTensor& mul_out_sparse_scalar(SparseTensor& r, const SparseTensor& t, const at::Scalar& value);
 at::Tensor& mul_out_sparse(const at::Tensor& self, const at::Tensor& other, at::Tensor& out);
 
-}
+} // namespace sparse

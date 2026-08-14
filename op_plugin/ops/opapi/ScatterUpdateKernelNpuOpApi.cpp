@@ -17,26 +17,16 @@
 #include "op_plugin/utils/op_api_common.h"
 
 namespace op_api {
-at::Tensor scatter_update(
-    const at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    at::Tensor result = self.clone();
-    EXEC_NPU_CMD(aclnnInplaceScatterUpdate, result, indices, updates, axis);
-    return result;
+at::Tensor scatter_update(const at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t axis) {
+  // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+  at::Tensor result = self.clone();
+  EXEC_NPU_CMD(aclnnInplaceScatterUpdate, result, indices, updates, axis);
+  return result;
 }
 
-at::Tensor &scatter_update_(
-    at::Tensor &self,
-    const at::Tensor &indices,
-    const at::Tensor &updates,
-    int64_t axis)
-{
-    // The attribute 'reduce' of Scatter only supports setting it to 'update'.
-    EXEC_NPU_CMD(aclnnInplaceScatterUpdate, self, indices, updates, axis);
-    return self;
+at::Tensor& scatter_update_(at::Tensor& self, const at::Tensor& indices, const at::Tensor& updates, int64_t axis) {
+  // The attribute 'reduce' of Scatter only supports setting it to 'update'.
+  EXEC_NPU_CMD(aclnnInplaceScatterUpdate, self, indices, updates, axis);
+  return self;
 }
-}  // namespace op_api
+} // namespace op_api
