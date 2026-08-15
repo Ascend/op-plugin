@@ -4823,6 +4823,9 @@
   "func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor": {
     "version": ["v2.3", "newest"]
   },
+  "func: repeat_interleave.Tensor(Tensor repeats, *, SymInt? output_size=None) -> Tensor": {
+    "version": ["v2.2", "newest"]
+  },
   "func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor": {
     "version": ["v2.3", "newest"]
   },

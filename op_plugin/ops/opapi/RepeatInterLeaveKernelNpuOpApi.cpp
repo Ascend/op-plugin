@@ -216,5 +216,32 @@ at::Tensor repeat_interleave_symint(
   }
   return result;
 }
+
+
+at::Tensor repeat_interleave_symint(
+    const at::Tensor& repeats,
+    c10::optional<c10::SymInt> output_size)
+{
+    TORCH_CHECK(
+        repeats.dim() == 1, "repeat_interleave only accept 1D vector as repeat");
+    TORCH_CHECK(
+        repeats.scalar_type() == at::kLong || repeats.scalar_type() == at::kInt,
+        "repeats has to be Long or Int tensor");
+    if (repeats.size(0) == 0) {
+        return at::empty_like(repeats, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
+    }
+    at::Tensor cumsum = repeats.cumsum(0);
+    int64_t total = 0;
+    if (output_size.has_value()) {
+        total = output_size.value().expect_int();
+    } else {
+        total = cumsum[-1].item<int64_t>();
+        TORCH_CHECK((repeats >= 0).all().to(at::kBool).item<bool>(), "repeats cannot be negative.");
+    }
+    at::Tensor result = at::empty({total}, repeats.options());
+    EXEC_NPU_CMD(aclnnRepeatInterleaveTensor, repeats, total, result);
+    return result;
+}
+
 #endif
 } // namespace op_api

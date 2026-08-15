@@ -4294,6 +4294,9 @@ official:
     acl_op: v2.1
     op_api: v2.1
 
+  - func: repeat_interleave.Tensor(Tensor repeats, *, SymInt? output_size=None) -> Tensor
+    op_api: [v2.2, newest]
+
   - func: replication_pad1d(Tensor self, SymInt[2] padding) -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
@@ -7698,6 +7701,9 @@ symint:
 
   - func: repeat_interleave.self_Tensor(Tensor self, Tensor repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor
     acl_op: [v2.2, newest]
+    op_api: [v2.2, newest]
+
+  - func: repeat_interleave.Tensor(Tensor repeats, *, SymInt? output_size=None) -> Tensor
     op_api: [v2.2, newest]
 
   - func: repeat_interleave.self_int(Tensor self, SymInt repeats, int? dim=None, *, SymInt? output_size=None) -> Tensor

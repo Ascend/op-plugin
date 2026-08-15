@@ -124,6 +124,65 @@ class TestRepeatInterleave(TestCase):
         npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), input2)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def cpu_op_exec_repeats_only(self, repeats):
+        output = torch.repeat_interleave(repeats)
+        output = output.numpy()
+        return output
+
+    def npu_op_exec_repeats_only(self, repeats):
+        output = torch.repeat_interleave(repeats)
+        output = output.cpu()
+        output = output.numpy()
+        return output
+
+    def cpu_op_exec_repeats_output_size(self, repeats, output_size):
+        output = torch.repeat_interleave(repeats, output_size=output_size)
+        output = output.numpy()
+        return output
+
+    def npu_op_exec_repeats_output_size(self, repeats, output_size):
+        output = torch.repeat_interleave(repeats, output_size=output_size)
+        output = output.cpu()
+        output = output.numpy()
+        return output
+
+    def test_repeat_interleave_repeats_tensor_int64(self):
+        repeats = torch.tensor([2, 3, 1, 4], dtype=torch.int64)
+        cpu_output = self.cpu_op_exec_repeats_only(repeats)
+        npu_output = self.npu_op_exec_repeats_only(repeats.npu())
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_repeats_tensor_int32(self):
+        repeats = torch.tensor([2, 3, 1, 4], dtype=torch.int32)
+        cpu_output = self.cpu_op_exec_repeats_only(repeats)
+        npu_output = self.npu_op_exec_repeats_only(repeats.npu())
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_repeats_tensor_with_output_size(self):
+        repeats = torch.tensor([2, 3, 1, 4], dtype=torch.int64)
+        output_size = 10
+        cpu_output = self.cpu_op_exec_repeats_output_size(repeats, output_size)
+        npu_output = self.npu_op_exec_repeats_output_size(repeats.npu(), output_size)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_repeats_tensor_large(self):
+        repeats = torch.randint(1, 5, (100,), dtype=torch.int64)
+        cpu_output = self.cpu_op_exec_repeats_only(repeats)
+        npu_output = self.npu_op_exec_repeats_only(repeats.npu())
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_repeats_tensor_single_element(self):
+        repeats = torch.tensor([5], dtype=torch.int64)
+        cpu_output = self.cpu_op_exec_repeats_only(repeats)
+        npu_output = self.npu_op_exec_repeats_only(repeats.npu())
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_repeats_tensor_empty(self):
+        repeats = torch.tensor([], dtype=torch.int64)
+        cpu_output = self.cpu_op_exec_repeats_only(repeats)
+        npu_output = self.npu_op_exec_repeats_only(repeats.npu())
+        self.assertRtolEqual(cpu_output, npu_output)
+
 
 if __name__ == '__main__':
     run_tests()
