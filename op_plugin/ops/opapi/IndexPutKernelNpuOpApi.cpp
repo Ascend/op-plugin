@@ -54,6 +54,50 @@ at::Tensor& index_put_(
     return at::_index_put_impl_(self, indices, value, accumulate, false);
 }
 
+inline std::tuple<bool, at::Tensor> canDispatchToMaskedFill(
+    const at::Tensor& self,
+    const torch::List<std::optional<at::Tensor>>& indices,
+    const at::Tensor& value) {
+  if (!(value.numel() == 1)) {
+    return std::make_tuple(false, at::Tensor());
+  }
+  int64_t num_ind = 0;
+  at::Tensor mask;
+  auto self_device = self.device();
+  for (const std::optional<at::Tensor>& i : indices) {
+    if (!i.has_value() || !(*i).defined()) {
+      num_ind++;
+    } else {
+      const at::Tensor& index = *i;
+      if ((index.scalar_type() != c10::kByte && index.scalar_type() != c10::kBool) ||
+          index.device() != self_device || mask.defined()) {
+        return std::make_tuple(false, at::Tensor());
+      } else {
+        mask = index;
+        for (const auto j : c10::irange(index.dim())) {
+          int64_t srcIdx = num_ind + j;
+          TORCH_CHECK_INDEX(
+              index.size(j) == self.size(srcIdx),
+              "The shape of the mask ",
+              index.sizes(),
+              " at index ",
+              j,
+              " does not match the shape of the indexed tensor ",
+              self.sizes(),
+              " at index ",
+              srcIdx);
+        }
+        num_ind += mask.ndimension();
+      }
+    }
+  }
+  for ([[maybe_unused]] const auto i :
+       c10::irange(num_ind, self.ndimension())) {
+    mask = mask.unsqueeze(-1);
+  }
+  return std::make_tuple(true, mask);
+}
+
 at::Tensor& _index_put_impl_(
     at::Tensor& self,
     const c10::List<c10::optional<at::Tensor>>& indices,
@@ -69,6 +113,16 @@ at::Tensor& _index_put_impl_(
             "Use of index_put_ on expanded tensors is deprecated. "
             "Please clone() the tensor before performing this operation. "
             "This also applies to advanced indexing e.g. tensor[indices] = tensor");
+    }
+    if (!accumulate) {
+        static const std::set<at::ScalarType> masked_fill_dtypes = {
+            at::kFloat, at::kHalf, at::kInt, at::kLong, at::kChar, at::kBool, at::kBFloat16};
+        if (masked_fill_dtypes.count(self.scalar_type()) && masked_fill_dtypes.count(value.scalar_type())) {
+            auto masked_fill_dispatch = canDispatchToMaskedFill(self, indices, value);
+            if (std::get<0>(masked_fill_dispatch)) {
+                return self.masked_fill_(std::get<1>(masked_fill_dispatch), value.item());
+            }
+        }
     }
     check_no_overlap(self, value);
     for (const c10::optional<at::Tensor>& index : indices) {
