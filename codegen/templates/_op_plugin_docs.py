@@ -10539,14 +10539,14 @@ torch_npu.npu_moe_compute_expert_tokens(Tensor sorted_expert_for_source_row, int
 功能描述
 算子功能: MoE(Mixture of Experts, 混合专家模型)计算中, 通过二分查找的方式查找每个专家处理的最后一行的位置.
 计算公式:
-expertTokens_{i}=BinaerSearch(sortedExpertForSourceRow,numExpert)
+expertTokens_{i}=BinarySearch(sortedExpertForSourceRow,i), i in [0,numExpert)
 
 参数说明
-sorted_expert_for_source_row: Tensor类型, 必选参数, 经过专家处理过的结果, 要求是一个1D的Tensor, 数据类型支持int32, 数据格式要求为ND. shape大小需要小于2147483647.
-num_expert: int类型, 必选参数, 总专家数.
+sorted_expert_for_source_row: Tensor类型, 必选参数, 每个source row经过排序后对应的专家索引, 要求是一个1D的Tensor, 数据类型支持int32, 数据格式要求为ND. 输入值取值范围为[0, num_expert-1], 且需按非递减顺序排列; Tensor元素个数需小于2^24.
+num_expert: int类型, 必选参数, 总专家数, 取值范围为(0, 2048].
 
 输出说明
-expertTokens: Tensor类型, 公式中的输出, 要求的是一个1D的Tensor, 数据类型与sorted_expert_for_source_row保持一致.
+expertTokens: Tensor类型, 公式中的输出, 要求的是一个1D的Tensor, shape为[num_expert], 数据类型与sorted_expert_for_source_row保持一致.
 
 约束说明
 该接口支持推理场景下使用.
@@ -10560,14 +10560,15 @@ PyTorch 2.0
 PyTorch 1.11.0
 
 支持的型号
+Ascend 950PR/Ascend 950DT
 Atlas A2 训练系列产品/Atlas 800I A2 推理产品
 
 调用示例
 单算子模式调用
 import torch
 import torch_npu
-sorted_experts = torch.tensor([3,3,4,5,6,7], dtype=torch.int32)
-num_experts = 5
+sorted_experts = torch.tensor([0,0,0,1,1,2], dtype=torch.int32)
+num_experts = 3
 output = torch_npu.npu_moe_compute_expert_tokens(sorted_experts.npu(), num_experts)
 图模式调用
 import torch
@@ -10584,8 +10585,8 @@ class GMMModel(nn.Module):
     def forward(self, sorted_experts, num_experts):
         return torch_npu.npu_moe_compute_expert_tokens(sorted_experts, num_experts)
 def main():
-    sorted_experts = torch.tensor([3,3,4,5,6,7], dtype=torch.int32)
-    num_experts = 5
+    sorted_experts = torch.tensor([0,0,0,1,1,2], dtype=torch.int32)
+    num_experts = 3
     model = GMMModel().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     custom_output = model(sorted_experts, num_experts)

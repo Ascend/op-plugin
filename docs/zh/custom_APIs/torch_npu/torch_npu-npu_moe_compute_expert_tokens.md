@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term> | √ |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 
 ## 功能说明
@@ -12,7 +13,7 @@
 - 计算公式：
 
     $$
-    expertTokens_i = BinarySearch(sortedExpertForSourceRow,numExpert)
+    expertTokens_i = BinarySearch(sortedExpertForSourceRow,i), \quad i \in [0,numExpert)
     $$
 
 ## 函数原型
@@ -23,15 +24,15 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 
 ## 参数说明
 
-- **sorted_expert_for_source_row** (`Tensor`)：必选参数，每个source row经过排序后对应的专家索引，对应公式中的$sortedExpertForSourceRow$，要求是一个1维变量，数据类型支持int32，数据格式要求为$ND$。shape需小于2147483647。
+- **sorted_expert_for_source_row** (`Tensor`)：必选参数，每个source row经过排序后对应的专家索引，对应公式中的$sortedExpertForSourceRow$，要求是一个1维变量，数据类型支持int32，数据格式要求为$ND$。输入值取值范围为[0, `num_expert`-1]，且需按非递减顺序排列；Tensor元素个数需小于$2^{24}$。
 
-- **num_expert** (`int`)：必选参数，表示总专家数。对应公式中的$numExpert$。
+- **num_expert** (`int`)：必选参数，表示总专家数。对应公式中的$numExpert$，取值范围为(0, 2048]。
 
 ## 返回值说明
 
 `Tensor`
 
- 对应公式中的$expertTokens$，要求的是一个1维张量，数据类型与`sorted_expert_for_source_row`保持一致。
+ 对应公式中的$expertTokens$，要求的是一个1维张量，shape为[`num_expert`]，数据类型与`sorted_expert_for_source_row`保持一致。
 
 ## 约束说明
 
