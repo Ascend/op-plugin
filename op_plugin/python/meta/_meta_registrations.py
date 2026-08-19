@@ -3730,7 +3730,15 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
             torch._check(k > 0, lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),)
     if num_x > 0 and output_dtype is None:
         output_dtype = x[0].dtype
-    if split_item == 0:
+    if group_type == 2 and (split_item == 0 or split_item == 1):
+        # In K-split, x is laid out as [K, M], and K is reduced instead of becoming an output dimension.
+        num_weight = weight[0].shape[0] if singleWeight else len(weight)
+        for i in range(num_weight):
+            weight_i = weight[0] if singleWeight else weight[i]
+            ni = n if singleWeight else weight_i.shape[1]
+            dim_n = ni * INT4_IN_INT32 if weight_i.dtype == torch.int32 else ni
+            y.append(x[0].new_empty((x[0].shape[0], dim_n), dtype=output_dtype))
+    elif split_item == 0:
         for i in range(num_x):
             ni = n if singleWeight else weight[i].shape[1]
             dim_n = ni * INT4_IN_INT32 if weight[i].dtype == torch.int32 else ni

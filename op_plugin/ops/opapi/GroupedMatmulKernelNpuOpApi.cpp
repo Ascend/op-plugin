@@ -222,7 +222,14 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
         TORCH_CHECK(x[0].size(1) != 1, "In mxfp4, dim K should not be 2.", OPS_ERROR(ErrCode::VALUE));
     }
     if (split_item_value == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item_value == IN_SPLIT_OUT_NOT_SPLIT) {
-        if (num_group_list > 0) {
+        if (group_type_value == K_SPLIT) {
+            // In K-split, x is laid out as [K, M], and K is reduced instead of becoming an output dimension.
+            y.reserve(num_weight);
+            for (size_t i = 0; i < num_weight; i++) {
+                size_t ni = singleWeight ? n0 : weight[i].size(dim_num_w - 1);
+                create_new_tensor(y, x[0].size(0), ni, options);
+            }
+        } else if (num_group_list > 0) {
             y.reserve(num_group_list);
             int64_t glr_value_0 = group_list_real[0].item<int64_t>();
             TORCH_CHECK(glr_value_0 >= 0,

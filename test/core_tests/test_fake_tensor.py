@@ -2813,6 +2813,25 @@ class TestGroupedMatmul(TestCase):
             self.assertTrue(x[0].shape[0] == res[0].shape[0])
             self.assertTrue(w[0].shape[1] == res[0].shape[1])
 
+    def test_npu_grouped_matmul_meta_13(self): # K分组单多多fp32
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            x1 = torch.randn(125, 2031, dtype=torch.float32).npu().transpose(0, 1)
+            x = [x1]
+            w1 = torch.randn(10, 729, dtype=torch.float32).npu()
+            w2 = torch.randn(115, 653, dtype=torch.float32).npu()
+            w = [w1, w2]
+            group_list = torch.tensor([10, 115]).to(torch.int64).npu()
+            split_item = 1
+            group_type = 2
+            group_list_type = 1
+
+            res = torch_npu.npu_grouped_matmul(x, w, bias=None, group_list=group_list, split_item=split_item, group_type=group_type, group_list_type=group_list_type)
+            self.assertTrue(x[0].shape[0] == res[0].shape[0])
+            self.assertTrue(x[0].shape[0] == res[1].shape[0])
+            self.assertTrue(w[0].shape[1] == res[0].shape[1])
+            self.assertTrue(w[1].shape[1] == res[1].shape[1])
+
     def test_npu_grouped_matmul_meta_950_fp8_1(self):
         with FakeTensorMode():
             torch.manual_seed(0)
