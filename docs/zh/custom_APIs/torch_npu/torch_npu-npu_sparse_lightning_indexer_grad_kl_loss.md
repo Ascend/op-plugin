@@ -37,7 +37,7 @@
         Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
         $$
 
-        其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
+        其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行sinks修正后的L1正则化得到。$D_{KL}$为KL散度，其表达式为：
 
         $$
         D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
@@ -66,7 +66,7 @@
 ## 函数原型
 
 ```python
-npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor, Tensor, Tensor)
+npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, weights, sparse_indices, softmax_max, softmax_sum, scale_value, *, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, sinks=None) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
@@ -104,6 +104,8 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
 **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
+
+ **sinks**(`float`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`float32`，shape为$(N1)$。
 
 ## 返回值说明
 
@@ -233,5 +235,5 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
           q, k, q_index, k_index, weights, sparse_indices, softmax_max, softmax_sum, scale,
           query_rope=q_rope, key_rope=k_rope, actual_seq_qlen=actual_seq_qlen,
           actual_seq_klen=actual_seq_kvlen, layout=input_layout, sparse_mode=sparse_mode,
-          pre_tokens=65536, next_tokens=65536)
+          pre_tokens=65536, next_tokens=65536, sinks=None)
     ```
