@@ -1,12 +1,14 @@
-# 适配开发及调用
+# 自定义算子 C++ 扩展开发示例
 
-## 目录结构介绍
+本示例演示如何使用 Ascend C 实现自定义算子 Kernel，并通过 C++ 扩展（`cpp_extension`）方式集成到 PyTorch，最终在 Python 侧调用。涵盖工程结构、编译、安装、测试全流程。
+
+## 目录结构
 
 ```text
 ├── examples
 |   ├── cpp_extension
 |   │   ├── csrc
-|   │   │   ├── add_custom.asc          # Add算子实现
+|   │   │   ├── add_custom.asc          # Add算子实现（含 5 种正确启动方式对比）
 |   │   │   ├── trig_inplace_custom.asc # 原地三角函数算子实现
 |   │   │   └── pybind11.asc            # pybind绑定自定义算子
 |   |   ├── op_extension/
@@ -21,45 +23,61 @@
 
 ## 新增自定义算子
 
-本示例以Add算子为例，展示了如何在 PyTorch 中使用Ascend C扩展自定义算子Kernel实现，并通过Python的接口调用实现的算子。
+### 1. Kernel 实现
 
-### kernel实现
+在 `./csrc/` 下创建 `.asc` 文件，基于 Ascend C 实现算子 Kernel。Ascend C 开发参考[昇腾社区文档](https://www.hiascend.com/ascend-c)。
 
-  本小节主要介绍如何实现Kernel算子，本样例基于Ascend C进行开发算子。如何使用Ascend C实现算子kernel，可以参考昇腾社区文档[昇腾Ascend C](https://www.hiascend.com/ascend-c)。
+以 `add_custom.asc` 为例，文件包含三部分：
 
-  在`./csrc/`目录下创建一个名为`add_custom.asc`的文件，这是我们自定义加法Kernel的实现文件。样例中实现了一个`run_ascendc_add`的核函数。
+| 组成 | 说明 |
+|------|------|
+| `KernelAdd` 类 | 算子设备侧实现，包含 `Init` / `Process` / `CopyIn` / `Compute` / `CopyOut` |
+| `add_custom` 核函数 | `__global__ __vector__` 修饰的设备入口 |
+| `ascendc_add1/2/3/4/5` | 5 种正确的 Host 侧启动方式，对比不同 stream 获取与队列管理策略 |
 
-### 将Kernel实现与Python接口集成
+**5 种启动方式对比**：
 
-  本小节主要介绍如何封装实现的kernel算子，以及绑定为Python的接口。
-  代码实现在./csrc/ 目录下。
+| 方式 | 函数 | stream 获取 | 队列管理 | 适用场景 |
+|------|------|------------|---------|---------|
+| 1 | `ascendc_add1` | `NPUStream` 对象 | `<<<>>>` 内部清 queue | 简单同步场景 |
+| 2 | `ascendc_add2` | `stream(true)` | 清 queue 后直接启动 | 等价方式1 |
+| 3 | `ascendc_add3` | `stream(false)` | OpCommand 入 queue | **推荐**，保留流水线性能 |
+| 4 | `ascendc_add4` | `stream(true)` | 清 queue + OpCommand 入 queue | 语义直观 |
+| 5 | `ascendc_add5` | `stream()` | 等待 queue 完成后启动 | 等价方式2 |
 
-#### 封装Python模块
+> **推荐方式3**：`stream(false)` 配合 `OpCommand::RunOpApiV2`，保留 TaskQueue 流水线性能，与 TorchNPU 内置算子行为一致。
 
-在`pybind11.asc`文件中使用了pybind11库来将C++代码封装成Python模块，在Python侧可以通过`import`方式进行调用。例如：
-  
-  ```c++
-  PYBIND11_MODULE(custom_ops, m)
-  {
-      m.def("custom_add", &ascendc_ops::run_ascendc_add, "");
-  }
-  ```
+### 2. Python 模块绑定
 
-  通过此绑定，python侧可通过`op_extension.ops.custom_add`调用自定义的API。
+在 `pybind11.asc` 中使用 pybind11 将 C++ 函数暴露为 Python 接口。Python 侧仅暴露推荐方式3：
 
-#### Aten IR实现
+```cpp
+namespace ascendc_ops {
+// 方式3(推荐): stream(false) + OpCommand::RunOpApiV2
+at::Tensor ascendc_add3(const at::Tensor &x, const at::Tensor &y);
+at::Tensor run_trig_custom(const at::Tensor &x, const at::Tensor &out_sin, const at::Tensor &out_cos);
+}
 
-根据Aten IR定义适配算子。
-TorchNPU的算子下发和执行是异步的，通过TASKQUEUE实现，
-样例中，我们通过`at_npu::native::OpCommand::RunOpApiV2`方法，将算子执行入队到TorchNPU的TASKQUEUE。样例如下：
+PYBIND11_MODULE(custom_ops_lib, m)
+{
+    m.def("custom_add", &ascendc_ops::ascendc_add3, "");
+    m.def("custom_trig", &ascendc_ops::run_trig_custom, "");
+}
+```
 
-  ```c++
+### 3. Aten IR 实现
+
+算子通过 `at_npu::native::OpCommand::RunOpApiV2` 入队到 TorchNPU 的 TaskQueue，实现异步下发。推荐方式3的实现：
+
+```cpp
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
+
 namespace ascendc_ops {
-at::Tensor run_ascendc_add(const at::Tensor &x, const at::Tensor &y)
+at::Tensor ascendc_add3(const at::Tensor &x, const at::Tensor &y)
 {
-    auto acl_stream = c10_npu::getCurrentNPUStream().stream(true);
+    // stream(false) 返回 ACL stream 但不清 queue
+    auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);
     at::Tensor z = at::empty_like(x);
     uint32_t blockDim = 8;
     uint32_t totalLength = 1;
@@ -67,20 +85,21 @@ at::Tensor run_ascendc_add(const at::Tensor &x, const at::Tensor &y)
         totalLength *= size;
     }
     // Launch the custom kernel use <<<>>>
-    auto acl_call = [=]() -> int{
-        add_custom<<<blockDim, nullptr, acl_stream>>>((uint8_t *)(x.mutable_data_ptr()), (uint8_t *)(y.mutable_data_ptr()),
-                                                    (uint8_t *)(z.mutable_data_ptr()), totalLength);
+    auto acl_call = [=]() -> int {
+        add_custom<<<blockDim, nullptr, acl_stream>>>(
+            (uint8_t *)(x.mutable_data_ptr()),
+            (uint8_t *)(y.mutable_data_ptr()),
+            (uint8_t *)(z.mutable_data_ptr()),
+            totalLength);
         return 0;
     };
     at_npu::native::OpCommand::RunOpApiV2("ascendc_add", acl_call);
-
     return z;
 }
-
 }  // namespace ascendc_ops
-  ```
+```
 
-上述主要介绍了自定义算子kernel集成的必备流程。
+上述主要介绍了自定义算子kernel集成的必备流程。完整的5种正确启动方式见`./csrc/add_custom.asc`，Python侧通过`./csrc/pybind11.asc`仅暴露推荐方式3。
 
 最后，通过创建ops路径，定义python接口，通过`module_name.ops.custom_add`可以调用自定义算子。测试样例如下：
 
@@ -96,18 +115,31 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 
 ## 运行自定义的算子
 
-  运行依赖PyTorch、TorchNPU和CANN。具体安装步骤参考[TorchNPU文档](https://gitcode.com/ascend/pytorch#%E5%AE%89%E8%A3%85)
-  运行流程：
-
-  1. 运行setup脚本，编译生成whl包。
+### 1. 编译 whl 包
 
       ```bash
       python setup.py bdist_wheel
       ```
 
-     我们的编译工程通过setuptools已为用户封装好如何编译算子kernel和集成到PyTorch。
+`setup.py` 关键逻辑：
 
-  2. 安装whl包
+| 步骤 | 实现 | 说明 |
+|------|------|------|
+| 源码收集 | `glob.glob("csrc/*.asc")` | 自动收集所有 `.asc` 文件 |
+| 架构识别 | `get_npu_arch()` | 通过 `npu-smi info` 解析芯片型号，映射到 `dav-2201`/`dav-3510` |
+| 依赖路径 | `get_dependency_paths()` | 自动收集 torch / torch_npu / Python 的 include 与 lib 路径 |
+| ABI 对齐 | `torch._C._GLIBCXX_USE_CXX11_ABI` | 与 PyTorch ABI 保持一致 |
+| 编译器 | `bisheng -x asc` | 使用 CANN 提供的 bisheng 编译器 |
+
+编译产物位于 `dist/op_extension-0.1-*.whl`。
+
+可选环境变量：
+
+```bash
+USE_NINJA=1 python setup.py bdist_wheel  # 启用 ninja 加速
+```
+
+### 2. 安装 whl 包
 
       ```bash
       cd dist
