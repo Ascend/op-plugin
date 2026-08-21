@@ -5083,5 +5083,11 @@
   },
   "func: npu_renorm_backward(Tensor grad, Tensor self, Scalar p, int dim, Scalar maxnorm) -> Tensor": {
     "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_left_shift.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_right_shift.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
   }
 }
