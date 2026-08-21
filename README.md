@@ -1,89 +1,95 @@
 # OpPlugin
 
-## 简介
+<p>
+    English | <a href="./README.zh.md">简体中文</a>
+</p>
 
-本项目开发了TorchNPU算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
-OpPlugin算子插件的编译、使用依赖昇腾TorchNPU。因此，在编译OpPlugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[TorchNPU](https://gitcode.com/ascend/pytorch/blob/v2.7.1-26.1.0/README.zh.md)。
+## Brief Introduction 
 
-## 目录结构
+In this project, the TorchNPU operator plug-in is developed to provide the NPU operator library invoking capability for developers using the PyTorch framework. The compilation and use of the OpPlugin operator plug-in depend on the Ascend TorchNPU. Therefore, you need to understand and install Ascend PyTorch before compiling OpPlugin. For details about the user manual, see the Ascend community.[TorchNPU](https://gitcode.com/ascend/pytorch/blob/master/README.md).
 
-关键目录如下:
+## Directory structure
 
-```ColdFusion
-├─docs                             # 文档目录
-├─ci                               # 自动化构建与测试脚本目录
-├─op_plugin                        # 项目核心目录
-│  ├─config                        # 配置管理目录
-│  ├─ops                           # 算子实现目录
-│  ├─python                        # python绑定目录
-├─codegen                          # 代码生成目录
-├─examples                         # 示例目录
-└─test                             # 测试目录
+The key directories are as follows:
+
+```text
+├─docs                             #Document Directory
+├─ci                               #Directory for storing the automatic build and test scripts.
+├─op_plugin                        #Project core catalog
+│  ├─config                        #Configuration Management Directory
+│  ├─ops                           #Operator Implementation Directory
+│  ├─python                        #Directory bound with Python
+├─codegen                          #Code generation directory
+├─examples                         #Sample Directory
+└─test                             #Test Directory
 ```
 
-## 版本配套表
+## Version mapping table
 
-OpPlugin仓旨在为**TorchNPU**提供运行所需要的算子适配文件，两个仓的对应关系如下：
+The OpPlugin repository provides the operator adaptation files required by the TorchNPU. The mapping between the two repositories is as follows:
 
-| OpPlugin分支 | 对应TorchNPU版本 |
-| ------------- | :----------------------------------: |
-| master       |     主线版本，如v2.7.1等              |
-| 26.1.0       |    26.1.0版本，如v2.7.1-26.1.0等      |
-| 26.0.0       |    26.0.0版本，如v2.7.1-26.0.0等      |
-| 7.3.0        |     7.3.0版本，如v2.7.1-7.3.0等       |
-| 7.2.0        |     7.2.0版本，如v2.7.1-7.2.0等       |
-| 7.1.0        |     7.1.0版本，如v2.1.0-7.1.0等       |
-| 7.0.0        |     7.0.0版本，如v2.1.0-7.0.0等       |
-| 6.0.0        |     6.0.0版本，如v2.1.0-6.0.0等       |
-| 6.0.rc3      |   6.0.rc3版本，如v2.1.0-6.0.rc3等     |
-| 6.0.rc2      |   6.0.rc2版本，如v2.1.0-6.0.rc2等     |
-| 6.0.rc1      |   6.0.rc1版本，如v2.1.0-6.0.rc1等     |
-| 5.0.0        |     5.0.0版本，如v2.1.0-5.0.0等       |
-| 5.0.rc3      |   5.0.rc3版本，如v2.1.0-5.0.rc3等     |
+| OpPlugin Branch |      Corresponding TorchNPU version      |
+|:--------------- |:----------------------------------------:|
+| master          |    Mainline version, such as v2.7.1.     |
+| 26.1.0          |  Version 26.1.0, such as v2.7.1-26.1.0   |
+| 26.0.0          |  Version 26.0.0, such as v2.7.1-26.0.0   |
+| 7.3.0           |       7.3.0, such as v2.7.1-7.3.0        |
+| 7.2.0           |   7.2.0 version, such as v2.7.1-7.2.0    |
+| 7.1.0           |   7.1.0 version, such as v2.1.0-7.1.0    |
+| 7.0.0           |     7.0.0, for example, v2.1.0-7.0.0     |
+| 6.0.0           |     6.0.0, for example, v2.1.0-6.0.0     |
+| 6.0.rc3         | Version 6.0.rc3, such as v2.1.0-6.0.rc3. |
+| 6.0.rc2         | Version 6.0.rc2, such as v2.1.0-6.0.rc2. |
+| 6.0.rc1         | Version 6.0.rc1, such as v2.1.0-6.0.rc1  |
+| 5.0.0           |   Version 5.0.0, such as v2.1.0-5.0.0    |
+| 5.0.rc3         | 5.0.rc3 version, such as v2.1.0-5.0.rc3  |
 
-## 安装OpPlugin
+## Installing OpPlugin
 
-支持通过源码编译的方式安装OpPlugin。具体操作，请参考[安装OpPlugin](docs/zh/install.md)。
+OpPlugin can be installed by compiling the source code. For details, see.[Installing OpPlugin](docs/en/install.md).
 
-## 快速入门
+## Quick Start
 
-提供了一个通过OpPlugin插件实现PyTorch调用Ascend C自定义算子的完整开发指南，涵盖了从环境配置、算子注册、适配实现到测试验证提供了全流程说明。具体操作，请参考[调用样例](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/framework_feature_guide_pytorch/opplugin_operator_adaptation.md)。
+This document provides a complete development guide for PyTorch to invoke Ascend C custom operator by using the OpPlugin plug-in, covering the entire process from environment configuration, operator registration, adaptation implementation, to test and verification. For details, see the Invoking Example.
 
-## API参考
+## API Reference
 
-基于PyTorch2.10.0/2.9.0/2.8.0/2.7.1版本，提供TorchNPU自定义API的功能说明、函数原型、参数说明与调用示例等。具体信息，请参考[自定义API](https://gitcode.com/Ascend/op-plugin/blob/26.1.0/docs/zh/custom_APIs/menu_Pytorch_API.md)。
+Provides the function description, function prototype, parameter description, and invoking examples of the TorchNPU customized API based on the PyTorch2.10.0/2.9.0/2.8.0/2.7.1 version. For details, see the Custom API.
 
-## 生命周期
+## Life Cycle
 
-OpPlugin仓依赖**TorchNPU**运行，生命周期请参考**TorchNPU**中的[PyTorch版本维护策略](https://gitcode.com/ascend/pytorch/blob/v2.7.1-26.1.0/README.zh.md#pytorch%E7%89%88%E6%9C%AC%E7%BB%B4%E6%8A%A4%E7%AD%96%E7%95%A5)。
+The OpPlugin repository depends on the TorchNPU. For details about the life cycle, see the [PyTorch Version Maintenance Policy](https://gitcode.com/ascend/pytorch/blob/master/README.md).
 
-## 贡献指导
+## Contribution guidance
 
-介绍如何向OpPlugin仓库贡献代码，具体请参见[贡献指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/CONTRIBUTING.md)。
+This section describes how to contribute code to the OpPlugin repository. For details, see the [Contribution Guide](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/CONTRIBUTING.md).
 
-## 联系我们
+## Contact us
 
-如果有任何疑问或建议，请提交[GitCode Issues](https://gitcode.com/Ascend/pytorch/issues)，我们会尽快回复。感谢您的支持。
+If you have any questions or suggestions, please submit [GitCode Issues](https://gitcode.com/Ascend/pytorch/issues) We'll get back to you as soon as we can. Thank you for your support.
 
-## 安全声明
+## Safety Statement
 
-主要描述了OpPlugin的安全加固信息、公网地址信息及通信矩阵等内容。具体介绍，请参考[OpPlugin安全声明](docs/zh/SECURITYNOTE.md)。
+This document describes the security hardening information, public network address information, and communication matrix of OpPlugin. For details, see the OpPlugin Security Statement.
+<!-- 
+ [OpPlugin Security Statement](docs/en/SECURITYNOTE.en.md). -->
 
-## 免责声明
+## Disclaimer
 
-致OpPlugin插件使用者
+To OpPlugin plug-in users
 
-- 本插件仅供调试和开发使用，使用者需自行承担使用风险，并理解以下内容：
-    - 数据处理及删除：用户在使用本插件过程中产生的数据属于用户责任范畴。建议用户在使用完毕后及时删除相关数据，以防信息泄露。
-    - 数据保密与传播：使用者了解并同意不得将通过本插件产生的数据随意外发或传播。对于由此产生的信息泄露、数据泄露或其他不良后果，本插件及其开发者概不负责。
-    - 用户输入安全性：用户需自行保证输入的命令行的安全性，并承担因输入不当而导致的任何安全风险或损失。对于输入命令行不当所导致的问题，本插件及其开发者概不负责。
-- 免责声明范围：本免责声明适用于所有使用本插件的个人或实体。使用本插件即表示您同意并接受本声明的内容，并愿意承担因使用该功能而产生的风险和责任，如有异议请停止使用本插件。
-- 在使用本工具之前，请谨慎阅读并理解以上免责声明的内容。对于使用本插件所产生的任何问题或疑问，请及时联系开发者。
-
-  ## License
-
-  OpPlugin的使用许可证，详见[LICENSE](http://gitcode.com/Ascend/op-plugin/blob/26.1.0/LICENSE)。
-
-  ## 致谢
-
-  感谢来自社区的每一个PR，欢迎贡献Ascend Extension for TensorPipe插件！
+- This plug-in is for debugging and development only. You must bear the risks and understand the following:
+    
+    - Data processing and deletion: The data generated during the use of this plug-in belongs to the user's responsibility. You are advised to delete related data in time after using the data to prevent information leakage.
+    - Data confidentiality and dissemination: Users understand and agree not to send or disseminate the data generated through this plug-in at will. This plug-in and its developers are not responsible for any information leakage, data leakage, or other adverse consequences arising therefrom.
+    - User input security: Users must ensure the security of the entered command lines and bear any security risks or losses caused by improper input. This plug-in and its developers are not responsible for any problems caused by improper command line input.
+- Scope of Disclaimer: This disclaimer applies to all individuals or entities using this plug-in. By using this plug-in, you agree to and accept the content of this statement and are willing to bear the risks and responsibilities arising from the use of this function. If you have any objection, please stop using this plug-in.
+- Read and understand the disclaimer before using this tool. For any questions or questions arising from the use of this plug-in, please contact the developer in time.
+    
+## License
+    
+OpPlugin license. For details, see the[LICENSE](http://gitcode.com/Ascend/op-plugin/blob/master/LICENSE).
+    
+## Acknowledgment
+    
+Thank you for every PR from the community. Welcome to contribute the Ascend Extension for TensorPipe plug-in!
