@@ -88,15 +88,10 @@ class TestNpuMhcPre(TestCase):
         return (h_in, h_post, inv_rms[:, 0], h_mix, h_pre)
 
     def custom_op_exec(self, x, phi, alpha, bias, gamma, out_flag, inner_precise=0):
-        return torch_npu.npu_mhc_pre(
-            x,
-            phi,
-            alpha,
-            bias,
-            gamma=gamma,
-            out_flag=out_flag,
-            inner_precise=inner_precise
-        )
+        kwargs = {"gamma": gamma, "out_flag": out_flag}
+        if inner_precise != 0:
+            kwargs["inner_precise"] = inner_precise
+        return torch_npu.npu_mhc_pre(x, phi, alpha, bias, **kwargs)
 
     def build_input_tensors(self, T, n, D):
         x = torch.randn(T, n, D, dtype=torch.bfloat16)
@@ -244,6 +239,64 @@ class TestNpuMhcPre(TestCase):
             "h_pre": 1e-3,
         }
         self.run_hy_and_check(T, n, D, out_flag, output_names, tol_map)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_batch_consistency_bsnd(self, device="npu"):
+        """Check that an input keeps bitwise-identical outputs after batching (BSND format)."""
+        original_level = torch_npu.npu._get_deterministic_level()
+        torch_npu.npu.set_deterministic_level(3)
+        try:
+            torch.manual_seed(20260728)
+            torch.npu.manual_seed(20260728)
+            self.assertEqual(torch_npu.npu._get_deterministic_level(), 3)
+
+            B, S, n, D = 1, 64, 4, 2560
+            out_flag = 0
+            output_names = ["h_in", "h_post", "h_res"]
+            with torch.no_grad():
+                x_a, phi, alpha, bias, gamma = self.build_input_tensors_bsnd(B, S, n, D)
+                x_b, _, _, _, _ = self.build_input_tensors_bsnd(B, S, n, D)
+
+                def run_batch(x):
+                    outputs = self.custom_op_exec(
+                        x.npu(), phi.npu(), alpha.npu(), bias.npu(), gamma.npu(), out_flag=out_flag
+                    )
+                    torch.npu.synchronize()
+                    return tuple(output.cpu() for output in outputs[:len(output_names)])
+
+                out_a = run_batch(x_a)
+                out_ab = run_batch(torch.cat((x_a, x_b), dim=0))
+                out_ba = run_batch(torch.cat((x_b, x_a), dim=0))
+
+                for name, reference, actual_ab, actual_ba in zip(
+                    output_names,
+                    out_a,
+                    (output[:B] for output in out_ab),
+                    (output[B:] for output in out_ba),
+                ):
+                    self.assertTrue(
+                        torch.equal(reference, actual_ab),
+                        f"{name} differs between [A] and [A, B]",
+                    )
+                    self.assertTrue(
+                        torch.equal(reference, actual_ba),
+                        f"{name} differs between [A] and [B, A]",
+                    )
+        finally:
+            torch_npu.npu.set_deterministic_level(original_level)
+
+    def build_input_tensors_bsnd(self, B, S, n, D):
+        x = torch.randn(B, S, n, D, dtype=torch.bfloat16)
+        phi = torch.randn(n * n + 2 * n, n * D, dtype=torch.float32)
+        alpha = torch.tensor([0.5, 0.5, 0.5], dtype=torch.float32)
+        gamma = torch.ones(n, D, dtype=torch.float32)
+
+        bias_pre = torch.full((n,), 0.01, dtype=torch.float32)
+        bias_post = torch.full((n,), 0.01, dtype=torch.float32)
+        bias_res = torch.full((n, n), 0.01, dtype=torch.float32)
+        bias = torch.cat([bias_pre, bias_post, bias_res.reshape(-1)], dim=0)
+
+        return x, phi, alpha, bias, gamma
 
 if __name__ == "__main__":
     run_tests()

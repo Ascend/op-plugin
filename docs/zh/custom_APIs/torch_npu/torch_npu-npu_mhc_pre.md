@@ -26,7 +26,7 @@ $$
 $$
 \operatorname{RmsNorm}(x_i)=\frac{x_i}{\operatorname{Rms}(\mathbf{x})} g_i, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+norm\_eps}
 $$
-   
+
 ## 函数原型
 
 ```python
@@ -65,6 +65,11 @@ torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=
 - 当alpha=\[3\]时，支持 h\_res 输出，必须满足以下条件：输入 phi=\(n<sup>2</sup>+2n, nD\)，bias=\(n<sup>2</sup>+2n\)，输出 h\_mix=\(B, S ,n<sup>2</sup>+2n\) 或 \(T, n<sup>2</sup>+2n\)；当alpha=\[2\]时，h\_res 输出为0，必须满足以下条件：输入 phi=\(2n, nD\)，bias=\(2n\)，输出 h\_mix=\(B, S ,2n\) 或 \(T, 2n\)。
 - 可选输出 inv\_rms、h\_mix、h\_pre 为互存关系，需同时输出或全部不输出，不支持仅返回其中部分。
   - inner_precise：目前支持0、1。
+
+- 确定性计算
+  - 默认支持确定性计算。
+- Batch一致性
+  - 默认不支持Batch一致性，可通过PyTorch开关（[torch_npu.npu.set_deterministic_level](../torch_npu-npu/torch_npu-npu-set_deterministic_level.md)）支持。
 
 ## 调用示例
 
