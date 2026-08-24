@@ -1585,7 +1585,6 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      integral_identity_tensor: self
       out:
         size: self
         dtype: self
@@ -1596,7 +1595,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
-      structured_inherit: ceil.out
+      exec: aclnnInplaceCeil
 
   - func: _coalesce(Tensor self) -> Tensor
     sparse: [v2.1, newest]
