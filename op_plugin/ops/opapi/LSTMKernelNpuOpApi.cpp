@@ -250,10 +250,20 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
   }
 
   DO_COMPATIBILITY(
-      aclnnLSTM, acl_op::lstm(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional));
+      aclnnLSTM,
+      acl_op::lstm(data, batch_sizes, hx, params, has_biases, num_layers, dropout, train, bidirectional));
+  // The legacy LSTM.forward patch passes NPU batch_sizes and reshapes the output in Python.
+  const bool should_reshape_output = batch_sizes.device().is_cpu();
+  auto batch_sizes_npu = batch_sizes;
+  if (batch_sizes_npu.device() != data.device()) {
+    batch_sizes_npu = batch_sizes_npu.to(data.device());
+  }
   auto output = at_npu::native::custom_ops::_lstm_npu(
-      data, hx, params, has_biases, num_layers, dropout, train, bidirectional, false, batch_sizes);
+      data, hx, params, has_biases, num_layers, dropout, train, bidirectional, false, batch_sizes_npu);
+  const auto& output_y = std::get<0>(output);
   return std::make_tuple(
-      std::get<0>(output), std::get<1>(output), std::get<2>(output)); // 0 for output_y, 1 for output_h, 2 for output_c
+      should_reshape_output ? output_y.reshape({-1, output_y.size(-1)}) : output_y,
+      std::get<1>(output),
+      std::get<2>(output)); // 0 for output_y, 1 for output_h, 2 for output_c
 }
 } // namespace op_api
