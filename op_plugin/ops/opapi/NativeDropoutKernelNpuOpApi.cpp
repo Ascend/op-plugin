@@ -153,6 +153,37 @@ std::tuple<at::Tensor, at::Tensor> native_dropout(const at::Tensor& input, doubl
 }
 
 at::Tensor native_dropout_backward(const at::Tensor& grad_output, const at::Tensor& mask, double scale) {
+  // On A5, to align the backward precision with GPU(H20), the original scale is passed
+  // to aclnnDropoutV3Grad directly. The kernel computes gradX = gradY * mask * scale with
+  // a pure multiplication chain, avoiding the extra float computation of restoring the
+  // scale factor (p = 1 - 1 / scale) inside the operator.
+  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
+      check_aclnn_kernel_available("aclnnDropoutV3Grad")) {
+    TORCH_CHECK(
+        scale == NUMBER_ZERO || scale >= NUMBER_ONE,
+        "native_dropout_backward scale has to be 0 or greater than or equal to 1, but got ",
+        scale,
+        OPS_ERROR(ErrCode::VALUE));
+
+    if (mask.numel() == 0) {
+      return at_npu::native::OpPreparation::apply_tensor_without_format(mask.sizes(), grad_output.options());
+    }
+    // Branch on scale: scale == 1 (p == 0, no dropout) returns grad_output itself;
+    // scale == 0 or scale == inf (p == 1, all dropped) returns zeros;
+    // otherwise aclnnDropoutV3Grad receives the original scale.
+    double p = (scale == 0.0) ? 1 : (1 - 1 / scale);
+    if (p == 0) {
+      return grad_output.clone();
+    }
+    if (p == 1) {
+      at::TensorOptions options = grad_output.options();
+      return at::zeros(grad_output.sizes(), options);
+    }
+    at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(grad_output);
+    EXEC_NPU_CMD(aclnnDropoutV3Grad, grad_output, mask, scale, result);
+    return result;
+  }
+
   DO_COMPATIBILITY(aclnnDropoutDoMask, acl_op::native_dropout_backward(grad_output, mask, scale));
   TORCH_CHECK(
       scale == NUMBER_ZERO || scale >= NUMBER_ONE,
