@@ -41,5 +41,10 @@
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p2517104919514"><a name="p2517104919514"></a><a name="p2517104919514"></a>参考原生接口torch.distributed.all_gather_into_tensor功能，torch_npu.distributed.all_gather_into_tensor_uneven接口新增支持零拷贝和非等长切分功能。</p>
 </td>
 </tr>
+<tr id="row187261049165117"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p187271249165115"><a name="p187271249165115"></a><a name="p187271249165115"></a><a href="torch_npu-distributed-all_to_all_vc.md">（beta）torch_npu.distributed.all_to_all_vc</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p287281049195115"><a name="p287281049195115"></a><a name="p287281049195115"></a>基于HCCL HcclAlltoAllVC接口实现的变长all-to-all通信，由全局计数矩阵驱动，支持非等长收发。</p>
+</td>
+</tr>
 </tbody>
 </table>
