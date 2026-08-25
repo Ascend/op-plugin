@@ -51,6 +51,10 @@
 
 ```python
 torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_value, *, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, query_rope=None, key_rope=None, sparse_block_size=1, layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0, return_softmax_lse=False, sinks=None) -> (Tensor, Tensor, Tensor)
+
+> [!NOTE]
+>
+> `value`参数为位置参数（必填），类型为`Tensor`（可空），支持传入`None`。`value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
 ```
 
 ## 参数说明
@@ -63,7 +67,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - **query**（`Tensor`）：必选参数，对应公式中的$Q$，不支持非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，其中Atlas A3 推理系列产品/Atlas A2 推理系列产品的N1支持1/2/4/8/16/32/64/128，Ascend 950PR/Ascend 950DT的N1支持1~128。
 - **key**（`Tensor`）：必选参数，对应公式中的$\tilde{K}$，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持ND，数据类型支持`bfloat16`和`float16`，`layout_kv`为PA_BSND时shape为[block\_num, block\_size, KV\_N, D]，其中block\_num为Paged Attention时block总数，block\_size为一个block的token数，block\_size取值为16的倍数，最大支持1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, D]，`layout_kv`为TND时shape为[T2, KV\_N, D]，其中KV\_N只支持1。
 
-- **value**（`Tensor`）：必选参数，在`layout_kv`为PA_BSND时支持0轴非连续，对应公式中的$\tilde{V}$，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。
+- **value**（`Tensor`）：必选参数（可空），对应公式中的$\tilde{V}$。传入`Tensor`时，在`layout_kv`为PA_BSND时支持0轴非连续，维度N只支持1，数据格式支持ND，数据类型支持`bfloat16`和`float16`，shape与`key`的shape一致。传入`None`时，底层kernel将D和V合并处理，减少冗余访存与计算，提升性能，此时反向传播中`d_value`为空张量。`value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
 
 - **sparse\_indices**（`Tensor`）：必选参数，代表离散取kvCache的索引，该索引通常由稀疏选择算法（如`lightning_indexer`）生成，具体生成流程见[功能说明](#功能说明)中的典型使用流程。不支持非连续，数据格式支持ND，数据类型支持`int32`。当`layout_query`为BSND时，shape需要传入[B, Q\_S, KV\_N, sparse\_size]，当`layout_query`为TND时，shape需要传入[Q\_T, KV\_N, sparse\_size]，其中sparse\_size为一次离散选取的block数，需要保证每行有效值均在前半部分，无效值均在后半部分，且需要满足sparse\_size大于0。
 
@@ -115,6 +119,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - 该接口支持图模式。
 - 参数query中的D和key、value的D值相等为512，参数query\_rope中的D和key\_rope的D值相等为64。
 - 参数query、key、value的数据类型必须保持一致。
+- `value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
 - 支持sparse\_block\_size整除block\_size。
 - `layout_kv`为PA_BSND时，`layout_query`和`layout_kv`无需一致；`layout_kv`为BSND或TND时，`layout_query`和`layout_kv`需保持一致。
 - Ascend 950PR/Ascend 950DT：

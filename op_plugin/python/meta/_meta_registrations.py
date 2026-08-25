@@ -286,7 +286,7 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
                                          key_rope=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND",
                                          sparse_mode=3, pre_tokens=(1 << 63) - 1, next_tokens=(1 << 63) - 1,
                                          attention_mode=0, return_softmax_lse=False, sinks=None):
-    require_param = {"query": query, "key": key, "value": value, "sparse_indices": sparse_indices}
+    require_param = {"query": query, "key": key, "sparse_indices": sparse_indices}
 
     for item_name, item in require_param.items():
         torch._check(
@@ -302,10 +302,17 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
         key.numel() > 0,
         lambda: "Input key should not be empty." + ops_error(ErrCode.VALUE),
     )
-    torch._check(
-        value.numel() > 0,
-        lambda: "Input value should not be empty." + ops_error(ErrCode.VALUE),
-    )
+    if value is None:
+        torch._check(
+            get_cann_version() >= "9.2.0",
+            lambda: "npu_sparse_flash_attention: value=None is only supported with CANN >= 9.2.0."
+                    + ops_error(ErrCode.NOT_SUPPORT),
+        )
+    else:
+        torch._check(
+            value.numel() > 0,
+            lambda: "Input value should not be empty." + ops_error(ErrCode.VALUE),
+        )
     torch._check(
         sparse_indices.numel() > 0,
         lambda: "Input sparse_indices should not be empty." + ops_error(ErrCode.VALUE),
@@ -346,7 +353,15 @@ def npu_sparse_flash_attention_forward(query, key, value, sparse_indices, scale_
 def npu_sparse_flash_attention_grad_meta(query, key, value, sparse_indices, d_out, out, softmax_max, softmax_sum, scale_value, sparse_block_size, query_rope=None, key_rope=None, actual_seq_qlen=None, actual_seq_kvlen=None, layout="BSND", sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0):
     d_query = query.new_empty(query.shape, dtype=query.dtype, device='meta')
     d_key = key.new_empty(key.shape, dtype=key.dtype, device='meta')
-    d_value = value.new_empty(value.shape, dtype=value.dtype, device='meta')
+    if value is None:
+        torch._check(
+            get_cann_version() >= "9.2.0",
+            lambda: "npu_sparse_flash_attention_grad: value=None is only supported with CANN >= 9.2.0."
+                    + ops_error(ErrCode.NOT_SUPPORT),
+        )
+        d_value = torch.empty([0], dtype=query.dtype, device='meta')
+    else:
+        d_value = value.new_empty(value.shape, dtype=value.dtype, device='meta')
     d_query_rope = torch.empty([0], dtype=query.dtype, device='meta') if query_rope is None else query_rope.new_empty(query_rope.shape, dtype=query_rope.dtype, device='meta')
     d_key_rope = torch.empty([0], dtype=key.dtype, device='meta') if key_rope is None else key_rope.new_empty(key_rope.shape, dtype=key_rope.dtype, device='meta')
     return (d_query, d_key, d_value, d_query_rope, d_key_rope)
