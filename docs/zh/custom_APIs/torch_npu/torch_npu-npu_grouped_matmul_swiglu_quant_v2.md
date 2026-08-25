@@ -273,7 +273,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：shape支持1维[m]，数据类型支持`float32`。
   - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持1维\[m\]，数据类型支持torch.float32。
 
-- **group\_list**（`Tensor`）：必选输入，指示每个分组参与计算的Token个数，对应公式中的$groupList$。shape支持1维[e]，长度需与`weight`的首轴维度相等。数据类型支持`int64`，数据格式支持$ND$，支持非连续的Tensor。
+- **group\_list**（`Tensor`）：必选输入，指示每个分组参与计算的Token个数，对应公式中的$groupList$。shape支持1维[e]，长度需与`weight`的首轴维度相等。数据类型支持`int64`，数据格式支持$ND$，支持非连续的Tensor。当group_list_type为0时，最后一个值不大于x中tensor的第一维，当group_list_type为1时，数值的总和不大于x中tensor的第一维。group_list中的值约束了输出数据的有效部分, group_list中未指定的部分将不会参与更新。
 - **smooth\_scale**（`Tensor`）：可选输入，平滑缩放因子，对应公式中的$smoothScale$。数据类型为`float32`，数据格式支持$ND$。仅A4W4场景下需传入，首轴长度需与`weight`的首轴维度相等，支持两种shape：(E, N/2)或(E,)，当使用(E,)时会进行广播乘法。其他场景传入默认值None。
 - **weight\_assist\_matrix**（`TensorList`）：可选输入，右矩阵的辅助矩阵，对应公式中的$weightAssistMatrix$。数据类型支持`float32`，数据格式支持$ND$，shape支持2维。仅A8W4场景下需传入，首轴长度需与`weight`的首轴维度相等，尾轴长度需要与`weight`还原为ND格式的尾轴相同。其他场景传入默认值None。
 - **bias**（`Tensor`）：可选输入，矩阵乘计算的偏移值，对应公式中的$bias$，shape支持2维，数据类型支持`int32`，当前仅支持传入默认值None。
