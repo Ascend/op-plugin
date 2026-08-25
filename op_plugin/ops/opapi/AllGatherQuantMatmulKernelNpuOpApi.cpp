@@ -20,15 +20,39 @@
 namespace op_api {
 const int32_t MIN_SUPPORT_WORLD_SIZE = 2;
 const int32_t MAX_SUPPORT_WORLD_SIZE = 64;
+static const int FP4_IN_INT8 = 2;
 using npu_preparation = at_npu::native::OpPreparation;
-static c10::SmallVector<int64_t, op_infer::SIZE> get_y_size(
-    const at::Tensor& x1,
-    const at::Tensor& x2,
-    int64_t world_size,
-    int64_t gather_index) {
-  auto out_x = gather_index == 0 ? x1.size(0) * world_size : x1.size(0);
-  auto out_y = x2.size(1);
-  return {out_x, out_y};
+static bool is_transpose_last_two_dims(const at::Tensor &tensor)
+{
+    if (tensor.dim() < 2 || tensor.dim() > 6) {
+        return false;
+    }
+    int64_t dim1 = tensor.dim() - 1;
+    int64_t dim2 = tensor.dim() - 2;
+    if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+        int64_t tmpNxD = tensor.size(dim1) * tensor.size(dim2);
+        for (int64_t batchDim = tensor.dim() - 3; batchDim >= 0; batchDim--) {
+            if (tensor.stride(batchDim) != tmpNxD) {
+                return false;
+            }
+            tmpNxD *= tensor.size(batchDim);
+        }
+        if (tensor.size(dim1) == 1 && tensor.size(dim2) == 1) {
+            return false;
+        }
+        return true;
+    }
+    return false;
+}
+static c10::SmallVector<int64_t, op_infer::SIZE> get_y_size(const at::Tensor& x1, const at::Tensor& x2,
+                                                            int64_t world_size, int64_t gather_index, bool x2_trans, bool is_mxfp4)
+{
+    auto out_x = gather_index == 0 ? x1.size(0) * world_size : x1.size(0);
+    auto out_y = x2.size(1);
+    if (is_mxfp4 && !x2_trans) {
+        out_y *= FP4_IN_INT8;
+    }
+    return {out_x, out_y};
 }
 
 static c10::SmallVector<int64_t, op_infer::SIZE> get_gather_out_size(
@@ -109,8 +133,14 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
   const at::Tensor& x1_scale_value = x1_scale.value_or(at::Tensor());
   const at::Tensor& x2_scale_value = x2_scale.value_or(at::Tensor());
   const at::Tensor& quant_scale_value = quant_scale.value_or(at::Tensor());
-  c10::SmallVector<int64_t, op_infer::SIZE> y_size =
-      get_y_size(self, x2, world_size, gather_index);
+  bool is_mxfp4 = false;
+  if ((x1_dtype.has_value() && x2_dtype.has_value()) &&
+      (x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+       x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1))) {
+    is_mxfp4 = true;
+  }
+  bool x2_trans = is_transpose_last_two_dims(x2);
+  c10::SmallVector<int64_t, op_infer::SIZE> y_size = get_y_size(self, x2, world_size, gather_index, x2_trans, is_mxfp4);
   auto gather_out_size = gather_output
       ? get_gather_out_size(self, x2, world_size, gather_index)
       : c10::SmallVector<int64_t, op_infer::SIZE>{0};

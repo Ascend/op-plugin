@@ -98,7 +98,80 @@ class TestAllGatherQuantMm(TestCase):
         expt_out_list, expt_gather = self._construct_excepted_result(x1_list, x2_list, world_size)
         self._test_multiprocess(TestAllGatherQuantMm._test_npu_all_gather_quant_mm,
                                 TestAllGatherQuantMm._init_dist_hccl, [expt_out_list, expt_gather, x1_list, x2_list, world_size])
+    @classmethod
+    def _test_npu_all_gather_quant_mm_mxfp4_nontrans(cls, rank, input_list):
+        x1_list, x2_list, x1_scale_list, x2_scale_list, world_size, init_pg, c2p = input_list
+        x1 = x1_list[rank]
+        x2 = x2_list[rank]
+        x1_scale = x1_scale_list[rank]
+        x2_scale = x2_scale_list[rank]
+        pg = init_pg(rank, world_size)
+        group = pg.distributed_c10d._get_default_group()
+        hcom_name = group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)
 
+        x1 = x1.npu()
+        x2 = x2.npu()
+        x1_scale = x1_scale.npu()
+        x2_scale = x2_scale.npu()
+        out, gather_out = torch_npu.npu_all_gather_quant_mm(x1,
+                                                            x2,
+                                                            hcom_name,
+                                                            world_size,
+                                                            bias=None,
+                                                            x1_scale=x1_scale,
+                                                            x2_scale=x2_scale,
+                                                            quant_scale=None,
+                                                            gather_index=0,
+                                                            gather_output=True,
+                                                            comm_turn=0,
+                                                            y_dtype=torch.bfloat16,
+                                                            x1_dtype=torch_npu.float4_e2m1fn_x2,
+                                                            x2_dtype=torch_npu.float4_e2m1fn_x2,
+                                                            x1_scale_dtype=torch_npu.float8_e8m0fnu,
+                                                            x2_scale_dtype=torch_npu.float8_e8m0fnu)
+
+        c2p.put((rank, out.cpu(), gather_out.cpu()))
+        pg.barrier()
+
+    @skipIfUnsupportMultiNPU(2)
+    @SupportedDevices(['Ascend950'])
+    def test_npu_all_gather_quant_mm_mxfp4_nontrans(self):
+        if not hasattr(torch_npu, "float4_e2m1fn_x2"):
+            self.skipTest("float4_e2m1fn_x2 not supported in current version")
+        world_size = 2
+        m, k, n = 16, 256, 128
+        x1_list = [torch.zeros((m, k // 2), dtype=torch.uint8) for _ in range(world_size)]
+        x2_list = [torch.zeros((k, n // 2), dtype=torch.uint8) for _ in range(world_size)]
+        x1_scale_list = [
+            torch.full((m, (k + 63) // 64, 2), 127, dtype=torch.uint8) for _ in range(world_size)
+        ]
+        x2_scale_list = [
+            torch.full(((k + 63) // 64, n, 2), 127, dtype=torch.uint8) for _ in range(world_size)
+        ]
+        expected_y = torch.zeros((m * world_size, n), dtype=torch.bfloat16)
+        expected_gather = torch.cat(x1_list)
+
+        ctx = mp.get_context('spawn')
+        c2p = ctx.Queue(world_size)
+        ps = []
+        for i in range(world_size):
+            p = ctx.Process(
+                target=TestAllGatherQuantMm._test_npu_all_gather_quant_mm_mxfp4_nontrans,
+                args=(i, [x1_list, x2_list, x1_scale_list, x2_scale_list, world_size,
+                          TestAllGatherQuantMm._init_dist_hccl, c2p]))
+            p.start()
+            ps.append(p)
+
+        for _ in range(world_size):
+            rank, output, gather_output = c2p.get()
+            self.assertEqual(output, expected_y,
+                             ("rank {} Expect receive tensor {} but got {}.").format(rank, expected_y, output))
+            self.assertEqual(gather_output, expected_gather,
+                             ("rank {} Expect receive gather tensor {} but got {}.").format(
+                                 rank, expected_gather, gather_output))
+
+        for p in ps:
+            p.join()
 
 if __name__ == '__main__':
     run_tests()
