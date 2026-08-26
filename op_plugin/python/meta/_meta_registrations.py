@@ -955,8 +955,18 @@ def npu_quant_mm_reduce_scatter_meta(self, x2, hcom, world_size, reduce_op='sum'
     if world_size <= 0:
         raise RuntimeError("world_size must be bigger than zero")
     out_m = math.floor(self.size(0) / world_size)
+    out_n = x2.size(1)
     torch_dtype = self.dtype if y_dtype is None else TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP[y_dtype]
-    return (self.new_empty(out_m, x2.size(1), dtype=torch_dtype), self.new_empty(0, dtype=torch.float32))
+    FP4_FACTOR = 2
+    is_fp4 = (x1_dtype == torch_npu.float4_e2m1fn_x2 and x1_scale_dtype == torch_npu.float8_e8m0fnu) and (x2_dtype == torch_npu.float4_e2m1fn_x2 and x2_scale_dtype == torch_npu.float8_e8m0fnu)
+    if is_fp4:
+        is_trans_b = False
+        if (x2.stride(0) == 1 and x2.stride(1) == x2.size(0)):
+            if not (x2.size(0) == 1 and x2.size(1) == 1):
+                is_trans_b = True
+        if not is_trans_b:
+            out_n = x2.size(1) * FP4_FACTOR
+    return (self.new_empty(out_m, out_n, dtype=torch_dtype), self.new_empty(0, dtype=torch.float32))
 
 
 @impl(m, "npu_gmm_alltoallv")

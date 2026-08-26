@@ -20,8 +20,32 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
+
+static bool is_transpose_last_two_dims(const at::Tensor& tensor) {
+  if (tensor.dim() < 2 || tensor.dim() > 6) {
+    return false;
+  }
+  int64_t dim1 = tensor.dim() - 1;
+  int64_t dim2 = tensor.dim() - 2;
+  if (tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2)) {
+    int64_t tmpNxD = tensor.size(dim1) * tensor.size(dim2);
+    for (int64_t batchDim = tensor.dim() - 3; batchDim >= 0; batchDim--) {
+      if (tensor.stride(batchDim) != tmpNxD) {
+        return false;
+      }
+      tmpNxD *= tensor.size(batchDim);
+    }
+    if (tensor.size(dim1) == 1 && tensor.size(dim2) == 1) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
 const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16, 32, 64};
 static const int DIM_TWO = 2;
+static const int64_t FP4_FACTOR = 2;
 std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor &self, const at::Tensor &x2,
     c10::string_view hcom, int64_t world_size, c10::string_view reduce_op, const c10::optional<at::Tensor> &bias,
     const c10::optional<at::Tensor> &x1_scale, const c10::optional<at::Tensor> &x2_scale,
@@ -35,9 +59,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
     TORCH_CHECK(self.dim() == DIM_TWO && x2.dim() == DIM_TWO,
         "Both inputs of mm are required to be 2D, but the actual inputs are ", self.dim(), "D and ", x2.dim(), "D",
         OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(self.size(1) == x2.size(0),
-        "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ", self.size(1),
-        " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(world_size != 0, "world_size cannot be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
         OPS_ERROR(ErrCode::PARAM));
@@ -50,7 +71,29 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
     at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
     int64_t group_size = op_plugin::utils::check_and_get_group_size(group_size_list);
     TORCH_CHECK(group_size != -1, "Invalid group_sizes.", OPS_ERROR(ErrCode::PARAM));
-    auto output_size = {self.size(0) / (world_size != 0 ? world_size : 1), x2.size(1)};
+    bool is_check_mxfp4 =
+        (x1_dtype.has_value() && x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+            x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
+    bool is_transpose_x2 = is_transpose_last_two_dims(x2);
+    if (!is_check_mxfp4 || (is_check_mxfp4 && is_transpose_x2)) {
+        TORCH_CHECK(self.size(1) == x2.size(0),
+            "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ", self.size(1),
+            " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
+    } else {
+        TORCH_CHECK(self.size(1) * 2 == x2.size(0),
+            "The K-axis in the two inputs of Matmul must be equal, but in reality, the K-axis of x1 is ", self.size(1) * 2,
+            " and the K-axis of x2 is ", x2.size(0), OPS_ERROR(ErrCode::PARAM));
+    }
+    bool is_x1_fp4 =
+        x1_dtype.has_value() && x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+        x1_scale_dtype.has_value() && x1_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0);
+    bool is_x2_fp4 =
+        x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) &&
+        x2_scale_dtype.has_value() && x2_scale_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT8_E8M0);
+    bool is_mxfp4 = is_x1_fp4 && is_x2_fp4;
+    int64_t output_size_m = self.size(0) / (world_size != 0 ? world_size : 1);
+    int64_t output_size_n = (is_mxfp4 && !is_transpose_x2) ? x2.size(1) * FP4_FACTOR : x2.size(1);
+    auto output_size = {output_size_m, output_size_n};
     auto output_scalar_type = self.scalar_type();
     bool is_fp16_or_bf16 = ((output_scalar_type == at::kBFloat16) || (output_scalar_type == at::kHalf));
     if (is_fp16_or_bf16) {
@@ -80,9 +123,6 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
     if (amax_output) {
         amax_output_result = npu_preparation::apply_tensor_without_format({1}, self.options().dtype(at::kFloat));
     }
-    bool is_check_mxfp4 =
-        (x1_dtype.has_value() && x1_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
-            x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1));
     if (is_check_mxfp4) {
         TORCH_CHECK(x1_dtype.has_value(), "In the mxfp4 scenario, x1_dtype is required pram and cannot be None.",
             OPS_ERROR(ErrCode::PARAM));
