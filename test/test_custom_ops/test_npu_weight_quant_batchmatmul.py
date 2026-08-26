@@ -19,6 +19,23 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
     def custom_op_exec(self, x, weight, antiquant_scale, antiquant_offset, weight_dtype=None):
         return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, weight_dtype=weight_dtype)
 
+    @staticmethod
+    def pack_int4_along_n(weight_int4):
+        # [K, N] int4 值（int8 存储，-8~7）-> uint8 载体 [K, N/2]，低 4 位为偶数列
+        w = (weight_int4.numpy() & 0xF).astype(np.uint8)
+        return torch.from_numpy((w[:, 1::2] << 4) | w[:, 0::2])
+
+    @staticmethod
+    def pack_int4_along_k(weight_int4):
+        # [K, N] int4 值 -> uint8 载体物理 [N, K/2]（沿 K 打包，低 4 位为偶数行）
+        w = (weight_int4.numpy() & 0xF).astype(np.uint8)
+        return torch.from_numpy(np.ascontiguousarray((w[1::2, :].T << 4) | w[0::2, :].T))
+
+    @staticmethod
+    def gen_fp16_exact_values(shape, pool):
+        # 从 fp16 精确可表示的值池中取样，保证与 CPU 反量化参考比对时基本无舍入差
+        return pool[torch.randint(0, len(pool), shape)]
+
     @SupportedDevices(['Ascend310P'])
     def test_npu_weight_quant_batchmatmul2(self, device="npu"):
         torch.manual_seed(0)
@@ -78,6 +95,54 @@ class TestNPUWeightQuantBatchMatmul(TestCase):
         custom_output = self.custom_op_exec(npu_x, npu_weight, npu_antiquant_scale, None, None)
 
         self.assertRtolEqual(supported_output, custom_output, 0.001)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_batchmatmul2_with_A16W4_nd_uint8_perchannel(self, device="npu"):
+        # uint8 载体紧凑打包 int4（沿 N 打包，ND 非转置视图 [K, N/2]，stride(-1)==1），
+        # weight_dtype=torch_npu.int4 时 N 维按每字节 2 个 4-bit 还原
+        torch.manual_seed(0)
+        m, k, n = 16, 256, 128
+        x_pool = torch.tensor([0.5, -0.5, 1.0, -1.0], dtype=torch.float16)
+        scale_pool = torch.tensor([0.5, 1.0, 1.5, 2.0], dtype=torch.float16)
+        cpu_x = self.gen_fp16_exact_values((m, k), x_pool)
+        cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int8)
+        cpu_antiquant_scale = self.gen_fp16_exact_values((n,), scale_pool)
+
+        npu_x = cpu_x.clone().npu()
+        npu_weight = self.pack_int4_along_n(cpu_weight).npu()
+        npu_antiquant_scale = cpu_antiquant_scale.clone().npu()
+
+        supported_output = torch.matmul(cpu_x.float(), cpu_weight.float() * cpu_antiquant_scale.float())
+        custom_output = self.custom_op_exec(
+            npu_x, npu_weight, npu_antiquant_scale, None, torch_npu.int4)
+
+        self.assertEqual(custom_output.shape, supported_output.shape)
+        self.assertEqual(custom_output.dtype, torch.float16)
+        self.assertRtolEqual(supported_output, custom_output.cpu().float(), 0.001)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_batchmatmul2_with_A16W4_nd_uint8_transposed(self, device="npu"):
+        # uint8 载体紧凑打包 int4（沿 K 打包，转置视图 [K/2, N]，stride(-2)==1），
+        # weight_dtype=torch_npu.int4 时 K 维按每字节 2 个 4-bit 还原
+        torch.manual_seed(0)
+        m, k, n = 16, 256, 128
+        x_pool = torch.tensor([0.5, -0.5, 1.0, -1.0], dtype=torch.float16)
+        scale_pool = torch.tensor([0.5, 1.0, 1.5, 2.0], dtype=torch.float16)
+        cpu_x = self.gen_fp16_exact_values((m, k), x_pool)
+        cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int8)
+        cpu_antiquant_scale = self.gen_fp16_exact_values((n,), scale_pool)
+
+        npu_x = cpu_x.clone().npu()
+        npu_weight = self.pack_int4_along_k(cpu_weight).npu().transpose(0, 1)
+        npu_antiquant_scale = cpu_antiquant_scale.clone().npu()
+
+        supported_output = torch.matmul(cpu_x.float(), cpu_weight.float() * cpu_antiquant_scale.float())
+        custom_output = self.custom_op_exec(
+            npu_x, npu_weight, npu_antiquant_scale, None, torch_npu.int4)
+
+        self.assertEqual(custom_output.shape, supported_output.shape)
+        self.assertEqual(custom_output.dtype, torch.float16)
+        self.assertRtolEqual(supported_output, custom_output.cpu().float(), 0.001)
 
 
 if __name__ == "__main__":

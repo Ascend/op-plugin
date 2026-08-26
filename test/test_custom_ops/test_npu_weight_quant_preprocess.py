@@ -34,6 +34,21 @@ class TestNpuWeightQuantPreprocess(TestCase):
         if torch_npu._C._npu_getOption("ALLOW_INTERNAL_FORMAT") == b"enable":
             self.assertEqual(torch_npu.get_npu_format(out_weight), FRACTAL_NZ_C0_16)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16w4_int8_carrier_rejected(self):
+        # A16W4 的 4-bit weight 只接受 uint8 载体（每字节 2 个 4-bit），int8 载体应被拒绝
+        k, n = 256, 128
+        weight = torch.zeros((k, n // 2), dtype=torch.int8).npu()
+        weight_scale = torch.ones((n,), dtype=torch.float16).npu()
+
+        with self.assertRaisesRegex(RuntimeError, "must be packed into a uint8 tensor"):
+            torch_npu.npu_weight_quant_preprocess(
+                weight,
+                weight_scale,
+                x_dtype=torch.float16,
+                weight_dtype=torch_npu.int4,
+                weight_scale_dtype=torch.float16)
+
 
 if __name__ == "__main__":
     run_tests()

@@ -20,6 +20,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 constexpr int MINIMUM_SHAPE_SIZE = 2;
 const int64_t INT4_NUMS_IN_INT32 = 8;
+const int64_t B4_IN_UINT8 = 2; // uint8 载体每字节打包 2 个 4-bit（INT4/FP4）
 at::Tensor npu_weight_quant_batchmatmul(
     const at::Tensor& x,
     const at::Tensor& weight,
@@ -49,9 +50,35 @@ at::Tensor npu_weight_quant_batchmatmul(
       "x dim is not the same as weight dim",
       OPS_ERROR(ErrCode::PARAM));
   auto x_k_dim = x.size(x_dim_num - 1);
-  auto weight_k_dim = ((weight.dtype() == at::kInt || weight.dtype() == at::kFloat) && trans_weight)
-      ? weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE) * INT4_NUMS_IN_INT32
-      : weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE);
+
+  // 计算 weight 的 K 维度
+  // 对于 INT32/FLOAT 类型的 4-bit 打包（INT4_NUMS_IN_INT32 = 8）
+  // uint8 载体 4-bit 紧凑排布（A16S4 链路）：NZ_C0_16 的 view 是逻辑 [K, N]，NZ_C0_8 的 view 是
+  // 物理打包形状 [K, N/2]；ND 的 view 是物理打包形状——非转置 [K, N/2]（沿 N 打包，行主序连续，
+  // stride(-1)==1 且 stride(-2)==size(-1)）、转置 [K/2, N]（沿 K 打包）。K=2 时转置视图退化为
+  // [1, N] strides [1, 1]，需靠 stride(-2)==size(-1) 排除误判，K/N 需按打包方向还原
+  bool is_int32_float_packed = (weight.dtype() == at::kInt || weight.dtype() == at::kFloat);
+
+  int64_t weight_format = at_npu::native::custom_ops::get_npu_format(weight);
+  aclDataType weight_acl_dtype =
+      weight_dtype.has_value() ? c10_npu::GetAclDataType(weight_dtype.value()) : ACL_DT_UNDEFINED;
+  bool is_4bit_acl_dtype =
+      (weight_acl_dtype == ACL_INT4 || weight_acl_dtype == ACL_FLOAT4_E2M1 || weight_acl_dtype == ACL_FLOAT4_E1M2);
+  bool is_uint8_4bit_nd = (weight.dtype() == at::kByte) && is_4bit_acl_dtype && (weight_format == ACL_FORMAT_ND);
+  bool is_uint8_4bit_nz_c08 =
+      (weight.dtype() == at::kByte) && is_4bit_acl_dtype && (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_8);
+  bool uint8_pack_along_n = is_uint8_4bit_nd &&
+      (weight.stride(weight_dim_num - 1) == 1 &&
+       weight.stride(weight_dim_num - MINIMUM_SHAPE_SIZE) == weight.size(weight_dim_num - 1));
+  bool uint8_pack_along_k = is_uint8_4bit_nd && !uint8_pack_along_n;
+
+  int64_t weight_k_dim = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE);
+  if (is_int32_float_packed && trans_weight) {
+    weight_k_dim *= INT4_NUMS_IN_INT32; // 8
+  } else if (uint8_pack_along_k) {
+    weight_k_dim *= B4_IN_UINT8; // 沿 K 打包，K 按每字节 2 个 4-bit 还原
+  }
+
   TORCH_CHECK(
       x_k_dim == weight_k_dim,
       "The k of x and weight should be equal. but x_k_dim is ",
@@ -61,12 +88,17 @@ at::Tensor npu_weight_quant_batchmatmul(
       OPS_ERROR(ErrCode::PARAM));
   auto out_dim_num = std::max(x_dim_num, weight_dim_num);
   auto output_size = op_infer::array_to_small_vector(x.sizes());
+  // weight.dim() > x.dim() 时 output_size 需预留 batch 维（batch 维由下方较长 tensor 填充），否则越界写
+  output_size.resize(out_dim_num, 1);
   output_size[out_dim_num - MINIMUM_SHAPE_SIZE] = x.size(x_dim_num - MINIMUM_SHAPE_SIZE);
   auto weight_size_base = weight.size(weight_dim_num - MINIMUM_SHAPE_SIZE + 1);
-  output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] =
-      ((weight.dtype() == at::kInt || weight.dtype() == at::kFloat) && !trans_weight)
-      ? weight_size_base * INT4_NUMS_IN_INT32
-      : weight_size_base;
+  if (is_int32_float_packed && !trans_weight) {
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = weight_size_base * INT4_NUMS_IN_INT32;
+  } else if (uint8_pack_along_n || is_uint8_4bit_nz_c08) {
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = weight_size_base * B4_IN_UINT8;
+  } else {
+    output_size[out_dim_num - MINIMUM_SHAPE_SIZE + 1] = weight_size_base;
+  }
   if (x_dim_num == weight_dim_num) {
     for (auto i = 0; i < out_dim_num - MINIMUM_SHAPE_SIZE; i++) {
       TORCH_CHECK(x.size(i) == weight.size(i), "batch of x is diff from batch of weight", OPS_ERROR(ErrCode::PARAM));
@@ -104,10 +136,12 @@ at::Tensor npu_weight_quant_batchmatmul(
       quant_scale.has_value() ? x.options().dtype(at::kChar) : x.options().dtype(x.scalar_type());
   at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
+  // uint8 载体 4-bit 紧凑排布（NZ_C0_8）同属 NZ 分形，统一走 aclnnWeightQuantBatchMatmulNz
+  const bool is_weight_nz = (weight_format == ACL_FORMAT_FRACTAL_NZ) ||
+      (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_2) || (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_8);
+
   TensorWrapper weight_wrapper = make_wrapper(weight, weight_dtype);
 
-  int64_t weight_format = at_npu::native::custom_ops::get_npu_format(weight);
-  const bool is_weight_nz = (weight_format == ACL_FORMAT_FRACTAL_NZ) || (weight_format == ACL_FORMAT_FRACTAL_NZ_C0_2);
   if (is_weight_nz && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
     static const bool is_weight_quant_matmul_nz_available =
         check_aclnn_kernel_available("aclnnWeightQuantBatchMatmulNz");
