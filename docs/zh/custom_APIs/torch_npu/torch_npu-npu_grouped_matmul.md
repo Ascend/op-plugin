@@ -142,12 +142,14 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - 每个张量支持1维或2维输入。
 
 - **`scale`**（`List[Tensor]`）：**可选参数**，用于缩放原数值以匹配量化后的范围值，代表量化参数中的缩放因子。
-  - 数据格式支持$ND$，支持的数据类型如下：
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
+  - 数据格式和数据类型支持如下：
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持$ND$格式。
       - 当`group_list`输入类型为`List[int]`时，支持`int64`。
       - 当`group_list`输入类型为`Tensor`时，支持`float32`、`bfloat16`、`int64`。
     - <term>Atlas 推理系列产品</term>：仅支持传入None。
-    - <term>Ascend 950PR/Ascend 950DT</term>：当`group_list`输入类型为`torch.Tensor`且`x`不为`float16`、`bfloat16`时，支持`int64`、`bfloat16`、`float32`、`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。
+    - <term>Ascend 950PR/Ascend 950DT</term>：
+      - $ND$格式：当`group_list`输入类型为`torch.Tensor`且`x`不为`float16`、`bfloat16`时，支持`int64`、`bfloat16`、`float32`、`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。
+      - `FRACTAL_NZ`格式：仅支持`float8_e8m0fnu`，且需配置`scale_dtype`为对应类型。
   - 列表长度与`weight`列表长度相同。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：每个张量仅支持1维输入。
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化的M轴分组场景时，每个张量的维度需要为4，在`weight`多tensor输入场景下，每个张量维度为3维，并且与`weight`具有相同的转置属性。mx量化的K轴分组场景时，每个张量的维度需要为3，并且与`weight`具有相同转置属性。K-CG伪量化的M轴分组场景，每个张量的维度需要为2，并且与`weight`具有相同转置属性。
@@ -272,6 +274,15 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - WeightNZ场景说明（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
   - 仅伪量化与全量化（输入`x`/`weight`数据类型为`int8`、`x`/`weight`数据类型为float8\_e4m3fn/float4\_e2m1fn\_x2/float4\_e1m2fn\_x2且scale\_dtype与per\_token\_scale\_dtype为float8_e8m0fnu）weight支持FRATCAL\_NZ数据格式。
   - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。
+
+- scale NZ亲和格式使用约束（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
+  - 仅支持MX量化场景，`scale`数据类型为`float8_e8m0fnu`。
+  - `scale`使用NZ亲和格式时，`weight`必须为`FRACTAL_NZ`格式。
+  - `x`和`weight`数据类型仅支持`float8_e4m3fn`。
+  - 仅支持`weight`不转置场景。
+  - 仅支持`group_type`为0，即M轴分组。
+  - 不支持图模式，仅支持单算子模式。
+  - 单tensor场景下，scale NZ亲和格式的storage shape为$[E, \lceil N/16 \rceil, \lceil K/64 \rceil, 16, 2]$；多tensor场景下，每个scale tensor的storage shape为$[\lceil N_i/16 \rceil, \lceil K_i/64 \rceil, 16, 2]$。
 
 - 内轴限制如下：
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：内轴限制InnerLimit为65536。
