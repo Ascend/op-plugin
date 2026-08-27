@@ -472,6 +472,11 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>npu_grouped_matmul是一种对多个矩阵乘法（matmul）操作进行分组计算的高效方法。</span></p>
 </td>
 </tr>
+<tr id="npu_grouped_matmul_finalize_routing"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_matmul_finalize_routing"><a name="p_npu_grouped_matmul_finalize_routing"></a><a name="p_npu_grouped_matmul_finalize_routing"></a><a href="torch_npu-npu_grouped_matmul_finalize_routing.md">torch_npu.npu_grouped_matmul_finalize_routing</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_matmul_finalize_routing_desc"><a name="p_npu_grouped_matmul_finalize_routing_desc"></a><a name="p_npu_grouped_matmul_finalize_routing_desc"></a><span>GroupedMatMul与MoeFinalizeRouting的融合算子。</span></p>
+</td>
+</tr>
 <tr id="row1231245645712"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p548217963045654"><a name="p548217963045654"></a><a name="p548217963045654"></a><a href="torch_npu-npu_grouped_matmul_swiglu_quant_v2.md">torch_npu.npu_grouped_matmul_swiglu_quant_v2</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5420573896217596"><a name="p5420573896217596"></a><a name="p5420573896217596"></a><span>npu_grouped_matmul_swiglu_quant_v2是一种融合分组矩阵乘法（GroupedMatmul）、反量化（dequant）、SwiGLu混合激活函数、量化（quant）的计算方法，用于模型性能优化。</span></p>
@@ -851,6 +856,11 @@
 <td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_rotary_pos_emb"><a name="p_npu_apply_rotary_pos_emb"></a><a name="p_npu_apply_rotary_pos_emb"></a><a href="torch_npu-apply_rotary_pos_emb.md">torch_npu.npu_apply_rotary_pos_emb</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_rotary_pos_emb_desc"><a name="p_npu_apply_rotary_pos_emb_desc"></a><a name="p_npu_apply_rotary_pos_emb_desc"></a><span>为提升推理网络性能，将query和key两路算子融合为单路，在旋转位置编码计算中直接对结果执行原地更新。</span></p>
+</td>
+</tr>
+<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>在micro-batch训练场景下，将量化GroupedMatmul与InplaceAdd操作融合，以提高网络性能。</span></p>
 </td>
 </tr>
 <tr id="npu_add_quant_matmul_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_matmul_"><a name="p_npu_add_quant_matmul_"></a><a name="p_npu_add_quant_matmul_"></a><a href="torch_npu-npu_add_quant_matmul_.md">torch_npu.npu_add_quant_matmul_</a></p>
