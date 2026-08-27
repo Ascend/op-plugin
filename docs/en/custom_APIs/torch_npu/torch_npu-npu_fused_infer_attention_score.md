@@ -10,8 +10,8 @@
 ## Function<a name="en-us_topic_0000001832267082_section14441124184110"></a>
 
 - Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The following two scenarios are supported:
-- PromptFlashAttention: Used during the prefill/prompt stage. Typically, `query`, `key`, and `value` are tensors containing the entire sequence and can be used in conjunction with `atten_mask` and the optional `pse_shift`. This mode prioritizes throughput; for long-sequence scenarios, pay close attention to timeout risks and splitting strategies.
-- IncreFlashAttention: Used during the decode stage, where the S dimension of `query` is 1, and `key`/`value` typically come from the KV Cache. This mode prioritizes per-step latency and KV Cache access efficiency. Enabling PagedAttention can improve throughput and memory access efficiency, but introduces additional constraints.
+  - PromptFlashAttention: Used during the prefill/prompt stage. Typically, `query`, `key`, and `value` are tensors containing the entire sequence and can be used in conjunction with `atten_mask` and the optional `pse_shift`. This mode prioritizes throughput; for long-sequence scenarios, pay close attention to timeout risks and splitting strategies.
+  - IncreFlashAttention: Used during the decode stage, where the S dimension of `query` is 1, and `key`/`value` typically come from the KV Cache. This mode prioritizes per-step latency and KV Cache access efficiency. Enabling PagedAttention can improve throughput and memory access efficiency, but introduces additional constraints.
 - Formulas:
 
   Basic formula:
@@ -615,11 +615,12 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     import torch_npu
     import math
     import torchair as tng
+    import os
     
     from torchair.configs.compiler_config import CompilerConfig
     import torch._dynamo
-    TORCHDYNAMO_VERBOSE=1
-    TORCH_LOGS="+dynamo"
+    os.environ['TORCHDYNAMO_VERBOSE'] = '1'
+    os.environ['TORCH_LOGS'] = '+dynamo'
     
     # Configure logging and debug settings for graph capture
     import logging

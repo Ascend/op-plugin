@@ -223,11 +223,11 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - Supported scenarios:
 
-> [!NOTE]
->
-> <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
->
-> - Full FP8, HiF8, and MXFP8 quantization scenarios are currently not supported.
+  > [!NOTE]
+  >
+  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  >
+  > - Full FP8, HiF8, and MXFP8 quantization scenarios are currently not supported.
 
   <table style="table-layout: auto;" border="1">
     <tr>

@@ -14,7 +14,7 @@
 
 ## Function
 
-Computes the Mish activation function element-wise. The Mish activation function is defined as: `$mish(x) = x * tanh(softplus(x))$, where $softplus(x) = ln(1 + e^x)$.
+Computes the Mish activation function element-wise. The Mish activation function is defined as: $mish(x) = x * tanh(softplus(x))$, where $softplus(x) = ln(1 + e^x)$.
 
 ## Prototype
 
