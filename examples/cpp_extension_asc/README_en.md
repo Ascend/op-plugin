@@ -231,9 +231,9 @@ After completing the operator adaptation development, you can call the custom op
   <table>
    <tr><td rowspan="1" align="center">Kernel Function Name</td><td colspan="4" align="center">add_custom</td></tr>
   <tr><td rowspan="3" align="center">Operator input</td><td align="center">Name</td><td align="center">Shape</td><td align="center">Data Type</td><td align="center">Data Layout</td></tr>
-  <tr><td align="center">x</td><td align="center">(8, 2048)</td><td align="center">int</td><td align="center">ND</td></tr>
-  <tr><td align="center">y</td><td align="center">(8, 2048)</td><td align="center">int</td><td align="center">ND</td></tr>
-  <tr><td rowspan="1" align="center">Operator output</td><td align="center">z</td><td align="center">(8, 2048)</td><td align="center">int</td><td align="center">ND</td></tr>
+  <tr><td align="center">x</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
+  <tr><td align="center">y</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
+  <tr><td rowspan="1" align="center">Operator output</td><td align="center">z</td><td align="center">8 * 2048</td><td align="center">int</td><td align="center">ND</td></tr>
   </table>
 
 ### `Trig` Operator
@@ -251,10 +251,10 @@ After completing the operator adaptation development, you can call the custom op
   <table>
   <tr><td rowspan="1" align="center">Kernel Function Name</td><td colspan="4" align="center">trig_inplace_custom</td></tr>
   <tr><td rowspan="4" align="center">Operator input</td><td align="center">Name</td><td align="center">Shape</td><td align="center">Data Type</td><td align="center">Data Layout</td></tr>
-  <tr><td align="center">x</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
-  <tr><td align="center">out_sin</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
-  <tr><td align="center">out_cos</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
-  <tr><td rowspan="3" align="center">Operator output</td><td align="center">out_sin</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
-  <tr><td align="center">out_cos</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
-  <tr><td align="center">out_tan</td><td align="center">(8, 2048)</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td align="center">x</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td align="center">out_sin</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td align="center">out_cos</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td rowspan="3" align="center">Operator output</td><td align="center">out_sin</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td align="center">out_cos</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
+  <tr><td align="center">out_tan</td><td align="center">8 * 2048</td><td align="center">float</td><td align="center">ND</td></tr>
   </table>

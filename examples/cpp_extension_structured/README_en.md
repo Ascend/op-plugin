@@ -105,7 +105,7 @@ After completing the operator adaptation development, you can call the custom op
     bash build_and_run.sh
     ```
 
-The following output indicates successful execution:
+    The following output indicates successful execution:
 
     ```bash
     Ran xx tests in xx s
