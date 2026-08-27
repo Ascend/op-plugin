@@ -13,6 +13,11 @@
 
 控制是否使用私有格式，设置为True时允许使用私有格式，设置为False时，不允许申请任何私有格式的tensor，避免了适配层出现私有格式流通。
 
+该配置直接影响以下API的行为：
+
+- `torch_npu.npu_format_cast`/`torch_npu.npu_format_cast_`/`at_npu::native::npu_format_cast`：设置为`False`时不支持转换为私有格式，目标私有格式会自动降级为对应的base格式，数据与shape保持不变；设置为`True`时真实转换为私有格式。
+- 卷积类算子（主要影响`torch.nn.Conv1d`、`torch.nn.Conv2d`，`torch.nn.Conv3d`不受影响）：影响卷积类算子的实现路径，设置为`False`且JIT编译关闭时，卷积类算子通过aclnn算子实现；否则通过aclop算子实现。建议大部分情况下设置为`False`，避免触发在线编译。
+
 ## 函数原型
 
 ```python

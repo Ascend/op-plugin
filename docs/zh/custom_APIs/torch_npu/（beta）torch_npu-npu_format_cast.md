@@ -54,6 +54,8 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
 
 `customize_dtype`参数仅在Atlas A2 训练系列产品/Atlas A3 训练系列产品且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
 
+<term>Ascend 950DT</term>场景下，本接口转为私有格式（如FRACTAL_NZ）的行为不受`allow_internal_format = False`约束。
+
 <term>Ascend 950DT</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
 
 - 当`input`的dtype与`customize_dtype`相同且类型为float16、bfloat16时，若`input`维度表示为[k, n]，则k为1场景暂不支持。
@@ -97,6 +99,8 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
     ```python
     >>> import torch
     >>> import torch_npu
+    >>> # Atlas A2/A3系列上allow_internal_format默认为False，需先开启私有格式开关，否则FRACTAL_NZ目标会被降级为ND
+    >>> torch_npu.npu.config.allow_internal_format = True
     >>> t = torch.randint(0, 100, (32, 32), dtype=torch.int32).npu()
     >>> # customize_dtype=3 即 ACL_INT32，此时 C0=8
     >>> out = torch_npu.npu_format_cast(t, 29, customize_dtype=3)
