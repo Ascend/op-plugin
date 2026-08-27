@@ -22,7 +22,7 @@ Obtains an empty NPU tensor in a specified format. The return value type is `Ten
 
 - **`acl_format`** (`int64_t`): Format of the tensor.
 
-- **`keep_format`** (`bool`): Optional. Specifies whether to enforce the requested format. Valid values are `True` (enforces the specified format) or `False` (allows the tensor format to be adjusted based on the actual operator execution requirements).
+- **`keep_format`** (`bool`): Optional. Specifies whether to enforce the requested format. Valid values are `true` (enforces the specified format) or `false` (allows the tensor format to be adjusted based on the actual operator execution requirements).
 
 ## Supported Products
 

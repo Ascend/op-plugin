@@ -16,7 +16,7 @@ Synchronizes the NPU device. This function blocks the current thread until all c
 
 ## Parameters
 
-**`device_index`** (`int64_t`): Optional. Device index used for synchronization. The default value is `-1`, which specifying to synchronize the current device.
+**`device_index`** (`int64_t`): Optional. Device index used for synchronization. The default value is `-1`, which specifies to synchronize the current device.
 
 ## Supported Products
 

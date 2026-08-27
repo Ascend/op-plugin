@@ -26,7 +26,7 @@ torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, 
 
 - **`boxes1`** (`Tensor`): Predicted bounding boxes in `xywh` format. This parameter must be 2D with shape `(4, n)`.
 - **`boxes2`** (`Tensor`): Corresponding ground truth bounding boxes. This parameter must be 2D with shape `(4, n)`.
-- **`trans`** (`bool`): Indicates whether there are offsets. The default value is `False`.
+- **`trans`** (`bool`): Indicates whether there are offsets. The default value is `True`.
 - **`is_cross`** (`bool`): Indicates whether a cross operation is performed between `box1` and `box2`. The default value is `False`.
 - **`mode`** (`int`): CIoU computation mode. The default value is `0`.
 

@@ -37,7 +37,7 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
 `Tensor`
 
-Computation result of the operator, $out$ in the formula. The output data type is `bfloat16`. The data layout can be ND. This parameter must be 2D with shape `(m, n)`.
+Computation result of the operator, $out$ in the formula. The output data type is `bfloat16`. The data layout can be ND. This output tensor must be 2D with shape `(m, n)`.
 
 ## Constraints
 

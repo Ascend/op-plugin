@@ -109,7 +109,7 @@
 
           $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
 
-          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$$
+          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
 
     </details>
   

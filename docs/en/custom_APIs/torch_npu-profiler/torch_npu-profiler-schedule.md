@@ -15,7 +15,7 @@ Sets the action for each step. It constructs the `schedule` parameter of `torch_
 ## Prototype
 
 ```python
-torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 0, skip_first_wait = 0)
+torch_npu.profiler.schedule(wait, active, warmup = 0, repeat = 0, skip_first = 0, skip_first_wait = 0)
 ```
 
 ## Parameters

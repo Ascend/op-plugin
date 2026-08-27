@@ -9,8 +9,8 @@
 
 ## Function<a name="en-us_topic_0000002236535552_section1023311522369"></a>
 
-- Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-head Latent Attention (MLA) structure.
-    - **Multi-head Latent Attention (MLA)**:
+- Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-Head Latent Attention (MLA) structure.
+    - **Multi-Head Latent Attention (MLA)**:
     An efficient attention mechanism proposed in DeepSeek-V2. It compresses Key/Value states into low-rank latent representations to reduce KV cache footprint and computational overhead while maintaining long-sequence modeling capabilities.
 
     - **Rotary Position Embedding (RoPE)**:

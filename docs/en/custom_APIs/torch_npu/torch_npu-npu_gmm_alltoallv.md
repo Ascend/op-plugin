@@ -8,7 +8,7 @@
 
 ## Function<a name="en-us_topic_0000002317314449_section14441124184110"></a>
 
-- Performs fused computation of routed expert GroupedMatMul and AlltoAllv, and parallel fused computation with shared expert MatMul in a Mixture of Experts (MoE) network. It performs computation before communication.
+- Performs fused computation of routed expert GroupedMatMul and AlltoAllv, and parallel fused computation with shared expert MatMul in a Mixture-of-Experts (MoE) network. It performs computation before communication.
 - Routed expert formulas:
 
     $$

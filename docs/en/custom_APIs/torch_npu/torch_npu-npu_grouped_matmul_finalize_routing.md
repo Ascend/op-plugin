@@ -11,7 +11,7 @@
 
 A fused operator that combines GroupedMatMul and MoeFinalizeRouting. GroupedMatMul performs separate computations for each expert, while MoeFinalizeRouting maps the GroupedMatMul results back to the original token positions and aggregates them based on the routing relationships. The two operations are performed in sequence to form a complete MoE output path.
 
-- **MoE**: Mixture of Experts. Each token is assigned to one or more experts for computation based on the routing results.
+- **MoE**: Mixture-of-Experts. Each token is assigned to one or more experts for computation based on the routing results.
 - **MoeFinalizeRouting**: The finalization process of MoE routing. It maps the computation results of each expert back to the original token order based on routing indices and aggregates the results from multiple experts for the same token to produce the final output.
 
 GroupedMatMul is an optimized computation pattern for batched sparse matrix multiplication. In an MoE architecture, each token is assigned to an expert, and different experts process varying numbers of tokens. GroupedMatMul groups all tokens assigned to the same expert together and executes the matrix multiplication for that expert in a single operation. This avoids the scheduling overhead of invoking separate matrix multiplications for each token, thereby improving computational efficiency.

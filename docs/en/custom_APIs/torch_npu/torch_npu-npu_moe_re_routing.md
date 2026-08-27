@@ -9,8 +9,8 @@
 
 ## Function
 
-- Rearranges tokens by expert order in the Mixture of Experts (MoE) network after AlltoAll communication across ranks.
-    - **MoE network**: A Mixture of Experts network in which each layer contains multiple parallel "expert" subnetworks, and a routing module determines which expert or experts process each token.
+- Rearranges tokens by expert order in the Mixture-of-Experts (MoE) network after AlltoAll communication across ranks.
+    - **MoE network**: A Mixture-of-Experts network in which each layer contains multiple parallel "expert" subnetworks, and a routing module determines which expert or experts process each token.
     - **Token**: The fundamental unit of data processed by a model, typically a feature vector obtained by embedding a word or subword.
     - **Expert**: A subnetwork within an MoE architecture. In multi-device deployments, experts are distributed across different devices, with each device hosting several experts.
     - **`AlltoAll` operation**: A collective communication primitive in which each device partitions its local data according to the destination device and sends the corresponding data to all other devices while receiving data from all other devices.

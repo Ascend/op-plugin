@@ -26,7 +26,7 @@ torch_npu.contrib.npu_fused_attention_with_layernorm(hidden_states, attention_ma
 
 - **`hidden_states`** (`Tensor`): Hidden states tensor of the last layer.
 - **`attention_mask`** (`Tensor`): Attention mask.
-- **query_kernel** (Tensor): Query weight.
+- **`query_kernel`** (Tensor): Query weight.
 - **`key_kernel`** (`Tensor`): Key weight.
 - **`value_kernel`** (`Tensor`): Value weight.
 - **`query_bias`** (`Tensor`): Query bias.

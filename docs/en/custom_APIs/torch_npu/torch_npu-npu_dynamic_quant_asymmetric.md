@@ -11,7 +11,7 @@
 
 - Description:
 
-    Performs dynamic asymmetric quantization on input tensors. The current version supports only `pertoken` mode. `pertensor` is currently not supported. Mixture of Experts (MoE) scenarios are supported.
+    Performs dynamic asymmetric quantization on input tensors. The current version supports only `pertoken` mode. `pertensor` is currently not supported. Mixture-of-Experts (MoE) scenarios are supported.
 
 - Formulas:
     

@@ -9,7 +9,7 @@
 
 ## Function
 
-- Uses the gating mechanism of the Mixture of Experts (MoE) architecture for expert routing. This API performs Softmax computation on the input `x`, followed by Top-K computation to select the top-K experts with the highest weights.
+- Uses the gating mechanism of the Mixture-of-Experts (MoE) architecture for expert routing. This API performs Softmax computation on the input `x`, followed by Top-K computation to select the top-K experts with the highest weights.
 
 - Formulas:
 

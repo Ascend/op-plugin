@@ -13,7 +13,7 @@
 
 - **Description:**
 
-    Performs causal 1D convolution on sequences. Data cached along the sequence dimension (with a length of `K - 1`, where `K` is the convolution kernel width) is used to pad the beginning of each sequence, ensuring that the output depends on the current and historical inputs. After convolution, data from the current sequence is updated in the cache. Based on the output of the causal 1D convolution, the original input is added to the output to implement a residual connection. Supports automatic prefix caching (APC), speculative decoding (MTP), residual connections, and other features.
+    Performs causal 1D convolution on a sequence. Cached data (with a length equal to the convolution kernel width minus 1) is used to pad the beginning of each sequence along the sequence dimension, ensuring that the output depends on the current and historical inputs. After the convolution, the current sequence data is updated in the cache. The original input is added to the causal 1D convolution output to implement a residual connection. This API supports features such as automatic prefix caching (APC), MTP-based speculative decoding, and residual connections.
 
 - **Formulas:**
 

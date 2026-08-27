@@ -33,7 +33,7 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 
 `Tensor`
 
-Dropout computation result.
+DropPath computation result.
 
 ## Example
 

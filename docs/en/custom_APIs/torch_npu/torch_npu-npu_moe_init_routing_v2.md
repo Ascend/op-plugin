@@ -10,7 +10,7 @@
 
 ## Function<a name="en-us_topic_0000002271534921_section1650913464367"></a>
 
-- Performs mixture of experts (MoE) routing based on the computation results of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md). Non-quantization, dynamic quantization, and static quantization configurations are supported.
+- Performs Mixture-of-Experts (MoE) routing based on the computation results of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md). Non-quantization, dynamic quantization, and static quantization configurations are supported.
 - Formulas: 
 
     1. Sort the input `expertIdx` to obtain the sorted expert indices `sortedExpertIdx` and the corresponding row indices `sortedRowIdx`.

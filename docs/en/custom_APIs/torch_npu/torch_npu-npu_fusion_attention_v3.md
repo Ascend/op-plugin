@@ -45,7 +45,7 @@ torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse
     >If the operator detects an invalid row scenario (for example, when `sparse_mode` is `3` and `Sq` is greater than `Skv`), invalid row computation is automatically enabled.
 
 - **`prefix`** (`List[int]`): Optional. `N` value of each batch in the prefix sparse computation scenario. The data type can be `int64`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`actual_seq_qlen`** (`Tensor`): Optional. This parameter must be provided in varlen scenarios as a one-dimensional CPU `Tensor`. representing the cumulative sequence length of each `S` dimension in `query`. The data type can be `int64`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
+- **`actual_seq_qlen`** (`Tensor`): Optional. This parameter must be provided in varlen scenarios as a one-dimensional CPU `Tensor`, representing the cumulative sequence length of each `S` dimension in `query`. The data type can be `int64`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
 
     For example, if the actual sequence lengths are `2`, `2`, `2`, `2`, and `2`, then `actual_seq_qlen` must be `2`, `4`, `6`, `8`, and `10`.
 

@@ -30,7 +30,7 @@ torch_npu.npu.check_uce_in_memory(device_id:int)
 ## Return Values
 
 - `0`: No UCE fault address exists.
-- `1`: The UCE fault address is not an TorchNPU memory address.
+- `1`: The UCE fault address is not a TorchNPU memory address.
 - `2`: The UCE fault address is a temporary memory address used by TorchNPU.
 - `3`: The UCE fault address is a resident memory address used by TorchNPU.
 

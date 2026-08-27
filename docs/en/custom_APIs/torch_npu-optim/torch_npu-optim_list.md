@@ -38,7 +38,7 @@ This section describes various fusion optimizers that provide better performance
 </tr>
 <tr id="row172915513437"><td class="cellrowborder" valign="top" width="38.34%" headers="mcps1.2.3.1.1 "><p id="p32915118430"><a name="p32915118430"></a><a name="p32915118430"></a><a href="torch_npu-optim-NpuFusedAdamW.md">torch_npu.optim.NpuFusedAdamW</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.660000000000004%" headers="mcps1.2.3.1.2 "><p id="p47811347134517"><a name="p47811347134517"></a><a name="p47811347134517"></a>Provides a high-performance Adam optimizer implemented through tensor fusion. The core functionality is compatible with <code>torch.optim.Adam</code>.</p>
+<td class="cellrowborder" valign="top" width="61.660000000000004%" headers="mcps1.2.3.1.2 "><p id="p47811347134517"><a name="p47811347134517"></a><a name="p47811347134517"></a>Provides a high-performance Adam optimizer implemented through tensor fusion. The core functionality is compatible with <code>torch.optim.AdamW</code>.</p>
 </td>
 </tr>
 <tr id="row14291551134320"><td class="cellrowborder" valign="top" width="38.34%" headers="mcps1.2.3.1.1 "><p id="p4295511435"><a name="p4295511435"></a><a name="p4295511435"></a><a href="torch_npu-optim-NpuFusedAdamP.md">torch_npu.optim.NpuFusedAdamP</a></p>

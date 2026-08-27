@@ -11,7 +11,7 @@
 
 - Performs pertoken symmetric dynamic quantization on the input tensor.
 
-    In Mixture of Experts (MoE) scenarios, `group_index` is introduced, and `smooth_scales` contains multiple groups of smoothing vectors that are applied to different rows of `x` according to the values specified in `group_index`. Specifically, if `x` contains m tokens and `smooth_scales` has n rows, `smooth_scales[0]` is applied to `x[0:group_index[0]]`, and `smooth_scales[i]` is applied to `x[group_index[i-1]:group_index[i]]`, where `i = 1, 2, ..., n-1`.
+    In Mixture-of-Experts (MoE) scenarios, `group_index` is introduced, and `smooth_scales` contains multiple groups of smoothing vectors that are applied to different rows of `x` according to the values specified in `group_index`. Specifically, if `x` contains m tokens and `smooth_scales` has n rows, `smooth_scales[0]` is applied to `x[0:group_index[0]]`, and `smooth_scales[i]` is applied to `x[group_index[i-1]:group_index[i]]`, where `i = 1, 2, ..., n-1`.
 
 - Formulas:
     - When `smooth_scales` is omitted:

@@ -434,7 +434,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p43681016105618"></a><a name="p43681016105618"></a><a href="torch_npu-npu_fused_infer_attention_score_v2.md">torch_npu.npu_fused_infer_attention_score_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p836911165560"><a name="p836911165560"></a><a name="p836911165560"></a>Adapts to the <code>FlashAttention</code> operator in the incremental and full inference scenarios, supporting both full computation (<code>PromptFlashAttention</code>) and incremental computation (<code>IncreFlashAttention</code>). Added support for MultiHead Latent Attention (MLA) full quantization.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p836911165560"><a name="p836911165560"></a><a name="p836911165560"></a>Adapts to the <code>FlashAttention</code> operator in the incremental and full inference scenarios, supporting both full computation (<code>PromptFlashAttention</code>) and incremental computation (<code>IncreFlashAttention</code>). Added support for Multi-Head Latent Attention (MLA) full quantization.</p>
 </td>
 </tr>
 <tr id="row14601311184810"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1799710217294"><a name="p1799710217294"></a><a name="p1799710217294"></a><a href="torch_npu-npu_fusion_attention.md">torch_npu.npu_fusion_attention</a></p>
@@ -519,7 +519,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row192221013132"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1474331220582"><a name="p1474331220582"></a><a name="p1474331220582"></a><a href="torch_npu-npu_moe_compute_expert_tokens.md">torch_npu.npu_moe_compute_expert_tokens</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12743131265818"><a name="p12743131265818"></a><a name="p12743131265818"></a>Uses binary search to locate the position of the last row processed by each expert in mixture of experts (MOE) computation.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12743131265818"><a name="p12743131265818"></a><a name="p12743131265818"></a>Uses binary search to locate the position of the last row processed by each expert in Mixture-of-Experts (MOE) computation.</p>
 </td>
 </tr>
 <tr id="row622320135311"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2743141295810"><a name="p2743141295810"></a><a name="p2743141295810"></a><a href="torch_npu-npu_moe_finalize_routing.md">torch_npu.npu_moe_finalize_routing</a></p>
@@ -529,12 +529,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row11308231313"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p57431312165820"><a name="p57431312165820"></a><a name="p57431312165820"></a><a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14743151275819"><a name="p14743151275819"></a><a name="p14743151275819"></a>Uses the gating mechanism of a Mixture of Experts (MoE) architecture for expert routing, and applies Softmax to the input <code>x</code>, followed by TopK to select the top-K experts with the highest weights.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14743151275819"><a name="p14743151275819"></a><a name="p14743151275819"></a>Uses the gating mechanism of a Mixture-of-Experts (MoE) architecture for expert routing, and applies Softmax to the input <code>x</code>, followed by TopK to select the top-K experts with the highest weights.</p>
 </td>
 </tr>
 <tr id="row133111231730"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p147431112105811"><a name="p147431112105811"></a><a name="p147431112105811"></a><a href="torch_npu-npu_moe_init_routing.md">torch_npu.npu_moe_init_routing</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1174351212586"><a name="p1174351212586"></a><a name="p1174351212586"></a>Performs mixture of experts (MoE) routing based on the computation results of <a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1174351212586"><a name="p1174351212586"></a><a name="p1174351212586"></a>Performs Mixture-of-Experts (MoE) routing based on the computation results of <a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>.</p>
 </td>
 </tr>
 <tr id="row1531023733"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7819527225"><a name="p7819527225"></a><a name="p7819527225"></a><a href="torch_npu-npu_prefetch.md">torch_npu.npu_prefetch</a></p>
@@ -684,7 +684,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_init_routing_v2.md">torch_npu.npu_moe_init_routing_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs mixture of experts (MoE) routing based on the computation results of <a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>. Non-quantization, dynamic quantization, and static quantization configurations are supported.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs Mixture-of-Experts (MoE) routing based on the computation results of <a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>. Non-quantization, dynamic quantization, and static quantization configurations are supported.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_swiglu_quant.md">torch_npu.npu_swiglu_quant</a></p>
@@ -699,7 +699,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_kv_rmsnorm_rope_cache.md">torch_npu.npu_kv_rmsnorm_rope_cache</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-head Latent Attention (MLA) structure.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-Head Latent Attention (MLA) structure.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_interleave_rope.md">torch_npu.npu_interleave_rope</a></p>
@@ -714,7 +714,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_re_routing.md">torch_npu.npu_moe_re_routing</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Rearranges tokens by expert order in the Mixture of Experts (MoE) network after AlltoAll communication across ranks.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Rearranges tokens by expert order in the Mixture-of-Experts (MoE) network after AlltoAll communication across ranks.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-matmul_checksum.md">torch_npu.matmul_checksum</a></p>
@@ -855,7 +855,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr> 
 <tr id="npu_fused_causal_conv1d"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_causal_conv1d"><a name="p_npu_fused_causal_conv1d"></a><a name="p_npu_fused_causal_conv1d"></a><a href="torch_npu-npu_fused_causal_conv1d.md">torch_npu.npu_fused_causal_conv1d</a></p> 
 </td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_causal_conv1d_desc"><a name="p_npu_fused_causal_conv1d_desc"></a><a name="p_npu_fused_causal_conv1d_desc"></a><span>Performs causal 1D convolution on a sequence. Cached data with a length equal to the convolution kernel width minus 1 is used to pad the beginning of each sequence along the sequence dimension, ensuring that the output depends on the current and historical inputs. After the convolution, the current sequence data is updated in the cache. The original input is added to the causal 1D convolution output to implement a residual connection. Supports features such as APC (Automatic Prefix Caching), MTP (speculative decoding), and residual connections.</span></p> 
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_causal_conv1d_desc"><a name="p_npu_fused_causal_conv1d_desc"></a><a name="p_npu_fused_causal_conv1d_desc"></a><span>Performs causal 1D convolution on a sequence. Cached data (with a length equal to the convolution kernel width minus 1) is used to pad the beginning of each sequence along the sequence dimension, ensuring that the output depends on the current and historical inputs. After the convolution, the current sequence data is updated in the cache. The original input is added to the causal 1D convolution output to implement a residual connection. This API supports features such as automatic prefix caching (APC), MTP-based speculative decoding, and residual connections.</span></p> 
 </td> 
 </tr> 
 <tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p> 
