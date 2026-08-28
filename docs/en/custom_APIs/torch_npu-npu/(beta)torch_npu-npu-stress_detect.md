@@ -34,7 +34,8 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
     - `2`: Online precision detection failed due to a hardware fault.
 
-- The following error indicates a voltage recovery failure, which requires manual voltage restoration (by referring to section "Comprehensive Check" in [CANN Troubleshooting](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/maintenref/troubleshooting/troubleshooting_0505.html)) or a system reboot.
+- The following error indicates a voltage recovery failure, which requires manual voltage restoration (by referring to section "Comprehensive Check" in CANN Troubleshooting) or a system reboot.
+<!-- in [CANN Troubleshooting](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/maintenref/troubleshooting/troubleshooting_0505.html)) or a system reboot. -->
 
     ```shell
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.

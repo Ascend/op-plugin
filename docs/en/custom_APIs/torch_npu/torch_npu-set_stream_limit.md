@@ -33,10 +33,11 @@ No value is returned.
 
 ## Constraints
 
-- This API supports core control only for operators developed using Ascend C. Core control is currently not supported for non-Ascend C operators. Using this API in micro-batch multi-stream parallel scenarios may cause deadlocks or other adverse effects, and its use is not recommended. For non-Ascend C operators, you can refer to [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html) to add operator implementations before using this API to implement operator core control.
+- This API supports core control only for operators developed using Ascend C. Core control is currently not supported for non-Ascend C operators. Using this API in micro-batch multi-stream parallel scenarios may cause deadlocks or other adverse effects, and its use is not recommended. For non-Ascend C operators, you can refer to CANN Ascend C Operator Development to add operator implementations before using this API to implement operator core control.
 - This API is primarily intended for micro-batch multi-stream parallelism. When it is used together with operators that do not support core control, the effectiveness of multi-stream parallelism may be affected.
 - This API must be used together with `torch_npu.npu.config.allow_internal_format = False` (proprietary formats are not allowed).
 - This API does not support concurrent multi-threaded configuration of core limits on the same stream. Therefore, the effective core limits during operator execution cannot be guaranteed.
+<!-- [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)  -->
 
 ## Example
 
@@ -51,7 +52,8 @@ No value is returned.
 ## Effective Core Control
 
 1. The Ascend PyTorch Profiler is used to collect performance data. This includes information about PyTorch layer operators, CANN layer operators, underlying NPU operators, and operator memory footprints.
-   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. You can add an Ascend PyTorch Profiler interface (`torch_npu.profiler.profile` is recommended) to your PyTorch script to collect specified metrics. During model execution, performance data is collected synchronously. For details about its usage and the resulting files, see <a href="https://www.hiascend.com/document/detail/en/mindstudio/latest/TITools/ascend_pytorch_profiler/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>.
+   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. You can add an Ascend PyTorch Profiler interface (`torch_npu.profiler.profile` is recommended) to your PyTorch script to collect specified metrics. During model execution, performance data is collected synchronously. For details about its usage and the resulting files, see Ascend PyTorch Profiler.
+   see <a href="https://www.hiascend.com/document/detail/en/mindstudio/latest/TITools/ascend_pytorch_profiler/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>
 
      ```python
      >>> import torch

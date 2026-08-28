@@ -25,7 +25,8 @@ torch_npu.npu.set_dump(path_to_json)
 
 ## Parameters
 
- **`path_to_json`**: Path to the configuration file, including the file name. Configure this parameter as needed. For details, see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/runtimeapi/aclpythondevg_01_0155.html">Function: set_dump</a> in <i>CANN Runtime APIs</i>.
+ **`path_to_json`**: Path to the configuration file, including the file name. Configure this parameter as needed. For details, see Function: set_dump in <i>CANN Runtime APIs</i>.
+ <!-- see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/runtimeapi/aclpythondevg_01_0155.html">Function: set_dump</a> in <i>CANN Runtime APIs</i>. -->
 
 ## Example
 

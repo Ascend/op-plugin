@@ -11,8 +11,8 @@
 
 ## Function
 
-Queries the ACLNN operator version information. For details about the ACLNN operators, see "<a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/aolapi/operatorlist_00001.html">Introduction</a>" in the <i>CANN Operator Library</i>.
-
+Queries the ACLNN operator version information. For details about the ACLNN operators, see "Introduction" in the <i>CANN Operator Library</i>.
+<!-- see "<a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/aolapi/operatorlist_00001.html">Introduction</a>" in the <i>CANN Operator Library</i>. -->
 ## Prototype
 
 ```python

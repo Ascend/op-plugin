@@ -10,7 +10,8 @@ This document describes how to adapt and call a single-operator API through Torc
 
 Before getting started, ensure that you have completed the installation of the following environments:
 
-1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum).
+1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to CANN Software Installation.
+<!-- [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum) -->
 
 2. Install the PyTorch framework by referring to [Software Installation](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/installation_guide/installation_description.md).
 
@@ -136,7 +137,8 @@ Before getting started, ensure that you have completed the installation of the f
 
 After completing the operator adaptation development, you can call the custom operator through C++ extensions.
 
-1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html).
+1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see CANN Ascend C Operator Development.
+<!-- [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html) -->
 
 2. Download the code sample.
 
