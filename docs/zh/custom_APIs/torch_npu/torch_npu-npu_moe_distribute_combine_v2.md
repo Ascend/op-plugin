@@ -13,7 +13,7 @@
 
     需与[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按npu\_moe\_distribute\_dispatch\_v2算子收集数据的路径原路返回。
      - 支持数据整合功能，先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）；
-     - 支持特殊专家场景。
+     - 支持特殊专家场景（零专家、拷贝专家、常量专家）。配合dispatch_v2的assist_info_for_combine实现更高效的全卡同步。
 - 计算公式：
     - 数据整合功能：
 

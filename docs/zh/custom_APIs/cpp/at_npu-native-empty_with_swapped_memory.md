@@ -47,3 +47,16 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 
 - 当安装CANN版本8.5.0及以上，且Ascend HDK版本26.0.rc1及以上时，该接口申请的特殊Tensor支持直接打印。
 - 当安装CANN版本小于8.5.0或者Ascend HDK版本小于26.0.rc1时，该接口申请的特殊Tensor不支持直接打印，此时会打印warning日志，需要查看值时要先通过`mul_`转为普通Tensor再打印。
+
+## 调用示例
+
+```cpp
+#include <torch/extension.h>
+#include <torch_npu/csrc/core/npu/NPUFormat.h>
+
+// 创建指定shape和dtype的特殊Tensor
+at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
+
+// 该接口申请的特殊Tensor需通过mul_算子转为普通Tensor后才能查看具体值
+at::mul_(tensor, 1.0);
+```

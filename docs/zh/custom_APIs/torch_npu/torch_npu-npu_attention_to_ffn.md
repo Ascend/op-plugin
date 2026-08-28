@@ -60,6 +60,8 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
     - shared_expert_num：表示共享专家数量（一个共享专家可以复制部署到多个FFN节点上），取值范围为\[0, 4\]。
 
+    - M：表示每个专家对应的FFN卡数量或相关映射维度，需根据实际部署配置确定。
+
 - HCCL通信域缓存区大小：调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
 
 ## 调用示例
