@@ -88,7 +88,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
     - `K`: Number of top-K experts selected. The value must satisfy 0 < `K` ≤ 16 and 0 < `K` ≤ `log_expert_num`.
     - `log_expert_num`: Number of logical experts, corresponding to the number of rows in `eplb_table`. The value range is (0, 1024).
     - `moe_expert_num`: Total number of physical experts, defined as the sum of deployed replicas across all logical experts (equal to the sum of the `count` values in the first column of `eplb_table`). The value range is (0, 1024].
-    - **`F`**: Number of columns in the input mapping table `eplb_table`. The value range is [2, `world_size + 1`].
+    - `F`: Number of columns in the input mapping table `eplb_table`. The value range is [2, `world_size + 1`].
     - Number of replicas deployed for each logical expert (the `count` value in the first column of `eplb_table`). The minimum value is `1` and the maximum value is `world_size`.
     - Total number of replicas deployed across all logical experts (sum of the `count` values in the first column of `eplb_table`). The total must be less than or equal to `1024` and be divisible by `world_size`.
 

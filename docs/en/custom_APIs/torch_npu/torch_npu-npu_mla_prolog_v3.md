@@ -141,7 +141,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **`rmsnorm_epsilon_ckv`** (`double`): Optional. The $\epsilon$ parameter in the `RmsNorm` formula for computing $c^{KV}$. The default value is `1e-05`.
 
-- `cache_mode` (`str`): Optional. Layout mode of `kv_cache`. The supported values are `"PA_BSND"`, `"PA_NZ"`, `"PA_BLK_BSND"`, `"PA_BLK_NZ"`, `"TND"` (corresponding to fused `B` and `S` axes), and `"BSND"` (corresponding to non-fused `B` and `S` axes). The default value is `"PA_BSND"`.
+- **`cache_mode`** (`str`): Optional. Layout mode of `kv_cache`. The supported values are `"PA_BSND"`, `"PA_NZ"`, `"PA_BLK_BSND"`, `"PA_BLK_NZ"`, `"TND"` (corresponding to fused `B` and `S` axes), and `"BSND"` (corresponding to non-fused `B` and `S` axes). The default value is `"PA_BSND"`.
 
 - **`query_norm_flag`** (`bool`): Optional. Specifies whether to output `query_norm`. Only the `bool` data type is supported. When set to `False`, `query_norm` is not output. When set to `True`, `query_norm` is output and is accompanied by the output of `dequant_scale_q_norm` in quantization scenarios. The default value is `False`.
 

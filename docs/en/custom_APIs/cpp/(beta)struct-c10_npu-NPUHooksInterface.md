@@ -12,9 +12,9 @@ Provides NPU hook APIs as a hook interface class.
 
 - **const at::Generator& c10_npu::NPUHooksInterface::getDefaultGenerator(c10::DeviceIndex device_index)**
 
-Obtains the default random number generator for `NPUHooksInterface`. This function is identical to `const at::Generator& at::CUDAHooksInterface::getDefaultCUDAGenerator(c10::DeviceIndex device_index = -1)`.
+  Obtains the default random number generator for `NPUHooksInterface`. This function is identical to `const at::Generator& at::CUDAHooksInterface::getDefaultCUDAGenerator(c10::DeviceIndex device_index = -1)`.
 
-**`device_index`** (`DeviceIndex`): NPU device ID.
+  **`device_index`** (`DeviceIndex`): NPU device ID.
 
 ## Supported Products
 
