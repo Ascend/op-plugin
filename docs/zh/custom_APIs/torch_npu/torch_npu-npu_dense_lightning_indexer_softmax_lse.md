@@ -30,7 +30,7 @@ $maxIndex$，$sumIndex$作为输出传递给接口npu_dense_lightning_indexer_gr
 ## 函数原型
 
 ```python
-npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor)
+npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2**63-1, next_tokens=2**63-1) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
