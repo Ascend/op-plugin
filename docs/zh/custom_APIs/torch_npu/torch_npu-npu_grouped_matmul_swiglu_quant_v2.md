@@ -211,9 +211,25 @@
     </details>
 
     <details>
-    <summary>Pertoken量化场景：</summary>
+    <summary>A8W8 Pertoken量化场景：</summary>
 
-      1. 根据分组确定的入参进行如下计算：
+      - **定义**：
+        - **⋅** 表示矩阵乘法。
+        - **⊙** 表示逐元素乘法。
+      - **输入**：
+        - $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度。
+        - $W∈\mathbb{Z_8}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度。
+        - $w\_scale∈\mathbb{R}^{E \times N}$：权重矩阵的逐channel缩放因子。
+        - $x\_scale∈\mathbb{R}^{M}$：激活矩阵的逐token缩放因子。
+        - $groupList∈\mathbb{N}^{E}$：cumsum或count形式的分组索引列表。
+      - **输出**：
+        - $Q∈\mathbb{Z_8}^{M \times N / 2}$：量化后的输出矩阵。
+        - $Q\_scale∈\mathbb{R}^{M}$：输出矩阵的逐token量化缩放因子。
+      - **计算过程**：
+
+      1. 根据groupList\[i\]确定当前分组的token，$i \in [0,Len(groupList)]$。
+
+      2. 根据分组确定的入参进行如下计算：
 
          $$
          C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i} \odot w\_scale_{i}
@@ -233,7 +249,7 @@
 
          其中，$x\_scale_{i}$表示对应token的量化因子。
 
-      2. 量化输出结果：
+      3. 量化输出结果：
 
          $$
          Q\_scale_{i} = \frac{max(|S_{i}|)}{max(type)}
@@ -263,15 +279,15 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     - A8W8场景下，weight仅支持NZ格式（FRACTAL\_NZ），不支持$ND$数据格式。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - 数据格式为ND时，shape支持3维，非转置shape\[\[e, k, n\]\]，转置shape\[\[e, n, k\]\]。数据类型支持torch.float8\_e5m2、torch.float8\_e4m3fn、torch\_npu.float4\_e2m1fn\_x2、torch.int8、torch\_npu.hifloat8，其中torch\_npu.hifloat8和float4系列需配置可选参数weight\_dtype为对应类型，此时weight本身的dtype不再生效，但仍需保证weight本身的dtype为8bit位的数据类型，以保证shape正确；其中float4内轴需为偶数，以保证8bits可以转换为2个float4。
-    - 数据格式为FRACTAL\_NZ\(通过接口npu\_format\_cast，可实现格式转换\)时，shape支持5维，非转置shape\[e, n/32, k/16, 16, 32\], 转置shape\[e, k/32, n/16, 16, 32\]；数据类型仅支持torch.float8\_e4m3fn。
+    - 数据格式为FRACTAL\_NZ时，shape支持5维：非转置shape为\[e, ceil\(n / 32\), ceil\(k / 16\), 16, 32\]，转置shape为\[e, ceil\(k / 32\), ceil\(n / 16\), 16, 32\]。数据类型支持torch.int8、torch\_npu.hifloat8和torch.float8\_e4m3fn。
 
 - **weight\_scale**（`TensorList`）：必选输入，右矩阵的量化因子，对应公式中的$w_{scale}$。目前仅支持TensorList长度为1。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`weight`数据类型为`int8`时，`weight_scale`的shape支持2维；`weight`数据类型为`int32`时，`weight_scale`的shape支持2维和3维。数据类型支持`float32`、`float16`、`bfloat16`、`uint64`。
-  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持4维，非转置shape\[\[e, ceil\(k / 64\), n, 2\]\]，转置shape\[\[e, n, ceil\(k / 64\), 2\]\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持2维，shape\[\[e, n\]\]，当x为torch.int8时，weightScale需支持torch.bfloat16、torch.float32、torch.float16，当x为torch.float8\_e4m3fn/torch.float8\_e5m2/torch\_npu.hifloat8时，weightScale支持torch.bfloat16、torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持4维，非转置shape\[\[e, ceil\(k / 64\), n, 2\]\]，转置shape\[\[e, n, ceil\(k / 64\), 2\]\]，数据类型支持torch\_npu.float8\_e8m0fnu。Pertoken量化场景下：shape支持2维，shape\[\[e, n\]\]，当x为torch.int8时，weightScale需支持torch.bfloat16、torch.float32、torch.float16，当x为torch.float8\_e4m3fn/torch.float8\_e5m2/torch\_npu.hifloat8时，weightScale支持torch.bfloat16、torch.float32。
 
 - **x\_scale**（`Tensor`）：必选输入，左矩阵的量化因子，对应公式中的$x_scale$。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：shape支持1维[m]，数据类型支持`float32`。
-  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持torch\_npu.float8\_e8m0fnu。pertoken量化场景下：shape支持1维\[m\]，数据类型支持torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下：shape支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持torch\_npu.float8\_e8m0fnu。Pertoken量化场景下：shape支持1维\[m\]，数据类型支持torch.float32。
 
 - **group\_list**（`Tensor`）：必选输入，指示每个分组参与计算的Token个数，对应公式中的$groupList$。shape支持1维[e]，长度需与`weight`的首轴维度相等。数据类型支持`int64`，数据格式支持$ND$，支持非连续的Tensor。当group_list_type为0时，最后一个值不大于x中tensor的第一维，当group_list_type为1时，数值的总和不大于x中tensor的第一维。group_list中的值约束了输出数据的有效部分, group_list中未指定的部分将不会参与更新。
 - **smooth\_scale**（`Tensor`）：可选输入，平滑缩放因子，对应公式中的$smoothScale$。数据类型为`float32`，数据格式支持$ND$。仅A4W4场景下需传入，首轴长度需与`weight`的首轴维度相等，支持两种shape：(E, N/2)或(E,)，当使用(E,)时会进行广播乘法。其他场景传入默认值None。
@@ -279,15 +295,15 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **bias**（`Tensor`）：可选输入，矩阵乘计算的偏移值，对应公式中的$bias$，shape支持2维，数据类型支持`int32`，当前仅支持传入默认值None。
 - **dequant\_mode**（`int`）：可选输入，表示反量化模式，数据类型为`int32`，默认值为0。取值为0时，表示激活矩阵pertoken，权重矩阵perchannel。取值为1时，表示激活矩阵pertoken，权重矩阵pergroup。取值为2时，表示mx量化。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：A8W4场景下，dequant_mode支持取值0和1；A8W8和A4W4场景下，dequant_mode仅支持取值0。
-  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入0以及2。
+  - <term>Ascend 950PR/Ascend 950DT</term>：Pertoken量化场景仅支持0，MX量化场景仅支持2。
 
 - **dequant\_dtype**（`int`）：可选输入，表示反量化类型，数据类型为`int32`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示`float32`）。
-  - <term>Ascend 950PR/Ascend 950DT</term>：默认值为torch.int8，当前仅支持传入torch.float32、torch.bfloat16、torch.float16。
+  - <term>Ascend 950PR/Ascend 950DT</term>：A8W8 Pertoken量化场景支持torch.float32、torch.bfloat16和torch.float16，MX量化场景仅支持torch.float32。
 
 - **quant\_mode**（`int`）：可选输入，参数表示SwiGLU后的量化模式。数据类型为`int32`。支持取值：0（默认）表示pertoken量化；1表示pergroup量化；2表示mx量化。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示pertoken）。
-  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入0以及2。
+  - <term>Ascend 950PR/Ascend 950DT</term>：Pertoken量化场景仅支持0，MX量化场景仅支持2；dequant\_mode和quant\_mode必须取相同值。
 
 - **quant\_dtype**（`int`）：可选输入，参数表示量化后低比特数据类型。数据类型为`int32`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前仅支持传入默认值0（表示`int8`）。
@@ -322,7 +338,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - **output\_scale**（`Tensor`）：输出的量化因子，对应公式中的$Q_{scale}$。数据格式支持$ND$，支持非连续的Tensor。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`，shape支持1维[m]。
-  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景：数据类型支持torch\_npu.float8\_e8m0fnu，shape支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。pertoken量化场景：shape支持1维\[m\]，数据类型支持torch.float32。
+  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景：数据类型支持torch\_npu.float8\_e8m0fnu，shape支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。Pertoken量化场景：shape支持1维\[m\]，数据类型支持torch.float32。
 
 ## 约束说明
 
@@ -362,6 +378,15 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - <term>Ascend 950PR/Ascend 950DT</term>：
 
+  - A8W8 Pertoken量化场景需满足以下约束：
+    - `x`仅支持非转置，shape为`(m, k)`。
+    - `weight`支持非转置和转置输入。FRACTAL_NZ格式下，非转置storage shape为`(e, ceil(n / 32), ceil(k / 16), 16, 32)`，转置storage shape为`(e, ceil(k / 32), ceil(n / 16), 16, 32)`。
+    - `weight_scale` shape为`(e, n)`，`x_scale`和`output_scale` shape均为`(m,)`，`output` shape为`(m, n / 2)`。
+    - `dequant_mode`和`quant_mode`均为0；`dequant_dtype`支持`torch.float32`、`torch.bfloat16`或`torch.float16`。
+    - `n`必须大于0且为64的整数倍。
+    - `weight`和`weight_scale`的TensorList长度均为1。
+    - `weight`为FRACTAL_NZ格式时，仅支持静态图模式。
+
   - 输入和输出Tensor支持的数据类型组合如下：
 
     - MX量化场景：
@@ -372,13 +397,14 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         | MXFP4量化（ND格式） | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.float4_e2m1fn_x2` / `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
         | MXFP8量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` |
 
-    - Pertoken量化场景：
+    - A8W8 Pertoken量化场景：
 
-        | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
-        | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-        | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float32` |
-        | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` / `torch.float16` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.int8` | `torch.float32` |
-        | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.hifloat8` | `torch.float32` |
+        | weight格式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
+        | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+        | ND | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float32` |
+        | ND / FRACTAL_NZ | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` / `torch.float16` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.int8` | `torch.float32` |
+        | ND / FRACTAL_NZ | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.hifloat8` | `torch.float32` |
+        | FRACTAL_NZ | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float32` |
 
   - 输入和输出Tensor支持的shape组合如下：
 
@@ -386,7 +412,8 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
       | --- | --- | --- | --- | --- | --- | --- |
       | MX量化（ND格式） | `(m, k)` | 非转置shape形如`{(e, k, n)}`<br>转置shape形如`{(e, n, k)}` | 非转置shape形如`{(e, ceil(k / 64), n, 2)}`<br>转置shape形如`{(e, n, ceil(k / 64), 2)}` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
       | MX量化（FRACTAL_NZ格式） | `(m, k)` | 非转置shape形如`{(e, n / 32, k / 16, 16, 32)}`<br>转置shape形如`{(e, k / 32, n / 16, 16, 32)}` | 非转置shape形如`{(e, ceil(k / 64), n, 2)}`<br>转置shape形如`{(e, n, ceil(k / 64), 2)}` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
-      | Pertoken量化 | `(m, k)` | 非转置shape形如`{(e, k, n)}`<br>转置shape形如`{(e, n, k)}` | `shape`形如`{(e, n)}` | `(m,)` | `(m, n / 2)` | `(m,)` |
+      | A8W8 Pertoken量化（ND格式） | `(m, k)` | 非转置shape形如`{(e, k, n)}`<br>转置shape形如`{(e, n, k)}` | `(e, n)` | `(m,)` | `(m, n / 2)` | `(m,)` |
+      | A8W8 Pertoken量化（FRACTAL_NZ格式） | `(m, k)` | 非转置storage shape形如`{(e, ceil(n / 32), ceil(k / 16), 16, 32)}`<br>转置storage shape形如`{(e, ceil(k / 32), ceil(n / 16), 16, 32)}` | `(e, n)` | `(m,)` | `(m, n / 2)` | `(m,)` |
 
 ## 调用示例
 
@@ -495,7 +522,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     print("y_scale.shape: ", y_scale.shape)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>：pertoken量化场景示例
+  - <term>Ascend 950PR/Ascend 950DT</term>：Pertoken量化场景示例
 
     ```python
     import numpy as np

@@ -23,47 +23,47 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## 参数说明
 
-- **`x`**（`Tensor`）：**必选参数**，矩阵计算的左矩阵，不支持非连续的Tensor。数据格式支持$ND$，维度为\(m, k\)。`m`取值范围为\[1, 16\*1024\*8\]。
+- **`x`**（`Tensor`）：**必选参数**，矩阵计算的左矩阵，支持非连续的Tensor。数据格式支持$ND$，维度为\(m, k\)。`m`取值范围为\[1, 16\*1024\*8\]。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
 
-- **`w`**（`Tensor`）：**必选参数**，矩阵计算的右矩阵，不支持非连续的Tensor。数据格式支持$ND$。
+- **`w`**（`Tensor`）：**必选参数**，矩阵计算的右矩阵，支持非连续的Tensor。数据格式支持$ND$。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int4`。
     - A8W8量化场景下，数据格式支持`FRACTAL_NZ`，维度为\(e, n1, k1, k0, n0\)，其中`k0`=16、`n0`=32，`x` shape中的`k`和`w` shape中的`k1`需要满足以下关系：ceilDiv(k, 16) = k1，`e`取值范围为\[1, 256\]，`k`取值为16整倍数，`n`取值为32整倍数，且`n`大于等于256。
     - A8W4场景下数据格式支持$ND$，维度为\(e, k, n\)，`k`支持2048，`n`只支持7168。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`w_dtype`为对应类型，此时`w`本身的`dtype`不再生效，但仍需保证`w`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4场景，此时输入`x`的`K`需为大于2的偶数，且当`weight`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。维度为\(e, k, n\)。
-    - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。数据格式支持`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
+    - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。数据格式支持`ND`和`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
 
 - <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **`group_list`**（`Tensor`）：**必选参数**，GroupedMatMul的各分组大小，不支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，`e`与`w`的`e`一致。`group_list`的值总和要求≤`m`，`group_list`的长度不超过1024。
+- **`group_list`**（`Tensor`）：**必选参数**，GroupedMatMul的各分组大小，支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，`e`与`w`的`e`一致。`group_list`的值总和要求≤`m`，`group_list`的长度不超过1024。
 - **`scale`**（`Tensor`）：**可选参数**，矩阵计算反量化参数，对应`weight`矩阵。数据格式支持$ND$。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：A8W8场景下支持per-channel量化方式，不支持非连续的Tensor，数据类型支持`float32`，维度\(e, n\)，这里的n=n1\*n0；A8W4量化场景下，数据类型支持`int64`，维度为\(e, 1, n\)。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
     - pertoken量化场景下，数据类型支持`float32`、`bfloat16`。维度为\(e, 1, n\)，`e`、`n`与`w`的`e`、`n`一致。
 
-- **`bias`**（`Tensor`）：**可选参数**，矩阵计算的bias参数，不支持非连续的Tensor。数据格式支持$ND$，维度为\(e, n\)。
+- **`bias`**（`Tensor`）：**可选参数**，矩阵计算的bias参数，支持非连续的Tensor。数据格式支持$ND$，维度为\(e, n\)。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：只支持A8W4场景，数据类型支持`float32`。
   - <term>Ascend 950PR/Ascend 950DT</term>：支持mx量化、pertoken量化场景，数据类型支持`bfloat16`。
 
-- **`offset`**（`Tensor`）：**可选参数**，矩阵计算量化参数的偏移量，不支持非连续的Tensor。支持3D Tensor输入，数据类型支持`float32`，数据格式支持$ND$。
+- **`offset`**（`Tensor`）：**可选参数**，矩阵计算量化参数的偏移量，支持非连续的Tensor。支持3D Tensor输入，数据类型支持`float32`，数据格式支持$ND$。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：只支持A8W4量化场景。
   - <term>Ascend 950PR/Ascend 950DT</term>：暂不支持该参数，使用默认值即可。
 
-- **`pertoken_scale`**（`Tensor`）：**可选参数**，矩阵计算的反量化参数，对应`x`矩阵，pertoken量化方式，不支持非连续的Tensor。数据格式支持$ND$。
+- **`pertoken_scale`**（`Tensor`）：**可选参数**，矩阵计算的反量化参数，对应`x`矩阵，pertoken量化方式，支持非连续的Tensor。数据格式支持$ND$。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。维度为\(m,\)。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，**必选参数**，数据类型支持`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
     - pertoken量化场景下，**可选参数**，数据类型支持`float32`。维度为\(m,\)。
 
-- **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，不支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
-- **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，不支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
+- **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
+- **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
   - <term>Ascend 950PR/Ascend 950DT</term>：该参数必须传入。
 
-- **`row_index`**（`Tensor`）：**可选参数**，MoE专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，不支持非连续的Tensor。数据格式支持$ND$，维度为\(m,\)，`m`与`x`的`m`一致。
+- **`row_index`**（`Tensor`）：**可选参数**，MoE专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，支持非连续的Tensor。数据格式支持$ND$，维度为\(m,\)，`m`与`x`的`m`一致。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`int64`。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，必选参数，数据类型支持`int64`。
@@ -96,7 +96,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## 返回值说明
 
-**`y`**（`Tensor`）：一个2D的Tensor，不支持非连续的Tensor，输出的数据类型固定为`float32`，维度为\(batch, n\)。
+**`y`**（`Tensor`）：一个2D的Tensor，支持非连续的Tensor，输出的数据类型固定为`float32`，维度为\(batch, n\)。
 
 ## 约束说明
 
