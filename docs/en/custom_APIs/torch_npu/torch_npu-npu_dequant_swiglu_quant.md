@@ -81,7 +81,9 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - **`activation_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to `pertoken` activation quantization. This parameter must be 2D with shape `[TokensNum, 1]`, where the last dimension is `1` and the remaining dimensions match those of `x`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, provide this parameter for dequantization.
 - **`bias`** (`Tensor`): Optional. Bias tensor for `x`. The data type can be `int32`. The data layout can be ND. When `group_index` is provided, `bias` must be `None`.
 - **`quant_scale`** (`Tensor`): Optional. Smooth quantization coefficient. This parameter must be 2D with shape `[groupNum, H]`. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND.
+
 > **Note:** For static quantization, `quant_scale` supports only the `float32` data type.
+
 - **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
 - **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `int64`. The data layout can be ND.
 - **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode=0`. The default value is `False`.

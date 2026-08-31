@@ -47,7 +47,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 - **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$, $D_v$).
 
-- **`beta`** (`Tensor``): Optional. $β$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$).
+- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$).
 
 - **`initial_state`** (`Tensor`): Optional. Initial state matrix $S_0$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
 

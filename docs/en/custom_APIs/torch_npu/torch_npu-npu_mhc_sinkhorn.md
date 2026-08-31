@@ -15,7 +15,7 @@
 
 - Formulas:
 
-     1. During the first iteration (initialization):
+    1. During the first iteration (initialization):
 
         $$
         \begin{aligned}
