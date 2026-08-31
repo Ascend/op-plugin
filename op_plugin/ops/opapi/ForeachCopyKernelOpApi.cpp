@@ -262,6 +262,11 @@ bool check_cross_dtype_supported(const at::TensorList dst, const at::TensorList 
   return true;
 }
 
+bool check_tensor_list_contiguous(const at::TensorList& tensors) {
+  return std::all_of(tensors.begin(), tensors.end(),
+                     [](const at::Tensor& t) { return t.is_contiguous(); });
+}
+
 void process_tensor_list_batch(
     const at::TensorList self,
     const at::TensorList src,
@@ -269,13 +274,15 @@ void process_tensor_list_batch(
     bool is_support_nd_out,
     bool is_support_batch) {
   bool can_fast_route = at::native::can_use_fast_route(self, src);
-  bool cross_dtype_supported = !can_fast_route && check_cross_dtype_supported(self, src);
 
-  if (!is_support_nd_out || (!can_fast_route && !cross_dtype_supported) || !check_tensor_dtype_support_base(src)) {
+  if (!is_support_nd_out || (!can_fast_route && !check_cross_dtype_supported(self, src)) ||
+      !check_tensor_dtype_support_base(src)) {
     if (is_support_batch &&
         ((non_blocking && c10_npu::acl::IsExistMemcpyBatchAsync()) ||
          (!non_blocking && c10_npu::acl::IsExistMemcpyBatch())) &&
-        check_tensor_device_dtype_base(self, src, non_blocking)) {
+        check_tensor_device_dtype_base(self, src, non_blocking) &&
+        check_tensor_list_contiguous(self) &&
+        check_tensor_list_contiguous(src)) {
       return memcpyBatch(self, src, non_blocking);
     }
     ASCEND_LOGW(
