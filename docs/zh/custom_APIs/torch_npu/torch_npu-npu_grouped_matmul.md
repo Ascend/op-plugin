@@ -109,7 +109,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - 数据格式支持$ND$，支持的数据类型如下：
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`float16`、`float32`、`bfloat16`、`int8`。
     - <term>Atlas 推理系列产品</term>：`float16`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：`float8_e4m3fn`、`float8_e5m2`、`float16`、`bfloat16`、`float32`、`int8`、`hifloat8`、`float4_e2m1fn_x2`、`float4_e1m2fn_x2`、`int8`、`int4`，其中`hifloat8`/float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4；另外，`float4_e1m2fn_x2`数据类型仅在`weight`为NZ时支持。
+    - <term>Ascend 950PR/Ascend 950DT</term>：`float8_e4m3fn`、`float8_e5m2`、`float16`、`bfloat16`、`float32`、`int8`、`hifloat8`、`float4_e2m1fn_x2`、`float4_e1m2fn_x2`、`int8`、`int4`，其中`int4`实际上是用torch.int8或者torch.int32承载，保持[-8,7]值域，而`hifloat8`/float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4；另外，`float4_e1m2fn_x2`数据类型仅在`weight`为NZ时支持。
   - 列表最大长度为128。
     - <term>Ascend 950PR/Ascend 950DT</term>：非量化场景支持列表最大长度为1024。
   - 当`split_item`=0，1时，部分场景张量支持2至6维输入，其他情况下，张量仅支持2维输入。
@@ -120,7 +120,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       - 当`group_list`输入类型为`List[int]`时，支持`float16`、`float32`、`bfloat16`、`int8`。
       - 当`group_list`输入类型为`Tensor`时，支持`float16`、`float32`、`bfloat16`、`int4`、`int8`。
     - <term>Atlas 推理系列产品</term>：`float16`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持`float8_e4m3fn`、`float8_e5m2`、`int8`、`hifloat8`、`bfloat16`、`float16`、`float32`、`float4_e2m1fn_x2`、`float4_e1m2fn_x2`、`int32`、`int4`，其中`hifloat8`/float4系列需配置可选参数`weight_dtype`为对应类型，此时`weight`本身的`dtype`不再生效，但仍需保证`weight`本身的`dtype`为8bit位的数据类型，以保证shape正确；另外，`float4_e1m2fn_x2`数据类型仅在`weight`为NZ时支持。
+    - <term>Ascend 950PR/Ascend 950DT</term>：支持`float8_e4m3fn`、`float8_e5m2`、`int8`、`hifloat8`、`bfloat16`、`float16`、`float32`、`float4_e2m1fn_x2`、`float4_e1m2fn_x2`、`int32`、`int4`，其中`int4`实际上是用torch.int8或者torch.int32承载，保持[-8,7]值域，而`hifloat8`/float4系列需配置可选参数`weight_dtype`为对应类型，此时`weight`本身的`dtype`不再生效，但仍需保证`weight`本身的`dtype`为8bit位的数据类型，以保证shape正确；另外，`float4_e1m2fn_x2`数据类型仅在`weight`为NZ时支持。
       - 全量化场景下，当`x`为float4系列、`weight`为float4系列输入时，仅支持推理场景，此时输入`x`的`K`需为偶数，且当`weight`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。当输入`x`/`weight`数据类型为`int8`或`float8_e4m3fn`（`scale_dtype`与`per_token_scale_dtype`为`float8_e8m0fnu`）或`float4_e2m1fn_x2`/`float4_e1m2fn_x2`（`scale_dtype`与`per_token_scale_dtype`为`float8_e8m0fnu`），`weight`数据格式支持`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。当`x`为`int4`、`weight`为`int4`输入时，同样需要输入`x`的`K`为偶数，且当`weight`不转置时内轴`N`需为偶数。`weight`数据格式支持`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
       - 伪量化场景下，当`weight`为`float32`/`int32`类型时，鉴于PyTorch原生不支持部分类型数据，可通过[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)实现**1个`float32`承载8个`float4_e2m1fn_x2`的输入、1个`int32`承载8个`int4`的输入**，此时不传入`weight_dtype`。同理，当`weight`为`int4`时，也需要进行pack操作。
       - 伪量化场景下，MxA8W4数据流支持`weight`使用uint8承载float4\_e2m1fn\_x2/float4\_e1m2fn\_x2（1个uint8承载两个float4\_e2m1fn\_x2/float4\_e1m2fn\_x2），该场景下，静态图/动态图不支持E=1或K=64，其中E表示Group大小。
@@ -269,11 +269,11 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - 伪量化场景下，`x_dtype`只支持传入None，`weight_dtype`支持传入None或hifloat8。
   - 伪量化场景下，`x_dtype`为float16/bfloat16、`weight_dtype`为int4的PerGroup量化场景下，不支持图模式运行。
   - 非量化场景下，`x_dtype`只支持传入None，`weight_dtype`只支持传入None。
-  - 全量化场景下，若输出数据类型`y`为int8，则不支持图模式运行。全量化MX量化且`weight`输入格式为FRACTAL\_NZ格式，若weight多tensor输入，则不支持图模式运行。
+  - 全量化场景下，若输出数据类型`y`为int8，则不支持图模式运行。全量化MX量化且`weight`输入格式为FRACTAL\_NZ格式，若weight多tensor输入，则不支持图模式运行。若`x`和`weight`输入类型都为int4，则暂不支持图模式。
 
 - WeightNZ场景说明（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
   - 仅伪量化与全量化（输入`x`/`weight`数据类型为`int8`、`x`/`weight`数据类型为float8\_e4m3fn/float4\_e2m1fn\_x2/float4\_e1m2fn\_x2且scale\_dtype与per\_token\_scale\_dtype为float8_e8m0fnu）weight支持FRATCAL\_NZ数据格式。
-  - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。
+  - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。S4S4（全量化int4）场景，不支持图模式运行，K必须保持8对齐。
 
 - scale NZ亲和格式使用约束（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
   - 仅支持MX量化场景，`scale`数据类型为`float8_e8m0fnu`。
@@ -369,6 +369,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | K-T && K-C动态量化 | int8 | int8 | int32/float16/float32/None | float32 | None | None | float32 | float16 | float16 |
     | K-T && K-C动态量化 | hifloat8 | hifloat8 | None | float32 | None | None | float32 | float16/bfloat16/float32 | float16/bfloat16/float32 |
     | K-T && K-C动态量化 | float8_e4m3fn/float8_e5m2 | float8_e4m3fn/float8_e5m2 | None | float32 | None | None | float32 | float16/bfloat16/float32 | float16/bfloat16/float32 |
+    | K-C动态量化 | int4 | int4 | None | uint64 | None | None | float32 | float16/bfloat16 | float16/bfloat16 |
+    | K-G量化 | int4 | int4 | None | uint64 | None | None | float32 | float16/bfloat16 | float16/bfloat16 |
     | T-C && T-T动态量化 | hifloat8 | hifloat8 | None | float32 | None | None | float32 | float16/bfloat16/float32 | float16/bfloat16/float32 |
     | T-C && T-T动态量化 | float8_e4m3fn/float8_e5m2 | float8_e4m3fn/float8_e5m2 | None | float32 | None | None | float32 | float16/bfloat16/float32 | float16/bfloat16/float32 |
     | G-B动态量化 | hifloat8 | hifloat8 | None | float32 | None | None | float32 | float16/bfloat16/float32 | float16/bfloat16/float32 |
@@ -376,7 +378,6 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | 非量化 | float16 | float16 | float16/float32 | None | None | None | None | float16 | float16 |
     | 非量化 | bfloat16 | bfloat16 | float16/float32 | None | None | None | None | bfloat16 | bfloat16 |
     | 非量化 | float32 | float32 | float32 | None | None | None | None | float32 | float32 |
-    | S4S4(全量化) | int4 | int4 | None | uint64 | None | None | float32 | float16/bfloat16 | float16/bfloat16 |
     | S8S4(伪量化) | int8 | int4 | float32 | uint64 | None | None | float32 | float16/bfloat16 | float16/bfloat16 |
 
 - 根据输入x、输入weight与输出y的Tensor数量不同，支持以下几种场景。场景中的“单”表示单个张量，“多”表示多个张量。场景顺序为x、weight、y，例如“单多单”表示x为单张量，weight为多张量，y为单张量。
@@ -424,7 +425,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | group_type | 支持场景 | 场景说明 | 场景限制 |
     | --- | --- | --- | --- |
     | -1 | 多多多 | x和weight为多张量，y为多张量。每组数据的张量是独立的。 | 1. 仅支持split_item为0或1（非量化仅支持split_item为0）。<br>  2. x中tensor要求维度一致，伪量化pergroup量化场景下仅支持2维，其他场景支持2-6维，非量化支持2维，weight中tensor需为2维，y中tensor维度和x保持一致。<br>  3. group_list必须传空。<br>  4. 支持weight转置，但weight中每个tensor是否转置需保持统一。<br>  5. x不支持转置。<br>  6. 非量化/伪量化场景bias可选且shape仅支持1维的tensorList[(n),(n),...,(n)]，list长度与weight长度相同。<br>  7. pergroup伪量化场景，weight最后一维需要为偶数，K为group_size整数倍；多多多场景下不支持weight非转置。 |
-    | 0 | 单单单 | `x`、`weight`与`y`均为单张量。 | 1. 仅支持`split_item`为2或3。<br>  2. 必须传`group_list`，且当`group_list_type`为0时，最后一个值不大于`x`中tensor的第一维，当`group_list_type`为1时，数值的总和不大于`x`中tensor的第一维。当`group_list_type`为2时，第二列数值的总和小于等于`x`中tensor的第一维。<br>  3. `group_list`第1维最大支持1024，即最多支持1024个group。<br>  4. 量化场景，仅在`x`输入`dtype`为`int8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`时支持`bias`；非量化场景和伪量化场景都支持`bias`。<br>  5. `x`仅支持不转置，`weight`支持转置或不转置。<br>  6. `weight`中单tensor需为3维，`x`、`y`中单tensor需为2维。<br>  7. K轴不能为0。<br>  8. `x`输入`dtype`为`float16`/`bfloat16`、`weight`为`float32`（`float4_e2m1fn_x2`）的mx伪量化场景，仅支持`x`不转置，`weight`不转置；`x`输入`dtype`为`float16`/`bfloat16`、`weight`为`float8_e4m3fn`/`float8_e5m2`/`hifloat8`的perchannel伪量化场景和`x`输入`dtype`为`float8_e4m3fn`、`weight`为`float32`（`float4_e2m1fn_x2`/`float4_e1m2fn_x2`）的mx伪量化场景，仅支持`x`不转置，`weight`转置。<br>  9. mx伪量化和K-CG伪量化场景，`weight`的最后2维需要满足32B对齐。<br>  10. `x`输入`dtype`为`float8_e4m3fn`、`weight`为`float32`（`float4_e2m1fn_x2`/`float4_e1m2fn_x2`）的mx伪量化场景，`bias`类型需要与`output_dtype`数据类型一致，此时必须传入可选参数`output_dtype`。<br>  11. `bias`可选且shape仅支持2维的（g,n），其中g为M的分组数。 |
+    | 0 | 单单单 | `x`、`weight`与`y`均为单张量。 | 1. 仅支持`split_item`为2或3。<br>  2. 必须传`group_list`，且当`group_list_type`为0时，最后一个值不大于`x`中tensor的第一维，当`group_list_type`为1时，数值的总和不大于`x`中tensor的第一维。当`group_list_type`为2时，第二列数值的总和小于等于`x`中tensor的第一维。<br>  3. `group_list`第1维最大支持1024，即最多支持1024个group。<br>  4. 量化场景，仅在`x`输入`dtype`为`int8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`时支持`bias`；非量化场景和伪量化场景都支持`bias`。<br>  5. `x`仅支持不转置，`weight`支持转置或不转置。但是`x`、`weight`均为int4场景下，`weight`格式为ND的话，仅支持不转置。<br>  6. `weight`中单tensor需为3维，`x`、`y`中单tensor需为2维。<br>  7. K轴不能为0。<br>  8. `x`输入`dtype`为`float16`/`bfloat16`、`weight`为`float32`（`float4_e2m1fn_x2`）的mx伪量化场景，仅支持`x`不转置，`weight`不转置；`x`输入`dtype`为`float16`/`bfloat16`、`weight`为`float8_e4m3fn`/`float8_e5m2`/`hifloat8`的perchannel伪量化场景和`x`输入`dtype`为`float8_e4m3fn`、`weight`为`float32`（`float4_e2m1fn_x2`/`float4_e1m2fn_x2`）的mx伪量化场景，仅支持`x`不转置，`weight`转置。<br>  9. mx伪量化和K-CG伪量化场景，`weight`的最后2维需要满足32B对齐。<br>  10. `x`输入`dtype`为`float8_e4m3fn`、`weight`为`float32`（`float4_e2m1fn_x2`/`float4_e1m2fn_x2`）的mx伪量化场景，`bias`类型需要与`output_dtype`数据类型一致，此时必须传入可选参数`output_dtype`。<br>  11. `bias`可选且shape仅支持2维的（g,n），其中g为M的分组数。 |
     | 0 | 单多单 | `x`为单张量、`weight`为多张量、`y`为单张量。 | 1. 仅支持`split_item`为2或3。<br>  2. 必须传`group_list`，且当`group_list_type`为0时，最后一个值与`x`中tensor的第一维相等，当`group_list_type`为1时，数值的总和需与`x`中tensor的第一维一一对应且长度最大为128，非量化场景长度最大为1024。<br>  3. `x`、`y`中tensor需为2维，shape分别为（M, K）和（M, N）。<br>  4. `weight`中tensor需为2维，shape分别为（N, K）或（K, N）。<br>  5. `weight`中每个tensor的N轴必须相等。<br>  6. 支持`weight`转置，但`weight`中每个tensor是否转置需保持统一。<br>  7. `x`不支持转置。<br>  8. 非量化和伪量化场景支持传入`bias`，`bias`可选且shape仅支持1维的tensorList[(n),(n),...,(n)]，list长度与`weight`列表长度相同。<br>  9. 全量化MX量化且输入`w`为`FRACTAL_NZ`格式时，支持单多单场景，此时不支持传入`bias`。 |
     | 0 | 多多单 | x和weight为多张量，y为单张量。每组矩阵乘法的结果连续存放在同一个张量中。 | 1. 仅支持split_item为2或3。<br>  2. x、weight、y中tensor需为2维。<br>  3. weight中每个tensor的N轴必须相等。<br>  4. 若传入group_list，当group_list_type为0时，group_list的差值需与x中tensor的第一维一一对应，当group_list_type为1时，group_list的数值需与x中tensor的第一维一一对应且长度最大为128，非量化场景长度最大为1024。<br>  5. 支持weight转置，但weight中每个tensor是否转置需保持统一。<br>  6. x不支持转置。<br>  7. 非量化场景bias可选且shape仅支持1维的tensorList[(n),(n),...,(n)]，list长度与weight长度相同。 |
     | 2 | 单单单 | x、weight与y均为单张量。 | 1. 仅支持split_item为2或3。<br>  2. 必须传group_list，且当group_list_type为0时，最后一个值不大于x中tensor的第一维，当group_list_type为1时，数值的总和不大于x中tensor的第一维。<br>  3. group_list第1维最大支持1024，即最多支持1024个group。<br>  4. 在全量化场景下，不支持scale为int64。<br>  5. 仅支持x转置，weight不转置。<br>  6. y中单tensor需为3维，x、weight中单tensor需为2维。<br>  7. 图模式场景下，K轴不能为0。<br>  8. 仅支持ND进ND出。 |
@@ -442,6 +443,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
         | 2 | mx量化 | 计算公式（4）中gsm = gsn = 1，gsk = 32。scale和per_token_scale均为单tensor。scale shape仅支持(K//64+g, N, 2)，per_token_scale shape仅支持(K//64 + g, M, 2)。 |
         | 0 | G-B动态量化 | 计算公式（4）中gsm = 1，gsn = gsk = 128。scale为单tensor，scale为3维，shape为（g, ceil(K/128), ceil(N/128)）或（g, ceil(N/128), ceil(K/128)）。<br>per_token_scale为单tensor，per_token_scale为2维，shape为（M,ceil(K/128)）。 |
         | 2 | G-B动态量化 | 计算公式（4）中gsm = 1，gsn = gsk = 128。scale为单tensor，scale为2维，shape为（K//128+g, ceil(N/128)）。<br>per_token_scale为单tensor，per_token_scale为2维，shape为（K//128+g, M） |
+        | 0 | K-G量化 | <li>每个tensor 3维，shape为（E, G, N），$G$必须要能整除$K$，且$k/G$需为偶数</li><li>per_token_scale为单tensor，group_type等于0时，shape为1维（M,）。</li> |
 
         > **单单单的全量化特殊场景说明**：
         > - 当group\_type为0或2，N=1且scale的shape为\(g, 1\)时，weight既可以pertensor量化也可以perchannel量化时，优先选择pertensor量化模式。
@@ -450,6 +452,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
         > - 在动态量化场景，当group\_type为0、g = M、K \> 128且per\_token\_scale的shape为\(g,\)时，x选择pertoken量化模式；当group\_type为0、g = M，K <= 128且per\_token\_scale的shape为\(g, 1\)时，根据weight的量化模式选择x的量化模式（weight如果是perchannel或者pertensor量化，x选择pertensor量化；weight如果是perblock量化，x选择pergroup量化）。
         > - 在动态量化场景，当group\_type为2、K<128、M不等于1时，如果N小于等于128，x则选择pergroup量化；如果N大于128，根据weight的量化模式选择x的量化模式（weight如果是perchannel或者pertensor量化，x选择pertoken量化；weight如果是perblock量化，x选择pergroup量化）。
         > - 在动态量化场景，当group\_type为2、K<128、M等于1且per\_token\_scale的shape为\(g, 1\)时，如果N小于等于128，x则选择pergroup量化；如果N大于128，根据weight的量化模式选择x的量化模式（weight如果是perchannel或者pertensor量化，x选择pertensor量化；weight如果是perblock量化，x选择pergroup量化）。
+        > - 在全量化int4场景，x为pertoken量化、weight为pergroup量化时，pergroup数G必须要整除K，且K/G需为偶数,weightNZ转置后，K/G必须按照64对齐，K按照64对齐，N按照16对齐。
 
     - **伪量化场景**：各场景对antiquant\_scale、scale和per\_token\_scale的shape规格限制如下（其中g为group\_list的shape大小，M和K与x的m和k一致，N与weight的n一致）：
 
@@ -798,73 +801,62 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - <term>Ascend 950PR/Ascend 950DT</term>：全量化int4，perchannel示例
 
     ```python
-    import os
     import numpy as np
     import torch
     import torch_npu
-
-    def build_inputs(m, k, n, e, weight_format, dequant_mode, group_list_type,
-                      k_num_per_group, weight_transpose=False, seed=42):
-        torch.manual_seed(seed)
+    
+    # npu_quantize 打 int4 包时需要开启内部格式 (allow_internal_format)
+    torch_npu.npu.config.allow_internal_format = True
+    
+    
+    def main():
+        torch_npu.npu.set_device(5)    
+        m, k, n, e = 2048, 1024, 1024, 16
+        out_dtype = torch.bfloat16
         npu = "npu"
-        x_int = torch.randint(-8, 7, (m, k), dtype=torch.int8)
-        w_int = torch.randint(-8, 7, (e, k, n), dtype=torch.int8)      # 逻辑 (E, K, N)
-        kg = (k // k_num_per_group) if dequant_mode == 0 else 1
-        scale_fp32 = (0.1 * torch.randn(e, kg, n)).to(torch.float32)
-        scale_ref = scale_fp32.to(torch.bfloat16).to(torch.float32)
-        pt_scale = (0.1 * torch.randn(m)).abs().to(torch.float32)
-        group_list = make_group_list(e, m, group_list_type, seed)
+        print(f"[run] perchannel  shape M={m} K={k} N={n} E={e}  out={out_dtype}")
+    
+        x_int = torch.full((m, k), 1, dtype=torch.int8)
+        w_int = torch.full((e, k, n), 1, dtype=torch.int8)
+        scale_ref = torch.full((e, 1, n), 0.1, dtype=torch.float32).to(torch.bfloat16).to(torch.float32)
+        pt_scale = torch.full((m,), 1.0, dtype=torch.float32)
+        group_list = torch.arange(1, e + 1) * (m // e)
+    
+        # ---- NPU 侧: int4 量化打包 (ND, 非转置) ----
         x_quant = torch_npu.npu_quantize(
             x_int.to(torch.float32).to(npu),
             torch.tensor([1.], device=npu), None, torch.quint4x2, -1, False)
-        if weight_format == "nz":
-            if weight_transpose:
-                weight_quant = pack_int4_weight_to_nz_transposed(w_int)
-            else:
-                weight_quant = pack_int4_weight_to_nz(w_int)
-        else:
-            weight_quant = torch_npu.npu_quantize(
-                w_int.to(torch.float32).to(npu),
-                torch.tensor([1.], device=npu), None, torch.quint4x2, -1, False)
-        scale_i64 = pack_scale_to_int64(scale_ref).to(npu)
-        npu_inputs = {
-            "x": x_quant,
-            "weight": weight_quant,
-            "scale": scale_i64,
-            "per_token_scale": pt_scale.to(npu),
-            "group_list": group_list.to(npu),
-            "group_list_type": group_list_type,
-        }
-        return npu_inputs
-
-    def call_gmm_a4w4(inputs, out_dtype):
-        y_list = torch_npu.npu_grouped_matmul(
-            [inputs["x"]],
-            [inputs["weight"]],
+        weight_quant = torch_npu.npu_quantize(
+            w_int.to(torch.float32).to(npu),
+            torch.tensor([1.], device=npu), None, torch.quint4x2, -1, False)
+    
+        # ---- scale 打包: (E,1,N) fp32 比特位放入 int64 低 32 位, 高 32 位=0 ----
+        scale_arr = scale_ref.cpu().numpy().astype(np.float32)
+        scale_arr.dtype = np.uint32                               # 比特重解释, 不改数值
+        packed = np.zeros((e, 1, n * 2), dtype=np.uint32)
+        packed[..., ::2] = scale_arr
+        packed.dtype = np.int64
+        scale_i64 = torch.from_numpy(packed).to(npu)
+    
+        y = torch_npu.npu_grouped_matmul(
+            [x_quant], [weight_quant],
             bias=None,
-            scale=[inputs["scale"]],
+            scale=[scale_i64],
             offset=None,
             antiquant_scale=None,
             antiquant_offset=None,
-            per_token_scale=[inputs["per_token_scale"]],
-            group_list=inputs["group_list"],
+            per_token_scale=[pt_scale.to(npu)],
+            group_list=group_list.to(npu),
             split_item=3,
             group_type=0,
-            group_list_type=inputs["group_list_type"],
+            group_list_type=0,
             act_type=0,
             output_dtype=out_dtype,
-        )
-        return y_list[0]
-
+        )[0]
+        torch_npu.npu.synchronize()    
+    
     if __name__ == "__main__":
-        m, k, n, e = args.m, args.k, args.n, args.e
-        kg_size = 64
-        npu_inputs = build_inputs(
-            m, k, n, e, weight_format, dequant_mode, group_list_type, kg_size,
-            weight_transpose, args.seed)
-        # NPU 执行
-        y = call_gmm_a4w4(npu_inputs, out_dtype)
-        torch_npu.npu.synchronize()
+        main()
     ```
 
   - <term>Ascend 950PR/Ascend 950DT</term>：全量化int8，动态K-C量化支持激活示例
