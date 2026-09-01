@@ -761,7 +761,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     import torch_npu
     import math
     torch.npu.config.allow_internal_format = True
-    # 生成随机数据, 并发送到npu
+    # Generate random data and send it to the NPU
     B = 8
     He = 7168
     Hcq = 1536

@@ -133,7 +133,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
     - When the conditions for resetting the values are met, if `gmm_x_scale`, `mm_x_scale`, and `mm_weight_scale` are all 3D tensors, `gmm_weight_scale` is a 4D tensor, and all data types are `float8_e8m0fnu`, the inferred combination of `[groupSizeM, groupSizeN, groupSizeK]` is `[1, 1, 32]`.
 - When all output tensors (`gmm_y`, `mm_y`, and `permute_out`) on a device are empty tensors, `torch.distributed.barrier()` must be called explicitly to ensure that the process on that device synchronizes and waits for other devices to complete communication and computation. If synchronization is not added, `AlltoAllv` communication will be blocked due to process desynchronization.
 
-- - Detailed input and output data type constraints for each quantization mode are provided in the following tables.
+- Detailed input and output data type constraints for each quantization mode are provided in the following tables.
 
     **Table 1** Data type constraints for T-T quantization
 

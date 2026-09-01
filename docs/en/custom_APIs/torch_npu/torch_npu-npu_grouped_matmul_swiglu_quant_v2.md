@@ -70,7 +70,7 @@
 
           $C_{i,act}, gate_{i} = split(C_{i})$
 
-          $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
+          $S_{i}=Swish(C_{i,act})\odot gate_{i}$, where $Swish(x)=\frac{x}{1+e^{-x}}$
         4. Quantize the output results.
 
           $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
@@ -123,7 +123,7 @@
 
          $C_{i,act}, gate_{i} = split(C_{i})$
 
-         $S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$
+         $S_{i}=Swish(C_{i,act})\odot gate_{i}$, where $Swish(x)=\frac{x}{1+e^{-x}}$
 
       2. Quantize the output:
 

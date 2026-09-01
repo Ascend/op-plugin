@@ -53,7 +53,6 @@ No value is returned.
 
 1. The Ascend PyTorch Profiler is used to collect performance data. This includes information about PyTorch layer operators, CANN layer operators, underlying NPU operators, and operator memory footprints.
    > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. You can add an Ascend PyTorch Profiler interface (`torch_npu.profiler.profile` is recommended) to your PyTorch script to collect specified metrics. During model execution, performance data is collected synchronously. For details about its usage and the resulting files, see Ascend PyTorch Profiler.
-   see <a href="https://www.hiascend.com/document/detail/en/mindstudio/latest/TITools/ascend_pytorch_profiler/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>
 
      ```python
      >>> import torch
@@ -108,3 +107,4 @@ No value is returned.
 
    For single-operator core control, you can check the `kernel_details.csv` file and check the **BlockDim** column (the number of cores used for operator computation). If the `BlockDim` value is less than or equal to the core limit configured by the user, the core control is successful.
    In this example, the `BlockDim` values of the SwiGlu operator are `22` and `23`, which comply with the core control logic.
+   <!-- see <a href="https://www.hiascend.com/document/detail/en/mindstudio/latest/TITools/ascend_pytorch_profiler/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a> -->
