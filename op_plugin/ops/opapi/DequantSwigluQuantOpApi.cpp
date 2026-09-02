@@ -47,8 +47,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dequant_swiglu_quant(
       quant_mode,
       OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
-      swiglu_mode == 0 || swiglu_mode == 1 || swiglu_mode == 2,
-      "swiglu_mode only support 0, 1 or 2, but got ",
+      swiglu_mode == 0 || swiglu_mode == 1 || swiglu_mode == 2 || swiglu_mode == 3,
+      "swiglu_mode only support 0, 1 , 2 or 3, but got ",
       swiglu_mode,
       OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(
