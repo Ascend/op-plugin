@@ -29,6 +29,7 @@ from torch._subclasses.fake_tensor import (
     DynamicOutputShapeException,
     UnsupportedOperatorException,
 )
+from torch.fx.experimental.symbolic_shapes import ShapeEnv
 from torch.fx.passes.fake_tensor_prop import FakeTensorProp
 from torch.testing import FileCheck
 from torch.testing._internal.common_device_type import instantiate_device_type_tests, OpDTypes
@@ -2929,6 +2930,33 @@ class TestGroupedMatmul(TestCase):
             scale = [scale2,]
             with self.assertRaises(RuntimeError):
                 torch_npu.npu_grouped_matmul(x, w, bias=None, scale=scale, group_list=group_list, split_item=split_item, group_type=0, group_list_type=0, output_dtype=torch.float16)
+
+    def test_npu_grouped_matmul_meta_quant_dynamic_m(self):
+        shape_env = ShapeEnv()
+        with FakeTensorMode(shape_env=shape_env):
+            dynamic_m = shape_env.create_unbacked_symint()
+            k = 128
+            n = 128
+            num_experts = 2
+            x = [torch.empty((dynamic_m, k), dtype=torch.float8_e4m3fn, device="npu")]
+            weight = [torch.empty((num_experts, k, n), dtype=torch.float8_e5m2, device="npu")]
+            group_list = torch.empty((num_experts,), dtype=torch.int64, device="npu")
+            scale = [torch.empty((num_experts, n), dtype=torch.int64, device="npu")]
+
+            result = torch_npu.npu_grouped_matmul(
+                x,
+                weight,
+                bias=None,
+                scale=scale,
+                group_list=group_list,
+                split_item=2,
+                group_type=0,
+                group_list_type=0,
+                output_dtype=torch.float16,
+            )
+
+            self.assertEqual(result[0].shape[1], n)
+
 
 class TestQuantMatmul(TestCase):
     def test_npu_quant_matmul_meta(self):

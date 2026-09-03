@@ -3751,8 +3751,10 @@ def npu_grouped_matmul_meta(x, weight, *, bias=None, scale=None, offset=None, an
     is_hifloat8 = x_dtype == torch_npu.hifloat8 and weight_dtype == torch_npu.hifloat8
     is_fp8 = (x[0].dtype == torch.float8_e4m3fn or x[0].dtype == torch.float8_e5m2) and (weight[0].dtype == torch.float8_e4m3fn or weight[0].dtype == torch.float8_e5m2)
     if is_a8w8 or is_a4w4_mxfp or is_fp8 or is_hifloat8:
-        if m > 0 and n > 0:
-            torch._check(k > 0, lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),)
+        torch._check(
+            (m <= 0) | (n <= 0) | (k > 0),
+            lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),
+        )
     if num_x > 0 and output_dtype is None:
         output_dtype = x[0].dtype
     if group_type == 2 and (split_item == 0 or split_item == 1):
@@ -4027,8 +4029,10 @@ def npu_all_to_all_quant_matmul_meta(x1, x2, hcom, world_size, all2all_out_flag=
 def add_quant_gmm_check(*args):
     m, n, k, group_sizes, x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype = args
 
-    if m > 0 and n > 0:
-        torch._check(k > 0, lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),)
+    torch._check(
+        (m <= 0) | (n <= 0) | (k > 0),
+        lambda: "k must be a positive integer when m and n are positive, but it is " + str(k) + "." + ops_error(ErrCode.VALUE),
+    )
     torch._check(
         group_sizes is None,
         lambda: "group_sizes is not supported for now",
