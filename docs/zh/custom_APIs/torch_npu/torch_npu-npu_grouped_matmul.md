@@ -273,7 +273,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 
 - WeightNZ场景说明（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
   - 仅伪量化与全量化（输入`x`/`weight`数据类型为`int8`、`x`/`weight`数据类型为float8\_e4m3fn/float4\_e2m1fn\_x2/float4\_e1m2fn\_x2且scale\_dtype与per\_token\_scale\_dtype为float8_e8m0fnu）weight支持FRATCAL\_NZ数据格式。
-  - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。S4S4（全量化int4）场景，不支持图模式运行，K必须保持8对齐。
+  - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。x和weight均为int4时，不支持图模式运行，K必须保持8对齐。
 
 - scale NZ亲和格式使用约束（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）：
   - 仅支持MX量化场景，`scale`数据类型为`float8_e8m0fnu`。
@@ -443,7 +443,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
         | 2 | mx量化 | 计算公式（4）中gsm = gsn = 1，gsk = 32。scale和per_token_scale均为单tensor。scale shape仅支持(K//64+g, N, 2)，per_token_scale shape仅支持(K//64 + g, M, 2)。 |
         | 0 | G-B动态量化 | 计算公式（4）中gsm = 1，gsn = gsk = 128。scale为单tensor，scale为3维，shape为（g, ceil(K/128), ceil(N/128)）或（g, ceil(N/128), ceil(K/128)）。<br>per_token_scale为单tensor，per_token_scale为2维，shape为（M,ceil(K/128)）。 |
         | 2 | G-B动态量化 | 计算公式（4）中gsm = 1，gsn = gsk = 128。scale为单tensor，scale为2维，shape为（K//128+g, ceil(N/128)）。<br>per_token_scale为单tensor，per_token_scale为2维，shape为（K//128+g, M） |
-        | 0 | K-G量化 | <li>每个tensor 3维，shape为（E, G, N），$G$必须要能整除$K$，且$k/G$需为偶数</li><li>per_token_scale为单tensor，group_type等于0时，shape为1维（M,）。</li> |
+        | 0 | K-G量化 | <li>每个tensor 3维，shape为（E, G, N），$G$必须要能整除$K$，且$k/G$需为偶数</li><li>per_token_scale为单tensor，shape为1维（M,）。</li> |
 
         > **单单单的全量化特殊场景说明**：
         > - 当group\_type为0或2，N=1且scale的shape为\(g, 1\)时，weight既可以pertensor量化也可以perchannel量化时，优先选择pertensor量化模式。
@@ -809,8 +809,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     torch_npu.npu.config.allow_internal_format = True
     
     
-    def main():
-        torch_npu.npu.set_device(5)    
+    def main(): 
         m, k, n, e = 2048, 1024, 1024, 16
         out_dtype = torch.bfloat16
         npu = "npu"
