@@ -7762,9 +7762,11 @@ quant:
 
   - func: dequantize.self(Tensor self) -> Tensor
     acl_op: [v2.2, newest]
+    op_api: [v2.2, newest]
 
   - func: int_repr(Tensor self) -> Tensor
     acl_op: [v2.2, newest]
+    op_api: [v2.2, newest]
 
   - func: _empty_affine_quantized(SymInt[] size, *, ScalarType? dtype=None, Layout? layout=None, Device? device=None, bool? pin_memory=None, float scale=1, int zero_point=0, MemoryFormat? memory_format=contiguous_format) -> Tensor
     acl_op: [v2.2, newest]
