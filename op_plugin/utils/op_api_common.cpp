@@ -1819,38 +1819,6 @@ bool ExecuteCachedOpV2(aclrtStream acl_stream, const char* aclnn_api, void* phra
     workspace_addr = const_cast<void*>(workspace_tensor.storage().data());
   }
 
-  auto acl_call = [workspace_addr, workspace_size, acl_stream, executor, phrase2]() -> int {
-    OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(phrase2);
-    auto api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
-    NPU_CHECK_ERROR(api_ret, "call failed");
-    return api_ret;
-  };
-
-  at_npu::native::OpCommand::RunOpApiV2(aclnn_api, acl_call);
-  UnInitCacheThreadLocal(); // 清理缓存线程本地资源
-  return true;
-}
-
-bool ExecuteCachedOpV2(
-    aclrtStream acl_stream,
-    const char* aclnn_api,
-    void* phrase2,
-    int* api_ret,
-    const c10_npu::DeterministicSnapshot& snapshot) {
-  uint64_t workspace_size = 0;
-  aclOpExecutor* executor = GetCacheExecutorV2(&workspace_size);
-  if (executor == nullptr) {
-    return false;
-  }
-
-  at_npu::native::ApplyDeterministicSnapshot(snapshot, true);
-  void* workspace_addr = nullptr;
-  at::Tensor workspace_tensor;
-  if (workspace_size != 0) {
-    workspace_tensor = at_npu::native::OpPreparation::unsafe_empty_workspace(workspace_size, acl_stream);
-    workspace_addr = const_cast<void*>(workspace_tensor.storage().data());
-  }
-
   OpApiFunc opApiFunc = reinterpret_cast<OpApiFunc>(phrase2);
   *api_ret = opApiFunc(workspace_addr, workspace_size, executor, acl_stream);
   NPU_CHECK_ERROR(*api_ret, "call failed");
