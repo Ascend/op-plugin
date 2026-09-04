@@ -1,0 +1,112 @@
+name: UT Job
+
+on:
+  workflow_call:
+    inputs:
+      py_version:
+        required: false
+        type: string
+        default: "3.10"
+      REMOTE_URL:
+        required: false
+        type: string
+        default: ${{ env.ATOMGIT_REPOSITORY_URL }}
+      pr_id:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.number }}
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      pytorch_branch:
+        required: true
+        type: string
+      runs_on_arch:
+        required: false
+        type: string
+        default: "x64"
+      runs_on_os:
+        required: false
+        type: string
+        default: "euler"
+      runs_on_spec:
+        required: false
+        type: string
+        default: "large"
+      TEST_RANK:
+        required: false
+        type: string
+      TEST_WORLD_SIZE:
+        required: false
+        type: string
+
+jobs:
+  JOB_UT:
+    name: JOB_UT
+    select: selected_by_default
+    runs-on: [ self-hosted, npu=1 ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+    env:
+      TEST_RANK: ${{ inputs.TEST_RANK }}
+      TEST_WORLD_SIZE: ${{ inputs.TEST_WORLD_SIZE }}
+    steps:
+      - name: check branch support
+        id: check_support
+        run: |
+          PYTORCH_BRANCH="${{ inputs.pytorch_branch }}"
+          TARGET_BRANCH="${{ inputs.TARGET_BRANCH }}"
+          echo "TARGET_BRANCH=${TARGET_BRANCH}"
+          echo "PYTORCH_BRANCH=${PYTORCH_BRANCH}"
+          if [ "${TARGET_BRANCH}" = "master" ]; then
+            echo "master branch, build all versions"
+            echo "need_ut=yes" >> "$ATOMGIT_OUTPUT"
+            echo "pytorch_build_branch=${PYTORCH_BRANCH}" >> "$ATOMGIT_OUTPUT"
+            exit 0
+          fi
+          support_730="v2.6.0 v2.7.1 v2.8.0 v2.9.0"
+          support_2600="v2.7.1 v2.8.0 v2.9.0 v2.10.0"
+          support_2610="v2.7.1 v2.9.0 v2.10.0 v2.11.0 v2.12.0"
+          suffix="${TARGET_BRANCH//./}"
+          list="support_${suffix}"
+          if [[ ! " ${!list} " =~ " ${PYTORCH_BRANCH} " ]]; then
+            echo "${TARGET_BRANCH} no need execute ${PYTORCH_BRANCH} build"
+            echo "need_ut=no" >> "$ATOMGIT_OUTPUT"
+          else
+            echo "${TARGET_BRANCH} need execute ${PYTORCH_BRANCH} build"
+            echo "need_ut=yes" >> "$ATOMGIT_OUTPUT"
+            echo "pytorch_build_branch=${PYTORCH_BRANCH}-${TARGET_BRANCH}" >> "$ATOMGIT_OUTPUT"
+          fi
+
+      - name: Download build artifact
+        if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
+        uses: download-artifact
+        with:
+          name: op-plugin-${{ inputs.pytorch_branch }}-arm
+          path: ../output/${{ inputs.pr_id }}
+
+      - name: download modify_files.txt artifact
+        if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
+        uses: download-artifact
+        with:
+          name: modify_files.txt
+          path: ./
+
+      - name: checkout op-plugin
+        if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
+        uses: checkout
+        with:
+          ref: refs/merge-requests/${{ inputs.pr_id }}/merge
+          fetch-depth: 1
+          path: ./CODE
+
+      - name: UT op-plugin
+        if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
+        run: |
+          # git clone -b ${{ atomgit.event.repository.default_branch }} ${{ inputs.REMOTE_URL }} cie
+          git clone -b  master_0903 https://gitcode.com/ComputingActionTest/op-plugin_0731.git cie
+          ls -R cie/.gitcode/workflows
+          # 将 download-artifact 下载的构建产物拷回工作目录供 UT 脚本使用
+          cp -rf ../output/${{ inputs.pr_id }}/* ./
+          ls ${ATOMGIT_WORKSPACE}
+          bash cie/.gitcode/workflows/scripts/UT/op-plugin_ut_general.sh ${{ inputs.pytorch_branch }} ${{ inputs.py_version }} ${{ inputs.pr_id }} ${ATOMGIT_WORKSPACE} ${{ atomgit.event.pull_request.base.ref }}
