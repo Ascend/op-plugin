@@ -264,6 +264,30 @@ class TestNpuFusedPermuteAndUnpermute():
         assert permuted_tokens.grad is not None
         assert permuted_tokens.grad.dtype == token_dtype
 
+    @SupportedDevices(['Ascend910B', 'Ascend910C'])
+    def test_unpermute_grad_v2_zero_tokens(self):
+        hidden_size = 64
+        token_dtype = torch.bfloat16
+        grad_unpermuted_tokens = torch.empty(
+            (0, hidden_size), dtype=token_dtype, device="npu")
+        sorted_indices = torch.empty((0,), dtype=torch.int32, device="npu")
+
+        grad_permuted_tokens, grad_probs = torch_npu.npu_moe_token_unpermute_grad_v2(
+            grad_unpermuted_tokens=grad_unpermuted_tokens,
+            sorted_indices=sorted_indices,
+            permuted_tokens_size_0=0,
+            permuted_tokens_dtype=token_dtype,
+            probs=None,
+            padded_mode=False,
+            restore_shape=None,
+            permuted_tokens=None,
+        )
+
+        assert grad_permuted_tokens.shape == (0, hidden_size)
+        assert grad_permuted_tokens.dtype == token_dtype
+        assert grad_probs.shape == torch.Size([])
+        assert grad_probs.dtype == token_dtype
+
     @staticmethod
     def _storage_data_ptr(tensor):
         return tensor.untyped_storage().data_ptr()

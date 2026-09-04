@@ -60,6 +60,56 @@ tensor_list _npu_moe_token_unpermute(
   return std::make_tuple(unpermuted_tokens, permuted_tokens_for_backward);
 }
 
+tensor_list npu_moe_token_unpermute_grad_v2_symint(
+    const at::Tensor &grad_unpermuted_tokens,
+    const at::Tensor &sorted_indices,
+    c10::SymInt permuted_tokens_size_0,
+    at::ScalarType permuted_tokens_dtype,
+    const c10::optional<at::Tensor> &probs,
+    bool padded_mode,
+    c10::OptionalIntArrayRef restore_shape,
+    const c10::optional<at::Tensor> &permuted_tokens)
+{
+    int64_t permuted_tokens_size_0_value = permuted_tokens_size_0.expect_int();
+    auto grad_permuted_tokens_size = op_infer::npu_moe_token_unpermute_grad_v2_permuted_tokens_out_size(
+        permuted_tokens_size_0_value, grad_unpermuted_tokens, sorted_indices, probs);
+    at::Tensor grad_permuted_tokens = npu_preparation::apply_tensor_without_format(
+        grad_permuted_tokens_size, grad_unpermuted_tokens.options().dtype(permuted_tokens_dtype));
+
+    bool has_probs = probs.has_value() && probs.value().defined();
+    auto grad_probs_size = op_infer::npu_moe_token_unpermute_grad_v2_probs_out_size(
+        grad_unpermuted_tokens, sorted_indices, probs);
+    auto grad_probs_dtype = has_probs ? probs.value().scalar_type() : grad_unpermuted_tokens.scalar_type();
+    // ACLNN requires probsGradOut to be a valid Tensor even when probs is absent.
+    // This matches the placeholder Tensor created by the previous gen_opapi implementation.
+    at::Tensor grad_probs = npu_preparation::apply_tensor_without_format(
+        grad_probs_size, grad_unpermuted_tokens.options().dtype(grad_probs_dtype));
+
+    // aclnnMoeTokenUnpermuteGrad does not currently accept a zero-token shape.
+    // The gradient for an empty permuted-token input is empty; if routing
+    // probabilities exist, their gradient is zero because there are no token
+    // values contributing to the unpermuted output.
+    if (permuted_tokens_size_0_value == 0) {
+        if (grad_probs.numel() != 0) {
+            grad_probs.zero_();
+        }
+        return std::make_tuple(std::move(grad_permuted_tokens), std::move(grad_probs));
+    }
+
+    std::array<int64_t, 1> default_restore_shape = {1};
+    at::IntArrayRef restore_shape_value = restore_shape.value_or(default_restore_shape);
+    EXEC_NPU_CMD(aclnnMoeTokenUnpermuteGrad,
+        permuted_tokens,
+        grad_unpermuted_tokens,
+        sorted_indices,
+        probs,
+        padded_mode,
+        restore_shape_value,
+        grad_permuted_tokens,
+        grad_probs);
+    return std::make_tuple(std::move(grad_permuted_tokens), std::move(grad_probs));
+}
+
 at::Tensor npu_moe_token_unpermute(
     const at::Tensor& permuted_tokens,
     const at::Tensor& sorted_indices,
