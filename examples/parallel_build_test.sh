@@ -178,7 +178,7 @@ run_project() {
         echo "----------- [${name}] install: ${whl_glob} -----------"
         install_and_test "${dir}" "${whl_glob}" "${mod_lock}" "${tests[@]}"
         exit $?
-    ) > "${log}" 2>&1
+    )
 
     local rc=$?
     local end_ts=$(date +%s)
@@ -187,7 +187,7 @@ run_project() {
     if [ $rc -eq 0 ]; then
         echo -e "[$(date '+%H:%M:%S')] [${COLOR_GREEN}PASS${COLOR_RESET}] ${name} (${duration}s)" | tee -a "${SUMMARY_LOG}"
     else
-        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] ${name} (${duration}s) -> ${log}" | tee -a "${SUMMARY_LOG}"
+        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] ${name} (${duration}s)" | tee -a "${SUMMARY_LOG}"
     fi
     return $rc
 }
@@ -277,7 +277,6 @@ task_cpp_extension_base() {
 task_cpp_extension_full() {
     # module 与 torch_lib_impl 共享包名 cpp_extension_full，串行执行
     # test_add_custom_graph.py 为图相关用例 (依赖 npugraph_ex backend)，不看护
-    local log="${LOG_DIR}/cpp_extension_full.log"
     local start_ts=$(date +%s)
     echo "[$(date '+%H:%M:%S')] [START] cpp_extension_full" | tee -a "${SUMMARY_LOG}"
     (
@@ -301,14 +300,14 @@ task_cpp_extension_full() {
         local rc2=$?
 
         [ $rc1 -eq 0 ] && [ $rc2 -eq 0 ]
-    ) > "${log}" 2>&1
+    )
     local rc=$?
     local end_ts=$(date +%s)
     local duration=$((end_ts - start_ts))
     if [ $rc -eq 0 ]; then
         echo -e "[$(date '+%H:%M:%S')] [${COLOR_GREEN}PASS${COLOR_RESET}] cpp_extension_full (${duration}s)" | tee -a "${SUMMARY_LOG}"
     else
-        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] cpp_extension_full (${duration}s) -> ${log}" | tee -a "${SUMMARY_LOG}"
+        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] cpp_extension_full (${duration}s)" | tee -a "${SUMMARY_LOG}"
     fi
     return $rc
 }
@@ -348,7 +347,6 @@ task_framwork_cpp_extension() {
 
 task_kernel_extension_aclgraph() {
     # pybind 与 torch_library 共享包名 op_extension，串行执行
-    local log="${LOG_DIR}/kernel_extension_aclgraph.log"
     local start_ts=$(date +%s)
     echo "[$(date '+%H:%M:%S')] [START] kernel_extension_aclgraph" | tee -a "${SUMMARY_LOG}"
     (
@@ -372,14 +370,14 @@ task_kernel_extension_aclgraph() {
         local rc2=$?
 
         [ $rc1 -eq 0 ] && [ $rc2 -eq 0 ]
-    ) > "${log}" 2>&1
+    )
     local rc=$?
     local end_ts=$(date +%s)
     local duration=$((end_ts - start_ts))
     if [ $rc -eq 0 ]; then
         echo -e "[$(date '+%H:%M:%S')] [${COLOR_GREEN}PASS${COLOR_RESET}] kernel_extension_aclgraph (${duration}s)" | tee -a "${SUMMARY_LOG}"
     else
-        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] kernel_extension_aclgraph (${duration}s) -> ${log}" | tee -a "${SUMMARY_LOG}"
+        echo -e "[$(date '+%H:%M:%S')] [${COLOR_RED}FAIL${COLOR_RESET}] kernel_extension_aclgraph (${duration}s)" | tee -a "${SUMMARY_LOG}"
     fi
     return $rc
 }
@@ -472,9 +470,7 @@ echo "========================================================================" 
 if [ ${OVERALL_RC} -eq 0 ]; then
     echo -e "${COLOR_GREEN}[ALL PASS] All scheduled projects passed.${COLOR_RESET}" | tee -a "${SUMMARY_LOG}"
 else
-    echo -e "${COLOR_RED}[SOME FAIL] See ${SUMMARY_LOG} and per-project logs in ${LOG_DIR}/${COLOR_RESET}" | tee -a "${SUMMARY_LOG}"
+    echo -e "${COLOR_RED}[SOME FAIL] See ${SUMMARY_LOG} for details${COLOR_RESET}" | tee -a "${SUMMARY_LOG}"
 fi
-echo "Per-project logs:"
-ls -1 "${LOG_DIR}"/*.log 2>/dev/null | sed 's/^/  /'
 
 exit ${OVERALL_RC}
