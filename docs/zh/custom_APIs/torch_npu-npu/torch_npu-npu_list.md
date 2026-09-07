@@ -216,6 +216,16 @@
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>该接口用于查询torch_npu.npu.use_compatible_impl的配置情况。</p>
 </td>
 </tr>
+<tr id="row285193313387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193824"><a name="p2851433193822"></a><a name="p2851433193822"></a><a href="（beta）torch_npu-npu-set_task_queue_enable.md">（beta）torch_npu.npu.set_task_queue_enable</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323818"><a name="p785143323818"></a><a name="p785143323818"></a>该接口用于在运行时动态设置TaskQueue优化等级，无需重启进程。</p>
+</td>
+</tr>
+<tr id="row285193313388"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193825"><a name="p2851433193823"></a><a name="p2851433193823"></a><a href="（beta）torch_npu-npu-get_task_queue_enable.md">（beta）torch_npu.npu.get_task_queue_enable</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323819"><a name="p785143323819"></a><a name="p785143323819"></a>该接口用于查询当前生效的TaskQueue优化等级。</p>
+</td>
+</tr>
 
 </tbody>
 </table>

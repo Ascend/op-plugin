@@ -279,6 +279,8 @@
             -   [torch_npu.npu.set_deterministic_level](./torch_npu-npu/torch_npu-npu-set_deterministic_level.md)
             -   [torch_npu.npu.use_compatible_impl](./torch_npu-npu/torch_npu-npu-use_compatible_impl.md)
             -   [torch_npu.npu.are_compatible_impl_enabled](./torch_npu-npu/torch_npu-npu-are_compatible_impl_enabled.md)
+            -   [（beta）torch_npu.npu.set_task_queue_enable](./torch_npu-npu/（beta）torch_npu-npu-set_task_queue_enable.md)
+            -   [（beta）torch_npu.npu.get_task_queue_enable](./torch_npu-npu/（beta）torch_npu-npu-get_task_queue_enable.md)
         -   [amp](./torch_npu-npu/amp.md)
             -   [（beta）torch_npu.npu.get_amp_supported_dtype](./torch_npu-npu/（beta）torch_npu-npu-get_amp_supported_dtype.md)
             -   [（beta）torch_npu.npu.is_autocast_enabled](./torch_npu-npu/（beta）torch_npu-npu-is_autocast_enabled.md)
