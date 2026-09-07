@@ -18,12 +18,12 @@ mstx_range装饰器，用来采集被装饰函数的range执行耗时。
 ## 函数原型
 
 ```python
-torch_npu.npu.mstx.mstx_range(msg: str='None', stream=None, domain: str='default')
+torch_npu.npu.mstx.mstx_range(msg: str, stream=None, domain: str='default')
 ```
 
 ## 参数说明
 
-- **msg** (`str`)：可选参数，打点携带信息的字符串，默认为'None'。
+- **msg** (`str`)：必选参数，打点携带信息的字符串。
 - **stream** (`torch_npu.npu.Stream`)：可选参数，用于执行打点任务的stream，默认为None。
   - 配置为None时，只标记Host侧的瞬时事件。
   - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。

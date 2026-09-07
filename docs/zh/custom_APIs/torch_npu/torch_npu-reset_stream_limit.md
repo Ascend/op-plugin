@@ -38,5 +38,5 @@ torch.npu.reset_stream_limit(stream) -> None
 >>> import torch_npu
 
 >>> torch.npu.set_stream_limit(torch.npu.current_stream(), 12, 24)
->>> torch.npu.reset_stream_limit(torch.npu.Stream())
+>>> torch.npu.reset_stream_limit(torch.npu.current_stream())
  ```

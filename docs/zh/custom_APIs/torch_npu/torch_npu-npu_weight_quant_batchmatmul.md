@@ -130,11 +130,10 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
             npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(),quantscale.npu())
             ```
 
-    - weight transpose+antiquant\_scale场景，仅支持如下产品：
+    - weight transpose+antiquant\_scale场景（float16/bfloat16类型），仅支持如下产品：
 
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
-        - <term>Atlas 推理系列加速卡产品</term>
 
             ```python
             import torch
@@ -148,7 +147,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
             npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), cpu_weight.transpose(-1,-2).npu(), antiquant_scale.transpose(-1,-2).npu(), cpu_antiquantoffset.transpose(-1,-2).npu())
             ```
 
-    - weight transpose+antiquant\_scale场景，仅支持如下产品：
+    - weight transpose+antiquant\_scale场景（antiquant\_scale为`float16`类型），仅支持如下产品：
 
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
         - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>

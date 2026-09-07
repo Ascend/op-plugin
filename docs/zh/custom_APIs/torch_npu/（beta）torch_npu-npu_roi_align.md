@@ -26,8 +26,8 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 - **spatial_scale** (`float`)：必选参数，指定`features`与原始图像的缩放比率。数据类型支持`float32`。
 - **pooled_height** (`int`)：必选参数，指定输出图像的高度。数据类型支持`int32`。
 - **pooled_width** (`int`)：必选参数，指定输出图像的宽度。数据类型支持`int32`。
-- **sample_num** (`int`)： 必选参数，默认值为2。指定每个输出元素在H和W方向上的采样频率。若此属性设置为0，则采样频率等于“rois”的向上取整值（一个浮点数）。数据类型支持`int32`。
-- **roi_end_mode** (`int`)：必选参数，默认值为1。数据类型支持`int32`。
+- **sample_num** (`int`)： 必选参数。指定每个输出元素在H和W方向上的采样频率。若此属性设置为0，则采样频率等于“rois”的向上取整值（一个浮点数）。数据类型支持`int32`。
+- **roi_end_mode** (`int`)：必选参数。数据类型支持`int32`。
 
 ## 约束说明
 
