@@ -12,22 +12,16 @@
 
 事件采集列表，Enum类型。用于赋值给torch_npu.profiler.profile的activities参数。
 
-## 函数原型
+## 类签名
 
 ```python
 torch_npu.profiler.ProfilerActivity
 ```
 
-## 参数说明
+## 成员说明
 
-- **torch_npu.profiler.ProfilerActivity.CPU**：可选参数，框架侧数据采集的开关。
-- **torch_npu.profiler.ProfilerActivity.NPU**：可选参数，CANN软件栈及NPU数据采集的开关。
-
-默认情况下两个开关同时开启。
-
-## 返回值说明
-
-无
+- **torch_npu.profiler.ProfilerActivity.CPU**：枚举成员，用于开启框架侧数据采集。
+- **torch_npu.profiler.ProfilerActivity.NPU**：枚举成员，用于开启CANN软件栈及NPU数据采集。
 
 ## 调用示例
 

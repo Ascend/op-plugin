@@ -18,7 +18,7 @@ API级别的打点，可自定义选择目标代码段或目标函数进行耗�
 ## 函数原型
 
 ```python
-torch_npu.npu.mstx.annotate(message: str = '', stream=None, domain: str = 'default')
+torch_npu.npu.mstx.annotate(message: str, stream=None, domain: str = 'default')
 ```
 
 ## 参数说明

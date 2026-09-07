@@ -25,7 +25,7 @@ torch_npu.contrib.npu_ptiou(boxes1, boxes2, mode="ptiou", is_normalized=False, n
 ## 参数说明
 
 - **boxes1**（`Tensor`）：shape为(n, 4)的预测检测框。
-- **boxes2**（`Tensor`）：shape为(m, 4)的预测检测框。
+- **boxes2**（`Tensor`）：shape为(m, 4)的Anchor框。
 - **is_normalized**（`bool`）：坐标值是否已经标准化。默认值为False。
 - **normalized_scale**（`float`）：设置恢复坐标的标准化比例，默认值为100。
 
