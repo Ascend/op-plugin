@@ -610,5 +610,65 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
                 weight_scale_dtype=torch_npu.float8_e8m0fnu,
                 x_scale_dtype=torch_npu.float8_e8m0fnu)
 
+    @SupportedDevices(['Ascend950'])
+    @unittest.skip("Operator does not support default dequant_dtype=uint8(0), skip until operator side supports it")
+    def test_v2_default_dequant_dtype_pertoken(self, device="npu"):
+        """Ascend950: do not pass dequant_dtype, verify default value works in Pertoken scenario"""
+        E, M, K, N = 2, 128, 128, 64
+        x = torch.randint(0, 256, (M, K), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weight = torch.randint(0, 256, (E, K, N), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weightScale = torch.randint(0, 256, (E, N), dtype=torch.float)
+        xScale = torch.randint(0, 256, (M,), dtype=torch.float)
+        groupList = torch.tensor([int(M // 2), int(M // 2) + 1], dtype=torch.int64)
+        output_npu, _ = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(),
+            quant_mode=0, dequant_mode=0,
+            quant_dtype=torch.float8_e5m2)
+        self.assertEqual(output_npu.dim(), 2)
+
+    @SupportedDevices(['Ascend950'])
+    @unittest.skip("Operator does not support default dequant_dtype=uint8(0), skip until operator side supports it")
+    def test_v2_default_dequant_dtype_mx(self, device="npu"):
+        """Ascend950: do not pass dequant_dtype, verify default value works in MX scenario"""
+        E, M, K, N = 2, 2, 16, 128
+        x, weight, weightScale, xScale, groupList = self.gen_input_data_950(E, M, K, N, False)
+        output_npu, _ = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(),
+            quant_mode=2, dequant_mode=2,
+            quant_dtype=torch.float8_e5m2,
+            weight_scale_dtype=torch_npu.float8_e8m0fnu,
+            x_scale_dtype=torch_npu.float8_e8m0fnu)
+        self.assertEqual(output_npu.dim(), 2)
+
+    @SupportedDevices(['Ascend950'])
+    def test_v2_dequant_dtype_pertoken_float32(self, device="npu"):
+        """Ascend950: Pertoken scenario with dequant_dtype=torch.float32 valid value"""
+        E, M, K, N = 2, 128, 128, 64
+        x = torch.randint(0, 256, (M, K), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weight = torch.randint(0, 256, (E, K, N), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weightScale = torch.randint(0, 256, (E, N), dtype=torch.float)
+        xScale = torch.randint(0, 256, (M,), dtype=torch.float)
+        groupList = torch.tensor([int(M // 2), int(M // 2) + 1], dtype=torch.int64)
+        output_npu, _ = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(),
+            dequant_dtype=torch.float32, quant_mode=0, dequant_mode=0,
+            quant_dtype=torch.float8_e5m2)
+        self.assertEqual(output_npu.dim(), 2)
+
+    @SupportedDevices(['Ascend950'])
+    def test_v2_mode_mismatch(self, device="npu"):
+        """Ascend950: dequantMode != quantMode should raise RuntimeError"""
+        E, M, K, N = 2, 128, 128, 64
+        x = torch.randint(0, 256, (M, K), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weight = torch.randint(0, 256, (E, K, N), dtype=torch.uint8).to(torch.float8_e4m3fn)
+        weightScale = torch.randint(0, 256, (E, N), dtype=torch.float)
+        xScale = torch.randint(0, 256, (M,), dtype=torch.float)
+        groupList = torch.tensor([int(M // 2), int(M // 2) + 1], dtype=torch.int64)
+        with self.assertRaises(RuntimeError):
+            torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+                x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(),
+                dequant_dtype=torch.float32, dequant_mode=0, quant_mode=2,
+                quant_dtype=torch.float8_e5m2)
+
 if __name__ == "__main__":
     run_tests()
