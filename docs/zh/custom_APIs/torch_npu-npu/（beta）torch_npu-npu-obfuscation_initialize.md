@@ -53,7 +53,7 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
 
 `Tensor`
 
-代表socket连接符，1D，shape为(1)，数据类型为`int32`。
+返回1D、shape为(1)、数据类型为`int32`的Tensor。当`cmd`为1或2（资源初始化）时，该返回值代表socket连接符，供后续的模型混淆计算及资源释放使用；当`cmd`为3（资源释放）时，接口用于断开与混淆引擎CA的socket连接，该返回值不再作为socket连接符使用。
 
 ## 调用示例
 

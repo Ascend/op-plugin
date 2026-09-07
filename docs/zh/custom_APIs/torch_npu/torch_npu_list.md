@@ -219,7 +219,7 @@
 </tr>
 <tr id="row858014718113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p25801047101117"><a name="p25801047101117"></a><a name="p25801047101117"></a><a href="（beta）torch_npu-npu_one_hot.md">（beta）torch_npu.npu_one_hot</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5580547191120"><a name="p5580547191120"></a><a name="p5580547191120"></a>返回一个one-hot张量。input中index表示的位置采用on_value值，而其他所有位置采用off_value的值。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5580547191120"><a name="p5580547191120"></a><a name="p5580547191120"></a>返回一个one-hot张量。input中每个元素的值v作为类别索引：输出在one_hot维（深度为depth）索引v处填充on_value，其余位置填充off_value。input应为整数索引张量，元素取值建议在[0, depth)范围内，越界的元素对应的输出全部填充off_value。</p>
 </td>
 </tr>
 <tr id="row2037715364114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p173771360112"><a name="p173771360112"></a><a name="p173771360112"></a><a href="（beta）torch_npu-npu_pad.md">（beta）torch_npu.npu_pad</a></p>

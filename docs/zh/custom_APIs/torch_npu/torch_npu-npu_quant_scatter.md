@@ -200,14 +200,14 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
             model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
             graph_output = model()
         single_op = torch_npu.npu_quant_scatter(var_npu, indices_npu, updates_npu, quant_scales_npu, quant_zero_points_npu, axis=axis, quant_axis=quant_axis, reduce=reduce)
-        print("single op output with mask:", single_op[0], single_op[0].shape)
-        print("graph output with mask:", graph_output[0], graph_output[0].shape)
+        print("single op output with mask:", single_op, single_op.shape)
+        print("graph output with mask:", graph_output, graph_output.shape)
 
     if __name__ == "__main__":
         MetaInfershape()
     
     # 执行上述代码的输出类似如下
-    single op output with mask: tensor([[[ 1,  1,  0,  1,  0, -1,  0,  0,  0,  1,  0,  1,  0, -1,  1,  0,  0,
+    single op output with mask: tensor([[[[ 1,  1,  0,  1,  0, -1,  0,  0,  0,  1,  0,  1,  0, -1,  1,  0,  0,
                0,  0,  0,  0,  0,  1,  0,  1,  0,  1,  1,  2,  1,  0,  0]],
             [[ 1,  0,  0,  1,  0,  0,  1,  1,  1,  1,  0,  0,  0,  1,  1,  0,  1,
                1,  1,  1,  1,  1,  0,  1,  0,  0,  1,  1,  0,  1,  0,  0]],
@@ -228,9 +228,9 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
             [[ 1,  0,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  1,  1,  1,  0,  1,
                0,  1,  1,  1, -1,  0,  1,  0,  0,  0,  1,  1,  1,  0,  0]],
             [[ 1,  0, -1,  1,  0,  0,  1,  0,  1,  2,  0,  1,  0, -1,  1,  1,  1,
-               1,  0,  0,  2,  1,  0,  1,  1,  0,  1,  0,  1,  0,  1,  0]]],
-           device='npu:0', dtype=torch.int8) torch.Size([11, 1, 32])           
-    graph output with mask: tensor([[[ 1,  1,  0,  1,  0, -1,  0,  0,  0,  1,  0,  1,  0, -1,  1,  0,  0,
+               1,  0,  0,  2,  1,  0,  1,  1,  0,  1,  0,  1,  0,  1,  0]]]],
+           device='npu:0', dtype=torch.int8) torch.Size([1, 11, 1, 32])           
+    graph output with mask: tensor([[[[ 1,  1,  0,  1,  0, -1,  0,  0,  0,  1,  0,  1,  0, -1,  1,  0,  0,
                0,  0,  0,  0,  0,  1,  0,  1,  0,  1,  1,  2,  1,  0,  0]],
             [[ 1,  0,  0,  1,  0,  0,  1,  1,  1,  1,  0,  0,  0,  1,  1,  0,  1,
                1,  1,  1,  1,  1,  0,  1,  0,  0,  1,  1,  0,  1,  0,  0]],
@@ -251,6 +251,6 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
             [[ 1,  0,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  1,  1,  1,  0,  1,
                0,  1,  1,  1, -1,  0,  1,  0,  0,  0,  1,  1,  1,  0,  0]],
             [[ 1,  0, -1,  1,  0,  0,  1,  0,  1,  2,  0,  1,  0, -1,  1,  1,  1,
-               1,  0,  0,  2,  1,  0,  1,  1,  0,  1,  0,  1,  0,  1,  0]]],
-           device='npu:0', dtype=torch.int8) torch.Size([11, 1, 32])
+               1,  0,  0,  2,  1,  0,  1,  1,  0,  1,  0,  1,  0,  1,  0]]]],
+           device='npu:0', dtype=torch.int8) torch.Size([1, 11, 1, 32])
     ```

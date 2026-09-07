@@ -141,7 +141,7 @@
 </tr>
 <tr id="row395820517240"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1495814522412"><a name="p1495814522412"></a><a name="p1495814522412"></a><a href="（beta）at_npu-native-get_npu_storage_sizes.md">（beta）at_npu::native::get_npu_storage_sizes</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p17958115172419"><a name="p17958115172419"></a><a name="p17958115172419"></a>获取NPU tensor的内存大小，返回值类型vector&lt;int64_t&gt;，表示获取的NPU tensor内存大小。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p17958115172419"><a name="p17958115172419"></a><a name="p17958115172419"></a>获取NPU tensor存储的各维度大小，返回值类型vector&lt;int64_t&gt;，表示NPU tensor底层存储每一维的大小。</p>
 </td>
 </tr>
 <tr id="row978610882412"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p678619815247"><a name="p678619815247"></a><a name="p678619815247"></a><a href="（beta）at_npu-native-npu_format_cast.md">（beta）at_npu::native::npu_format_cast</a></p>
