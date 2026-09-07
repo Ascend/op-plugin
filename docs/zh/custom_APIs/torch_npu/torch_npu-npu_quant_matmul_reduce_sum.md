@@ -20,7 +20,7 @@ $$
 ## 函数原型
 
 ```python
-torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -> Tensor
+torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale, x2_scale) -> Tensor
 ```
 
 ## 参数说明

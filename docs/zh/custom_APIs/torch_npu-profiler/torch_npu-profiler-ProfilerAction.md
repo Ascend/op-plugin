@@ -10,24 +10,24 @@
 
 ## 功能说明
 
-用于控制Profiler行为状态，如性能数据采集、性能数据采集预热、性能数据采集并保存，属于Enum类型。
+Profiler采集行为状态，枚举类型。由`torch_npu.profiler.schedule`在每个step返回，用于控制`torch_npu.profiler.profile`在该step执行的采集行为（无操作、预热、采集、采集并保存）。
 
-## 函数原型
+## 类签名
 
 ```python
-torch_npu.profiler.ProfilerAction
+class ProfilerAction(Enum)
 ```
 
-## 参数说明
+## 成员说明
 
-- **torch_npu.profiler.ProfilerAction.NONE**：可选参数，无任何行为。
-- **torch_npu.profiler.ProfilerAction.WARMUP**：可选参数，性能数据采集预热。
-- **torch_npu.profiler.ProfilerAction.RECORD**：可选参数，性能数据采集。
-- **torch_npu.profiler.ProfilerAction.RECORD_AND_SAVE**：可选参数，性能数据采集并保存。
+> 所有枚举值均为只读，不可在运行时修改。
 
-## 返回值说明
-
-无
+| 成员名 | 值 | 描述 |
+| :--- | :--- | :--- |
+| `NONE` | `0` | 无任何行为。 |
+| `WARMUP` | `1` | 性能数据采集预热。 |
+| `RECORD` | `2` | 性能数据采集。 |
+| `RECORD_AND_SAVE` | `3` | 性能数据采集并保存。 |
 
 ## 调用示例
 

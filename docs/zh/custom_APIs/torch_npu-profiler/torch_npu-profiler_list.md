@@ -9,7 +9,7 @@
 | [torch_npu.profiler.ProfilerActivity](./torch_npu-profiler-ProfilerActivity.md) | 事件采集列表，枚举类。用于赋值给torch_npu.profiler.profile的activities参数。 |
 | [torch_npu.profiler.tensorboard_trace_handler](./torch_npu-profiler-tensorboard_trace_handler.md) | 将采集到的性能数据导出为TensorBoard工具支持的格式。作为torch_npu.profiler.profile on_trace_ready参数的执行操作。 |
 | [torch_npu.profiler.schedule](./torch_npu-profiler-schedule.md) | 设置不同step的行为。用于构造torch_npu.profiler.profile的schedule参数。 |
-| [torch_npu.profiler.ProfilerAction](./torch_npu-profiler-ProfilerAction.md) | 用于控制Profiler行为状态，如性能数据采集、性能数据采集预热、性能数据采集并保存，属于Enum类型。                                     |
+| [torch_npu.profiler.ProfilerAction](./torch_npu-profiler-ProfilerAction.md) | Profiler采集行为状态，枚举类型。由torch_npu.profiler.schedule在每个step返回，用于控制torch_npu.profiler.profile在该step执行的采集行为（无操作、预热、采集、采集并保存）。 |
 | [torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md) | 性能数据采集扩展参数。用于构造torch_npu.profiler.profile的experimental_config参数。 |
 | [torch_npu.profiler.ExportType](./torch_npu-profiler-ExportType.md) | 设置导出的性能数据结果文件格式，作为_ExperimentalConfig类的export_type参数。 |
 | [torch_npu.profiler.ProfilerLevel](./torch_npu-profiler-ProfilerLevel.md) | 采集等级，作为_ExperimentalConfig类的profiler_level参数。   |

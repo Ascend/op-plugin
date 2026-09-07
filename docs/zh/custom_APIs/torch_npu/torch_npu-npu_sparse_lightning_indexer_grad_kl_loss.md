@@ -83,7 +83,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 **sparse_indices**(`Tensor`)：必选参数，表示排序后`key`和`key_index`的token序号。数据格式支持$ND$，数据类型支持`int32`。shape支持$(B, S1, N2index, topK)$、$(T1, N2index, topK)$。
 
-**softmax_max**(`Tensor`)：必选参数，表示Attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。
+**softmax_max**(`Tensor`)：必选参数，表示Attention softmax结果中的最大值。数据格式支持$ND$，数据类型支持`bfloat16`、`float16`、`float32`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。
 
 **softmax_sum**(`Tensor`)：必选参数，表示Attention softmax结果的求和。数据格式支持$ND$，数据类型支持`float32`。shape支持$(B, N2, S1, G)$、$(N2, T1, G)$。
 
@@ -128,7 +128,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 | N1index | 8、16、32、64                            | -                     |
 | N2      | 1                                       | -                     |
 | N2index | 1                                     | -                     |
-| D       | 512                                   | query与query_index的D不同 |
+| D       | 512（query/key）/ 128（query_index/key_index） | query与query_index的D可取不同值 |
 | Dr      | 64                                    | -                     |
 | K       | 1024、2048、3081、4096、5120、6144、7168、8192 | -                     |
 | layout  | BSND/TND                              | -                     |
