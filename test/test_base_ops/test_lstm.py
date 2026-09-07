@@ -1,20 +1,19 @@
 import copy
-import unittest
 import torch
 import numpy as np
 import torch_npu
-from torch.nn.utils.rnn import pack_padded_sequence
+from torch.nn.utils.rnn import PackedSequence, pack_padded_sequence, pad_packed_sequence
 from torch_npu.testing.testcase import TestCase, run_tests
 
 
 class TestLstm(TestCase):
     device = "npu"
 
-    def _build_lstm(self, dtype=torch.float32):
+    def _build_lstm(self, dtype=torch.float32, num_layers=2):
         model = torch.nn.LSTM(
             input_size=4,
             hidden_size=6,
-            num_layers=2,
+            num_layers=num_layers,
             bias=True,
             batch_first=False,
             dropout=0.0,
@@ -29,12 +28,12 @@ class TestLstm(TestCase):
         c0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
         return x, h0, c0
 
-    def _make_packed_inputs(self, dtype):
+    def _make_packed_inputs(self, dtype, num_layers=2):
         lengths = [5, 3, 2]
         padded = torch.randn(5, 3, 4, device=self.device, dtype=dtype)
         packed = pack_padded_sequence(padded, lengths, enforce_sorted=True)
-        h0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
-        c0 = torch.randn(2, 3, 6, device=self.device, dtype=dtype)
+        h0 = torch.randn(num_layers, 3, 6, device=self.device, dtype=dtype)
+        c0 = torch.randn(num_layers, 3, 6, device=self.device, dtype=dtype)
         return packed, h0, c0
 
     def _run_raw_lstm(self, model, x, hx):
@@ -74,14 +73,59 @@ class TestLstm(TestCase):
         self.assertEqual(h.shape, (2, 3, 6))
         self.assertEqual(c.shape, (2, 3, 6))
 
-    def test_lstm_packed_fallback(self):
-        model = self._build_lstm(dtype=torch.float32)
-        packed, h0, c0 = self._make_packed_inputs(torch.float16)
+    def _assert_packed_fallback(self, model_dtype, input_dtype, num_layers=1):
+        model = self._build_lstm(dtype=model_dtype, num_layers=num_layers)
+        packed, h0, c0 = self._make_packed_inputs(input_dtype, num_layers=num_layers)
         y, h, c = self._run_raw_packed_lstm(model, packed, (h0, c0))
 
-        self.assertEqual(h.shape, (2, 3, 6))
-        self.assertEqual(c.shape, (2, 3, 6))
-        self.assertTrue(y.dim() >= 2)
+        self.assertEqual(y.shape, (packed.data.size(0), 6))
+        self.assertEqual(h.shape, (num_layers, 3, 6))
+        self.assertEqual(c.shape, (num_layers, 3, 6))
+
+    def test_lstm_packed_mixed_dtype_fallback(self):
+        with torch.autocast(device_type=self.device, dtype=torch.float16):
+            self._assert_packed_fallback(torch.float32, torch.float16)
+
+    def test_lstm_packed_autocast_fallback(self):
+        jit_compile = not torch_npu.npu.is_jit_compile_false()
+        try:
+            for jit in (False, True):
+                torch_npu.npu.set_compile_mode(jit_compile=jit)
+                for device_type in (self.device, "cpu"):
+                    with self.subTest(jit=jit, autocast=device_type), torch.autocast(device_type=device_type):
+                        model = self._build_lstm(num_layers=1)
+                        packed, h0, c0 = self._make_packed_inputs(torch.float16, num_layers=1)
+                        output, (h, c) = model(packed, (h0, c0))
+                        self.assertEqual(output.data.shape, (packed.data.size(0), 6))
+                        self.assertEqual(h.shape, h0.shape)
+                        self.assertEqual(c.shape, c0.shape)
+                        self.assertTrue(torch.isfinite(output.data).all().item())
+        finally:
+            torch_npu.npu.set_compile_mode(jit_compile=jit_compile)
+
+    def test_lstm_packed_bf16_fallback(self):
+        self._assert_packed_fallback(torch.bfloat16, torch.bfloat16)
+
+    def test_lstm_packed_params_size_fallback(self):
+        self._assert_packed_fallback(torch.float32, torch.float32, num_layers=2)
+
+    def test_lstm_packed_aclop_output_shape(self):
+        jit_compile = not torch_npu.npu.is_jit_compile_false()
+        torch_npu.npu.set_compile_mode(jit_compile=True)
+        try:
+            model = self._build_lstm(dtype=torch.float32, num_layers=1)
+            packed, h0, c0 = self._make_packed_inputs(torch.float32, num_layers=1)
+            y, h, c = self._run_raw_packed_lstm(model, packed, (h0, c0))
+
+            self.assertEqual(y.shape, (packed.data.size(0), 6))
+            self.assertEqual(h.shape, (1, 3, 6))
+            self.assertEqual(c.shape, (1, 3, 6))
+
+            output = PackedSequence(y, packed.batch_sizes, packed.sorted_indices, packed.unsorted_indices)
+            padded, _ = pad_packed_sequence(output)
+            self.assertEqual(padded.shape, (5, 3, 6))
+        finally:
+            torch_npu.npu.set_compile_mode(jit_compile=jit_compile)
 
     def test_lstm_params_size_fallback(self):
         model = torch.nn.LSTM(

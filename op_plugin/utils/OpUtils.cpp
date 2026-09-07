@@ -14,6 +14,8 @@
 // limitations under the License.
 
 #include "op_plugin/utils/NamedTensorCompat.h"
+#include <ATen/autocast_mode.h>
+#include <torch/csrc/jit/runtime/interpreter.h>
 
 #include "torch_npu/csrc/aten/CustomFunctions.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
@@ -413,6 +415,46 @@ void check_input_same_type_as_parameters(
     const at::Tensor& weight)
 {
     check_input_same_type_as_parameters(input, weight, at::Tensor());
+}
+
+void check_packed_lstm_args(
+    const at::Tensor& data, const at::Tensor& batch_sizes, at::TensorList hx,
+    at::TensorList params, int64_t num_layers, bool bidirectional)
+{
+    const auto& weight = params.at(0);
+    if (data.scalar_type() != weight.scalar_type() && !torch::jit::in_torchscript_runtime()) {
+        // Same device set as torch._C._is_any_autocast_enabled in RNNBase.check_input.
+        bool autocast_enabled = false;
+        for (auto device : {at::kCPU, at::kCUDA, at::kXPU, at::kIPU, at::kXLA,
+                            at::kHPU, at::kMTIA, at::kPrivateUse1}) {
+            autocast_enabled = autocast_enabled || at::autocast::is_autocast_enabled(device);
+        }
+        if (!autocast_enabled) {
+            const auto input_dtype = c10::getDtypeNames(data.scalar_type()).first;
+            const auto weight_dtype = c10::getDtypeNames(weight.scalar_type()).first;
+#if VERSION_BETWEEN(V2R11, VERSION_NEWEST)
+            TORCH_CHECK_VALUE(false,
+                "RNN input dtype (torch.", input_dtype, ") does not match weight dtype (torch.", weight_dtype,
+                "). Convert input: input.to(torch.", weight_dtype,
+                "), or convert model: model.to(torch.", input_dtype, ")");
+#else
+            TORCH_CHECK_VALUE(false,
+                "input must have the type torch.", weight_dtype, ", got type torch.", input_dtype);
+#endif
+        }
+    }
+    TORCH_CHECK(data.dim() == 2, "input must have 2 dimensions, got ", data.dim());
+    TORCH_CHECK(data.size(1) == weight.size(1),
+                "input.size(-1) must be equal to input_size. Expected ", weight.size(1), ", got ", data.size(1));
+    const int64_t batch_size = batch_sizes[0].item<int64_t>();
+    const int64_t layers = num_layers * (bidirectional ? 2 : 1);
+    for (int64_t i = 0; i < 2; ++i) {
+        const int64_t hidden_size = i == 0 ? params.at(1).size(1) : weight.size(0) / 4;
+        const auto sizes = hx.at(i).sizes();
+        TORCH_CHECK(sizes == at::IntArrayRef({layers, batch_size, hidden_size}),
+                    "Expected hidden[", i, "] size (", layers, ", ", batch_size, ", ", hidden_size,
+                    "), got ", sizes);
+    }
 }
 
 bool is_gte_cann_version_810rc1()

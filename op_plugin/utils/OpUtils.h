@@ -97,6 +97,9 @@ OP_PLUGIN_HIDDEN void check_input_same_type_as_parameters(
     const at::Tensor& weight,
     const at::Tensor& bias);
 OP_PLUGIN_HIDDEN void check_input_same_type_as_parameters(const at::Tensor& input, const at::Tensor& weight);
+OP_PLUGIN_HIDDEN void check_packed_lstm_args(
+    const at::Tensor& data, const at::Tensor& batch_sizes, at::TensorList hx,
+    at::TensorList params, int64_t num_layers, bool bidirectional);
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_810rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_820rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_830rc1();
