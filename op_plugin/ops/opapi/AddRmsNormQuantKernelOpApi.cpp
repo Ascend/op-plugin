@@ -79,9 +79,9 @@ tensor_list npu_add_rms_norm_quant(
         x_out,
         rmsnorm_out);
   } else if (
-      c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend950 &&
+      c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
       !beta.has_value()) {
-    // 950上，没有beta调用V1。 防止老CANN包 + 新的PTA 由于没有V2 报错。
+    // Ascend950及后续平台上，没有beta调用V1。防止老CANN包 + 新的PTA由于没有V2报错。
     EXEC_NPU_CMD(
         aclnnAddRmsNormQuant,
         x1,
@@ -98,7 +98,7 @@ tensor_list npu_add_rms_norm_quant(
         y2_wrapper,
         x_out);
   } else {
-    // 在A2/A3平台，并且没有V2的情况下，调用V1
+    // 在没有V2的情况下，校验V1的参数约束后调用V1。
     TORCH_CHECK(
         !scales2.has_value(),
         "In the current CANN version, for aclnnAddRmsNormQuant, the parameter scales2 input only support None. It "
