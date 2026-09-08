@@ -5607,6 +5607,39 @@ official:
     gen_opapi:
       exec: aclnnRightShift
 
+  - func: bitwise_left_shift.Tensor_Scalar(Tensor self, Scalar other) -> Tensor
+    op_api: [v2.7, newest]
+    gen_opapi:
+      out:
+        size: self
+        dtype: self
+      exec: aclnnLeftShifts
+
+  - func: bitwise_left_shift.Tensor_Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.7, newest]
+    gen_opapi:
+      exec: aclnnLeftShifts
+
+  - func: bitwise_left_shift_.Tensor_Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
+    op_api: [v2.7, newest]
+    gen_opapi:
+      structured_inherit: bitwise_left_shift.Tensor_Scalar_out
+
+  - func: bitwise_right_shift.Tensor_Scalar(Tensor self, Scalar other) -> Tensor
+    op_api: [v2.7, newest]
+
+  - func: bitwise_right_shift.Tensor_Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: [v2.7, newest]
+
+  - func: bitwise_right_shift_.Tensor_Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)
+    op_api: [v2.7, newest]
+
+  - func: bitwise_right_shift.Scalar_Tensor(Scalar self, Tensor other) -> Tensor
+    op_api: [v2.7, newest]
+
+  - func: bitwise_left_shift.Scalar_Tensor(Scalar self, Tensor other) -> Tensor
+    op_api: [v2.7, newest]
+
 autograd:
   - func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)
     op_api: [v2.5, newest]

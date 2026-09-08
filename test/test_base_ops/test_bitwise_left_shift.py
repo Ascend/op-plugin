@@ -24,8 +24,10 @@ class TestBitwiseLeftShift(TestCase):
         return out
 
     def npu_op_exec_out(self, input1, input2, out):
-        input1 = input1.to("npu")
-        input2 = input2.to("npu")
+        if (isinstance(input1, torch.Tensor)):
+            input1 = input1.to("npu")
+        if (isinstance(input2, torch.Tensor)):
+            input2 = input2.to("npu")
         out = out.to("npu")
         torch.bitwise_left_shift(input1, input2, out=out)
         out = out.to("cpu")
@@ -59,6 +61,58 @@ class TestBitwiseLeftShift(TestCase):
             cpu_out, npu_out = create_common_tensor(item[1], 0, 1)
             cpu_output = self.cpu_op_exec_out(cpu_input1, cpu_input2, cpu_out)
             npu_output = self.npu_op_exec_out(npu_input1, npu_input2, npu_out)
+            cpu_output = cpu_output.astype(npu_output.dtype)
+            self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_bitwise_left_shift_tensor_scalar(self, device="npu"):
+        format_list = [0]
+        shape_list = [(256, 32, 56)]
+        shape_format = [[np.int32, i, j] for i in format_list for j in shape_list]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, 0, 100)
+            shift_value = 2
+            cpu_output = self.cpu_op_exec(cpu_input1, shift_value)
+            npu_output = self.npu_op_exec(npu_input1, shift_value)
+            cpu_output = cpu_output.astype(npu_output.dtype)
+            self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_bitwise_left_shift_scalar_tensor(self, device="npu"):
+        input_value = 512
+        cpu_shift = torch.tensor([8]).to(torch.int32)
+        npu_shift = cpu_shift.npu()
+        cpu_output = self.cpu_op_exec(input_value, cpu_shift)
+        npu_output = self.npu_op_exec(input_value, npu_shift)
+        cpu_output = cpu_output.astype(npu_output.dtype)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_bitwise_left_shift_tensor_scalar_out(self, device="npu"):
+        shape_format = [
+            [[np.int32, 0, [256, 128, 7, 7]], [np.int32, 0, [256, 128, 7, 7]]],
+            [[np.int32, 0, [2, 3, 3, 3]], [np.int32, 0, [2, 3, 3, 3]]],
+            [[np.int32, 0, [128, 232, 7, 7]], [np.int32, 0, [128, 232, 7, 7]]],
+            [[np.int16, 0, [128, 3, 224, 224]], [np.int16, 0, [128, 3, 224, 224]]],
+            [[np.int16, 0, [128, 116, 14, 14]], [np.int16, 0, [128, 116, 14, 14]]],
+        ]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item[0], 0, 100)
+            cpu_out, npu_out = create_common_tensor(item[1], 0, 1)
+            shift_value = 2
+            cpu_output = self.cpu_op_exec_out(cpu_input1, shift_value, cpu_out)
+            npu_output = self.npu_op_exec_out(npu_input1, shift_value, npu_out)
+            cpu_output = cpu_output.astype(npu_output.dtype)
+            self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_bitwise_left_shift__tensor_scalar(self, device="npu"):
+        format_list = [0]
+        shape_list = [(256, 32, 56)]
+        shape_format = [[np.int32, i, j] for i in format_list for j in shape_list]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, 0, 100)
+            shift_value = 2
+            cpu_input1.bitwise_left_shift_(shift_value)
+            npu_input1.bitwise_left_shift_(shift_value)
+            cpu_output = cpu_input1.numpy()
+            npu_output = npu_input1.to("cpu").numpy()
             cpu_output = cpu_output.astype(npu_output.dtype)
             self.assertRtolEqual(cpu_output, npu_output)
 

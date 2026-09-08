@@ -5090,7 +5090,31 @@
   "func: bitwise_left_shift.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["v2.7", "newest"]
   },
+  "func: bitwise_left_shift.Tensor_Scalar(Tensor self, Scalar other) -> Tensor": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_left_shift.Tensor_Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_left_shift_.Tensor_Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_left_shift.Scalar_Tensor(Scalar self, Tensor other) -> Tensor": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_right_shift.Tensor_Scalar_out(Tensor self, Scalar other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_right_shift_.Tensor_Scalar(Tensor(a!) self, Scalar other) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_right_shift.Scalar_Tensor(Scalar self, Tensor other) -> Tensor": {
+    "version": ["v2.7", "newest"]
+  },
   "func: bitwise_right_shift.Tensor_out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.7", "newest"]
+  },
+  "func: bitwise_right_shift.Tensor_Scalar(Tensor self, Scalar other) -> Tensor": {
     "version": ["v2.7", "newest"]
   }
 }
