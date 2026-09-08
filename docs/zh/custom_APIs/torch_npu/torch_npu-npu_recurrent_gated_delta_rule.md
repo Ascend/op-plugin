@@ -4,6 +4,7 @@
 
 |产品             |  是否支持  |
 |:-------------------------|:----------:|
+|  <term>Ascend 950PR/Ascend 950DT</term>            |    √     |
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   |     √    |
 |  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>   |     √    |
 
@@ -32,33 +33,33 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 ## 参数说明
 
-- **query** (`Tensor`)：必选输入，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **query** (`Tensor`)：必选输入，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
 
-- **key** (`Tensor`)：必选输入，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。
+- **key** (`Tensor`)：必选输入，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
 
-- **value** (`Tensor`)：必选输入，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。
+- **value** (`Tensor`)：必选输入，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。不支持空tensor。
 
-- **state** (`Tensor`)：必选输入&输出，对应公式中的状态矩阵$S$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$BlockNum$, $N_v$, $D_v$, $D_k$）。
+- **state** (`Tensor`)：必选输入&输出，对应公式中的状态矩阵$S$，数据类型支持`bfloat16`、`float32`，数据格式支持ND，shape为（$BlockNum$, $N_v$, $D_v$, $D_k$）。不支持空tensor。
 
-- **beta** (`Tensor`)：可选输入。对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。
+- \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+
+- **beta** (`Tensor`)：可选输入。对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
 
 - **scale** (`float`)：可选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`float32`。
 
-- **actual_seq_lengths** (`Tensor`)可选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$）。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
+- **actual_seq_lengths** (`Tensor`)：可选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$）。不支持空tensor。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
 
-- **ssm_state_indices** (`Tensor`)：可选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。`ssm_state_indices[i]`要求取值大于等于0且小于$BlockNum$。数据类型支持`int32`，数据格式支持ND，shape为（$T$）。
+- **ssm_state_indices** (`Tensor`)：可选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。`ssm_state_indices[i]`要求取值大于等于0且小于$BlockNum$。数据类型支持`int32`，数据格式支持ND，shape为（$T$）。不支持空tensor。
 
-- **num_accepted_tokens** (`Tensor`)：可选输入，`num_accepted_tokens[i]`表示投机推理第i个batch接受的token数量，要求取值大于等于1且不大于$L_i$。默认为None，表示每个batch接受的token数为1。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
+- **num_accepted_tokens** (`Tensor`)：可选输入，`num_accepted_tokens[i]`表示投机推理第i个batch接受的token数量，要求取值大于等于1且不大于$L_i$。默认为None，表示每个batch接受的token数为1。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。不支持空tensor。
 
-- **g** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。
+- **g** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
 
-- **gk** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^{gk}$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$, $D_k$）。
+- **gk** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^{gk}$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$, $D_k$）。不支持空tensor。
 
 ## 返回值说明
 
-`Tensor`
-
-公式中的$o$，注意力计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
+**out** (`Tensor`)：表示计算结果，公式中的$o$，注意力计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
 
 ## 约束说明
 
@@ -67,12 +68,22 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
     - $B$ 表示batch size。
     - $L_i$ 表示第i个序列的长度，由actual_seq_lengths传入，其取值范围为$1 \le L_i \le 8$。
     - $N_k$ 表示key的头数，其取值范围为$1 \le N_k \le 256$。
-    - $N_v$ 表示value的头数，其取值范围为$1 \le N_v \le 256$。
+    - $N_v$ 表示value的头数，其取值范围为$1 \le N_v \le 256$，$N_v \bmod N_k = 0$。
     - $D_k$ 表示key向量的维度，其取值范围为$1 \le D_k \le 512$。
     - $D_v$ 表示value向量的维度，其取值范围为$1 \le D_v \le 512$。
-    - $BlockNum$为状态矩阵分块数量，其值不小于$T$。
-- 该接口仅支持在推理场景下使用。
-- 该接口仅支持单算子和静态图模式。
+    - $BlockNum$为状态矩阵分块数量，其取值范围为$T \le BlockNum$。
+- 该接口仅支持在推理场景下使用，当前TND场景，beta、scale、actual_seq_lengths、ssm_state_indices必传。
+- 该接口仅支持单算子模式和静态图模式调用。
+- state仅支持0轴、1轴非连续Tensor。
+- 以下约束由于算子无法获取tensor中具体数值，故需用户保证，算子不校验：
+    - $ssm\_state\_indices[i] \lt BlockNum$
+    - $1 \le actual\_seq\_lengths[i] \le 8$，且actual_seq_lengths[i]累加和等于$T$
+    - $1 \le num\_accepted\_tokens[i] \le actual\_seq\_lengths[i]$
+    - $-1 \le query[i][j][k] \le 1$
+    - $-1 \le key[i][j][k] \le 1$
+    - $g[i][j] \lt 0$
+    - $gk[i][j][k] \lt 0$
+    - $0 \lt beta[i][j] \lt 1$
 
 ## 调用示例
 
