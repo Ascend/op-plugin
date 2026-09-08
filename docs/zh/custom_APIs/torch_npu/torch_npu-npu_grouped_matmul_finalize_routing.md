@@ -23,11 +23,12 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## 参数说明
 
-- **`x`**（`Tensor`）：**必选参数**，矩阵计算的左矩阵，支持非连续的Tensor。数据格式支持$ND$，维度为\(m, k\)。`m`取值范围为\[1, 16\*1024\*8\]。
+- **`x`**（`Tensor`）：**必选参数**，矩阵计算的左矩阵，支持非连续的Tensor。数据格式支持$ND$，维度为\(m, k\)。`m`取值范围为\[0, 16\*1024\*8\]。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`。
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
+    - x支持m为0，其他空Tensor场景不支持。
 
 - **`w`**（`Tensor`）：**必选参数**，矩阵计算的右矩阵，支持非连续的Tensor。数据格式支持$ND$。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int4`。
@@ -36,6 +37,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`w_dtype`为对应类型，此时`w`本身的`dtype`不再生效，但仍需保证`w`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4场景，此时输入`x`的`K`需为大于2的偶数，且当`weight`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。维度为\(e, k, n\)。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。数据格式支持`ND`和`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
+    - w支持n为0，其他空Tensor场景不支持。
 
 - <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **`group_list`**（`Tensor`）：**必选参数**，GroupedMatMul的各分组大小，支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，`e`与`w`的`e`一致。`group_list`的值总和要求≤`m`，`group_list`的长度不超过1024。
