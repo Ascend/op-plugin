@@ -89,6 +89,10 @@ torch_npu.npu_format_cast_(input, src, customize_dtype=None) -> Tensor
 - Format类型调用示例：
 
     ```python
-    >>> torch_npu.get_npu_format(torch_npu.npu_format_cast_(x, torch_npu.Format.NHWC))
+    >>> import torch
+    >>> import torch_npu
+    >>> x = torch.rand(2, 3, 4, 5).npu()
+    >>> x2 = torch_npu.npu_format_cast_(x, torch_npu.Format.NHWC)
+    >>> torch_npu.get_npu_format(x2)
     1
     ```
