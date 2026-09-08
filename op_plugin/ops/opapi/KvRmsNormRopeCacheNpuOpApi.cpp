@@ -221,14 +221,15 @@ namespace op_api {
         aclDataType k_cache_acltype = k_cache_dtype.has_value() ? c10_npu::GetAclDataType(k_cache_dtype.value()) : k_Cache_Type;
         aclDataType ckv_cache_acltype = ckv_cache_dtype.has_value() ? c10_npu::GetAclDataType(ckv_cache_dtype.value()) : ckv_Cache_Type;
 
-        TensorWrapper k_cache_wrapper = {k_cache, k_cache_acltype};
-        TensorWrapper ckv_cache_wrapper = {ckv_cache, ckv_cache_acltype};
-
         at::Tensor k_rope = npu_preparation::apply_tensor_without_format(k_rope_shape, kv.options());
         at::Tensor c_kv = npu_preparation::apply_tensor_without_format(c_kv_shape, kv.options());
 
         at::Tensor k_cache_inplace = k_cache.clone();
         at::Tensor ckv_cache_inplace = ckv_cache.clone();
+
+        // Wrap the inplace tensor cloned from inputs to keep graph functionalities normal
+        TensorWrapper k_cache_wrapper = {k_cache_inplace, k_cache_acltype};
+        TensorWrapper ckv_cache_wrapper = {ckv_cache_inplace, ckv_cache_acltype};
 
         if (exec_v2_flag) {
             // V2 : v is ignored in V1
