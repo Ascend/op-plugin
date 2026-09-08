@@ -75,8 +75,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> native_layer_norm(const at::Tenso
         std::accumulate(input_shape.cbegin(), input_shape.cbegin() + begin_axis, 1LL, std::multiplies<int64_t>());
     auto acc_type = input.scalar_type() == at::kDouble ? at::kDouble : at::kFloat;
 
-    // shape and dtype of mean and rstd depend on M value and input dtype
-    if (M <= 0) {
+    if (M <= 0 && c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
         mean_out = at_npu::native::OpPreparation::apply_tensor_without_format({M}, input.options().dtype(acc_type));
         rstd_out = at_npu::native::OpPreparation::apply_tensor_without_format({M}, input.options().dtype(acc_type));
     } else {
