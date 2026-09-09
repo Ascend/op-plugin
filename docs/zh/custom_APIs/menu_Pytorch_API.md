@@ -83,6 +83,7 @@
         -   [torch_npu.npu_block_sparse_attention](./torch_npu/torch_npu-npu_block_sparse_attention.md)
         -   [torch_npu.npu_chunk_gated_delta_rule](./torch_npu/torch_npu-npu_chunk_gated_delta_rule.md)
         -   [torch_npu.npu_convert_weight_to_int4pack](./torch_npu/torch_npu-npu_convert_weight_to_int4pack.md)
+        -   [torch_npu.npu_dual_level_quant_matmul](./torch_npu/torch_npu-npu_dual_level_quant_matmul.md)
         -   [torch_npu.npu_dynamic_quant](./torch_npu/torch_npu-npu_dynamic_quant.md)
         -   [torch_npu.npu_dynamic_quant_asymmetric](./torch_npu/torch_npu-npu_dynamic_quant_asymmetric.md)
         -   [torch_npu.npu_fast_gelu](./torch_npu/torch_npu-npu_fast_gelu.md)

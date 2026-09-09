@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>           |    √     |
+| <term>Ascend 950PR/Ascend 950DT</term> | √ |
 |<term>Atlas A3 训练系列产品</term>           |    √     |
 |<term>Atlas A2 训练系列产品</term> | √   |
 |<term>Atlas 训练系列产品</term> | √   |
@@ -17,13 +17,16 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
+torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtype=None) -> Tensor
 ```
 
 ## 参数说明
 
 - **input**（`Tensor`）：必选参数，待处理的输入张量。
-- **acl_format**（`int`/`Format`）：必选参数，目标格式。可输入整数或torch_npu.Format类型，torch_npu.Format类型会被自动转换为对应格式的整数值。例如将`input`的数据格式修改为ND格式时，此处既可以输入`2`，也可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式，torch_npu支持如下数据格式：
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据维度支持2-6维，数据类型支持`torch.int8`、`torch.uint8`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
+- **acl_format**（`int`/`Format`）：必选参数，目标格式。可输入整数或torch_npu.Format类型，torch_npu.Format类型会被自动转换为对应格式的整数值。例如将`input`的数据格式修改为ND格式时，此处既可以输入`2`，也可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式。
+  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持取29（ACL\_FORMAT\_FRACTRAL\_NZ）和2（ACL\_FORMAT\_ND）。
+  - torch_npu支持如下数据格式：
 
     |torch_npu.Format类型|整数值|说明|
     | ------| ------|:------: |
@@ -42,25 +45,65 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
     |torch_npu.Format.FRACTAL_Z_3D|33|3D卷积权重格式，例如Conv3D/MaxPool3D/AvgPool3D这些算子均需以这种格式来表达。对应的AscendCL数据格式为ACL_FORMAT_FRACTAL_Z_3D。|
     |torch_npu.Format.NC|35|2维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NC。|
     |torch_npu.Format.NCL|47|3维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NCL。|
-    
+
     > [!NOTE]
     > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/programug/Ascendcopdevg/docs/guide/%E6%8A%80%E6%9C%AF%E9%99%84%E5%BD%95/%E6%A6%82%E5%BF%B5%E5%8E%9F%E7%90%86%E5%92%8C%E6%9C%AF%E8%AF%AD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%92%8C%E7%AE%97%E5%AD%90/%E6%95%B0%E6%8D%AE%E6%8E%92%E5%B8%83%E6%A0%BC%E5%BC%8F.md">数据排布格式</a>”章节。
 
-- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`。
-  - 不传参时默认值为`None`，float32和int32数据类型的默认C0值为16，int8数据类型的默认C0值为32；
-  - 传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
+- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`float32`和`int32`数据类型的默认C0值为16，`int8`数据类型的默认C0值为32。
+  - <term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
+  - <term>Ascend 950PR/Ascend 950DT</term>：对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。
+- **input\_dtype**（`int`）：可选参数，表示`input`的真实数据类型，支持`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`。
+  - <term>Atlas 推理系列产品</term>、<term>Atlas 训练系列产品</term>、<term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：暂不支持该参数，使用默认值`None`即可。
+  - <term>Ascend 950PR/Ascend 950DT</term>：支持该参数。默认值`None`表示`input`的真实类型和tensor的数据类型一致。
+
+## 返回值说明
+
+**out**（`Tensor`）：返回修改数据格式后的输出Tensor。
 
 ## 约束说明
 
-`customize_dtype`参数仅在Atlas A2 训练系列产品/Atlas A3 训练系列产品且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
+`customize_dtype`参数仅在Atlas A2 训练系列产品/Atlas A3 训练系列产品/Ascend 950PR/Ascend 950DT且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
 
-<term>Ascend 950DT</term>场景下，本接口转为私有格式（如FRACTAL_NZ）的行为不受`allow_internal_format = False`约束。
+- <term>Ascend 950PR/Ascend 950DT</term>：
 
-<term>Ascend 950DT</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
+  目前输入参数支持如下组合，当传入为第三种组合时，转换出来的format为50（ACL\_FORMAT\_FRACTRAL\_NZ\_C0\_16）。
 
-- 当`input`的dtype与`customize_dtype`相同且类型为float16、bfloat16时，若`input`维度表示为[k, n]，则k为1场景暂不支持。
-- 调用本接口转为FRACTAL_NZ格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
-- `input`的shape后两维任意一维度shape等于1场景，不允许转FRACTAL_NZ后进行transpose。
+    | `input`数据类型 | `input` format | `acl_format`取值 | `customize_dtype`取值 | `input_dtype`取值 |
+    | --- | --- | --- | --- | --- |
+    | `torch.int8` | $ND$ | 29 | `torch.int8` | NA |
+    | `torch.float8_e4m3fn` | $ND$ | 29 | `torch.float8_e4m3fn` | NA |
+    | `torch.int32` | $ND$ | 29 | `torch.float16`/`torch.bfloat16` | NA |
+    | `torch.float16` | $ND$ | 29 | `torch.float16` | NA |
+    | `torch.bfloat16` | $ND$ | 29 | `torch.bfloat16` | NA |
+    | `torch_npu.float4_e2m1fn_x2`（`torch.float32`承载） | $ND$ | 29 | `torch.float8_e4m3fn` | NA |
+    | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $ND$ | 29 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` |
+    | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $FRACTAL\_NZ$ | 2 | NA | `torch_npu.float4_e2m1fn_x2` |
+    | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | `torch_npu.float4_e2m1fn_x2` |
+    | `torch_npu.float4_e1m2fn_x2`（`torch.uint8`/`torch.int8` 承载） | $ND$ | 29 | NA | `torch_npu.float4_e1m2fn_x2` |
+    | `torch.uint8` | $FRACTAL\_NZ$ | 2 | NA | NA |
+    | `torch.uint8` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
+    | `torch.uint8` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
+    | `torch.int8` | $FRACTAL\_NZ$ | 2 | NA | NA |
+    | `torch.int8` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
+    | `torch.int8` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
+    | `torch.float8_e4m3fn` | $FRACTAL\_NZ$ | 2 | NA | NA |
+    | `torch.float16` | $FRACTAL\_NZ$ | 2 | NA | NA |
+    | `torch.bfloat16` | $FRACTAL\_NZ$ | 2 | NA | NA |
+    | `torch.int32` | $FRACTAL\_NZ\_C0\_2$ | 2 | NA | NA |
+    | `torch.int32` | $FRACTAL\_NZ\_C0\_4$ | 2 | NA | NA |
+    | `torch.int32` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
+    | `torch.int32` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
+    | `torch.float32` | $FRACTAL\_NZ\_C0\_2$ | 2 | NA | NA |
+    | `torch.float32` | $FRACTAL\_NZ\_C0\_4$ | 2 | NA | NA |
+    | `torch.float32` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
+    | `torch.float32` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
+
+  当前不支持的特殊场景：
+
+  - $ND$转$FRACTAL\_NZ$场景，当`srcTensor.dtype`和`additionalDtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若维度表示为\[k, n\]，则k为1场景暂不支持。
+  - 调用本接口转为$FRACTAL\_NZ$格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
+  - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
+  - $FRACTAL\_NZ$转$ND$场景，不支持输入`srcTensor`非连续。
 
 ## 返回值说明
 
@@ -105,5 +148,16 @@ torch_npu.npu_format_cast(input, acl_format, customize_dtype=None) -> Tensor
     >>> # customize_dtype=3 即 ACL_INT32，此时 C0=8
     >>> out = torch_npu.npu_format_cast(t, 29, customize_dtype=3)
     >>> torch_npu.get_npu_format(out)
+    29
+    ```
+
+- 使用 `input_dtype` （仅<term>Ascend 950PR/Ascend 950DT</term>）：
+
+    ```python
+    >>> import torch
+    >>> import torch_npu
+    >>> x = torch.randint(-5, 5, (1,64), dtype=torch.int8).npu()
+    >>> y = torch_npu.npu_format_cast(x, 29, customize_dtype=torch.int8, input_dtype=torch.int8)
+    >>> torch_npu.get_npu_format(y)
     29
     ```

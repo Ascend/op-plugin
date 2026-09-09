@@ -2,50 +2,63 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √    |
+| 产品 | 是否支持 |
+| --- | --- |
+| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
+| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
 
 ## 功能说明
 
-将`int32`类型的输入`tensor`打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+将`int32`类型的输入Tensor打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+
+<term>Ascend 950PR/Ascend 950DT</term>：除了上述能力，还支持将`torch.float32`类型输入Tensor打包为`torch_npu.float4_e2m1fn_x2`存放，每8个`torch_npu.float4_e2m1fn_x2`数据通过一个`torch.float32`数据承载，并进行交叠排放。
 
 ## 函数原型
 
 ```python
-torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
+torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 ```
 
 ## 参数说明
 
-- **weight** (`Tensor`)：输入的weight，数据格式支持$ND$、$FRACTAL\_NZ$，数据类型支持`int32`，不支持非连续的`Tensor`；维度支持2维或3维，shape支持$(k, n)$、$(n, k)$，最后一维度需要8个元素对齐，元素的值需要在`int4`的表示范围内，即[-8, 7]。
-- **inner_k_tiles** (`int`)：用于指定内部打包格式中，多少个K-tiles被打包在一起，默认值为`0`。**预留参数，暂未使用**。
+- **weight**(`Tensor`)：必选参数，待处理的张量。数据格式支持$ND$、$FRACTAL\_NZ$，使用接口torch_npu.npu_format_cast可以将数据格式转换为$FRACTAL\_NZ$，不支持非连续的Tensor。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`，要求`weight`中元素取值在`int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维度需要8个元素对齐。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维度需要8个元素对齐。
+
+    > **说明：**
+    > - PyTorch 2.7及之前版本：表示在`torch_npu.float4_e2m1fn_x2`范围内使用的是Python中`ml_dtypes`库提供的`float4_e2m1fn`类型，`ml_dtypes`版本要求不小于0.5.0，具体使用参见[调用示例](#调用示例)。
+    > - PyTorch 2.8版本开始：可直接使用`torch.float4_e2m1fn_x2`。
+
+- **inner\_k\_tiles**(`int`)：可选参数，用于指定内部打包格式中多少个K-tiles被打包在一起，默认值为`0`。**预留参数，暂未使用**。
 
 ## 返回值说明
 
-`Tensor`
+**out**(`Tensor`)：代表打包后的输出张量，shape为$(k, n/8)$、$(n, k/8)$或$(g, k, n/8)$，数据格式和`weight`一致。
 
-代表`int4`打包后的输出，数据类型为`int32`，shape为$(k, n/8)$、$(n, k/8)$，数据格式支持$ND$。
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`。
+- <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int32`（对应`weight`为`torch.int32`）、`torch.float32`（对应`weight`为`torch.float32`）。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
+- 该接口支持单算子模式和TorchAir图模式。
 
 ## 调用示例
 
 - 单算子模式调用
 
+  - 输入为`int32`场景
+
     ```python
     import torch
     import torch_npu
-    
+
     m = 128
     k = 64
-    n = 32
+    n = 128
     trans_weight = False
-    
+
     cpu_x = torch.randn((m, k), dtype=torch.float16)
     if trans_weight:
         cpu_weight = torch.randint(low=-8, high=8, size=(n, k), dtype=torch.int32)
@@ -55,92 +68,256 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
         cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int32)
         cpu_antiquantscale = torch.randn((1, n), dtype=torch.float16)
         cpu_antiquantoffset = torch.randn((1, n), dtype=torch.float16)
-    
+
     weight_int4 = torch_npu.npu_convert_weight_to_int4pack(cpu_weight.npu())
-    
+
     if trans_weight:
         cpu_weight = cpu_weight.transpose(-1, -2)
         weight_int4 = weight_int4.transpose(-1, -2)
         cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
         cpu_antiquantoffset = cpu_antiquantoffset.transpose(-1, -2)
 
-    npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), weight_int4.npu(), cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
-    print(npu_out)
-    # 执行上述代码的输出类似如下    
-    tensor([[  27.2344,  -33.7500,   11.8047,  ...,   40.2188,  -15.7188,
-                6.2070],
-            [  30.0625,  -66.8750,    7.6758,  ...,  -24.9531,  -11.2031,
-            -52.0312],
-            [   1.2246, -102.3125,  -13.2734,  ...,  -31.2344,   16.0938,
-            -48.9375],
-            ...,
-            [  38.8750,  -56.6562,  -15.9219,  ...,    1.0771,   -3.8047,
-            13.3359],
-            [  17.1719,  -26.8594,   -7.6016,  ..., -251.2500,    2.5684,
-            -38.1562],
-            [  32.5938,  -64.6250,    8.0938,  ...,  -28.5312,  -18.7031,
-            18.0781]], device='npu:0', dtype=torch.float16)
+    npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), weight_int4, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu())
     ```
 
-- 图模式调用
+  - 输入为`torch.float32`场景：该示例仅<term>Ascend 950PR/Ascend 950DT</term>支持。
 
     ```python
     import torch
     import torch_npu
-    import  torchair
+    import numpy as np
+    # ml_dtypes版本要求不小于0.5.0
+    from ml_dtypes import float4_e2m1fn
+
+    m = 128
+    k = 64
+    n = 128
+    E2M1_MIN, E2M1_MAX = -6, 6
+    antiquant_group_size = 32
+    trans_weight = False
+
+    cpu_x = torch.randn((m, k), dtype=torch.float16)
+    if trans_weight:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((n, k))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (n, k // antiquant_group_size), dtype=torch.uint8) # 使用uint8类型承载scale数据
+    else:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((k, n))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (k // antiquant_group_size, n), dtype=torch.uint8) # 使用uint8类型承载scale数据
+
+    weight_packed = torch_npu.npu_convert_weight_to_int4pack(cpu_weight.npu())
+
+    if trans_weight:
+        weight_packed = weight_packed.transpose(-1, -2)
+        cpu_antiquantscale = cpu_antiquantscale.transpose(-1, -2)
+
+    npu_out = torch_npu.npu_weight_quant_batchmatmul(cpu_x.npu(), weight_packed, cpu_antiquantscale.npu(), None, None, None, None, antiquant_group_size)
+    ```
+
+- 图模式调用
+
+  - $ND$格式，输入类型为`int32`
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
     from torchair.configs.compiler_config import CompilerConfig
     config = CompilerConfig()
     npu_backend = torchair.get_npu_backend(compiler_config=config)
-    
+
     m = 16
-    k = 17
-    n = 72
-    
+    k = 64
+    n = 128
     trans_weight = False
     is_weight_nz = False
-    
+
     cpu_x = torch.randn((m, k),dtype=torch.float16)
     if trans_weight:
-        cpu_weight = torch.randint(low=-8, high=8, size=(n, k) ,dtype=torch.int32)
+        cpu_weight = torch.randint(low=-8, high=8, size=(n, k), dtype=torch.int32)
         cpu_antiquantscale = torch.ones((n, 1),dtype=torch.float16)
         cpu_antiquantoffset = torch.zeros((n, 1),dtype=torch.float16)
     else:
-        cpu_weight = torch.randint(low=-8, high=8, size=(k, n) ,dtype=torch.int32)
+        cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int32)
         cpu_antiquantscale = torch.ones((1, n),dtype=torch.float16)
         cpu_antiquantoffset = torch.zeros((1, n),dtype=torch.float16)
-    
+
     npu_weight = cpu_weight.npu()
+
+    # 判断是否进行ND格式转NZ格式
     if is_weight_nz:
-       # nd to fractal_nz
-       npu_weight = torch_npu.npu_format_cast(npu_weight.npu(), 29)
+        npu_weight = torch_npu.npu_format_cast(npu_weight, 29)
     # int32 to int4pack
     weight_int4pack = torch_npu.npu_convert_weight_to_int4pack(npu_weight)
-    
+
     class MyModel(torch.nn.Module):
         def __init__(self):
             super().__init__()
-    
+
         def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
             if trans_weight:
                 weight  = weight.transpose(-1, -2)
                 antiquant_scale = antiquant_scale.transpose(-1, -2)
                 antiquant_offset = antiquant_offset.transpose(-1, -2)
-            return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale ,quant_offset, bias, antiquant_group_size)
-    
+            return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale, quant_offset, bias, antiquant_group_size)
+
     cpu_model = MyModel()
     model = cpu_model.npu()
-    model = torch.compile(model, backend=npu_backend, dynamic=True, fullgraph=True)
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
 
     npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
-    print(npu_out)
+    ```
 
-    # 执行上述代码的输出类似如下  
-    tensor([[  4.6055,   6.0078,  -9.5078,  ...,  29.7188,   9.4688,  -7.6797],
-            [-23.0312, -24.9062,  32.2500,  ...,  -7.8789,  14.3359, -19.7812],
-            [-10.6172,  -0.8887,   7.7344,  ...,  -2.7676, -26.4531,   8.3906],
-            ...,
-            [ -3.8086, -21.3125, -17.8594,  ...,  20.3750,   0.5649,  32.9062],
-            [ 16.1094,  13.8203,   3.7461,  ..., -22.6875,  19.0000,   4.4375],
-            [ 34.9375, -15.1797, -23.1094,  ..., -13.6797,   8.7734,   6.8750]],
-        device='npu:0', dtype=torch.float16)
+  - $FRACTAL\_NZ$格式，输入类型为`int32`
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+
+    m = 16
+    k = 64
+    n = 64
+    trans_weight = False
+    is_weight_nz = True
+    cpu_x = torch.randn((m, k),dtype=torch.float16)
+
+    if trans_weight:
+        cpu_weight = torch.randint(low=-8, high=8, size=(n, k), dtype=torch.int32)
+        cpu_antiquantscale = torch.ones((n, 1),dtype=torch.float16)
+        cpu_antiquantoffset = torch.zeros((n, 1),dtype=torch.float16)
+    else:
+        cpu_weight = torch.randint(low=-8, high=8, size=(k, n), dtype=torch.int32)
+        cpu_antiquantscale = torch.ones((1, n),dtype=torch.float16)
+        cpu_antiquantoffset = torch.zeros((1, n),dtype=torch.float16)
+    npu_weight = cpu_weight.npu()
+
+    # 判断是否进行ND格式转NZ格式
+    if is_weight_nz:
+        # nd to fractal_nz
+            npu_weight = torch_npu.npu_format_cast(npu_weight.npu(), 29, customize_dtype=cpu_x.dtype)
+
+    # int32 to int4pack
+    weight_int4pack = torch_npu.npu_convert_weight_to_int4pack(npu_weight)
+    class MyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
+            if trans_weight:
+                weight  = weight.transpose(-1, -2)
+                antiquant_scale = antiquant_scale.transpose(-1, -2)
+                antiquant_offset = antiquant_offset.transpose(-1, -2)
+            return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale, quant_offset, bias, antiquant_group_size)
+    cpu_model = MyModel()
+    model = cpu_model.npu()
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
+    npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
+    ```
+
+  - $ND$格式，输入类型为`torch.float32`，仅支持<term>Ascend 950PR/Ascend 950DT</term>
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    import numpy as np
+    from ml_dtypes import float4_e2m1fn
+
+    m = 128
+    k = 64
+    n = 128
+    E2M1_MIN, E2M1_MAX = -6, 6
+    antiquant_group_size = 32
+    trans_weight = False
+    is_weight_nz = False
+
+    cpu_x = torch.randn((m, k),dtype=torch.float16)
+    if trans_weight:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((n, k))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (n, k // antiquant_group_size), dtype=torch.uint8) # 使用uint8类型承载scale数据
+    else:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((k, n))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (k // antiquant_group_size, n), dtype=torch.uint8) # 使用uint8类型承载scale数据
+    npu_weight = cpu_weight.npu()
+
+    # 判断是否进行ND格式转NZ格式
+    if is_weight_nz:
+        npu_weight = torch_npu.npu_format_cast(npu_weight, 29, customize_dtype=torch.float16)
+    weight_packed = torch_npu.npu_convert_weight_to_int4pack(npu_weight)
+
+    class MyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
+            if trans_weight:
+                weight  = weight.transpose(-1, -2)
+                antiquant_scale = antiquant_scale.transpose(-1, -2)
+                antiquant_offset = antiquant_offset.transpose(-1, -2)
+            return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale, quant_offset, bias, antiquant_group_size)
+
+    cpu_model = MyModel()
+    model = cpu_model.npu()
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
+    npu_out = model(cpu_x.npu(), weight_packed, cpu_antiquantscale.npu(), None, None, None, None, antiquant_group_size)
+    ```
+
+  - $FRACTAL\_NZ$格式，输入类型为`torch.float32`，仅支持<term>Ascend 950PR/Ascend 950DT</term>
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    import numpy as np
+    from ml_dtypes import float4_e2m1fn
+
+    m = 128
+    k = 64
+    n = 128
+    E2M1_MIN, E2M1_MAX = -6, 6
+    antiquant_group_size = 32
+    trans_weight = False
+    is_weight_nz = True
+
+    cpu_x = torch.randn((m, k),dtype=torch.float16)
+    if trans_weight:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((n, k))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (n, k // antiquant_group_size), dtype=torch.uint8) # 使用uint8类型承载scale数据
+    else:
+        cpu_weight = (E2M1_MIN + (E2M1_MAX - E2M1_MIN) * np.random.random(k * n).reshape((k, n))).astype(float4_e2m1fn)
+        cpu_weight = torch.from_numpy(cpu_weight.astype(np.float32))
+        cpu_antiquantscale = torch.randint(127 - 5, 127 + 5, (k // antiquant_group_size, n), dtype=torch.uint8) # 使用uint8类型承载scale数据
+    npu_weight = cpu_weight.npu()
+
+    # 判断是否进行ND格式转NZ格式
+    if is_weight_nz:
+        npu_weight = torch_npu.npu_format_cast(npu_weight, 29, customize_dtype=torch.float16)
+    weight_packed = torch_npu.npu_convert_weight_to_int4pack(npu_weight)
+
+    class MyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, x, weight, antiquant_scale, antiquant_offset, quant_scale,quant_offset, bias, antiquant_group_size):
+            if trans_weight:
+                weight  = weight.transpose(-1, -2)
+                antiquant_scale = antiquant_scale.transpose(-1, -2)
+                antiquant_offset = antiquant_offset.transpose(-1, -2)
+            return torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_offset, quant_scale, quant_offset, bias, antiquant_group_size)
+
+    cpu_model = MyModel()
+    model = cpu_model.npu()
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True, fullgraph=True)
+    npu_out = model(cpu_x.npu(), weight_packed, cpu_antiquantscale.npu(), None, None, None, None, antiquant_group_size)
     ```
