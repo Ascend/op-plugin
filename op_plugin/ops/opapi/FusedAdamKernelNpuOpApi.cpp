@@ -175,6 +175,16 @@ void _fused_adam_(
 	const c10::optional<at::Tensor>& grad_scale,
 	const c10::optional<at::Tensor>& found_inf)
 {
+	bool is_same_size = (self.size() == grads.size() &&
+					   self.size() == exp_avgs.size() &&
+					   self.size() == exp_avg_sqs.size() &&
+					   self.size() == state_steps.size() &&
+					   (max_exp_avg_sqs.size() == 0 ||
+					   self.size() == max_exp_avg_sqs.size()));
+	if (!is_same_size) {
+		TORCH_CHECK(false, "the size of tensor list should be same.");
+	}
+
 	if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
 		TORCH_NPU_WARN(
 			"CAUTION: The operator 'aten::_fused_adam_' is not currently supported "
@@ -199,16 +209,6 @@ void _fused_adam_(
 		return;
 	}
 
-	bool is_same_size = (self.size() == grads.size() &&
-					   self.size() == exp_avgs.size() &&
-					   self.size() == exp_avg_sqs.size() &&
-					   self.size() == state_steps.size() &&
-					   (max_exp_avg_sqs.size() == 0 ||
-					   self.size() == max_exp_avg_sqs.size()));
-	if (!is_same_size) {
-		TORCH_CHECK(false, "the size of tensor list should be same.");
-	}
-
 	std::vector<at::Tensor> state_steps_adjusted;
 	state_steps_adjusted.reserve(state_steps.size());
 	for (size_t i = 0; i < state_steps.size(); i++) {
@@ -221,12 +221,13 @@ void _fused_adam_(
 			max_exp_avg_sqs_adjusted.emplace_back(at::zeros_like(tensor));
 		}
 	}
-	at::TensorList state_steps_list(state_steps_adjusted);
-	at::TensorList max_exp_avg_sqs_list = max_exp_avg_sqs.empty()
-		? at::TensorList(max_exp_avg_sqs_adjusted)
-		: max_exp_avg_sqs;
 	const at::Tensor grad_scale_tensor = grad_scale.value_or(at::Tensor());
 	const at::Tensor found_inf_tensor = found_inf.value_or(at::Tensor());
+	at::TensorList state_steps_list(state_steps_adjusted);
+	at::TensorList max_exp_avg_sqs_list(max_exp_avg_sqs);
+	if (max_exp_avg_sqs.empty()) {
+		max_exp_avg_sqs_list = at::TensorList(max_exp_avg_sqs_adjusted);
+	}
 
 	_split_and_exec_npu_cmd_fused_adam(
 		self,
@@ -244,5 +245,40 @@ void _fused_adam_(
 		eps,
 		amsgrad,
 		maximize);
+}
+
+void _fused_adam_(
+	at::TensorList self,
+	at::TensorList grads,
+	at::TensorList exp_avgs,
+	at::TensorList exp_avg_sqs,
+	at::TensorList max_exp_avg_sqs,
+	at::TensorList state_steps,
+	const at::Tensor& lr,
+	const double beta1,
+	const double beta2,
+	const double weight_decay,
+	const double eps,
+	const bool amsgrad,
+	const bool maximize,
+	const c10::optional<at::Tensor>& grad_scale,
+	const c10::optional<at::Tensor>& found_inf)
+{
+	op_api::_fused_adam_(
+		self,
+		grads,
+		exp_avgs,
+		exp_avg_sqs,
+		max_exp_avg_sqs,
+		state_steps,
+		lr.item<double>(),
+		beta1,
+		beta2,
+		weight_decay,
+		eps,
+		amsgrad,
+		maximize,
+		grad_scale,
+		found_inf);
 }
 }  // namespace op_api

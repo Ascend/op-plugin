@@ -58,6 +58,8 @@ class TestFusedAdam(TestCase):
 
         npu_grad_scale = grad_scale.npu() if grad_scale is not None else None
         npu_found_inf = found_inf.npu() if found_inf is not None else None
+        cpu_lr = lr.cpu() if torch.is_tensor(lr) else lr
+        npu_lr = lr.npu() if torch.is_tensor(lr) else lr
 
         max_exp_avg_sqs_cpu = cpu_max_exp_avg_sqs if amsgrad else []
         max_exp_avg_sqs_npu = npu_max_exp_avg_sqs if amsgrad else []
@@ -65,14 +67,14 @@ class TestFusedAdam(TestCase):
         torch._fused_adam_(
             cpu_self, cpu_grads, cpu_exp_avgs, cpu_exp_avg_sqs,
             max_exp_avg_sqs_cpu, state_steps_cpu,
-            lr=lr, beta1=beta1, beta2=beta2, weight_decay=weight_decay,
+            lr=cpu_lr, beta1=beta1, beta2=beta2, weight_decay=weight_decay,
             eps=eps, amsgrad=amsgrad, maximize=maximize,
             grad_scale=None, found_inf=None)
 
         torch._fused_adam_(
             npu_self, npu_grads, npu_exp_avgs, npu_exp_avg_sqs,
             max_exp_avg_sqs_npu, state_steps_npu,
-            lr=lr, beta1=beta1, beta2=beta2, weight_decay=weight_decay,
+            lr=npu_lr, beta1=beta1, beta2=beta2, weight_decay=weight_decay,
             eps=eps, amsgrad=amsgrad, maximize=maximize,
             grad_scale=npu_grad_scale, found_inf=npu_found_inf)
 
@@ -100,6 +102,54 @@ class TestFusedAdam(TestCase):
             lr=0.001, beta1=0.9, beta2=0.999, weight_decay=0.0,
             eps=1e-8, amsgrad=False, maximize=False,
             state_steps_values=[1, 1])
+
+    def test_adam_tensor_lr(self, device="npu"):
+        """Adam with a scalar Tensor learning rate."""
+        self._run_and_compare(
+            shapes=[(4, 4), (8, 8)], dtype=torch.float32,
+            lr=torch.tensor(0.001, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.0, eps=1e-8, amsgrad=False, maximize=False,
+            state_steps_values=[1, 1])
+
+    def test_adam_tensor_lr_amsgrad(self, device="npu"):
+        """Adam with a scalar Tensor learning rate and AMSGrad."""
+        self._run_and_compare(
+            shapes=[(4, 4), (8, 8)], dtype=torch.float32,
+            lr=torch.tensor(0.001, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.01, eps=1e-8, amsgrad=True, maximize=False,
+            state_steps_values=[1, 1])
+
+    def test_adam_tensor_lr_maximize(self, device="npu"):
+        """Adam with a scalar Tensor learning rate and maximize=True."""
+        self._run_and_compare(
+            shapes=[(4, 4), (8, 8)], dtype=torch.float32,
+            lr=torch.tensor(0.01, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.0, eps=1e-8, amsgrad=False, maximize=True,
+            state_steps_values=[1, 1])
+
+    def test_adam_tensor_lr_weight_decay(self, device="npu"):
+        """Adam with a scalar Tensor learning rate and weight decay."""
+        self._run_and_compare(
+            shapes=[(4, 4), (2, 3, 3)], dtype=torch.float32,
+            lr=torch.tensor(0.001, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.01, eps=1e-8, amsgrad=False, maximize=False,
+            state_steps_values=[1, 1])
+
+    def test_adam_tensor_lr_state_step_2(self, device="npu"):
+        """Adam with a scalar Tensor learning rate at the second step."""
+        self._run_and_compare(
+            shapes=[(4, 4), (8, 8)], dtype=torch.float32,
+            lr=torch.tensor(0.01, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.0, eps=1e-8, amsgrad=False, maximize=False,
+            state_steps_values=[2, 2])
+
+    def test_adam_tensor_lr_float16(self, device="npu"):
+        """Adam with a scalar Tensor learning rate and float16 tensors."""
+        self._run_and_compare(
+            shapes=[(4, 4), (8, 8)], dtype=torch.float16,
+            lr=torch.tensor(0.001, dtype=torch.float32), beta1=0.9, beta2=0.999,
+            weight_decay=0.0, eps=1e-8, amsgrad=False, maximize=False,
+            state_steps_values=[1, 1], prec=1e-3)
 
     def test_adam_amsgrad(self, device="npu"):
         """Adam with AMSGrad variant: amsgrad=True, max_exp_avg_sqs provided."""
