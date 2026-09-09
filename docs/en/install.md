@@ -48,7 +48,7 @@ The system dependency and official PyTorch framework must be installed during in
 1. Script for configuring CANN environment variables.
     
     ```bash
-    source <CANN软件安装目录>/<CANN软件路径>/set_env.sh
+    source <CANN_install_dir>/<CANN_path>/set_env.sh
     ```
     
     The default path of the environment variable script is /usr/local/npu/ascend-toolkit/set_env.sh. The path of ascend-toolkit depends on the name of the installed CANN software.
