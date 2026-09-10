@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950DT</term>              | √ |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
@@ -30,6 +31,7 @@ torch_npu.npu.config.allow_internal_format = bool
 
 - <term>Atlas A2 训练系列产品</term>/<term>Atlas A3 训练系列产品</term>默认值为`False`。
 - <term>Atlas 推理系列产品</term>/<term>Atlas 训练系列产品</term>默认值为`True`。
+- <term>Ascend 950DT</term>默认值为`False`，且仅支持`False`。
 
 ## 约束说明
 
