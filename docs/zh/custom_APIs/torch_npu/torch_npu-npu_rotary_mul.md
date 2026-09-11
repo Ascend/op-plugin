@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term> | √ |
 |<term>Atlas A3 训练系列产品</term>           |    √     |
 |<term>Atlas A2 训练系列产品</term> | √   |
 |<term>Atlas 训练系列产品</term> | √   |
@@ -11,12 +12,12 @@
 
 ## 功能说明
 
-- API功能：实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息。
+- API功能：实现Rotary Position Embedding (RoPE) 旋转位置编码，通过对输入特征进行二维平面旋转注入位置信息，支持FakeTensor模式。
 - 计算公式：
      $$
     output = x * cos + rotate(x) * sin
      $$
-     其中$x$是输入`input`，$cos$和$sin$分别是旋转系数输入`r1`和`r2`，输入rotate支持两种计算模式：
+     其中$x$是输入`input`，$cos$和$sin$分别是旋转系数输入`r1`和`r2`，`rotary_mode`支持以下计算模式：
 
      - 当`rotary_mode`为`half`时，将输入向量沿最后一个维度分为两半，然后应用旋转：
          $$
@@ -32,6 +33,25 @@
      - 当输入`rotate`参数时，旋转矩阵的生成方式为：
          $$
          rotate(x) = x \cdot rotate\\
+         $$
+
+     - <term>Ascend 950PR/Ascend 950DT</term>：当`rotary_mode`为`quarter`时，将输入沿最后一维分为四部分 $x_1,x_2,x_3,x_4$：
+         $$
+         \begin{aligned}
+         x_1 &= x[..., :D/4], & x_2 &= x[..., D/4:D/2], \\
+         x_3 &= x[..., D/2:3D/4], & x_4 &= x[..., 3D/4:], \\
+         x_{rotate} &= concat(-x_2,x_1,-x_4,x_3), \\
+         y &= x \cdot r1 + x_{rotate} \cdot r2
+         \end{aligned}
+         $$
+     - <term>Ascend 950PR/Ascend 950DT</term>：当`rotary_mode`为`interleave-half`时，先将偶数、奇数位置元素分别拼接为`x_part1`、`x_part2`：
+         $$
+         \begin{aligned}
+         x_1 &= x[..., ::2], & x_2 &= x[..., 1::2], \\
+         x_{part1} &= concat(x_1,x_2), \\
+         x_{part2} &= concat(-x_2,x_1), \\
+         y &= x_{part1} \cdot r1 + x_{part2} \cdot r2
+         \end{aligned}
          $$
 
 - 等价计算逻辑：
@@ -71,11 +91,11 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
-- **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
-- **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度支持3维、4维，数据类型支持`float16`，`bfloat16`，`float32`。
-- **rotary_mode** (`str`)：可选参数，用于选择计算模式，支持`half`、`interleave`两种模式。默认值为`half`。
-- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，输入维度支持2维，数据类型支持`float16`，`bfloat16`，`float32`，构造方式参考调用示例，默认值为None。
+- **input** (`Tensor`)：必选参数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
+- **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
+- **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
+- **rotary_mode** (`str`)：可选参数，用于选择计算模式，支持`half`、`interleave`两种模式；<term>Ascend 950PR/Ascend 950DT</term>还支持`quarter`、`interleave-half`模式。默认值为`half`。
+- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，输入维度支持2维，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`，构造方式参考调用示例，默认值为None。
 
 ## 返回值说明
 
@@ -119,7 +139,16 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 
      广播场景下，广播轴的总数据量不能超过1024。
 
-- rotate推荐使用场景
+- <term>Ascend 950PR/Ascend 950DT</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下。
+    - 输入张量`input`、`r1`、`r2`及输出张量的D维度大小必须相同，且小于等于1024。half、interleave和interleave-half模式下，D必须能被2整除；quarter模式下，D必须能被4整除。
+    - 输入张量`r1`和`r2`的shape必须完全相同，且必须满足下列条件之一：
+        - shape为\(1, 1, 1, D\)；
+        - shape为\(B, S, N, D\)；
+        - shape为\(B, 1, N, D\)或\(B, S, 1, D\)；
+        - shape为\(1, 1, N, D\)、\(1, S, 1, D\)或\(B, 1, 1, D\)。
+    - 当`input`为空Tensor时，输出也为空Tensor，且不受上述shape约束限制。
+
+- rotate推荐使用场景（适用<term>Atlas A2 训练系列产品</term>，<term>Atlas A3 训练系列产品</term>）：
   - interleave模式
   - half模式仅在以下场景时推荐使用：输入矩阵x需要在最后一个维度切分多份时，可以通过构造旋转编码矩阵实现一次调用获得性能收益，以x的layout为BSND需要切分为3份为例：
      x切分为3份，$x = [x1|x2|x3]_{(dim=4)} ∈ R^{B×S×N×D}, x1 ∈ R^{B×S×N×D1},x2 ∈ R^{B×S×N×D2},x3 ∈ R^{B×S×N×D3}, 其中D = D1 + D2 + D3$，
@@ -236,4 +265,30 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
         r1 = torch.rand(1, 2, 1, 128).npu()
         r2 = torch.rand(1, 2, 1, 128).npu()
         out = torch_npu.npu_rotary_mul(x, r1, r2, "interleave", inter_mat_128.npu())
+    ```
+
+- 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+
+    class Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x, r1, r2):
+            return torch_npu.npu_rotary_mul(x, r1, r2, rotary_mode="half")
+
+    model = Model().npu()
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    model = torch.compile(model, backend=npu_backend)
+
+    x = torch.rand((2, 1, 1, 64), dtype=torch.float16).npu()
+    r1 = torch.rand((2, 1, 1, 64), dtype=torch.float16).npu()
+    r2 = torch.rand((2, 1, 1, 64), dtype=torch.float16).npu()
+    result = model(x, r1, r2)
     ```

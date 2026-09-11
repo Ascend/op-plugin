@@ -4,7 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
+| <term>Ascend 950PR/Ascend 950DT</term>                        |    √    |
 |<term>Atlas A3 训练系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品</term>  | √   |
 |<term>Atlas 推理系列产品</term>                                       |    √     |
@@ -14,6 +14,14 @@
 
 计算输入张量`x`经缩放和`mask`遮蔽后的`Softmax`结果。
 
+- 计算公式：
+
+  $$
+  \mathrm{out}=\operatorname{Softmax}_{\mathrm{dim}=-1}\left(\operatorname{Mask}(\mathrm{scale}\cdot x,\mathrm{mask})\right)
+  $$
+
+其中，`x`为输入 logits，`scale`为缩放系数，`mask`为布尔掩码，`out`为计算结果。
+
 ## 函数原型
 
 ```python
@@ -22,16 +30,16 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，输入的logits。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
-- **mask**（`Tensor`）：必选参数，输入的掩码。支持数据类型：`bool`。支持格式：$[ND, FRACTAL\_NZ]$。
-- **scale**（`float`）：可选参数，`x`的缩放系数，默认值为`1.0`。
-- **fixed_triu_mask**（`bool`）：预留参数，功能未完成，默认值为`False`，当前只支持`False`。该功能完成后可支持自动生成上三角`bool`掩码。
+- **x**（`Tensor`）：必选参数，输入的logits。支持数据类型：`torch.float16`、`torch.float32`、`torch.bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
+- **mask**（`Tensor`）：必选参数，输入的掩码。支持数据类型：`torch.bool`。支持格式：$[ND, FRACTAL\_NZ]$。
+- **scale**（`float`）：可选参数，`x`的缩放系数，默认值为`1.0`，支持数据类型：`torch.float32`。
+- **fixed_triu_mask**（`bool`）：预留参数，功能未完成，默认值为`False`，当前只支持`False`。支持数据类型：`torch.bool`。该功能完成后可支持自动生成上三角`torch.bool`掩码。
 
 ## 返回值说明
 
 `Tensor`
 
-一个`Tensor`类型的输出，输入`x`经过`mask`后在最后一维的`Softmax`结果，输出shape与`x`一致。支持数据类型：`float16`、`float32`、`bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
+一个`Tensor`类型的输出，输入`x`经过`mask`后在最后一维的`Softmax`结果，输出shape、数据类型和数据格式与输入`x`一致。
 
 ## 约束说明
 

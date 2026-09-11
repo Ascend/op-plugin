@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term> | √ |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 
@@ -37,9 +38,15 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 
 ## 参数说明
 
-- **x** (`Tensor`)：表示待处理张量。要求为4维张量，shape为\(B, N, S, D\)，数据类型支持`bfloat16`、`float16`，数据格式为$ND$，不支持非连续的Tensor。
-- **cos** (`Tensor`)：表示RoPE旋转位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致，不支持非连续的Tensor。
-- **sin** (`Tensor`)：表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与`cos`保持一致，不支持非连续的Tensor。
+- **x** (`Tensor`)：必选参数，表示待处理张量。要求为4维张量，shape为\(B, N, S, D\)，数据格式支持$ND$。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
+- **cos** (`Tensor`)：必选参数，表示RoPE旋转位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
+- **sin** (`Tensor`)：必选参数，表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与`cos`保持一致。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
 
 ## 返回值说明
 
@@ -49,10 +56,12 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 
 ## 约束说明
 
-- 该接口支持推理场景下使用。
+- 该接口仅支持推理场景。
 - 该接口支持图模式。
-- 输入`x`、`cos`、`sin`的D维度均必须等于64。
-- `cos`、`sin`的N维度必须等于1。
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入`x`、`cos`、`sin`的D维度均必须等于64，且`cos`、`sin`的N维度必须等于1。
+- <term>Ascend 950PR/Ascend 950DT</term>：
+    - 输入张量`x`、`cos`、`sin`及输出张量的D维度大小必须等于64。
+    - 输入张量`cos`和`sin`的shape必须完全相同，且N维度必须等于1；S维度可以为1或与`x`的S维度相同。
 
 ## 调用示例
 

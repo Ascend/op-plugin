@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term> | √ |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
 |<term>Atlas 推理系列产品</term>    | √  |
 
@@ -11,7 +12,7 @@
 
 - API功能：对输入张量`input`依次执行GroupNorm和SiLU激活，返回三个张量：out（SiLU激活后的输出）、meanOut（归一化均值）、rstdOut（归一化标准差的倒数）。
 - 计算公式：
-    - GroupNorm：$x$为输入`input`，$\gamma$和$\beta$分别代表输入`weight`和`bias`，$E[x] = \bar{x}$代表$x$的均值，$ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$x$的方差，则
+    - GroupNorm：$x$为输入`input`，公式中$\gamma$和$\beta$分别对应可选参数`weight`和`bias`，当`weight`、`bias`均为空时不进行仿射变换（等价于$\gamma = 1$、$\beta = 0$），$E[x] = \bar{x}$代表$x$的均值，$ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$x$的方差，则
     $$
     \begin{cases}
     \text{groupnormOut} = \frac{x - E[x]}{\sqrt{Var[x] + eps}} * \gamma + \beta \\
@@ -24,6 +25,8 @@
     \text{out} = \frac{\text{groupnormOut}}{1 + e^{-\text{groupnormOut}}}
     $$
 
+    其中，$n$表示单个样本的单个group中参与归一化的元素数量，均值和方差按group分别计算。
+
 ## 函数原型
 
 ```python
@@ -33,33 +36,40 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 ## 参数说明
 
 - **input** (`Tensor`)：必选参数，源数据张量，维度需要为2~8维且第1维度能被`group`整除。数据格式支持$ND$，支持非连续的Tensor。
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **weight** (`Tensor`)：可选参数，缩放张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **bias** (`Tensor`)：可选参数，偏移张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
-- **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。
-- **eps** (`float`)：可选参数，为保持数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。
+- **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。数据类型支持`torch.int64`。
+
+- **eps** (`float`)：可选参数，为保持数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。数据类型支持`torch.float32`。
 
 ## 返回值说明
 
 - **out** (`Tensor`)：数据类型和shape与`input`相同，支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **meanOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **rstdOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 ## 约束说明
 
@@ -77,30 +87,57 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 
 ## 调用示例
 
-```python
-import torch
-import numpy as np
-import torch_npu
-     
-dtype = np.float32
-shape_x = [24,320,48,48]
-num_groups = 32
-shape_c = [320]
-eps = 0.00001
-     
-input_npu=torch.randn(shape_x,dtype=torch.float32).npu()
-weight_npu=torch.randn(shape_c,dtype=torch.float32).npu()
-bias_npu=torch.randn(shape_c,dtype=torch.float32).npu()
-out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
-     
-     
-input_npu=torch.randn(shape_x,dtype=torch.bfloat16).npu()
-weight_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
-bias_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
-out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
-     
-input_npu=torch.randn(shape_x,dtype=torch.float16).npu()
-weight_npu=torch.randn(shape_c,dtype=torch.float16).npu()
-bias_npu=torch.randn(shape_c,dtype=torch.float16).npu()
-out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
-```
+- 单算子模式调用
+
+    ```python
+    import torch
+    import numpy as np
+    import torch_npu
+        
+    dtype = np.float32
+    shape_x = [24,320,48,48]
+    num_groups = 32
+    shape_c = [320]
+    eps = 0.00001
+        
+    input_npu=torch.randn(shape_x,dtype=torch.float32).npu()
+    weight_npu=torch.randn(shape_c,dtype=torch.float32).npu()
+    bias_npu=torch.randn(shape_c,dtype=torch.float32).npu()
+    out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
+        
+        
+    input_npu=torch.randn(shape_x,dtype=torch.bfloat16).npu()
+    weight_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+    bias_npu=torch.randn(shape_c,dtype=torch.bfloat16).npu()
+    out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
+        
+    input_npu=torch.randn(shape_x,dtype=torch.float16).npu()
+    weight_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+    bias_npu=torch.randn(shape_c,dtype=torch.float16).npu()
+    out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
+    ```
+
+- 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+
+    class Net(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, input, weight, bias, group, eps):
+            return torch_npu.npu_group_norm_silu(input, weight, bias, group, eps)
+
+    x = torch.randn(10, 1024, 4, 8, dtype=torch.float32).npu()
+    weight = torch.randn(1024, dtype=torch.float32).npu()
+    bias = torch.randn(1024, dtype=torch.float32).npu()
+    model = Net().npu()
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    model = torch.compile(model, fullgraph=True, backend=npu_backend, dynamic=False)
+    out, mean, rstd = model(x, weight, bias, group=4, eps=0.0001)
+    ```
