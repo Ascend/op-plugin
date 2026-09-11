@@ -1,85 +1,99 @@
-# torch\_npu.npu\_alltoallv\_gmm<a name="ZH-CN_TOPIC_0000002350725076"></a>
+# torch_npu.npu_alltoallv_gmm
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+| 产品 | 是否支持 |
+| :--- | :------: |
+| <term>Ascend 950DT</term> | √ |
+| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
 
-## 功能说明<a name="zh-cn_topic_0000002282815538_section14441124184110"></a>
+## 功能说明
 
-- API功能：MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
+- **API功能**：MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
 
-- 路由专家计算公式：
+- **路由专家计算公式**：
+    $$
+    ata\_out = AlltoAllv(gmm\_x)
+    $$
 
-    $$ata\_out = AlltoAllv(gmm\_x)$$
+    $$
+    permute\_out = Permute(ata\_out)
+    $$
 
-    $$permute\_out = Permute(ata\_out)$$
-
-    $$gmm\_y = permute\_out \times gmm\_weight$$
+    $$
+    gmm\_y = permute\_out \times gmm\_weight
+    $$
 
     - ata\_out是gmm\_x进行AlltoAllv通信的输出结果，后续用于Permute计算。
     - permute\_out是ata\_out进行Permute计算的输出结果，作为路由专家进行GroupedMatMul计算的左矩阵。
     - gmm\_weight指路由专家进行GroupedMatMul计算的右矩阵。
     - gmm\_y指路由专家进行GroupedMatMul计算的输出。
 
-- 共享专家计算公式：
+- **共享专家计算公式**：
+    $$
+    mm\_y = mm\_x \times mm\_weight
+    $$
 
-    $$mm\_y = mm\_x \times mm\_weight$$
     - mm\_x指共享专家MatMul计算的左矩阵。
     - mm\_weight指共享专家MatMul计算的右矩阵。
     - mm\_y指共享专家MatMul计算的输出。
 
-## 函数原型<a name="zh-cn_topic_0000002282815538_section45077510411"></a>
+## 函数原型
 
 ```python
-torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts, recv_counts, *, send_counts_tensor=None, recv_counts_tensor=None, mm_x=None, mm_weight=None, trans_gmm_weight=False, trans_mm_weight=False, permute_out_flag=False) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts, recv_counts, *, send_counts_tensor=None, recv_counts_tensor=None, mm_x=None, mm_weight=None, trans_gmm_weight=False, trans_mm_weight=False, permute_out_flag=False, comm_mode=None) -> (Tensor, Tensor, Tensor)
 ```
 
-## 参数说明<a name="zh-cn_topic_0000002282815538_section112637109429"></a>
+## 参数说明
 
-- **gmm\_x**（`Tensor`）：必选参数，AlltoAllv通信与Permute操作后结果作为GroupedMatMul计算的左矩阵。数据类型支持`float16`、`bfloat16`，支持2维，shape为$(BSK, H1)$，数据格式支持ND。
-- **gmm\_weight**（`Tensor`）：必选参数，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为$(e, H1, N1)$，数据格式支持ND。
-- **hcom**（`str`）：必选参数，专家并行的通信域名，字符串长度要求\(0, 128\)。
-- **ep\_world\_size**（`int`）：必选参数，EP通信域size，取值支持8、16、32、64、128。
-- **send\_counts**（`List[int]`）：必选参数，表示发送给其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。
-- **recv\_counts**（`List[int]`）：必选参数，表示接收其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。
-- **send\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持int，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
-- **recv\_counts\_tensor**（`Tensor`）：可选参数，数据类型支持int，shape为$(e*ep\_world\_size,)$，数据格式支持ND。**当前版本暂不支持**，使用默认值即可。
-- **mm\_x**（`Tensor`）：可选参数，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型支持`float16`、`bfloat16`，支持2维，shape为$(BS, H2)$。
-- **mm\_weight**（`Tensor`）：可选参数，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型与`mm_x`保持一致，支持2维，shape为$(H2, N2)$。
-- **trans\_gmm\_weight**（`bool`）：可选参数，GroupedMatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
-- **trans\_mm\_weight**（`bool`）：可选参数，共享专家MatMul的右矩阵是否需要转置，true表示需要转置，false表示不转置。
-- **permute\_out\_flag**（`bool`）：可选参数，Permute结果是否需要输出，true表明需要输出，false表明不需要输出。
+- **gmm\_x**（`Tensor`）：**必选参数**，该输入进行AlltoAllv通信与Permute操作后结果作为GroupedMatMul计算的左矩阵。数据类型支持`float16`、`bfloat16`，支持2维，shape为\(BSK, H1\)，数据格式支持$ND$。
+- **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$。
+- **hcom**（`str`）：**必选参数**，专家并行的通信域名，字符串长度要求\(0, 128\)。
+- **ep\_world\_size**（`int`）：**必选参数**，EP通信域size，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持8、16、32、64、128。
+    - <term>Ascend 950DT</term>：取值支持2、4、8、16、32、64。
 
-## 返回值说明<a name="zh-cn_topic_0000002282815538_section22231435517"></a>
+- **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
+- **recv\_counts**（`List[int]`）：**必选参数**，表示接收其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **send\_counts\_tensor**（`Tensor`）：**可选参数**，数据类型支持int，shape为\(e\*ep\_world\_size,\)，数据格式支持$ND$。**当前版本暂不支持**，使用默认值即可。
+- **recv\_counts\_tensor**（`Tensor`）：**可选参数**，数据类型支持int，shape为\(e\*ep\_world\_size,\)，数据格式支持$ND$。**当前版本暂不支持**，使用默认值即可。
+- **mm\_x**（`Tensor`）：**可选参数**，共享专家MatMul计算中的左矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型支持`float16`、`bfloat16`，支持2维，shape为\(BS, H2\)。
+- **mm\_weight**（`Tensor`）：**可选参数**，共享专家MatMul计算中的右矩阵。当需要融合共享专家矩阵计算时，该参数必选，数据类型与`mm_x`保持一致，支持2维，shape为\(H2, N2\)。
+- **trans\_gmm\_weight**（`bool`）：**可选参数**，GroupedMatMul的右矩阵是否需要转置，`true`表示需要转置，`false`表示不转置（默认值）。
+- **trans\_mm\_weight**（`bool`）：**可选参数**，共享专家MatMul的右矩阵是否需要转置，`true`表示需要转置，`false`表示不转置（默认值）。
+- **permute\_out\_flag**（`bool`）：**可选参数**，Permute结果是否需要输出，`true`表明需要输出，`false`表明不需要输出（默认值）。
+- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持`None`、`ai_cpu`。传入任意值都将使用AI CPU通信。
+    - <term>Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。当为`None`时，使用AI CPU通信。
 
-- **gmm\_y**（`Tensor`）：计算输出，表示最终的计算结果，数据类型与输入`gmm_x`保持一致，支持2维，shape为$(A, N1)$。
-- **mm\_y**（`Tensor`）：计算输出，共享专家MatMul的输出，数据类型与`mm_x`保持一致，支持2维，shape为$(BS, N2)$。仅当传入`mm_x`与`mm_weight`才输出。
+## 返回值说明
+
+- **gmm\_y**（`Tensor`）：计算输出，表示最终的计算结果，数据类型与输入`gmm_x`保持一致，支持2维，shape为\(A, N1\)。
+- **mm\_y**（`Tensor`）：计算输出，共享专家MatMul的输出，数据类型与`mm_x`保持一致，支持2维，shape为\(BS, N2\)。仅当传入`mm_x`与`mm_weight`才输出。
 - **permute\_out**（`Tensor`）：计算输出，Permute之后的输出，数据类型与`gmm_x`保持一致。
 
-## 约束说明<a name="zh-cn_topic_0000002282815538_section12345537164214"></a>
+## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
-- 单卡通信量取值大于等于2MB。
+- 该接口支持单算子模式和TorchAir图模式。
+- **单卡通信量要求**：
+  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：单卡通信量大于等于2MB。
+  - <term>Ascend 950DT</term>：单卡通信量无约束。
+
 - 输入参数Tensor中shape使用的变量说明：
-    - BSK：本卡发送的token数（BS\*K=BSK），是send\_counts参数累加之和，取值范围\(0, 52428800\)。
-    - H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
+  - BSK：本卡发送的token数（BS\*K=BSK），是send\_counts参数累加之和，取值范围\(0, 52428800\)。
+  - H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
+  - H2：表示共享专家hidden size隐藏层大小，取值范围\(0, 12288\]。
+  - e：表示单卡上专家个数，e<=32，e\*ep\_world\_size最大支持256。
+  - N1：表示路由专家的head\_num，取值范围\(0, 65536\)。
+  - N2：表示共享专家的head\_num，取值范围\(0, 65536\)。
+  - BS：表示batch sequence size。
+  - K：表示选取topK个专家，K的范围\[2, 8\]。
+  - A：本卡收到的token数，是recv\_counts参数累加之和。
+  - EP通信域内所有卡上的A累加和等于所有卡上的BSK累加和。
 
-    - H2：表示共享专家hidden size隐藏层大小，取值范围\(0, 12288\]。
-    - e：表示单卡上专家个数，e<=32，e\*ep\_world\_size最大支持256。
-
-    - N1：表示路由专家的head\_num，取值范围\(0, 65536\)。
-    - N2：表示共享专家的head\_num，取值范围\(0, 65536\)。
-
-    - BS：表示batch sequence size。
-    - K：表示选取topK个专家，K的范围\[2, 8\]。
-
-    - A：本卡收到的token数，是recv\_counts参数累加之和。
-    - EP通信域内所有卡上的A累加和等于所有卡上的BSK累加和。
-
-## 调用示例<a name="zh-cn_topic_0000002282815538_section14459801435"></a>
+## 调用示例
 
 - 单算子模式调用
 
@@ -88,7 +102,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     import torch_npu
     import torch.distributed as dist
     import torch.multiprocessing as mp
-    
+
     def run_npu_alltoallv_gmm(rank, ep_world_size, master_ip, master_port, gmm_x, gmm_w, send_counts, recv_counts, dtype):
         torch_npu.npu.set_device(rank)
         init_method = 'tcp://' + master_ip + ':' + master_port
@@ -99,10 +113,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
             hcom_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcom_info = default_pg.get_hccl_comm_name(rank)
-    
+
         input = torch.randn(gmm_x, dtype=dtype).npu()
         weight = torch.randn(gmm_w, dtype=dtype).npu()
-    
+
         print(torch_npu.npu_alltoallv_gmm(gmm_x =input,
                                                 gmm_weight = weight,
                                                 hcom= hcom_info,
@@ -116,7 +130,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                                                 trans_gmm_weight = False,
                                                 trans_mm_weight  = False,
                                                 permute_out_flag  = False))
-    
+
     if __name__ == "__main__":
         epWorkSize = 8
         e = 4
@@ -140,7 +154,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     import torch.distributed as dist
     import torch.multiprocessing as mp
     import torchair
-    
+
     class ALLTOALLV_GMM_GRAPH_Model(torch.nn.Module):
         def __init__(self):
             super().__init__()
@@ -162,7 +176,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                                                 trans_gmm_weight = trans_gmm_weight,
                                                 trans_mm_weight  = trans_mm_weight,
                                                 permute_out_flag  = permute_out_flag)
-    
+
     def run_npu_alltoallv_gmm(rank, ep_world_size, master_ip, master_port, gmm_x, gmm_w, send_counts, recv_counts, dtype):
         torch_npu.npu.set_device(rank)
         init_method = 'tcp://' + master_ip + ':' + master_port
@@ -173,10 +187,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
             hcom_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
         else:
             hcom_info = default_pg.get_hccl_comm_name(rank)
-    
+
         input = torch.randn(gmm_x, dtype=dtype).npu()
         weight = torch.randn(gmm_w, dtype=dtype).npu()
-    
+
         model = ALLTOALLV_GMM_GRAPH_Model()
         npu_backend = torchair.get_npu_backend(compiler_config=None)
         # 静态图：dynamic=False；动态图：dynamic=True
@@ -194,7 +208,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
                         trans_gmm_weight=False,
                         trans_mm_weight=False,
                         permute_out_flag=True))
-    
+
     if __name__ == "__main__":
         epWorkSize = 8
         e = 4
