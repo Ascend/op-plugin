@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term>            |    √     |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
 
@@ -58,6 +59,16 @@
             $$
             swish(z,\alpha)=z*sigmoid(\alpha*z)
             $$
+        - 当swiglu_mode=3（标准Swiglu的拆分方式+变种Swiglu的计算方式，clamp在swish之后），以左激活为例：
+            $$
+            x\_{glu}=clamp(swish(x[:,0:H]),\ max=clamp\_limit)\\
+            x\_{linear}=clamp(x[:,H:2H],-clamp\_limit,clamp\_limit)\\
+            swiglu(x)=x\_{glu}*x\_{linear}
+            $$
+            其中：
+            $$
+            swish(z)=z*sigmoid(z)
+            $$
 
     - quant量化：
         1. （可选）先进行smooth量化。
@@ -73,12 +84,12 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=None, bias=None, quant_scale=None, quant_offset=None, group_index=None, activate_left=False, quant_mode=0, swiglu_mode=0, clamp_limit=7.0, float glu_alpha=1.702, float glu_bias=1.0) -> (Tensor, Tensor)
+torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=None, bias=None, quant_scale=None, quant_offset=None, group_index=None, activate_left=False, quant_mode=0, dst_type=None, round_mode=None, activate_dim=None, swiglu_mode=0, clamp_limit=7.0, glu_alpha=1.702, glu_bias=1.0) -> (Tensor, Tensor)
 ```
 
 ## 参数说明
 
-> [!NOTE]  
+> [!NOTE]
 > Tensor中shape使用的变量说明：
 >
 >- TokensNum：表示传输的Tokens数，取值≥0。
@@ -94,25 +105,28 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
   > **注意：**静态量化下，quant\_scale仅支持float32类型。
 - **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持`float32`、`float16`和`bfloat16`，数据格式为$ND$。`group_index`场景下（非None），该参数不生效，需为None。
 - **group\_index** (`Tensor`)：可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求为1维张量，数据类型支持`int64`，数据格式$ND$。
-- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做 swish 激活，仅在 swiglu_mode=0/2 时生效，默认值为 False。
+- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做 swish 激活，仅在 swiglu_mode=0/2/3 时生效，默认值为 False。
     - 取True时，out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
     - 取False时，out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
 - **quant\_mode** (`int`)：可选参数，表示量化类型，默认值为0。0表示静态量化，1表示动态量化。
-- **swiglu\_mode**（`int`）：可选参数，swiglu计算模式，0表示传统 swiglu，1表示变种swiglu（支持clamp、alpha、bias），2表示传统swiglu的拆分方式+变种swiglu的计算方式。
+- **dst\_type**(`int`)：可选参数，输出`out`的数据类型。`1`表示`int8`，`290`表示`hifloat8`，`291`表示`float8_e5m2`，`292`表示`float8_e4m3fn`，`296`表示`float4_e2m1fn_x2`，`297`表示`float4_e1m2fn_x2`。默认值为`None`，表示输出为`int8`。当输出为`float4_e2m1fn_x2`或`float4_e1m2fn_x2`时，`out`的最后一维为对应量化结果的一半（两个元素打包为一个字节存储）。
+- **round\_mode**(`int`)：可选参数，输出`out`的舍入模式。取值范围为$[0,4]$：`0`表示`"rint"`，`1`表示`"round"`，`2`表示`"floor"`，`3`表示`"ceil"`，`4`表示`"trunc"`。当输出数据类型为`int8`、`float8_e5m2`、`float8_e4m3fn`时仅支持`0`；为`hifloat8`时仅支持`1`。默认值为`0`。
+- **activate\_dim**(`int`)：可选参数，进行swish计算时选择的切分轴。取值范围为$[-x.dim(),\ x.dim()-1]$，负数表示从末尾开始计数。当`activate_dim`为非尾轴时，`group_index`必须为`None`，且`quant_mode`仅支持静态量化（`0`）。默认值为`-1`，表示尾轴。
+- **swiglu\_mode**（`int`）：可选参数，swiglu计算模式，默认值为0。0表示传统swiglu，1表示变种swiglu（支持clamp、alpha、bias），2表示传统swiglu的拆分方式+变种swiglu的计算方式，3表示传统swiglu的拆分方式+变种swiglu的计算方式（clamp在swish之后，不支持alpha、bias）。
 - **clamp\_limit**（`float`）：可选参数，swiglu输入门限，默认7.0。
 - **glu\_alpha**（`float`）：可选参数，glu激活函数系数，默认1.702。
 - **glu\_bias**（`float`）：可选参数，swiglu计算中的偏差，默认1.0。
 
 ## 返回值说明
 
-- **out** (`Tensor`)：表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型支持`int8`，数据格式为$ND$。
+- **out** (`Tensor`)：表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型由`dst_type`决定，默认为`int8`，数据格式为$ND$。当`dst_type`为`float4_e2m1fn_x2`或`float4_e1m2fn_x2`类型时，尾轴为H的一半。
 - **scale** (`Tensor`)：表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持`float32`，数据格式为$ND$。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
+- 该接口支持单算子模式和图模式。
 - `group_index`场景下（非None）约束说明：
     - `group_index`只支持count模式，需要网络保证`group_index`输入的求和不超过`x`的TokensNum维度，否则会出现越界访问。
     - H轴有维度大小限制：H≤10496同时64对齐场景；规格不满足场景会进行校验。
@@ -122,7 +136,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - x的最后一维长度必须为偶数。
 - 当激活维度不是x的最后一维时，group_index必须为None。
 - 当`group_index`非None，且为动态量化（即`quant_mode`为1）时，bias、quant_offset不生效。
-- clamp_limit、glu_alpha、glu_bias仅在swiglu_mode=1/2时生效。
+- clamp_limit、glu_alpha、glu_bias仅在swiglu_mode=1/2时生效，swiglu_mode=3时仅clamp_limit生效。
 
 ## 调用示例
 
