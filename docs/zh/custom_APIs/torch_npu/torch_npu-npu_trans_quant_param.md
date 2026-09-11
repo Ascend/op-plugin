@@ -4,6 +4,7 @@
 
 |产品             |  是否支持  |
 |:-------------------------|:----------:|
+|  <term>Ascend 950PR/Ascend 950DT</term>     |     √    |
 |  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
 |  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
 |  <term>Atlas 推理系列产品</term>   |     √    |
@@ -65,15 +66,17 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
-- 该接口在当前支持的产品中，支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
+- 该接口支持单算子模式和TorchAir图模式。
+- 接口配套使用说明：
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas 推理系列产品</term>：支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
+  - <term>Ascend 950PR/Ascend 950DT</term>：同时支持与[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)和[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)配套使用。
 - 当不传入`offset`时，输出shape与`scale` shape一致。
   - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
-  - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
+  - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
 - 当传入`offset`时，仅作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）:
   - `scale`、`offset`、`out`的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
   - 当输入`scale`的shape为1维，`out`的shape也为1维，且shape大小为`scale`与`offset`单维shape大小的最大值。
-  - 当输入`scale`的shape为2维，`out`的shape与输入`scale`的shape维度和大小完全一致。
+  - 当输入`scale`的shape为2维时，`scale`和`offset`的shape需要保持一致，且`out`的shape为$(1, n)$。
 
 ## 调用示例
 
@@ -136,7 +139,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
     offset = torch.randn(1, dtype=torch.float32)
     round_mode = 1
     bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-    model = torch.compile(model, backend=npu_backend, dynamic=True)
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
     
     npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu(), round_mode)
     print(npu_out.shape)
