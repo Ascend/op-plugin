@@ -4,6 +4,7 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
+|<term>Ascend 950PR/Ascend 950DT</term>            |    √     |
 |<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>|    √     |
 |<term>Atlas 推理系列产品</term>| √   |
@@ -14,55 +15,62 @@
 - 计算公式：
     - 若`div_mode`为`True`：
         $$
-        result=(input/scales)+zero\_points
+        result=(self/scales)+zero\_points
         $$
 
     - 若`div_mode`为`False`：
 
         $$
-        result=(input*scales)+zero\_points
+        result=(self*scales)+zero\_points
         $$
 
 ## 函数原型
 
 ```python
-torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True) -> Tensor
+torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) -> Tensor
 ```
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，对应公式中的`input`。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
+- **self** (`Tensor`)：必选参数，需要进行量化的源数据张量，对应公式中的`self`。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。`div_mode`为`False`且`dtype`为`quint4x2`时，最后一维需要能被8整除。
     - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。`div_mode`为`False`时，且当数据类型为`float`时，数据格式支持$NZ$。
+    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float`、`torch.float16`、`torch.bfloat16`。
 
-- **scales** (`Tensor`)：必选参数，对`input`进行缩放的张量，对应公式中的`scales`。支持空Tensor，支持非连续的Tensor。
+- **scales** (`Tensor`)：必选参数，对`self`进行缩放的张量，对应公式中的`scales`。支持空Tensor，支持非连续的Tensor。
     - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`bfloat16`。
 
-    - `div_mode`为`False`时，数据格式支持$ND$。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`的shape维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等或等于1）。数据类型、数据格式需要和`input`的数据类型和数据格式一致。
+    - `div_mode`为`False`时，数据格式支持$ND$。支持1维或多维（1维时，对应轴的大小需要与`self`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`self`的shape维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`self`对应的维度相等或等于1）。数据类型、数据格式需要和`self`的数据类型和数据格式一致。
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当数据格式为$NZ$时，`scales`的所有元素值为1。
 
-- **zero_points** (`Tensor`)：必选参数，允许为None，对`input`进行偏移的张量，对应公式中的`zero_points`。支持空Tensor，支持非连续的Tensor。
+- **zero_points** (`Tensor`)：必选参数，允许为None，对`self`进行偏移的张量，对应公式中的`zero_points`。支持空Tensor，支持非连续的Tensor。
     - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：数据类型支持`int8`、`uint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`uint8`、`int32`、`bfloat16`。
 
-    - `div_mode`为`False`时，数据格式支持$ND$。支持1维或多维（1维时，对应轴的大小需要与`input`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`input`维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`input`对应的维度相等）。`zero_points`的shape和dtype需要和`scales`一致。
+    - `div_mode`为`False`时，数据格式支持$ND$。支持1维或多维（1维时，对应轴的大小需要与`self`中第`axis`维相等或等于1；多维时，`scales`的shape需要与`self`维度相等，除`axis`指定的维度，其他维度为1，`axis`指定的维度必须和`self`对应的维度相等）。`zero_points`的shape和dtype需要和`scales`一致。
         - <term>Atlas 推理系列产品</term>：数据类型支持`float`、`float16`。
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当`input`的数据格式为$NZ$时，值为空。
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float`、`float16`、`bfloat16`。当`self`的数据格式为$NZ$时，值为空。
 
 - **dtype** (`int`)：必选参数，指定输出参数的类型。
     - `div_mode`为`True`时：
         - <term>Atlas 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：类型支持`qint8`、`quint8`、`int32`。
+        - <term>Ascend 950PR/Ascend 950DT</term>：类型支持`torch.qint8`、`torch.quint8`、`torch.int32`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`。
 
-    - `div_mode`为`False`时，类型支持`qint8`、`quint4x2`。当`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
+    - `div_mode`为`False`时：
+        - <term>Atlas 推理系列产品</term>：类型支持`qint8`、`int8`。
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：类型支持`qint8`、`int8`、`quint4x2`。当`dtype`为`quint4x2`时，输出tensor类型为`int32`，由8个`int4`拼接。
+        - <term>Ascend 950PR/Ascend 950DT</term>：类型支持`torch.qint8`、`torch.int8`、`torch.quint4x2`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`。当`dtype`为`torch.quint4x2`时，输出tensor类型为`torch.int32`，由8个`torch_npu.int4`拼接。
 
 - **axis** (`int`)：可选参数，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
 
-    `div_mode` 为`False`时，`axis`取值范围是[-2, +∞)且指定的轴不能超过输入`input`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`input`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴。
+    - `div_mode`为`True`时，支持范围为小于输入`self`的维度数且大于等于`self`维度数的负值。当输入的`scales`和`zero_points`的size均为1时，该参数实际不使用。
+
+    - `div_mode` 为`False`时，`axis`取值范围是[-2, +∞)且指定的轴不能超过输入`self`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`self`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴（即`axis`>-2时，都指定-1轴）。
 
 - **div_mode** (`bool`)：可选参数，表示计算`scales`模式，对应公式中的`div_mode`。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
@@ -70,13 +78,17 @@ torch_npu.npu_quantize(input, scales, zero_points, dtype, axis=1, div_mode=True)
 
 `Tensor`
 
-对应公式中的`result`。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是`input`的shape最后一维的1/8，shape其他维度和`input`的shape其他维度保持一致；如果参数`dtype`不为`quint4x2`时，shape与输入`input`的shape保持一致。输出的数据格式与输入`input`的数据格式保持一致，且当数据格式为$NZ$时，数据类型仅支持int32。支持空Tensor，支持非连续的Tensor。
+对应公式中的`result`。数据类型由参数`dtype`指定，如果参数`dtype`为`quint4x2`，输出的`dtype`是`int32`，shape的最后一维是`self`的shape最后一维的1/8，shape其他维度和`self`的shape其他维度保持一致；如果参数`dtype`不为`quint4x2`时，shape与输入`self`的shape保持一致。输出的数据格式与输入`self`的数据格式保持一致，且当数据格式为$NZ$时，数据类型仅支持int32。支持空Tensor，支持非连续的Tensor。
+
+- <term>Ascend 950PR/Ascend 950DT</term>：
+  - 单算子模式：当`dtype`为`torch_npu.hifloat8`时，`result`的数据类型为`torch.uint8`（实际承载`torch_npu.hifloat8`类型）。
+  - 图模式：当`dtype`为`torch_npu.hifloat8`时，`result`的数据类型为`torch.bits8`（实际承载`torch_npu.hifloat8`类型）。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
-- `input`数据格式为$NZ$时，`input`输入shape支持3维，形如\(e，k，n\)，k为256的倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
+- 该接口支持单算子模式和TorchAir图模式。
+- `self`数据格式为$NZ$时，`self`输入shape支持3维，形如\(e，k，n\)，k为256的倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`quint4x2`。
 - `div_mode`为`False`时：
     - 支持<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。
     - 当`dtype`为`quint4x2`或者`axis`为-2时，不支持<term>Atlas 推理系列产品</term>。

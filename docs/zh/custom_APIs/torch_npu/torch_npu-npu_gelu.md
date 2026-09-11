@@ -7,8 +7,9 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-|<term>Atlas 推理系列产品</term>           |    √     |
+|<term>Ascend 950PR/Ascend 950DT</term>           |    √     |
 |<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
+|<term>Atlas 推理系列产品</term>           |    √     |
 |<term>Atlas 训练系列产品</term>   | √   |
 
 ## 功能说明
@@ -30,28 +31,27 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_gelu(input, approximate='none') -> Tensor
+torch_npu.npu_gelu(self, *, approximate='none') -> Tensor
 ```
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，对应公式中的$x$，待进行`npu_gelu`计算的入参，数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。
-    - <term>Atlas 训练系列产品</term>：数据类型支持`float16`、`float32`。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`float16`、`bfloat16`。
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
-
+- **self** (`Tensor`)：必选参数，对应公式中的$x$，待进行`npu_gelu`计算的入参，数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。输入最大支持8维。
+    - <term>Atlas 训练系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **approximate** (`str`)：可选参数，字符串类型，计算使用的激活函数模式，可配置为`none`或者`tanh`。其中`none`代表使用erf模式，`tanh`代表使用tanh模式。
 
 ## 返回值说明
 
 `Tensor`
 
-数据类型必须和`input`一样，数据格式支持$ND$，shape必须和`input`一样，支持非连续的Tensor。
+数据类型必须和`self`一样，数据格式支持$ND$，shape必须和`self`一样，支持非连续的Tensor。
 
 ## 约束说明
 
-- 该接口支持图模式。
-- `input`输入不能为None。
+- 该接口支持单算子模式和TorchAir图模式。
+- `self`输入不能为None。
 
 ## 调用示例
 
