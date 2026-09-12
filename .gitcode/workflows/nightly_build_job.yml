@@ -1,0 +1,133 @@
+name: _Nightly_Build_ob
+
+on:
+  workflow_call:
+    inputs:
+      py_version:
+        required: false
+        type: string
+        default: "3.10"
+      REMOTE_URL:
+        required: false
+        type: string
+        default: ${{ env.ATOMGIT_REPOSITORY_URL }}
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      pytorch_branch:
+        required: true
+        type: string
+      PYTORCH_REPO_URL:
+        required: false
+        type: string
+        default: "https://gitcode.com/Ascend/pytorch.git"
+      CONTAINER_OPTIONS:
+        required: false
+        type: string
+        default: "--user root -v /data/torchnpu-ccache:/ccache"
+      # 调度标签 (变量化): 编译任务默认调度到 8 卡机
+      RUNNER_LABEL:
+        required: false
+        type: string
+        default: "npu=8"
+
+jobs:
+  Compile:
+    name: Compile
+    select: selected_by_default
+    runs-on: [ self-hosted, "${{ inputs.RUNNER_LABEL }}" ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+      options: ${{ inputs.CONTAINER_OPTIONS }}
+    env:
+      CCACHE_DIR: /ccache
+      CCACHE_MAXSIZE: 10G
+    steps:
+      - name: print env
+        run: |
+          echo "RUNNER_LABEL=${{ inputs.RUNNER_LABEL }}"
+          echo "pytorch_branch=${{ inputs.pytorch_branch }}"
+          echo "py_version=3.10"
+          echo "CP_DOCKER_IMG=swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}"
+          echo "REMOTE_URL=${{ inputs.REMOTE_URL }}"
+          echo "TARGET_BRANCH=master"
+
+      - name: checkout ascend pytorch
+        uses: checkout
+        with:
+          repository: ${{ inputs.PYTORCH_REPO_URL }}
+          ref: refs/heads/${{ inputs.pytorch_branch }}
+          path: pytorch
+          fetch-depth: 1
+
+      - name: install torch
+        run: |
+          torch_version=$(cat pytorch/requirements.txt | grep torch== | cut -c 8-25)
+          nightly_date=${torch_version:10:8}
+          echo "torch_version=${torch_version}"
+          echo "nightly_date=${nightly_date}"
+          # 版本信息在此处最早固化到 env: 后续 checkout op-plugin 会清理工作区中的
+          # pytorch/ 目录, 之后再解析 requirements.txt 将取不到版本
+          echo "TORCH_VERSION=${torch_version}" >> $ATOMGIT_ENV
+
+          if [ ${#nightly_date} -ne 8 ]; then
+            ver=${torch_version:0:6}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${ver}"
+          else
+            ver=${torch_version}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}"
+          fi
+
+          torch_url="${url_base}/torch-${ver}%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl"
+          echo "torch_url=${torch_url}"
+          pip3 install $torch_url
+
+      - name: checkout
+        uses: checkout
+        with:
+          fetch-depth: 0
+
+      - name: ccache init
+        run: |
+          ccache -M $CCACHE_MAXSIZE
+          ccache -z
+          ccache -s
+
+      - name: compile
+        run: |
+          ls -al
+          bash ci/build.sh --python=3.10 --pytorch=${{ inputs.pytorch_branch }}
+
+      - name: record build info
+        run: |
+          WHL_FILE=$(basename $(ls dist/torch_npu*.whl))
+          TORCH_VERSION=${TORCH_VERSION}
+          BUILD_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+          OP_PLUGIN_COMMIT=$(git rev-parse --short HEAD)
+          PYTORCH_COMMIT=$(cd build/pytorch && git rev-parse --short HEAD)
+          cat > dist/build_info.txt << EOF
+          whl_file=${WHL_FILE}
+          torch_version=${TORCH_VERSION}
+          build_time=${BUILD_TIME}
+          op_plugin_commit=${OP_PLUGIN_COMMIT}
+          pytorch_commit=${PYTORCH_COMMIT}
+          pytorch_branch=${{ inputs.pytorch_branch }}
+          EOF
+          cat dist/build_info.txt
+
+      - name: ccache stats
+        run: |
+          ccache -s
+
+      # whl 通过流水线 artifact 传递给下游 (collect/UT), 不再上传 OBS
+      - name: Upload whl to artifact
+        uses: upload-artifact
+        with:
+          name: op-plugin-master-arm
+          path: dist/torch_npu*.whl
+
+      - name: Upload build info to artifact
+        uses: upload-artifact
+        with:
+          name: build-info
+          path: dist/build_info.txt

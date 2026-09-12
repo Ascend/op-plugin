@@ -1,0 +1,233 @@
+name: _Nightly_UT_Exec_Job
+
+on:
+  workflow_call:
+    inputs:
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      # 分片类型: regular = 常规用例分片 (并行执行), distributed = 分布式用例分片 (串行独占执行)
+      SHARD_TYPE:
+        required: false
+        type: string
+        default: "regular"
+      # 当前分片编号 (1 起), 对应 collect 阶段产出的
+      # regular_npu_cases_shard_${TEST_RANK}.json; distributed 类型固定为 1
+      TEST_RANK:
+        required: false
+        type: string
+        default: "1"
+      TEST_WORLD_SIZE:
+        required: false
+        type: string
+        default: "6"
+      CONTAINER_OPTIONS:
+        required: false
+        type: string
+        default: "--user root --volume /usr/local/Ascend:/usr/local/Ascend --volume /usr/local/sbin/npu-smi:/usr/local/sbin/npu-smi --device /dev/davinci0 --device /dev/davinci1 --device /dev/davinci2 --device /dev/davinci3 --device /dev/davinci4 --device /dev/davinci5 --device /dev/davinci6 --device /dev/davinci7 --device /dev/davinci_manager --device /dev/hisi_hdc --device /dev/devmm_svm"
+      # 单用例超时 (秒): 个别超长用例直接判超时失败, 不为它们拖慢整体
+      # 分布式用例含多卡通信/进程组初始化, 单用例耗时普遍较长, 统一放宽到 180s
+      TIMEOUT:
+        required: false
+        type: string
+        default: "180"
+      # 常规分片并发 worker 数 (每个 worker 轮转占用 1 张卡)
+      # 32 并发时出现过大量简单算子用例卡死被空闲超时杀掉的情况,
+      # 10 并发时仍出现多 worker 同时卡死的雪崩现象, 8 并发依然偏高,
+      # 进一步降低到 4 以减少设备争用
+      MAX_WORKERS:
+        required: false
+        type: string
+        default: "4"
+      PYTORCH_REPO_URL:
+        required: false
+        type: string
+        default: "https://gitcode.com/Ascend/pytorch.git"
+      pytorch_branch:
+        required: false
+        type: string
+        default: "master"
+      # 执行机标签 (runs-on 第二个标签):
+      # 分布式用例需要整机 8 卡 -> npu=8; 常规用例单卡即可 -> npu=1
+      NPU_LABEL:
+        required: false
+        type: string
+        default: "npu=1"
+
+jobs:
+  UT:
+    name: op-plugin UT exec
+    select: selected_by_default
+    # 单分片执行超时: 5 小时
+    timeout-minutes: 300
+    runs-on: [ self-hosted, "${{ inputs.NPU_LABEL }}" ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+      options: ${{ inputs.CONTAINER_OPTIONS }}
+    env:
+      SHARD_TYPE: ${{ inputs.SHARD_TYPE }}
+      TEST_RANK: ${{ inputs.TEST_RANK }}
+      TEST_WORLD_SIZE: ${{ inputs.TEST_WORLD_SIZE }}
+    steps:
+      - name: print env
+        run: |
+          echo "CP_DOCKER_IMG=swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}"
+          echo "SHARD_TYPE=${{ env.SHARD_TYPE }}"
+          echo "TEST_RANK=${{ env.TEST_RANK }}"
+          echo "TEST_WORLD_SIZE=${{ env.TEST_WORLD_SIZE }}"
+          echo "TIMEOUT=${{ inputs.TIMEOUT }}"
+          echo "MAX_WORKERS=${{ inputs.MAX_WORKERS }}"
+          echo "NPU_LABEL=${{ inputs.NPU_LABEL }}"
+
+      # 环境准备顺序与 collect 阶段保持一致:
+      # 先 checkout pytorch 并从 requirements.txt 现场解析版本安装 torch,
+      # 再下载 build-info artifact 获取 whl 文件名。
+      - name: checkout pytorch
+        uses: checkout
+        with:
+          repository: ${{ inputs.PYTORCH_REPO_URL }}
+          ref: refs/heads/${{ inputs.pytorch_branch }}
+          path: pytorch
+          fetch-depth: 1
+
+      - name: install torch
+        run: |
+          torch_version=$(cat pytorch/requirements.txt | grep torch== | cut -c 8-25)
+          nightly_date=${torch_version:10:8}
+          echo "torch_version=${torch_version}"
+          echo "nightly_date=${nightly_date}"
+
+          if [ ${#nightly_date} -ne 8 ]; then
+            ver=${torch_version:0:6}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${ver}"
+          else
+            ver=${torch_version}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}"
+          fi
+
+          torch_url="${url_base}/torch-${ver}%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl"
+          echo "torch_url=${torch_url}"
+          pip3 install $torch_url
+
+      - name: download build info from artifact
+        uses: download-artifact
+        with:
+          name: build-info
+          path: ./
+
+      - name: read build info
+        run: |
+          cat build_info.txt
+          WHL_FILE=$(grep whl_file build_info.txt | cut -d= -f2)
+          echo "WHL_FILE=${WHL_FILE}"
+          echo "WHL_FILE=${WHL_FILE}" >> $ATOMGIT_ENV
+
+      # whl 从 build 阶段的流水线 artifact 获取, 不再走 OBS
+      - name: download op-plugin from artifact
+        uses: download-artifact
+        with:
+          name: op-plugin-master-arm
+          path: ./
+
+      - name: install torch_npu
+        run: |
+          ls -al
+          pip3 install ${{ env.WHL_FILE }}
+        working-directory: ./
+
+      - name: checkout op-plugin
+        uses: checkout
+        with:
+          fetch-depth: 1
+
+      - name: download collected cases from artifact
+        uses: download-artifact
+        with:
+          name: collected-cases
+          path: ./collected_cases
+
+      - name: resolve shard files
+        run: |
+          if [ "${{ env.SHARD_TYPE }}" = "distributed" ]; then
+            # 分布式分片文件: 收集阶段按 DISTRIBUTED_SHARDS 产出。
+            # 单分片时为 distributed_cases.json, 多分片时为
+            # distributed_cases_shard_{rank}.json
+            if [ "${{ env.TEST_WORLD_SIZE }}" = "1" ]; then
+              echo "CASES_JSON=collected_cases/distributed_cases.json" >> $ATOMGIT_ENV
+            else
+              echo "CASES_JSON=collected_cases/distributed_cases_shard_${{ env.TEST_RANK }}.json" >> $ATOMGIT_ENV
+            fi
+          else
+            echo "CASES_JSON=collected_cases/regular_npu_cases_shard_${{ env.TEST_RANK }}.json" >> $ATOMGIT_ENV
+          fi
+          echo "REPORT_DIR=test-reports-${{ env.SHARD_TYPE }}-${{ env.TEST_RANK }}" >> $ATOMGIT_ENV
+
+      # pytest 执行依赖: --timeout 参数需要 pytest-timeout 插件,
+      # 缺失时 pytest 以退出码 4 (usage error) 立即退出, 所有用例报
+      # "XML file not generated"; einops 为部分测试文件运行时依赖
+      - name: install test dependencies
+        run: |
+          pip3 install pytest-timeout einops
+
+      # 执行测试前的环境验证: 确认当前机器 NPU 驱动/设备可用。
+      # 此前出现过坏机器导致所有用例在 setUp 阶段报
+      # "aclInit, error code is 507899" 的情况, 逐用例失败浪费大量时间。
+      # 此处用最小探测快速失败 (fail fast), 并输出主机名便于定位机器。
+      # 设备状态可能短暂不可用 (驱动恢复中/被占用), 因此最多重试 10 次, 每次间隔 10s。
+      - name: verify NPU environment
+        run: |
+          source /usr/local/Ascend/cann/set_env.sh 2>/dev/null || true
+          source /usr/local/Ascend/nnal/atb/set_env.sh 2>/dev/null || true
+          echo "=== hostname ==="
+          hostname
+          echo "=== npu-smi info ==="
+          npu-smi info || echo "WARNING: npu-smi info failed"
+          echo "=== torch_npu init probe (max 10 attempts, interval 10s) ==="
+          probe_ok=0
+          for i in $(seq 1 10); do
+            echo "--- probe attempt ${i}/10 ---"
+            if timeout 120 python3 - <<'EOF'
+          import torch
+          import torch_npu
+          print(f"torch={torch.__version__}, torch_npu={torch_npu.__version__}")
+          count = torch.npu.device_count()
+          print(f"npu device_count={count}")
+          assert count > 0, "No NPU device visible"
+          torch.npu.set_device(0)
+          t = torch.zeros(4, device="npu") + torch.ones(4, device="npu")
+          assert (t == 1.0).all(), "NPU compute probe failed"
+          print("NPU environment verification PASSED")
+          EOF
+            then
+              probe_ok=1
+              break
+            fi
+            echo "WARNING: probe attempt ${i}/10 failed"
+            if [ "${i}" -lt 10 ]; then
+              sleep 10
+            fi
+          done
+          if [ "${probe_ok}" -ne 1 ]; then
+            echo "ERROR: NPU environment verification failed after 10 attempts"
+            exit 1
+          fi
+
+      - name: Execute tests
+        run: |
+          source /usr/local/Ascend/cann/set_env.sh 2>/dev/null || true
+          source /usr/local/Ascend/nnal/atb/set_env.sh 2>/dev/null || true
+          python3 .gitcode/scripts/run_npu_test_shard.py \
+            --cases-json ${{ env.CASES_JSON }} \
+            --test-dir test \
+            --disabled-testcases .gitcode/config/disabled_testcases.json \
+            --report-dir ${{ env.REPORT_DIR }} \
+            --timeout ${{ inputs.TIMEOUT }} \
+            --max-workers ${{ inputs.MAX_WORKERS }} \
+            --verbose
+
+      - name: upload test reports to artifact
+        if: always()
+        uses: upload-artifact
+        with:
+          name: test-reports-${{ inputs.SHARD_TYPE }}-${{ inputs.TEST_RANK }}
+          path: test-reports-${{ inputs.SHARD_TYPE }}-${{ inputs.TEST_RANK }}/

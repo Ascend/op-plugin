@@ -1,0 +1,157 @@
+name: _Nightly_Report_Job
+
+on:
+  workflow_call:
+    inputs:
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      # 常规分片总数, 用于构建分片矩阵 (dist-1..M, reg-1..N)
+      REGULAR_NPU_SHARDS:
+        required: false
+        type: string
+        default: "4"
+      # 分布式分片总数, 用于构建分片矩阵
+      DISTRIBUTED_SHARDS:
+        required: false
+        type: string
+        default: "1"
+      pytorch_branch:
+        required: false
+        type: string
+        default: "master"
+      # 报告聚合是纯 Python 计算, 不需要 NPU 设备
+      CONTAINER_OPTIONS:
+        required: false
+        type: string
+        default: "--user root"
+      # 调度标签 (变量化): 报告聚合默认调度到单卡机
+      RUNNER_LABEL:
+        required: false
+        type: string
+        default: "npu=1"
+
+jobs:
+  report:
+    name: Generate Test Report
+    # 无论前面阶段成败都生成报告 (用例失败不阻断 nightly 流水线)
+    select: always
+    runs-on: [ self-hosted, "${{ inputs.RUNNER_LABEL }}" ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+      options: ${{ inputs.CONTAINER_OPTIONS }}
+    steps:
+      - name: checkout
+        uses: checkout
+        with:
+          fetch-depth: 1
+
+      # 读取当次编译的 whl 文件名, 用于报告展示
+      - name: download build info from artifact
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: build-info
+          path: ./
+
+      - name: read build info
+        run: |
+          if [ -f "build_info.txt" ]; then
+            cat build_info.txt
+            WHL_FILE=$(grep whl_file build_info.txt | cut -d= -f2)
+          else
+            WHL_FILE="unknown"
+          fi
+          echo "WHL_FILE=${WHL_FILE}"
+          echo "WHL_FILE=${WHL_FILE}" >> $ATOMGIT_ENV
+
+      # collect 阶段产物: 分片用例清单 + cases_collection_summary.json + *_cases_by_file.jsonl
+      - name: download collected cases
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: collected-cases
+          path: collected_cases
+
+      # 各分片执行报告 (分片失败/取消时可能不存在, 均允许缺失)
+      - name: download test reports (regular)
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: test-reports-regular-1
+          path: test-reports-regular-1
+
+      - name: download test reports (regular 2)
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: test-reports-regular-2
+          path: test-reports-regular-2
+
+      - name: download test reports (regular 3)
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: test-reports-regular-3
+          path: test-reports-regular-3
+
+      - name: download test reports (regular 4)
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: test-reports-regular-4
+          path: test-reports-regular-4
+
+      - name: download test reports (distributed)
+        uses: download-artifact
+        continue-on-error: true
+        with:
+          name: test-reports-distributed-1
+          path: test-reports-distributed-1
+
+      - name: generate consolidated report
+        run: |
+          # 构建分片矩阵: dist-1..M + reg-1..N
+          shard_matrix='['
+          first=1
+          j=1
+          while [ $j -le ${{ inputs.DISTRIBUTED_SHARDS }} ]; do
+            if [ $first -eq 1 ]; then first=0; else shard_matrix="${shard_matrix},"; fi
+            shard_matrix="${shard_matrix}\"dist-${j}\""
+            j=$((j + 1))
+          done
+          i=1
+          while [ $i -le ${{ inputs.REGULAR_NPU_SHARDS }} ]; do
+            if [ $first -eq 1 ]; then first=0; else shard_matrix="${shard_matrix},"; fi
+            shard_matrix="${shard_matrix}\"reg-${i}\""
+            i=$((i + 1))
+          done
+          shard_matrix="${shard_matrix}]"
+          echo "shard_matrix=${shard_matrix}"
+
+          python3 .gitcode/scripts/generate_npu_full_test_report.py \
+            --reports-root . \
+            --output-markdown npu-full-test-summary.md \
+            --output-json npu-full-test-summary.json \
+            --output-html npu-full-test-summary.html \
+            --pytorch-version "${{ inputs.pytorch_branch }}" \
+            --torch-npu-whl "${{ env.WHL_FILE }}" \
+            --shard-matrix-json "${shard_matrix}" \
+            --cases-summary collected_cases/cases_collection_summary.json \
+            --cases-by-file-dir collected_cases \
+            --docker-image "swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}" \
+            --runner "self-hosted, os=euler"
+
+          echo "=== Test Report Summary ==="
+          cat npu-full-test-summary.md
+
+      - name: upload reports as artifact
+        if: always()
+        uses: upload-artifact
+        with:
+          name: npu-full-test-report
+          path: |
+            npu-full-test-summary.md
+            npu-full-test-summary.json
+            npu-full-test-summary.html
+            *_cases_results_by_file.jsonl

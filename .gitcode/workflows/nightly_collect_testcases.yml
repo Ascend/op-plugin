@@ -1,0 +1,160 @@
+name: _Nightly_Collect_TestCases
+
+on:
+  workflow_call:
+    inputs:
+      REMOTE_URL:
+        required: false
+        type: string
+        default: ${{ env.ATOMGIT_REPOSITORY_URL }}
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      # 收集阶段只做用例收集 (pytest --collect-only), 不实际执行用例。
+      # 但测试文件均会 import torch_npu, 其运行时初始化依赖驱动设备节点,
+      # 故必须与 UT 容器一致挂载 /usr/local/Ascend、npu-smi 及 davinci 设备,
+      # 否则 import 失败导致所有文件收集为空。
+      CONTAINER_OPTIONS:
+        required: false
+        type: string
+        default: "--user root --volume /usr/local/Ascend:/usr/local/Ascend --volume /usr/local/sbin/npu-smi:/usr/local/sbin/npu-smi --device /dev/davinci0 --device /dev/davinci1 --device /dev/davinci2 --device /dev/davinci3 --device /dev/davinci4 --device /dev/davinci5 --device /dev/davinci6 --device /dev/davinci7 --device /dev/davinci_manager --device /dev/hisi_hdc --device /dev/devmm_svm"
+      PYTORCH_REPO_URL:
+        required: false
+        type: string
+        default: "https://gitcode.com/Ascend/pytorch.git"
+      pytorch_branch:
+        required: false
+        type: string
+        default: "master"
+      # 分布式用例分片数 (每个分片串行独占执行, 不区分卡数)
+      DISTRIBUTED_SHARDS:
+        required: false
+        type: string
+        default: "1"
+      # 常规 (NPU) 用例分片数, 建议与 UT job 数量保持一致
+      REGULAR_NPU_SHARDS:
+        required: false
+        type: string
+        default: "6"
+      # 收集并发数 (每个文件一个 pytest --collect-only 子进程,
+      # 主要耗时在进程启动与 torch/torch_npu 重复初始化, 提高并发可近似线性提速)
+      PARALLEL:
+        required: false
+        type: string
+        default: "32"
+      # 调度标签 (变量化): 收集任务默认调度到单卡机
+      RUNNER_LABEL:
+        required: false
+        type: string
+        default: "npu=1"
+
+jobs:
+  Collect:
+    name: Collect Test Cases
+    select: selected_by_default
+    runs-on: [ self-hosted, "${{ inputs.RUNNER_LABEL }}" ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+      options: ${{ inputs.CONTAINER_OPTIONS }}
+    steps:
+      - name: print env
+        run: |
+          echo "CP_DOCKER_IMG=swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}"
+          echo "REMOTE_URL=${{ inputs.REMOTE_URL }}"
+          echo "PYTORCH_REPO_URL=${{ inputs.PYTORCH_REPO_URL }}"
+          echo "pytorch_branch=${{ inputs.pytorch_branch }}"
+          echo "DISTRIBUTED_SHARDS=${{ inputs.DISTRIBUTED_SHARDS }}"
+          echo "REGULAR_NPU_SHARDS=${{ inputs.REGULAR_NPU_SHARDS }}"
+          echo "PARALLEL=${{ inputs.PARALLEL }}"
+
+      - name: checkout pytorch
+        uses: checkout
+        with:
+          repository: ${{ inputs.PYTORCH_REPO_URL }}
+          ref: refs/heads/${{ inputs.pytorch_branch }}
+          path: pytorch
+          fetch-depth: 1
+
+      - name: install torch
+        run: |
+          torch_version=$(cat pytorch/requirements.txt | grep torch== | cut -c 8-25)
+          nightly_date=${torch_version:10:8}
+          echo "torch_version=${torch_version}"
+          echo "nightly_date=${nightly_date}"
+
+          if [ ${#nightly_date} -ne 8 ]; then
+            ver=${torch_version:0:6}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${ver}"
+          else
+            ver=${torch_version}
+            url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}"
+          fi
+
+          torch_url="${url_base}/torch-${ver}%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl"
+          echo "torch_url=${torch_url}"
+          pip3 install $torch_url
+
+      - name: download build info from artifact
+        uses: download-artifact
+        with:
+          name: build-info
+          path: ./
+
+      - name: read build info
+        run: |
+          cat build_info.txt
+          WHL_FILE=$(grep whl_file build_info.txt | cut -d= -f2)
+          echo "WHL_FILE=${WHL_FILE}"
+          echo "WHL_FILE=${WHL_FILE}" >> $ATOMGIT_ENV
+
+      # whl 从 build 阶段的流水线 artifact 获取, 不再走 OBS
+      - name: download op-plugin from artifact
+        uses: download-artifact
+        with:
+          name: op-plugin-master-arm
+          path: ./
+
+      - name: install torch_npu
+        run: |
+          ls -al
+          pip3 install ${{ env.WHL_FILE }}
+        working-directory: ./
+
+      - name: install test dependencies
+        run: |
+          pip3 install pytest-timeout einops
+
+      - name: checkout op-plugin
+        uses: checkout
+        with:
+          fetch-depth: 1
+
+      # collect_all_cases.py 内部会自动调用 discover_test_files 完成测试文件发现,
+      # 无需单独执行 discover 步骤
+      - name: collect test cases
+        run: |
+          source /etc/profile
+          source /usr/local/Ascend/cann/set_env.sh
+          export PTA_UT_EXEC_TIMEOUT=4800
+          python3 .gitcode/scripts/collect_all_cases.py \
+            --test-dir test \
+            --distributed-shards ${{ inputs.DISTRIBUTED_SHARDS }} \
+            --regular-npu-shards ${{ inputs.REGULAR_NPU_SHARDS }} \
+            --output-dir collected_cases \
+            --error-log-dir collected_cases/collection_errors \
+            --parallel ${{ inputs.PARALLEL }}
+
+      - name: show collection summary
+        run: |
+          echo "=== collected_cases content ==="
+          ls -al collected_cases/
+          if [ -f "collected_cases/cases_collection_summary.json" ]; then
+            echo "=== cases_collection_summary.json ==="
+            cat collected_cases/cases_collection_summary.json
+          fi
+
+      - name: upload collected cases to artifact
+        uses: upload-artifact
+        with:
+          name: collected-cases
+          path: collected_cases/

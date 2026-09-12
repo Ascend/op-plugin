@@ -1,0 +1,128 @@
+name: Nightly-pipeline_op-plugin
+
+concurrency:
+  max: 5
+  exceed-action: QUEUE
+  enable: true
+  preemption:
+    enable: true
+    events: [mr_id]
+
+on:
+  # 定时触发：每天凌晨 6:00 (平台 cron 按北京时间解析, 已用实际触发记录验证)
+  # (此注释用于重新触发流水线门禁)
+  schedule:
+    - cron: "0 6 * * *"
+
+  # 测试阶段：PR 触发
+  pull_request:
+    types: [open, update, reopen]
+    branches: [ 'master' ]
+
+  # 测试阶段：Push 触发
+  push:
+    branches: [ 'master' ]
+
+env:
+  repo: ${{ atomgit.event.repository.name }}
+  org_name: "ComputingActionTest"
+  img_master_arm: "pytorch_master_a2_aarch64_builder:20260704"
+  pytorch_branch: "master"
+  # 常规用例分片总数: 4 个 (1/2 调度到 2 卡机, 3/4 调度到 1 卡机)
+  TEST_WORLD_SIZE: "4"
+  # 分布式用例分片数 (每个分片串行独占全卡)
+  DISTRIBUTED_WORLD_SIZE: "1"
+
+stages:
+  build:
+    name: Build
+    select: selected_by_default
+    jobs:
+      Build_master:
+        name: Build ARM
+        uses: .gitcode/workflows/nightly_build_job.yml
+        with:
+          pytorch_branch: ${{ env.pytorch_branch }}
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          RUNNER_LABEL: "npu=8"
+
+  collect:
+    name: Collect Test Cases
+    select: selected_by_default
+    jobs:
+      collect_cases:
+        name: Collect Cases
+        uses: .gitcode/workflows/nightly_collect_testcases.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          pytorch_branch: ${{ env.pytorch_branch }}
+          REGULAR_NPU_SHARDS: ${{ env.TEST_WORLD_SIZE }}
+          DISTRIBUTED_SHARDS: ${{ env.DISTRIBUTED_WORLD_SIZE }}
+          RUNNER_LABEL: "npu=1"
+
+  unit_test:
+    name: Unit Test (run sharded cases from collect stage)
+    select: selected_by_default
+    jobs:
+      ut_regular_1:
+        name: op-plugin UT regular 1/4
+        uses: .gitcode/workflows/nightly_ut_exec_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          SHARD_TYPE: regular
+          TEST_RANK: "1"
+          TEST_WORLD_SIZE: ${{ env.TEST_WORLD_SIZE }}
+          NPU_LABEL: "npu=2"
+
+      ut_regular_2:
+        name: op-plugin UT regular 2/4
+        uses: .gitcode/workflows/nightly_ut_exec_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          SHARD_TYPE: regular
+          TEST_RANK: "2"
+          TEST_WORLD_SIZE: ${{ env.TEST_WORLD_SIZE }}
+          NPU_LABEL: "npu=2"
+
+      ut_regular_3:
+        name: op-plugin UT regular 3/4
+        uses: .gitcode/workflows/nightly_ut_exec_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          SHARD_TYPE: regular
+          TEST_RANK: "3"
+          TEST_WORLD_SIZE: ${{ env.TEST_WORLD_SIZE }}
+          NPU_LABEL: "npu=1"
+
+      ut_regular_4:
+        name: op-plugin UT regular 4/4
+        uses: .gitcode/workflows/nightly_ut_exec_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          SHARD_TYPE: regular
+          TEST_RANK: "4"
+          TEST_WORLD_SIZE: ${{ env.TEST_WORLD_SIZE }}
+          NPU_LABEL: "npu=1"
+
+      ut_distributed_1:
+        name: op-plugin UT distributed
+        uses: .gitcode/workflows/nightly_ut_exec_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          SHARD_TYPE: distributed
+          TEST_RANK: "1"
+          TEST_WORLD_SIZE: ${{ env.DISTRIBUTED_WORLD_SIZE }}
+          NPU_LABEL: "npu=8"
+
+  report:
+    name: Report
+    select: always
+    jobs:
+      generate_report:
+        name: Generate Test Report
+        uses: .gitcode/workflows/nightly_report_job.yml
+        with:
+          CP_DOCKER_IMG: ${{ env.img_master_arm }}
+          REGULAR_NPU_SHARDS: ${{ env.TEST_WORLD_SIZE }}
+          DISTRIBUTED_SHARDS: ${{ env.DISTRIBUTED_WORLD_SIZE }}
+          pytorch_branch: ${{ env.pytorch_branch }}
