@@ -43,7 +43,7 @@
     gatherOut=AllGather(x1)
     $$
 
-  - 场景4：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`的mx量化场景，x1为(m, k)、x2为(n, k)，且x1Scale为(m, ceilDiv(k, 64), 2)、x2Scale为(ceilDiv(k, 64), n, 2)时，对入参x1和x1Scale进行AllGather后，对x1、x2进行MatMul计算，然后进行dequant操作：
+  - 场景4：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`的mx量化场景，x1为(m, k)、x2非转置场景下为(k, n)，转置场景下为(n, k)，且x1Scale为(m, ceilDiv(k, 64), 2)、x2Scale非转置场景下为(ceilDiv(k, 64), n, 2)，转置场景下为(n, ceilDiv(k, 64), 2)，入参x1和x1Scale进行AllGather后，对x1、x2进行MatMul计算，然后进行dequant操作：
 
     $$
     output=\sum_{0}^{\left \lfloor \frac{k}{blockSize=32} \right \rfloor} (AllGather(x1)_{pr}@x2_{rq}*(AllGather(x1Scale)_{pr}*x2Scale_{rq}))
@@ -70,7 +70,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 - **self** (`Tensor`)：必选参数，MM左矩阵，即计算公式中的$x1$。shape为2维$(m, k)$，仅支持不转置场景，数据格式支持$ND$。
   - <term>Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`。
-- **x2** (`Tensor`)：必选参数，MM右矩阵，即计算公式中的$x2$。shape为2维$(k, n)$，支持转置/不转置场景，仅转置场景支持非连续Tensor，数据格式支持$ND$。数据类型支持范围与`self`一致，且x1和x2的数据类型需保持一致（`torch.float8_e4m3fn`与`torch.float8_e5m2`可混用）。
+- **x2** (`Tensor`)：必选参数，MM右矩阵，即计算公式中的$x2$。shape为2维，转置时为$(n, k)$，非转置时为$(k, n)$，支持转置/不转置场景，仅转置场景支持非连续Tensor，数据格式支持$ND$。数据类型支持范围与`self`一致，且x1和x2的数据类型需保持一致（`torch.float8_e4m3fn`与`torch.float8_e5m2`可混用）。
 - **hcom** (`str`)：必选参数，通信域名称。可通过`group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)`获取，其中`group`为`torch.distributed`的进程组。
 - **world_size** (`int`)：必选参数，通信域内的rank总数，必须为2的幂。
   - <term>Ascend 950DT</term>：支持2、4、8、16、32、64卡。
@@ -83,7 +83,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   - <term>Ascend 950DT</term>：pertensor场景shape为$[1]$，perblock场景shape为$(ceilDiv(m, 128), ceilDiv(k, 128))$，以上场景数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape为$(m, ceilDiv(k, 64), 2)$。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float32`，pertoken场景shape为$(m, 1)$。
 - **x2_scale** (`Tensor`)：可选参数，MM右矩阵反量化参数，默认值为`None`。当x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，仅支持传入`None`。
-  - <term>Ascend 950DT</term>：pertensor场景shape为$[1]$，perblock场景shape为$(ceilDiv(k, 128), ceilDiv(n, 128))$，以上场景数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape为$(ceilDiv(k, 64), n, 2)$，仅支持转置场景。
+  - <term>Ascend 950DT</term>：pertensor场景shape为$[1]$，perblock场景shape为$(ceilDiv(k, 128), ceilDiv(n, 128))$，以上场景数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，转置场景下shape为$(n, ceilDiv(k, 64), 2)$，非转置场景下shape为$(ceilDiv(k, 64), n, 2)$，仅支持转置/不转置场景。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float32`、`torch.int64`（`torch.int64`仅在x1和x2数据类型为`torch.int8`或output数据类型为`torch.float16`场景支持），perchannel场景shape为$(1, n)$。
 - **quant_scale** (`Tensor`)：可选参数，量化参数，默认值为`None`。当前版本仅支持传入`None`。
 - **block_size** (`int`)：可选参数，用于表示MM输出矩阵在M轴方向和N轴方向上可用于对应方向上的多少个数的量化，默认值为`0`。block_size由blockSizeM、blockSizeN、blockSizeK三个值拼接而成，每个值占16位，计算公式为block_size = blockSizeK | blockSizeN << 16 | blockSizeM << 32，MM输出矩阵不涉及K轴，blockSizeK固定为0。当前版本仅支持blockSizeM=blockSizeN=0，即仅支持传入0。
@@ -114,13 +114,13 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 - 该接口支持推理、训练场景下使用。
 - 该接口支持图模式。
 - 默认确定性实现。
-- 输入self必须是2维，其shape为$(m, k)$；输入x2必须是2维，其shape为$(k, n)$，k轴相等，且k轴取值范围为$[256, 65535)$，m和n的值不得超过2147483647。
+- 输入self必须是2维，其shape为$(m, k)$；输入x2必须是2维，非转置时其shape为$(k, n)$，转置时其shape为$(n, k)$，k轴相等，且k轴取值范围为$[256, 65535)$，m和n的值不得超过2147483647。
 - self仅支持不转置场景，x2支持转置/不转置场景。
 - x1和x2的数据类型需保持一致；当x1、x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`时，两者可以为其中任意一种。
 - <term>Ascend 950DT</term>：
   - 支持2、4、8、16、32、64卡。
   - 支持空Tensor场景：m和n可以为空，k不可为空，且需满足以下条件：m为空、k不为空、n不为空；m不为空、k不为空、n为空；m为空、k不为空、n为空。
-  - 当x1、x2数据类型为`torch_npu.float4_e2m1fn_x2`时，x2矩阵仅支持转置场景，且k轴需要为偶数。
+  - 当x1、x2数据类型为`torch_npu.float4_e2m1fn_x2`时，x2矩阵支持转置/不转置场景，x1矩阵只支持不转置场景，k轴需要为偶数，且当x2矩阵非转置时，n轴也需要为偶数。
   - 当group_size取值为549764202624时，bias必须为`None`。
   - comm_mode为`"ccu"`时仅支持单机UB域内互联，`"ai_cpu"`可支持跨机UB域内互联；使用`"ccu"`通信引擎时，单个通信域内allgather(x1)集合通信数据总量不能超过63*256MB，集合通信数据总量计算方式为：m \* k \* sizeof(x1_dtype) \* 卡数。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
