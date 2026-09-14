@@ -36,7 +36,7 @@
     ceildiv = \left \lceil \frac{k}{blockSize=128} \right \rceil
     $$
 
-  - 场景4：x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`的mx量化场景，且不输出amax时，当x1的shape为(m, k)、x2的shape为(n, k)，x1Scale的shape为(m, ceildiv(k, 64), 2)、x2Scale的shape为(ceildiv(k, 64), n, 2)时，入参x1、x2进行matmul计算和dequant计算后，再进行ReduceScatter通信。mx量化仅支持x2、x2Scale转置场景。
+  - 场景4：x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`的mx量化场景，且不输出amax时，当x1的shape为(m, k)、x1Scale的shape为(m, ceildiv(k, 64), 2)时，入参x1、x2进行matmul计算和dequant计算后，再进行ReduceScatter通信。x2支持转置/不转置场景：当x2转置时，x2的shape为(n, k)、x2Scale的shape为(n, ceildiv(k, 64), 2)；当x2不转置时，x2的shape为(k, n)、x2Scale的shape为(ceildiv(k, 64), n, 2)。
 
     $$
     output=ReduceScatter(\sum_{0}^{ceildiv} (x1_{pr}@x2_{rq}*(x1Scale_{pr}*x2Scale_{rq})))
@@ -67,7 +67,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **self**（`Tensor`）：必选参数，MM左矩阵，即计算公式中的$x1$。当前版本仅支持两维输入，shape为[m, k]，且仅支持不转置场景，m须为卡数（world\_size）的整数倍，k轴取值范围为[256, 65535)。数据格式支持ND，不支持非连续Tensor。数据类型支持如下：
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
   - <term>Ascend 950DT</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
-- **x2**（`Tensor`）：必选参数，MM右矩阵，即计算公式中的$x2$。当前版本仅支持两维输入，shape为[k, n]，支持转置/不转置场景。支持如下：
+- **x2**（`Tensor`）：必选参数，MM右矩阵，即计算公式中的$x2$。当前版本仅支持两维输入，支持转置/不转置场景，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。数据类型支持如下：
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式支持ND、FRACTAL_NZ。
   - <term>Ascend 950DT</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，数据格式仅支持ND。
 - **hcom**（`str`）：必选参数，通信域名称。通过get\_hccl\_comm\_name接口获取。
@@ -84,7 +84,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - <term>Ascend 950DT</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(m, 128), ceildiv(k, 128)]，数据类型支持`torch.float32`；mx量化场景（MXFP8和MXFP4）数据类型为`torch.float8_e8m0fnu`，shape为(m, ceilDiv(k, 64), 2)。
 - **x2\_scale**（`Tensor`）：可选参数，mm右矩阵反量化参数，支持传入None。当x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，仅支持传入None。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：perchannel场景shape为(1, n)，数据类型支持`torch.float32`、`torch.int64`（仅在output数据类型为`torch.float16`场景支持）。
-  - <term>Ascend 950DT</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(k, 128), ceildiv(n, 128)]，数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape为(ceilDiv(k, 64), n, 2)，仅支持转置输入。
+  - <term>Ascend 950DT</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(k, 128), ceildiv(n, 128)]，数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape跟随`x2`转置/不转置，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。
 - **quant\_scale**（`Tensor`）：可选参数，输出矩阵量化scale。当前仅支持传入None。默认值为None。
 - **block\_size**（`int`）：可选参数，用于表示mm输出矩阵在M轴方向和N轴方向上可以用于对应方向上的多少个数的量化。由blockSizeM、blockSizeN、blockSizeK三个值拼接而成，每个值占16位，计算公式为blockSize = blockSizeK | blockSizeN << 16 | blockSizeM << 32，mm输出矩阵不涉及K轴，blockSizeK固定为0，当前版本只支持blockSizeM=blockSizeN=0。默认值为0。
 - **comm\_turn**（`int`）：可选参数，通信数据切分数，即总数据量/单次通信量。当前版本仅支持输入0。默认值为0。
@@ -120,7 +120,9 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - 通信约束：当前版本仅支持输入comm\_mode为"ai\_cpu"或"ccu"，支持CCU通信和AICPU通信，CCU仅支持单机UB域内互联，AICPU可支持跨机UB域内互联。
   - 当x1、x2的数据类型为`torch.float16`/`torch.bfloat16`时，x1/x2支持空tensor场景，m和n可以为空，k不可为空；当x1、x2的数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`时，不支持空tensor。
   - 当x1、x2的数据类型为`torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`时，x1和x2的数据类型需要保持一致；当x1、x2的数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`时，x1和x2的数据类型可以为其中任意一种。
-  - mx量化场景下，x2/x2Scale仅支持转置输入；且x1和x2输入为`torch_npu.float4_e2m1fn_x2`（MXFP4量化）时，k必须是偶数。
+  - 输入x2支持转置和不转置场景，但输入约束里要求其shape为(k, n)，这是为了满足mm算子入参要求，即左矩阵x1的shape应该是(输出行维度，规约轴)，右矩阵x2的shape应该是(规约轴，输出列维度)，其中输出行维度为m，规约轴为k，输出列维度为n。支持转置场景，是指x2可以通过(n, k)的shape构造连续Tensor，在调用本接口前执行x2.t()操作，以此得到视图上为(k, n)的x2，满足mm算子入参要求，此时x2非连续，x2也仅支持该场景下的非连续Tensor。不转置场景时，x2的shape为(k, n)，此时x2连续，可以直接作为入参输入。
+  - 输入x2\_scale在mx量化场景时为3维，其shape跟随x2转置/不转置，x2转置时x2\_scale的shape为(n, ceildiv(k, 64), 2)，x2不转置时x2\_scale的shape为(ceildiv(k, 64), n, 2)。
+  - mx量化场景下，x1和x2输入为`torch_npu.float4_e2m1fn_x2`（MXFP4量化）时，k必须是偶数，当x2不转置时，n也必须是偶数。
   - 支持2、4、8、16、32、64卡。
   - ReduceScatter集合通信数据总量不能超过16 \* 256MB，集合通信数据总量计算方式为：m \* n \* sizeof(output\_dtype)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>约束：
