@@ -2,12 +2,13 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 训练系列产品</term>            |    √     |
-|<term>Atlas A2 训练系列产品</term>  | √    |
-|<term>Atlas 推理系列产品</term>                                       |    √     |
-|<term>Atlas 训练系列产品</term>                                       |    √     |
+|产品             |  是否支持  |
+|:-------------------------|:----------:|
+| <term>Ascend 950PR/Ascend 950DT</term>                        |    √    |
+|  <term>Atlas A3 训练系列产品</term>   |     √    |
+|  <term>Atlas A2 训练系列产品</term>     |     √    |
+|  <term>Atlas 推理系列产品</term>    |     √    |
+|  <term>Atlas 训练系列产品</term>    |     √    |
 
 ## 功能说明
 
@@ -21,18 +22,33 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，2D矩阵张量。数据类型支持`float32`、`float16`、`int32`、`int8`。格式支持[ND, NHWC, FRACTAL_NZ]。
-- **weight** (`Tensor`)：必选参数，2D矩阵张量。数据类型支持`float32`、`float16`、`int32`、`int8`。格式支持[ND, NHWC, FRACTAL_NZ]。
-- **bias** (`Tensor`)：可选参数，1D张量。数据类型支持`float32`、`float16`、`int32`。格式支持[ND, NHWC]。默认值为None。
+- **input**(`Tensor`)：必选参数，2D矩阵张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`、`torch.int8`。
+
+- **weight**(`Tensor`)：必选参数，2D矩阵张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`、`torch.int8`。
+
+- **bias**(`Tensor`)：**可选参数**，1D张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`。数据格式支持$ND$、$NHWC$。默认值为None。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`。
+
+## 返回值说明
+
+- **out**(`Tensor`)：输出张量，数据类型与计算输入`input`和`weight`的类型一致。数据格式支持$ND$。
+
+## 约束说明
+
+- 该接口仅支持单算子模式。
 
 ## 调用示例
+
+单算子模式调用如下：
 
 ```python
 >>> import torch
 >>> import torch_npu
->>> x=torch.rand(2,16).npu()
->>> w=torch.rand(4,16).npu()
->>> b=torch.rand(4).npu()
+>>> x = torch.rand(2, 16).npu()
+>>> w = torch.rand(4, 16).npu()
+>>> b = torch.rand(4).npu()
 >>> output = torch_npu.npu_linear(x, w, b)
 >>> print(output)
 tensor([[3.6335, 4.3713, 2.4440, 2.0081],
