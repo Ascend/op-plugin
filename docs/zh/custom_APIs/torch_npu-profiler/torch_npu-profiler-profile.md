@@ -94,14 +94,14 @@ torch_npu.profiler.profile采集的性能数据会自动解析到torch_npu.profi
   
   ...
   
-  # 添加Profiling采集扩展配置参数，详细参数介绍可参考下文的参数说明
+  # 添加Profiling采集扩展配置参数，详细参数介绍可参考上文的参数说明
   experimental_config = torch_npu.profiler._ExperimentalConfig(
       export_type=torch_npu.profiler.ExportType.Text,
       profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
       aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone
   )
   
-  # 添加Profiling采集基础配置参数，详细参数介绍可参考下文的参数说明
+  # 添加Profiling采集基础配置参数，详细参数介绍可参考上文的参数说明
   with torch_npu.profiler.profile(
       activities=[
           torch_npu.profiler.ProfilerActivity.CPU,
