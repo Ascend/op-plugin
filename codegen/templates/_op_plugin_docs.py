@@ -16837,3 +16837,376 @@ if __name__ == "__main__":
     mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
 """
 )
+
+_add_torch_npu_docstr(
+    "npu_moe_token_permute",
+    """
+接口原型:
+torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mode=False) -> (Tensor, Tensor)
+
+功能描述
+MoE的permute计算，根据索引indices将tokens广播并排序。
+
+参数说明:
+tokens(torch.Tensor)：必选输入，2维Tensor，shape为(num_tokens, hidden_size)，支持空tensor，数据类型支持float16、bfloat16、float32，Ascend 950PR/Ascend 950DT上数据类型额外支持int8（按非量化方式处理），支持非连续Tensor，支持ND
+indices(torch.Tensor)：必选输入，1维或2维Tensor，数据类型支持int32、int64，支持非连续Tensor，支持ND。padded_mode为False时表示每一个输入token对应的topK个处理专家索引，维度为2时shape为(num_tokens, topK)，维度为1时shape为(num_tokens)，此时topK视为1；元素个数小于16777215，元素值大于等于0且小于16777215
+num_out_tokens(int, optional)：可选输入，默认值为None，数据类型int64，表示有效输出token数。值为None或0时表示不会删除任何token；大于0时按照num_out_tokens对按照专家排序好的token进行切片，保留前num_out_tokens个token；小于0时按负的切片索引进行处理。
+padded_mode(bool, optional)：可选输入，默认值为False。False表示非填充模式，对indices进行排序；True表示填充模式，indices已被填充为代表每个专家选中的token索引，此时不对indices进行排序，当前仅支持False
+
+输出说明:
+permuted_tokens(torch.Tensor)：根据indices进行扩展并排序过的tokens，2维Tensor，数据类型与tokens保持一致，不支持非连续Tensor。第一维的大小为min(num_tokens * topK, num_out_tokens)，num_out_tokens为None或0时第一维的大小为num_tokens * topK；除第一维外其余维度大小与tokens保持一致。
+sorted_indices(torch.Tensor)：permuted_tokens和tokens的映射关系，1维Tensor，shape为(num_tokens * topK)，数据类型支持int32，不支持非连续Tensor。sorted_indices[i]表示tokens的第i//topK行在permuted_tokens中的位置，即permuted_tokens[sorted_indices[i]] = tokens[i//topK]，可配合torch_npu.npu_moe_token_unpermute接口将数据还原回原始顺序。
+
+约束说明:
+该接口支持推理、训练场景下使用。
+该接口支持图模式。
+该接口为确定性计算。
+tokens必须为2维Tensor，indices必须为1D或2D，不满足时接口直接返回参数错误。
+tokens与permuted_tokens的数据类型必须一致；int8类型的tokens和permuted_tokens仅支持Ascend 950PR/Ascend 950DT。
+在Ascend 950PR/Ascend 950DT上调用本接口且tokens数据类型为int8时，indices表示expert ID，取值范围为[0, 10240)，最大值为10239，不支持10240。
+padded_mode当前仅支持False。
+
+支持版本:
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号:
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+Ascend 950PR/Ascend 950DT
+
+调用示例:
+import torch
+import torch_npu
+
+tokens = torch.tensor([[1, 1], [2, 2], [3, 3], [4, 4]]).npu().to(torch.float16)
+indices = torch.tensor([[0, 1], [1, 0], [0, 2], [2, 0]]).npu()
+permuted_tokens, sorted_indices = torch_npu.npu_moe_token_permute(tokens, indices)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_token_permute_with_routing_map",
+    """
+接口原型：
+torch_npu.npu_moe_token_permute_with_routing_map(tokens, routing_map, *, probs=None, num_out_tokens=None, drop_and_pad=False) -> (Tensor, Tensor, Tensor)
+
+算子功能：
+MoE的permute计算，将token和expert的标签作为routing_map传入，根据routing_map将tokens和可选probs广播后排序。
+
+接口说明：
+输入：
+tokens（Tensor，计算输入）：输入token特征，要求为一个2D的Tensor，shape为(tokens_num, hidden_size)，支持空tensor，数据类型支持float16、bfloat16、float32，数据格式要求为ND。支持非连续的Tensor。
+routing_map（Tensor，计算输入）：token到expert的映射关系，要求shape为一个2D的(tokens_num, experts_num)，支持空tensor，数据类型支持int8、bool，数据类型为int8时取值支持0、1，数据类型为bool时取值支持true、false，数据格式要求为ND。支持非连续的Tensor。非drop_and_pad模式要求每行中为1或true的个数固定（记为topK）。
+probs（Tensor，计算输入）：可选输入probs，关键字参数，默认值为None，要求元素个数与routing_map相同（shape为(tokens_num, experts_num)），支持空tensor。数据类型支持float16、bfloat16、float32：仅当probs的数据类型为float32且tokens的数据类型为bfloat16时，probs的数据类型可以不和tokens一致，其他场景probs的数据类型需要和tokens一致。当probs为None时，输出permuted_probs为空。数据格式要求为ND。支持非连续的Tensor。
+num_out_tokens（int，计算输入）：可选输入，默认值为None，此时等效于tokens_num。表示有效输出token数，用于计算topK和capacity，取值范围为[0, tokens_num * experts_num]。非drop_and_pad模式下topK = num_out_tokens // tokens_num，实际输出token数outToken = topK * tokens_num；drop_and_pad模式下capacity = num_out_tokens // experts_num，实际输出token数outToken = capacity * experts_num。
+drop_and_pad（bool，计算输入）：可选输入，默认值为False，表示是否开启dropAndPad模式。False表示非dropAndPad模式；True表示dropAndPad模式，每个专家按固定capacity对token进行选择，不足的部分进行pad。
+输出：
+permuted_tokens（Tensor，第一个输出）：根据routing_map进行扩展并排序筛选过的tokens，要求是一个2D的Tensor，shape为(outToken, hidden_size)。数据类型同tokens，数据格式要求为ND。
+permuted_probs（Tensor，第二个输出）：根据routing_map进行排序并筛选过的probs，Shape为(outToken)，数据类型同probs。当probs为None时，该输出为空。
+sorted_indices（Tensor，第三个输出）：permuted_tokens和tokens的映射关系，要求是一个1D的Tensor，Shape为(outToken)，数据类型支持int32，数据格式要求为ND。非drop_and_pad模式下，sorted_indices[i]表示tokens的第i//topK行在permuted_tokens中的位置，即permuted_tokens[sorted_indices[i]] = tokens[i//topK]。
+
+输入约束：
+1. 该接口支持推理、训练场景下使用，支持图模式。
+2. 该接口为确定性计算。
+3. 由于float无损转int限制，tokens_num和experts_num要求小于16777215。
+4. 由于UB限制，drop_and_pad为False场景下，routing_map中每行为1或true的个数固定且小于512，topK（num_out_tokens // tokens_num）小于512，且topK * tokens_num小于16777215。
+5. drop_and_pad为False场景，num_out_tokens // tokens_num需和routing_map中每行1或True的个数一致。
+
+调用示例：
+import torch
+import torch_npu
+
+tokens = torch.tensor([[0.1, 0.1, 0.1, 0.1], [0.2, 0.2, 0.2, 0.2], [0.3, 0.3, 0.3, 0.3]],
+                      dtype=torch.float16).npu()
+routing_map = torch.ones((3, 2), dtype=torch.int8).npu()
+numtoken = 6
+pad_mode = False
+
+permuted_tokens_out, _, sorted_indices_out = torch_npu.npu_moe_token_permute_with_routing_map(tokens, routing_map, num_out_tokens=numtoken, drop_and_pad=pad_mode)
+    """
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_token_unpermute",
+    """
+接口原型:
+torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=None, padded_mode=False, restore_shape=None) -> Tensor
+
+
+功能描述
+MoE的unpermute计算，根据sorted_indices存储的下标，获取permuted_tokens中存储的输入数据；如果存在probs数据，permuted_tokens会与probs相乘；最后进行累加求和，并输出计算结果。
+
+参数说明:
+permuted_tokens(torch.Tensor)：必选输入，2维Tensor，shape为(tokens_num * topK_num, hidden_size)，其中tokens_num表示输入token的个数，topK_num表示处理每个token的专家个数，hidden_size表示每个token的向量表示的长度。数据类型支持float16、bfloat16、float32，支持非连续Tensor，支持ND。
+sorted_indices(torch.Tensor)：必选输入，1维Tensor，shape为(tokens_num * topK_num)，表示需要计算的数据在permuted_tokens中的位置。数据类型支持int32，支持非连续Tensor，支持ND。取值范围是[0, tokens_num * topK_num - 1]，且没有重复索引。
+probs(torch.Tensor, optional)：可选输入，默认值为None，表示与permuted_tokens相乘的概率值。要求是一个2维Tensor，shape为(tokens_num, topK_num)，数据类型支持float16、bfloat16、float32，支持非连续Tensor，支持ND。当probs传入时，topK_num等于probs的最后一维大小；当probs不传时，topK_num等于1。
+padded_mode(bool, optional)：可选输入，默认值为False，表示是否开启paddedMode。padded_mode为True时restore_shape生效，输出结果的shape与restore_shape保持一致。当前仅支持False。
+restore_shape(int[], optional)：可选输入，默认值为None，表示padded_mode为True时输出结果的shape。当前仅支持None。
+
+输出说明:
+unpermuted_tokens(torch.Tensor)：unpermute计算后的输出结果，2维Tensor，数据类型与permuted_tokens保持一致，不支持非连续Tensor。padded_mode为False时shape为(tokens_num, hidden_size)，padded_mode为True时shape与restore_shape保持一致（当前padded_mode仅支持False）。
+
+约束说明:
+该接口支持推理、训练场景下使用。
+该接口支持图模式。
+该接口为确定性计算。
+Atlas A2训练系列产品/Atlas A2推理系列产品、Atlas A3训练系列产品/Atlas A3推理系列产品：topK_num要求小于等于512。
+padded_mode当前仅支持False，restore_shape当前仅支持None。
+在Ascend 950PR/Ascend 950DT上调用本接口时，框架内部会转调用aclnnMoeFinalizeRoutingV2接口，参数映射关系：permuted_tokens等同于expandedX输入，sorted_indices等同于expandedRowIdx输入，probs等同于scalesOptional输入，padded_mode等同于dropPadMode输入，输出out等同于out输出。
+
+支持版本:
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号:
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+Ascend 950PR/Ascend 950DT
+
+调用示例:
+import torch
+import torch_npu
+
+permuted_tokens = torch.tensor([[1, 1], [2, 2], [3, 3], [4, 4], [1, 1], [2, 2], [3, 3], [4, 4]],
+                               dtype=torch.float16).npu()
+sorted_indices = torch.tensor([0, 4, 5, 1, 2, 6, 7, 3], dtype=torch.int32).npu()
+probs = torch.ones((4, 2), dtype=torch.float16).npu() / 2
+
+unpermuted_tokens = torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=probs)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_moe_token_unpermute_with_routing_map",
+    """
+接口原型:
+torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indices, restore_shape, *, probs=None, routing_map=None, drop_and_pad=False) -> Tensor
+
+功能描述
+对经过permute计算处理的permuted_tokens，累加回原unpermuted_tokens。根据sorted_indices存储的下标，获取permuted_tokens中存储的输入数据；如果存在probs数据，permuted_tokens会与probs相乘，最后进行累加求和，并输出计算结果。
+
+
+参数说明:
+permuted_tokens(torch.Tensor)：必选输入，表示经过permute计算后的输入tokens，2维Tensor。drop_and_pad为False时shape为(tokens_num * topK_num, hidden_size)，drop_and_pad为True时shape为(experts_num * capacity, hidden_size)，其中capacity表示每个专家能够处理的token个数。数据类型支持float16、bfloat16、float32，支持非连续Tensor，支持ND。
+sorted_indices(torch.Tensor)：必选输入，表示输入输出梯度的映射关系，1维Tensor，数据类型支持int32，支持非连续Tensor，支持ND。drop_and_pad为False时shape为(tokens_num * topK_num)，索引取值范围[0, tokens_num * topK_num - 1]，允许使用-1表示无效槽位；drop_and_pad为True时shape为(experts_num * capacity)，索引取值范围[0, tokens_num - 1]。
+restore_shape(int[])：必选输入，表示输出unpermuted_tokens的shape，size大小为2，即(tokens_num, hidden_size)。
+*(位置参数与关键字参数的分隔符)：其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+probs(torch.Tensor, optional)：可选输入，默认值为None，表示对应位置的token被对应专家处理后的结果在最终结果中的权重，2维Tensor，shape与routing_map一致，为(tokens_num, experts_num)。数据类型支持float16、bfloat16、float32：数据类型与permuted_tokens一致，当permuted_tokens的数据类型为bfloat16时，probs额外支持float32。支持非连续Tensor，支持ND。当probs为None时，routing_map不需要传入。
+routing_map(torch.Tensor, optional)：可选输入，默认值为None，表示对应位置的token是否被对应专家处理，2维Tensor，shape为(tokens_num, experts_num)。数据类型支持int8、bool，int8时取值支持0、1，bool时取值支持true、false。支持非连续Tensor，支持ND。
+drop_and_pad(bool, optional)：可选输入，默认值为False，表示填充模式是否开启。False表示关闭填充模式，True表示开启填充模式。
+
+输出说明:
+unpermuted_tokens(torch.Tensor)：unpermute计算后的正向输出结果，2维Tensor，shape为restore_shape，即(tokens_num, hidden_size)。数据类型与permuted_tokens保持一致。
+
+约束说明:
+该接口支持推理、训练场景下使用。
+该接口支持图模式。
+该接口默认非确定性实现，支持通过alcrtCtxSetSysParamOpt开启确定性。
+topK_num要求小于等于512。drop_and_pad为False时，每个token最多预留topK_num个专家槽位，routing_map中每行为1或true的个数小于等于topK_num；sorted_indices中允许使用-1表示无效槽位。
+以下场景后续版本会拦截，如果提示warning，建议整改：drop_and_pad为True且topK_num大于experts_num；drop_and_pad为True且capacity大于tokens_num；routing_map的数据类型或shape不符合要求；输入tensor的数据格式不为ND。
+
+支持版本:
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号:
+Atlas A2训练系列产品
+Atlas A3训练系列产品
+Ascend 950PR/Ascend 950DT
+
+调用示例:
+import torch
+import torch_npu
+
+permuted_tokens = torch.tensor([[1, 1, 1, 1], [2, 2, 2, 2]], dtype=torch.float16).npu()
+sorted_indices = torch.tensor([0, 1], dtype=torch.int32).npu()
+routing_map = torch.tensor([[1, 0], [0, 1]], dtype=torch.int8).npu()
+probs = torch.tensor([[1, 0], [0, 1]], dtype=torch.float16).npu()
+
+unpermuted_tokens = torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indices, [2, 4], probs=probs, routing_map=routing_map)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_add_quant_gmm_",
+    """
+接口原型:
+torch_npu.npu_add_quant_gmm_(self, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None, x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None) -> Tensor
+
+功能描述
+在micro-batch训练场景，需要做micro-batch的梯度累计，会存在大量GroupedMatMul后接InplaceAdd的融合场景。本算子（QuantGroupedMatmulInplaceAdd）将上述算子融合起来，提高网络性能。实现分组矩阵乘计算和加法计算，基本功能为矩阵乘和加法的组合，如T-C量化场景下y_i[m,n]=(x1_i[m,k_i] x x2_i[k_i,n]) * scale2_i[n] * scale1_i + y_i[m,n], i=1...g，其中g为分组个数。仅支持量化场景（1.mx量化；2.T-C量化；3.T-T量化）。仅支持x1、x2是FLOAT8_E5M2、FLOAT8_E4M3FN、HIFLOAT8的输入。本接口为原地版本，直接在self上累加并返回self。另有非原地版本torch_npu.npu_add_quant_gmm，参数一致，区别为非原地版本不修改self，返回新结果。
+
+
+参数说明:
+self(torch.Tensor)：必选输入，待累加矩阵，原地累加后作为结果返回，数据类型支持float32，tensor支持3维，shape为(g, M, N)，数据格式支持ND。当x1的M轴或者x2的N轴为0时，self为空tensor。
+x1(torch.Tensor)：必选输入，矩阵乘法中的左矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8，tensor支持2维，shape为(K, M)，数据格式支持ND，支持非连续Tensor。
+x2(torch.Tensor)：必选输入，矩阵乘法中的右矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8，tensor支持2维，shape为(K, N)，数据格式支持ND，支持非连续Tensor。
+x2_scale(torch.Tensor)：必选输入，由x2量化引入的缩放因子，数据类型支持float32、float8_e8m0fnu，数据格式支持ND。float8_e8m0fnu需配置可选参数x2_scale_dtype为对应类型，此时x2_scale本身的dtype不再生效，但仍需保证x2_scale本身的dtype为8bit位的数据类型，以保证shape正确。
+group_list(torch.Tensor)：必选输入，输入和输出分组轴方向的matmul大小分布，数据类型支持int64，tensor支持1维，shape为(g,)，数据格式支持ND。group_list_type为0时要求为非负单调非递减数列且最后一个值不大于x1的第一维（M轴）；group_list_type为1时要求为非负数列且数值总和不大于x1的第一维（M轴）。group_list中的值约束了输出数据的有效部分，未指定的部分将不会参与更新。第1维最大支持1024。
+*(位置参数与关键字参数的分隔符)：其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+x1_scale(torch.Tensor, optional)：可选输入，默认值为None，表示由x1量化引入的缩放因子，数据类型支持float32、float8_e8m0fnu，数据格式支持ND。float8_e8m0fnu需配置可选参数x1_scale_dtype为对应类型。
+group_list_type(int, optional)：可选输入，默认值为0，表示group_list中数值的含义，只支持0和1两个取值。0：group_list中数值为分组轴大小的cumsum结果（累积和）；1：group_list中数值为分组轴上每组大小。
+group_sizes(int[], optional)：可选输入，默认值为None，表示m、n、k方向上的量化分组大小。当前仅支持None。
+x1_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x1的dtype相同。用于在x1无法用torch原生数据类型表示时显式指定x1的数据类型，当前仅支持torch_npu.hifloat8。
+x2_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x2的dtype相同。用于在x2无法用torch原生数据类型表示时显式指定x2的数据类型，当前仅支持torch_npu.hifloat8。
+x1_scale_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x1_scale的dtype相同。用于在x1_scale无法用torch原生数据类型表示时显式指定x1_scale的数据类型，当前仅支持torch_npu.float8_e8m0fnu。
+x2_scale_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x2_scale的dtype相同。用于在x2_scale无法用torch原生数据类型表示时显式指定x2_scale的数据类型，当前仅支持torch_npu.float8_e8m0fnu。
+
+输出说明:
+self(torch.Tensor)：GroupedMatMul计算完成后与待累加矩阵相加得到的最后结果矩阵，原地更新后返回。数据类型支持float32，shape为(g, M, N)，与输入self保持一致。
+
+约束说明:
+该接口支持训练场景下使用。
+该接口支持单算子模式和TorchAir图模式。
+该接口为确定性计算。
+x1和x2的每一维大小在32字节对齐后都应小于int32的最大值2147483647，且内轴（K轴）大小需小于2097152。
+group_list第1维最大支持1024，即最多支持1024个group。
+group_sizes当前仅支持None。
+mx量化场景：x1、x2为float8_e4m3fn/float8_e5m2，x1_scale、x2_scale为float8_e8m0fnu，self为float32，x1_scale的shape为((K/64)+g, M, 2)，x2_scale的shape为((K/64)+g, N, 2)。
+动态量化（T-T/T-C量化）场景：x1、x2为hifloat8，x1_scale、x2_scale为float32，self为float32，x1_scale的shape为(g, 1)或(g,)，x2_scale的shape为(g, 1)或(g,)或(g, N)。
+
+支持版本:
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号:
+Ascend 950PR/Ascend 950DT
+
+调用示例:
+import torch
+import torch_npu
+
+g, M, N, K = 2, 16, 16, 16
+y = torch.randint(-1, 1, (g, M, N), dtype=torch.float32).npu()
+x1 = torch.randint(0, 1, (K, M), dtype=torch.uint8).npu()
+x2 = torch.randint(0, 1, (K, N), dtype=torch.uint8).npu()
+x2_scale = torch.randint(-1, 1, (g, N), dtype=torch.float32).npu()
+x1_scale = torch.randint(-1, 1, (g, 1), dtype=torch.float32).npu()
+group_list = torch.tensor([8, 16], dtype=torch.int64).npu()
+
+y = torch_npu.npu_add_quant_gmm_(y, x1, x2, x2_scale, group_list, x1_scale=x1_scale,
+                                 x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_apply_adam_w",
+    """
+接口原型:
+torch_npu.npu_apply_adam_w(beta1_power, beta2_power, lr, weight_decay, beta1, beta2, epsilon, grad, max_grad_norm, amsgrad, maximize, *, out=(var, m, v)) -> (Tensor, Tensor, Tensor)
+
+功能描述:
+实现AdamW优化器功能。AdamW将权重衰减与基于梯度的参数更新解耦，在参数更新前先对权重施加衰减，适用于Transformer等大规模模型的训练场景。
+计算公式:
+gt = -grad（maximize为True时），gt = grad（maximize为False时）
+mt = beta1 * mt-1 + (1 - beta1) * gt
+vt = beta2 * vt-1 + (1 - beta2) * gt * gt
+beta1t = beta1t-1 * beta1
+beta2t = beta2t-1 * beta2
+vt = max(maxGradNorm, vt)（amsgrad为True时），vt = vt（amsgrad为False时）
+mt_hat = mt / (1 - beta1t)
+vt_hat = vt / (1 - beta2t)
+theta_t+1 = theta_t - lr / (sqrt(vt_hat) + epsilon) * mt_hat - lr * weight_decay * theta_t
+
+参数说明:
+beta1_power：Scalar类型, 必选参数, beta1^(t-1), 数据类型与grad保持一致。
+beta2_power：Scalar类型, 必选参数, beta2^(t-1), 数据类型与grad保持一致。
+lr：Scalar类型, 必选参数, 学习率, 通常情况下为1e-3、1e-6、1e-9, 数据类型与grad保持一致。
+weight_decay：Scalar类型, 必选参数, 权重衰减系数, 数据类型与grad保持一致。
+beta1：Scalar类型, 必选参数, 一阶矩估计值的指数衰减率, 数据类型与grad保持一致。
+beta2：Scalar类型, 必选参数, 二阶矩估计值的指数衰减率, 数据类型与grad保持一致。
+epsilon：Scalar类型, 必选参数, 添加到分母中以防止除数为0, 数据类型与grad保持一致。
+grad：Tensor类型, 必选参数, 梯度数据, shape与var保持一致, 数据类型与var保持一致, 支持float16、bfloat16、float32, 数据格式支持ND, 维度支持1-8维, 支持非连续的Tensor。
+max_grad_norm：Tensor类型, 可选参数, 如果amsgrad为True, 在v中保存max_grad_norm与v的最大值；如果amsgrad为False, v中的值不做额外计算。此参数在amsgrad为True时必选, 在amsgrad为False时可选。shape与var保持一致, 数据类型与var保持一致, 数据格式支持ND, 维度支持1-8维, 支持非连续的Tensor。
+amsgrad：Bool类型, 可选参数, 是否使用max_grad_norm变量。当设置为True时, 必须传入max_grad_norm, 否则报错。未传入时按False处理。
+maximize：Bool类型, 可选参数, 是否对梯度grad取反, 应用梯度上升方向优化权重使损失函数最大化。未传入时按False处理。
+out：必选关键字参数, 包含var、m、v三个张量的元组。
+    var：Tensor类型, 待计算的权重输入同时也是输出。数据格式支持ND, 维度支持1-8维, 支持非连续的Tensor, 数据类型支持float16、bfloat16、float32。
+    m：Tensor类型, AdamW优化器中m参数。shape要求与输入var保持一致, 数据类型与var保持一致, 数据格式支持ND, 维度支持1-8维, 支持非连续的Tensor。
+    v：Tensor类型, AdamW优化器中v参数。shape要求与输入var保持一致, 数据类型与var保持一致, 数据格式支持ND, 维度支持1-8维, 支持非连续的Tensor。
+
+输出说明：
+varOut：Tensor类型, 更新后的权重参数, 复用out中传入的var张量地址, 数据类型和shape与输入var保持一致。
+mOut：Tensor类型, 更新后的一阶矩估计, 复用out中传入的m张量地址, 数据类型和shape与输入m保持一致。
+vOut：Tensor类型, 更新后的二阶矩估计, 复用out中传入的v张量地址, 数据类型和shape与输入v保持一致。
+
+约束说明:
+该接口支持训练场景下使用。
+该接口支持图模式。
+该接口默认确定性实现。
+grad、var、m、v的数据类型需保持一致, shape需保持一致。
+当amsgrad为True时, 必须传入max_grad_norm, 且max_grad_norm与var的数据类型和shape需保持一致, 否则报错。
+var、m、v、grad、max_grad_norm支持1-8维。
+该接口为原地更新接口, 调用时必须通过out参数传入var、m、v三个张量, 也可以直接调用torch_npu.npu_apply_adam_w_out接口。
+
+支持的PyTorch版本:
+PyTorch 2.1及更高版本
+
+支持的型号:
+Atlas A2训练系列产品/Atlas A2推理系列产品
+
+调用示例:
+单算子模式调用
+import torch
+import torch_npu
+
+var = torch.tensor([[0., 1.], [2., 3.]], dtype=torch.float32, device='npu')
+m = torch.tensor([[0., 1.], [2., 3.]], dtype=torch.float32, device='npu')
+v = torch.tensor([[0., 1.], [2., 3.]], dtype=torch.float32, device='npu')
+grad = torch.tensor([[0., 1.], [2., 3.]], dtype=torch.float32, device='npu')
+max_grad_norm = torch.tensor([[0., 1.], [2., 3.]], dtype=torch.float32, device='npu')
+var_out, m_out, v_out = torch_npu.npu_apply_adam_w(0.431, 0.992, 0.001, 0.01,
+                                                   0.9, 0.999, 1e-8, grad, max_grad_norm,
+                                                   True, False, out=(var, m, v))
+print(var_out, m_out, v_out)
+"""
+)
+
+_add_torch_npu_docstr(
+    "npu_dynamic_mx_quant",
+    """
+接口原型:
+torch_npu.npu_dynamic_mx_quant(input, *, axis=-1, round_mode="rint", dst_type=296, block_size=32, scale_alg=0, dst_type_max=0.0, max_low_bound=0.0) -> (Tensor, Tensor)
+
+功能描述
+目的数据类型为FLOAT4类、FLOAT8类的MX量化。在给定的轴axis上，每block_size个数为一组，计算出这组数对应的量化尺度mxscale，然后对组内每一个数除以mxscale，根据round_mode转换到对应的dst_type，得到量化结果y。
+
+参数说明:
+input(torch.Tensor)：必选输入，支持1-7维，数据类型支持float16、bfloat16、float32，支持非连续Tensor，支持ND。当dst_type为FP4类时，input的最后一维必须是偶数；当input的数据类型为float32时，block_size必须为32，且量化轴的维度不能小于32。
+*(位置参数与关键字参数的分隔符)：其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+axis(int, optional)：可选输入，量化发生的轴，默认值为-1，取值范围为[-D, D-1]，D为input的维数。
+round_mode(str, optional)：可选输入，数据转换模式，默认值为"rint"。dst_type为FP4类时支持{"rint", "floor", "round"}，dst_type为FP8类时仅支持{"rint"}。
+dst_type(ScalarType, optional)：可选输入，指定y的数据类型，默认值为torch_npu.float4_e2m1fn_x2(296)，支持torch_npu.float8_e5m2(291)、torch_npu.float8_e4m3fn(292)、torch_npu.float4_e2m1fn_x2(296)、torch_npu.float4_e1m2fn_x2(297)。
+block_size(int, optional)：可选输入，每次量化的元素个数，默认值为32。仅支持32的倍数，不能为0，且不能超过1024。scale_alg为2时或input的数据类型为float32时，block_size必须为32。
+scale_alg(int, optional)：可选输入，mxscale的计算方法，默认值为0。0代表场景1(OCP Mx Specification)，1代表场景2(CuBALS Scale算法，仅FP8)，2代表场景3(仅FP4_E2M1)。dst_type为float4_e1m2fn_x2时仅支持0，为float4_e2m1fn_x2时支持0和2，为FP8类时支持0和1。
+dst_type_max(float, optional)：可选输入，Amax(DType)的取值，默认值为0.0。支持0.0和6.0-12.0，0.0表示Amax(DType)为量化结果数据类型的最大值。仅支持在dst_type为float4_e2m1fn_x2且block_size为32时设置。
+max_low_bound(float, optional)：可选输入，每个block计算出的最大绝对值的下界钳位值，默认值为0.0。仅当scale_alg为1时生效，scale_alg不为1时必须为0.0；取值为非负数，大于0时Amax = max(Amax, max_low_bound)。
+
+输出说明:
+y(torch.Tensor)：输入x量化后的结果，shape和input一致。dst_type为FP8类时数据类型支持float8_e4m3fn、float8_e5m2；dst_type为FP4类时实际返回uint8，y的最后一维为input最后一维的一半，查看具体值需自行解包。
+mxscale(torch.Tensor)：每个分组对应的量化尺度，数据类型支持float8_e8m0fnu，实际返回uint8。shape的秩为input的秩加1，最后一维固定为2，量化轴axis上的值为ceil(input.shape[axis]/block_size)偶数对齐后除以2，axis为非尾轴时需要对每两行数据进行交织处理。
+
+约束说明:
+该接口支持训练、推理场景下使用。
+该接口支持单算子模式和图模式调用。
+该接口为确定性计算。
+rank(mxscale) = rank(input) + 1，mxscale.shape[-1] = 2。
+优先调用aclnnDynamicMxQuantV3内核，运行环境不支持时自动回退到aclnnDynamicMxQuantV2内核，此时max_low_bound参数不生效、scale_alg不支持取值2。
+max_low_bound仅当scale_alg为1时生效，scale_alg不为1时必须为0.0，且必须为非负数。
+
+支持版本:
+PyTorch 2.1
+PyTorch 2.5及更高版本
+
+支持的型号:
+Ascend 950PR/Ascend 950DT
+
+调用示例:
+import torch
+import torch_npu
+
+input = torch.randn((1, 512), dtype=torch.bfloat16).npu()
+y, mxscale = torch_npu.npu_dynamic_mx_quant(input)
+"""
+)

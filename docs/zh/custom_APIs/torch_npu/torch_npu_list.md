@@ -1007,5 +1007,39 @@
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><span>QuantMatmul的二级量化功能，减少精度损失。</span></p></td>
 </tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_permute.md">torch_npu.npu_moe_token_permute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE的permute计算，根据索引indices将tokens广播并排序。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_permute_with_routing_map.md">torch_npu.npu_moe_token_permute_with_routing_map</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE的permute计算，将token和expert的标签作为routing_map传入，根据routing_map将tokens和可选probs广播后排序。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute.md">torch_npu.npu_moe_token_unpermute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE的unpermute计算，根据sorted_indices存储的下标获取permuted_tokens中的输入数据，与可选probs相乘后进行累加求和，输出还原后的计算结果。</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute_with_routing_map.md">torch_npu.npu_moe_token_unpermute_with_routing_map</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回原unpermuted_tokens，支持drop_and_pad填充模式。</p>
+</td>
+</tr>
+<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>训练场景下micro-batch的梯度累计会存在大量GroupedMatMul操作接InplaceAdd操作，本接口将操作融合起来，实现分组矩阵乘计算和加法计算，仅支持mx量化、T-C量化和T-T量化场景。</span></p>
+</td>
+</tr>
+<tr id="npu_apply_adam_w"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_adam_w"><a name="p_npu_apply_adam_w"></a><a name="p_npu_apply_adam_w"></a><a href="torch_npu-npu_apply_adam_w.md">torch_npu.npu_apply_adam_w</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_adam_w_desc"><a name="p_npu_apply_adam_w_desc"></a><a name="p_npu_apply_adam_w_desc"></a><span>实现AdamW优化器功能，将权重衰减与基于梯度的参数更新解耦，原地更新权重参数以及一阶、二阶矩估计。</span></p></td>
+</tr>
+<tr id="npu_dynamic_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_mx_quant"><a name="p_npu_dynamic_mx_quant"></a><a name="p_npu_dynamic_mx_quant"></a><a href="torch_npu-npu_dynamic_mx_quant.md">torch_npu.npu_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_mx_quant_desc"><a name="p_npu_dynamic_mx_quant_desc"></a><a name="p_npu_dynamic_mx_quant_desc"></a><span>目的数据类型为FLOAT4类、FLOAT8类的MX量化。在给定的轴axis上，每block_size个数为一组，计算出这组数对应的量化尺度mxscale，再根据round_mode将组内元素转换到对应的dst_type。</span></p>
+</td>
+</tr>
 </tbody>
 </table>
