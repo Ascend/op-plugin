@@ -142,6 +142,7 @@
         -   [torch_npu.npu_sparse_lightning_indexer_grad_kl_loss](./torch_npu/torch_npu-npu_sparse_lightning_indexer_grad_kl_loss.md)
         -   [torch_npu.npu_top_k_top_p](./torch_npu/torch_npu-npu_top_k_top_p.md)
         -   [torch_npu.npu_top_k_top_p_sample](./torch_npu/torch_npu-npu_top_k_top_p_sample.md)
+        -   [torch_npu.npu_scatter_pa_cache](./torch_npu/torch_npu-npu_scatter_pa_cache.md)
         -   [torch_npu.npu_scatter_pa_kv_cache](./torch_npu/torch_npu-npu_scatter_pa_kv_cache.md)
         -   [torch_npu.npu_trans_quant_param](./torch_npu/torch_npu-npu_trans_quant_param.md)
         -   [torch_npu.npu_weight_quant_batchmatmul](./torch_npu/torch_npu-npu_weight_quant_batchmatmul.md)
