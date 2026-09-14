@@ -4,8 +4,8 @@
 
 | 产品                                                         | 是否支持 |
 | ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A2 训练系列产品</term>  | √   |
+| <term>Ascend 950PR/Ascend 950DT</term>       |    √    |
+| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √   |
 
 ## 功能说明<a name="zh-cn_topic_0000001742717129_section14441124184110"></a>
 
@@ -154,13 +154,16 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 ## 约束说明<a name="zh-cn_topic_0000001742717129_section12345537164214"></a>
 
 - 该接口仅在训练场景下使用。
+- 该接口仅支持单算子模式。
 - 该接口暂不支持图模式，不支持aclgraph。
 - 输入`query`、`key`、`value`、`pse`的数据类型必须一致。
 - 输入`query`、`key`、`value`的`input_layout`必须一致。
 - 输入`query`、`key`、`value`的shape说明：
     - 输入`key`和`value`的shape必须一致。
     - B：batchsize必须相等；非varlen场景B取值范围1\~2M；varlen场景B取值范围1\~2K。
-    - D：Head Dim必须满足Dq=Dk和Dk≥Dv，取值范围1\~768。
+    - D：Head Dim必须满足Dq=Dk和Dk≥Dv。取值范围：
+        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围1\~768。
+        - <term>Ascend 950PR/Ascend 950DT</term>：取值范围1\~512。
     - S：sequence length，取值范围1\~1M。
 
 - varlen场景下：
