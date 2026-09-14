@@ -84,6 +84,7 @@ jobs:
           ref: refs/heads/master
           path: pytorch
           fetch-depth: 1
+          allow-unsafe-pr-checkout: true
       - name: install torch
         if: ${{ steps.check_support.outputs.need_build == 'yes' && inputs.pytorch_branch == 'master' }}
         run: |
@@ -119,15 +120,14 @@ jobs:
         with:
           ref: refs/merge-requests/${{ inputs.pr_id }}/merge
           fetch-depth: 0
+          allow-unsafe-pr-checkout: true
       - name: compile
         if: ${{ steps.check_support.outputs.need_build == 'yes' }}
         run: |
           ls -al
           export OMP_NUM_THREADS=32
           bash ci/build.sh --python=3.10 --pytorch=${{ steps.check_support.outputs.pytorch_build_branch }}
-          pwd
           ls -al
-          ls -al ${workspace}
 
       - name: Upload artifact
         if: ${{ steps.check_support.outputs.need_build == 'yes' }}

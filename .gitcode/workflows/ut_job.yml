@@ -44,7 +44,7 @@ jobs:
   JOB_UT:
     name: JOB_UT
     select: selected_by_default
-    runs-on: [ self-hosted, npu=1 ]
+    runs-on: [ self-hosted, default, npu=1 ]
     container:
       image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
     env:
@@ -99,6 +99,7 @@ jobs:
           ref: refs/merge-requests/${{ inputs.pr_id }}/merge
           fetch-depth: 1
           path: ./CODE
+          allow-unsafe-pr-checkout: true
 
       - name: UT op-plugin
         if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
