@@ -176,11 +176,12 @@ class TestNpuMhcPre(TestCase):
     def npu_op_exec(self, x, phi, alpha,
             dh_in, dh_post, dh_res,
             inv_rms, h_mix, h_pre, h_post,
-            gamma, hc_eps, grad_x_post=None):
+            gamma, hc_eps, grad_x_post=None, inner_precise=0):
         return torch_npu.npu_mhc_pre_backward(
             x, phi, alpha, dh_in, dh_post, dh_res,
             inv_rms, h_mix, h_pre, h_post,
-            gamma=gamma, hc_eps=hc_eps, grad_x_post=grad_x_post
+            gamma=gamma, hc_eps=hc_eps, grad_x_post=grad_x_post,
+            inner_precise=inner_precise
         )
 
     def build_input_tensors(self, B, S, n, D, with_grad_x_post=False, tnd_format=False, with_gamma=True):
@@ -224,7 +225,8 @@ class TestNpuMhcPre(TestCase):
         return (x, phi, alpha, bias, gamma,
                 dh_in, dh_post, dh_res, inv_rms, h_mix, h_pre, h_post, grad_x_post)
 
-    def run_and_check(self, B, S, n, D, with_grad_x_post=False, tnd_format=False, with_gamma=True):
+    def run_and_check(self, B, S, n, D, with_grad_x_post=False, tnd_format=False,
+                      with_gamma=True, inner_precise=0):
         with torch.no_grad():
             (x, phi, alpha, bias, gamma,
                 dh_in, dh_post, dh_res, inv_rms, h_mix, h_pre, h_post,
@@ -241,6 +243,7 @@ class TestNpuMhcPre(TestCase):
                 gamma=gamma.npu() if gamma is not None else None,
                 hc_eps=1e-6,
                 grad_x_post=grad_x_post.npu() if grad_x_post is not None else None,
+                inner_precise=inner_precise,
             )
 
             output_names = ["dx", "dphi", "dalpha", "dbias", "dgamma"]
@@ -290,6 +293,39 @@ class TestNpuMhcPre(TestCase):
     def test_npu_mhc_pre_backward_tnd_no_gamma_with_grad_x_post(self, device="npu"):
         self.run_and_check(B=1, S=128, n=4, D=512, with_grad_x_post=True, tnd_format=True, with_gamma=False)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_without_grad_x_post(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_with_grad_x_post(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, with_grad_x_post=True, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_tnd_without_grad_x_post(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, tnd_format=True, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_tnd_with_grad_x_post(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, with_grad_x_post=True, tnd_format=True, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_no_gamma(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, with_gamma=False, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_no_gamma_with_grad_x_post(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, with_grad_x_post=True, with_gamma=False, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_tnd_no_gamma(self, device="npu"):
+        self.run_and_check(B=1, S=128, n=4, D=512, tnd_format=True, with_gamma=False, inner_precise=1)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_pre_backward_v2_tnd_no_gamma_with_grad_x_post(self, device="npu"):
+        self.run_and_check(
+            B=1, S=128, n=4, D=512, with_grad_x_post=True,
+            tnd_format=True, with_gamma=False, inner_precise=1)
 
 if __name__ == "__main__":
     run_tests()

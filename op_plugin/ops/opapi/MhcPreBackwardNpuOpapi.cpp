@@ -24,16 +24,23 @@ constexpr int64_t TND_DIMS = 3;
 constexpr int64_t NUM_THREE = 3;
 constexpr int64_t NUM_TWO = 2;
 constexpr int64_t NUM_ONE = 1;
+constexpr int64_t CUBE_USE_FP32 = 0;
+constexpr int64_t CUBE_USE_HF32 = 1;
 
-inline void check_mhc_pre_backward_supported() {
+// FP32模式固定调用V1接口；仅HF32模式调用V2接口透传inner_precise。
+// 返回true表示本次应调用aclnnMhcPreBackwardV2。
+inline bool check_mhc_pre_backward_supported(int64_t inner_precise) {
   static const bool is_cann_ready = op_plugin::utils::is_gte_cann_version_900();
-  static const bool is_aclnn_kernel_available =
-      check_aclnn_kernel_available("aclnnMhcPre") && check_aclnn_kernel_available("aclnnMhcPreBackward");
+  static const bool is_mhc_pre_backward_available = check_aclnn_kernel_available("aclnnMhcPreBackward");
+  static const bool is_mhc_pre_backward_v2_available = check_aclnn_kernel_available("aclnnMhcPreBackwardV2");
   TORCH_CHECK(
-      is_cann_ready && is_aclnn_kernel_available,
-      "torch_npu.npu_mhc_pre_backward requires CANN >= 9.0.0, aclnnMhcPre and aclnnMhcPreBackward support. "
+      is_cann_ready && ((inner_precise == CUBE_USE_FP32 && is_mhc_pre_backward_available) ||
+          (inner_precise == CUBE_USE_HF32 && is_mhc_pre_backward_v2_available)),
+      "torch_npu.npu_mhc_pre_backward requires CANN >= 9.0.0. inner_precise=0 requires "
+      "aclnnMhcPreBackward, while inner_precise=1 requires aclnnMhcPreBackwardV2. "
       "Please upgrade CANN.",
       OPS_ERROR(ErrCode::NOT_SUPPORT));
+  return inner_precise == CUBE_USE_HF32;
 }
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mhc_pre_backward(
@@ -49,7 +56,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mhc_p
     const at::Tensor& h_post,
     const c10::optional<at::Tensor>& gamma,
     double hc_eps,
-    const c10::optional<at::Tensor>& grad_x_post) {
+    const c10::optional<at::Tensor>& grad_x_post,
+    int64_t inner_precise) {
   TORCH_CHECK(x.numel() > 0, "Tensor x is empty.");
   TORCH_CHECK(phi.numel() > 0, "Tensor phi is empty.");
   TORCH_CHECK(alpha.numel() > 0, "Tensor alpha is empty.");
@@ -73,7 +81,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mhc_p
       grad_h_post.dim(),
       "D.",
       OPS_ERROR(ErrCode::PARAM));
-  check_mhc_pre_backward_supported();
+  TORCH_CHECK(
+      inner_precise == CUBE_USE_FP32 || inner_precise == CUBE_USE_HF32,
+      "Input inner_precise must be 0 (Cube uses FP32) or 1 (Cube uses HF32), but got ",
+      inner_precise,
+      ".",
+      OPS_ERROR(ErrCode::VALUE));
+  bool useMhcPreBackwardV2 = check_mhc_pre_backward_supported(inner_precise);
 
   c10::TensorOptions xGradOptions = x.options().dtype(x.dtype());
   c10::TensorOptions fp32Options = grad_h_in.options().dtype(at::kFloat);
@@ -109,26 +123,50 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mhc_p
   gammaGrad = at::empty(gammaGradSize, fp32Options); // [n, D]
 
   float eps_f = static_cast<float>(hc_eps);
-  EXEC_NPU_CMD(
-      aclnnMhcPreBackward,
-      x,
-      phi,
-      alpha,
-      grad_h_in,
-      grad_h_post,
-      grad_h_res,
-      inv_rms,
-      h_mix,
-      h_pre,
-      h_post,
-      gamma,
-      grad_x_post,
-      eps_f,
-      xGrad,
-      phiGrad,
-      alphaGrad,
-      biasPostGrad,
-      gammaGrad);
+  if (useMhcPreBackwardV2) {
+    EXEC_NPU_CMD(
+        aclnnMhcPreBackwardV2,
+        x,
+        phi,
+        alpha,
+        grad_h_in,
+        grad_h_post,
+        grad_h_res,
+        inv_rms,
+        h_mix,
+        h_pre,
+        h_post,
+        gamma,
+        grad_x_post,
+        eps_f,
+        inner_precise,
+        xGrad,
+        phiGrad,
+        alphaGrad,
+        biasPostGrad,
+        gammaGrad);
+  } else {
+    EXEC_NPU_CMD(
+        aclnnMhcPreBackward,
+        x,
+        phi,
+        alpha,
+        grad_h_in,
+        grad_h_post,
+        grad_h_res,
+        inv_rms,
+        h_mix,
+        h_pre,
+        h_post,
+        gamma,
+        grad_x_post,
+        eps_f,
+        xGrad,
+        phiGrad,
+        alphaGrad,
+        biasPostGrad,
+        gammaGrad);
+  }
 
   return std::make_tuple(xGrad, phiGrad, alphaGrad, biasPostGrad, gammaGrad);
 }
