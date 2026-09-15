@@ -163,7 +163,7 @@ stages:
           - name: Run SCA PR scan
             uses: openlibing/sca-action/sca-pr-action@v1.0.0
             with:
-              project-name: FrameworkPTAdapter
+              project-name: AscendForPyTorch
 
       malicious-scan:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
@@ -176,7 +176,7 @@ stages:
             with:
               repository-name: ${{ atomgit.repository }}
               pr-id: "${{ atomgit.event.pull_request.number }}"
-              project-name: FrameworkPTAdapter
+              project-name: AscendForPyTorch
 
   stage_3:
     name: Build
