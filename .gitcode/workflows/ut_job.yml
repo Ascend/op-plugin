@@ -104,9 +104,7 @@ jobs:
       - name: UT op-plugin
         if: ${{ steps.check_support.outputs.need_ut == 'yes' }}
         run: |
-          # git clone -b ${{ atomgit.event.repository.default_branch }} ${{ inputs.REMOTE_URL }} cie
-          git clone -b  master_0903 https://gitcode.com/ComputingActionTest/op-plugin_0731.git cie
-          ls -R cie/.gitcode/workflows
+          git clone -b ${{ atomgit.event.repository.default_branch }} ${{ inputs.REMOTE_URL }} cie
           # 将 download-artifact 下载的构建产物拷回工作目录供 UT 脚本使用
           cp -rf ../output/${{ inputs.pr_id }}/* ./
           ls ${ATOMGIT_WORKSPACE}

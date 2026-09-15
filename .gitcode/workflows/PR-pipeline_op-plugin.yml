@@ -38,6 +38,7 @@ env:
   img_2_13_0_x86: "pytorch_2.13.0_a1_x86_64_builder:20260709"
 
 permissions:
+  project: read
   repository: read
   id-token: write
   pr: write
@@ -107,10 +108,20 @@ stages:
       associate_pr_comment:
         name: associate_pr_comment
         select: selected_by_default
+        runs-on: [ self-hosted, x86, cpu=32 ]
         steps:
           - name: associate-pr-comment
             uses: associate-pr-comment
-        runs-on: [ self-hosted, x86, cpu=32 ]
+          - name: pre_pipeline
+            id: pre_pipeline
+            uses: cann/.gitcode/actions/pre-pipeline@689551d6b29a77d8c2a005b8f1b3883db24820ef
+            with:
+              owner: ${{ env.org_name }}
+              repo: ${{ atomgit.event.repository.name }}
+              pr_number: ${{ atomgit.event.pull_request.number }}
+              token: ${{ atomgit.token }}
+              apply_label: 'true'
+              run_url: https://gitcode.com/${{ env.org_name }}/${{ atomgit.event.repository.name }}/actions/runs/${{ atomgit.workflow_run_id }}
 
   stage_2:
     name: CodeCheck
@@ -255,3 +266,18 @@ stages:
                 img: "pytorch_2.11.0_a2_aarch64_builder:20260804"
               - branch: "v2.12.0"
                 img: "pytorch_2.12.0_a2_aarch64_builder:20260804"
+
+post:
+  jobs:
+    query_pipeline:
+      steps:
+        - name: query_pipeline
+          id: query_pipeline
+          uses: cann/.gitcode/actions/query-pipeline@689551d6b29a77d8c2a005b8f1b3883db24820ef
+          with:
+            owner: ${{ env.org_name }}
+            repo: ${{ atomgit.event.repository.name }}
+            run_id: ${{ atomgit.workflow_run_id }}
+            token: ${{ atomgit.token }}
+            pr_number: ${{ atomgit.event.pull_request.number }}
+            apply_label: 'true'
