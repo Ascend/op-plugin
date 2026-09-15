@@ -123,6 +123,8 @@
         -   [torch_npu.npu_moe_finalize_routing](./torch_npu/torch_npu-npu_moe_finalize_routing.md)
         -   [torch_npu.npu_moe_gating_top_k_softmax](./torch_npu/torch_npu-npu_moe_gating_top_k_softmax.md)
         -   [torch_npu.npu_moe_init_routing](./torch_npu/torch_npu-npu_moe_init_routing.md)
+        -   [torch_npu.npu_moe_token_permute](./torch_npu/torch_npu-npu_moe_token_permute.md)
+        -   [torch_npu.npu_moe_token_unpermute](./torch_npu/torch_npu-npu_moe_token_unpermute.md)
         -   [torch_npu.npu_prefetch](./torch_npu/torch_npu-npu_prefetch.md)
         -   [torch_npu.npu_prompt_flash_attention](./torch_npu/torch_npu-npu_prompt_flash_attention.md)
         -   [torch_npu.npu_quant_gmm_alltoallv](./torch_npu/torch_npu-npu_quant_gmm_alltoallv.md)
