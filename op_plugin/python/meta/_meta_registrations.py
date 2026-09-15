@@ -7437,3 +7437,40 @@ def npu_weight_quant_preprocess_meta(weight, weight_scale, x_dtype, weight_dtype
     else:
         out_bias = torch.empty([0], dtype=weight.dtype, device='meta')
     return (out_weight, out_weight_scale, out_weight_offset, out_bias)
+
+@impl(m, "_npu_matmul_abft_verify")
+def _npu_matmul_abft_verify_meta(a, b, c, checksum_weight, *, e_max=0.001):
+    torch._check(
+        a.dim() == 2 and b.dim() == 2 and c.dim() == 2,
+        lambda: "a, b and c must be 2D tensors, but got "
+                f"{a.dim()}D, {b.dim()}D and {c.dim()}D" + ops_error(ErrCode.PARAM))
+    torch._check(
+        checksum_weight.dim() == 1,
+        lambda: f"checksum_weight must be a 1D tensor, but got {checksum_weight.dim()}D"
+                + ops_error(ErrCode.PARAM))
+    torch._check(
+        a.size(1) == b.size(0),
+        lambda: f"The K dim of a ({a.size(1)}) must be equal to the K dim of b ({b.size(0)})"
+                + ops_error(ErrCode.PARAM))
+    torch._check(
+        c.size(0) == a.size(0) and c.size(1) == b.size(1),
+        lambda: "c must have shape [M, N] derived from a and b" + ops_error(ErrCode.PARAM))
+    torch._check(
+        checksum_weight.size(0) == b.size(1),
+        lambda: f"checksum_weight must have shape [N] = [{b.size(1)}], "
+                f"but got [{checksum_weight.size(0)}]" + ops_error(ErrCode.PARAM))
+    torch._check(
+        c.dtype == torch.float32,
+        lambda: f"c only supports float32, but got {c.dtype}" + ops_error(ErrCode.TYPE))
+    torch._check(
+        a.dtype == b.dtype == checksum_weight.dtype
+        and a.dtype in (torch.float16, torch.bfloat16, torch.float32),
+        lambda: "a, b and checksum_weight must share one dtype in "
+                "float16/bfloat16/float32" + ops_error(ErrCode.TYPE))
+    torch._check(
+        e_max >= 0,
+        lambda: f"e_max must be non-negative, but got {e_max}" + ops_error(ErrCode.PARAM))
+    # compRow shape: [ceil(M / 8) * splitN], where splitN = ceil(N / 256).
+    row_bytes = (a.size(0) + 7) // 8
+    split_n = (b.size(1) + 255) // 256
+    return torch.empty([row_bytes * split_n], dtype=torch.uint8, device='meta')
