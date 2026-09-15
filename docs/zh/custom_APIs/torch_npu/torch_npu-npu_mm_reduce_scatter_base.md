@@ -88,9 +88,12 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 ## 返回值说明
 
-- **output**（`Tensor`）：输出张量，shape为\(m // world\_size, n\)。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：仅支持基础场景，数据类型和`input`保持一致。
+`Tensor`
+
+输出shape为\(m // world\_size, n\)。
+
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
+- <term>Ascend 950PR/Ascend 950DT</term>：仅支持基础场景，数据类型和`input`保持一致。
 
 ## 约束说明
 
@@ -98,11 +101,8 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
 - `world_size`必须等于实际通信域中的rank总数，且`input`的m轴必须能够被`world_size`整除。
 - **通信模式约束**：
-  - `comm_mode`为`ai_cpu`或`ccu`时：
-      - 该接口仅在训练场景下使用。
-      - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
-      - <term>Ascend 950PR/Ascend 950DT</term>：ReduceScatter集合通信数据总量不能超过16\*256MB，集合通信数据总量计算方式为：m \* n \* sizeof\(output\_dtype\)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
-  - `comm_mode`为`aiv`时，训练和推理场景均可使用。
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_mode`支持`ai_cpu`、`aiv`两种模式。`ai_cpu`模式仅在训练场景下使用，`aiv`模式训练和推理场景均可使用。
+  - <term>Ascend 950PR/Ascend 950DT</term>：`comm_mode`支持`ai_cpu`、`ccu`两种模式，两种模式均仅在训练场景下使用。ReduceScatter集合通信数据总量不能超过16\*256MB，集合通信数据总量计算方式为：m \* n \* sizeof\(output\_dtype\)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 - **comm_mode支持矩阵**：
 

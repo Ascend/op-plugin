@@ -10,35 +10,36 @@
 
 - **API功能**：实现路由专家GroupedMatmul和AlltoAllv的融合，先计算后通信，同时与共享专家MatMul计算并行融合。支持T-T量化模式（即pertensor-pertensor量化模式）和mx量化模式（即特殊的pergroup-pergroup量化模式）。
 
-- **路由专家计算公式**：
+- **计算公式**：
+    - 路由专家：
 
-    $$
-    \begin{aligned}
-    &gmm\_y = (gmm\_x \times gmm\_x\_scale) \mathbin{@} (gmm\_weight \times gmm\_weight\_scale) \\
-    &unpermute\_out = Unpermute(gmm\_y) \\
-    &y = AlltoAllv(unpermute\_out)
-    \end{aligned}
-    $$
+        $$
+        \begin{aligned}
+        &gmm\_y = (gmm\_x \times gmm\_x\_scale) \mathbin{@} (gmm\_weight \times gmm\_weight\_scale) \\
+        &unpermute\_out = Unpermute(gmm\_y) \\
+        &y = AlltoAllv(unpermute\_out)
+        \end{aligned}
+        $$
 
-    - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
-    - gmm\_x\_scale指路由专家左矩阵的量化参数。
-    - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
-    - gmm\_weight\_scale指路由专家右矩阵的量化参数。
-    - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
-    - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
-    - y指对unpermute\_out进行AlltoAllv通信输出。
+        - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
+        - gmm\_x\_scale指路由专家左矩阵的量化参数。
+        - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
+        - gmm\_weight\_scale指路由专家右矩阵的量化参数。
+        - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
+        - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
+        - y指对unpermute\_out进行AlltoAllv通信输出。
 
-- **共享专家计算公式**：
+    - 共享专家：
 
-    $$
-    mm\_y = (mm\_x \times mm\_x\_scale) \mathbin{@} (mm\_weight \times mm\_weight\_scale)
-    $$
+        $$
+        mm\_y = (mm\_x \times mm\_x\_scale) \mathbin{@} (mm\_weight \times mm\_weight\_scale)
+        $$
 
-    - mm\_x指共享专家MatMul计算的左矩阵。
-    - mm\_x\_scale指共享专家左矩阵的量化参数。
-    - mm\_weight指共享专家MatMul计算的右矩阵。
-    - mm\_weight\_scale指共享专家右矩阵的量化参数。
-    - mm\_y指共享专家MatMul计算的输出。
+        - mm\_x指共享专家MatMul计算的左矩阵。
+        - mm\_x\_scale指共享专家左矩阵的量化参数。
+        - mm\_weight指共享专家MatMul计算的右矩阵。
+        - mm\_weight\_scale指共享专家右矩阵的量化参数。
+        - mm\_y指共享专家MatMul计算的输出。
 
 ## 函数原型
 
@@ -49,7 +50,7 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 ## 参数说明
 
 - **gmm\_x**（`Tensor`）：**必选参数**，表示GroupedMatmul计算的左矩阵Tensor。数据类型支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`。支持2维，shape为\(A, H1\)，数据格式支持$ND$，其中数据类型为float4时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
-- **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatmul的右矩阵。数据类型支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`。支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$，全量化场景下，当`gmm_x`、`gmm_weight`均为float4系列时，仅支持推理场景，此时输入`gmm_x`的H1需要为偶数，且当`gmm_weight`不转置时内轴N1需为偶数，转置时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
+- **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatmul的右矩阵。数据类型与`gmm_x`一致。支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$，全量化场景下，当`gmm_x`、`gmm_weight`均为float4系列时，仅支持推理场景，此时输入`gmm_x`的H1需要为偶数，且当`gmm_weight`不转置时内轴N1需为偶数，转置时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
 - **gmm\_x\_scale**（`Tensor`）：**必选参数**，表示左矩阵的量化缩放系数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(A, ceil\(H1/64\), 2\)。数据格式为$ND$。
 - **gmm\_weight\_scale**（`Tensor`）：**必选参数**，表示右矩阵的量化参数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持4维，shape为\(e, ceil\(H1/64\), N1, 2\)。数据格式为$ND$。
 - **hcom**（`str`）：**必选参数**，表示专家并行（EP）的通信域名称，字符串长度需在\(0,128\)范围内。
@@ -58,10 +59,10 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **recv\_counts**（`List[int]`）：**必选参数**，表示接收其他卡的token数列表，数据类型支持`int64`，数组大小为e \* ep\_world\_size。
 - **gmm\_y\_dtype**（`int`）：**必选参数**，表示路由专家GroupedMatmul计算输出张量`gmm_y`的数据类型（例如torch.float16）。数据类型支持`torch.float16`、`torch.bfloat16`。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **send\_counts\_tensor**（`Tensor`）：**可选参数**，当前仅支持输入None。
-- **recv\_counts\_tensor**（`Tensor`）：**可选参数**，当前仅支持输入None。
-- **mm\_x**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的左矩阵，数据类型支持`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.float4_e2m1fn_x2`，且和`gmm_x`类型一致。支持2维，Shape为\(BS, H2\)，数据格式为$ND$，其中数据类型为float4时内轴H2需为偶数，以保证8bits可以转换为2个float4。
-- **mm\_weight**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的右矩阵，数据类型支持`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.float4_e2m1fn_x2`，且和`gmm_weight`类型一致。支持2维，shape为\(H2, N2\)。数据格式为$ND$。全量化场景下，当`mm_x`、`mm_weight`均为float4系列时，仅支持推理场景，此时输入`mm_x`的H2需要为偶数，且当`mm_weight`不转置时内轴N2需为偶数，转置时内轴H2需要为偶数，以保证8bits可以转换为2个float4。
+- **send\_counts\_tensor**（`Tensor`）：**可选参数**，默认值为`None`，当前仅支持输入None。
+- **recv\_counts\_tensor**（`Tensor`）：**可选参数**，默认值为`None`，当前仅支持输入None。
+- **mm\_x**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的左矩阵，数据类型与`gmm_x`一致。支持2维，Shape为\(BS, H2\)，数据格式为$ND$，其中数据类型为float4时内轴H2需为偶数，以保证8bits可以转换为2个float4。
+- **mm\_weight**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的右矩阵，数据类型与`gmm_x`一致。支持2维，shape为\(H2, N2\)。数据格式为$ND$。全量化场景下，当`mm_x`、`mm_weight`均为float4系列时，仅支持推理场景，此时输入`mm_x`的H2需要为偶数，且当`mm_weight`不转置时内轴N2需为偶数，转置时内轴H2需要为偶数，以保证8bits可以转换为2个float4。
 - **mm\_x\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul左矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(BS, ceil\(H2/64\), 2\)。数据格式为$ND$。
 - **mm\_weight\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul右矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(ceil\(H2/64\), N2, 2\)。数据格式为$ND$。
 - **comm\_quant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示低比特通信的量化参数，数据类型为`torch.float32`，维度为1维，当前暂不支持。
@@ -77,14 +78,13 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **gmm\_weight\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家右矩阵`gmm_weight`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
 - **gmm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家左矩阵量化系数`gmm_x_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
 - **gmm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家右矩阵量化系数`gmm_weight_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
-- **mm\_x\_dtype**（`int`）：**可选参数**，表示共享专家左矩阵`mm_x`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
-- **mm\_weight\_dtype**（`int`）：**可选参数**，表示共享专家右矩阵`mm_weight`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
-- **mm\_x\_scale\_dtype**（`int`）：**可选参数**，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
-- **mm\_weight\_scale\_dtype**（`int`）：**可选参数**，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
+- **mm\_x\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵`mm_x`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
+- **mm\_weight\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家右矩阵`mm_weight`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
+- **mm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
+- **mm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。对于PyTorch原生不支持的数据类型（如torch\_npu.float8\_e8m0）需要指定该参数取值。
 - **comm\_quant\_dtype**（`int`）：**可选参数**，默认值为`None`，低比特通信量化后的数据类型，当前暂不支持。
 - **mm\_y\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家输出张量`mm_y`的数据类型，数据类型支持`torch.float16`、`torch.bfloat16`。
-- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：取值支持`None`、`ai_cpu`和`ccu`。当为`None`时，使用AI CPU通信。
+- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。取值支持`None`、`ai_cpu`和`ccu`，当为`None`时，使用AI CPU通信。
 
 ## 返回值说明
 

@@ -38,11 +38,11 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **hcom**（`str`）：**必选参数**，通信域handle名，通过get\_hccl\_comm\_name接口获取。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce\_op**（`str`）：**可选参数**，reduce操作类型，当前版本仅支持'sum'（默认值）。
-- **bias**（`Tensor`）：**可选参数**，数据格式支持$ND$。bias当前仅支持一维，且维度大小与`output`/`x2`的最后一维大小相同。
+- **bias**（`Tensor`）：**可选参数**，默认值为`None`，数据格式支持$ND$。bias当前仅支持一维，且维度大小与`output`/`x2`的最后一维大小相同。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int32`、`float16`、`bfloat16`。
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`、`torch.float32`。perblock场景，仅支持bias输入空。
 
-- **antiquant\_scale**（`Tensor`）：**可选参数**，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
+- **antiquant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
     - pertensor场景：shape为\[1\]。
     - perchannel场景：shape为\[1,n\]或者\[n\]，n为`x2`最后一维的大小。
     - pergroup场景：shape为\[ceil\(k, antiquant\_group\_size\), n\]。其中k为`x2`第一维的大小，n为`x2`最后一维的大小，`antiquant_group_size`为伪量化场景对输入`x2`进行反量化计算的groupSize输入。
@@ -50,12 +50,12 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         > [!NOTE]
         > ceil\(k, antiquant\_group\_size\)的计算逻辑为：\(k+antiquant\_group\_size-1\)/antiquant\_group\_size，并对计算结果取整数部分。
 
-- **antiquant\_offset**（`Tensor`）：**可选参数**，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
-- **x3**（`Tensor`）：**可选参数**，matmul计算后的偏移。数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
+- **antiquant\_offset**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
+- **x3**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的偏移。数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
 
-- **dequant\_scale**（`Tensor`）：**可选参数**，matmul计算后的去量化系数。数据格式支持$ND$。支持的量化场景如下：
+- **dequant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的去量化系数。数据格式支持$ND$。支持的量化场景如下：
     - pertensor场景：shape为\[1\]。
     - perchannel场景：shape为\[n\]/\[1,n\]，n为`x2`最后一维的大小。
     - mx量化场景：数据类型为`torch_npu.float8_e8m0fnu`时，仅支持转置，`x2` shape为\[n, k\]时，x2Scale的shape为\[n, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数。
@@ -63,33 +63,33 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持pertensor、perchannel场景。数据类型支持`int64`、`uint64`、`bfloat16`、`float32`。
     - <term>Ascend 950PR/Ascend 950DT</term>：支持pertensor、perchannel、mx、perblock场景。数据类型支持`torch.int64`、`uint64`、`torch.bfloat16`、`torch.float32`、`torch_npu.float8_e8m0fnu`。
 
-- **pertoken\_scale**（`Tensor`）：**可选参数**，matmul计算后的pertoken去量化系数。若数据类型为`float32`，当`x1`为\[m,k\]时，`pertoken_scale` shape为\[m\]；当`x1`为\[b, s, k\]时，`pertoken_scale` shape为\[b\*s\]。
+- **pertoken\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的pertoken去量化系数。若数据类型为`float32`，当`x1`为\[m,k\]时，`pertoken_scale` shape为\[m\]；当`x1`为\[b, s, k\]时，`pertoken_scale` shape为\[b\*s\]。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`。
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。若数据类型为`torch_npu.float8_e8m0fnu`，mx场景：shape为\[s, ceilDiv\(k, 64\), 2\]或者\[m, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数；perblock场景：shape为\[ceilDiv\(m, 128\), ceilDiv\(k, 128\)\]。
 
-- **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，alltoall通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
-- **comm\_quant\_scale\_2**（`Tensor`）：**可选参数**，allgather通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
+- **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，默认值为`None`，alltoall通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
+- **comm\_quant\_scale\_2**（`Tensor`）：**可选参数**，默认值为`None`，allgather通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
 - **antiquant\_group\_size**（`int`）：**可选参数**，表示伪量化pre-group算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre-group时传入0；当伪量化算法模式为pre-group时传入值的范围为\[32, min\(k-1, INT\_MAX\)\]且值要求是32的倍数，其中k为`x2`第一维的大小。默认值0，为0则表示非per-group场景。
-- **group\_sizes**（`List[int]`）：**可选参数**，用于表示反量化中x1Scale/x2Scale输入的一个数在其所在的对应维度方向上可以用于该方向`x1`/`x2`输入的多少个数的反量化。group\_sizes为\[groupSizeM，groupSizeN，groupSizeK\]。groupSizeM，groupSizeN，groupSizeK表示一个反量化系数在各个维度对应的数的个数。支持参数自动推导，当根据计算公式分解的groupSizeM/groupSizeN/groupSizeK任一或多个参数为0时，算子自动推导对应的参数值，推导原理为：假设groupSizeM=0，表示m方向量化分组值由接口推断，推断公式为groupSizeM = m / scaleM（需保证m能被scaleM整除），其中m与`x1` shape中的m一致，scaleM与`x1Scale` shape中的m一致。
+- **group\_sizes**（`List[int]`）：**可选参数**，默认值为`None`，用于表示反量化中x1Scale/x2Scale输入的一个数在其所在的对应维度方向上可以用于该方向`x1`/`x2`输入的多少个数的反量化。group\_sizes为\[groupSizeM，groupSizeN，groupSizeK\]。groupSizeM，groupSizeN，groupSizeK表示一个反量化系数在各个维度对应的数的个数。支持参数自动推导，当根据计算公式分解的groupSizeM/groupSizeN/groupSizeK任一或多个参数为0时，算子自动推导对应的参数值，推导原理为：假设groupSizeM=0，表示m方向量化分组值由接口推断，推断公式为groupSizeM = m / scaleM（需保证m能被scaleM整除），其中m与`x1` shape中的m一致，scaleM与`x1Scale` shape中的m一致。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **y\_dtype**（`int`）：**可选参数**，代表输出数据类型。支持取值：5表示`torch.float16`、6表示`torch.float32`、15表示`torch.bfloat16`。
+- **y\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输出数据类型。支持取值：5表示`torch.float16`、6表示`torch.float32`、15表示`torch.bfloat16`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **x1\_dtype**（`int`）：**可选参数**，代表输入数据类型，当`x1` tensor的数据类型为`torch_npu.hifloat8`时，需要输入`torch_npu.hifloat8`，类型为`torch_npu.float4_e2m1fn_x2`时输入`torch_npu.float4_e2m1fn_x2`。
+- **x1\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`x1` tensor的数据类型为`torch_npu.hifloat8`时，需要输入`torch_npu.hifloat8`，类型为`torch_npu.float4_e2m1fn_x2`时输入`torch_npu.float4_e2m1fn_x2`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **x2\_dtype**（`int`）：**可选参数**，代表输入数据类型，当`x2` tensor的数据类型为`torch_npu.hifloat8`时，需要输入`torch_npu.hifloat8`，类型为`torch_npu.float4_e2m1fn_x2`时输入`torch_npu.float4_e2m1fn_x2`。
+- **x2\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`x2` tensor的数据类型为`torch_npu.hifloat8`时，需要输入`torch_npu.hifloat8`，类型为`torch_npu.float4_e2m1fn_x2`时输入`torch_npu.float4_e2m1fn_x2`。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **dequant\_scale\_dtype**（`int`）：**可选参数**，代表输入数据类型，当`dequant_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
+- **dequant\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`dequant_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **pertoken\_scale\_dtype**（`int`）：**可选参数**，代表输入数据类型，当`pertoken_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
+- **pertoken\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`pertoken_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
-- **comm\_quant\_mode**（`int`）：**可选参数**，代表低比特通信的量化模式，取值为0或1，当需要动态量化的低比特通信时，需要输入为1。
+- **comm\_quant\_mode**（`int`）：**可选参数**，默认值为`0`，代表低比特通信的量化模式，取值为0或1，当需要动态量化的低比特通信时，需要输入为1。
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：**暂不支持该参数。**
 
 - **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
@@ -98,7 +98,9 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
 ## 返回值说明
 
-- **output**（`Tensor`）：输出张量。数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的0维保持一致，若`x1`为2维，shape第1维度和`x2`的1维保持一致，若`x1`为3维，shape第1维度和`x1`的1维保持一致，shape第2维度和`x2`的1维保持一致。
+`Tensor`
+
+输出张量。数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的0维保持一致，若`x1`为2维，shape第1维度和`x2`的1维保持一致，若`x1`为3维，shape第1维度和`x1`的1维保持一致，shape第2维度和`x2`的1维保持一致。
 
 ## 约束说明
 

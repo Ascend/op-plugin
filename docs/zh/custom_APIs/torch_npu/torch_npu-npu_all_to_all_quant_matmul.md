@@ -92,8 +92,7 @@ torch_npu.npu_all_to_all_quant_matmul(x1, x2, hcom, world_size, *, all2all_out_f
 - **output\_scale\_dtype**（`int`）：**可选参数**，表示输出量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **comm\_scale\_dtype**（`int`）：**可选参数**，表示低比特通信量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **y\_dtype**（`int`）：**可选参数**，表示输出数据类型，支持取值为5（`torch.float16`）、6（`torch.float32`）或者15（`torch.bfloat16`）。
-- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。传入`None`时，使用`ai_cpu`通信。
+- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。取值支持`None`、`ai_cpu`、`ccu`，传入`None`时使用`ai_cpu`通信。
 
 ## 返回值说明
 
@@ -132,38 +131,38 @@ torch_npu.npu_all_to_all_quant_matmul(x1, x2, hcom, world_size, *, all2all_out_f
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |
-    | float16 | float8_e4m3fn | float32 | - | float32 | float16 | 7 | 2 |
-    | float16 | float8_e4m3fn | float32 | - | float32 | bfloat16 | 7 | 2 |
-    | float16 | float8_e4m3fn | float32 | - | float32 | float32 | 7 | 2 |
-    | float16 | float8_e5m2 | float32 | - | float32 | float16 | 7 | 2 |
-    | float16 | float8_e5m2 | float32 | - | float32 | bfloat16 | 7 | 2 |
-    | float16 | float8_e5m2 | float32 | - | float32 | float32 | 7 | 2 |
-    | bfloat16 | float8_e4m3fn | float32 | - | float32 | float16 | 7 | 2 |
-    | bfloat16 | float8_e4m3fn | float32 | - | float32 | bfloat16 | 7 | 2 |
-    | bfloat16 | float8_e4m3fn | float32 | - | float32 | float32 | 7 | 2 |
-    | bfloat16 | float8_e5m2 | float32 | - | float32 | float16 | 7 | 2 |
-    | bfloat16 | float8_e5m2 | float32 | - | float32 | bfloat16 | 7 | 2 |
-    | bfloat16 | float8_e5m2 | float32 | - | float32 | float32 | 7 | 2 |
+    | torch.float16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.float16 | 7 | 2 |
+    | torch.float16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.bfloat16 | 7 | 2 |
+    | torch.float16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.float32 | 7 | 2 |
+    | torch.float16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.float16 | 7 | 2 |
+    | torch.float16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.bfloat16 | 7 | 2 |
+    | torch.float16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.float32 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.float16 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.bfloat16 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e4m3fn | torch.float32 | - | torch.float32 | torch.float32 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.float16 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.bfloat16 | 7 | 2 |
+    | torch.bfloat16 | torch.float8_e5m2 | torch.float32 | - | torch.float32 | torch.float32 | 7 | 2 |
 
     **表 2**  mx量化数据类型约束
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |
-    | float8_e4m3fn | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | float16 | 6 | 6 |
-    | float8_e4m3fn | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | bfloat16 | 6 | 6 |
-    | float8_e4m3fn | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | float32 | 6 | 6 |
-    | float8_e4m3fn | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | float16 | 6 | 6 |
-    | float8_e4m3fn | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | bfloat16 | 6 | 6 |
-    | float8_e4m3fn | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | float32 | 6 | 6 |
-    | float8_e5m2 | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | float16 | 6 | 6 |
-    | float8_e5m2 | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | bfloat16 | 6 | 6 |
-    | float8_e5m2 | float8_e4m3fn | float32 | float8_e8m0 | float8_e8m0 | float32 | 6 | 6 |
-    | float8_e5m2 | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | float16 | 6 | 6 |
-    | float8_e5m2 | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | bfloat16 | 6 | 6 |
-    | float8_e5m2 | float8_e5m2 | float32 | float8_e8m0 | float8_e8m0 | float32 | 6 | 6 |
-    | float4_e2m1fn_x2 | float4_e2m1fn_x2 | float32 | float8_e8m0 | float8_e8m0 | float16 | 6 | 6 |
-    | float4_e2m1fn_x2 | float4_e2m1fn_x2 | float32 | float8_e8m0 | float8_e8m0 | bfloat16 | 6 | 6 |
-    | float4_e2m1fn_x2 | float4_e2m1fn_x2 | float32 | float8_e8m0 | float8_e8m0 | float32 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float16 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.bfloat16 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float32 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float16 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.bfloat16 | 6 | 6 |
+    | torch.float8_e4m3fn | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float32 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float16 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.bfloat16 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e4m3fn | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float32 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float16 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.bfloat16 | 6 | 6 |
+    | torch.float8_e5m2 | torch.float8_e5m2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float32 | 6 | 6 |
+    | torch_npu.float4_e2m1fn_x2 | torch_npu.float4_e2m1fn_x2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float16 | 6 | 6 |
+    | torch_npu.float4_e2m1fn_x2 | torch_npu.float4_e2m1fn_x2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.bfloat16 | 6 | 6 |
+    | torch_npu.float4_e2m1fn_x2 | torch_npu.float4_e2m1fn_x2 | torch.float32 | torch_npu.float8_e8m0 | torch_npu.float8_e8m0 | torch.float32 | 6 | 6 |
 
 ## 调用示例
 

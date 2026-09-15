@@ -14,46 +14,47 @@
 > [!NOTE]
 > 若未按配对关系使用，可能导致路由恢复错误或通信结果错误。
 
-- 计算公式：
-
-    $$
-    rs\_out = ReduceScatterV(expand\_x)
-    $$
-
-    $$
-    ata\_out = AlltoAllv(rs\_out)
-    $$
-
-    $$
-    combine\_out = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)
-    $$
-
-    $$
-    x = combine\_out + residual\_x
-    $$
-
-    $$
-    y = \frac{x}{RMS(x)} * gamma, \quad \text{where } RMS(x) = \sqrt{\frac{1}{H}\sum_{i=1}^{H}x_i^2 + norm\_eps}
-    $$
-
-- 新增支持特殊专家场景：
-    - zero\_expert\_num ≠ 0：通过传入大于0的zero\_expert\_num参数开启。
+- **计算公式**：
+    - 数据整合功能：
 
         $$
-        Moe(ori\_x)=0
+        rs\_out = ReduceScatterV(expand\_x)
         $$
 
-    - copy\_expert\_num ≠ 0：通过传入大于0的copy\_expert\_num参数开启，且需传入有效的ori\_x参数。
-
         $$
-        Moe(ori\_x)=ori\_x
+        ata\_out = AlltoAllv(rs\_out)
         $$
 
-    - const\_expert\_num ≠ 0：通过传入大于0的const\_expert\_num参数开启，且需传入有效的ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v参数。
+        $$
+        combine\_out = Sum(expert\_scales * ata\_out + expert\_scales * shared\_expert\_x)
+        $$
 
         $$
-        Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v
+        x = combine\_out + residual\_x
         $$
+
+        $$
+        y = \frac{x}{RMS(x)} * gamma, \quad \text{where } RMS(x) = \sqrt{\frac{1}{H}\sum_{i=1}^{H}x_i^2 + norm\_eps}
+        $$
+
+    - 特殊专家场景：
+        - zero\_expert\_num ≠ 0：通过传入大于0的zero\_expert\_num参数开启。
+
+            $$
+            Moe(ori\_x)=0
+            $$
+
+        - copy\_expert\_num ≠ 0：通过传入大于0的copy\_expert\_num参数开启，且需传入有效的ori\_x参数。
+
+            $$
+            Moe(ori\_x)=ori\_x
+            $$
+
+        - const\_expert\_num ≠ 0：通过传入大于0的const\_expert\_num参数开启，且需传入有效的ori\_x、const\_expert\_alpha\_1、const\_expert\_alpha\_2、const\_expert\_v参数。
+
+            $$
+            Moe(ori\_x)=const\_expert\_alpha\_1*ori\_x+const\_expert\_alpha\_2*const\_expert\_v
+            $$
 
 ## 函数原型
 

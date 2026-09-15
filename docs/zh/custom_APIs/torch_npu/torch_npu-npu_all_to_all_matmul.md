@@ -11,7 +11,7 @@
 
 - **API功能**：完成AlltoAll通信、Permute（保证通信后地址连续）和Matmul计算的融合，先通信后计算。
 
-- 计算公式：
+- **计算公式**：
 
     假设输入x1的shape为\(BS, H\)，x2的shape为\(H\*rankSize, N\)，rankSize为NPU卡数。
 

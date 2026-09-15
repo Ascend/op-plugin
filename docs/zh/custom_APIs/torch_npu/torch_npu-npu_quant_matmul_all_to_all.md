@@ -74,12 +74,13 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 - **output\_scale\_dtype**（`int`）：**可选参数**，表示代表输出量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **comm\_scale\_dtype**（`int`）：**可选参数**，表示低比特通信量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **y\_dtype**（`int`）：**可选参数**，表示输出数据类型，取值为5（`torch.float16`）、6（`torch.float32`）、15（`torch.bfloat16`）。
-- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
-    - <term>Ascend 950PR/Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。传入`None`时，使用`ai_cpu`通信。
+- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。取值支持`None`、`ai_cpu`、`ccu`，传入`None`时使用`ai_cpu`通信。
 
 ## 返回值说明
 
-- **y**（`Tensor`）：表示最终的计算结果，公式中的output，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，维度为2D，shape为\(BS\*rankSize, H2/rankSize\)，数据格式支持$ND$，不支持非连续的Tensor。当`y_dtype`传入且不为undefined时，根据`y_dtype`决定数据类型；当`y_dtype`为默认值None或者为undefined时，数据类型默认为`torch.float32`，表示高精度。
+`Tensor`
+
+表示最终的计算结果，公式中的output，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，维度为2D，shape为\(BS\*rankSize, H2/rankSize\)，数据格式支持$ND$，不支持非连续的Tensor。当`y_dtype`传入且不为undefined时，根据`y_dtype`决定数据类型；当`y_dtype`为默认值None或者为undefined时，数据类型默认为`torch.float32`，表示高精度。
 
 ## 约束说明
 

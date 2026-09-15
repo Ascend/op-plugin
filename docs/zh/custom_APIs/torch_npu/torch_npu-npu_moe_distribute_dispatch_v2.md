@@ -18,7 +18,7 @@
     - npu\_moe\_distribute\_dispatch中shape为\(BS \* K, \)的返回值`expand_idx`替换为shape为\(A \* 128, \)的`assist_info_for_combine`，以包含更详细的token信息辅助torch\_npu.npu\_moe\_distribute\_combine\_v2高效地进行全卡同步。
     - 新增输入参数`comm_alg`，可用于代替HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE环境变量。
 
-- 计算公式：
+- **计算公式**：
     - 量化场景：
         - 如果`quant_mode`为0（非量化）：
 

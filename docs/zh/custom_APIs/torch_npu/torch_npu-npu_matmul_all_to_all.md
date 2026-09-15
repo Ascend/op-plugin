@@ -41,7 +41,9 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
 
 ## 返回值说明
 
-- **y**（`Tensor`）：表示最终的计算结果，公式中的$output$，数据类型与计算输入`x1`或`x2`类型一致，维度为2D，shape为\(BS\*rankSize, H2/rankSize\)，数据格式支持$ND$，不支持非连续的Tensor。
+`Tensor`
+
+表示最终的计算结果，公式中的$output$，数据类型与计算输入`x1`或`x2`类型一致，维度为2D，shape为\(BS\*rankSize, H2/rankSize\)，数据格式支持$ND$，不支持非连续的Tensor。
 
 ## 约束说明
 

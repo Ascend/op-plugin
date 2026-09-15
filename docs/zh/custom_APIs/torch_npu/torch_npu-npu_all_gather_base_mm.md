@@ -12,7 +12,7 @@
 
 - **API功能**：TP切分（Tensor Parallelism，张量并行）场景下，实现allgather和matmul的融合，实现通信和计算流水并行。
 
-- 计算公式：
+- **计算公式**：
     `x1`（即`input`）代表Matmul计算的左矩阵，`x2`代表Matmul计算的右矩阵，`bias`代表Matmul计算的偏置。
 
     基础场景：

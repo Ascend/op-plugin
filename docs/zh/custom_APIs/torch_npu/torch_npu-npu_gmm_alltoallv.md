@@ -11,33 +11,34 @@
 
 - **API功能**：MoE网络中，完成路由专家GroupedMatMul、AlltoAllv融合并实现与共享专家MatMul并行融合，先计算后通信。
 
-- **路由专家计算公式**：
-    $$
-    gmm\_y = gmm\_x \times gmm\_weight
-    $$
+- **计算公式**：
+    - 路由专家：
+        $$
+        gmm\_y = gmm\_x \times gmm\_weight
+        $$
 
-    $$
-    unpermute\_out = Unpermute(gmm\_y)
-    $$
+        $$
+        unpermute\_out = Unpermute(gmm\_y)
+        $$
 
-    $$
-    y = AlltoAllv(unpermute\_out)
-    $$
+        $$
+        y = AlltoAllv(unpermute\_out)
+        $$
 
-    - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
-    - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
-    - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
-    - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
-    - y指对unpermute\_out进行AlltoAllv通信输出。
+        - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
+        - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
+        - gmm\_y指路由专家进行GroupedMatMul计算的输出，后续用于Unpermute计算。
+        - unpermute\_out是gmm\_y进行Unpermute计算的输出结果，作为AlltoAllv通信的输入。
+        - y指对unpermute\_out进行AlltoAllv通信输出。
 
-- **共享专家计算公式**：
-    $$
-    mm\_y = mm\_x \times mm\_weight
-    $$
+    - 共享专家：
+        $$
+        mm\_y = mm\_x \times mm\_weight
+        $$
 
-    - mm\_x指共享专家MatMul计算的左矩阵。
-    - mm\_weight指共享专家MatMul计算的右矩阵。
-    - mm\_y指共享专家MatMul计算的输出。
+        - mm\_x指共享专家MatMul计算的左矩阵。
+        - mm\_weight指共享专家MatMul计算的右矩阵。
+        - mm\_y指共享专家MatMul计算的输出。
 
 ## 函数原型
 

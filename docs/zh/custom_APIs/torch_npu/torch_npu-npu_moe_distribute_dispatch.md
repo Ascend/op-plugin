@@ -12,7 +12,7 @@
 
 - **API功能**：需与[torch\_npu.npu\_moe\_distribute\_combine](torch_npu-npu_moe_distribute_combine.md)配套使用，完成MoE的并行部署下的token dispatch与combine。对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor Parallelism）域的allgatherv通信（可选）。
 
-- 计算公式：`x`表示输入`x`，`scales`表示输入`scales`，`quant_mode`表示输入`quant_mode`。
+- **计算公式**：`x`表示输入`x`，`scales`表示输入`scales`，`quant_mode`表示输入`quant_mode`。
     - 如果`quant_mode`不为2（非动态量化）：
 
         $$

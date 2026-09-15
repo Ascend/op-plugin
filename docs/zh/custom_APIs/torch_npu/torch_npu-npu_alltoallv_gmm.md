@@ -11,32 +11,33 @@
 
 - **API功能**：MoE（Mixture of Experts，混合专家模型）网络中，完成路由专家AlltoAllv、Permute、GroupedMatMul融合并实现与共享专家MatMul并行融合，先通信后计算。
 
-- **路由专家计算公式**：
-    $$
-    ata\_out = AlltoAllv(gmm\_x)
-    $$
+- **计算公式**：
+    - 路由专家：
+        $$
+        ata\_out = AlltoAllv(gmm\_x)
+        $$
 
-    $$
-    permute\_out = Permute(ata\_out)
-    $$
+        $$
+        permute\_out = Permute(ata\_out)
+        $$
 
-    $$
-    gmm\_y = permute\_out \times gmm\_weight
-    $$
+        $$
+        gmm\_y = permute\_out \times gmm\_weight
+        $$
 
-    - ata\_out是gmm\_x进行AlltoAllv通信的输出结果，后续用于Permute计算。
-    - permute\_out是ata\_out进行Permute计算的输出结果，作为路由专家进行GroupedMatMul计算的左矩阵。
-    - gmm\_weight指路由专家进行GroupedMatMul计算的右矩阵。
-    - gmm\_y指路由专家进行GroupedMatMul计算的输出。
+        - ata\_out是gmm\_x进行AlltoAllv通信的输出结果，后续用于Permute计算。
+        - permute\_out是ata\_out进行Permute计算的输出结果，作为路由专家进行GroupedMatMul计算的左矩阵。
+        - gmm\_weight指路由专家进行GroupedMatMul计算的右矩阵。
+        - gmm\_y指路由专家进行GroupedMatMul计算的输出。
 
-- **共享专家计算公式**：
-    $$
-    mm\_y = mm\_x \times mm\_weight
-    $$
+    - 共享专家：
+        $$
+        mm\_y = mm\_x \times mm\_weight
+        $$
 
-    - mm\_x指共享专家MatMul计算的左矩阵。
-    - mm\_weight指共享专家MatMul计算的右矩阵。
-    - mm\_y指共享专家MatMul计算的输出。
+        - mm\_x指共享专家MatMul计算的左矩阵。
+        - mm\_weight指共享专家MatMul计算的右矩阵。
+        - mm\_y指共享专家MatMul计算的输出。
 
 ## 函数原型
 

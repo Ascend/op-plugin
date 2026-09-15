@@ -14,7 +14,7 @@
     - 支持数据整合功能，先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。
     - 支持特殊专家场景（零专家、拷贝专家、常量专家），配合dispatch\_v2的`assist_info_for_combine`实现更高效的全卡同步。
 
-- 计算公式：
+- **计算公式**：
     - 数据整合功能：
 
         $$
@@ -57,8 +57,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持共享专家场景。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持共享专家场景。
 
 - **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **assist\_info\_for\_combine**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求为1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
@@ -175,7 +174,9 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## 返回值说明
 
-- **x**（`Tensor`）：表示处理后的token，要求为2维张量，shape为\(BS, H\)，数据类型支持`bfloat16`、`float16`，与输入`expand_x`保持一致，数据格式为$ND$，不支持非连续的Tensor。
+`Tensor`
+
+表示处理后的token，要求为2维张量，shape为\(BS, H\)，数据类型支持`bfloat16`、`float16`，与输入`expand_x`保持一致，数据格式为$ND$，不支持非连续的Tensor。
 
 ## 约束说明
 
