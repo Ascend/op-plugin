@@ -14,7 +14,7 @@
 
 ## Function
 
-Applies an NPU-based DIoU operation. DIoU considers both the overlap ratio and the distance between target bounding boxes to improve localization stability.
+This API implements NPU-based DIoU (Distance Intersection over Union) computation. The algorithm comprehensively considers the distance between the centers of predicted and ground-truth bounding boxes as well as the overlap ratio of bounding boxes, making bounding box regression more stable.
 
 ## Prototype
 

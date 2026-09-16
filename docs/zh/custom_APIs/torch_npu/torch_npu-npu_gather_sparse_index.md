@@ -65,8 +65,8 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 
 - `input`的维度与`index`的维度之和减1不能超过8，即$index.dim + input.dim - 1<=8$。
 - 为获取性能收益，`input`和`index`需要满足如下约束：
-     1. `input`的shape内积需要大于$150 * 1024 / itemsize$，其中itemsize为`input` dtype对应元素大小，可以通过`torch.dtype.itemsize`查询。
-     2. `index`的shape内积大于960。
+     1. `input`的shape各维度乘积需要大于$150 * 1024 / itemsize$，其中itemsize为`input` dtype对应元素大小，可以通过`torch.dtype.itemsize`查询。
+     2. `index`的shape各维度乘积大于960。
      3. 数据需要聚合，即`input`中0值元素和非0值元素分别集中在连续区域内，而不是频繁交错分布。可将 `input != 0`按行优先顺序展开为一维布尔序列$mask$，统计相邻元素状态切换比例：
      $$
      \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}

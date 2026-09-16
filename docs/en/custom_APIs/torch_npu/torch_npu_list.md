@@ -124,7 +124,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row125771550121117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16577135019112"><a name="p16577135019112"></a><a name="p16577135019112"></a><a href="(beta)torch_npu-npu_diou.md">(beta)torch_npu.npu_diou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p12796833183010"><a name="en-us_topic_0000001655404257_p12796833183010"></a><a name="en-us_topic_0000001655404257_p12796833183010"></a>Applies an NPU-based DIoU operation. Considering the distance between targets and the overlap ratio of distance and scope, different targets or boundaries must tend to be stable.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p12796833183010"><a name="en-us_topic_0000001655404257_p12796833183010"></a><a name="en-us_topic_0000001655404257_p12796833183010"></a>This API implements NPU-based DIoU (Distance Intersection over Union) computation. The algorithm comprehensively considers the distance between the centers of predicted and ground-truth bounding boxes as well as the overlap ratio of bounding boxes, making bounding box regression more stable and improving object localization accuracy.</p>
 </td>
 </tr>
 <tr id="row95771950161112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35771150191112"><a name="p35771150191112"></a><a name="p35771150191112"></a><a href="(beta)torch_npu-npu_dtype_cast.md">(beta)torch_npu.npu_dtype_cast</a></p>

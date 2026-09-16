@@ -26,6 +26,7 @@ torch_npu.contrib.npu_iou(boxes1, boxes2, mode="ptiou", is_normalized=False, nor
 
 - **`boxes1`** (`Tensor`): Predicted bounding boxes. This parameter must be 2D with shape `(n, 4)`.
 - **`boxes2`** (`Tensor`): Predicted bounding boxes. This parameter must be 2D with shape `(m, 4)`.
+- **`mode`** (`str`): IoU computation method. Valid values are "iou" and "ptiou". "iou" = (overlap area + 0.001) / (union area + 0.001), "ptiou" = overlap area / (union area + 0.001). The default value is "ptiou".
 - **`is_normalized`** (`bool`): Indicates whether the coordinate values have been normalized. Default value: `False`.
 - **`normalized_scale`** (`float`): Normalization scale for restoring coordinates. The default value is `100`.
 
@@ -36,6 +37,8 @@ This function is commonly used for matching bounding boxes and anchors. This fun
 ## Example
 
 ```python
+>>> import torch
+>>> import torch_npu.contrib
 >>> box1 = torch.randint(0, 256, size=(32, 4)).npu()
 >>> box2 = torch.randint(0, 256, size=(16, 4)).npu()
 >>> iou = torch_npu.contrib.npu_iou(box1, box2)

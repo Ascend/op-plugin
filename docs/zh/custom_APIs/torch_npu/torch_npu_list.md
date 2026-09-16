@@ -124,7 +124,7 @@
 </tr>
 <tr id="row125771550121117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16577135019112"><a name="p16577135019112"></a><a name="p16577135019112"></a><a href="（beta）torch_npu-npu_diou.md">（beta）torch_npu.npu_diou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p12796833183010"><a name="zh-cn_topic_0000001655404257_p12796833183010"></a><a name="zh-cn_topic_0000001655404257_p12796833183010"></a>应用基于NPU的DIoU操作。考虑到目标之间距离，以及距离和范围的重叠率，不同目标或边界需趋于稳定。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p12796833183010"><a name="zh-cn_topic_0000001655404257_p12796833183010"></a><a name="zh-cn_topic_0000001655404257_p12796833183010"></a>该接口用于实现基于NPU的DIoU（距离交并比）计算。该算法综合考虑预测框与真实框中心点之间的距离以及边界框的重叠率，使边界框回归趋于稳定，提升目标定位精度。</p>
 </td>
 </tr>
 <tr id="row95771950161112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35771150191112"><a name="p35771150191112"></a><a name="p35771150191112"></a><a href="（beta）torch_npu-npu_dtype_cast.md">（beta）torch_npu.npu_dtype_cast</a></p>

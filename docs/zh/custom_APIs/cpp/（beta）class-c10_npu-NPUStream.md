@@ -106,7 +106,7 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
 
     NPUStream aclrtStream流查询，返回值类型aclrtStream，允许输入参数need_empty。
 
-    need_empty：bool类型，false表示直接返回当前stream，不用返回空stream。
+    need_empty：bool类型。false表示直接返回当前stream；true表示确保当前stream关联的任务队列清空后，再返回当前stream。
 
 ## 支持的型号
 

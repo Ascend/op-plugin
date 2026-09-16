@@ -1,7 +1,7 @@
 # (beta) torch_npu.npu_confusion_transpose
 
 > [!NOTICE]  
-> This API is planned for deprecation. Use `torch.view` and `torch.permute` instead.
+> This API is planned for deprecation. Use `Tensor.view()` and `torch.permute` instead.
 
 ## Supported Products
 

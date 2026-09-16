@@ -20,7 +20,7 @@ torch_npu/npu/memory.py
 ## Prototype
 
 ```python
-torch_npu.npu.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name)
+torch_npu.npu.memory.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name)
 ```
 
 ## Parameters
