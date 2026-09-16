@@ -95,7 +95,9 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 - **r1** (`Tensor`)：必选参数，表示$cos$旋转系数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
 - **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
 - **rotary_mode** (`str`)：可选参数，用于选择计算模式，支持`half`、`interleave`两种模式；<term>Ascend 950PR/Ascend 950DT</term>还支持`quarter`、`interleave-half`模式。默认值为`half`。
-- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，输入维度支持2维，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`，构造方式参考调用示例，默认值为None。
+- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，构造方式参考调用示例，默认值为`None`。
+    - <term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：输入维度支持2维，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+    - <term>Ascend 950PR/Ascend 950DT</term>：不支持该参数，使用默认值`None`或省略该参数。
 
 ## 返回值说明
 
@@ -223,7 +225,19 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
             device='npu:0')
     ```
 
-- rotate生成示例：
+- <term>Ascend 950PR/Ascend 950DT</term>调用示例：
+
+    ```python
+    >>> import torch
+    >>> import torch_npu
+    >>>
+    >>> x = torch.rand(2, 5, 128).npu()
+    >>> r1 = torch.rand(2, 1, 128).npu()
+    >>> r2 = torch.rand(2, 1, 128).npu()
+    >>> out = torch_npu.npu_rotary_mul(x, r1, r2, "half")
+    ```
+
+- rotate生成示例（仅适用于<term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>）：
 
     ```python
     import torch
