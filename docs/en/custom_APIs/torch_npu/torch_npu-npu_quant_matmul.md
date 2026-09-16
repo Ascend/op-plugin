@@ -114,7 +114,6 @@ Output tensor representing the computation result of quantized matrix multiplica
     |int8|int8|float32/bfloat16|None|int32/bfloat16/float32/None|float32/None|bfloat16|
     |int8|int8|float32|None|int32/bfloat16/float32/None|float32|float16|
     |int32|int32|int64/float32|None|int32/None|None|float16|
-    |int32|int32|float32|float16|None|float32|bfloat16/float16|
     |int8|int8|float32/bfloat16|None|int32/None|None|int32|
 
 ## Examples
