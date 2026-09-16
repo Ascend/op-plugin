@@ -5132,6 +5132,9 @@ official:
         dtype: self
       exec: aclnnThresholdBackward
 
+  - func: to_padded_tensor(Tensor self, float padding, SymInt[]? output_size=None) -> Tensor
+    op_api: [v2.1, newest]
+
   - func: topk(Tensor self, SymInt k, int dim=-1, bool largest=True, bool sorted=True) -> (Tensor values, Tensor indices)
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
