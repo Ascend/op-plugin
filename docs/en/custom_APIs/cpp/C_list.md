@@ -106,7 +106,7 @@ The standard C++ APIs provide fundamental capabilities such as NPU device initia
 </tr>
 <tr id="row1848933022417"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p124901730162414"><a name="p124901730162414"></a><a name="p124901730162414"></a><a href="(beta)c10_npu-GetDevice.md">(beta) c10_npu::GetDevice</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p2490183092411"><a name="p2490183092411"></a><a name="p2490183092411"></a>Obtains the NPU device ID. The return value type is <code>aclError</code>. This function is identical to <code>cudaError_t c10::cuda::GetDevice(int *<em id="i5414123319436"><a name="i5414123319436"></a><a name="i5414123319436"></a>device</em>)</code>.</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p2490183092411"><a name="p2490183092411"></a><a name="p2490183092411"></a>Obtains the NPU device ID. The return value type is <code>aclError</code>, which is identical to the return value type <code>cudaError_t</code> of the <code>c10::cuda::GetDevice</code> function in PyTorch 1.11.0.</p>
 </td>
 </tr>
 <tr id="row017092012245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p101705205249"><a name="p101705205249"></a><a name="p101705205249"></a><a href="(beta)c10_npu-SetDevice.md">(beta) c10_npu::SetDevice</a></p>

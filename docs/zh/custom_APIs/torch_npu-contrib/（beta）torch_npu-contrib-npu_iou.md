@@ -26,6 +26,7 @@ torch_npu.contrib.npu_iou(boxes1, boxes2, mode="ptiou", is_normalized=False, nor
 
 - **boxes1**（`Tensor`）：shape为(n, 4)的预测检测框。
 - **boxes2**（`Tensor`）：shape为(m, 4)的预测检测框。
+- **mode**（`str`）：选择IoU的计算方式，取值为"iou"、"ptiou"。"iou"=（重叠面积+0.001）/（并集面积+0.001），"ptiou"=重叠面积/（并集面积+0.001）。默认值为"ptiou"。
 - **is_normalized**（`bool`）：坐标值是否已经标准化。默认为False。
 - **normalized_scale**（`float`）：设置恢复坐标的标准化比例，默认100。
 
@@ -36,6 +37,8 @@ torch_npu.contrib.npu_iou(boxes1, boxes2, mode="ptiou", is_normalized=False, nor
 ## 调用示例
 
 ```python
+>>> import torch
+>>> import torch_npu.contrib
 >>> box1 = torch.randint(0, 256, size=(32, 4)).npu()
 >>> box2 = torch.randint(0, 256, size=(16, 4)).npu()
 >>> iou = torch_npu.contrib.npu_iou(box1, box2)

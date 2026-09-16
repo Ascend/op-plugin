@@ -129,7 +129,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
-- The values of `expert_ids`, `x_active_mask`, `elastic_info`, `group_ep`, `ep_world_size`, `moe_expert_num`, `group_tp`, `tp_world_size`, `expert_shard_type`, `shared_expert_num`, `shared_expert_rank_num`, `global_bs`, `comm_quant_mode`, `zero_expert_num`, `copy_expert_num`, `const_expert_num`, and `HCCL_BUFFSIZE` must be identical across all ranks during API execution. These values must also remain consistent across different layers of the network and match the corresponding parameters of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
+- The values of `expert_ids`, `x_active_mask`, `elastic_info`, `group_ep`, `ep_world_size`, `moe_expert_num`, `group_tp`, `tp_world_size`, `expert_shard_type`, `shared_expert_num`, `shared_expert_rank_num`, `global_bs`, `comm_quant_mode`, `zero_expert_num`, `copy_expert_num`, `const_expert_num`, and `HCCL_BUFFSIZE`, must be identical across all ranks during API execution. These values must also remain consistent across different layers of the network and match the corresponding parameters of [torch_npu.npu_moe_distribute_dispatch_v2](torch_npu-npu_moe_distribute_dispatch_v2.md).
 - Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 - The condition `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num < MAX_INT32` must be satisfied, where the value of `MAX_INT32` is `2147483647`.
 - Variables used in parameter tensor shapes:

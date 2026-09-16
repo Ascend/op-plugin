@@ -106,7 +106,7 @@ Implements NPU stream management functionality as an NPU stream class. An NPU st
 
     Queries the `aclrtStream` stream for `NPUStream`, allowing the input parameter `need_empty`. The return type is `aclrtStream`.
 
-    **`need_empty`** (`bool`): `False` specifies to return the current stream directly instead of an empty stream.
+    **`need_empty`** (`bool`): `False` specifies to return the current stream directly; `True` specifies to return the current stream after ensuring that the task queue associated with it is emptied.
 
 ## Supported Products
 

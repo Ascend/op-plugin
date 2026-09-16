@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_bmmV2
 
 > [!NOTICE]  
-> 该接口计划废弃，其内部通过`torch.view`/`torch.Tensor.expand`对输入张量进行形状变换（1D扩展、batch维度广播），再调用`torch.bmm`等价操作（BatchMatMul），最后`torch.view`至目标形状。可使用`torch.bmm`和`torch.view`接口进行替换。
+> 该接口计划废弃，其内部通过`torch.view`/`torch.Tensor.expand`对输入张量进行形状变换（1D扩展、batch维度广播），再调用`torch.bmm`等价操作（BatchMatMul），最后`torch.view`至目标形状。可使用`torch.bmm`和`Tensor.view()`接口进行替换。
 
 ## 产品支持情况
 

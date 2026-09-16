@@ -126,7 +126,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     - <term>Ascend 950DT</term>：仅支持UB Memory通信。
 
 - 该接口支持单算子模式和静态图模式。
-- 调用接口过程中使用的`expert_ids`、`x_active_mask`、`elastic_info`、`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`、`comm_alg`、`zero_expert_num`、`copy_expert_num`、`const_expert_num`参数、HCCL\_BUFFSIZE取值所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
+- 调用接口过程中使用的`expert_ids`、`x_active_mask`、`elastic_info`、`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`、`comm_alg`、`zero_expert_num`、`copy_expert_num`、`const_expert_num`参数、HCCL\_BUFFSIZE取值，所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
 - moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num < MAX\_INT32，其中MAX\_INT32的值为2147483647。
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 - 参数里Shape使用的变量如下：

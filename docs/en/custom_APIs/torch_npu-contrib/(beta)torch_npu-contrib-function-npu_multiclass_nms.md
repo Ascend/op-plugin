@@ -44,7 +44,7 @@ In dynamic shape scenarios, a maximum of `20` classes (`nmsed_classes`) and `100
 >>> import torch, torch_npu
 >>> from torch_npu.contrib.function import npu_multiclass_nms
 >>> boxes = torch.randint(1, 255, size=(1000, 4)).npu().half()
->>> scores = torch.randn(1000, 81).npu().half()
+>>> scores = torch.randn(1000, 21).npu().half()
 >>> det_bboxes, det_labels = npu_multiclass_nms(boxes, scores, score_thr=0.3, nms_thr=0.5, max_num=3)
 >>> print(det_bboxes.shape)
 torch.Size([3, 5])

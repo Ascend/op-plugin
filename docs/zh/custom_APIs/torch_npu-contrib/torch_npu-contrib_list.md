@@ -94,7 +94,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p137511352014"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p137511352014"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p137511352014"></a><a href="https://gitee.com/link?target=https://arxiv.org/abs/1902.09630" target="_blank" rel="noopener noreferrer">def bboxes_diou()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p10299559135513"><a name="p10299559135513"></a><a name="p10299559135513"></a>应用基于NPU的DIoU操作。考虑到目标之间距离，以及距离和范围的重叠率，不同目标或边界需趋于稳定。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p10299559135513"><a name="p10299559135513"></a><a name="p10299559135513"></a>该接口用于实现基于NPU的DIoU（距离交并比）计算。该算法综合考虑预测框与真实框中心点之间的距离以及边界框的重叠率，使边界框回归趋于稳定。</p>
 </td>
 </tr>
 <tr id="row42991659205514"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p229916594553"><a name="p229916594553"></a><a name="p229916594553"></a><a href="（beta）torch_npu-contrib-function-npu_ciou.md">（beta）torch_npu.contrib.function.npu_ciou</a></p>

@@ -1,7 +1,7 @@
 # (beta) torch_npu.npu_bmmV2
 
 > [!NOTICE]  
-> This API is planned for deprecation. Internally, the API performs shape transformations on input tensors through `torch.view` and `torch.Tensor.expand` (1D expansion and broadcasting along the batch dimension), followed by an equivalent `torch.bmm` (BatchMatMul) operation and a final `torch.view` to the target shape. Use `torch.bmm` and `torch.view` instead.
+> This API is planned for deprecation. Internally, the API performs shape transformations on input tensors through `torch.view` and `torch.Tensor.expand` (1D expansion and broadcasting along the batch dimension), followed by an equivalent `torch.bmm` (BatchMatMul) operation and a final `torch.view` to the target shape. Use `torch.bmm` and `Tensor.view()` instead.
 
 ## Supported Products
 

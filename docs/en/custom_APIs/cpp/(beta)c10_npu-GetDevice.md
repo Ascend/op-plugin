@@ -12,7 +12,7 @@ aclError c10_npu::GetDevice(c10::DeviceIndex* device)
 
 ## Function
 
-Obtains the NPU device ID. The return value type is `aclError`, which is identical to `cudaError_t c10::cuda::GetDevice(int* device)` in PyTorch 1.11.0.
+Obtains the NPU device ID. The return value type is `aclError`, which is identical to the return value type `cudaError_t` of the `c10::cuda::GetDevice` function in PyTorch 1.11.0.
 
 ## Parameters
 

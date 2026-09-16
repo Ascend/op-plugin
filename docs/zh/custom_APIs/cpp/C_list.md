@@ -106,7 +106,7 @@
 </tr>
 <tr id="row1848933022417"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p124901730162414"><a name="p124901730162414"></a><a name="p124901730162414"></a><a href="（beta）c10_npu-GetDevice.md">（beta）c10_npu::GetDevice</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p2490183092411"><a name="p2490183092411"></a><a name="p2490183092411"></a>NPU设备id获取，返回值类型aclError，与cudaError_t c10::cuda::GetDevice(int *<em id="i5414123319436"><a name="i5414123319436"></a><a name="i5414123319436"></a>device</em>)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p2490183092411"><a name="p2490183092411"></a><a name="p2490183092411"></a>NPU设备ID获取，返回值类型为aclError，与PyTorch 1.11.0版本中c10::cuda::GetDevice函数的返回值类型cudaError_t相同。</p>
 </td>
 </tr>
 <tr id="row017092012245"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p101705205249"><a name="p101705205249"></a><a name="p101705205249"></a><a href="（beta）c10_npu-SetDevice.md">（beta）c10_npu::SetDevice</a></p>

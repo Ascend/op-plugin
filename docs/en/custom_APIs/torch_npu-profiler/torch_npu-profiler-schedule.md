@@ -31,7 +31,7 @@ torch_npu.profiler.schedule(wait, active, warmup = 0, repeat = 0, skip_first = 0
   When using a cluster analysis tool or MindStudio Insight for visualization, you are advised to set `repeat = 1`, which means the process is executed once and only one set of profile data is generated. This configuration is recommended for the following reasons:
 
   - If `repeat` is greater than 1, multiple sets of profile data are generated in the same directory. You must manually divide the collected profile data folders into `repeat` equal groups and place them into separate folders for parsing. The grouping must follow the chronological order of the timestamps in the folder names.
-  - If `repeat` is set to `0`, the specific number of repeated executions is determined by the total training steps. For example, if total training steps is 100, `wait + active + warmup = 10`, and `skip_first = 10`, then `repeat = (100 - 10) / 10 = 9`. This indicates repeating 9 times and generating 9 sets of profile data.
+  - If `repeat` is set to `0`, the specific number of repeated executions is determined by the total training steps. For example, if total training steps is 100, `wait + active + warmup = 10`, and `skip_first = 10`, then the actual execution count is (100 - 10) / 10 = 9. This indicates repeating 9 times and generating 9 sets of profile data.
 
 - **`skip_first`** (`int`): Optional. Number of steps skipped before starting profile data collection. The default value is `0`. In dynamic shape scenarios, you are advised to skip the first 10 steps to ensure profile data stability. In other scenarios, you can configure this parameter as needed.
 

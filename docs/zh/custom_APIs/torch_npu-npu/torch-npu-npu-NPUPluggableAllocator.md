@@ -21,7 +21,7 @@ torch_npu/npu/memory.py
 ## 函数原型
 
 ```python
-torch_npu.npu.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name)
+torch_npu.npu.memory.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_fn_name)
 ```
 
 ## 参数说明
