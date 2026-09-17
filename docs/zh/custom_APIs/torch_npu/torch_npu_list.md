@@ -392,6 +392,10 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p950000000023"><a name="p950000000023"></a><a name="p950000000023"></a>完成量化的Matmul计算、Permute（保证通信后地址连续）和AlltoAll通信的融合，先通信后计算。支持K-C动态量化模式和mx量化模式。</p>
 </td>
 </tr>
+<tr id="npu_anti_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_anti_mx_quant"><a name="p_npu_anti_mx_quant"></a><a name="p_npu_anti_mx_quant"></a><a href="torch_npu-npu_anti_mx_quant.md">torch_npu.npu_anti_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_anti_mx_quant_desc"><a name="p_npu_anti_mx_quant_desc"></a><a name="p_npu_anti_mx_quant_desc"></a><span>将调用npu_dynamic_mx_quant量化得到的float4/float8的Tensor反量化为float16/bfloat16/float32格式，是npu_dynamic_mx_quant的逆过程。</span></p></td>
+</tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_anti_quant.md">torch_npu.npu_anti_quant</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001850161621_p0996174814315"><a name="zh-cn_topic_0000001850161621_p0996174814315"></a><a name="zh-cn_topic_0000001850161621_p0996174814315"></a>对张量x进行反量化操作，即将量化后的低精度数据恢复为浮点数。反量化是量化的逆过程，用于将低精度数据（如torch.int8、torch_npu.int4、torch_npu.hifloat8、torch.float8_e4m3fn、torch.float8_e5m2）转换回高精度浮点数。</p>
