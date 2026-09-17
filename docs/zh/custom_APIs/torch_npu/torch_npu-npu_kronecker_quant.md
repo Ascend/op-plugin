@@ -16,71 +16,71 @@
 
 - **pertoken计算公式**：
 
-   1. 输入`x`右乘`kroneckerP2`：
+    1. 输入`x`右乘`kroneckerP2`：
 
-      $$
-      x' = x @ kroneckerP2
-      $$
+        $$
+        x' = x @ kroneckerP2
+        $$
 
-   1. `kroneckerP1`左乘`x'`：
+    2. `kroneckerP1`左乘`x'`：
 
-      $$
-      x'' = kroneckerP1 @ x'
-      $$
+        $$
+        x'' = kroneckerP1 @ x'
+        $$
 
-   1. 沿着$x''$的0维计算最大绝对值并除以$(7 / clipRatio)$，以计算需量化为int4格式的量化缩放系数`quantScale`：
+    3. 沿着$x''$的0维计算最大绝对值并除以$(7 / clipRatio)$，以计算需量化为int4格式的量化缩放系数`quantScale`：
 
-      $$
-      quantScale = \frac{[\max(\operatorname{abs}(x''[0, :, :])),\ \max(\operatorname{abs}(x''[1, :, :])),\ \ldots,\ \max(\operatorname{abs}(x''[K, :, :]))]}{7 / clipRatio}
-      $$
+        $$
+        quantScale = \frac{[\max(\operatorname{abs}(x''[0, :, :])),\ \max(\operatorname{abs}(x''[1, :, :])),\ \ldots,\ \max(\operatorname{abs}(x''[K, :, :]))]}{7 / clipRatio}
+        $$
 
-   1. 计算输出的`out`：
+    4. 计算输出的`out`：
 
-      $$
-      out = x'' / quantScale
-      $$
+        $$
+        out = x'' / quantScale
+        $$
 
 - **pergroup计算公式**：
 
-   1. 输入`x`右乘`kroneckerP2`：
+    1. 输入`x`右乘`kroneckerP2`：
 
-      $$
-      x' = x @ kroneckerP2
-      $$
+        $$
+        x' = x @ kroneckerP2
+        $$
 
-   1. `kroneckerP1`左乘`x'`：
+    2. `kroneckerP1`左乘`x'`：
 
-      $$
-      x'' = kroneckerP1 @ x'
-      $$
+        $$
+        x'' = kroneckerP1 @ x'
+        $$
 
-   1. $x''$进行pergroup量化需转换shape，记为`x2`。形如[K,M,N]转换成[K,M*N]。沿着$x''$的第二个维度进行pergroup量化。一个group中包含元素对应的指数$e_0, e_1, \ldots, e_{31}$。计算$emax$：
+    3. $x''$进行pergroup量化需转换shape，记为`x2`。形如[K,M,N]转换成[K,M*N]。沿着$x''$的第二个维度进行pergroup量化。一个group中包含元素对应的指数$e_0, e_1, \ldots, e_{31}$。计算$emax$：
 
-      $$
-      emax = \max(e_0, e_1, \ldots, e_{31})
-      $$
+        $$
+        emax = \max(e_0, e_1, \ldots, e_{31})
+        $$
 
-   1. 计算reduceMaxValue和sharedExp：
+    4. 计算reduceMaxValue和sharedExp：
 
-      $$
-      reduceMaxValue = \log_2(\operatorname{reduceMax}(x2)),\ groupsize = 32
-      $$
+        $$
+        reduceMaxValue = \log_2(\operatorname{reduceMax}(x2)),\ groupsize = 32
+        $$
 
-      $$
-      sharedExp = reduceMaxValue - emax
-      $$
+        $$
+        sharedExp = reduceMaxValue - emax
+        $$
 
-   1. 计算quantScale：
+    5. 计算quantScale：
 
-      $$
-      quantScale = 2^{sharedExp}
-      $$
+        $$
+        quantScale = 2^{sharedExp}
+        $$
 
-   1. 每blocksize共享一个quantscale并计算out：
+    6. 每blocksize共享一个quantscale并计算out：
 
-      $$
-      out = x2 / quantScale
-      $$
+        $$
+        out = x2 / quantScale
+        $$
 
 ## 函数原型
 
