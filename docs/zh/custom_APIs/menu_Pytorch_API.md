@@ -67,6 +67,7 @@
         -   [（beta）torch_npu.npu_rms_norm](./torch_npu/（beta）torch_npu-npu_rms_norm.md)
         -   [（beta）torch_npu.npu_dropout_with_add_softmax](./torch_npu/（beta）torch_npu-npu_dropout_with_add_softmax.md)
         -   [torch_npu.npu_rms_norm_quant](./torch_npu/torch_npu-npu_rms_norm_quant.md)
+        -   [torch_npu.npu_rms_norm_quant_v2](./torch_npu/torch_npu-npu_rms_norm_quant_v2.md)
         -   [torch_npu.npu_rms_norm_dynamic_mx_quant](./torch_npu/torch_npu-npu_rms_norm_dynamic_mx_quant.md)
         -   [torch_npu.npu_rotary_mul](./torch_npu/torch_npu-npu_rotary_mul.md)
         -   [torch_npu.npu_scaled_masked_softmax](./torch_npu/torch_npu-npu_scaled_masked_softmax.md)
