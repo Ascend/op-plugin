@@ -326,7 +326,7 @@ torch_npu.npu_fused_infer_attention_score(
 | 约束项 | Q_S > 1 | Q_S = 1 |
 | ------ | ------- | ------- |
 | `block_size` | 最小128，最大512，须128倍数 | <li><term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：非0，最大512，推荐128。</li><li><term>Ascend 950PR/Ascend 950DT</term>：`key`、`value`输入类型为`torch.float16`、`torch.bfloat16`时需要16对齐，`key`、`value`输入类型为`torch.int8`时需要32对齐，推荐使用128，`key`、`value`输入类型是`torch.int4（torch.int32）`时需要64对齐。</li> |
-| kv dtype | `torch.float16`、`torch.bfloat16` | <li><term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`torch.float16`、`torch.bfloat16`、`torch.int8`。</li><li><term>Ascend 950PR/Ascend 950DT</term>：`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`） |
+| kv dtype | `torch.float16`、`torch.bfloat16` | <li><term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`torch.float16`、`torch.bfloat16`、`torch.int8`。</li><li><term>Ascend 950PR/Ascend 950DT</term>：`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`）</li> |
 | `query` `torch.int8` | 不支持 | 不支持 |
 | kv cache排布 | BSH/BSND仅BnBsH；BNSD/TND支持BnBsH和BnNBsD | 同左 |
 | 必须传入`actual_seq_lengths_kv` | ✓ | ✓ |

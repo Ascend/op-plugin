@@ -102,8 +102,8 @@ torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indic
 
 ## 参数说明
 
-- **permuted_tokens**（`Tensor`）：必选参数，表示经过permute计算后的输入tokens。要求是一个2D的Tensor：drop_and_pad为`False`时shape为(tokens_num * topK_num, hidden_size)，drop_and_pad为`True`时shape为(experts_num * capacity, hidden_size)，其中capacity表示每个专家能够处理的token个数。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$，支持非连续Tensor。
-- **sorted_indices**（`Tensor`）：必选参数，表示输入输出梯度的映射关系。要求是一个1D的Tensor：drop_and_pad为`False`时shape为(tokens_num * topK_num)，索引取值范围[0, tokens_num * topK_num - 1]，允许使用`-1`表示无效槽位，计算时跳过该槽位；drop_and_pad为`True`时shape为(experts_num * capacity)，索引取值范围[0, tokens_num - 1]。数据类型支持`int32`，数据格式支持$ND$，支持非连续Tensor。
+- **permuted_tokens**（`Tensor`）：必选参数，表示经过permute计算后的输入tokens。要求是一个2D的Tensor：drop_and_pad为`False`时shape为(tokens_num \* topK_num, hidden_size)，drop_and_pad为`True`时shape为(experts_num \* capacity, hidden_size)，其中capacity表示每个专家能够处理的token个数。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$，支持非连续Tensor。
+- **sorted_indices**（`Tensor`）：必选参数，表示输入输出梯度的映射关系。要求是一个1D的Tensor：drop_and_pad为`False`时shape为(tokens_num \* topK_num)，索引取值范围[0, tokens_num \* topK_num - 1]，允许使用`-1`表示无效槽位，计算时跳过该槽位；drop_and_pad为`True`时shape为(experts_num \* capacity)，索引取值范围[0, tokens_num - 1]。数据类型支持`int32`，数据格式支持$ND$，支持非连续Tensor。
 - **restore_shape**（`int[]`）：必选参数，表示输出unpermuted_tokens的shape。size大小为2，即(tokens_num, hidden_size)。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。

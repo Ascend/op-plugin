@@ -13,7 +13,7 @@
   
   多算子融合计算顺序（依次执行）：
   1. GroupedMatmul：根据group\_list对token按组切分，各组计算$X_{i}\cdot W_{i}$；
-  2. dquant：矩阵乘结果与激活量化因子$x\_scale$、权重量化因子$w\_scale$逐元素相乘，完成反量化；
+  2. dequant：矩阵乘结果与激活量化因子$x_scale$、权重量化因子$w_scale$逐元素相乘，完成反量化；
   3. swiglu：反量化结果沿N轴对半切分为$C_{i,act}$与$gate_{i}$，计算$S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$；
   4. quant：$Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$，$Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$，得到量化输出Q与量化因子Q\_scale。
 - 量化场景**A8W8**（A指激活矩阵，W指权重矩阵，8指`torch.int8`数据类型）：

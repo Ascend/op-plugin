@@ -84,7 +84,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
 - **y1**（`Tensor`）：表示量化后的输出Tensor，公式中的$y1$。数据格式支持$ND$，支持非连续的Tensor。shape与输入`x1`一致。
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型支持`torch.int8`。
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
 
 - **y2**（`Tensor`）：表示量化后的输出Tensor，公式中的$y2$。数据格式支持$ND$，支持非连续的Tensor。shape和数据类型与输出`y1`一致。
 - **x**（`Tensor`）：表示`x1`和`x2`相加的和，公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。数据类型和shape与输入`x1`一致。

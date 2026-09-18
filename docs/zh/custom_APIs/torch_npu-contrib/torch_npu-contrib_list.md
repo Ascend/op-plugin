@@ -52,7 +52,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1543482795211"><a name="p1543482795211"></a><a name="p1543482795211"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p182983598556"><a name="p182983598556"></a><a name="p182983598556"></a>在NPU上按元素方向应用Sigmoid线性单元（SiLU）。SiLU函数也称为Swish函数。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p182983598556"><a name="p182983598556"></a><a name="p182983598556"></a>在NPU上按元素应用Sigmoid线性单元（SiLU）。SiLU函数也称为Swish函数。</p>
 </td>
 </tr>
 <tr id="row152981459165519"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p729815915510"><a name="p729815915510"></a><a name="p729815915510"></a><a href="（beta）torch_npu-contrib-NpuFairseqDropout.md">（beta）torch_npu.contrib.NpuFairseqDropout</a></p>

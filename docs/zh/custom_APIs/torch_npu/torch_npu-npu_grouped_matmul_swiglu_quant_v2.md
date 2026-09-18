@@ -792,7 +792,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
     model = Model().npu()
     model = torch.compile(model, backend=npu_backend, dynamic=False)
-    y = model(x.npu(), [weight_npu], [weight_scale.npu()], xScale.npu(), groupList.npu()
+    y = model(x.npu(), [weight_npu], [weight_scale.npu()], xScale.npu(), groupList.npu())
     ```
 
   - Ascend 950PR/Ascend 950DT：mx量化场景示例-mxfp8

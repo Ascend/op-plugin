@@ -71,7 +71,7 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
 
 ## 返回值说明
 
-- **permuted_tokens**（`Tensor`）：根据indices进行扩展并排序过的tokens。要求是一个2维的Tensor，数据类型与`tokens`保持一致，数据格式支持$ND$，不支持非连续Tensor。第一维的大小为min(num_tokens * topK, num_out_tokens)，其中`num_out_tokens`为`None`或`0`时第一维的大小为num_tokens * topK，`num_out_tokens`小于`0`时按负的切片索引处理；除第一维外其余维度大小与`tokens`保持一致。
+- **permuted_tokens**（`Tensor`）：根据indices进行扩展并排序过的tokens。要求是一个2维的Tensor，数据类型与`tokens`保持一致，数据格式支持$ND$，不支持非连续Tensor。第一维的大小为min(num_tokens \* topK, num_out_tokens)，其中`num_out_tokens`为`None`或`0`时第一维的大小为num_tokens \* topK，`num_out_tokens`小于`0`时按负的切片索引处理；除第一维外其余维度大小与`tokens`保持一致。
 - **sorted_indices**（`Tensor`）：表示`permuted_tokens`和`tokens`的映射关系。要求是一个1D的Tensor，shape为(num_tokens * topK)，即`indices`的元素个数，数据类型支持`int32`，数据格式支持$ND$，不支持非连续Tensor。其中sorted_indices[i]表示`tokens`的第i // topK行在`permuted_tokens`中的位置，即permuted_tokens[sorted_indices[i]] = tokens[i // topK]，可配合`torch_npu.npu_moe_token_unpermute`接口将数据还原回原始顺序。
 
 ## 约束说明

@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：在输入张量的-1轴和-2轴上同时进行目的数据类型为`float4`（`torch_npu.float4_e1m2fn_x2`，`torch_npu.float4_e2m1fn_x2`）、`float8`（`torch.float8_e4m3fn`，`torch.float8_e5m2`）的MX量化。在-1轴和-2轴上，每32个数计算出对应的量化尺度mxscale1、mxscale2作为输出mxscale1、mxscale2的对应部分，然后分别将两组数所有元素除以对应的量化尺度，根据round\_mode转换到对应的dst\_type，得到量化结果y1和y2。
+- API功能：在输入张量的-1轴和-2轴上同时进行目标数据类型为`float4`（`torch_npu.float4_e1m2fn_x2`，`torch_npu.float4_e2m1fn_x2`）、`float8`（`torch.float8_e4m3fn`，`torch.float8_e5m2`）的MX量化。在-1轴和-2轴上，每32个数计算出对应的量化尺度mxscale1、mxscale2作为输出mxscale1、mxscale2的对应部分，然后分别将两组数所有元素除以对应的量化尺度，根据round\_mode转换到对应的dst\_type，得到量化结果y1和y2。
   - 合轴说明：算子实现时，会对-2轴（不包含）之前的所有轴进行合轴处理。即对于输入shape为$(d_0, d_1, ..., d_{n-3}, d_{n-2}, d_{n-1})$的张量，-2轴之前的维度$(d_0, d_1, ..., d_{n-3})$会被合并为一个维度，等效于将输入reshape为$(d_0 \times d_1 \times ... \times d_{n-3}, d_{n-2}, d_{n-1})$后再进行量化计算。
 - 计算公式：
   - 场景1，当scale\_alg为0时，即OCP Microscaling Formats (Mx) Specification实现：
@@ -41,7 +41,7 @@
       $$
 
     - -1轴量化后的$P_i$按对应的$V_i$的位置组成输出y1，mxscale1按对应的-1轴维度上的分组组成输出mxscale1。-2轴量化后的$P_j$按对应的$V_j$的位置组成输出y2，mxscale2按对应的-2轴维度上的分组组成输出mxscale2。
-    - emax：对应数据类型的最大正则数的指数位，对应关系如下表：
+    - emax：对应数据类型的最大正规数的指数位，对应关系如下表：
 
       | dst_type | emax |
       | --- | --- |

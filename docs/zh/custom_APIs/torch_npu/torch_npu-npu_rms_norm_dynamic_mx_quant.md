@@ -26,7 +26,7 @@
     3. DynamicMxQuant量化
         - **场景1：当scale_alg为0时，支持fp4、fp8的动态MX量化。**
 
-            将RmsNorm输出y在尾轴维度上按k=blocksize个数分组，一组k个数 $\{\{V_i\}_{i=1}^{k}\}$ 动态量化为 $\{mxscale,\{P_i\}_{i=1}^{k}\}$，1<=i<=k，blocksie=32。
+            将RmsNorm输出y在尾轴维度上按k=blocksize个数分组，一组k个数 $\{\{V_i\}_{i=1}^{k}\}$ 动态量化为 $\{mxscale,\{P_i\}_{i=1}^{k}\}$，1<=i<=k，blocksize=32。
 
             $$
             shared\_exp = floor(log_2(max_i(|V_i|))) - emax

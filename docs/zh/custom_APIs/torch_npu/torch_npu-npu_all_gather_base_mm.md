@@ -65,7 +65,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
     - <term>Ascend 950PR/Ascend 950DT</term>：**暂不支持该参数。**
 
 - **x2\_scale**（`Tensor`）：**可选参数**，mm右矩阵反量化参数。数据格式支持$ND$。数据维度为\(1, n\)，支持perchannel量化。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型的，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`int64`数据类型的`x2_scale`。
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`int64`数据类型的`x2_scale`。
     - <term>Ascend 950PR/Ascend 950DT</term>：**暂不支持该参数。**
 
 - **gather\_index**（`int`）：**可选参数**，表示gather操作对象，0：对`input`做gather，1：对`x2`做gather。默认值0。**当前版本仅支持输入0。**

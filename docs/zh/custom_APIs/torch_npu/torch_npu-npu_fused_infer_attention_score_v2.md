@@ -364,7 +364,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - `dequant_scale_key`和`dequant_scale_value`的shape：当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[N,1,D]；输出为BSND时，必须传入[N, D]；
         - 当MTP等于0时，支持`sparse_mode`=0且不传mask；当MTP大于0、小于16时，支持`sparse_mode`=3且传入优化后的`atten_mask`矩阵，`atten_mask`矩阵shape必须传入（2048*2048）；
         - 不支持tensorlist、pse、page attention、后量化；
-    
 
 ### learnable_sink约束<a name="zh-cn_topic_0000001832267082_section_learnable_sink_constraint"></a>
 
@@ -488,7 +487,6 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             | `key`支持per-channel叠加`value`支持per-token模式 | 对`key`支持per-channel，两个参数的shape可支持(N, 1, D)、(N, D)、(H)，(1, N, 1, D)、(1, N, D)、(1, H)且数据类型和`query`数据类型相同。 | 当`key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
             | 对于`value`支持per-token，两个参数的shape均为(B, S)并且数据类型固定为`torch.float32`。 | | |
             | per-token-group模式 | `dequant_scale`的shape为(1, B, N, S, D/32)，数据类型固定为`torch.float8_e8m0fnu`，不支持带`dequant_offset`。 | 当`key`、`value`数据类型为`torch.float4_e2m1fn_x2`时支持。 |
-
 
     - MXFP8全量化：
         - <term>Ascend 950PR/Ascend 950DT</term> ：

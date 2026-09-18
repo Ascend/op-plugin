@@ -13,7 +13,7 @@
 </thead>
 <tbody><tr id="row1626219913139"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p17262149181310"><a name="p17262149181310"></a><a name="p17262149181310"></a><a href="（beta）torch_npu-jit-optimize.md">（beta）torch_npu.jit.optimize</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p152621493135"><a name="p152621493135"></a><a name="p152621493135"></a>实现jit_mod优化。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p152621493135"><a name="p152621493135"></a><a name="p152621493135"></a>主要用于优化ScriptFunction或ScriptModule，以获取更好的性能。</p>
 </td>
 </tr>
 </tbody>

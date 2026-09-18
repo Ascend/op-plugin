@@ -153,7 +153,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
     a4 = torch.rand(2, 2, 3, 7).to(torch.float32).npu()     # value
     a5 = torch.rand(2, 2, 1, 7).to(torch.float32).npu()    # value_cache
     a6 = torch.tensor([[1, 0, 0],[0, 1, 0]]).to(torch.int32).npu()                # compress_lens
-    a7 = torch.tensor([0, 0, 1, 0, 1, 1]).to(torch.int32).npu()                  # compress_seq_offset
+    a7 = torch.tensor([0, 0, 1, 0, 1, 1]).to(torch.int32).npu()                  # compress_seq_offsets
     a8 = torch.tensor([2,1]).to(torch.int32).npu()                   # seq_lens
     res = torch_npu.npu_scatter_pa_kv_cache(a1, a4, a2, a5, a3, compress_lens=a6,compress_seq_offsets=a7, seq_lens=a8, cache_mode="Norm")
     ```

@@ -21,7 +21,7 @@
       一种归一化方法，通过均方根对输入进行缩放，计算简单、开销较低，常用于大模型训练。
 
 - 计算公式：
-    - **输入张量kv拆分**：拆分为两部分，其中B为批次大小，T为序列长度。以kv为576为例，拆分出512进行RMSNorm运算，拆分出64进行RoPE运算为例。
+    - **输入张量kv拆分**：拆分为两部分，其中B为批次大小，T为序列长度。以kv为576为例，拆分出512进行RMSNorm运算，拆分出64进行RoPE运算。
 
         $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$， $rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
 
