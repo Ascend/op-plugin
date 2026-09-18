@@ -1470,6 +1470,19 @@ class TestNpuRotaryMul(TestCase):
             self.assertEqual(embedding.shape, ret.shape)
             self.assertEqual(embedding.dtype, ret.dtype)
 
+    def test_npu_rotary_mul_noncontiguous(self):
+        with FakeTensorMode():
+            embedding = torch.randn(2, 4, 112, 256, dtype=torch.float32).npu()
+            cosine = torch.randn(1, 1, 256, 112, dtype=torch.float32).npu()
+            sine = torch.randn(1, 1, 256, 112, dtype=torch.float32).npu()
+            embedding_noncontiguous = embedding.permute(0, 1, 3, 2)
+            self.assertFalse(embedding_noncontiguous.is_contiguous())
+            ret = torch.ops.npu.npu_rotary_mul(embedding_noncontiguous, cosine, sine)
+
+            self.assertEqual(embedding_noncontiguous.shape, ret.shape)
+            self.assertEqual(embedding_noncontiguous.dtype, ret.dtype)
+            self.assertTrue(ret.is_contiguous())
+
     @unittest.skip("skip test_npu_rotary_mul_matrix now")
     def test_npu_rotary_mul_matrix(self):
         with FakeTensorMode():
