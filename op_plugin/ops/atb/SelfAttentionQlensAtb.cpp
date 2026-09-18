@@ -29,6 +29,22 @@ void _npu_flash_attention_qlens(
     double scale_value,
     at::Tensor& out) {
   const c10::OptionalDeviceGuard device_guard(device_of(query));
+  constexpr int64_t kSupportedBlockSize = 128;
+  TORCH_CHECK(
+      key_cache.dim() >= 2 && value_cache.dim() >= 2,
+      "_npu_flash_attention_qlens expects key_cache and value_cache to have at least 2 dimensions.");
+  TORCH_CHECK(
+      key_cache.size(1) == value_cache.size(1),
+      "_npu_flash_attention_qlens expects key_cache and value_cache to have the same blockSize, but got ",
+      key_cache.size(1),
+      " and ",
+      value_cache.size(1),
+      ".");
+  TORCH_CHECK(
+      key_cache.size(1) == kSupportedBlockSize,
+      "_npu_flash_attention_qlens only supports blockSize=128, but got blockSize=",
+      key_cache.size(1),
+      ".");
   OpParamCache<SelfAttentionParam>& selfAttentionParamCache = OpParamCache<SelfAttentionParam>::getInstance();
   SelfAttentionParam selfattentionparam;
 

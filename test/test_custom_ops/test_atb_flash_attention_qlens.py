@@ -1,6 +1,5 @@
+import os
 import unittest
-import random
-import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -20,6 +19,9 @@ class GenerateDataParams:
     head_size: int = 128
     block_size: int = 128
     num_blocks: int = 64
+    seed: int = 1234
+    seq_lens: tuple = (192, 224)
+    prefix_lens: tuple = (128, 128)
 
 
 # 封装 ref_fa_with_prefix_cache 函数的输入参数
@@ -134,28 +136,62 @@ class TestFA(TestCase):
             curr += query_len
 
     def generate_data(self, params: GenerateDataParams):
-        seq_lens = [1024] * params.num_prompts
-        context_lens = random.choices([128 * n for n in range(1, 8)], k=params.num_prompts)
-        query_lens = [seq_len - context_len for seq_len, context_len in zip(seq_lens, context_lens)]
+        self.assertEqual(len(params.seq_lens), params.num_prompts)
+        self.assertEqual(len(params.prefix_lens), params.num_prompts)
+        self.assertTrue(all(
+            0 < prefix_len < seq_len
+            for seq_len, prefix_len in zip(params.seq_lens, params.prefix_lens)
+        ))
 
+        rng = np.random.default_rng(params.seed)
+        seq_lens = list(params.seq_lens)
+        query_lens = [
+            seq_len - prefix_len
+            for seq_len, prefix_len in zip(seq_lens, params.prefix_lens)
+        ]
         num_tokens = sum(query_lens)
         head_size_v = params.head_size
 
-        query = torch.from_numpy(np.random.uniform(-1.0, 1.0, size=(num_tokens, params.num_heads, params.head_size))).to(torch.bfloat16)
-        key_cache = torch.from_numpy(np.random.uniform(-1.0, 1.0, size=(params.num_blocks, params.block_size, params.kv_heads, params.head_size))).to(torch.bfloat16)
-        value_cache = torch.from_numpy(np.random.uniform(-1.0, 1.0, size=(params.num_blocks, params.block_size, params.kv_heads, head_size_v))).to(torch.bfloat16)
+        query = torch.from_numpy(rng.uniform(
+            -1.0, 1.0, size=(num_tokens, params.num_heads, params.head_size)
+        ).astype(np.float32)).to(torch.bfloat16)
         max_seq_len = max(seq_lens)
         max_num_blocks_per_seq = (max_seq_len + params.block_size - 1) // params.block_size
-        block_tables = []
-        for _ in range(params.num_prompts):
-            block_table = [
-                random.randint(0, params.num_blocks - 1) for _ in range(max_num_blocks_per_seq)
-            ]
-            block_tables.append(block_table)
+        required_blocks = params.num_prompts * max_num_blocks_per_seq
+        self.assertGreaterEqual(params.num_blocks, required_blocks)
+
+        dense_keys = torch.from_numpy(rng.uniform(
+            -1.0,
+            1.0,
+            size=(params.num_prompts, max_seq_len, params.kv_heads, params.head_size),
+        ).astype(np.float32)).to(torch.bfloat16)
+        dense_values = torch.from_numpy(rng.uniform(
+            -1.0,
+            1.0,
+            size=(params.num_prompts, max_seq_len, params.kv_heads, head_size_v),
+        ).astype(np.float32)).to(torch.bfloat16)
+        key_cache = torch.zeros(
+            (params.num_blocks, params.block_size, params.kv_heads, params.head_size),
+            dtype=torch.bfloat16,
+        )
+        value_cache = torch.zeros(
+            (params.num_blocks, params.block_size, params.kv_heads, head_size_v),
+            dtype=torch.bfloat16,
+        )
+        block_tables = torch.zeros(
+            (params.num_prompts, max_num_blocks_per_seq), dtype=torch.int32
+        )
+        for prompt_idx in range(params.num_prompts):
+            for logical_block_idx in range(max_num_blocks_per_seq):
+                block_number = prompt_idx * max_num_blocks_per_seq + logical_block_idx
+                block_tables[prompt_idx, logical_block_idx] = block_number
+                start = logical_block_idx * params.block_size
+                end = min(start + params.block_size, max_seq_len)
+                key_cache[block_number, :end - start] = dense_keys[prompt_idx, start:end]
+                value_cache[block_number, :end - start] = dense_values[prompt_idx, start:end]
 
         seq_lens = torch.tensor(seq_lens, dtype=torch.int32)
         query_lens = torch.tensor(query_lens, dtype=torch.int32)
-        block_tables = torch.tensor(block_tables, dtype=torch.int32)
         mask = torch.ones(size=(1, max_seq_len, max_seq_len), dtype=torch.bfloat16)
         mask = torch.triu(mask, 1)
         mask *= -10000.0
@@ -184,7 +220,6 @@ class TestFA(TestCase):
             ref_output=ref_output
         )
 
-    @unittest.skip("skip case")
     @SupportedDevices(['Ascend910B'])
     def test_flash_attention_qlens(self):
         num_heads = 32
@@ -192,47 +227,69 @@ class TestFA(TestCase):
         head_dim = 128
         num_prompts = 2
         block_num = 64
-        block_size = 128
 
-        data_params = GenerateDataParams(
-            num_prompts=num_prompts,
-            num_heads=num_heads,
-            kv_heads=num_kv_heads,
-            head_size=head_dim,
-            block_size=block_size,
-            num_blocks=block_num
-        )
-        result = self.generate_data(data_params)
+        requested_block_size = os.getenv("QLENS_BLOCK_SIZE")
+        block_sizes = [int(requested_block_size)] if requested_block_size else [16, 32, 64, 128]
+        for block_size in block_sizes:
+            with self.subTest(block_size=block_size):
+                data_params = GenerateDataParams(
+                    num_prompts=num_prompts,
+                    num_heads=num_heads,
+                    kv_heads=num_kv_heads,
+                    head_size=head_dim,
+                    block_size=block_size,
+                    num_blocks=block_num
+                )
+                result = self.generate_data(data_params)
 
-        query = result.query.npu()
-        key_cache = result.key_cache.npu()
-        value_cache = result.value_cache.npu()
-        block_tables = result.block_tables.npu()
-        gt_output = result.ref_output.npu()
-        output = torch.empty_like(gt_output)
+                query = result.query.npu()
+                key_cache = result.key_cache.npu()
+                value_cache = result.value_cache.npu()
+                block_tables = result.block_tables.npu()
+                output = torch.full_like(result.ref_output, float("nan"), device="npu")
 
-        seq_lens = result.seq_lens
-        query_lens = result.query_lens
+                scale = head_dim ** -0.5
+                mask_compress = torch.ones(size=(128, 128), dtype=torch.bfloat16)
+                mask_compress = torch.triu(mask_compress, 1).npu()
 
-        scale = head_dim ** -0.5
+                def run_qlens():
+                    torch_npu._npu_flash_attention_qlens(
+                        query=query,
+                        key_cache=key_cache,
+                        value_cache=value_cache,
+                        block_table=block_tables,
+                        mask=mask_compress,
+                        seq_len=result.query_lens,
+                        context_lens=result.seq_lens,
+                        num_kv_heads=num_kv_heads,
+                        num_heads=num_heads,
+                        scale_value=scale,
+                        out=output)
 
-        mask_compress = torch.ones(size=(128, 128), dtype=torch.bfloat16)
-        mask_compress = torch.triu(mask_compress, 1)
-        mask_compress = mask_compress.npu()
+                if block_size != 128:
+                    with self.assertRaisesRegex(RuntimeError, "blockSize=128"):
+                        run_qlens()
+                    continue
 
-        torch_npu._npu_flash_attention_qlens(
-            query=query,
-            key_cache=key_cache,
-            value_cache=value_cache,
-            block_table=block_tables,
-            mask=mask_compress,
-            seq_len=query_lens,
-            context_lens=seq_lens,
-            num_kv_heads=num_kv_heads,
-            num_heads=num_heads,
-            scale_value=scale,
-            out=output)
-        self.assertRtolEqual(output, gt_output)
+                run_qlens()
+                torch_npu.npu.synchronize()
+
+                output_cpu = output.cpu().float()
+                reference_cpu = result.ref_output.float()
+                max_abs = torch.max(torch.abs(output_cpu - reference_cpu)).item()
+                cosine = torch.nn.functional.cosine_similarity(
+                    output_cpu.flatten(), reference_cpu.flatten(), dim=0
+                ).item()
+                nan_count = torch.isnan(output_cpu).sum().item()
+                inf_count = torch.isinf(output_cpu).sum().item()
+                print(
+                    f"block_size={block_size} max_abs={max_abs:.8f} "
+                    f"cosine={cosine:.8f} nan_count={nan_count} inf_count={inf_count}"
+                )
+
+                self.assertEqual(nan_count, 0)
+                self.assertEqual(inf_count, 0)
+                self.assertRtolEqual(output_cpu, reference_cpu)
 
 if __name__ == '__main__':
     run_tests()
