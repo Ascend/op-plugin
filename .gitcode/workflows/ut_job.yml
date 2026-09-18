@@ -39,6 +39,10 @@ on:
       TEST_WORLD_SIZE:
         required: false
         type: string
+      TARGET_BRANCH:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.base.ref }}
 
 jobs:
   JOB_UT:
@@ -55,7 +59,6 @@ jobs:
         id: check_support
         run: |
           PYTORCH_BRANCH="${{ inputs.pytorch_branch }}"
-          TARGET_BRANCH="${{ inputs.TARGET_BRANCH }}"
           echo "TARGET_BRANCH=${TARGET_BRANCH}"
           echo "PYTORCH_BRANCH=${PYTORCH_BRANCH}"
           if [ "${TARGET_BRANCH}" = "master" ]; then

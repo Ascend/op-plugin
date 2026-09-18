@@ -42,6 +42,7 @@ permissions:
   repository: read
   id-token: write
   pr: write
+  note: write
 
 stages:
   stage_1:
@@ -50,7 +51,7 @@ stages:
     jobs:
       Detect_file_changes:
         name: Detect_file_changes
-        runs-on: [ self-hosted, x86, cpu=32 ]
+        runs-on: [ self-hosted, default, x86, cpu=16 ]
         container:
           image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
         outputs:
@@ -108,7 +109,7 @@ stages:
       associate_pr_comment:
         name: associate_pr_comment
         select: selected_by_default
-        runs-on: [ self-hosted, x86, cpu=32 ]
+        runs-on: [ self-hosted, default, x86, cpu=16 ]
         steps:
           - name: associate-pr-comment
             uses: associate-pr-comment
@@ -128,9 +129,9 @@ stages:
     select: selected_by_default
     jobs:
       CodeCheck_pre_commit:
-        name: CodeCheck_pre_commit
+        name: pre-commit
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
-        runs-on: [ self-hosted, x86, cpu=32 ]
+        runs-on: [ self-hosted, default, x86, cpu=16 ]
         container:
           image: swr.cn-north-4.myhuaweicloud.com/mindspore/mindspore_python3.11:v0.1
         steps:
@@ -151,12 +152,12 @@ stages:
               wget --no-host-directories -c --no-check-certificate https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta-codecheck/gitleaks
               chmod +x gitleaks
               cd -
-          - name: pre-commit
-            uses: openlibing-pre-commit-action
+          - name: Run pre-commit
+            uses: openlibing/pre-commit-action@v1.0.0
 
       sca-pr:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
-        runs-on: [ self-hosted, x86, cpu=32 ]
+        runs-on: [ self-hosted, default, x86, cpu=16 ]
         steps:
           - name: checkout
             uses: checkout
@@ -167,7 +168,7 @@ stages:
 
       malicious-scan:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
-        runs-on: [ self-hosted, x86, cpu=32 ]
+        runs-on: [ self-hosted, default, x86, cpu=16 ]
         steps:
           - name: checkout
             uses: checkout
