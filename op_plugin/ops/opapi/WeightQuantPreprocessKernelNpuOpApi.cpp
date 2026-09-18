@@ -77,7 +77,7 @@ static bool is_transpose_certain_two_dims(const at::Tensor& tensor, int64_t firs
   return tensor.stride(first_dim + 1) == tensor.stride(first_dim) * tensor.size(first_dim);
 }
 
-// A16W4（INT4 / FP4 E2M1，非 MX）torch 侧统一用 uint8 载体物理打包（每字节 2 个 4-bit 元素），
+// A16W4（INT4 / FP4 E2M1，含 MX）torch 侧统一用 uint8 载体物理打包（每字节 2 个 4-bit 元素），
 // 与 aclnnWeightQuantBatchMatmulV2 的 uint8 packed 输入约定一致；其他载体直接拒绝
 static void check_a16w4_uint8_carrier(const QuantContext& ctx) {
   TORCH_CHECK(
@@ -200,7 +200,7 @@ bool judge_mm_a16s4_per_channel(QuantContext& ctx) {
   if (x_dtype_match && weight_acl_dtype == ACL_INT4 && ctx.weight.dim() == DIMS_2) {
     int64_t scale_dim = ctx.weight_scale.dim();
     bool is_per_channel = (scale_dim == DIMS_1) || (scale_dim == DIMS_2 && ctx.weight_scale.size(0) == 1);
-    // 转置状态内部分流：转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16s4）
+    // 转置状态内部分流：转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16w4）
     if (is_per_channel && ctx.weight_scale.numel() > 1) {
       check_a16w4_uint8_carrier(ctx);
       ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
@@ -218,7 +218,7 @@ bool judge_mm_a16s4_per_group(QuantContext& ctx) {
 
   bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
 
-  // A16S4 per-group：转置状态内部分流，转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16s4）
+  // A16S4 per-group：转置状态内部分流，转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16w4）
   if (x_dtype_match && weight_acl_dtype == ACL_INT4 && x_scale_acl_dtype == ACL_DT_UNDEFINED &&
       ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2 && ctx.weight_scale.size(0) > 1) {
     check_a16w4_uint8_carrier(ctx);
@@ -239,6 +239,7 @@ bool judge_mm_a16f4_nz_pergroup(QuantContext& ctx) {
   bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
 
   // A16F4 per-group NZ：FP4 weight + per-group scale [G, N]（G > 1），仅支持非转置 weight
+  // （pergroup 转置无下游 wqbmmv2 支持，整体不支持；MX 转置 ND 直拷见 judge_mm_a16f4_mx）
   if (x_dtype_match && scale_dtype_match && weight_acl_dtype == ACL_FLOAT4_E2M1 &&
       x_scale_acl_dtype == ACL_DT_UNDEFINED && ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2 &&
       ctx.weight_scale.size(0) > 1 && !is_transpose_certain_two_dims(ctx.weight, 0)) {
@@ -258,44 +259,25 @@ bool judge_mm_a16f4_mx(QuantContext& ctx) {
 
   bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
 
-  // A16 MXFP4：FP4 weight + MX scale（E8M0，2D [K/32, N] 连续），仅支持非转置 weight
+  // A16 MXFP4：FP4 weight + MX scale（E8M0，2D [K/32, N]，转置时为 strides [1, K/32] 视图）；
+  // 转置状态内部分流：转置 → ND 直拷（wqbmmv2 MX kernel 支持 ND 转置），非转置 → NZ 转换
   if (x_dtype_match && weight_acl_dtype == ACL_FLOAT4_E2M1 && weight_scale_acl_dtype == ACL_FLOAT8_E8M0 &&
-      x_scale_acl_dtype == ACL_DT_UNDEFINED && ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2 &&
-      !is_transpose_certain_two_dims(ctx.weight, 0)) {
+      x_scale_acl_dtype == ACL_DT_UNDEFINED && ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2) {
     check_a16w4_uint8_carrier(ctx);
-    ctx.is_weight_trans = false;
+    ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
     return true;
   }
   return false;
 }
 
-// 校验镜像 strides 的寻址包络不超出按 numel 最小分配的 buffer；
-// 连续/确定转置视图必过，padding/重叠/expand 视图直接拒绝而不是写出界
-static void check_strides_envelope(c10::IntArrayRef sizes, c10::IntArrayRef strides, int64_t numel) {
-  int64_t max_offset = 0;
-  for (size_t i = 0; i < sizes.size(); ++i) {
-    TORCH_CHECK(strides[i] > 0, "expanded/overlapped view is not supported here", OPS_ERROR(ErrCode::PARAM));
-    max_offset += (sizes[i] - 1) * strides[i];
-  }
-  TORCH_CHECK(max_offset < numel, "mirrored strides exceed output allocation: max offset ", max_offset,
-              " vs numel ", numel, OPS_ERROR(ErrCode::PARAM));
-}
-
-static void prepare_out_weight_scale(QuantContext& ctx) {
-  auto scale_view_shape = op_infer::array_to_small_vector(ctx.weight_scale.sizes());
-  ctx.out_weight_scale = npu_preparation::apply_tensor_without_format(scale_view_shape, ctx.weight_scale.options());
-  check_strides_envelope(ctx.weight_scale.sizes(), ctx.weight_scale.strides(), ctx.out_weight_scale.numel());
-  // 保持与输入 scale 相同的 strides（ND per-group 转置场景需配转置 scale），连续输入时为空操作
-  ctx.out_weight_scale =
-      ctx.out_weight_scale.as_strided_(scale_view_shape, op_infer::array_to_small_vector(ctx.weight_scale.strides()));
+// 直拷输出别名：out 直接复用输入 tensor（共享 storage 与 view），aclnn 直拷路径同址时无拷贝
+static void prepare_out_weight_scale_direct(QuantContext& ctx) {
+  ctx.out_weight_scale = ctx.weight_scale;
 }
 
 static void prepare_out_weight_nd(QuantContext& ctx) {
-  auto weight_view_shape = op_infer::array_to_small_vector(ctx.weight.sizes());
-  ctx.out_weight = npu_preparation::apply_tensor_without_format(weight_view_shape, ctx.weight.options());
-  check_strides_envelope(ctx.weight.sizes(), ctx.weight.strides(), ctx.out_weight.numel());
-  // ND 直拷是物理透传，out_weight 必须与 weight 保持相同的 sizes/strides（转置场景尤为关键）
-  ctx.out_weight = ctx.out_weight.as_strided_(weight_view_shape, op_infer::array_to_small_vector(ctx.weight.strides()));
+  // ND 直拷为物理透传，out_weight 直接别名 weight（共享 storage 与 view，转置场景尤为关键）
+  ctx.out_weight = ctx.weight;
 }
 
 template <bool IsGmm, int64_t NzC0, aclFormat OutWeightFormat>
@@ -377,8 +359,8 @@ static void prepare_out_weight_nz_a16w4(QuantContext& ctx) {
       ctx.out_weight, ctx.out_weight.sizes(), storage_shape, ctx.out_weight.strides(), ACL_FORMAT_FRACTAL_NZ_C0_8);
 }
 
-// A16S4 内部分流：转置 weight → ND 直拷（物理透传，与转置状态无关）；非转置 → NZ 转换
-static void prepare_out_weight_a16s4(QuantContext& ctx) {
+// A16W4（INT4/FP4）转置分流：转置 weight → ND 直拷（物理透传，与转置布局无关）；非转置 → NZ 转换
+static void prepare_out_weight_a16w4(QuantContext& ctx) {
   if (ctx.is_weight_trans) {
     prepare_out_weight_nd(ctx);
   } else {
@@ -418,24 +400,17 @@ static void prepare_out_weight_scale_mx(QuantContext& ctx) {
   }
 }
 
-static void prepare_out_weight_offset(QuantContext& ctx) {
+static void prepare_out_weight_offset_direct(QuantContext& ctx) {
   if (ctx.weight_offset.has_value() && ctx.weight_offset.value().defined()) {
-    auto offset_sizes = op_infer::array_to_small_vector(ctx.weight_offset.value().sizes());
-    ctx.out_weight_offset =
-        npu_preparation::apply_tensor_without_format(offset_sizes, ctx.weight_offset.value().options());
-    check_strides_envelope(
-        ctx.weight_offset.value().sizes(), ctx.weight_offset.value().strides(), ctx.out_weight_offset.numel());
-    // 与 prepare_out_weight_scale 同理：保持与输入 offset 相同的 strides，
-    // 转置场景下游 wqbmmv2 要求 antiquantOffset 与 weight 连续/转置状态一致，连续输入时为空操作
-    ctx.out_weight_offset = ctx.out_weight_offset.as_strided_(
-        offset_sizes, op_infer::array_to_small_vector(ctx.weight_offset.value().strides()));
+    // offset 为直拷，out 直接别名输入（共享 storage 与 view，转置场景 strides 一并继承）
+    ctx.out_weight_offset = ctx.weight_offset.value();
   }
 }
 
-static void prepare_out_bias(QuantContext& ctx) {
+static void prepare_out_bias_direct(QuantContext& ctx) {
   if (ctx.bias.has_value() && ctx.bias.value().defined()) {
-    auto bias_sizes = op_infer::array_to_small_vector(ctx.bias.value().sizes());
-    ctx.out_bias = npu_preparation::apply_tensor_without_format(bias_sizes, ctx.bias.value().options());
+    // bias 为直拷，out 直接别名输入
+    ctx.out_bias = ctx.bias.value();
   }
 }
 
@@ -451,39 +426,40 @@ static const std::unordered_map<c10_npu::SocVersion, std::vector<DataFlowConfig>
        {// FP4 逻辑 C0 为 32，torch 层用 1 个 int8/uint8 元素打包 2 个 FP4，因此物理存储的 C0 维长度为 16
         prepare_out_weight_nz<false, NZ_C0_16, ACL_FORMAT_FRACTAL_NZ_C0_16>,
         prepare_out_weight_scale_mx<false>,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_gmm_mx_a8w4,
        {// FP4 逻辑 C0 为 32，torch 层用 1 个 int8/uint8 元素打包 2 个 FP4，因此物理存储的 C0 维长度为 16
         prepare_out_weight_nz<true, NZ_C0_16, ACL_FORMAT_FRACTAL_NZ_C0_16>,
         prepare_out_weight_scale_mx<true>,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_mm_a16s4_per_tensor,
        {prepare_out_weight_nd,
-        prepare_out_weight_scale,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_mm_a16s4_per_channel,
-       {prepare_out_weight_a16s4,
-        prepare_out_weight_scale,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+       {prepare_out_weight_a16w4,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_mm_a16s4_per_group,
-       {prepare_out_weight_a16s4,
-        prepare_out_weight_scale,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+       {prepare_out_weight_a16w4,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_mm_a16f4_nz_pergroup,
        {prepare_out_weight_nz_a16w4,
-        prepare_out_weight_scale,
-        prepare_out_weight_offset,
-        prepare_out_bias}},
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
       {judge_mm_a16f4_mx,
-       {prepare_out_weight_nz_a16w4,
-        prepare_out_weight_scale,
-        prepare_out_weight_offset,
-        prepare_out_bias}}}},
+       {// 转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16w4 内部分流）
+        prepare_out_weight_a16w4,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}}}},
 };
 
 } // namespace
