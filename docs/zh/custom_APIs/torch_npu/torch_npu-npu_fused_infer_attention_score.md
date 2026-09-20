@@ -87,7 +87,7 @@ torch_npu.npu_fused_infer_attention_score(
 
 - **query** (`Tensor`)：attention的Query输入。数据格式：$ND$，不支持非连续Tensor。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型：`torch.float16`、`torch.bfloat16`。
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型：`torch.float16`、`torch.bfloat16`、`torch.int8`。
+  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型：`torch.float16`、`torch.bfloat16`。
 
 - **key** (`Tensor`)：attention的Key输入。数据类型：`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`容器，即8个`torch.int4`拼接为一个`torch.int32`），数据格式：$ND$，不支持非连续Tensor。
 
@@ -98,7 +98,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **pse_shift** (`Tensor`,可选)：位置编码参数。数据类型：`torch.float16`、`torch.bfloat16`（需与`query`类型满足推导规则），数据格式：$ND$，不支持非连续，默认值：None。
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型：Q_S > 1时：shape为(B, Q_N, Q_S, KV_S)或(1, Q_N, Q_S, KV_S)；KV_S非32字节对齐建议padding到32字节。Q_S = 1时：shape为(B, Q_N, 1, KV_S)或(1, Q_N, 1, KV_S)；仅支持D轴16整除。
   - <term>Ascend 950PR/Ascend 950DT</term>：
-    - Q_S不为1，要求在`pse_shift`为`float16`类型时，此时的`query`为`float16`或`int8`类型；而在`pse_shift`为`bfloat16`类型时，要求此时`query`为`bfloat16`类型。输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S)，其中Q_S为query的shape中的S，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
+    - Q_S不为1，要求在`pse_shift`为`float16`类型时，此时的`query`为`float16`类型；而在`pse_shift`为`bfloat16`类型时，要求此时`query`为`bfloat16`类型。输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S)，其中Q_S为query的shape中的S，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
     - Q_S为1，要求在`pse_shift`为`float16`类型时，此时的`query`为`float16`类型；而在`pse_shift`为`bfloat16`类型时，要求此时`query`为`bfloat16`类型。输入shape类型需为(B, N, 1, KV_S)或(1, N, 1, KV_S)，其中N为num_heads，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
   
 #### Mask与序列长度参数
@@ -449,7 +449,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **S轴**：≤ 20971520 (20M)。
 - **D对齐**：
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`int8` 须32字节对齐，`int4` 须64字节对齐，`float16`/`bfloat16` 须16字节对齐。
-  - <term>Ascend 950PR/Ascend 950DT</term>：非量化场景：`query`，`key`，`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。全量化场景：`query`，`key`，`value`的类型全部为`torch.int8`时，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch.int4`（`torch.int32`），其中当`key`、`value`类型为`torch.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D轴8对齐）。
+  - <term>Ascend 950PR/Ascend 950DT</term>：非量化场景：`query`，`key`，`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch.int4`（`torch.int32`），其中当`key`、`value`类型为`torch.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D轴8对齐）。
 - **actual_seq_lengths**：
   - <term>Ascend 950PR/Ascend 950DT</term>：该参数应为非负数，在`input_layout`不同时，其含义与拦截条件不同：一般情况下，该入参为可选入参，其长度为1或大于等于`query`的Batch值，该入参中的值代表每个Batch的实际长度，其值应该不大于Q_S。当`input_layout`为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 - **actual_seq_lengths_kv**：
