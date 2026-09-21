@@ -185,6 +185,20 @@ class TestScaledDotProductAttention(TestCase):
         npu_output = torch.nn.functional.scaled_dot_product_attention(query.npu(), key.npu(), value.npu())
         self.assertRtolEqual(cpu_output.to(torch.float16), npu_output, 0.001)
 
+    @unittest.skipIf(torch.__version__ < "2.14.0", "Only validated on 2.14.0")
+    def test_sdpa_attn_mask_and_is_causal_error(self):
+        q = torch.randn(2, 4, 8, 16).npu()
+        k = torch.randn(2, 4, 8, 16).npu()
+        v = torch.randn(2, 4, 8, 16).npu()
+        fp32_mask = torch.zeros(8, 8, device="npu")
+        bool_mask = torch.zeros(8, 8, dtype=torch.bool, device="npu")
+        expected = "_scaled_dot_product_attention: Explicit attn_mask should not be set when is_causal=True"
+
+        for mask in (fp32_mask, bool_mask):
+            with self.assertRaises(RuntimeError) as cm:
+                F.scaled_dot_product_attention(q, k, v, attn_mask=mask, is_causal=True)
+            self.assertIn(expected, str(cm.exception))
+
 
 if __name__ == "__main__":
     run_tests()
