@@ -169,7 +169,7 @@
 ## Prototype
 
 ```python
-torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, group_list, *, smooth_scale=None, weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=0, quant_mode=0, quant_dtype=0, group_list_type=0, tuning_config=None) -> (Tensor, Tensor)
+torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, group_list, *, smooth_scale=None, weight_assist_matrix=None, bias=None, dequant_mode=0, dequant_dtype=6, quant_mode=0, quant_dtype=0, group_list_type=0, tuning_config=None) -> (Tensor, Tensor)
 ```
 
 ## Parameters
@@ -203,8 +203,8 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR/Ascend 950DT</term>: Currently, only `0` and `2` are supported.
 
 - **`dequant_dtype`** (`int`): Optional. Dequantization data type. This parameter is of type `int32`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `0` (indicating `float32`) is supported.
-  - <term>Ascend 950PR/Ascend 950DT</term>: The default value is `torch.int8`. Currently, `torch.float32`, `torch.bfloat16`, and `torch.float16` are supported.
+  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `6` (indicating `float32`) is supported.
+  - <term>Ascend 950PR/Ascend 950DT</term>: The default value is `torch.float32`. Currently, `torch.float32`, `torch.bfloat16`, and `torch.float16` are supported.
 
 - **`quant_mode`** (`int`): Optional. Quantization mode after SwiGLU. This parameter is of type `int32`. Valid values are `0` (default, `pertoken` quantization), `1` (`pergroup` quantization), or `2` (MX quantization).
   - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `0` (`pertoken` quantization) is supported.
