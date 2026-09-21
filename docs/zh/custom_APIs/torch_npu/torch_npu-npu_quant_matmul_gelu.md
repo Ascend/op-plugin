@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品                                            | 是否支持 |
-|-----------------------------------------------|:----:|
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>  |  √   |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  |  √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
@@ -100,6 +102,7 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
     - 如果需要使用$NZ$格式以提升性能，可以手动调用`torch_npu.npu_format_cast`完成输入`x2`（weight）的$NZ$格式转换。
     - 转置信息由算子内部根据tensor的stride自动推导，无需手动指定。
 
+<!-- npu="A3,910b" id3 -->
 - 输入参数间支持的数据类型组合情况如下：
 
     **表 1** <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
@@ -112,6 +115,7 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
     | int32 | int32 | float32  | bfloat16  | int32/None                          | bfloat16  |
     | int4  | int4  | float32  | float32   | int32/None                          | float16   |
     | int4  | int4  | float32  | bfloat16  | int32/None                          | bfloat16  |
+<!-- end id3 -->
 
 ## 调用示例
 

@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| :--- | :------: |
-| <term>Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
@@ -77,8 +79,13 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，取值范围\[1, 1024\]，并且满足moe\_expert\_num\%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`tp_recv_counts`输出。
+
+    <!-- npu="A3" id3 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+    <!-- end id3 -->
+    <!-- npu="950" id4 -->
     - <term>Ascend 950DT</term>：不支持TP通信域，使用默认输入。
+    <!-- end id4 -->
 
 - **x\_active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信，默认所有token参与通信，要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 - **activation\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -93,12 +100,22 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **const\_expert\_v**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
 - **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。当有TP域通信时，字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
 - **tp\_world\_size**（`int`）：**可选参数**，TP通信域size。有TP域通信才需要传参。
+
+    <!-- npu="A3" id5 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
+    <!-- end id5 -->
+    <!-- npu="950" id6 -->
     - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值即可。
+    <!-- end id6 -->
 
 - **tp\_rank\_id**（`int`）：**可选参数**，TP通信域本卡ID。有TP域通信才需要传参。
+
+    <!-- npu="A3" id7 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的`tp_rank_id`不重复。无TP域通信时，传0即可。
+    <!-- end id7 -->
+    <!-- npu="950" id8 -->
     - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值0即可。
+    <!-- end id8 -->
 
 - **expert\_shard\_type**（`int`）：**可选参数**，表示共享专家卡排布类型。当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 - **shared\_expert\_num**（`int`）：**可选参数**，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
@@ -122,24 +139,25 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 ## 约束说明
 
 - 该接口支持推理场景下使用。
+<!-- npu="950" id9 -->
 - 通信方式约束：
     - <term>Ascend 950DT</term>：仅支持UB Memory通信。
+<!-- end id9 -->
 
 - 该接口支持单算子模式和静态图模式。
 - 调用接口过程中使用的`expert_ids`、`x_active_mask`、`elastic_info`、`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`、`comm_alg`、`zero_expert_num`、`copy_expert_num`、`const_expert_num`参数、HCCL\_BUFFSIZE取值，所有卡需保持一致，网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
 - moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num < MAX\_INT32，其中MAX\_INT32的值为2147483647。
+
+<!-- npu="A3" id10 -->
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+<!-- end id10 -->
 - 参数里Shape使用的变量如下：
     - A：表示本卡接收的最大token数量，取值范围如下：
         - 对于共享专家，要满足A=global\_bs\*shared\_expert\_num/shared\_expert\_rank\_num。
         - 对于MoE专家，当`global_bs`为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当`global_bs`非0时，要满足A\>=global\_bs\*min\(local\_expert\_num, K\)。
 
-    - H：表示hidden size隐藏层大小。
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[1024, 8192\]。
-
-    - BS：表示待发送的token数量。
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围为0<BS≤512。
-
+    - H：表示hidden size隐藏层大小，取值范围\[1024, 8192\]。
+    - BS：表示待发送的token数量，取值范围为0<BS≤512。
     - K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num。
     - local\_expert\_num：表示本卡专家数量。
         - 对于共享专家卡，local\_expert\_num=1。
@@ -156,7 +174,10 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - 通信域使用约束：
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_add_rms_norm`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_add_rms_norm`算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
+
+    <!-- npu="A3" id13 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：一个通信域内的节点需在一个超节点内，不支持跨超节点。
+    <!-- end id13 -->
 
 ## 调用示例
 

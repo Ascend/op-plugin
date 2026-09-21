@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term> | √ |
-|<term>Atlas A2 训练系列产品</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
@@ -47,6 +49,7 @@ torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
   output = torch_npu.npu_swiglu(input_tensor.npu(), dim = -1)
   ```
 
+<!-- npu="950" id3 -->
 - 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
 
     ```python
@@ -69,3 +72,4 @@ torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
     model = torch.compile(model, fullgraph=True, backend=npu_backend, dynamic=False)
     output = model(x, dim=-1)
     ```
+<!-- end id3 -->

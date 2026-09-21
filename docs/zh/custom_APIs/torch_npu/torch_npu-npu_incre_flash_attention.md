@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>            |    √     |
-|<term>Atlas 推理系列加速卡产品</term>   | √  |
+<!-- npu="910b" id1 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id1 -->
+<!-- npu="310p" id11 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id11 -->
 
 ## 功能说明
 
@@ -24,39 +26,93 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 ## 参数说明
 
 - **query** (`Tensor`)：必选参数。attention结构的Query输入，数据格式支持$ND$。其中$ND$表示N-Dimensional Tensor（任意维张量）。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
+    <!-- npu="310p" id12 -->
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
+    <!-- end id12 -->
+
+    <!-- npu="910b" id2 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+    <!-- end id2 -->
 
 - **key** (`Tensor`)：必选参数。attention结构的Key输入，数据格式支持$ND$。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    <!-- npu="310p" id13 -->
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    <!-- end id13 -->
+
+    <!-- npu="910b" id3 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    <!-- end id3 -->
 
 - **value** (`Tensor`)：必选参数。attention结构的Value输入，数据格式支持$ND$。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`、`int8`。
+    <!-- npu="310p" id14 -->
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`int8`。
+    <!-- end id14 -->
+
+    <!-- npu="910b" id4 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    <!-- end id4 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **padding_mask** (`Tensor`)：预留参数，暂未使用，默认值为`None`。
 - **pse_shift** (`Tensor`)：可选参数。表示在attention结构内部的位置编码参数，数据格式支持$ND$。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：仅支持`None`。
+    <!-- npu="310p" id15 -->
+    - <term>Atlas 推理系列产品</term>：仅支持`None`。
+    <!-- end id15 -->
+
+    <!-- npu="910b" id5 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+    <!-- end id5 -->
+
 - **atten_mask** (`Tensor`)：可选参数。取值为`1`代表该位不参与计算（不生效），为`0`代表该位参与计算，默认值为`None`，即全部参与计算；数据类型支持`bool`、`int8`、`uint8`，数据格式支持$ND$。
 - **actual_seq_lengths** (`List[int]`)：可选参数。其`shape`为$(B,)$或$(1,)$，形如$[1, 2, 3]$，代表`key`、`value`中有效的$S$序列长度，默认值为`None`，即全部有效，类型为`List[int]`；数据类型为`int64`，数据格式支持$ND$。
-- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM1后反量化场景，通常在BMM1输出为量化结果、后续计算需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持pertensor（scalar）。该参数用于BMM2前量化场景，通常在进入BMM2前需要将输入转换为量化表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
-- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM2后反量化场景，通常在BMM2输出为量化结果、后续需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。<term>Atlas 推理系列加速卡产品</term>暂不使用该参数。
+- **dequant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM1后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM1后反量化场景，通常在BMM1输出为量化结果、后续计算需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。
+    <!-- npu="310p" id21 -->
+    - <term>Atlas 推理系列产品</term>暂不使用该参数。
+    <!-- end id21 -->
+- **quant_scale1** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2前面量化的量化因子，支持pertensor（scalar）。该参数用于BMM2前量化场景，通常在进入BMM2前需要将输入转换为量化表示时使用。如不使用该功能时可不传或传入`None`。
+    <!-- npu="310p" id22 -->
+    - <term>Atlas 推理系列产品</term>暂不使用该参数。
+    <!-- end id22 -->
+- **dequant_scale2** (`Tensor`)：可选参数。数据类型支持`float32`，数据格式支持$ND$，表示BMM2后面反量化的量化因子，支持pertensor（scalar）。该参数用于BMM2后反量化场景，通常在BMM2输出为量化结果、后续需要恢复为浮点表示时使用。如不使用该功能时可不传或传入`None`。
+    <!-- npu="310p" id23 -->
+    - <term>Atlas 推理系列产品</term>暂不使用该参数。
+    <!-- end id23 -->
 - **quant_scale2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化因子，支持pertensor（scalar）和perchannel（`list`）。该参数用于最终输出量化场景；当输出需要量化时通常需要与`quant_offset2`配合使用。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
+    <!-- npu="310p" id16 -->
+    - <term>Atlas 推理系列产品</term>：当前版本不支持。
+    <!-- end id16 -->
+
+    <!-- npu="910b" id6 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
+    <!-- end id6 -->
+
 - **quant_offset2** (`Tensor`)：可选参数。数据格式支持$ND$，表示输出量化的量化偏移，支持pertensor（`scalar`）和perchannel（`list`）。该参数用于最终输出量化场景，通常与`quant_scale2`配合使用；如不使用输出量化功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：当前版本不支持。
+    <!-- npu="310p" id17 -->
+    - <term>Atlas 推理系列产品</term>：当前版本不支持。
+    <!-- end id17 -->
+
+    <!-- npu="910b" id7 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。
+    <!-- end id7 -->
+
 - **antiquant_scale** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化因子，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。该参数用于输入/权重反量化场景，通常用于将低比特数据恢复为计算所需格式；一般与`antiquant_offset`配合使用。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
+    <!-- npu="310p" id18 -->
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
+    <!-- end id18 -->
+
+    <!-- npu="910b" id8 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+    <!-- end id8 -->
+
 - **antiquant_offset** (`Tensor`)：可选参数。数据格式支持$ND$，表示量化偏移，支持perchannel（`list`），由`shape`决定，$BNSD$场景下`shape`为$(2, N, 1, D)$，$BSH$场景下`shape`为$(2, H)$，$BSND$场景下`shape`为$(2, N, D)$。该参数用于输入/权重反量化场景，一般与`antiquant_scale`配合使用。如不使用该功能时可不传或传入`None`。
-    - <term>Atlas 推理系列加速卡产品</term>：数据类型支持`float16`。
+    <!-- npu="310p" id19 -->
+    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
+    <!-- end id19 -->
+
+    <!-- npu="910b" id9 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+    <!-- end id9 -->
+
 - **block_table** (`Tensor`)：可选参数。数据类型支持`int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
 - **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`int64`，数据格式支持$ND$，表示KV左`padding`场景开启时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
 - **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；数据类型为`int64`。
@@ -89,8 +145,13 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 - `input_layout`的值与`query`的`shape`相关，三维是$BSH$，四维是$BNSD$或$BSND$。
 - `num_key_value_heads`的值要等于`key`、`value`的$N$，且`num_heads`需要能被`num_key_value_heads`整除。
 - `query`，`key`，`value`输入，功能使用限制如下：
+
+    <!-- npu="910b" id10 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>支持$B$轴小于等于65535，支持$N$轴小于等于256，支持$S$轴小于等于262144，支持$D$轴小于等于512。
-    - <term>Atlas 推理系列加速卡产品</term>支持$B$轴小于等于256，支持$N$轴小于等于256，支持$S$轴小于等于65536，支持$D$轴小于等于512。
+    <!-- end id10 -->
+    <!-- npu="310p" id20 -->
+    - <term>Atlas 推理系列产品</term>支持$B$轴小于等于256，支持$N$轴小于等于256，支持$S$轴小于等于65536，支持$D$轴小于等于512。
+    <!-- end id20 -->
     - `query`、`key`、`value`输入均为`int8`的场景暂不支持。
 
 - `int8`量化相关入参数量与输入、输出数据格式的综合限制：

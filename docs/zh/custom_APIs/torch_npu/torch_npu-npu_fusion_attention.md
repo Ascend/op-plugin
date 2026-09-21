@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-| <term>Ascend 950PR/Ascend 950DT</term>       |    √    |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明<a name="zh-cn_topic_0000001742717129_section14441124184110"></a>
 
@@ -162,8 +164,14 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
     - 输入`key`和`value`的shape必须一致。
     - B：batchsize必须相等；非varlen场景B取值范围1\~2M；varlen场景B取值范围1\~2K。
     - D：Head Dim必须满足Dq=Dk和Dk≥Dv。取值范围：
+
+        <!-- npu="910b" id3 -->
         - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围1\~768。
+        <!-- end id3 -->
+        <!-- npu="950" id4 -->
         - <term>Ascend 950PR/Ascend 950DT</term>：取值范围1\~512。
+        <!-- end id4 -->
+
     - S：sequence length，取值范围1\~1M。
 
 - varlen场景下：

@@ -2,12 +2,18 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| :----------------------------------------------------------- | :------: |
-| <term>Ascend 950PR/Ascend 950DT</term>                     |    √     |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |    √     |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |    √     |
-| <term>Atlas 推理系列产品</term>                             |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
 
 ## 功能说明
 
@@ -54,21 +60,42 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 ## 参数说明
 
 - **x1**（`Tensor`）：必选参数，表示标准化过程中的源数据张量，公式中的$x1$。数据格式支持$ND$，支持非连续的Tensor。shape支持1-8维。
+
+  <!-- npu="310p" id5 -->
   - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`。
+  <!-- end id5 -->
+  <!-- npu="A3,910b" id6 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
+  <!-- end id6 -->
+  <!-- npu="950" id7 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+  <!-- end id7 -->
 
 - **x2**（`Tensor`）：必选参数，表示标准化过程中的源数据张量，公式中的$x2$。数据格式支持$ND$，支持非连续的Tensor。shape支持1-8维，shape和数据类型需要与`x1`保持一致。
 - **gamma**（`Tensor`）：必选参数，表示标准化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持非连续的Tensor。shape支持1-8维，shape与`x1`需要norm的维度一致，数据类型需要与`x1`保持一致。
 - **scales1**（`Tensor`）：必选参数，表示量化过程中得到`y1`的scales张量，公式中的$scales1$。数据格式支持$ND$，支持非连续的Tensor。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。
+
+  <!-- npu="310p" id8 -->
   - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float32`。
+  <!-- end id8 -->
+  <!-- npu="A3,910b" id9 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。
+  <!-- end id9 -->
+  <!-- npu="950" id10 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+  <!-- end id10 -->
 
 - **zero_points1**（`Tensor`）：可选参数，表示量化过程中得到`y1`的offset张量，公式中的$zero\_points1$。数据格式支持$ND$，支持非连续的Tensor。shape需要与`gamma`保持一致。
+
+  <!-- npu="310p" id11 -->
   - <term>Atlas 推理系列产品</term>：数据类型支持`torch.int32`。
+  <!-- end id11 -->
+  <!-- npu="A3,910b" id12 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.int32`、`torch.bfloat16`。
+  <!-- end id12 -->
+  <!-- npu="950" id13 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int32`、`torch.float32`、`torch.float16`、`torch.bfloat16`。
+  <!-- end id13 -->
 
 - **beta**（`Tensor`）：可选参数，表示标准化过程中的偏置项，公式中的$beta$。数据格式支持$ND$，支持非连续的Tensor。shape和数据类型需要与`gamma`保持一致。
 - **scales2**（`Tensor`）：可选参数，表示量化过程中得到`y2`的scales张量，公式中的$scales2$。数据格式支持$ND$，支持非连续的Tensor。数据类型需要与`scales1`保持一致。shape需要与`gamma`保持一致。当参数`div_mode`的值为True时，该参数的值不能为0。默认值为None。
@@ -77,14 +104,24 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **epsilon**（`float`）：可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为`torch.double`。建议传较小的正数，默认值为1e-6。
 - **div_mode**（`bool`）：可选参数，公式中决定量化公式是否使用除法的参数，数据类型为`torch.bool`，默认值为True。
 - **dst_type**（`int`）：可选参数，指定量化输出`y1`、`y2`的数据类型，默认值为`torch.int8`。传None时当做int8处理。
+
+  <!-- npu="A3,910b,310p" id14 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas 推理系列产品</term>：支持None或torch.int8。
+  <!-- end id14 -->
+  <!-- npu="950" id15 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：支持None或torch.int8、torch_npu.hifloat8、torch.float8_e5m2、torch.float8_e4m3fn。
+  <!-- end id15 -->
 
 ## 返回值说明
 
 - **y1**（`Tensor`）：表示量化后的输出Tensor，公式中的$y1$。数据格式支持$ND$，支持非连续的Tensor。shape与输入`x1`一致。
+
+  <!-- npu="A3,910b,310p" id16 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型支持`torch.int8`。
+  <!-- end id16 -->
+  <!-- npu="950" id17 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+  <!-- end id17 -->
 
 - **y2**（`Tensor`）：表示量化后的输出Tensor，公式中的$y2$。数据格式支持$ND$，支持非连续的Tensor。shape和数据类型与输出`y1`一致。
 - **x**（`Tensor`）：表示`x1`和`x2`相加的和，公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。数据类型和shape与输入`x1`一致。
@@ -92,16 +129,25 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 ## 约束说明
 
 - 该接口仅支持单算子模式调用。
-- <term>Atlas 推理系列产品</term>：`x1`、`x2`的最后一维数据个数不能小于32。`gamma`、`beta`、`scales1`、`zero_points1`、`scales2`、`zero_points2`的数据个数不能小于32。
 
+<!-- npu="310p" id18 -->
+- <term>Atlas 推理系列产品</term>：`x1`、`x2`的最后一维数据个数不能小于32。`gamma`、`beta`、`scales1`、`zero_points1`、`scales2`、`zero_points2`的数据个数不能小于32。
+<!-- end id18 -->
 - 边界值场景说明：
+
+  <!-- npu="310p" id19 -->
   - <term>Atlas 推理系列产品</term>：输入不支持包含inf和nan。
+  <!-- end id19 -->
+  <!-- npu="A3,910b" id20 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当输入是inf时，输出为inf。当输入是nan时，输出为nan。
+  <!-- end id20 -->
 
 - 维度的边界说明：
   参数`x1`、`x2`、`gamma`、`scales1`、`zero_points1`、`beta`、`scales2`、`zero_points2`、`y1`、`y2`、`x`的shape中每一维大小都不大于int32的最大值2147483647。  
 
 - 各产品型号数据类型支持说明：
+
+  <!-- npu="950" id21 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | y1 | y2 | x |
@@ -113,20 +159,23 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
     | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
     | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
     | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
-
+  <!-- end id21 -->
+  <!-- npu="A3,910b" id22 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
     | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.float16 | torch.int8 | torch.int8 | torch.float16 |
     | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.int8 | torch.int8 | torch.bfloat16 |
-
+  <!-- end id22 -->
+  <!-- npu="310p" id23 -->
   - <term>Atlas 推理系列产品</term>：
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
     | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.float16 | torch.int8 | torch.int8 | torch.float16 |
-    
+  <!-- end id23 -->
+
 ## 调用示例
 
 ```python

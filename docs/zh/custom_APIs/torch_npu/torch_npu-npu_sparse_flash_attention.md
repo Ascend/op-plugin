@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term> | √ |
-|<term>Atlas A2 推理系列产品</term>   | √  |
-|<term>Atlas A3 推理系列产品</term>   | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -51,11 +55,11 @@
 
 ```python
 torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_value, *, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, query_rope=None, key_rope=None, sparse_block_size=1, layout_query='BSND', layout_kv='BSND', sparse_mode=3, pre_tokens=9223372036854775807, next_tokens=9223372036854775807, attention_mode=0, return_softmax_lse=False, sinks=None) -> (Tensor, Tensor, Tensor)
+```
 
 > [!NOTE]
 >
 > `value`参数为位置参数（必填），类型为`Tensor`（可空），支持传入`None`。`value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
-```
 
 ## 参数说明
 
@@ -122,15 +126,20 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 - `value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
 - 支持sparse\_block\_size整除block\_size。
 - `layout_kv`为PA_BSND时，`layout_query`和`layout_kv`无需一致；`layout_kv`为BSND或TND时，`layout_query`和`layout_kv`需保持一致。
+
+<!-- npu="950" id4 -->
 - Ascend 950PR/Ascend 950DT：
   - Q\_N支持1~128。
   - sparse\_block\_size仅支持1。
   - 仅在`layout_kv`为PA_BSND时，key、value和key_rope支持0轴非连续。
+<!-- end id4 -->
+<!-- npu="A3,910b" id5 -->
 - Atlas A3 推理系列产品/Atlas A2 推理系列产品：
   - Q\_N支持1/2/4/8/16/32/64/128。
   - 参数sparse\_block\_size支持[1,128]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
   - 不支持sinks。
   - key、value和key_rope不支持非连续。
+<!-- end id5 -->
 
 ## 调用示例
 

@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| :--- | :------: |
-| <term>Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
@@ -51,8 +53,13 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatMul计算的右矩阵。数据类型与`gmm_x`保持一致，支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$。
 - **hcom**（`str`）：**必选参数**，专家并行的通信域名，字符串长度要求\(0, 128\)。
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
+
+    <!-- npu="A3" id3 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持8、16、32、64、128。
+    <!-- end id3 -->
+    <!-- npu="950" id4 -->
     - <term>Ascend 950DT</term>：取值支持2、4、8、16、32、64。
+    <!-- end id4 -->
 
 - **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
 - **recv\_counts**（`List[int]`）：**必选参数**，表示接收其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
@@ -65,8 +72,13 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **trans\_mm\_weight**（`bool`）：**可选参数**，共享专家MatMul的右矩阵是否需要转置，`true`表示需要转置，`false`表示不转置（默认值）。
 - **permute\_out\_flag**（`bool`）：**可选参数**，Permute结果是否需要输出，`true`表明需要输出，`false`表明不需要输出（默认值）。
 - **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
+
+    <!-- npu="A3" id5 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持`None`、`ai_cpu`。传入任意值都将使用AI CPU通信。
+    <!-- end id5 -->
+    <!-- npu="950" id6 -->
     - <term>Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。当为`None`时，使用AI CPU通信。
+    <!-- end id6 -->
 
 ## 返回值说明
 
@@ -79,8 +91,13 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - 该接口支持推理场景下使用。
 - 该接口支持单算子模式和TorchAir图模式。
 - **单卡通信量要求**：
+
+  <!-- npu="A3" id7 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：单卡通信量大于等于2MB。
+  <!-- end id7 -->
+  <!-- npu="950" id8 -->
   - <term>Ascend 950DT</term>：单卡通信量无约束。
+  <!-- end id8 -->
 
 - 输入参数Tensor中shape使用的变量说明：
   - BSK：本卡发送的token数（BS\*K=BSK），是send\_counts参数累加之和，取值范围\(0, 52428800\)。

@@ -2,13 +2,21 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
-| <term>Atlas 推理系列产品</term> | √ |
-| <term>Atlas 训练系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas 训练系列产品</term>：支持
+<!-- end id5 -->
 
 ## 功能说明
 
@@ -34,7 +42,11 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 ## 约束说明
 
 - 该接口支持推理、训练场景下使用。
-- 该接口支持单算子模式和图模式调用，图模式调用仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
+- 该接口支持单算子模式。
+
+<!-- npu="950" id6 -->
+- 该接口在<term>Ascend 950PR/Ascend 950DT</term>产品上支持图模式调用。
+<!-- end id6 -->
 
 ## 调用示例
 
@@ -48,6 +60,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
     output, mask = torch_npu._npu_dropout(input, prob)
     ```
 
+<!-- npu="950" id7 -->
 - 图模式调用：（仅适用于<term>Ascend 950PR/Ascend 950DT</term>）
 
     ```python
@@ -79,3 +92,4 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
     output = opt_model()
     print("Output shape:", output.shape)
     ```
+<!-- end id7 -->

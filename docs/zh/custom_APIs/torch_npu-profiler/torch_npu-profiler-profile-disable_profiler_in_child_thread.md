@@ -2,15 +2,27 @@
 
 ## 产品支持情况
 
-| 产品                                                      | 是否支持 |
-| --------------------------------------------------------- | :------: |
-| <term>Ascend 950DT</term>                   |    √     |
-| <term>Atlas A3 训练系列产品</term>                        |    √     |
-| <term>Atlas A3 推理系列产品</term>                        |    √     |
-| <term>Atlas A2 训练系列产品</term>                        |    √     |
-| <term>Atlas A2 推理系列产品</term> |    √     |
-| <term>Atlas 推理系列产品</term>                           |    √     |
-| <term>Atlas 训练系列产品</term>                           |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="910b" id4 -->
+- <term>Atlas A2 训练系列产品</term>：支持
+<!-- end id4 -->
+<!-- npu="910b" id5 -->
+- <term>Atlas A2 推理系列产品</term>：支持
+<!-- end id5 -->
+<!-- npu="310p" id6 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id6 -->
+<!-- npu="910" id7 -->
+- <term>Atlas 训练系列产品</term>：支持
+<!-- end id7 -->
 
 ## 功能说明
 

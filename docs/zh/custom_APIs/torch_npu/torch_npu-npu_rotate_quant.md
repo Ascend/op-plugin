@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>        |    √     |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>        |    √     |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>        |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -77,6 +81,7 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
     )
     ```
 
+<!-- npu="A3,910b" id4 -->
 - 图模式调用（仅在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上支持）：
 
     ```python
@@ -110,3 +115,4 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     y = model(x.npu(), rotation.npu())
     ```
+<!-- end id4 -->

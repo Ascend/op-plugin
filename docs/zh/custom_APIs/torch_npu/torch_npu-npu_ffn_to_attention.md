@@ -2,9 +2,9 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id1 -->
 
 ## 功能说明<a name="zh-cn_topic_0000002203575833_section14441124184110"></a>
 
@@ -33,8 +33,10 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 ## 约束说明<a name="zh-cn_topic_0000002203575833_section12345537164214"></a>
 
 - 调用接口过程中使用的`group`、`world_size`、`token_info_table_shape`、`token_data_shape`参数及`HCCL_BUFFSIZE`参数取值所有卡需保持一致，网络中不同层中也需保持一致。
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+<!-- end id2 -->
 - 参数说明里shape格式说明：
     - Y：表示本卡需要分发的最大token数量。
 

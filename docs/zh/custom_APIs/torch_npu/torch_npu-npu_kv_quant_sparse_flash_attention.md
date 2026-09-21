@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>        | √ |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>   | √  |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -93,15 +97,20 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
 - 非PageAttention场景layout\_query和layout\_kv需要保持一致。
+
+<!-- npu="950" id4 -->
 - Ascend 950PR/Ascend 950DT：
   - 参数key、value数据类型仅支持`int8、hifloat8、float8_e4m3fn`数据类型。
   - 参数sparse\_block\_size仅支持1。
   - 仅在`layout_kv`为PA_BSND时，key支持0轴非连续。
+<!-- end id4 -->
+<!-- npu="A3,910b" id5 -->
 - Atlas A3 训练系列产品/Atlas A3 推理系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品：
   - query Q\_N不支持48。
   - 参数key、value数据类型仅支持`int8`数据类型，不支持`hifloat8、float8_e4m3fn`。
   - 参数sparse\_block\_size支持[1,16]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
   - key不支持非连续。
+<!-- end id5 -->
 
 ## 调用示例
 

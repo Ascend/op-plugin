@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>            |    √     |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>            |    √     |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>  | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -44,19 +48,37 @@ torch_npu.npu_dynamic_quant(input, *, smooth_scales=None, group_index=None, dst_
 - **smooth_scales** (`Tensor`)：可选参数，用于对`input`进行缩放的张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。shape见约束说明。
 - **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组的下标，仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`为1维Tensor，元素数量与`smooth_scales`的第一维一致；`group_index`不为`None`时，`smooth_scales`必须不为`None`。
 - **dst_type** (`int`)：可选参数，指定量化输出的类型，传`None`时当作`int8`处理。
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取值`int8`、`quint4x2`。
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值`int8`、`quint4x2`。
+    <!-- npu="A3,910b" id4 -->
+    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值`int8`、`quint4x2`。
+    <!-- end id4 -->
+    <!-- npu="950" id6 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`torch.int8`、`torch.quint4x2`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+    <!-- end id6 -->
+
 - **quant_mode** (`str`)：可选参数，指定量化模式，默认值为`"pertoken"`。如果`group_index`不为`None`，仅支持取值`"pertoken"`。
+
+    <!-- npu="A3,910b" id7 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，默认按`"pertoken"`处理。
+    <!-- end id7 -->
+    <!-- npu="950" id8 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`"pertoken"`（按token粒度）、`"perchannel"`（按通道）、`"pertensor"`（整个张量共用一个scale）。
+    <!-- end id8 -->
+
 - **dst_type_max** (`float`)：可选参数，指定目标数据类型的最大表示值，默认值为0.0。
+
+    <!-- npu="A3,910b" id9 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数。
+    <!-- end id9 -->
+    <!-- npu="950" id10 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：仅在`dst_type`为`torch_npu.hifloat8`时生效，支持取值0.0~32768.0；取值为0.0时使用目标精度能表示的最大值，取值为非0.0时使用传入值作为目标数据类型的最大值。
+    <!-- end id10 -->
 
 ## 返回值说明
 
-- **y** (`Tensor`)：量化后的输出Tensor，数据类型由`dst_type`指定。当`dst_type`是`quint4x2`时，`y`的数据类型为`int32`，形状最后一维为`input`最后一维除以8，其余维度与`input`一致，每个`int32`元素包含8个`int4`结果。其他场景下`y`形状与输入`input`一致，数据类型由`dst_type`指定。在<term>Ascend 950PR/Ascend 950DT</term>上，当`dst_type`为`torch_npu.hifloat8`时，`y`的数据类型为`torch.uint8`（实际承载`torch_npu.hifloat8`类型）。
+- **y** (`Tensor`)：量化后的输出Tensor，数据类型由`dst_type`指定。当`dst_type`是`quint4x2`时，`y`的数据类型为`int32`，形状最后一维为`input`最后一维除以8，其余维度与`input`一致，每个`int32`元素包含8个`int4`结果。其他场景下`y`形状与输入`input`一致，数据类型由`dst_type`指定。
+    <!-- npu="950" id5 -->
+    - 在<term>Ascend 950PR/Ascend 950DT</term>上，当`dst_type`为`torch_npu.hifloat8`时，`y`的数据类型为`torch.uint8`（实际承载`torch_npu.hifloat8`类型）。
+    <!-- end id5 -->
 - **scale** (`Tensor`)：对称动态量化过程中计算出的缩放系数，数据类型为`float32`。
   - 当`quant_mode`为`"pertoken"`时，形状为`input`的形状剔除最后一维。
   - 当`quant_mode`为`"perchannel"`时，形状为`input`的形状剔除倒数第二维，最后一维保持与`input`一致。

@@ -2,13 +2,16 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
+<!-- npu="A3,910b" id3 -->
 - API功能：融合GroupedMatmul（分组矩阵乘）、dequant（反量化）、swiglu（SwiGLU激活）和quant（量化）四个计算环节，deepseek模型使用，对比小算子做性能优化，weight需以FRACTAL\_NZ格式传入。该API是`npu_grouped_matmul_swiglu_quant_v2`的简化版本，仅支持<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>。
   
   多算子融合计算顺序（依次执行）：
@@ -16,6 +19,7 @@
   2. dequant：矩阵乘结果与激活量化因子$x_scale$、权重量化因子$w_scale$逐元素相乘，完成反量化；
   3. swiglu：反量化结果沿N轴对半切分为$C_{i,act}$与$gate_{i}$，计算$S_{i}=Swish(C_{i,act})\odot gate_{i}$，其中$Swish(x)=\frac{x}{1+e^{-x}}$；
   4. quant：$Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$，$Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$，得到量化输出Q与量化因子Q\_scale。
+<!-- end id3 -->
 - 量化场景**A8W8**（A指激活矩阵，W指权重矩阵，8指`torch.int8`数据类型）：
   - 输入：
     - $X∈\mathbb{Z_8}^{M \times K}$为激活矩阵（左矩阵），M是总token数，K是特征维度；
