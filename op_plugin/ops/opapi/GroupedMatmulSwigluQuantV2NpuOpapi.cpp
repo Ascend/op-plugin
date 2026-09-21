@@ -245,13 +245,13 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     }
 
     int64_t dequant_mode_real = dequant_mode.value_or(0);
-    int64_t dequant_dtype_real = dequant_dtype.value_or(0);
+    int64_t dequant_dtype_real = dequant_dtype.value_or(6);
     // 从torch的枚举值转化为Ge的枚举值
     const std::map<int64_t, int64_t> TorchToGeMap = {
         {6, 0},
         {5, 1},
         {15, 27}};
-    auto it = TorchToGeMap.find(dequant_dtype.value_or(0));
+    auto it = TorchToGeMap.find(dequant_dtype.value_or(6));
     if (it != TorchToGeMap.end()) {
         dequant_dtype_real = it->second;
     }

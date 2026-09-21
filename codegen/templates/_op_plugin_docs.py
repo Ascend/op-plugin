@@ -12873,7 +12873,7 @@ if __name__ == "__main__":
 _add_torch_npu_docstr(
     "npu_grouped_matmul_swiglu_quant_v2",
     """
-torch_npu.npu_grouped_matmul_swiglu_quant_v2(Tensor x, Tensor[] weight, Tensor[] weight_scale, Tensor x_scale, Tensor group_list, *, Tensor? smooth_scale=None, Tensor[]? weight_assist_matrix=None, Tensor? bias=None, int? dequant_mode=0, int? dequant_dtype=0, int? quant_mode=0, int? quant_dtype=0, int? group_list_type=0, int[]? tuning_config=None) -> (Tensor, Tensor)
+torch_npu.npu_grouped_matmul_swiglu_quant_v2(Tensor x, Tensor[] weight, Tensor[] weight_scale, Tensor x_scale, Tensor group_list, *, Tensor? smooth_scale=None, Tensor[]? weight_assist_matrix=None, Tensor? bias=None, int? dequant_mode=0, int? dequant_dtype=6, int? quant_mode=0, int? quant_dtype=0, int? group_list_type=0, int[]? tuning_config=None) -> (Tensor, Tensor)
 功能描述
 `npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLu混合激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGlu激活函数激活的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。支持 A8W8、A8W4、A4W4；A4W4 场景下 smooth_scale 必填（与 aclnnGroupedMatmulSwigluQuantV2 一致）。
 
@@ -12887,7 +12887,7 @@ smooth_scale（Tensor）：可选输入，平滑缩放因子，数据类型为`f
 weight_assist_matrix（TensorList）：可选输入，右矩阵的辅助矩阵，数据类型支持`float32`。仅 A8W4 场景使用，其他场景传 None。
 bias（Tensor）：可选输入，矩阵乘计算的偏移值，公式中的bias，shape支持2维，数据类型支持`int32`，当前仅支持传入默认值None。
 dequant_mode（int）：可选输入，表示反量化模式。`weight`数据类型为`int8`时仅支持0，`weight`数据类型为`int32`时支持0和1。0：左pertoken，右perchannel；1：左pertoken，右pergroup。
-dequant_dtype（int）：可选输入，表示反量化类型，当前仅支持传入默认值0。
+dequant_dtype（int）：可选输入，表示反量化类型，当前仅支持传入默认值6。
 quant_dtype（int）：可选输入，参数表示量化后低比特数据类型。0：`int8`；1：`float8_e8m0`；2：`float8_e5m2`；3：`float8_e4m3`，当前仅支持传入默认值0。
 quant_mode（int）：可选输入，参数表示SwiGLU后的量化模式。0：pertoken；1：perchannel，当前仅支持传入默认值0。
 group_list_type（int）：可选输入，参数表示grouplist的输入类型。0：cumsum；1：count，默认0。
