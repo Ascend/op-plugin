@@ -2,13 +2,21 @@
 
 ## 产品支持情况
 
-|产品             |  是否支持  |
-|:-------------------------|:----------:|
-| <term>Ascend 950PR/Ascend 950DT</term>                        |    √    |
-|  <term>Atlas A3 训练系列产品</term>   |     √    |
-|  <term>Atlas A2 训练系列产品</term>     |     √    |
-|  <term>Atlas 推理系列产品</term>    |     √    |
-|  <term>Atlas 训练系列产品</term>    |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas 训练系列产品</term>：支持
+<!-- end id5 -->
 
 ## 功能说明
 
@@ -23,13 +31,22 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 ## 参数说明
 
 - **input**(`Tensor`)：必选参数，2D矩阵张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
+
+  <!-- npu="950" id6 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`、`torch.int8`。
+  <!-- end id6 -->
 
 - **weight**(`Tensor`)：必选参数，2D矩阵张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
+
+  <!-- npu="950" id7 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`、`torch.int8`。
+  <!-- end id7 -->
 
 - **bias**(`Tensor`)：**可选参数**，1D张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`。数据格式支持$ND$、$NHWC$。默认值为None。
+
+  <!-- npu="950" id8 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不支持`torch.int32`。
+  <!-- end id8 -->
 
 ## 返回值说明
 

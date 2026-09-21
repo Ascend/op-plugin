@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term> | √ |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>           |    √     |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -146,8 +150,13 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 
 - **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`。支持`0`和`1`，`0`表示不做renorm，`1`表示做renorm。仅`norm_type`为`0`时该参数生效，`norm_type`为`1`或`2`时无效。
 - **norm_type**（`int`）：可选参数，表示norm函数类型，默认值为`0`。
+
+    <!-- npu="A3,910b" id4 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值`0`、`1`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数。
+    <!-- end id4 -->
+    <!-- npu="950" id5 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`0`、`1`、`2`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数，`2`表示使用SqrtSoftplus函数。
+    <!-- end id5 -->
 
 - **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。
 - **routed_scaling_factor**（`float`）：可选参数，表示计算`yOut`使用的`routed_scaling_factor`系数，默认值为`1.0`。

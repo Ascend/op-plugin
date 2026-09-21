@@ -2,31 +2,42 @@
 
 ## 产品支持情况
 
-|产品             |  是否支持  |
-|:-------------------------|:----------:|
-| <term>Ascend 950PR/Ascend 950DT</term>                        |    √    |
-|  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>   |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
-|  <term>Atlas 推理系列产品</term>    |     √    |
-|  <term>Atlas 训练系列产品</term>    |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas 训练系列产品</term>：支持
+<!-- end id5 -->
 
 ## 功能说明
 
 - API功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
 - 计算公式：
 
+  <!-- npu="910,310p" id6 -->
   - <term>Atlas 推理系列产品</term>、<term>Atlas 训练系列产品</term>公式如下：
 
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702 \mid x\mid}} e^{0.851 x(x- \mid x\mid)}
   $$
-
+  <!-- end id6 -->
+  <!-- npu="950,A3,910b" id7 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950PR/Ascend 950DT</term>公式如下：
 
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702x}}
   $$
-
+  <!-- end id7 -->
+  
 ## 函数原型
 
 ```python
@@ -37,11 +48,21 @@ torch_npu.npu_fast_gelu(self) -> Tensor
 
 - **self**(`Tensor`)：必选参数，对应公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。支持空Tensor。
 
+  <!-- npu="910" id8 -->
   - <term>Atlas 训练系列产品</term>：数据类型支持`float16`、`float32`。
+  <!-- end id8 -->
+  <!-- npu="910b" id9 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+  <!-- end id9 -->
+  <!-- npu="A3" id10 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+  <!-- end id10 -->
+  <!-- npu="310p" id11 -->
   - <term>Atlas 推理系列产品</term>：数据类型仅支持`float16`、`float32`。
+  <!-- end id11 -->
+  <!-- npu="950" id12 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+  <!-- end id12 -->
 
 ## 返回值说明
 

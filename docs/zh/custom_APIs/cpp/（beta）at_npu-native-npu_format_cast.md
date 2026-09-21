@@ -39,8 +39,18 @@ customize_dtype：可选参数，用于指定格式转换时的目标数据类�
 
 ## 支持的型号
 
+<!-- npu="950" id1 -->
 - <term>Ascend 950DT</term>
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
 - <term>Atlas A3 训练系列产品</term>
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
 - <term>Atlas A2 训练系列产品</term>
+<!-- end id3 -->
+<!-- npu="910" id4 -->
 - <term>Atlas 训练系列产品</term>
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
 - <term>Atlas 推理系列产品</term>
+<!-- end id5 -->

@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>        | √ |
-|<term>Atlas A3 推理系列产品</term>   | √  |
-|<term>Atlas A2 推理系列产品</term>   | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -82,16 +86,21 @@ query_dtype=None, key_dtype=None) -> Tensor
 - 该接口支持图模式。
 - 该接口要求$W \odot Scale_Q$的结果在`float16`的表示范围内。
 - 该接口的TopK过程对NaN排序是未定义行为。
+
+<!-- npu="A3" id4 -->
 - Atlas A3 推理系列产品：
     - query和key的数据类型支持`int8`。
     - 仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
     - key和key_dequant_scale在`layout_key`为PA_BSND时支持0轴非连续，其余轴必须连续。
+<!-- end id4 -->
+<!-- npu="950" id5 -->
 - Ascend 950PR/Ascend 950DT：
     - query N1仅支持8、16、24、32、64。
     - query和key的数据类型支持`float8_e4m3fn、hifloat8、int8`。
     - 当query和key的数据类型为`float8_e4m3fn`时，支持weights、query_dequant_scale、key_dequant_scale的数据类型为`bfloat16、float、float`或`float16、float16、float16`；
     - 当query和key的数据类型为`hifloat8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`bfloat16、float、float`；
     - 当query和key的数据类型为`int8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`float16、float16、float16`。
+<!-- end id5 -->
 
 ## 调用示例
 

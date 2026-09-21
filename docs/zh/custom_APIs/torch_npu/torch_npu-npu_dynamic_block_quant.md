@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -50,29 +54,62 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 - **x** (`Tensor`)：必选参数，输入张量，数据类型支持`float16`、`bfloat16`，支持非连续的Tensor，数据格式支持$ND$。当前shape支持2维和3维。不支持空Tensor。
 - **min_scale** (`float`)：可选参数，参与`scale`计算的最小`scale`值。当前支持取值大于等于0。
 - **round_mode** (`str`)：可选参数，指定类型转换到输出的转换方式，默认值为`"rint"`。
+
+    <!-- npu="A3,910b" id4 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持取值`"rint"`。
+    <!-- end id4 -->
+    <!-- npu="950" id5 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：
       - 当`dst_type`为`torch.int8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`时，仅支持取值`"rint"`。
       - 当`dst_type`为`torch_npu.hifloat8`时，仅支持取值`"round"`。
+    <!-- end id5 -->
+
 - **dst_type** (`int`)：可选参数，指定输出`y`的数据类型，默认值为`int8`。
+
+    <!-- npu="A3,910b" id6 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.int8`。
+    <!-- end id6 -->
+    <!-- npu="950" id7 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+    <!-- end id7 -->
+
 - **row_block_size** (`int`)：可选参数，指定单个量化的数据块的行大小。
+
+    <!-- npu="A3,910b" id8 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持取值1。
+    <!-- end id8 -->
+    <!-- npu="950" id9 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：支持取值1、128、256、512。
+    <!-- end id9 -->
+
 - **col_block_size** (`int`)：可选参数，指定单个量化的数据块的列大小。
+
+    <!-- npu="A3,910b" id10 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：仅支持取值1或128。
+    <!-- end id10 -->
+    <!-- npu="950" id11 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：支持取值64、128、192、256。
+    <!-- end id11 -->
+
 - **dst_type_max** (`float`)：可选参数，指定目标数据类型的最大值，默认值为0.0。取值为0.0时表示使用数据类型原始的最大值。
+
+    <!-- npu="A3,910b" id12 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数。
+    <!-- end id12 -->
+    <!-- npu="950" id13 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：仅在`dst_type`为`torch_npu.hifloat8`时生效，支持取值0.0、15.0、56.0、224.0、32768.0。
+    <!-- end id13 -->
 
 ## 返回值说明
 
 - **y** (`Tensor`)：量化结果，数据类型由参数`dst_type`指定，shape与输入`x`一致。
+
+    <!-- npu="950" id14 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：
         - 单算子模式/静态图模式：当`dst_type`为`torch_npu.hifloat8`时，`y`输出的数据类型为`torch.uint8`（实际承载的是`torch_npu.hifloat8`类型）。
         - 动态图模式：当`dst_type`为`torch_npu.hifloat8`时，`y`输出的数据类型为`torch.bits8`（实际承载的是`torch_npu.hifloat8`类型）。
+    <!-- end id14 -->
+
 - **scale** (`Tensor`)：量化时使用的量化参数，数据类型为`torch.float32`。如果输入`x`的shape为`[M, N]`，`scale`的shape为`[ceil(M/row_block_size), ceil(N/col_block_size)]`；如果输入`x`的shape为`[B, M, N]`，`scale`的shape为`[B, ceil(M/row_block_size), ceil(N/col_block_size)]`。
 
 ## 约束说明
@@ -105,6 +142,7 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
           [0.0073]], device='npu:0')
   ```
 
+<!-- npu="950" id15 -->
 - 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>
 
     ```python
@@ -126,3 +164,4 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
     model = torch.compile(model, backend=npu_backend, dynamic=True)
     y, scale = model(x, 0.0, "rint", torch.float8_e5m2, 1, 128)
     ```
+<!-- end id15 -->

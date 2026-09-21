@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                   | 是否支持 |
-|:-----------------------------------------------------|:----:|
-| <term>Ascend 950DT</term>               |  √  |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>                      |  √   |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> |  √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -38,7 +42,13 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **block_sparse_mask** (`Tensor`)：必选参数，块稀疏掩码。shape为`[batch, headNum, ceilDiv(maxQSeqLength, blockShapeX), ceilDiv(maxKvSeqLength, blockShapeY)]`，表示按块划分后哪些块参与计算（当取值为1则对应的块参与注意力计算，当取值为0则表示不参与）。数据类型为`int8`。
 
-- **block_shape** (`list[int]`)：必选参数，稀疏块shape。至少需要包含两个元素，如`[blockShapeX, blockShapeY]`，且均大于0。blockShapeX：Q方向块大小；blockShapeY：KV方向块大小。在<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> ：**blockShapeY 必须为128的倍数**，<term>Ascend 950DT</term>：**blockShapeY 必须为16的倍数**。
+- **block_shape** (`list[int]`)：必选参数，稀疏块shape。至少需要包含两个元素，如`[blockShapeX, blockShapeY]`，且均大于0。blockShapeX：Q方向块大小；blockShapeY：KV方向块大小。
+  <!-- npu="A3,910b" id4 -->
+  - 在<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> ：**blockShapeY必须为128的倍数**。
+  <!-- end id4 -->
+  <!-- npu="950" id8 -->
+  - <term>Ascend 950DT</term>：**blockShapeY必须为16的倍数**。
+  <!-- end id8 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
@@ -50,8 +60,13 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **scale_value** (`float`)：可选参数，缩放系数，默认值为`0.0`，通常设置为$D^{-0.5}$。
 
-- **inner_precise** (`int`)：可选参数，Softmax计算精度，默认值为`1`。`0`表示float32中间结果（高精度），`1`表示float16中间结果（性能更优），`4`表示混合精度运算。**当`query`/`key`/`value`为`bfloat16`时，仅支持`0`**。<term>Ascend 950DT</term>仅支持`4`，<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>仅支持`0`或`1`。
-
+- **inner_precise** (`int`)：可选参数，Softmax计算精度，默认值为`1`。`0`表示float32中间结果（高精度），`1`表示float16中间结果（性能更优），`4`表示混合精度运算。**当`query`/`key`/`value`为`bfloat16`时，仅支持`0`**。
+  <!-- npu="950" id5 -->
+  - <term>Ascend 950DT</term>仅支持`4`。
+  <!-- end id5 -->
+  <!-- npu="A3,910b" id9 -->
+  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>仅支持`0`或`1`。
+  <!-- end id9 -->
 - **actual_seq_lengths** (`list[int]`)：可选参数，代表每个batch的`query`实际序列长度，用于变长序列场景。
   - **当`q_input_layout`为`"TND"`时必选**：TND下`query`的shape为`[totalQTokens, headNum, headDim]`，若无batch维度，算子无法从shape推断各batch的`query`长度。
   - **当`q_input_layout`为`"BNSD"`时可选**：BNSD下`query`的 shape为`[batch, headNum, maxQSeqLength, headDim]`，不传时算子按shape中的S（maxQSeqLength）作为序列长度处理；传入时按本参数指定的实际长度处理。
@@ -77,8 +92,6 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 - 序列长度不需要被`block_shape`整除，分块数按向上取整计算。
 - 正向路径当前支持headDim=64或128；反向路径当前支持headDim=128。
 - 反向路径支持`q_input_layout`和`kv_input_layout`同为`"BNSD"`或同为`"TND"`，并支持MHA/GQA场景。MHA场景下$N1 = N2$，GQA场景下需满足$N1 > N2$且$N1 \% N2 = 0$，其中$N1$为`query`的head数，$N2$为`key`/`value`的head数。
-- `block_shape`包含的两个元素`[blockShapeX, blockShapeY]`中，<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>上`blockShapeY`必须为128的倍数，<term>Ascend 950DT</term>上`blockShapeY`必须为16的倍数。
-- `inner_precise`必须为0或1或4。其中，<term>Ascend 950DT</term>仅支持配置为4，<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>仅支持配置为0或1。
 
 ## 调用示例
 

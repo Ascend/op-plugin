@@ -2,15 +2,27 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
-- API功能：融合MatMul（矩阵乘）与ReduceScatter（归约散射）集合通信计算，对入参x1（self）、x2进行矩阵乘（可选加bias、反量化）计算后，按卡数对M轴切分并进行ReduceScatter通信，常用于MoE等分布式场景（MC2）。该接口是`torch_npu.npu_mm_reduce_scatter_base`接口的功能扩展，在支持x1和x2输入类型为`torch.float16`/`torch.bfloat16`的基础上，<term>Ascend 950DT</term>新增了对低精度数据类型`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`的支持（支持pertensor、perblock、mx量化方式，其中mx量化支持mxfp8和mxfp4场景）；<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>新增了对`torch.int8`的支持（支持pertoken/perchannel量化方式）。
+- API功能：融合MatMul（矩阵乘）与ReduceScatter（归约散射）集合通信计算，对入参x1（self）、x2进行矩阵乘（可选加bias、反量化）计算后，按卡数对M轴切分并进行ReduceScatter通信，常用于MoE等分布式场景（MC2）。<br>
+  该接口是`torch_npu.npu_mm_reduce_scatter_base`接口的功能扩展，在支持x1和x2输入类型为`torch.float16`/`torch.bfloat16`的基础上：
+    <!-- npu="950" id4 -->
+    - <term>Ascend 950DT</term>新增了对低精度数据类型`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`的支持（支持pertensor、perblock、mx量化方式，其中mx量化支持mxfp8和mxfp4场景）；
+    <!-- end id4 -->
+    <!-- npu="A3,910b" id23 -->
+    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>新增了对`torch.int8`的支持（支持pertoken/perchannel量化方式）。
+    <!-- end id23 -->
+
 - 计算公式：
   - 场景1：x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，对入参x1、x2、bias进行matmul计算后，进行ReduceScatter通信。
 
@@ -65,32 +77,74 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，MM左矩阵，即计算公式中的$x1$。当前版本仅支持两维输入，shape为[m, k]，且仅支持不转置场景，m须为卡数（world\_size）的整数倍，k轴取值范围为[256, 65535)。数据格式支持ND，不支持非连续Tensor。数据类型支持如下：
+
+  <!-- npu="A3,910b" id5 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
+  <!-- end id5 -->
+  <!-- npu="950" id6 -->
   - <term>Ascend 950DT</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
+  <!-- end id6 -->
+
 - **x2**（`Tensor`）：必选参数，MM右矩阵，即计算公式中的$x2$。当前版本仅支持两维输入，支持转置/不转置场景，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。数据类型支持如下：
+
+  <!-- npu="A3,910b" id7 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式支持ND、FRACTAL_NZ。
+  <!-- end id7 -->
+  <!-- npu="950" id8 -->
   - <term>Ascend 950DT</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，数据格式仅支持ND。
+  <!-- end id8 -->
+
 - **hcom**（`str`）：必选参数，通信域名称。通过get\_hccl\_comm\_name接口获取。
 - **world\_size**（`int`）：必选参数，卡数（rank\_size）。
+
+  <!-- npu="A3,910b" id9 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持2、4、8卡。
+  <!-- end id9 -->
+  <!-- npu="950" id10 -->
   - <term>Ascend 950DT</term>：支持2、4、8、16、32、64卡。
+  <!-- end id10 -->
+
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce\_op**（`str`）：可选参数，reduce操作类型。当前版本仅支持"sum"。默认值为'sum'。
 - **bias**（`Tensor`）：可选参数，即计算公式中的$bias$。当前版本仅支持一维输入，shape为(n,)，支持传入None。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+
+  <!-- npu="A3,910b" id11 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当x1和x2数据类型为`torch.int8`时，bias数据类型可以是`torch.float16`、`torch.bfloat16`、`torch.float32`；当x1和x2数据类型为`torch.float16`时，bias数据类型必须为`torch.float16`、`torch.float32`；当x1和x2数据类型为`torch.bfloat16`时，bias数据类型必须为`torch.bfloat16`、`torch.float32`。
+  <!-- end id11 -->
+  <!-- npu="950" id12 -->
   - <term>Ascend 950DT</term>：如果x1的数据类型是`torch.float16`、`torch.bfloat16`，则bias的数据类型必须为`torch.float16`、`torch.bfloat16`。如果x1的数据类型是`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`时，在pertensor和mx量化场景下，bias的数据类型必须为`torch.float32`。在perblock场景下，仅支持输入为None。
+  <!-- end id12 -->
+
 - **x1\_scale**（`Tensor`）：可选参数，mm左矩阵反量化参数，支持传入None。当x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，仅支持传入None。
+
+  <!-- npu="A3,910b" id13 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：pertoken场景shape为(m, 1)，数据类型支持`torch.float32`。
+  <!-- end id13 -->
+  <!-- npu="950" id14 -->
   - <term>Ascend 950DT</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(m, 128), ceildiv(k, 128)]，数据类型支持`torch.float32`；mx量化场景（MXFP8和MXFP4）数据类型为`torch.float8_e8m0fnu`，shape为(m, ceilDiv(k, 64), 2)。
+  <!-- end id14 -->
+
 - **x2\_scale**（`Tensor`）：可选参数，mm右矩阵反量化参数，支持传入None。当x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，仅支持传入None。
+
+  <!-- npu="A3,910b" id15 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：perchannel场景shape为(1, n)，数据类型支持`torch.float32`、`torch.int64`（仅在output数据类型为`torch.float16`场景支持）。
+  <!-- end id15 -->
+  <!-- npu="950" id16 -->
   - <term>Ascend 950DT</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(k, 128), ceildiv(n, 128)]，数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape跟随`x2`转置/不转置，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。
+  <!-- end id16 -->
+
 - **quant\_scale**（`Tensor`）：可选参数，输出矩阵量化scale。当前仅支持传入None。默认值为None。
 - **block\_size**（`int`）：可选参数，用于表示mm输出矩阵在M轴方向和N轴方向上可以用于对应方向上的多少个数的量化。由blockSizeM、blockSizeN、blockSizeK三个值拼接而成，每个值占16位，计算公式为blockSize = blockSizeK | blockSizeN << 16 | blockSizeM << 32，mm输出矩阵不涉及K轴，blockSizeK固定为0，当前版本只支持blockSizeM=blockSizeN=0。默认值为0。
 - **comm\_turn**（`int`）：可选参数，通信数据切分数，即总数据量/单次通信量。当前版本仅支持输入0。默认值为0。
 - **group\_sizes**（`List[int]`）：可选参数，用于表示反量化中x1_scale/x2_scale输入的一个数在其所在的对应维度方向上可以用于该方向x1/x2输入的多少个数的反量化。长度为3，依次为[groupSizeM, groupSizeN, groupSizeK]，每个值取值范围[0, 65535]，内部拼接公式为groupSize = groupSizeK | groupSizeN << 16 | groupSizeM << 32。传None或全0表示使用默认值。默认值为None。
+
+  <!-- npu="950" id17 -->
   - <term>Ascend 950DT</term>：仅当x1Scale和x2Scale输入都是2维及以上数据时，groupSize取值有效，其他场景需传入0。当groupSizeM/groupSizeN/groupSizeK中有1个或多个为0时，会根据x1/x2/x1Scale/x2Scale输入shape重新推导：groupSizeM = m / scaleM（需保证m能被scaleM整除），groupSizeK = k / scaleK，groupSizeN = n / scaleN。一般情况下，当x1Scale、x2Scale输入都是2维且数据类型都为`torch.float32`时，[groupSizeM, groupSizeN, groupSizeK]取值组合会推导为[128, 128, 128]；当x1Scale、x2Scale输入都是3维且数据类型都为`torch.float8_e8m0fnu`时，会推导为[1, 1, 32]。
+  <!-- end id17 -->
+  <!-- npu="A3,910b" id18 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本仅支持输入0。
+  <!-- end id18 -->
+
 - **amax\_output**（`bool`）：可选参数，是否输出MM计算的最大值结果。为True时返回MM计算的最大值结果amax。默认值为False。
 - **y\_dtype**（`int`）：可选参数，输出数据类型（ScalarType枚举值）。当输入为`torch.float16`或`torch.bfloat16`时，输出应与输入数据类型保持一致（可不传）；输入为其他数据类型时必须传入。支持取值`torch.float16`、`torch.bfloat16`、`torch.float32`。默认值为None。
 - **x1\_dtype**（`int`）：可选参数，x1的数据类型（ScalarType枚举值），用于将x1的存储类型解释为指定低精度类型。mx量化场景（MXFP4）下必须传入，取值须为`torch_npu.float4_e2m1fn_x2`。默认值为None。
@@ -98,8 +152,13 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **x1\_scale\_dtype**（`int`）：可选参数，x1\_scale的数据类型（ScalarType枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch.float8_e8m0fnu`。默认值为None。
 - **x2\_scale\_dtype**（`int`）：可选参数，x2\_scale的数据类型（ScalarType枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch.float8_e8m0fnu`。默认值为None。
 - **comm\_mode**（`str`）：可选参数，通信模式。
+
+  <!-- npu="A3,910b" id19 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本仅支持输入"aiv"，默认值为"aiv"。
+  <!-- end id19 -->
+  <!-- npu="950" id20 -->
   - <term>Ascend 950DT</term>：当前版本支持输入"ai\_cpu"或"ccu"。默认值为"ai\_cpu"）。
+  <!-- end id20 -->
 
 ## 返回值说明
 
@@ -116,6 +175,8 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - 输入x2必须是2维，其shape为(k, n)，轴满足mm算子入参要求，k轴相等。
   - bias为1维，shape为(n,)。
   - 输出为2维，其shape为(m / rank\_size, n)，rank\_size为卡数。
+
+<!-- npu="950" id21 -->
 - <term>Ascend 950DT</term>约束：
   - 通信约束：当前版本仅支持输入comm\_mode为"ai\_cpu"或"ccu"，支持CCU通信和AICPU通信，CCU仅支持单机UB域内互联，AICPU可支持跨机UB域内互联。
   - 当x1、x2的数据类型为`torch.float16`/`torch.bfloat16`时，x1/x2支持空tensor场景，m和n可以为空，k不可为空；当x1、x2的数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`时，不支持空tensor。
@@ -125,11 +186,14 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - mx量化场景下，x1和x2输入为`torch_npu.float4_e2m1fn_x2`（MXFP4量化）时，k必须是偶数，当x2不转置时，n也必须是偶数。
   - 支持2、4、8、16、32、64卡。
   - ReduceScatter集合通信数据总量不能超过16 \* 256MB，集合通信数据总量计算方式为：m \* n \* sizeof(output\_dtype)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+<!-- end id21 -->
+<!-- npu="A3,910b" id22 -->
 - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>约束：
   - 仅支持comm\_mode为"aiv"，且通信缓冲区大于等于200MB。
   - 不支持空tensor。
   - x1和x2的数据类型需要保持一致。
   - 支持2、4、8卡。
+<!-- end id22 -->
 - `world_size`取值必须在[2, 4, 8, 16, 32, 64]范围内。
 - 输入self和x2的K轴必须相等，且self的M轴必须能被world\_size整除。
 - `group_sizes`必须传长度为3的列表，每个元素取值范围[0, 65535]。

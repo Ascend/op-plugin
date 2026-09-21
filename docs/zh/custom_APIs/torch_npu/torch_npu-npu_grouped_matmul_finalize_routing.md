@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -24,52 +28,90 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 ## 参数说明
 
 - **`x`**（`Tensor`）：**必选参数**，矩阵计算的左矩阵，支持非连续的Tensor。数据格式支持$ND$，维度为\(m, k\)。`m`取值范围为\[0, 16\*1024\*8\]。
+
+  <!-- npu="A3,910b" id4 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`。
+  <!-- end id4 -->
+  <!-- npu="950" id5 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
     - x支持m为0，其他空Tensor场景不支持。
+  <!-- end id5 -->
 
 - **`w`**（`Tensor`）：**必选参数**，矩阵计算的右矩阵，支持非连续的Tensor。数据格式支持$ND$。
+
+  <!-- npu="A3,910b" id6 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int4`。
     - A8W8量化场景下，数据格式支持`FRACTAL_NZ`，维度为\(e, n1, k1, k0, n0\)，其中`k0`=16、`n0`=32，`x` shape中的`k`和`w` shape中的`k1`需要满足以下关系：ceilDiv(k, 16) = k1，`e`取值范围为\[1, 256\]，`k`取值为16整倍数，`n`取值为32整倍数，且`n`大于等于256。
     - A8W4场景下数据格式支持$ND$，维度为\(e, k, n\)，`k`支持2048，`n`只支持7168。
+  <!-- end id6 -->
+  <!-- npu="950" id7 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`w_dtype`为对应类型，此时`w`本身的`dtype`不再生效，但仍需保证`w`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4场景，此时输入`x`的`K`需为大于2的偶数，且当`weight`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。维度为\(e, k, n\)。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。数据格式支持`ND`和`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
     - w支持n为0，其他空Tensor场景不支持。
+  <!-- end id7 -->
 
 - <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **`group_list`**（`Tensor`）：**必选参数**，GroupedMatMul的各分组大小，支持非连续的Tensor。数据类型支持`int64`，数据格式支持$ND$，维度为\(e,\)，`e`与`w`的`e`一致。`group_list`的值总和要求≤`m`，`group_list`的长度不超过1024。
 - **`scale`**（`Tensor`）：**可选参数**，矩阵计算反量化参数，对应`weight`矩阵。数据格式支持$ND$。
+
+  <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：A8W8场景下支持per-channel量化方式，不支持非连续的Tensor，数据类型支持`float32`，维度\(e, n\)，这里的n=n1\*n0；A8W4量化场景下，数据类型支持`int64`，维度为\(e, 1, n\)。
+  <!-- end id8 -->
+  <!-- npu="950" id9 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，数据类型支持`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
     - pertoken量化场景下，数据类型支持`float32`、`bfloat16`。维度为\(e, 1, n\)，`e`、`n`与`w`的`e`、`n`一致。
+  <!-- end id9 -->
 
 - **`bias`**（`Tensor`）：**可选参数**，矩阵计算的bias参数，支持非连续的Tensor。数据格式支持$ND$，维度为\(e, n\)。
+
+  <!-- npu="A3,910b" id10 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：只支持A8W4场景，数据类型支持`float32`。
+  <!-- end id10 -->
+  <!-- npu="950" id11 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：支持mx量化、pertoken量化场景，数据类型支持`bfloat16`。
+  <!-- end id11 -->
 
 - **`offset`**（`Tensor`）：**可选参数**，矩阵计算量化参数的偏移量，支持非连续的Tensor。支持3D Tensor输入，数据类型支持`float32`，数据格式支持$ND$。
+
+  <!-- npu="A3,910b" id12 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：只支持A8W4量化场景。
+  <!-- end id12 -->
+  <!-- npu="950" id13 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：暂不支持该参数，使用默认值即可。
+  <!-- end id13 -->
 
 - **`pertoken_scale`**（`Tensor`）：**可选参数**，矩阵计算的反量化参数，对应`x`矩阵，pertoken量化方式，支持非连续的Tensor。数据格式支持$ND$。
+
+  <!-- npu="A3,910b" id14 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。维度为\(m,\)。
+  <!-- end id14 -->
+  <!-- npu="950" id15 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，**必选参数**，数据类型支持`float8_e8m0fnu`，其中`float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
     - pertoken量化场景下，**可选参数**，数据类型支持`float32`。维度为\(m,\)。
+  <!-- end id15 -->
 
 - **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
 - **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，支持非连续的Tensor。数据类型支持`float32`，数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
+
+  <!-- npu="950" id16 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：该参数必须传入。
+  <!-- end id16 -->
 
 - **`row_index`**（`Tensor`）：**可选参数**，MoE专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，支持非连续的Tensor。数据格式支持$ND$，维度为\(m,\)，`m`与`x`的`m`一致。
+
+  <!-- npu="A3,910b" id17 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`int64`。
+  <!-- end id17 -->
+  <!-- npu="950" id18 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，必选参数，数据类型支持`int64`。
     - pertoken量化场景下，**必选参数**。当输入的`x`数据类型为`int8`时，`row_index`数据类型支持`int64`和`int32`；当输入的`x`数据类型为`float8_e4m3fn`或`hifloat8`时，`row_index`数据类型支持`int64`；
+  <!-- end id18 -->
 
 - **`dtype`**（`ScalarType`）：**可选参数**，指定GroupedMatMul计算的输出类型。0表示`float32`，1表示`float16`，2表示`bfloat16`。默认值为0。
 - **`shared_input_weight`**（`float`）：**可选参数**，共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
@@ -77,24 +119,44 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 - **`output_bs`**（`int`）：**可选参数**，输出的最高维大小。默认值为0。
 - **`group_list_type`**（`int`）：**可选参数**，GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 - **`x_dtype`**（`int`）：**可选参数**，输入`x`的真实数据类型，默认为None。
+
+  <!-- npu="A3,910b" id19 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  <!-- end id19 -->
+  <!-- npu="950" id20 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`float4_e2m1fn_x2`。
     - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`hifloat8`。
+  <!-- end id20 -->
 
 - **`w_dtype`**（`int`）：**可选参数**，输入`w`的真实数据类型，默认为None。
+
+  <!-- npu="A3,910b" id21 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  <!-- end id21 -->
+  <!-- npu="950" id22 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
     - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`float4_e2m1fn_x2`。
     - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`hifloat8`。
+  <!-- end id22 -->
 
 - **`scale_dtype`**（`int`）：**可选参数**，输入`scale`的真实数据类型，默认为None。
+
+  <!-- npu="A3,910b" id23 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  <!-- end id23 -->
+  <!-- npu="950" id24 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景下，若传入None表示输入`scale`的真实数据类型与输入的`dtype`相同；若非None，`scale`的真实数据类型支持`float8_e8m0`。
+  <!-- end id24 -->
 
 - **`pertoken_scale_dtype`**（`int`）：**可选参数**，输入`pertoken_scale`的真实数据类型，默认为None。
+
+  <!-- npu="A3,910b" id25 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  <!-- end id25 -->
+  <!-- npu="950" id26 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景下，若传入None表示输入`pertoken_scale`的真实数据类型与输入的`dtype`相同；若非None，`pertoken_scale`的真实数据类型支持`float8_e8m0`。
+  <!-- end id26 -->
 
 ## 返回值说明
 
@@ -105,6 +167,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 - 该接口支持推理和训练场景下使用。
 - 该接口支持单算子模式和TorchAir图模式。
 - 输入和输出Tensor支持的数据类型组合如下：
+
+  <!-- npu="A3,910b" id27 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
@@ -113,7 +177,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     | int8 | int8 | int64 | float32 | None | None | float32 | None | None | int64 | float32 |
     | int8 | int4 | int64 | int64 | float32 | None | float32 | bfloat16 | float32 | int64 | float32 |
     | int8 | int4 | int64 | int64 | float32 | float32 | float32 | bfloat16 | float32 | int64 | float32 |
-
+  <!-- end id27 -->
+  <!-- npu="950" id28 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
@@ -137,11 +202,13 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     > - `x`数据类型为`float8_e4m3fn`，`w`数据类型为`float4_e2m1fn_x2`。`w`数据格式要求FRACTAL\_NZ格式，可通过torch\_npu.npu\_format\_cast接口实现ND转FRACTAL\_NZ格式。
     > - `x`要求非转置，`w`要求转置，`w`的shape支持\(e, n, k\), 要求e<=1024、k和n满足32对齐。图模式场景下要求e不等于1，同时k\>64。
     > - `shared_input_offset`+`shared_input`的第一维度总和不允许超过`output_bs`。
+  <!-- end id28 -->
 
 ## 调用示例
 
 - 单算子模式调用
 
+  <!-- npu="A3,910b" id29 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
     ```python
@@ -184,7 +251,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
                 shared_input=shared_input_clone, logit=logit_clone, row_index=row_index_clone,
                 shared_input_offset=shared_input_offset, output_bs=output_bs)
     ```
-
+  <!-- end id29 -->
+  <!-- npu="950" id30 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp8
 
     ```python
@@ -229,7 +297,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     print(out.cpu())
     print(out.cpu().shape)
     ```
-
+  <!-- end id30 -->
+  <!-- npu="950" id31 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：pertoken量化weightNZ场景示例-int8
 
     ```python
@@ -271,7 +340,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     print(out.cpu())
     print(out.cpu().shape)
     ```
-
+  <!-- end id31 -->
+  <!-- npu="950" id32 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：伪量化场景mxA8W4
 
     ```python
@@ -349,8 +419,11 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     scale_npu = scale_npu.transpose(-2, -3)
     output = torch_npu.npu_grouped_matmul_finalize_routing(x_npu, weight_npu, group_list=group_list_npu,             scale=scale_npu,bias=bias_npu, pertoken_scale=pertoken_scale_npu, shared_input=shared_input_npu,               logit=logit_npu,row_index=row_index_npu,shared_input_weight=shared_input_weight,               shared_input_offset=shared_input_offset, group_list_type=group_list_type,               output_bs=output_bs, scale_dtype=torch_npu.float8_e8m0fnu, pertoken_scale_dtype=torch_npu.float8_e8m0fnu,               w_dtype=torch_npu.float4_e2m1fn_x2)
     ```
+  <!-- end id32 -->
 
 - 图模式调用
+
+  <!-- npu="A3,910b" id33 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：
 
     ```python
@@ -407,7 +480,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     y = model(x_clone, weightNz, group_list_clone, scale_clone, pertoken_scale_clone, shared_input_clone, logit_clone, row_index_clone, shared_input_offset, output_bs)
     ```
-
+  <!-- end id33 -->
+  <!-- npu="950" id34 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：mx量化场景示例-mxfp4图模式调用
 
     ```python
@@ -465,7 +539,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     print(y.cpu())
     print(y.cpu().shape)
     ```
-
+  <!-- end id34 -->
+  <!-- npu="950" id35 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：pertoken量化weightNZ场景示例-int8图模式调用
 
     ```python
@@ -521,7 +596,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     print(y.cpu())
     print(y.cpu().shape)
     ```
-
+  <!-- end id35 -->
+  <!-- npu="950" id36 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：伪量化mxA8W4场景图模式
 
     ```python
@@ -634,3 +710,4 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
         model = torch.compile(model, backend=npu_backend, dynamic=True)
     out = model(x_npu, weight_npu, pertoken_scale_npu, scale_npu, bias_npu, logit_npu, shared_input_npu, row_index_npu,group_list_npu, group_list_type, output_bs, shared_input_weight, shared_input_offset)
     ```
+  <!-- end id36 -->

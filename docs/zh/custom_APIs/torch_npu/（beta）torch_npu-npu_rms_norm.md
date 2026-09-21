@@ -2,13 +2,21 @@
 
 ## 产品支持情况
 
-|产品             |  是否支持  |
-|:-------------------------|:----------:|
-|  <term>Ascend 950PR/Ascend 950DT</term> |     √    |
-|  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
-|  <term>Atlas 推理系列产品</term>   |     √    |
-|  <term>Atlas 训练系列产品</term>   |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas 训练系列产品</term>：支持
+<!-- end id5 -->
 
 ## 功能说明
 
@@ -43,13 +51,25 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## 约束说明
 
 - 该接口支持单算子模式调用。
+
+<!-- npu="950" id6 -->
 - <term>Ascend 950PR/Ascend 950DT</term>：该接口还支持TorchAir图模式调用。
+<!-- end id6 -->
+<!-- npu="310p" id7 -->
 - <term>Atlas 推理系列产品</term>：`self`、`gamma`输入的尾轴长度必须大于等于32 Bytes。
+<!-- end id7 -->
 - 边界值场景说明：
+
+  <!-- npu="310p" id8 -->
   - <term>Atlas 推理系列产品</term>：输入不支持包含Inf和NaN。
+  <!-- end id8 -->
+  <!-- npu="950,A3,910b" id9 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Ascend 950PR/Ascend 950DT</term>：当输入时Inf时，输出为Inf。当输入是NaN时，输出为NaN。
+  <!-- end id9 -->
 
 - 各产品支持数据类型及对应关系说明：
+
+  <!-- npu="950,A3,910b" id10 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Ascend 950PR/Ascend 950DT</term>：
 
     | `self`数据类型 | `gamma`数据类型 | `yOut`数据类型 | `rstdOut`数据类型 |
@@ -59,13 +79,15 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` |
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` |
     | `torch.float32` | `torch.float32`  | `torch.float32` | `torch.float32` |
-
+  <!-- end id10 -->
+  <!-- npu="910,310p" id11 -->
   - <term>Atlas 推理系列产品</term>、<term>Atlas 训练系列产品</term>：
 
     | `self`数据类型 | `gamma`数据类型 | `yOut`数据类型 | `rstdOut`数据类型 |
     | -------- | -------- | -------- | -------- |
     | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` |
     | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` |
+  <!-- end id11 -->
 
 ## 调用示例
 
@@ -80,6 +102,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     y, rstd = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)
     ```
 
+<!-- npu="950" id12 -->
 - 图模式调用：该示例仅支持<term>Ascend 950PR/Ascend 950DT</term>。
 
     ```python
@@ -103,3 +126,4 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     model = torch.compile(model, backend=npu_backend, dynamic=True)
     y, rstd = model(x, gamma, 1e-5)
     ```
+<!-- end id12 -->

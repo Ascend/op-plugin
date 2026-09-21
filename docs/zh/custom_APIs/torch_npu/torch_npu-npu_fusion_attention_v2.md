@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
-| <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -64,14 +68,20 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - **pse**（`Tensor`）：可选参数，公式中的$pse$，位置编码，需与`pse_type`配套使用，默认值为None。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。
   - 非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。
   - 若非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是`sparse_mode`为0、2、3的下三角掩码场景，可开启alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse[:, :, -1024:, :]，参数每个batch不相同时输入BNHSkv(H=1024)，每个batch相同时输入1NHSkv(H=1024)。varlen场景压缩的适用情况如下：
+
+    <!-- npu="950" id4 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：varlen场景亦支持压缩。
+    <!-- end id4 -->
     - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：仅非varlen场景支持压缩，且需同时满足Sq大于1024、每个batch的Sq与Skv等长、下三角掩码条件。
   - varlen场景支持BNHSkv(H=1024)、1NHSkv(H=1024)、pseTotalLen三种shape；pseTotalLen为所有batch段pse元素个数之和，第i个batch段的pse元素个数为N \* Sq\_i \* Skv\_i。
   - 当`pse_type`为2或3时，数据类型需为`torch.float32`，对应shape支持范围是\[B, N\]或\[N\]。
 - **padding\_mask**（`Tensor`）：可选参数，预留参数，暂未使用，传入None即可。
 - **atten\_mask**（`Tensor`）：可选参数，公式中的$atten\_mask$。取值为1（或True）代表该位不参与计算（被遮蔽），取值为0（或False）代表该位参与计算（被保留），数据类型支持`bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。
 - **query\_rope**（`Tensor`）：可选参数，公式中的$query\_rope$，为query的RoPE扩展输入，需与`key_rope`同时传入，默认值为None。仅在varlen场景（input\_layout为TND）下支持，此时必须传入`atten_mask`。数据格式支持$ND$，shape类型支持\[TND\]。Head-Dim必须满足(qRoPED == kRoPED)、D为8的整数倍且小于等于query、key、value的D。数据类型支持如下：
+
+  <!-- npu="950" id5 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：与`query`一致（`torch.float16`、`torch.bfloat16`、`torch.float32`）。
+  <!-- end id5 -->
   - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：仅支持`torch.bfloat16`。
 - **key\_rope**（`Tensor`）：可选参数，公式中的$key\_rope$，为key的RoPE扩展输入，需与`query_rope`同时传入，默认值为None。仅在varlen场景（input\_layout为TND）下支持，此时必须传入`atten_mask`。数据类型、数据格式、shape及Head-Dim约束与`query_rope`一致。
 - **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，默认值为1.。
@@ -116,7 +126,10 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - **q\_start\_idx**（`List[int]`）：可选参数，代表外切场景，当前分块的query的sequence在全局中的起始索引，默认值为None。数据类型支持`torch.int64`。
 - **kv\_start\_idx**（`List[int]`）：可选参数，代表外切场景，当前分块的key和value的sequence在全局中的起始索引，默认值为None。数据类型支持`torch.int64`。
 - **softmax\_layout**（`str`）：可选参数，用于控制TND场景下softmax的输出（softmax\_max和softmax\_sum）的数据排布方式，默认值为""。仅支持传入""和"TND"，且仅当`input_layout`为TND时才可传入"TND"。TND场景下softmax\_max和softmax\_sum的输出格式如下：
+
+  <!-- npu="950" id6 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：传入"TND"时，softmax的输出排布为TN8，否则为BNS8。
+  <!-- end id6 -->
   - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：传入"TND"时，softmax的输出排布为TND排布，否则为NTD。
 - **sink**（`Tensor`）：可选参数，每个注意力头的偏置，默认值为None。shape为\[head\_num\]，数据类型仅支持`torch.float32`。
 - **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout mask，默认值为None。不传入时，由接口内部根据`keep_prob`、`seed`、`offset`自动生成。
@@ -143,17 +156,26 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - 确定性计算：默认确定性实现。当`keep_prob`小于1时，dropout mask由随机数生成，计算结果的确定性受`seed`、`offset`参数控制。
 - 输入`query`、`key`、`value`的维度必须为3维或4维，且`input_layout`必须一致。
 - 输入`query`、`key`、`value`的数据类型必须一致。传入query\_rope/key\_rope时：
+
+  <!-- npu="950" id7 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型不变，仍支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+  <!-- end id7 -->
   - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：仅支持`torch.bfloat16`。
 - 输入`pse`时数据类型必须与`query`、`key`、`value`的数据类型一致。
 - 输入`key`和`value`的shape必须一致（除Head-Dim外）。有一个例外场景，D不等长场景下，`key`的D跟`value`的D可以不同，但是`value`的D要求小于`key`的D，适用情况如下：
+
+  <!-- npu="950" id8 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：支持该例外场景。
+  <!-- end id8 -->
   - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：不支持，`key`和`value`的shape必须完全一致（含Head-Dim）。
 - D：Head-Dim必须满足(qD == kD && kD >= vD)，取值范围1\~768。其中D不等长（kD > vD）的适用情况：
+
+  <!-- npu="950" id9 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：支持。
+  <!-- end id9 -->
   - <term>Atlas A2/A3 训练系列产品/Atlas A2/A3 推理系列产品</term>：不支持，须满足qD == kD == vD。
 - 关于数据shape的约束（B表示batchsize，N表示head个数，S表示sequence length，T表示B\*S）：
-
+  
   | 场景 | B | N | S | T |
   | --- | --- | --- | --- | --- |
   | 非varlen | 1\~2M（带prefix时最大2K） | 1\~256 | 1\~1M | - |
@@ -178,8 +200,13 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - 传入`query_rope`、`key_rope`时：
   - 仅在varlen场景（input_layout为TND）下支持，且必须传入`atten_mask`。
   - qRoPED必须等于kRoPED，且D必须是8的整数倍、小于等于query、key和value的D。
+
+  <!-- npu="950" id10 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：输入`query_rope`与`query`的输入shape仅在D维度不同，其他shape参数需要相同。当前只支持：query的D=128，query_rope的D=64这1种场景。
+  <!-- end id10 -->
+  <!-- npu="950" id11 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：输入`key_rope`与`key`的输入shape仅在D维度不同，其他shape参数需要相同。当前只支持：key的D=128，key_rope的D=64这1种场景。
+  <!-- end id11 -->
   - 不支持传入`pse`和dropout mask。
 - 传入`sink`时，sink的shape必须为\[head\_num\]。
 - `input_layout`为TND时，`sparse_mode`取值范围为\[0, 5)或(5, 8\]；`input_layout`为其他取值时，`sparse_mode`取值范围为\[0, 6\]。

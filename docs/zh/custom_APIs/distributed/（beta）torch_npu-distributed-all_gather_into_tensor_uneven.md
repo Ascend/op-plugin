@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>                        |    √     |
-|<term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品</term>            |    √     |
-|<term>Atlas 推理系列产品</term>                                       |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas 800I A2 推理产品</term>：支持
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 

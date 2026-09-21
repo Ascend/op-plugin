@@ -2,10 +2,12 @@
 
 ## 产品支持情况
 
-| 产品 | 是否支持 |
-| :--- | :------: |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
-| <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
 
 ## 功能说明
 
@@ -36,8 +38,13 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
 - **bias**（`Tensor`）：**可选参数**，矩阵乘运算后累加的偏置，对应公式中的$bias$。数据类型由输入`x1`和`x2`决定，当`x1`和`x2`为`float16`时，`bias`的数据类型为`float16`和`float32`；当`x1`和`x2`为`bfloat16`时，`bias`的数据类型为`bfloat16`和`float32`。维度只能为1D，shape为\(H2\)，数据格式支持$ND$。
 - **all2all_axes**（`List[int]`）：**可选参数**，AlltoAll和Permute数据交换的方向，支持为空或者\[-1, -2\]，表示将Matmul结果由\(BS, H2\)转为\(BS\*rankSize, H2/rankSize\)。
 - **comm_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
+
+    <!-- npu="A3" id3 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持`None`、`ai_cpu`。传入`None`时，使用`ai_cpu`通信。
+    <!-- end id3 -->
+    <!-- npu="950" id4 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。传入`None`时，使用`ai_cpu`通信。
+    <!-- end id4 -->
 
 ## 返回值说明
 
@@ -48,7 +55,10 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
 ## 约束说明
 
 - 该接口支持训练、推理场景下使用。
-- 该接口支持单算子模式和图模式调用（仅<term>Ascend 950PR/Ascend 950DT</term>支持）。
+- 该接口支持单算子模式。
+<!-- npu="950" id5 -->
+- 该接口在<term>Ascend 950PR/Ascend 950DT</term>上支持图模式调用。
+<!-- end id5 -->
 - 除`x1`以外的输入参数均不支持空Tensor。
 - 通信域名称`hcom`不支持传入空字符串，长度取值范围为\[1, 127\]。
 - 参数里Shape使用的变量如下：
@@ -101,6 +111,7 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
         )
     ```
 
+<!-- npu="950" id6 -->
 - 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>
 
     ```python
@@ -158,3 +169,4 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
             nprocs=world_size,
         )
     ```
+<!-- end id6 -->

@@ -2,12 +2,18 @@
 
 ## 产品支持情况
 
-|产品             |  是否支持  |
-|:-------------------------|:----------:|
-|  <term>Ascend 950PR/Ascend 950DT</term>     |     √    |
-|  <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>     |     √    |
-|  <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>     |     √    |
-|  <term>Atlas 推理系列产品</term>   |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id4 -->
 
 ## 功能说明
 
@@ -68,8 +74,14 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 - 该接口支持推理场景下使用。
 - 该接口支持单算子模式和TorchAir图模式。
 - 接口配套使用说明：
+
+  <!-- npu="A3,910b,310p" id5 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas 推理系列产品</term>：支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
+  <!-- end id5 -->
+  <!-- npu="950" id6 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：同时支持与[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)和[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)配套使用。
+  <!-- end id6 -->
+
 - 当不传入`offset`时，输出shape与`scale` shape一致。
   - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
   - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。

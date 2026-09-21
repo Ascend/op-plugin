@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term> | √ |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>    | √  |
-|<term>Atlas 推理系列产品</term>    | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -36,19 +40,40 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 ## 参数说明
 
 - **input** (`Tensor`)：必选参数，源数据张量，维度需要为2~8维且第1维度能被`group`整除。数据格式支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id4 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    <!-- end id4 -->
+    <!-- npu="910b" id5 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id5 -->
+    <!-- npu="950" id6 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id6 -->
 
 - **weight** (`Tensor`)：可选参数，缩放张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id7 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    <!-- end id7 -->
+    <!-- npu="910b" id8 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id8 -->
+    <!-- npu="950" id9 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id9 -->
 
 - **bias** (`Tensor`)：可选参数，偏移张量，维度为1且元素数量需与输入`input`的第1维度保持相同，数据格式支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id10 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    <!-- end id10 -->
+    <!-- npu="910b" id11 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id11 -->
+    <!-- npu="950" id12 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id12 -->
 
 - **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。数据类型支持`torch.int64`。
 
@@ -57,19 +82,40 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 ## 返回值说明
 
 - **out** (`Tensor`)：数据类型和shape与`input`相同，支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id13 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
+    <!-- end id13 -->
+    <!-- npu="910b" id14 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    <!-- end id14 -->
+    <!-- npu="950" id15 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id15 -->
 
 - **meanOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id16 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
+    <!-- end id16 -->
+    <!-- npu="910b" id17 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    <!-- end id17 -->
+    <!-- npu="950" id18 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id18 -->
 
 - **rstdOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
+
+    <!-- npu="310p" id19 -->
     - <term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
+    <!-- end id19 -->
+    <!-- npu="910b" id20 -->
     - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    <!-- end id20 -->
+    <!-- npu="950" id21 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
+    <!-- end id21 -->
 
 ## 约束说明
 
@@ -117,6 +163,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     out_npu, mean_npu, rstd_out = torch_npu.npu_group_norm_silu(input_npu, weight_npu, bias_npu, group=num_groups, eps=eps)
     ```
 
+<!-- npu="950" id22 -->
 - 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
 
     ```python
@@ -141,3 +188,4 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     model = torch.compile(model, fullgraph=True, backend=npu_backend, dynamic=False)
     out, mean, rstd = model(x, weight, bias, group=4, eps=0.0001)
     ```
+<!-- end id22 -->

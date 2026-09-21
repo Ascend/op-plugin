@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>                        |    √     |
-|<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>      |    √     |
-|<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR/Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -50,15 +54,25 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
 ## 参数说明
 
 - **tokens**（`Tensor`）：必选参数，表示输入token特征。要求是一个2维的Tensor，shape为(num_tokens, hidden_size)，其中第一维的大小为num_tokens。支持空tensor。数据格式支持$ND$，支持非连续Tensor。
+
+  <!-- npu="950" id4 -->
   - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`float16`、`bfloat16`、`float32`、`int8`，其中`int8`按非量化方式处理。
+  <!-- end id4 -->
+  <!-- npu="A3" id5 -->
   - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
+  <!-- end id5 -->
+  <!-- npu="910b" id6 -->
   - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
+  <!-- end id6 -->
 
 - **indices**（`Tensor`）：必选参数，表示输入indices索引。要求是一个1D或2D的Tensor，支持空tensor。数据类型支持`int32`、`int64`，数据格式支持$ND$，支持非连续Tensor。
   - 当`padded_mode`为`False`时，表示每一个输入token对应的topK个处理专家索引：维度为2时shape为(num_tokens, topK)，维度为1时shape为(num_tokens)，此时topK视为1。
   - 当`padded_mode`为`True`时，表示每个专家选中的token索引（当前暂不支持）。
   - 元素个数要求小于16777215，元素值要求大于等于0且小于16777215。
+
+  <!-- npu="950" id7 -->
   - 在<term>Ascend 950PR/Ascend 950DT</term>上调用本接口且`tokens`数据类型为`int8`时，元素表示expert ID，取值范围为[0, 10240)，最大值为10239，不支持10240。
+  <!-- end id7 -->
 
 - **num_out_tokens**（`int`）：可选参数，表示有效输出token数，默认值为`None`，数据类型为`int64`。
   - 值为`None`或`0`时，表示不会删除任何token。
@@ -79,7 +93,10 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
 - 该接口支持推理、训练场景下使用。
 - 该接口仅支持图模式。
 - 该接口为确定性计算。
-- `tokens`与`permuted_tokens`的数据类型必须一致；`int8`类型的`tokens`和`permuted_tokens`仅支持<term>Ascend 950PR/Ascend 950DT</term>。
+- `tokens`与`permuted_tokens`的数据类型必须一致。
+<!-- npu="950" id8 -->
+- `int8`类型的`tokens`和`permuted_tokens`仅支持<term>Ascend 950PR/Ascend 950DT</term>。
+<!-- end id8 -->
 
 ## 调用示例
 

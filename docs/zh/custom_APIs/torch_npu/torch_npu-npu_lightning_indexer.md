@@ -2,11 +2,15 @@
 
 ## 产品支持情况
 
-| 产品                                                         | 是否支持 |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>              | √ |
-|<term>Atlas A2 推理系列产品</term>         | √  |
-|<term>Atlas A3 推理系列产品</term>         | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT</term>：支持
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 推理系列产品</term>：支持
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 推理系列产品</term>：支持
+<!-- end id3 -->
 
 ## 功能说明
 
@@ -78,14 +82,21 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - 参数query中的D和参数key中的D值相等为128。
 - 参数query、key的数据类型应保持一致。
 - 参数weights不为`float32`时，参数query、key、weights的数据类型应保持一致。
+
+<!-- npu="950" id4 -->
 - return_value仅在<term>Ascend 950DT</term>上支持图模式。
+<!-- end id4 -->
+<!-- npu="950" id5 -->
 - <term>Ascend 950DT</term>：
     - query中的N仅支持8、16、24、32、64。
     - 参数weights不支持`float32`类型。
     - 仅在layout_key为PA_BSND时，key支持0轴非连续。
+<!-- end id5 -->
+<!-- npu="A3,910b" id6 -->
 - <term>Atlas A2 推理系列产品</term>、<term>Atlas A3 推理系列产品</term>：
     - query中的N必须小于等于64。
     - key不支持非连续。
+<!-- end id6 -->
 - 确定性说明：
     - 正向默认确定性实现。
     - 反向梯度默认非确定性实现，不支持开启确定性。
