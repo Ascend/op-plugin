@@ -1,78 +1,108 @@
-# OpPlugin
+<h1 align="center">OpPlugin</h1>
 
-<p>
-    English | <a href="./README.zh.md">简体中文</a>
+<p align="center">
+  <strong>Ascend NPU Operator Adaptation Sub-repository for TorchNPU</strong>
 </p>
 
-## Brief Introduction 
+<p align="center">
+  English | <a href="./README.zh.md">简体中文</a>
+</p>
 
-In this project, the TorchNPU operator plug-in is developed to provide the NPU operator library invoking capability for developers using the PyTorch framework. The compilation and use of the OpPlugin operator plug-in depend on the Ascend TorchNPU. Therefore, you need to understand and install Ascend PyTorch before compiling OpPlugin. For details about the user manual, see the Ascend community.[TorchNPU](https://gitcode.com/ascend/pytorch/blob/master/README.md).
+<p align="center">
+  <a href="#compatibility">Compatibility</a> ·
+  <a href="#installation">Installation</a> ·
+  <a href="#operator-development">Operator Development</a> ·
+  <a href="#api-reference">API Reference</a> ·
+  <a href="#contributing-and-community">Contributing</a> ·
+  <a href="https://gitcode.com/Ascend/pytorch">TorchNPU Repository</a>
+</p>
 
-## Directory structure
+<p align="center">
+  <img src="https://img.shields.io/badge/C++-00599C?style=flat&amp;logo=cplusplus&amp;logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat&amp;logo=python&amp;logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Platform-Ascend%20NPU-C31D20" alt="Platform: Ascend NPU">
+  <a href="https://gitcode.com/Ascend/pytorch"><img src="https://img.shields.io/badge/TorchNPU-Submodule-blue" alt="TorchNPU submodule"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-BSD--3--Clause-8A2BE2" alt="License: BSD-3-Clause"></a>
+  <a href="https://gitcode.com/Ascend/op-plugin"><img src="https://img.shields.io/badge/Repo-GitCode-D71D3A" alt="GitCode repository"></a>
+</p>
 
-The key directories are as follows:
+## Overview
 
-```text
-├─docs                             #Document Directory
-├─ci                               #Directory for storing the automatic build and test scripts.
-├─op_plugin                        #Project core catalog
-│  ├─config                        #Configuration Management Directory
-│  ├─ops                           #Operator Implementation Directory
-│  ├─python                        #Directory bound with Python
-├─codegen                          #Code generation directory
-├─examples                         #Sample Directory
-└─test                             #Test Directory
-```
+**OpPlugin** is the operator adaptation sub-repository of [TorchNPU](https://gitcode.com/Ascend/pytorch/blob/master/README.md). It provides Ascend NPU implementations for native PyTorch operators and TorchNPU custom operators.
 
-## Version mapping table
+TorchNPU integrates this repository through the `third_party/op-plugin` submodule and compiles its operator adaptation code into the `torch_npu` package. Building and running OpPlugin depend on TorchNPU. To use these operators, install a compatible TorchNPU package; no separate OpPlugin package is required.
 
-The OpPlugin repository provides the operator adaptation files required by the TorchNPU. The mapping between the two repositories is as follows:
+## Key Features
 
-| OpPlugin Branch |      Corresponding TorchNPU version      |
-|:--------------- |:----------------------------------------:|
-| master          |    Mainline version, such as v2.7.1.     |
-| 26.1.0          |  Version 26.1.0, such as v2.7.1-26.1.0   |
-| 26.0.0          |  Version 26.0.0, such as v2.7.1-26.0.0   |
-| 7.3.0           |       7.3.0, such as v2.7.1-7.3.0        |
-| 7.2.0           |   7.2.0 version, such as v2.7.1-7.2.0    |
-| 7.1.0           |   7.1.0 version, such as v2.1.0-7.1.0    |
-| 7.0.0           |     7.0.0, for example, v2.1.0-7.0.0     |
-| 6.0.0           |     6.0.0, for example, v2.1.0-6.0.0     |
-| 6.0.rc3         | Version 6.0.rc3, such as v2.1.0-6.0.rc3. |
-| 6.0.rc2         | Version 6.0.rc2, such as v2.1.0-6.0.rc2. |
-| 6.0.rc1         | Version 6.0.rc1, such as v2.1.0-6.0.rc1  |
-| 5.0.0           |   Version 5.0.0, such as v2.1.0-5.0.0    |
-| 5.0.rc3         | 5.0.rc3 version, such as v2.1.0-5.0.rc3  |
+- **Operator adaptation:** Connects to CANN operator interfaces to implement NPU computation for native PyTorch operators and TorchNPU custom operators.
+- **Configuration and code generation:** Uses YAML configuration to manage operator interfaces, version adaptation, and forward/backward bindings, with support for structured adaptation code generation.
+- **Development and verification:** Provides operator adaptation guides, custom operator extension examples, and test cases.
 
-## Installing OpPlugin
+## Compatibility
 
-OpPlugin can be installed by compiling the source code. For details, see.[Installing OpPlugin](docs/en/install.md).
+OpPlugin is integrated and released with the corresponding TorchNPU version. Refer to TorchNPU for shared environment requirements and support policies:
 
-## Quick Start
+- [Compatibility](https://gitcode.com/Ascend/pytorch/blob/master/COMPATIBILITY.en.md): Version mappings for PyTorch, TorchNPU, CANN, and Python.
+- [Support](https://gitcode.com/Ascend/pytorch/blob/master/SUPPORT.en.md): Version support status and lifecycle.
 
-This document provides a complete development guide for PyTorch to invoke Ascend C custom operator by using the OpPlugin plug-in, covering the entire process from environment configuration, operator registration, adaptation implementation, to test and verification. For details, see the Invoking Example.
+For historical versions, read the documentation on the corresponding branch.
+
+## Installation
+
+### Using Existing Operators
+
+Follow the [TorchNPU installation guide](https://gitcode.com/Ascend/pytorch/blob/master/README.md#installation) to prepare the driver, firmware, CANN, PyTorch, and TorchNPU. Then verify your NPU environment with the [TorchNPU quick start](https://gitcode.com/Ascend/pytorch/blob/master/README.md#quick-start).
+
+### Building from Source
+
+To modify or add operators, choose one of the following workflows:
+
+- **Build from the TorchNPU repository:** Follow the [TorchNPU source installation guide (Chinese)](https://gitcode.com/Ascend/pytorch/blob/master/docs/zh/installation_guide/building_from_source.md) to obtain the source and submodules, develop in `third_party/op-plugin`, and build with TorchNPU.
+- **Build from this repository:** Follow the [OpPlugin source build guide](docs/en/install.md) to prepare the environment, then use `ci/build.sh` to build with a specified TorchNPU version.
+
+The build script in this repository obtains the TorchNPU source, integrates the local operator adaptation code, and produces a `torch_npu` wheel in `dist/`. Select the Python version and TorchNPU branch according to the target version's requirements.
+
+## Operator Development
+
+| Task | Documentation |
+| --- | --- |
+| Configure operator interfaces, version adaptation, forward/backward bindings, and structured adaptation | [API adaptation workflow (Chinese)](op_plugin/config/README.md) |
+| Adapt Ascend C custom operators through OpPlugin | [TorchNPU operator adaptation guide](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/developer_notes/framework_feature_guide_pytorch/opplugin_operator_adaptation.md) |
+| Build custom operator extensions using C++ extensions | [Custom operator extension examples (Chinese)](examples/README.md) |
+| Review and add operator test cases | [Tests](test) |
 
 ## API Reference
 
-Provides the function description, function prototype, parameter description, and invoking examples of the TorchNPU customized API based on the PyTorch2.10.0/2.9.0/2.8.0/2.7.1 version. For details, see the Custom API.
+The [TorchNPU custom API reference (Chinese)](docs/zh/custom_APIs/menu_Pytorch_API.md) describes API functionality, signatures, parameters, constraints, and usage examples. Refer to each API document for its supported versions and hardware.
 
-## Life Cycle
+## Directory Structure
 
-The OpPlugin repository depends on the TorchNPU. For details about the life cycle, see the [PyTorch Version Maintenance Policy](https://gitcode.com/ascend/pytorch/blob/master/README.md).
+```text
+├── ci                    # Build and test scripts
+├── codegen               # Operator adaptation code generation
+├── docs                  # Installation, security, and API documentation
+├── examples              # Custom operator extension examples
+├── op_plugin             # Operator adaptation implementations
+│   ├── config            # Operator interface and adaptation configuration
+│   ├── ops               # Operator implementations
+│   │   ├── aclops        # aclop operator adaptation
+│   │   └── opapi         # aclnn operator adaptation
+│   └── python            # Python-related implementations
+├── test                  # Operator test cases
+└── torchnpugen            # TorchNPU code generation tools
+```
 
-## Contribution guidance
+## Contributing and Community
 
-This section describes how to contribute code to the OpPlugin repository. For details, see the [Contribution Guide](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/CONTRIBUTING.md).
+OpPlugin follows the development workflow and contribution conventions in the [TorchNPU contribution guide](https://gitcode.com/Ascend/pytorch/blob/master/CONTRIBUTING.en.md). Submit changes to this repository's code, tests, and documentation as OpPlugin PRs.
 
-## Contact us
+Report operator adaptation issues or suggestions through [OpPlugin Issues](https://gitcode.com/Ascend/op-plugin/issues). For TorchNPU framework issues, use [TorchNPU Issues](https://gitcode.com/Ascend/pytorch/issues).
 
-If you have any questions or suggestions, please submit [GitCode Issues](https://gitcode.com/Ascend/pytorch/issues) We'll get back to you as soon as we can. Thank you for your support.
+The Ascend for PyTorch community's [Core SIG](https://gitcode.com/Ascend/community/tree/master/AscendForPyTorch/sigs/core) is responsible for the design, implementation, and maintenance of OpPlugin. Contributions and discussions are welcome.
 
-## Safety Statement
+## Security Note
 
-This document describes the security hardening information, public network address information, and communication matrix of OpPlugin. For details, see the OpPlugin Security Statement.
-<!-- 
- [OpPlugin Security Statement](docs/en/SECURITYNOTE.en.md). -->
+Read the [OpPlugin security statement](docs/en/SECURITYNOTE.md) before using this repository. For shared security hardening and runtime requirements, see the [TorchNPU security note](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md).
 
 ## Disclaimer
 
@@ -85,11 +115,11 @@ To OpPlugin plug-in users
     - User input security: Users must ensure the security of the entered command lines and bear any security risks or losses caused by improper input. This plug-in and its developers are not responsible for any problems caused by improper command line input.
 - Scope of Disclaimer: This disclaimer applies to all individuals or entities using this plug-in. By using this plug-in, you agree to and accept the content of this statement and are willing to bear the risks and responsibilities arising from the use of this function. If you have any objection, please stop using this plug-in.
 - Read and understand the disclaimer before using this tool. For any questions or questions arising from the use of this plug-in, please contact the developer in time.
-    
+
 ## License
-    
-OpPlugin license. For details, see the[LICENSE](http://gitcode.com/Ascend/op-plugin/blob/master/LICENSE).
-    
-## Acknowledgment
-    
-Thank you for every PR from the community. Welcome to contribute the Ascend Extension for TensorPipe plug-in!
+
+See [LICENSE](./LICENSE) for the OpPlugin license.
+
+## Acknowledgments
+
+Thanks for every PR from the community! Contributions to OpPlugin code, tests, and documentation are welcome.

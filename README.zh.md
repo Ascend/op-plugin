@@ -1,77 +1,108 @@
-# OpPlugin
+<h1 align="center">OpPlugin</h1>
 
-<p>
-    简体中文 | <a href="./README.md">English</a>
+<p align="center">
+  <strong>TorchNPU 的昇腾 NPU 算子适配子仓</strong>
+</p>
+
+<p align="center">
+  简体中文 | <a href="./README.md">English</a>
+</p>
+
+<p align="center">
+  <a href="#版本配套">版本配套</a> ·
+  <a href="#安装">安装</a> ·
+  <a href="#算子开发">算子开发</a> ·
+  <a href="#api-参考">API 参考</a> ·
+  <a href="#贡献与交流">贡献与交流</a> ·
+  <a href="https://gitcode.com/Ascend/pytorch">TorchNPU 主仓</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/C++-00599C?style=flat&amp;logo=cplusplus&amp;logoColor=white" alt="C++">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=flat&amp;logo=python&amp;logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Platform-Ascend%20NPU-C31D20" alt="Platform: Ascend NPU">
+  <a href="https://gitcode.com/Ascend/pytorch"><img src="https://img.shields.io/badge/TorchNPU-Submodule-blue" alt="TorchNPU submodule"></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-BSD--3--Clause-8A2BE2" alt="License: BSD-3-Clause"></a>
+  <a href="https://gitcode.com/Ascend/op-plugin"><img src="https://img.shields.io/badge/Repo-GitCode-D71D3A" alt="GitCode repository"></a>
 </p>
 
 ## 简介
 
-本项目开发了TorchNPU算子插件，为使用PyTorch框架的开发者提供便捷的NPU算子库调用能力。
-OpPlugin算子插件的编译、使用依赖昇腾TorchNPU。因此，在编译OpPlugin之前，需要了解、安装昇腾PyTorch。使用手册可参考昇腾社区[TorchNPU](https://gitcode.com/ascend/pytorch/blob/v2.7.1-26.1.0/README.zh.md)。
+**OpPlugin** 是 [TorchNPU](https://gitcode.com/Ascend/pytorch/blob/master/README.zh.md) 的算子适配子仓，为 PyTorch 原生算子和 TorchNPU 自定义算子提供昇腾 NPU 适配实现。
+
+TorchNPU 通过 `third_party/op-plugin` 子模块集成本仓，将算子适配代码编译到 `torch_npu` 软件包中。OpPlugin 的编译和运行依赖 TorchNPU；使用算子时，安装配套的 TorchNPU 即可，无需单独安装 OpPlugin 软件包。
+
+## 核心功能
+
+- **算子适配：** 对接 CANN 算子接口，实现 PyTorch 原生算子与 TorchNPU 自定义算子的 NPU 计算。
+- **配置与代码生成：** 通过 YAML 配置管理算子接口、版本适配及前反向绑定，并支持结构化适配代码生成。
+- **开发与验证：** 提供算子适配指南、自定义算子扩展示例和测试用例，支持算子开发与验证。
+
+## 版本配套
+
+OpPlugin 随对应版本的 TorchNPU 集成和发布，环境配套和支持策略统一参考 TorchNPU：
+
+- [版本配套](https://gitcode.com/Ascend/pytorch/blob/master/COMPATIBILITY.md)：PyTorch、TorchNPU、CANN 和 Python 的配套关系。
+- [支持说明](https://gitcode.com/Ascend/pytorch/blob/master/SUPPORT.md)：版本支持状态与生命周期。
+
+使用历史版本时，请切换到对应分支阅读文档。
+
+## 安装
+
+### 使用已有算子
+
+按照 [TorchNPU 安装指南](https://gitcode.com/Ascend/pytorch/blob/master/README.zh.md#安装)准备驱动、固件、CANN、PyTorch 和 TorchNPU。安装后，可通过 [TorchNPU 快速开始](https://gitcode.com/Ascend/pytorch/blob/master/README.zh.md#快速开始)验证 NPU 环境。
+
+### 源码编译
+
+需要修改或新增算子时，可选择以下方式：
+
+- **从 TorchNPU 主仓构建：** 按照 [TorchNPU 源码安装指南](https://gitcode.com/Ascend/pytorch/blob/master/docs/zh/installation_guide/building_from_source.md)获取源码和子模块，在 `third_party/op-plugin` 中开发并随主仓编译。
+- **从 OpPlugin 本仓构建：** 按照 [OpPlugin 源码编译指南](docs/zh/install.md)准备环境，并使用 `ci/build.sh` 与指定版本的 TorchNPU 协同编译。
+
+本仓构建脚本会获取 TorchNPU 源码，将本地算子适配代码集成到其中，最终在 `dist/` 下生成 `torch_npu` wheel 包。Python 版本和 TorchNPU 分支需按目标版本配套选择。
+
+## 算子开发
+
+| 开发任务 | 参考文档 |
+| --- | --- |
+| 配置算子接口、版本适配、前反向绑定与结构化适配 | [API 适配开发流程](op_plugin/config/README.md) |
+| 通过 OpPlugin 适配 Ascend C 自定义算子 | [TorchNPU 算子适配指南](https://gitcode.com/Ascend/pytorch/blob/master/docs/zh/developer_notes/custom_operator_adaptation/opplugin_operator_adaptation/_menu_opplugin_operator_adaptation.md) |
+| 通过 C++ extensions 构建自定义算子扩展 | [自定义算子扩展示例](examples/README.md) |
+| 查阅和补充算子测试用例 | [测试目录](test) |
+
+## API 参考
+
+[TorchNPU 自定义 API](docs/zh/custom_APIs/menu_Pytorch_API.md)提供接口功能、函数原型、参数说明、支持约束和调用示例。具体接口的版本和硬件支持范围以对应 API 文档为准。
 
 ## 目录结构
 
-关键目录如下:
-
-```ColdFusion
-├─docs                             # 文档目录
-├─ci                               # 自动化构建与测试脚本目录
-├─op_plugin                        # 项目核心目录
-│  ├─config                        # 配置管理目录
-│  ├─ops                           # 算子实现目录
-│  ├─python                        # python绑定目录
-├─codegen                          # 代码生成目录
-├─examples                         # 示例目录
-└─test                             # 测试目录
+```text
+├── ci                    # 构建与测试脚本
+├── codegen               # 算子适配代码生成
+├── docs                  # 安装、安全和 API 文档
+├── examples              # 自定义算子扩展示例
+├── op_plugin             # 算子适配实现
+│   ├── config            # 算子接口与适配配置
+│   ├── ops               # 算子实现
+│   │   ├── aclops        # aclop 算子适配
+│   │   └── opapi         # aclnn 算子适配
+│   └── python            # Python 相关实现
+├── test                  # 算子测试用例
+└── torchnpugen            # TorchNPU 代码生成工具
 ```
 
-## 版本配套表
+## 贡献与交流
 
-OpPlugin仓旨在为**TorchNPU**提供运行所需要的算子适配文件，两个仓的对应关系如下：
+OpPlugin 复用 [TorchNPU 贡献指南](https://gitcode.com/Ascend/pytorch/blob/master/CONTRIBUTING.md)中的开发流程和贡献规范。涉及本仓的代码、测试和文档修改，请向 OpPlugin 提交 PR。
 
-| OpPlugin分支 | 对应TorchNPU版本 |
-| ------------- | :----------------------------------: |
-| master       |     主线版本，如v2.7.1等              |
-| 26.1.0       |    26.1.0版本，如v2.7.1-26.1.0等      |
-| 26.0.0       |    26.0.0版本，如v2.7.1-26.0.0等      |
-| 7.3.0        |     7.3.0版本，如v2.7.1-7.3.0等       |
-| 7.2.0        |     7.2.0版本，如v2.7.1-7.2.0等       |
-| 7.1.0        |     7.1.0版本，如v2.1.0-7.1.0等       |
-| 7.0.0        |     7.0.0版本，如v2.1.0-7.0.0等       |
-| 6.0.0        |     6.0.0版本，如v2.1.0-6.0.0等       |
-| 6.0.rc3      |   6.0.rc3版本，如v2.1.0-6.0.rc3等     |
-| 6.0.rc2      |   6.0.rc2版本，如v2.1.0-6.0.rc2等     |
-| 6.0.rc1      |   6.0.rc1版本，如v2.1.0-6.0.rc1等     |
-| 5.0.0        |     5.0.0版本，如v2.1.0-5.0.0等       |
-| 5.0.rc3      |   5.0.rc3版本，如v2.1.0-5.0.rc3等     |
+算子适配问题或建议请提交 [OpPlugin Issues](https://gitcode.com/Ascend/op-plugin/issues)；TorchNPU 框架相关问题请提交 [TorchNPU Issues](https://gitcode.com/Ascend/pytorch/issues)。
 
-## 安装OpPlugin
-
-支持通过源码编译的方式安装OpPlugin。具体操作，请参考[安装OpPlugin](docs/zh/install.md)。
-
-## 快速入门
-
-提供了一个通过OpPlugin插件实现PyTorch调用Ascend C自定义算子的完整开发指南，涵盖了从环境配置、算子注册、适配实现到测试验证提供了全流程说明。具体操作，请参考[调用样例](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/framework_feature_guide_pytorch/opplugin_operator_adaptation.md)。
-
-## API参考
-
-基于PyTorch2.10.0/2.9.0/2.8.0/2.7.1版本，提供TorchNPU自定义API的功能说明、函数原型、参数说明与调用示例等。具体信息，请参考[自定义API](https://gitcode.com/Ascend/op-plugin/blob/26.1.0/docs/zh/custom_APIs/menu_Pytorch_API.md)。
-
-## 生命周期
-
-OpPlugin仓依赖**TorchNPU**运行，生命周期请参考**TorchNPU**中的[PyTorch版本维护策略](https://gitcode.com/ascend/pytorch/blob/v2.7.1-26.1.0/README.zh.md#pytorch%E7%89%88%E6%9C%AC%E7%BB%B4%E6%8A%A4%E7%AD%96%E7%95%A5)。
-
-## 贡献指导
-
-介绍如何向OpPlugin仓库贡献代码，具体请参见[贡献指南](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/zh/CONTRIBUTING.md)。
-
-## 联系我们
-
-如果有任何疑问或建议，请提交[GitCode Issues](https://gitcode.com/Ascend/pytorch/issues)，我们会尽快回复。感谢您的支持。
+OpPlugin 由 Ascend for PyTorch 社区的 [Core SIG](https://gitcode.com/Ascend/community/tree/master/AscendForPyTorch/sigs/core)负责设计、实现与维护，欢迎参与交流和贡献。
 
 ## 安全声明
 
-主要描述了OpPlugin的安全加固信息、公网地址信息及通信矩阵等内容。具体介绍，请参考[OpPlugin安全声明](docs/zh/SECURITYNOTE.md)。
+使用本仓前，请阅读 [OpPlugin 安全声明](docs/zh/SECURITYNOTE.md)。TorchNPU 的通用安全加固与运行要求请参见 [TorchNPU 安全声明](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.md)。
 
 ## 免责声明
 
@@ -84,10 +115,10 @@ OpPlugin仓依赖**TorchNPU**运行，生命周期请参考**TorchNPU**中的[Py
 - 免责声明范围：本免责声明适用于所有使用本插件的个人或实体。使用本插件即表示您同意并接受本声明的内容，并愿意承担因使用该功能而产生的风险和责任，如有异议请停止使用本插件。
 - 在使用本工具之前，请谨慎阅读并理解以上免责声明的内容。对于使用本插件所产生的任何问题或疑问，请及时联系开发者。
 
-  ## License
+## License
 
-  OpPlugin的使用许可证，详见[LICENSE](http://gitcode.com/Ascend/op-plugin/blob/26.1.0/LICENSE)。
+OpPlugin 的使用许可证，请参见 [LICENSE](./LICENSE)。
 
-  ## 致谢
+## 致谢
 
-  感谢来自社区的每一个PR，欢迎贡献Ascend Extension for TensorPipe插件！
+感谢来自社区的每一个 PR，欢迎开发者向 OpPlugin 贡献代码、测试和文档！
