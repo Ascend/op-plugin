@@ -56,6 +56,35 @@ at::Tensor npu_transpose_quant_batchmatmul(
     c10::optional<int64_t> batch_split_factor,
     c10::optional<int64_t> x1_dtype,
     c10::optional<int64_t> x2_dtype) {
+  if (x1_dtype.has_value() || x2_dtype.has_value()) {
+    const int64_t fp8_e4m3fn = static_cast<int64_t>(c10_npu::DType::FLOAT8_E4M3FN);
+    const int64_t fp8_e5m2 = static_cast<int64_t>(c10_npu::DType::FLOAT8_E5M2);
+    const int64_t hifloat8 = static_cast<int64_t>(c10_npu::DType::HIFLOAT8);
+
+    const bool x1_is_fp8 = x1_dtype.has_value() &&
+        (x1_dtype.value() == fp8_e4m3fn || x1_dtype.value() == fp8_e5m2);
+    const bool x2_is_fp8 = x2_dtype.has_value() &&
+        (x2_dtype.value() == fp8_e4m3fn || x2_dtype.value() == fp8_e5m2);
+    const bool x1_is_mxfp8 = x1_dtype.has_value() && x1_dtype.value() == fp8_e4m3fn;
+    const bool x2_is_mxfp8 = x2_dtype.has_value() && x2_dtype.value() == fp8_e4m3fn;
+    const bool x1_is_hifp8 = x1_dtype.has_value() && x1_dtype.value() == hifloat8;
+    const bool x2_is_hifp8 = x2_dtype.has_value() && x2_dtype.value() == hifloat8;
+
+    auto is_e8m0_scale = [](const c10::optional<at::Tensor>& scale) -> bool {
+      return scale.has_value() && scale->defined() &&
+          (c10_npu::GetAclDataType(static_cast<int64_t>(scale->scalar_type())) == ACL_FLOAT8_E8M0);
+    };
+    const bool scale_is_mx = is_e8m0_scale(x1_scale) || is_e8m0_scale(x2_scale);
+
+    const bool ishifp8 = x1_is_hifp8 || x2_is_hifp8;
+    const bool ismxfp8 = (x1_is_mxfp8 || x2_is_mxfp8) && scale_is_mx;
+    const bool isfp8 = (x1_is_fp8 || x2_is_fp8) && !scale_is_mx;
+
+    TORCH_CHECK(
+        ishifp8 || ismxfp8 || isfp8,
+        "aclnnTransposeQuantBatchMatMul only supports mxfp8, fp8, or hifp8 input.",
+        OPS_ERROR(ErrCode::PARAM));
+  }
   const at::Tensor& bias_real = bias.value_or(at::Tensor());
   const at::Tensor& x1_scale_real = x1_scale.value_or(at::Tensor());
   const at::Tensor& x2_scale_real = x2_scale.value_or(at::Tensor());
