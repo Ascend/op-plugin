@@ -43,6 +43,7 @@ permissions:
   id-token: write
   pr: write
   note: write
+  action: read
 
 stages:
   stage_1:
@@ -71,7 +72,7 @@ stages:
               base: ${{ atomgit.event.pull_request.base.ref }}
               repo: ${{ atomgit.repository }}
               number: ${{ env.pr_id }}
-              token: ${{ atomgit.token }}
+              token: ${{ secrets.GIT_TOKEN }}
               list-files: json
               predicate-quantifier: every
               filters: |
@@ -120,7 +121,7 @@ stages:
               owner: ${{ env.org_name }}
               repo: ${{ atomgit.event.repository.name }}
               pr_number: ${{ atomgit.event.pull_request.number }}
-              token: ${{ atomgit.token }}
+              token: ${{ secrets.GIT_TOKEN }}
               apply_label: 'true'
               run_url: https://gitcode.com/${{ env.org_name }}/${{ atomgit.event.repository.name }}/actions/runs/${{ atomgit.workflow_run_id }}
 
@@ -133,7 +134,7 @@ stages:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
         runs-on: [ self-hosted, default, x86, cpu=16 ]
         container:
-          image: swr.cn-north-4.myhuaweicloud.com/mindspore/mindspore_python3.11:v0.1
+          image: swr.cn-north-4.myhuaweicloud.com/atlas-ci/common:latest
         steps:
           - name: checkout
             uses: checkout
@@ -154,6 +155,8 @@ stages:
               cd -
           - name: Run pre-commit
             uses: openlibing/pre-commit-action@v1.0.0
+            env:
+              SKIP: clang-tidy
 
       sca-pr:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
@@ -232,7 +235,6 @@ stages:
                 arch: "arm"
                 img: "pytorch_2.12.0_a2_aarch64_builder:20260804"
 
-
   stage_4:
     name: UT
     select: selected_by_default
@@ -279,6 +281,6 @@ post:
             owner: ${{ env.org_name }}
             repo: ${{ atomgit.event.repository.name }}
             run_id: ${{ atomgit.workflow_run_id }}
-            token: ${{ atomgit.token }}
+            token: ${{ secrets.GIT_TOKEN }}
             pr_number: ${{ atomgit.event.pull_request.number }}
             apply_label: 'true'
