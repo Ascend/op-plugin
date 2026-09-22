@@ -66,27 +66,19 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`。
 - **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **expand\_idx**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求是1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
-- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1维张量，shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
+- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1维张量，shape为\(ep\_world\_size\*local\_expert\_num, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
 - **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重，要求是2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
 - **residual\_x**（`Tensor`）：**必选参数**，表示处理后的token需要add的参数，要求是3维张量，shape为\(BS, 1, H\)。数据类型支持`bfloat16`，数据格式为$ND$，支持非连续的Tensor。
 - **gamma**（`Tensor`）：**必选参数**，表示rms\_norm的权重，要求是1维张量，shape为\(H, \)。数据类型支持`bfloat16`，数据格式为$ND$，支持非连续的Tensor。
-- **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和`group_tp`相同。
+- **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size，取值范围为\[2, 768\]。
 - **ep\_rank\_id**（`int`）：**必选参数**，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的`ep_rank_id`不重复。
 - **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，取值范围\[1, 1024\]，并且满足moe\_expert\_num\%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`tp_recv_counts`输出。
-
-    <!-- npu="A3" id3 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求是一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
-    <!-- end id3 -->
-    <!-- npu="950" id4 -->
-    - <term>Ascend 950DT</term>：不支持TP通信域，使用默认输入。
-    <!-- end id4 -->
-
+- **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。预留参数，当前版本不支持，传默认值None即可。
 - **x\_active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信，默认所有token参与通信，要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 - **activation\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
 - **weight\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -98,25 +90,9 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **const\_expert\_alpha\_1**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
 - **const\_expert\_alpha\_2**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
 - **const\_expert\_v**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
-- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。当有TP域通信时，字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
-- **tp\_world\_size**（`int`）：**可选参数**，TP通信域size。有TP域通信才需要传参。
-
-    <!-- npu="A3" id5 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
-    <!-- end id5 -->
-    <!-- npu="950" id6 -->
-    - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值即可。
-    <!-- end id6 -->
-
-- **tp\_rank\_id**（`int`）：**可选参数**，TP通信域本卡ID。有TP域通信才需要传参。
-
-    <!-- npu="A3" id7 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的`tp_rank_id`不重复。无TP域通信时，传0即可。
-    <!-- end id7 -->
-    <!-- npu="950" id8 -->
-    - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值0即可。
-    <!-- end id8 -->
-
+- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。预留参数，当前版本不支持，传默认值""即可。
+- **tp\_world\_size**（`int`）：**可选参数**，TP通信域size。预留参数，当前版本不支持，传默认值0即可。
+- **tp\_rank\_id**（`int`）：**可选参数**，TP通信域本卡ID。预留参数，当前版本不支持，传默认值0即可。
 - **expert\_shard\_type**（`int`）：**可选参数**，表示共享专家卡排布类型。当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 - **shared\_expert\_num**（`int`）：**可选参数**，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
 - **shared\_expert\_rank\_num**（`int`）：**可选参数**，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
@@ -161,20 +137,17 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
     - K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num。
     - local\_expert\_num：表示本卡专家数量。
         - 对于共享专家卡，local\_expert\_num=1。
-        - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。
+        - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)。
 
 - HCCL通信域缓存区大小：
 
     调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理，该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。该场景通信域缓存区大小支持通过环境变量HCCL\_BUFFSIZE配置，也支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
 
     - ep通信域内：设置大小要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)，local\_expert\_num表示需使用MoE专家卡的本卡专家数。
-    - tp通信域内：设置大小要求\>=(A \* Align512(Align32(H \* 2) + 44) + A \* Align512(H \* 2)) \* 2。
-    - 其中480Align512(x) = ((x+480-1)/480)\*512，Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。
+    - 其中Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。
 
 - 通信域使用约束：
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_add_rms_norm`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
-    - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_add_rms_norm`算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
-
     <!-- npu="A3" id13 -->
     - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：一个通信域内的节点需在一个超节点内，不支持跨超节点。
     <!-- end id13 -->
@@ -302,14 +275,10 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
             expert_ids=expert_ids,
             expand_idx=expand_idx,
             ep_send_counts=ep_recv_counts,
-            tp_send_counts=tp_recv_counts,
             expert_scales=expert_scales,
             group_ep=ep_hcomm_info,
-            group_tp=tp_hcomm_info,
             ep_world_size=ep_world_size,
-            tp_world_size=tp_world_size,
             ep_rank_id=rank // tp_world_size,
-            tp_rank_id=rank % tp_world_size,
             expert_shard_type=0,
             shared_expert_num=0,
             shared_expert_rank_num=sharedExpertRankNum,
@@ -424,14 +393,10 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
                                                                                expert_ids=expert_ids,
                                                                                expand_idx=expand_idx_npu,
                                                                                ep_send_counts=ep_recv_counts_npu,
-                                                                               tp_send_counts=tp_recv_counts_npu,
                                                                                expert_scales=expert_scales,
                                                                                group_ep=group_ep,
-                                                                               group_tp=group_tp,
                                                                                ep_world_size=ep_world_size,
-                                                                               tp_world_size=tp_world_size,
                                                                                ep_rank_id=ep_rank_id,
-                                                                               tp_rank_id=tp_rank_id,
                                                                                expert_shard_type=expert_shard_type,
                                                                                shared_expert_rank_num=shared_expert_rank_num,
                                                                                moe_expert_num=moe_expert_num,
