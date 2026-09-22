@@ -34,7 +34,7 @@ const static int64_t ATTN_MASK_DIM_TWO = 2;
 const static int64_t ATTN_MASK_DIM_FOUR = 4;
 
 inline void validate_sdpa_input(const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
-    const c10::optional<at::Tensor> &attn_mask) {
+    const c10::optional<at::Tensor> &attn_mask, bool is_causal = false) {
     TORCH_CHECK(query.dtype() == key.dtype() && query.dtype() == value.dtype(),
         "Expected query, key, and value to have the same dtype, but got query.dtype: ", query.dtype(),
         " key.dtype: ", key.dtype(), " and value.dtype: ", value.dtype(),
@@ -54,6 +54,12 @@ inline void validate_sdpa_input(const at::Tensor &query, const at::Tensor &key, 
         TORCH_CHECK(!query.is_nested() && !key.is_nested(),
             "Scaled_dot_product_attention: Nested tensors for query / key are not supported "
             "when an explicit attn_mask is set" +
+                OPS_ERROR(ErrCode::NOT_SUPPORT));
+    }
+    if (is_causal) {
+        TORCH_CHECK(!attn_mask.has_value(),
+            "_scaled_dot_product_attention: Explicit attn_mask should not be set "
+            "when is_causal=True" +
                 OPS_ERROR(ErrCode::NOT_SUPPORT));
     }
     return;
@@ -78,6 +84,9 @@ c10::optional<at::Tensor> convert_boolean_attn_mask(
         return c10::nullopt;
     }
     if (is_causal) {
+        // For V2R5+ (2.14.0), this illegal combination is already rejected in validate_sdpa_input;
+        // this branch only builds the causal mask. Keep the check to preserve the V2R1-V2R4 behavior,
+        // since the front-end is_causal validation is not enabled there.
         TORCH_CHECK(!attn_mask.has_value(), "The attn_mask should be none when is_causal is true, but got ",
             attn_mask.has_value(), "-value");
         at::Tensor atten_mask_shape = at::ones({ATTENMASK_LIMIT, ATTENMASK_LIMIT}, query.options().dtype(at::kBool));
@@ -262,7 +271,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
 at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tensor &key, const at::Tensor &value,
     const c10::optional<at::Tensor> &attn_mask, double dropout_p, bool is_causal, c10::optional<double> scale,
     bool enable_gqa) {
-    validate_sdpa_input(query, key, value, attn_mask);
+    validate_sdpa_input(query, key, value, attn_mask, is_causal);
 
     if (query.scalar_type() == at::kFloat &&
         (query.size(-1) % 4 != 0 || key.size(-1) % 4 != 0 || value.size(-1) % 4 != 0)) {
