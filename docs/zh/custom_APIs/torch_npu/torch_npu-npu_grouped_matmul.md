@@ -327,7 +327,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - <term>Atlas 推理系列产品</term>：不支持取2。
     <!-- end id42 -->
     <!-- npu="950" id43 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：仅当全量化场景下，并且`group_type`取0（m轴分组）时，支持取2。
+    - <term>Ascend 950PR/Ascend 950DT</term>：仅当全量化场景或MX A8W4伪量化场景下，并且`group_type`取0（m轴分组）时，支持取2。
     - <term>Ascend 950PR/Ascend 950DT</term>：K-CG伪量化场景下，`group_list_type`仅支持取1。
     <!-- end id43 -->
 
