@@ -17,16 +17,6 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p349751701118"><a name="p349751701118"></a><a name="p349751701118"></a>不使用种子（seed）进行dropout结果计数。</p>
 </td>
 </tr>
-<tr id="row13497417121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11170526121211"><a name="p11170526121211"></a><a name="p11170526121211"></a><a href="（beta）torch_npu-copy_memory_.md">（beta）torch_npu.copy_memory_</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p74971174115"><a name="p74971174115"></a><a name="p74971174115"></a>从src拷贝元素到self张量，并返回self。</p>
-</td>
-</tr>
-<tr id="row949751712110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p164971017121112"><a name="p164971017121112"></a><a name="p164971017121112"></a><a href="（beta）torch_npu-empty_with_format.md">（beta）torch_npu.empty_with_format</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p8497111791114"><a name="p8497111791114"></a><a name="p8497111791114"></a>返回一个填充未初始化数据的张量。</p>
-</td>
-</tr>
 <tr id="row949712178110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5497817161113"><a name="p5497817161113"></a><a name="p5497817161113"></a><a href="（beta）torch_npu-fast_gelu.md">（beta）torch_npu.fast_gelu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p9497101717113"><a name="p9497101717113"></a><a name="p9497101717113"></a>快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function）对输入的每个元素计算FastGelu的前向结果。</p>
@@ -40,11 +30,6 @@
 <tr id="row104977172114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1849701710119"><a name="p1849701710119"></a><a name="p1849701710119"></a><a href="（beta）torch_npu-npu_anchor_response_flags.md">（beta）torch_npu.npu_anchor_response_flags</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p69023133817"><a name="zh-cn_topic_0000001655404257_p69023133817"></a><a name="zh-cn_topic_0000001655404257_p69023133817"></a>在单个特征图中生成锚点的责任标志。</p>
-</td>
-</tr>
-<tr id="row1120483231119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p152051325111"><a name="p152051325111"></a><a name="p152051325111"></a><a href="（beta）torch_npu-npu_apply_adam.md">（beta）torch_npu.npu_apply_adam</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p18205193215119"><a name="p18205193215119"></a><a name="p18205193215119"></a>获取Adam优化器的计算结果。</p>
 </td>
 </tr>
 <tr id="row1920533291116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13205173251112"><a name="p13205173251112"></a><a name="p13205173251112"></a><a href="（beta）torch_npu-npu_batch_nms.md">（beta）torch_npu.npu_batch_nms</a></p>
@@ -72,11 +57,6 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2577105019119"><a name="p2577105019119"></a><a name="p2577105019119"></a>计算标注框和ground truth真值框之间的坐标变化。自定义Faster R-CNN算子。</p>
 </td>
 </tr>
-<tr id="row989165331120"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p38965316111"><a name="p38965316111"></a><a name="p38965316111"></a><a href="（beta）torch_npu-npu_broadcast.md">（beta）torch_npu.npu_broadcast</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p918313310142"><a name="zh-cn_topic_0000001655404257_p918313310142"></a><a name="zh-cn_topic_0000001655404257_p918313310142"></a>返回self张量的新视图，其单维度被扩展，结果连续。张量也可以扩展更多维度，新的维度添加在最前面。</p>
-</td>
-</tr>
 <tr id="row589165316115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1489155321111"><a name="p1489155321111"></a><a name="p1489155321111"></a><a href="（beta）torch_npu-npu_ciou.md">（beta）torch_npu.npu_ciou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p749621223015"><a name="zh-cn_topic_0000001655404257_p749621223015"></a><a name="zh-cn_topic_0000001655404257_p749621223015"></a>基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）损失。</p>
@@ -92,29 +72,9 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p7908532119"><a name="p7908532119"></a><a name="p7908532119"></a>融合reshape和transpose运算。</p>
 </td>
 </tr>
-<tr id="row2090953141119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1690125311117"><a name="p1690125311117"></a><a name="p1690125311117"></a><a href="（beta）torch_npu-npu_conv_transpose2d.md">（beta）torch_npu.npu_conv_transpose2d</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p122041623817"><a name="zh-cn_topic_0000001655404257_p122041623817"></a><a name="zh-cn_topic_0000001655404257_p122041623817"></a>在由多个输入平面组成的输入图像上应用一个2D转置卷积算子，有时这个过程也被称为“反卷积”。</p>
-</td>
-</tr>
-<tr id="row49065381112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p189035310112"><a name="p189035310112"></a><a name="p189035310112"></a><a href="（beta）torch_npu-npu_conv2d.md">（beta）torch_npu.npu_conv2d</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1790753191113"><a name="p1790753191113"></a><a name="p1790753191113"></a>在由多个输入平面组成的输入图像上应用一个2D卷积。</p>
-</td>
-</tr>
 <tr id="row109045310113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p49035381110"><a name="p49035381110"></a><a name="p49035381110"></a><a href="（beta）torch_npu-npu_conv3d.md">（beta）torch_npu.npu_conv3d</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p18901253111116"><a name="p18901253111116"></a><a name="p18901253111116"></a>在由多个输入平面组成的输入图像上应用一个3D卷积。</p>
-</td>
-</tr>
-<tr id="row0901534111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1090253101111"><a name="p1090253101111"></a><a name="p1090253101111"></a><a href="（beta）torch_npu-npu_convolution.md">（beta）torch_npu.npu_convolution</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p890053121116"><a name="p890053121116"></a><a name="p890053121116"></a>在由多个输入平面组成的输入图像上应用一个2D或3D卷积。</p>
-</td>
-</tr>
-<tr id="row9577205019119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7577105010119"><a name="p7577105010119"></a><a name="p7577105010119"></a><a href="（beta）torch_npu-npu_convolution_transpose.md">（beta）torch_npu.npu_convolution_transpose</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p35776509119"><a name="p35776509119"></a><a name="p35776509119"></a>在由多个输入平面组成的输入图像上应用一个2D或3D转置卷积算子，有时这个过程也被称为“反卷积”。</p>
 </td>
 </tr>
 <tr id="row75771250101115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p15771150151111"><a name="p15771150151111"></a><a name="p15771150151111"></a><a href="（beta）torch_npu-npu_deformable_conv2d.md">（beta）torch_npu.npu_deformable_conv2d</a></p>
@@ -125,11 +85,6 @@
 <tr id="row125771550121117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16577135019112"><a name="p16577135019112"></a><a name="p16577135019112"></a><a href="（beta）torch_npu-npu_diou.md">（beta）torch_npu.npu_diou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p12796833183010"><a name="zh-cn_topic_0000001655404257_p12796833183010"></a><a name="zh-cn_topic_0000001655404257_p12796833183010"></a>该接口用于实现基于NPU的DIoU（距离交并比）计算。该算法综合考虑预测框与真实框中心点之间的距离以及边界框的重叠率，使边界框回归趋于稳定，提升目标定位精度。</p>
-</td>
-</tr>
-<tr id="row95771950161112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35771150191112"><a name="p35771150191112"></a><a name="p35771150191112"></a><a href="（beta）torch_npu-npu_dtype_cast.md">（beta）torch_npu.npu_dtype_cast</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p1221456142618"><a name="zh-cn_topic_0000001655404257_p1221456142618"></a><a name="zh-cn_topic_0000001655404257_p1221456142618"></a>执行张量数据类型（dtype）转换。</p>
 </td>
 </tr>
 <tr id="row195782506118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1857885061113"><a name="p1857885061113"></a><a name="p1857885061113"></a><a href="（beta）torch_npu-npu_format_cast.md">（beta）torch_npu.npu_format_cast</a></p>
@@ -157,11 +112,6 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p258994112512"><a name="zh-cn_topic_0000001655404257_p258994112512"></a><a name="zh-cn_topic_0000001655404257_p258994112512"></a><span>执行position-sensitive的候选区域池化梯度计算。</span></p>
 </td>
 </tr>
-<tr id="row14377936121116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1337753621111"><a name="p1337753621111"></a><a name="p1337753621111"></a><a href="（beta）torch_npu-npu_gru.md">（beta）torch_npu.npu_gru</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p798911210261"><a name="zh-cn_topic_0000001655404257_p798911210261"></a><a name="zh-cn_topic_0000001655404257_p798911210261"></a>计算DynamicGRUV2。</p>
-</td>
-</tr>
 <tr id="row557919470115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p157994710118"><a name="p157994710118"></a><a name="p157994710118"></a><a href="（beta）torch_npu-npu_indexing.md">（beta）torch_npu.npu_indexing</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p191786291"><a name="zh-cn_topic_0000001655404257_p191786291"></a><a name="zh-cn_topic_0000001655404257_p191786291"></a>以begin为起始索引，end为结束索引，strides为步长，对输入张量进行切片。</p>
@@ -170,11 +120,6 @@
 <tr id="row11579164761115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p195798473119"><a name="p195798473119"></a><a name="p195798473119"></a><a href="（beta）torch_npu-npu_iou.md">（beta）torch_npu.npu_iou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p10544194202310"><a name="zh-cn_topic_0000001655404257_p10544194202310"></a><a name="zh-cn_topic_0000001655404257_p10544194202310"></a>根据ground-truth和预测区域计算交并比（IoU）或前景交叉比（IoF）。</p>
-</td>
-</tr>
-<tr id="row10579184741114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35791247141119"><a name="p35791247141119"></a><a name="p35791247141119"></a><a href="（beta）torch_npu-npu_layer_norm_eval.md">（beta）torch_npu.npu_layer_norm_eval</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p75791547101117"><a name="p75791547101117"></a><a name="p75791547101117"></a>对层归一化结果进行计算。与torch.nn.functional.layer_norm相同，优化NPU设备实现。</p>
 </td>
 </tr>
 <tr id="row11579104721117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p135794473113"><a name="p135794473113"></a><a name="p135794473113"></a><a href="（beta）torch_npu-npu_linear.md">（beta）torch_npu.npu_linear</a></p>
@@ -190,16 +135,6 @@
 <tr id="row3579194701112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16579184717113"><a name="p16579184717113"></a><a name="p16579184717113"></a><a href="（beta）torch_npu-npu_max.md">（beta）torch_npu.npu_max</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1758054719115"><a name="p1758054719115"></a><a name="p1758054719115"></a>使用dim对最大结果进行计算。类似于torch.max，优化NPU设备实现。</p>
-</td>
-</tr>
-<tr id="row2580347161118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p12580124781118"><a name="p12580124781118"></a><a name="p12580124781118"></a><a href="（beta）torch_npu-npu_min.md">（beta）torch_npu.npu_min</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p1171133519333"><a name="zh-cn_topic_0000001655404257_p1171133519333"></a><a name="zh-cn_topic_0000001655404257_p1171133519333"></a>使用dim对最小结果进行计算。类似于torch.min，优化NPU设备实现。</p>
-</td>
-</tr>
-<tr id="row115511438538"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p75511930538"><a name="p75511930538"></a><a name="p75511930538"></a><a href="（beta）torch_npu-npu_mish.md">（beta）torch_npu.npu_mish</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12741142714357"><a name="p12741142714357"></a><a name="p12741142714357"></a>按元素计算Mish激活函数结果。</p>
 </td>
 </tr>
 <tr id="row558010477110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17580147201113"><a name="p17580147201113"></a><a name="p17580147201113"></a><a href="（beta）torch_npu-npu_nms_rotated.md">（beta）torch_npu.npu_nms_rotated</a></p>
@@ -242,11 +177,6 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p219311346269"><a name="zh-cn_topic_0000001655404257_p219311346269"></a><a name="zh-cn_topic_0000001655404257_p219311346269"></a>混洗非零元素的index。</p>
 </td>
 </tr>
-<tr id="row837833671119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1137810369111"><a name="p1137810369111"></a><a name="p1137810369111"></a><a href="（beta）torch_npu-npu_reshape.md">（beta）torch_npu.npu_reshape</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14378123610113"><a name="p14378123610113"></a><a name="p14378123610113"></a>reshape张量。仅更改张量shape，其数据不变。</p>
-</td>
-</tr>
 <tr id="row11378336161116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83782360112"><a name="p83782360112"></a><a name="p83782360112"></a><a href="（beta）torch_npu-npu_roi_align.md">（beta）torch_npu.npu_roi_align</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11378133620112"><a name="p11378133620112"></a><a name="p11378133620112"></a>从特征图中获取ROI特征矩阵。自定义Faster R-CNN算子。</p>
@@ -272,11 +202,6 @@
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>将uint8类型1位Adam拆包为float。</p>
 </td>
 </tr>
-<tr id="row17842154219116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384284211115"><a name="p1384284211115"></a><a name="p1384284211115"></a><a href="（beta）torch_npu-npu_silu.md">（beta）torch_npu.npu_silu</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11842194231120"><a name="p11842194231120"></a><a name="p11842194231120"></a>计算self的Swish。Swish是一种激活函数，计算公式为x * sigmoid(x)。</p>
-</td>
-</tr>
 <tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="（beta）torch_npu-npu_slice.md">（beta）torch_npu.npu_slice</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p0842124210117"><a name="p0842124210117"></a><a name="p0842124210117"></a>从张量中提取切片。</p>
@@ -285,11 +210,6 @@
 <tr id="row7842204261115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13842442161112"><a name="p13842442161112"></a><a name="p13842442161112"></a><a href="（beta）torch_npu-npu_softmax_cross_entropy_with_logits.md">（beta）torch_npu.npu_softmax_cross_entropy_with_logits</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1842144291119"><a name="p1842144291119"></a><a name="p1842144291119"></a>计算softmax的交叉熵损失。</p>
-</td>
-</tr>
-<tr id="row1084224211115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p188421442111120"><a name="p188421442111120"></a><a name="p188421442111120"></a><a href="（beta）torch_npu-npu_sort_v2.md">（beta）torch_npu.npu_sort_v2</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5842442111110"><a name="p5842442111110"></a><a name="p5842442111110"></a>沿给定维度（目前仅支持最后一个维度）对输入张量元素进行升序排序（不返回索引）。若dim未设置，则选择输入的最后一个维度。如果descending为True，则元素将按值降序排序。</p>
 </td>
 </tr>
 <tr id="row884254219118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1784284271118"><a name="p1784284271118"></a><a name="p1784284271118"></a><a href="（beta）torch_npu-npu_transpose.md">（beta）torch_npu.npu_transpose</a></p>
@@ -350,11 +270,6 @@
 <tr id="row480181910211"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p137651452352"><a name="p137651452352"></a><a name="p137651452352"></a><a href="（beta）torch_npu-npu_swiglu.md">（beta）torch_npu.npu_swiglu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14325153814812"><a name="p14325153814812"></a><a name="p14325153814812"></a>提供swiglu的激活函数。</p>
-</td>
-</tr>
-<tr id="row178010191727"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13901449479"><a name="p13901449479"></a><a name="p13901449479"></a><a href="（beta）torch_npu-one_.md">（beta）torch_npu.one_</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001726825729_zh-cn_topic_0000001655404257_p5268123310116"><a name="zh-cn_topic_0000001726825729_zh-cn_topic_0000001655404257_p5268123310116"></a><a name="zh-cn_topic_0000001726825729_zh-cn_topic_0000001655404257_p5268123310116"></a>用1填充self张量。</p>
 </td>
 </tr>
 <tr id="row106843515114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p168510515113"><a name="p168510515113"></a><a name="p168510515113"></a><a href="torch_npu-npu_group_norm_swish.md">torch_npu.npu_group_norm_swish</a></p>

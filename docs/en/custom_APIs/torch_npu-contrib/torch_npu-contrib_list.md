@@ -13,14 +13,7 @@ This section describes common affinity library APIs and provides commonly used c
 </th>
 </tr>
 </thead>
-<tbody><tr id="row9494183725519"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p3494193718552"><a name="p3494193718552"></a><a name="p3494193718552"></a><a href="(beta)torch_npu-contrib-npu_fused_attention_with_layernorm.md">(beta) torch_npu.contrib.npu_fused_attention_with_layernorm</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p243410273524"><a name="p243410273524"></a><a name="p243410273524"></a>-</p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p6494173775514"><a name="p6494173775514"></a><a name="p6494173775514"></a>Fuses BERT self-attention and layer normalization computations.</p>
-</td>
-</tr>
-<tr id="row20494037175516"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1349410376553"><a name="p1349410376553"></a><a name="p1349410376553"></a><a href="(beta)torch_npu-contrib-npu_fused_attention.md">(beta) torch_npu.contrib.npu_fused_attention</a></p>
+<tbody><tr id="row20494037175516"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1349410376553"><a name="p1349410376553"></a><a name="p1349410376553"></a><a href="(beta)torch_npu-contrib-npu_fused_attention.md">(beta) torch_npu.contrib.npu_fused_attention</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p143412710527"><a name="p143412710527"></a><a name="p143412710527"></a>-</p>
 </td>
@@ -34,25 +27,11 @@ This section describes common affinity library APIs and provides commonly used c
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1829817598554"><a name="p1829817598554"></a><a name="p1829817598554"></a>Provides a data prefetcher on NPU devices.</p>
 </td>
 </tr>
-<tr id="row929810596554"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p14298175911553"><a name="p14298175911553"></a><a name="p14298175911553"></a><a href="(beta)torch_npu-contrib-DCNv2.md">(beta) torch_npu.contrib.DCNv2</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p14344279524"><a name="p14344279524"></a><a name="p14344279524"></a>-</p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p8298559105514"><a name="p8298559105514"></a><a name="p8298559105514"></a>Applies an NPU-based modulated deformable 2D convolution operation. The implementation of <code>DCNv2</code> is designed and refactored based on MMCV.</p>
-</td>
-</tr>
 <tr id="row1829825935515"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p829895965516"><a name="p829895965516"></a><a name="p829895965516"></a><a href="(beta)torch_npu-contrib-BiLSTM.md">(beta) torch_npu.contrib.BiLSTM</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p164341274524"><a name="p164341274524"></a><a name="p164341274524"></a>-</p>
 </td>
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p72981559175518"><a name="p72981559175518"></a><a name="p72981559175518"></a>Applies NPU-compatible bidirectional LSTM operations on input sequences.</p>
-</td>
-</tr>
-<tr id="row182981759195519"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p72981059205511"><a name="p72981059205511"></a><a name="p72981059205511"></a><a href="(beta)torch_npu-contrib-Swish.md">(beta) torch_npu.contrib.Swish</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1543482795211"><a name="p1543482795211"></a><a name="p1543482795211"></a>-</p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p182983598556"><a name="p182983598556"></a><a name="p182983598556"></a>Applies the NPU-based Sigmoid Linear Unit (SiLU) function element-wise. The SiLU function is also known as the Swish function.</p>
 </td>
 </tr>
 <tr id="row152981459165519"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p729815915510"><a name="p729815915510"></a><a name="p729815915510"></a><a href="(beta)torch_npu-contrib-NpuFairseqDropout.md">(beta) torch_npu.contrib.NpuFairseqDropout</a></p>
@@ -167,20 +146,6 @@ This section describes common affinity library APIs and provides commonly used c
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p178121939569"><a name="p178121939569"></a><a name="p178121939569"></a>Replaces the native <code>roll</code> operation in Swin Transformer with an NPU-optimized implementation.</p>
 </td>
 </tr>
-<tr id="row481219385615"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1881212345615"><a name="p1881212345615"></a><a name="p1881212345615"></a><a href="(beta)torch_npu-contrib-module-Mish.md">(beta) torch_npu.contrib.module.Mish</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p107710352010"><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p107710352010"></a><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p107710352010"></a><a href="https://gitee.com/link?target=https://github.com/digantamisra98/Mish/blob/master/Mish/Torch/mish.py" target="_blank" rel="noopener noreferrer">class Mish()</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p581212365619"><a name="p581212365619"></a><a name="p581212365619"></a>Applies an NPU-based Mish operation.</p>
-</td>
-</tr>
-<tr id="row16812163115611"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p1281210314562"><a name="p1281210314562"></a><a name="p1281210314562"></a><a href="(beta)torch_npu-contrib-module-SiLU.md">(beta) torch_npu.contrib.module.SiLU</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p47703172014"><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p47703172014"></a><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p47703172014"></a><a href="https://gitee.com/link?target=https://pytorch.org/docs/1.8.1/generated/torch.nn.SiLU.html?highlight=silu#torch.nn.SiLU" target="_blank" rel="noopener noreferrer">class SiLU()</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="en-us_topic_0000001606524122_p196702038144319"><a name="en-us_topic_0000001606524122_p196702038144319"></a><a name="en-us_topic_0000001606524122_p196702038144319"></a>Applies the NPU-based Sigmoid Linear Unit (SiLU) function element-wise. The SiLU function is also known as the Swish function.</p>
-</td>
-</tr>
 <tr id="row1781253125616"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p381217319561"><a name="p381217319561"></a><a name="p381217319561"></a><a href="(beta)torch_npu-contrib-module-ChannelShuffle.md">(beta) torch_npu.contrib.module.ChannelShuffle</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p197893102017"><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p197893102017"></a><a name="en-us_topic_0000001678826450_en-us_topic_0000001606524122_en-us_topic_0000001390596206_en-us_topic_0000001385999112_p197893102017"></a><a href="https://github.com/pytorch/vision/blob/main/torchvision/models/shufflenetv2.py#L28" target="_blank" rel="noopener noreferrer">def channel_shuffle()</a></p>
@@ -230,13 +195,6 @@ This section describes common affinity library APIs and provides commonly used c
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p429975920559"><a name="p429975920559"></a><a name="p429975920559"></a>Performs a region of interest alignment (ROIAlign) operation using the NPU API.</p>
 </td>
 </tr>
-<tr id="row029911593559"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p10299759175510"><a name="p10299759175510"></a><a name="p10299759175510"></a><a href="(beta)torch_npu-contrib-module-FusedColorJitter.md">(beta) torch_npu.contrib.module.FusedColorJitter</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001606524122_p8909182712250"><a name="en-us_topic_0000001606524122_p8909182712250"></a><a name="en-us_topic_0000001606524122_p8909182712250"></a><a href="https://beesbuzz.biz/code/16-hsv-color-transforms" target="_blank" rel="noopener noreferrer">Reference 1</a> or <a href="https://github.com/NVIDIA/DALI/blob/release_v1.15/dali/operators/image/color/color_twist.h#L155" target="_blank" rel="noopener noreferrer">Reference 2</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p102991559115515"><a name="p102991559115515"></a><a name="p102991559115515"></a>Randomly adjusts the brightness, contrast, saturation, and hue of an image.</p>
-</td>
-</tr>
 <tr id="row4299155965520"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p14299559105517"><a name="p14299559105517"></a><a name="p14299559105517"></a><a href="(beta)torch_npu-contrib-function-npu_bbox_coder_decode_xywh2xyxy.md">(beta) torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001606524122_p13353211123217"><a name="en-us_topic_0000001606524122_p13353211123217"></a><a name="en-us_topic_0000001606524122_p13353211123217"></a><a href="https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/coder/delta_xywh_bbox_coder.py#L164" target="_blank" rel="noopener noreferrer">def npu_bbox_coder_decode_xywh2xyxy()</a></p>
@@ -263,13 +221,6 @@ This section describes common affinity library APIs and provides commonly used c
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1435227155218"><a name="p1435227155218"></a><a name="p1435227155218"></a>-</p>
 </td>
 <td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p3914125415512"><a name="p3914125415512"></a><a name="p3914125415512"></a>Applies an NPU-compatible <code>dropout_with_byte_mask</code> operation. This function is supported exclusively on NPU devices. It generates a stateless random <code>uint8</code> mask and performs dropout based on that mask.</p>
-</td>
-</tr>
-<tr id="row62941778711"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p183268185292"><a name="p183268185292"></a><a name="p183268185292"></a><a href="torch_npu-contrib-module-LinearA8W8Quant.md">torch_npu.contrib.module.LinearA8W8Quant</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="en-us_topic_0000001778938168_p156512056161014"><a name="en-us_topic_0000001778938168_p156512056161014"></a><a name="en-us_topic_0000001778938168_p156512056161014"></a>-</p>
-</td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p16295679713"><a name="p16295679713"></a><a name="p16295679713"></a>Encapsulates the <code>torch_npu.npu_quant_matmul</code> API to perform matrix multiplication computations for the A8W8 quantized operator.</p>
 </td>
 </tr>
 <tr id="row4342314612"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p23423113616"><a name="p23423113616"></a><a name="p23423113616"></a><a href="torch_npu-contrib-module-LinearQuant.md">torch_npu.contrib.module.LinearQuant</a></p>
