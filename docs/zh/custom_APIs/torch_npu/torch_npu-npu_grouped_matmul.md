@@ -325,6 +325,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     <!-- end id42 -->
     <!-- npu="950" id43 -->
     - <term>Ascend 950PR/Ascend 950DT</term>：仅当全量化场景下，并且`group_type`取0（m轴分组）时，支持取2。
+    - <term>Ascend 950PR/Ascend 950DT</term>：K-CG伪量化场景下，`group_list_type`仅支持取1。
     <!-- end id43 -->
 
 - **`act_type`**（`int`）：**可选参数**，代表激活函数类型。数据类型支持`int64`。
@@ -617,7 +618,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
         | -1 | pergroup | <li>group_size支持32/64/128/256，pergroup数G=k/gs，要求K可以被gs整除。</li><li>antiquant_scale/antiquant_offset为多tensor，每个tensor为2维，shape为 (Gi, ni)，固定为非转置。</li> |
         | 0 | pergroup | <li>group_size支持32/64/128/256，pergroup数G=k/gs，要求K可以被gs整除。</li><li>antiquant_scale/antiquant_offset为单tensor，每个tensor为3维，shape为 (g, G, N)，固定为非转置。</li> |
          | 0 | mx | pergroup数G=K/32，要求K可以被32整除。<br><ul><li>`x`为`float16`、`bfloat16`输入，`weight`为`float32`（`float4_e2m1fn_x2`）输入场景：`antiquant_scale`为单tensor，每个tensor为3维，shape为（g, K/32, N）。</li><li>`x`为`float8_e4m3fn`输入，`weight`为uint8/int8（`float4_e2m1fn_x2`/`float4_e1m2fn_x2`）输入场景：<ul><li>G需要为偶数。</li><li>单单单：`antiquant_scale`为单tensor，每个tensor为4维，shape为（g, N, K/64, 2）。</li><li>单单单：`per_token_scale`为单tensor，每个tensor为3维，shape为（M, K/64, 2）。</li><li>单多单：`antiquant_scale`为单tensor，每个tensor为3维，shape为（N, K/64, 2）。</li><li>单多单：`per_token_scale`为单tensor，每个tensor为3维，shape为（M, K/64, 2）。</li></ul></li></ul> |
-        | 0 | K-CG | <li>antiquant_scale为单tensor，每个tensor为3维，shape为（g, G, N），其中pergroup数G=K/gs，gs支持取值为128、192、256、512，要求K可以被gs整除。</li><li>per_token_scale为单tensor，每个tensor为1维，shape为（M）。</li><li>scale为单tensor，每个tensor为2维，shape为，shape为（g, N）。</li> |
+        | 0 | K-CG | <li>仅支持`group_list_type`为1，此时`group_list`中的数值表示分组轴上每组大小。</li><li>antiquant_scale为单tensor，每个tensor为3维，shape为（g, G, N），其中pergroup数G=K/gs，gs支持取值为128、192、256、512，要求K可以被gs整除。</li><li>per_token_scale为单tensor，每个tensor为1维，shape为（M）。</li><li>scale为单tensor，每个tensor为2维，shape为，shape为（g, N）。</li> |
   <!-- end id69 -->
 
 ## 调用示例
