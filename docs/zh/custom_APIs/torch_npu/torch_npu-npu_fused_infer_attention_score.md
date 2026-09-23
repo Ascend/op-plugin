@@ -219,8 +219,12 @@ torch_npu.npu_fused_infer_attention_score(
 
 > **特殊约束**：
 >
+><!-- npu="A3,910b" id47 -->
 > - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：Q_S ≥ 2时仅支持0、1；Q_S = 1时支持0~5。
+><!-- end id47 -->
+><!-- npu="950" id48 -->
 > - <term>Ascend 950PR&950DT系列产品</term>：`key_antiquant_mode`支持取值0、1、2、3、4、5。`value_antiquant_mode`：Q_S ≥ 2时支持0、1、2、3、4、5；Q_S = 1时支持0、1、2、3、4、5。除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，`key_antiquant_mode`与`value_antiquant_mode`必须一致。
+><!-- end id48 -->
 
 #### Prefix（共享前缀）参数
 

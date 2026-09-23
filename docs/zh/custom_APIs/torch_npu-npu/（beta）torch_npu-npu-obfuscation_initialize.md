@@ -44,8 +44,12 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
     * 2：进行量化推理模式资源初始化。
     * 3：进行资源释放。
 - **data_type**（`int`）：可选参数，代表Tensor数据类型的编号，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+    <!-- npu="310p" id3 -->
     * <term>Atlas推理系列产品</term>：Tensor数据类型支持`float16`、`float32`、`int8`。
+    <!-- end id3 -->
+    <!-- npu="910b" id4 -->
     * <term>Atlas A2系列产品</term>：Tensor数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
+    <!-- end id4 -->
 - **model_obf_seed_id**（`int`）：可选参数，模型混淆因子id，用于`TA`从`TEE KMC`查询模型混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
 - **data_obf_seed_id**（`int`）：可选参数，数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
 - **thread_num**（`int`）：可选参数，`CA`/`TA`进行混淆处理使用的线程数，数据类型为`int32`，取值范围为{1, 2, 3, 4, 5, 6}，仅在`cmd`设置为1或2时需要填写有效值，否则填0。

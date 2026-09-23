@@ -68,7 +68,9 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 ## 约束说明
 
 - 该接口仅支持推理场景下使用，当前TND场景，beta、initial_state、actual_seq_lengths必传。
+<!-- npu="950" id4 -->
 - initial_state、final_state float32数据类型仅在Ascend 950PR&950DT系列产品支持。
+<!-- end id4 -->
 - 维度约束：
   - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, 且 $Nv \bmod Nk = 0$
   - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$

@@ -27,6 +27,7 @@
     gather\_out = allgather(x1)
     $$
 
+    <!-- npu="A3,910b" id22 -->
     量化场景（仅<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>支持）：
     $$
     output = (allgather(x1\_scale) * x2\_scale) * (allgather(x1) \mathbin{@} x2 + bias)
@@ -36,6 +37,7 @@
     $$
 
     量化场景公式中，`allgather(x1_scale)`由底层算子内部完成，用户无需手动对`x1_scale`执行allgather操作。用户只需将当前rank本地的`x1_scale`（shape为(m, 1)）直接传入接口即可，底层算子会自动聚合所有rank的`x1_scale`后参与计算。`x2_scale`为全局共享的perchannel量化参数，各rank相同，无需执行allgather操作。
+    <!-- end id22 -->
 
 > [!NOTE]
 > 使用该接口时，请确保驱动固件包和CANN包都为配套的8.0.RC2版本或者更高版本，否则将会引发报错，比如BUS ERROR等。

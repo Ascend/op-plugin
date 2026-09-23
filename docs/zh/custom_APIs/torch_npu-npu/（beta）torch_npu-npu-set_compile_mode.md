@@ -31,8 +31,12 @@ torch_npu.npu.set_compile_mode(jit_compile = bool)
 
 > [!NOTE]  
 >
+<!-- npu="910,310p" id5 -->
 >- Atlas训练系列产品/Atlas推理系列产品默认为jit_compile=True，即开启JIT编译。
+<!-- end id5 -->
+<!-- npu="A3,910b" id6 -->
 >- Atlas A2训练系列产品/Atlas A3训练系列产品默认为jit_compile=False，即关闭JIT编译。
+<!-- end id6 -->
 
 ## 调用示例
 

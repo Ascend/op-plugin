@@ -101,7 +101,9 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - 输入张量`query`、`key`、`cos`、`sin`的数据类型必须相同。
   - `rotary_mode`为"half"和"interleave"时，输入shape最后一维必须被2整除；`rotary_mode`为"quarter"时，输入shape最后一维必须被4整除。
 <!-- end id18 -->
+<!-- npu="310p" id19 -->
 - Atlas推理系列产品不支持`bfloat16`。
+<!-- end id19 -->
 
 ## 调用示例
 

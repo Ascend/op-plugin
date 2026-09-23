@@ -32,7 +32,12 @@
   
 > **说明：**<br>
 > 正向默认确定性实现。<br>
-> 反向梯度在<term>Atlas A3训练系列产品</term>和<term>Atlas A2训练系列产品</term>上默认非确定性实现，在<term>Ascend 950DT系列产品</term>上默认确定性实现。
+> <!-- npu="A3,910b" id4 -->
+> 反向梯度在<term>Atlas A3训练系列产品</term>和<term>Atlas A2训练系列产品</term>上默认非确定性实现。
+> <!-- end id4 -->
+> <!-- npu="950" id5 -->
+> 反向梯度在<term>Ascend 950DT系列产品</term>上默认确定性实现。
+> <!-- end id5 -->
 > 需要计算反向梯度场景时，若需要输出结果排除随机性，则需要[设置确定性计算开关](../determin_API_list.md)。
 
 ## 函数原型

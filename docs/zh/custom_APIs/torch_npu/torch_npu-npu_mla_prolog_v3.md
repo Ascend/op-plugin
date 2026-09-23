@@ -196,12 +196,14 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **kv_cache_dtype**（`int`）：可选参数，表示参数kv_cache的传入dtype，在hif8 kv_cache pertensor量化和hif8 kv_cache pertoken-pergroup量化场景为torch_npu.hifloat8，其他场景为None。
 
+  <!-- npu="A3,910b" id5 -->
   > [!NOTE]
   >
   > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
   > - token_x、weight_dq、weight_uq_qr、weight_dkv_kr、kv_cache不支持float8_e4m3fn、hifloat8数据类型。
   > - dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr不支持float8_e8m0数据类型。
+  <!-- end id5 -->
 
 ## 返回值说明
 
@@ -215,12 +217,14 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **dequant_scale_q_norm**（`Tensor`）：Query做RmsNorm_cq后的反量化参数。数据格式支持ND，数据类型支持`float`、`float8_e8m0`。shape支持2维，`query_norm_flag=True`且`weight_quant_mode=1/2/3/4/5`时有效。`weight_quant_mode=0`时为nullptr。`weight_quant_mode=1/2/4/5`时，shape为[T,1]或[B\*S,1]；`weightQuantMode=3`时，shape为[T, Hcq/32]或[B*S, Hcq/32]。
 
+  <!-- npu="A3,910b" id6 -->
   > [!NOTE]
   >
   > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
   > - query、query_norm不支持float8_e4m3fn、hifloat8数据类型。
   > - dequant_scale_q_norm不支持float8_e8m0数据类型。
+  <!-- end id6 -->
 
 ## 约束说明
 

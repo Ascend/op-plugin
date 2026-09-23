@@ -62,7 +62,13 @@
 
 > [!NOTE]
 >
-> `comm_mode`未传入时按平台取默认值：<term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>默认值为"aiv"，<term>Ascend 950DT系列产品</term>默认值为"ai_cpu"。
+> `comm_mode`未传入时按平台取默认值：
+> <!-- npu="A3,910b" id24 -->
+> <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>默认值为"aiv"。
+> <!-- end id24 -->
+> <!-- npu="950" id25 -->
+> <term>Ascend 950DT系列产品</term>默认值为"ai_cpu"。
+> <!-- end id25 -->
 
 ## 函数原型
 

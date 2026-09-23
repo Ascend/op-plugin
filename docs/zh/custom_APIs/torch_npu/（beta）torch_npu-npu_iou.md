@@ -37,9 +37,11 @@ torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor
 - **gtboxes** (`Tensor`)：必选参数，输入张量。
 - **mode** (`int`)：可选参数，0为IoU模式，1为IoF模式。默认值为0。
 
+<!-- npu="950" id6 -->
 ## 约束说明
 
 Ascend 950DT系列产品：该API暂不支持反向计算。
+<!-- end id6 -->
 
 ## 调用示例
 
