@@ -6,19 +6,19 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950DT</term>：支持
+- <term>Ascend 950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 <!-- npu="910" id5 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id5 -->
 
 ## 功能说明
@@ -49,10 +49,10 @@ CIoU计算结果。
 ## 约束说明
 
 <!-- npu="950" id6 -->
-- Ascend 950DT：`boxes1`或`boxes2`的第二维度只支持1024的倍数，`is_cross`只支持False，且暂不支持反向计算。
+- Ascend 950DT系列产品：`boxes1`或`boxes2`的第二维度只支持1024的倍数，`is_cross`只支持False，且暂不支持反向计算。
 <!-- end id6 -->
 <!-- npu="A3,910b,910,310p" id7 -->
-- Atlas A3 训练系列产品、Atlas A2 训练系列产品、Atlas 推理系列产品、Atlas 训练系列产品：到目前为止，CIoU反向计算只支持trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+- Atlas A3训练系列产品、Atlas A2训练系列产品、Atlas推理系列产品、Atlas训练系列产品：到目前为止，CIoU反向计算只支持trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
 <!-- end id7 -->
 
 ## 调用示例

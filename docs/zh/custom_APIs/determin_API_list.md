@@ -44,7 +44,8 @@
 
 ## API清单
 
-当使用<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>或<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>时，[表1](#可开启确定性计算的API列表-1)所示API计算存在随机性，开启确定性计算开关可以保持计算结果的确定性。
+<!-- npu="A3,910b" id1 -->
+当使用<term>Atlas A2系列产品</term>或<term>Atlas A3系列产品</term>时，[表1](#可开启确定性计算的API列表-1)所示API计算存在随机性，开启确定性计算开关可以保持计算结果的确定性。
 
 **表 1** API列表<a id="可开启确定性计算的API列表-1"></a>
 
@@ -53,8 +54,10 @@
 | `torch_npu.npu_convolution_transpose` |
 | `torch_npu.npu_linear` |
 | `torch_npu.npu_deformable_conv2d` |
+<!-- end id1 -->
 
-当使用<term>Ascend 950DT</term>时，[表2](#可开启确定性计算的API列表-2)所示API计算存在随机性，开启确定性计算开关可以保持计算结果的确定性。
+<!-- npu="950" id2 -->
+当使用<term>Ascend 950DT系列产品</term>时，[表2](#可开启确定性计算的API列表-2)所示API计算存在随机性，开启确定性计算开关可以保持计算结果的确定性。
 
 **表 2** API列表<a id="可开启确定性计算的API列表-2"></a>
 
@@ -65,3 +68,4 @@
 | `torch_npu.scatter_update` |
 | `torch_npu.scatter_update_` |
 | `torch_npu.npu_fusion_attention_grad` |
+<!-- end id2 -->

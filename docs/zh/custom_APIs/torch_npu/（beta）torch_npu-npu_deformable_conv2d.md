@@ -3,19 +3,19 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 <!-- npu="910" id5 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id5 -->
 
 ## 功能说明
@@ -104,10 +104,10 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 - 该接口仅支持单算子模式调用。
 
 <!-- npu="A3,910b,910,310p" id6 -->
-- Atlas A3 训练系列产品、Atlas A2 训练系列产品、Atlas 推理系列产品、Atlas 训练系列产品：所有Tensor类型的输入参数，无论输入何种数据类型都会被自动转换为`torch.float32`；输出参数的数据类型为`torch.float32`。
+- Atlas A3训练系列产品、Atlas A2训练系列产品、Atlas推理系列产品、Atlas训练系列产品：所有Tensor类型的输入参数，无论输入何种数据类型都会被自动转换为`torch.float32`；输出参数的数据类型为`torch.float32`。
 <!-- end id6 -->
 <!-- npu="950" id7 -->
-- Ascend 950PR/Ascend 950DT：输入输出数据类型保持一致，支持`torch.float16`、`torch.float32`、`torch.bfloat16`。`modulated`参数仅支持配置为True。
+- Ascend 950PR&950DT系列产品：输入输出数据类型保持一致，支持`torch.float16`、`torch.float32`、`torch.bfloat16`。`modulated`参数仅支持配置为True。
 <!-- end id7 -->
 
 ## 调用示例

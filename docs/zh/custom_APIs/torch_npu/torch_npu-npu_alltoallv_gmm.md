@@ -3,10 +3,10 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950DT</term>：支持
+- <term>Ascend 950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 
 ## 功能说明
@@ -55,10 +55,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
 
     <!-- npu="A3" id3 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持8、16、32、64、128。
+    - <term>Atlas A3系列产品</term>：取值支持8、16、32、64、128。
     <!-- end id3 -->
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT</term>：取值支持2、4、8、16、32、64。
+    - <term>Ascend 950DT系列产品</term>：取值支持2、4、8、16、32、64。
     <!-- end id4 -->
 
 - **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
@@ -74,10 +74,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持`None`、`ai_cpu`。传入任意值都将使用AI CPU通信。
+    - <term>Atlas A3系列产品</term>：取值支持`None`、`ai_cpu`。传入任意值都将使用AI CPU通信。
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT</term>：取值支持`None`、`ai_cpu`、`ccu`。当为`None`时，使用AI CPU通信。
+    - <term>Ascend 950DT系列产品</term>：取值支持`None`、`ai_cpu`、`ccu`。当为`None`时，使用AI CPU通信。
     <!-- end id6 -->
 
 ## 返回值说明
@@ -93,10 +93,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **单卡通信量要求**：
 
   <!-- npu="A3" id7 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：单卡通信量大于等于2MB。
+  - <term>Atlas A3系列产品</term>：单卡通信量大于等于2MB。
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT</term>：单卡通信量无约束。
+  - <term>Ascend 950DT系列产品</term>：单卡通信量无约束。
   <!-- end id8 -->
 
 - 输入参数Tensor中shape使用的变量说明：

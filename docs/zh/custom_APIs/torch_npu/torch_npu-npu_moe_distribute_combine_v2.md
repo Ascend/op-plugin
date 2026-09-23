@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950DT</term>：支持
+- <term>Ascend 950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -61,245 +61,245 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。Atlas A2 训练系列产品/Atlas A2 推理系列产品不支持共享专家场景。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。Atlas A2系列产品不支持共享专家场景。
 
 - **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **assist\_info\_for\_combine**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求为1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
 - **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的token数（token数以前缀和的形式表示），要求为1维张量。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
 
     <!-- npu="910b" id4 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
+    - <term>Atlas A2系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
     <!-- end id4 -->
     <!-- npu="950,A3" id5 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
     <!-- end id5 -->
 
 - **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重。
 
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：要求为2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950DT</term>：支持传入空Tensor或2维张量，传入非空Tensor时shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Ascend 950DT系列产品</term>：支持传入空Tensor或2维张量，传入非空Tensor时shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id7 -->
 
 - **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。
 
     <!-- npu="A3" id8 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值不能和`group_tp`相同。
+    - <term>Atlas A3系列产品</term>：取值不能和`group_tp`相同。
     <!-- end id8 -->
 
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size。
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`ep_world_size`的取值范围如下所示。
+    - <term>Atlas A2系列产品</term>：`ep_world_size`的取值范围如下所示。
         - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为16、32、64、128、256。
         - `comm_alg`设置为"hierarchy"时，`ep_world_size`取值范围为16、32、64。
     <!-- end id9 -->
     <!-- npu="A3" id10 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：取值支持\[2, 768\]。`comm_alg`设置为"hierarchy"时，取值范围为\[16, 256\]，且为16的整数倍。
+    - <term>Atlas A3系列产品</term>：取值支持\[2, 768\]。`comm_alg`设置为"hierarchy"时，取值范围为\[16, 256\]，且为16的整数倍。
     <!-- end id10 -->
     <!-- npu="950" id11 -->
-    - <term>Ascend 950DT</term>：取值支持\[2, 1024\]。
+    - <term>Ascend 950DT系列产品</term>：取值支持\[2, 1024\]。
     <!-- end id11 -->
 
 - **ep\_rank\_id**（`int`）：**必选参数**，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的`ep_rank_id`不重复。
 - **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，取值范围\[1, 1024\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
 
     <!-- npu="A3" id12 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`comm_alg`设置为"hierarchy"时，取值范围为\(0, 512\]。
+    - <term>Atlas A3系列产品</term>：`comm_alg`设置为"hierarchy"时，取值范围为\(0, 512\]。
     <!-- end id12 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`tp_recv_counts`输出。
 
     <!-- npu="950,910b" id13 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Ascend 950DT</term>：不支持TP通信域，使用默认输入。
+    - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：不支持TP通信域，使用默认输入。
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持TP通信域，要求为1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>：支持TP通信域，要求为1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id14 -->
 
 - **x\_active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信。
 
     <!-- npu="910b" id15 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+    - <term>Atlas A2系列产品</term>：
         - `comm_alg`设置为"fullmesh"时，要求为一个1维张量，shape为\(BS, \)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
         - `comm_alg`设置为"hierarchy"时，当前版本不支持，使用默认值即可。
     <!-- end id15 -->
     <!-- npu="950,A3" id16 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：要求为一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求为一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
     <!-- end id16 -->
 
 - **expand\_scales**（`Tensor`）：**可选参数**，对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expand_scales`输出。
 
     <!-- npu="910b" id17 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：必选参数，要求为1维张量，shape为\(A, \)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：必选参数，要求为1维张量，shape为\(A, \)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id17 -->
     <!-- npu="950,A3" id18 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：暂不支持该参数，使用默认值即可。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id18 -->
 
 - **shared\_expert\_x**（`Tensor`）：**可选参数**，数据类型需与`expand_x`保持一致。仅在共享专家卡数量`shared_expert_rank_num`为0的场景下使用，表示共享专家token，在combine后需要做add的值。
 
     <!-- npu="910b" id19 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
+    - <term>Atlas A2系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id19 -->
     <!-- npu="950,A3" id20 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：要求为一个2维或3维的张量，当张量为2维时，shape为\(BS, H\)；当张量为3维时，前两维的乘积需等于BS，第三维需等于H。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求为一个2维或3维的张量，当张量为2维时，shape为\(BS, H\)；当张量为3维时，前两维的乘积需等于BS，第三维需等于H。
     <!-- end id20 -->
 
 - **elastic\_info**（`Tensor`）：**可选参数**，预留参数，当前版本不支持，传默认值None即可。
 - **ori\_x**（`Tensor`）：**可选参数**，表示未经过FFN的token数据，在`copy_expert_num`不为0或`const_expert_num`不为0的场景下需要本输入数据。
 
     <!-- npu="910b" id21 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
+    - <term>Atlas A2系列产品</term>：预留参数，当前版本不支持，传None即可。
     <!-- end id21 -->
     <!-- npu="950,A3" id22 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：可选择传入有效数据或填None，当`copy_expert_num`不为0或`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(BS, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：可选择传入有效数据或填None，当`copy_expert_num`不为0或`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(BS, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
     <!-- end id22 -->
 
 - **const\_expert\_alpha\_1**（`Tensor`）：**可选参数**，在`const_expert_num`不为0的场景下需要输入的计算系数。
 
     <!-- npu="910b" id23 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
+    - <term>Atlas A2系列产品</term>：预留参数，当前版本不支持，传None即可。
     <!-- end id23 -->
     <!-- npu="950,A3" id24 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
     <!-- end id24 -->
 
 - **const\_expert\_alpha\_2**（`Tensor`）：**可选参数**，在`const_expert_num`不为0的场景下需要输入的计算系数。
 
     <!-- npu="910b" id25 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
+    - <term>Atlas A2系列产品</term>：预留参数，当前版本不支持，传None即可。
     <!-- end id25 -->
     <!-- npu="950,A3" id26 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
     <!-- end id26 -->
 
 - **const\_expert\_v**（`Tensor`）：**可选参数**，在`const_expert_num`不为0的场景下需要输入的计算系数。
 
     <!-- npu="910b" id27 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：预留参数，当前版本不支持，传None即可。
+    - <term>Atlas A2系列产品</term>：预留参数，当前版本不支持，传None即可。
     <!-- end id27 -->
     <!-- npu="950,A3" id28 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
     <!-- end id28 -->
 
 - **performance\_info**（`Tensor`）：**可选参数**，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1维张量，shape为\(ep\_world\_size, \)，数据类型支持`int64`，数据格式为$ND$，支持非连续的Tensor。
 - **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
 
     <!-- npu="910b" id29 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
+    - <term>Atlas A2系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
     <!-- end id29 -->
     <!-- npu="A3" id30 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
+    - <term>Atlas A3系列产品</term>：字符串长度范围为\[1, 128\)，不能和`group_ep`相同。
     <!-- end id30 -->
     <!-- npu="950" id31 -->
-    - <term>Ascend 950DT</term>：不支持TP域通信，使用默认输入。
+    - <term>Ascend 950DT系列产品</term>：不支持TP域通信，使用默认输入。
     <!-- end id31 -->
 
 - **tp\_world\_size**（`int`）：**可选参数**，TP通信域size。有TP域通信才需要传参。
 
     <!-- npu="910b" id32 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值0即可。
+    - <term>Atlas A2系列产品</term>：不支持TP域通信，使用默认值0即可。
     <!-- end id32 -->
     <!-- npu="A3" id33 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
+    - <term>Atlas A3系列产品</term>：当有TP域通信时，取值范围\[0, 2\]，0和1表示无TP域通信，2表示有TP域通信。
     <!-- end id33 -->
     <!-- npu="950" id34 -->
-    - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值0即可。
+    - <term>Ascend 950DT系列产品</term>：不支持TP域通信，使用默认值0即可。
     <!-- end id34 -->
 
 - **tp\_rank\_id**（`int`）：**可选参数**，TP通信域本卡ID。有TP域通信才需要传参。
 
     <!-- npu="910b" id35 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持TP域通信，使用默认值0即可。
+    - <term>Atlas A2系列产品</term>：不支持TP域通信，使用默认值0即可。
     <!-- end id35 -->
     <!-- npu="A3" id36 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的`tp_rank_id`不重复。无TP域通信时，传0即可。
+    - <term>Atlas A3系列产品</term>：当有TP域通信时，取值范围\[0, 1\]，同一个TP通信域中各卡的`tp_rank_id`不重复。无TP域通信时，传0即可。
     <!-- end id36 -->
     <!-- npu="950" id37 -->
-    - <term>Ascend 950DT</term>：不支持TP域通信，使用默认值0即可。
+    - <term>Ascend 950DT系列产品</term>：不支持TP域通信，使用默认值0即可。
     <!-- end id37 -->
 
 - **expert\_shard\_type**（`int`）：**可选参数**，表示共享专家卡排布类型。
 
     <!-- npu="910b" id38 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值即可。
+    - <term>Atlas A2系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id38 -->
     <!-- npu="950,A3" id39 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：当前仅支持0，表示共享专家卡排在MoE专家卡前面。
     <!-- end id39 -->
 
 - **shared\_expert\_num**（`int`）：**可选参数**，表示共享专家数量，一个共享专家可以复制部署到多个卡上。
 
     <!-- npu="910b" id40 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，使用默认值1即可。
+    - <term>Atlas A2系列产品</term>：暂不支持该参数，使用默认值1即可。
     <!-- end id40 -->
     <!-- npu="950,A3" id41 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为1。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, 4\]，0表示无共享专家，默认值为1。
     <!-- end id41 -->
 
 - **shared\_expert\_rank\_num**（`int`）：**可选参数**，表示共享专家卡数量。
 
     <!-- npu="910b" id42 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：不支持共享专家，使用默认值即可。
+    - <term>Atlas A2系列产品</term>：不支持共享专家，使用默认值即可。
     <!-- end id42 -->
     <!-- npu="950,A3" id43 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0需满足shared\_expert\_rank\_num\%shared\_expert\_num=0。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0需满足shared\_expert\_rank\_num\%shared\_expert\_num=0。
     <!-- end id43 -->
 
 - **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 - **comm\_quant\_mode**（`int`）：**可选参数**，表示通信量化类型。
 
     <!-- npu="910b" id44 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当`comm_alg`配置为"hierarchy"或`HCCL_INTRA_PCIE_ENABLE`=1且`HCCL_INTRA_ROCE_ENABLE`=0且驱动版本不低于25.0.RC1.1时才支持取2。
+    - <term>Atlas A2系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当`comm_alg`配置为"hierarchy"或`HCCL_INTRA_PCIE_ENABLE`=1且`HCCL_INTRA_ROCE_ENABLE`=0且驱动版本不低于25.0.RC1.1时才支持取2。
     <!-- end id44 -->
     <!-- npu="A3" id45 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以开启int8量化。
+    - <term>Atlas A3系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以开启int8量化。
     <!-- end id45 -->
     <!-- npu="950" id46 -->
-    - <term>Ascend 950DT</term>：取值范围0、2、3或4。0表示不量化，2表示`int8`量化，3表示mxfp量化输出`torch.float8_e5m2`类型，4表示mxfp量化输出`torch.float8_e4m3fn`类型。
+    - <term>Ascend 950DT系列产品</term>：取值范围0、2、3或4。0表示不量化，2表示`int8`量化，3表示mxfp量化输出`torch.float8_e5m2`类型，4表示mxfp量化输出`torch.float8_e4m3fn`类型。
     <!-- end id46 -->
 
 - **comm\_alg**（`str`）：**可选参数**，表示通信亲和内存布局算法。
 
     <!-- npu="910b" id47 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本支持""、"fullmesh"、"hierarchy"三种输入方式。推荐配置"hierarchy"并搭配25.0.RC1.1及以上版本驱动使用。
+    - <term>Atlas A2系列产品</term>：当前版本支持""、"fullmesh"、"hierarchy"三种输入方式。推荐配置"hierarchy"并搭配25.0.RC1.1及以上版本驱动使用。
         - "": 配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
         - "fullmesh"：Token数据直接通过RDMA方式发回目标卡。
         - "hierarchy"：Token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。
     <!-- end id47 -->
     <!-- npu="950,A3" id48 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：暂不支持该参数，使用默认值即可。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id48 -->
 
 - **zero\_expert\_num**（`int`）：**可选参数**，表示零专家的数量。
 
     <!-- npu="910b" id49 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
+    - <term>Atlas A2系列产品</term>：当前版本不支持，传0即可。
     <!-- end id49 -->
     <!-- npu="950,A3" id50 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的零专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num\)。
     <!-- end id50 -->
 
 - **copy\_expert\_num**（`int`）：**可选参数**，表示拷贝专家的数量。
 
     <!-- npu="910b" id51 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
+    - <term>Atlas A2系列产品</term>：当前版本不支持，传0即可。
     <!-- end id51 -->
     <!-- npu="950,A3" id52 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的拷贝专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num\)。
     <!-- end id52 -->
 
 - **const\_expert\_num**（`int`）：**可选参数**，表示常量专家的数量。
 
     <!-- npu="910b" id53 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：当前版本不支持，传0即可。
+    - <term>Atlas A2系列产品</term>：当前版本不支持，传0即可。
     <!-- end id53 -->
     <!-- npu="950,A3" id54 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的常量专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, MAX\_INT32\)，MAX\_INT32 = 2^31 - 1，合法的常量专家的ID值是\[moe\_expert\_num, moe\_expert\_num+zero\_expert\_num+copy\_expert\_num+const\_expert\_num\)。
     <!-- end id54 -->
 
 ## 返回值说明
@@ -314,15 +314,15 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 - 通信方式约束：
 
     <!-- npu="950" id55 -->
-    - <term>Ascend 950DT</term>：仅支持UB Memory通信。
+    - <term>Ascend 950DT系列产品</term>：仅支持UB Memory通信。
     <!-- end id55 -->
 
 - 该接口支持单算子模式和静态图模式调用，`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`必须配套使用。
 - 在不同产品型号、不同通信算法或不同版本中，`npu_moe_distribute_dispatch_v2`的Tensor输出`assist_info_for_combine`、`ep_recv_counts`、`tp_recv_counts`、`expand_scales`中的元素值可能不同，使用时直接将上述Tensor传给`npu_moe_distribute_combine_v2`对应参数即可，模型其他业务逻辑不应对其存在依赖。
-- 调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络中不同层中也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
+- 调用接口过程中使用的`group_ep`、`ep_world_size`、`moe_expert_num`、`group_tp`、`tp_world_size`、`expert_shard_type`、`shared_expert_num`、`shared_expert_rank_num`、`global_bs`参数取值所有卡需保持一致，`group_ep`、`ep_world_size`、`group_tp`、`tp_world_size`、`expert_shard_type`、`global_bs`网络中不同层也需保持一致，且和[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)对应参数也保持一致。
 
 <!-- npu="A3" id56 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+- <term>Atlas A3系列产品</term>：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 <!-- end id56 -->
 - moe\_expert\_num + zero\_expert\_num + copy\_expert\_num + const\_expert\_num < MAX\_INT32。
 - 参数里Shape使用的变量如下：
@@ -333,28 +333,28 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - H：表示hidden size隐藏层大小。
 
         <!-- npu="910b" id57 -->
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：`H`的取值范围如下所示。
+        - <term>Atlas A2系列产品</term>：`H`的取值范围如下所示。
             - `comm_alg`设置为"fullmesh"时，`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
             - `comm_alg`设置为"hierarchy"且驱动版本不低于25.0.RC1.1时，`H`的取值范围\(0, 10 \* 1024\]，且保证是32的整数倍。
         <!-- end id57 -->
         <!-- npu="950,A3" id58 -->
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围\[1024, 8192\]。
+        - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[1024, 8192\]。
         <!-- end id58 -->
 
     - BS：表示待发送的token数量。
 
         <!-- npu="910b" id59 -->
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：取值范围为0<BS≤256。
+        - <term>Atlas A2系列产品</term>：取值范围为0<BS≤256。
         <!-- end id59 -->
         <!-- npu="950,A3" id60 -->
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：取值范围为0<BS≤512。
+        - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围为0<BS≤512。
         <!-- end id60 -->
 
     - K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero\_expert\_num + copy\_expert\_num + const\_expert\_num。
     - server\_num：表示服务器的节点数，取值只支持2、4、8。
 
         <!-- npu="910b" id61 -->
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：仅该场景的shape使用了该变量。
+        - <term>Atlas A2系列产品</term>：仅该场景的shape使用了该变量。
         <!-- end id61 -->
 
     - local\_expert\_num：表示本卡专家数量。
@@ -362,7 +362,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。
 
         <!-- npu="950,A3" id62 -->
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Ascend 950DT</term>：应满足0 < local\_expert\_num \* ep\_world\_size ≤ 2048。
+        - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：应满足0 < local\_expert\_num \* ep\_world\_size ≤ 2048。
         <!-- end id62 -->
 
 - HCCL通信域缓存区大小：
@@ -370,36 +370,36 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     调用本接口前需检查通信域缓存区大小取值是否合理，单位MB，不配置时默认为200MB。
 
     <!-- npu="910b" id63 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：该场景支持通过环境变量HCCL\_BUFFSIZE配置。
+    - <term>Atlas A2系列产品</term>：该场景支持通过环境变量HCCL\_BUFFSIZE配置。
         - `comm_alg`配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
         - `comm_alg`配置为"fullmesh"：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
         - `comm_alg`配置为"hierarchy"：设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype\_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
     <!-- end id63 -->
     <!-- npu="A3" id64 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
+    - <term>Atlas A3系列产品</term>：该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
         - ep通信域内：设置大小要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)。
         - tp通信域内：设置大小要求\>=(A \* Align512(Align32(H \* 2) + 44) + A \* Align512(H \* 2)) \* 2。
         - 其中480Align512(x) = ((x+480-1)/480)\*512，Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。
     <!-- end id64 -->
     <!-- npu="950" id65 -->
-    - <term>Ascend 950DT</term>：要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\) + 1024 \* 1024 \* 10。其中480Align512(x) = ((x+480-1)/480)\*512，Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。
+    - <term>Ascend 950DT系列产品</term>：要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\) + 1024 \* 1024 \* 10。其中480Align512(x) = ((x+480-1)/480)\*512，Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。
     <!-- end id65 -->
 
 <!-- npu="910b" id66 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE环境变量不再推荐使用，建议`comm_alg`配置"hierarchy"。
+- <term>Atlas A2系列产品</term>：HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE环境变量不再推荐使用，建议`comm_alg`配置"hierarchy"。
 <!-- end id66 -->
 - 通信域使用约束：
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
     - 一个模型中的`npu_moe_distribute_dispatch_v2`和`npu_moe_distribute_combine_v2`算子仅支持相同TP通信域或都不支持TP通信域，有TP通信域时该通信域中不允许有其他算子。
 
     <!-- npu="A3" id67 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：一个通信域内的节点需在一个超节点内，不支持跨超节点。
+    - <term>Atlas A3系列产品</term>：一个通信域内的节点需在一个超节点内，不支持跨超节点。
     <!-- end id67 -->
 
 <!-- npu="910b" id68 -->
 - 组网约束：
 
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：多机场景仅支持交换机组网，不支持双机直连组网。
+    - <term>Atlas A2系列产品</term>：多机场景仅支持交换机组网，不支持双机直连组网。
 <!-- end id68 -->
 
 - 公式中的“/”表示整除。

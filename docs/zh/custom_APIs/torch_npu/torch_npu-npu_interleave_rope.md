@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -45,28 +45,28 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 - **x** (`Tensor`)：必选参数，表示待处理张量。要求为4维张量，shape为\(B, N, S, D\)，数据格式支持$ND$。
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
     <!-- end id5 -->
 
 - **cos** (`Tensor`)：必选参数，表示RoPE旋转位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致。
 
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
     <!-- end id7 -->
 
 - **sin** (`Tensor`)：必选参数，表示RoPE旋转位置编码的正弦分量。shape、数据类型、数据格式需要与`cos`保持一致。
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
     <!-- end id9 -->
 
 ## 返回值说明
@@ -81,10 +81,10 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 - 该接口支持图模式。
 
 <!-- npu="A3,910b" id10 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：输入`x`、`cos`、`sin`的D维度均必须等于64，且`cos`、`sin`的N维度必须等于1。
+- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：输入`x`、`cos`、`sin`的D维度均必须等于64，且`cos`、`sin`的N维度必须等于1。
 <!-- end id10 -->
 <!-- npu="950" id11 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：
+- <term>Ascend 950PR&950DT系列产品</term>：
     - 输入张量`x`、`cos`、`sin`及输出张量的D维度大小必须等于64。
     - 输入张量`cos`和`sin`的shape必须完全相同，且N维度必须等于1；S维度可以为1或与`x`的S维度相同。
 <!-- end id11 -->

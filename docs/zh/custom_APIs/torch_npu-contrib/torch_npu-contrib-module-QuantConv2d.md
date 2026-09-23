@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="310p" id3 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -75,7 +75,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - 该接口仅支持PyTorch静态图模式在线推理。
 
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：不支持output中w轴为1的场景。
+- <term>Atlas推理系列产品</term>：不支持output中w轴为1的场景。
 <!-- end id4 -->
 
 ## 调用示例

@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明<a name="zh-cn_topic_0000002236535552_section1023311522369"></a>
@@ -69,19 +69,19 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - **k\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的k向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
+  - <term>Ascend 950PR&950DT系列产品</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
   <!-- end id5 -->
 
 - **ckv\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的压缩后的kv向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
+  - <term>Ascend 950PR&950DT系列产品</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
   <!-- end id7 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -90,19 +90,19 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - **k\_rope\_offset** (`Tensor`)：可选参数，默认值None，表示k旋转位置编码量化偏移量。数据类型支持`torch.float32`，数据格式为$ND$，要求为1维张量，形状为\[rope\_size\]。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：对称量化模式下该参数必填，暂不支持非对称量化。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：对称量化模式下该参数必填，暂不支持非对称量化。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：支持对称和非对称量化模式，非对称量化下该参数必填。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持对称和非对称量化模式，非对称量化下该参数必填。
   <!-- end id9 -->
 
 - **c\_kv\_offset** (`Tensor`)：可选参数，默认值None，表示压缩后kv的量化偏移量。数据类型支持`torch.float32`，数据格式为$ND$，要求为1维张量，形状为\[rms\_size\]。
 
   <!-- npu="A3,910b" id10 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：对称量化模式下该参数必填，暂不支持非对称量化。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：对称量化模式下该参数必填，暂不支持非对称量化。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：支持对称和非对称量化模式，非对称量化下该参数必填。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持对称和非对称量化模式，非对称量化下该参数必填。
   <!-- end id11 -->
 
 - **epsilon** (`float`)：可选参数，默认值1e-5，表示RMS归一化中的极小值，防止除以零。
@@ -140,10 +140,10 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
   - block\_size：PagedAttention模式下有效，表示Block的大小。
 
   <!-- npu="A3,910b" id12 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：hidden\_size取值仅支持576，rms\_size取值仅支持512，rope\_size取值仅支持64。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：hidden\_size取值仅支持576，rms\_size取值仅支持512，rope\_size取值仅支持64。
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：hidden\_size、rms\_size、rope\_size大小由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
+  - <term>Ascend 950PR&950DT系列产品</term>：hidden\_size、rms\_size、rope\_size大小由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
   <!-- end id13 -->
 
 - 量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`torch.int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空。

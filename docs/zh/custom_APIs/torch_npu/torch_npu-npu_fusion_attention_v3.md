@@ -3,7 +3,7 @@
 ## 产品支持情况
 
 <!-- npu="910b" id1 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id1 -->
 
 ## 功能说明<a name="zh-cn_topic_0000001742717129_section14441124184110"></a>

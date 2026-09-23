@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -113,7 +113,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 - **sinks**(`float`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`float32`，shape为$(N1)$。
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 训练系列产品/Atlas A3 训练系列产品</term>：暂不支持可选输入sinks，传默认值即可
+  - <term>Atlas A2训练系列产品/Atlas A3训练系列产品</term>：暂不支持可选输入sinks，传默认值即可
   <!-- end id4 -->
 
 ## 返回值说明
@@ -144,7 +144,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
   | layout  | BSND/TND                              | -                     |
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：N1额外支持48，N1index额外支持24，二者仅允许(48，24)组合，禁止其余数值配对；B,S1,S2均支持泛化。
+  - <term>Ascend 950PR&950DT系列产品</term>：N1额外支持48，N1index额外支持24，二者仅允许(48，24)组合，禁止其余数值配对；B,S1,S2均支持泛化。
   <!-- end id5 -->
 
 ## 调用示例

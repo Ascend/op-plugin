@@ -3,16 +3,16 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 
 ## 功能说明
@@ -40,31 +40,31 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 - **x** (`Tensor`)：必选参数，需要做反量化的输入，数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。最大支持8维。
 
   <!-- npu="310p" id5 -->
-  - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
+  - <term>Atlas推理系列产品</term>：数据类型支持`int8`。
   <!-- end id5 -->
   <!-- npu="910b" id6 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
+  - <term>Atlas A2系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
   <!-- end id6 -->
   <!-- npu="A3" id7 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
+  - <term>Atlas A3系列产品</term>：数据类型支持`int8`、`int32`，其中`int32`类型数据的每个值是由8个`int4`数值拼成。
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch.int32`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`，其中`torch.int32`类型数据的每个值是由8个`torch_npu.int4`数值拼成。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.int32`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`，其中`torch.int32`类型数据的每个值是由8个`torch_npu.int4`数值拼成。
   <!-- end id8 -->
 
 - **scale** (`Tensor`)：必选参数，反量化中的`scale`值。`scale`的维数必须与`x`相同或是1维；如果`x`是一维，`scale`的形状必须是[1]或与`x`相同；如果`scale`是一维，其大小必须是1、`x`[-1]或`x`[-2]；如果`scale`是多维，最多只能有一个非1的维度，且这个非1的维度只能是-1或-2轴；当`x`为`int32`类型且反量化轴为尾轴时，`scale`的尾轴必须等于`x`尾轴大小的8倍。数据格式支持$ND$，支持非连续的Tensor。
 
   <!-- npu="310p" id9 -->
-  - <term>Atlas 推理系列产品</term>：数据类型支持`float32`。`scale`仅支持1维，且只能等于`x`尾轴大小或1。当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
+  - <term>Atlas推理系列产品</term>：数据类型支持`float32`。`scale`仅支持1维，且只能等于`x`尾轴大小或1。当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
   <!-- end id9 -->
   <!-- npu="910b" id10 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。`scale`仅支持1维，且只能等于`x`尾轴大小或1；当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
+  - <term>Atlas A2系列产品</term>：数据类型支持`float32`、`bfloat16`。`scale`仅支持1维，且只能等于`x`尾轴大小或1；当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
   <!-- end id10 -->
   <!-- npu="A3" id11 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`bfloat16`。`scale`仅支持1维，且只能等于`x`尾轴大小或1；当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
+  - <term>Atlas A3系列产品</term>：数据类型支持`float32`、`bfloat16`。`scale`仅支持1维，且只能等于`x`尾轴大小或1；当`x`为`int32`类型时，必须为`x`尾轴大小的8倍。
   <!-- end id11 -->
   <!-- npu="950" id12 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch.bfloat16`。当`x`的数据类型为`torch_npu.hifloat8`、`torch.float8_e4m3fn`或`torch.float8_e5m2`时，`scale`仅支持`torch.float32`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。当`x`的数据类型为`torch_npu.hifloat8`、`torch.float8_e4m3fn`或`torch.float8_e5m2`时，`scale`仅支持`torch.float32`。
   <!-- end id12 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -74,31 +74,31 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 - **dst_dtype** (`int`)：可选参数，指定输出的数据类型，默认值为`float16`。
 
   <!-- npu="310p" id13 -->
-  - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
+  - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
   <!-- end id13 -->
   <!-- npu="910b" id14 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+  - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`。
   <!-- end id14 -->
   <!-- npu="A3" id15 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float16`、`bfloat16`。
+  - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`。
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
   <!-- end id16 -->
 
 - **src_dtype** (`int`)：可选参数，指定源输入的数据类型，默认值为`int8`。当不传入时，根据`x`的数据类型自动推断。`src_dtype`必须与`x`的实际数据类型匹配。
 
   <!-- npu="310p" id17 -->
-  - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
+  - <term>Atlas推理系列产品</term>：数据类型支持`int8`。
   <!-- end id17 -->
   <!-- npu="910b" id18 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
+  - <term>Atlas A2系列产品</term>：数据类型支持`quint4x2`或`int8`。
   <!-- end id18 -->
   <!-- npu="A3" id19 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`quint4x2`或`int8`。
+  - <term>Atlas A3系列产品</term>：数据类型支持`quint4x2`或`int8`。
   <!-- end id19 -->
   <!-- npu="950" id20 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.quint4x2`、`torch_npu.int4`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.quint4x2`、`torch_npu.int4`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id20 -->
 
 ## 返回值说明

@@ -6,10 +6,10 @@
 ## 产品支持情况
 
 <!-- npu="910" id1 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="310p" id2 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id2 -->
 
 ## 功能说明

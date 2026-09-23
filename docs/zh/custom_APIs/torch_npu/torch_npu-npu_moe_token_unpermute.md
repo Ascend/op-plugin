@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -49,7 +49,7 @@
 >
 > - 本接口为确定性计算。
 <!-- npu="950" id5 -->
-> - 在<term>Ascend 950PR/Ascend 950DT</term>上调用本接口时，框架内部会转调用aclnnMoeFinalizeRoutingV2接口，参数映射关系如下：permuted_tokens等同于aclnnMoeFinalizeRoutingV2接口的expandedX输入，sorted_indices等同于expandedRowIdx输入，probs等同于scalesOptional输入，padded_mode等同于dropPadMode输入，输出out等同于aclnnMoeFinalizeRoutingV2接口的out输出。如出现参数错误提示，请参考该映射关系。
+> - 在<term>Ascend 950PR&950DT系列产品</term>上调用本接口时，框架内部会转调用aclnnMoeFinalizeRoutingV2接口，参数映射关系如下：permuted_tokens等同于aclnnMoeFinalizeRoutingV2接口的expandedX输入，sorted_indices等同于expandedRowIdx输入，probs等同于scalesOptional输入，padded_mode等同于dropPadMode输入，输出out等同于aclnnMoeFinalizeRoutingV2接口的out输出。如出现参数错误提示，请参考该映射关系。
 <!-- end id5 -->
 
 ## 函数原型
@@ -79,7 +79,7 @@ torch_npu.npu_moe_token_unpermute(permuted_tokens, sorted_indices, probs=None, p
 - 该接口为确定性计算。
 
 <!-- npu="A3,910b" id4 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：topK_num要求小于等于512。
+- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：topK_num要求小于等于512。
 <!-- end id4 -->
 
 ## 调用示例

@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950DT</term>：支持
+- <term>Ascend 950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -32,7 +32,7 @@
   
 > **说明：**<br>
 > 正向默认确定性实现。<br>
-> 反向梯度在<term>Atlas A3 训练系列产品</term>和<term>Atlas A2 训练系列产品</term>上默认非确定性实现，在<term>Ascend 950DT</term>上默认确定性实现。
+> 反向梯度在<term>Atlas A3训练系列产品</term>和<term>Atlas A2训练系列产品</term>上默认非确定性实现，在<term>Ascend 950DT系列产品</term>上默认确定性实现。
 > 需要计算反向梯度场景时，若需要输出结果排除随机性，则需要[设置确定性计算开关](../determin_API_list.md)。
 
 ## 函数原型

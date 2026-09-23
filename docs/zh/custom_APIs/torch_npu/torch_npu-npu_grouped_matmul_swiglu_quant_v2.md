@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -19,7 +19,7 @@
 - 计算公式：
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
     <details>
     <summary>量化场景A8W8（A指激活矩阵，W指权重矩阵，8指torch.int8数据类型）：</summary>
 
@@ -169,7 +169,7 @@
     </details>
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：
+  - <term>Ascend 950PR&950DT系列产品</term>：
     <details>
     <summary>MX量化场景：</summary>
 
@@ -280,21 +280,21 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`x`**（`Tensor`）：**必选参数**，矩阵乘法的左矩阵。`shape`支持2维\[m, k\]，数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.int8`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持）。其中`torch_npu.hifloat8`和`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`x_dtype`为对应类型，此时输入`x`自身的`dtype`不再生效，但仍需保证输入`x`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴`K`需为偶数，以保证8 bit数据可以转换为2个float4。数据格式支持$ND$。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持）。其中`torch_npu.hifloat8`和`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`x_dtype`为对应类型，此时输入`x`自身的`dtype`不再生效，但仍需保证输入`x`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴`K`需为偶数，以保证8 bit数据可以转换为2个float4。数据格式支持$ND$。
   <!-- end id7 -->
 
 - **`weight`**（`List[Tensor]`）：**必选参数**，权重矩阵（矩阵乘法右矩阵），支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.int8`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`。
     - 数据格式为$ND$时，`shape`支持3维\[e, k, n\]。
     - 数据格式为$FRACTAL\_NZ$（通过接口`npu_format_cast`可实现格式转换）时，`shape`支持5维。以非转置为例，`torch.float8_e4m3fn`场景的`shape`为\[e, k/32, n/16, 16, 32\]，`torch.float4_e2m1fn_x2`场景的`shape`为\[e, k/64, n/16, 16, 64\]。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：支持单个`Tensor`（`Tensor`列表长度必须为1）和多个`Tensor`（`Tensor`列表长度为e）。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持单个`Tensor`（`Tensor`列表长度必须为1）和多个`Tensor`（`Tensor`列表长度为e）。
     - 数据格式为$ND$时，`shape`支持3维，非转置`shape`为\[\[e, k, n\]\]，转置`shape`为\[\[e, n, k\]\]。数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`，其中`torch_npu.hifloat8`和`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`weight_dtype`为对应类型，此时输入`weight`自身的`dtype`不再生效，但仍需保证输入`weight`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴需为偶数，以保证8 bit数据可以转换为2个float4。
     - 数据格式为$FRACTAL\_NZ$（通过接口`npu_format_cast`可实现格式转换）时，单单单场景其中`Tensor`的`shape`支持5维，单多单场景其中`Tensor`的`shape`支持4维；数据类型仅支持`torch.float8_e4m3fn`、`torch_npu.float4_e1m2fn_x2`、`torch.float4_e2m1fn_x2`。
   <!-- end id9 -->
@@ -302,19 +302,19 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`weight_scale`**（`List[Tensor]`）：**必选参数**，右矩阵的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id10 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`shape`支持2维\[\[e, n\]\]，数据类型支持`torch.float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`shape`支持2维\[\[e, n\]\]，数据类型支持`torch.float32`。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下，单多单且`weight`数据格式为$FRACTAL\_NZ$时，其中`Tensor`的`shape`支持3维；其余场景其中`Tensor`的`shape`支持4维。数据类型支持`torch.float8_e8m0fnu`。Pertoken量化场景下，`shape`支持2维，`shape`为\[\[e, n\]\]；当`x`为`torch.int8`时，`weight_scale`需支持`torch.bfloat16`、`torch.float32`、`torch.float16`；当`x`为`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`时，`weight_scale`支持`torch.bfloat16`、`torch.float32`。目前仅支持`Tensor`列表长度为1。
+  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，单多单且`weight`数据格式为$FRACTAL\_NZ$时，其中`Tensor`的`shape`支持3维；其余场景其中`Tensor`的`shape`支持4维。数据类型支持`torch.float8_e8m0fnu`。Pertoken量化场景下，`shape`支持2维，`shape`为\[\[e, n\]\]；当`x`为`torch.int8`时，`weight_scale`需支持`torch.bfloat16`、`torch.float32`、`torch.float16`；当`x`为`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`时，`weight_scale`支持`torch.bfloat16`、`torch.float32`。目前仅支持`Tensor`列表长度为1。
   <!-- end id11 -->
 
 - **`x_scale`**（`Tensor`）：**必选参数**，左矩阵的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id12 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：`shape`支持1维\[m\]，数据类型支持`torch.float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：MX量化场景下，`shape`支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持`torch.float8_e8m0fnu`；Pertoken量化场景下，`shape`支持1维\[m\]，数据类型支持`torch.float32`。
+  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，`shape`支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持`torch.float8_e8m0fnu`；Pertoken量化场景下，`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id13 -->
 
 - **`*`**：代表`*`之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -330,37 +330,37 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`dequant_mode`**（`int`）：**可选参数**，表示反量化模式，数据类型为`torch.int32`，默认值为`0`。取值为`0`时，表示激活矩阵pertoken、权重矩阵perchannel；取值为`1`时，表示激活矩阵pertoken、权重矩阵pergroup；取值为`2`时，表示MX量化。
 
   <!-- npu="A3,910b" id14 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持传入默认值`0`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当前仅支持传入默认值`0`。
   <!-- end id14 -->
   <!-- npu="950" id15 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入`0`以及`2`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当前仅支持传入`0`以及`2`。
   <!-- end id15 -->
 
 - **`dequant_dtype`**（`int`）：**可选参数**，表示反量化类型，数据类型为`torch.int32`。
 
   <!-- npu="A3,910b" id16 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：预留输入，当前仅支持传入默认值`torch.float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：预留输入，当前仅支持传入默认值`torch.float32`。
   <!-- end id16 -->
   <!-- npu="950" id17 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：默认值为`torch.float32`，当前仅支持传入`torch.float32`、`torch.bfloat16`、`torch.float16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：默认值为`torch.float32`，当前仅支持传入`torch.float32`、`torch.bfloat16`、`torch.float16`。
   <!-- end id17 -->
 
 - **`quant_mode`**（`int`）：**可选参数**，表示SwiGLU后的量化模式，数据类型为`torch.int32`。支持取值：`0`（默认值）表示pertoken量化；`1`表示pergroup量化；`2`表示MX量化。
 
   <!-- npu="A3,910b" id18 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持传入默认值`0`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当前仅支持传入默认值`0`。
   <!-- end id18 -->
   <!-- npu="950" id19 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持传入`0`以及`2`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当前仅支持传入`0`以及`2`。
   <!-- end id19 -->
 
 - **`quant_dtype`**（`int`）：**可选参数**，表示量化后低比特数据类型，数据类型为`torch.int32`。
 
   <!-- npu="A3,910b" id20 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：当前仅支持传入默认值`torch.int8`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当前仅支持传入默认值`torch.int8`。
   <!-- end id20 -->
   <!-- npu="950" id21 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：默认值为`torch.int8`，当前支持传入`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int8`、`torch_npu.hifloat8`。
+  - <term>Ascend 950PR&950DT系列产品</term>：默认值为`torch.int8`，当前支持传入`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int8`、`torch_npu.hifloat8`。
   <!-- end id21 -->
 
 - **`group_list_type`**（`int`）：**可选参数**，表示`group_list`的输入类型，数据类型为`torch.int32`，默认值为`0`。
@@ -372,37 +372,37 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`x_dtype`**（`int`）：**可选参数**，指定输入`x`的真实数据类型。当前仅支持默认值`None`，表示输入`x`真实的`dtype`。
 
   <!-- npu="A3,910b" id22 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当`x`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`x_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`x`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`x_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
   <!-- end id23 -->
 
 - **`weight_dtype`**（`int`）：**可选参数**，指定输入`weight`的真实数据类型。当前仅支持默认值`None`，表示输入`weight`真实的`dtype`。
 
   <!-- npu="A3,910b" id24 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id24 -->
   <!-- npu="950" id25 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当`weight`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`weight_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`weight`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`weight_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
   <!-- end id25 -->
 
 - **`weight_scale_dtype`**（`int`）：**可选参数**，指定输入`weight_scale`的真实数据类型。默认值为`None`，表示输入`weight_scale`真实的`dtype`。
 
   <!-- npu="A3,910b" id26 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id26 -->
   <!-- npu="950" id27 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当`weight_scale`为`torch.float8_e8m0fnu`时，`weight_scale_dtype`需要传入`torch.float8_e8m0fnu`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`weight_scale`为`torch.float8_e8m0fnu`时，`weight_scale_dtype`需要传入`torch.float8_e8m0fnu`。
   <!-- end id27 -->
 
 - **`x_scale_dtype`**（`int`）：**可选参数**，指定输入`x_scale`的真实数据类型。默认值为`None`，表示输入`x_scale`真实的`dtype`。
 
   <!-- npu="A3,910b" id28 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：暂不支持该参数，使用默认值。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id28 -->
   <!-- npu="950" id29 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：当`x_scale`为`torch.float8_e8m0fnu`时，`x_scale_dtype`需要传入`torch.float8_e8m0fnu`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`x_scale`为`torch.float8_e8m0fnu`时，`x_scale_dtype`需要传入`torch.float8_e8m0fnu`。
   <!-- end id29 -->
 
 ## 返回值说明
@@ -410,19 +410,19 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`output`**（`Tensor`）：输出的量化结果。数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id30 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.int8`，`shape`支持2维\[m, n / 2\]。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`，`shape`支持2维\[m, n / 2\]。
   <!-- end id30 -->
   <!-- npu="950" id31 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持），`shape`支持2维\[m, n / 2\]。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持），`shape`支持2维\[m, n / 2\]。
   <!-- end id31 -->
 
 - **`output_scale`**（`Tensor`）：输出的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id32 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.float`，`shape`支持1维\[m\]。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float`，`shape`支持1维\[m\]。
   <!-- end id32 -->
   <!-- npu="950" id33 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：
+  - <term>Ascend 950PR&950DT系列产品</term>：
     - MX量化场景：数据类型支持`torch.float8_e8m0fnu`，`shape`支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。
     - Pertoken量化场景：`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id33 -->
@@ -434,7 +434,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - group\_list第1维最大支持1024，即最多支持1024个group。
 
 <!-- npu="950" id34 -->
-- WeightNZ场景说明（仅适用于Ascend 950PR/Ascend 950DT）：
+- WeightNZ场景说明（仅适用于Ascend 950PR&950DT系列产品）：
   - MXFP4、MXFP8场景支持静态图模式，不支持动态图模式。
   - 单多单MXFP4、MXFP8场景支持单算子模式，不支持图模式。
   - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为2对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为4对齐。
@@ -446,7 +446,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - m：输出矩阵output的倒数第二维大小，取值范围为1-2147483647。
   - n：输出矩阵output的倒数第一维大小的两倍，取值范围为1-2147483647。
 
-    MX量化场景下要求（仅适用于Ascend 950PR/Ascend 950DT）：
+    MX量化场景下要求（仅适用于Ascend 950PR&950DT系列产品）：
 
     - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为2对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为4对齐。
     - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为64对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为128对齐。
@@ -456,7 +456,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - 输入和输出Tensor支持的数据类型组合如下：
 
     <!-- npu="A3,910b" id44 -->
-    **表 1** Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    **表 1** Atlas A2系列产品、Atlas A3系列产品
 
     | x | weight | group_list | weight_scale | x_scale | bias | weight_assit_matrix | smooth_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -464,7 +464,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     <!-- end id44 -->
 
     <!-- npu="950" id45 -->
-    **表 2** Ascend 950PR/Ascend 950DT
+    **表 2** Ascend 950PR&950DT系列产品
 
     | 量化模式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assit_matrix | smooth_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -492,7 +492,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 <!-- npu="950" id46 -->
 - 输入和输出Tensor支持的shape组合如下：
 
-    **表 3** Ascend 950PR/Ascend 950DT
+    **表 3** Ascend 950PR&950DT系列产品
 
     | 支持场景 | 量化模式 | x | weight | weight_scale | xScale | output | outputscale |
     | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -510,7 +510,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - 单算子模式调用
 
   <!-- npu="A3,910b" id35 -->
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品：
+  - Atlas A2系列产品、Atlas A3系列产品：
 
     ```python
     import numpy as np
@@ -535,7 +535,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id35 -->
   <!-- npu="950" id36 -->
-  - Ascend 950PR/Ascend 950DT：mx量化场景示例-mxfp8
+  - Ascend 950PR&950DT系列产品：mx量化场景示例-mxfp8
 
     ```python
     import unittest
@@ -572,7 +572,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id36 -->
   <!-- npu="950" id37 -->
-  - Ascend 950PR/Ascend 950DT：mx量化场景示例-mxfp4
+  - Ascend 950PR&950DT系列产品：mx量化场景示例-mxfp4
 
     ```python
     import numpy as np
@@ -609,7 +609,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id37 -->
   <!-- npu="950" id38 -->
-  - Ascend 950PR/Ascend 950DT：Pertoken量化场景示例
+  - Ascend 950PR&950DT系列产品：Pertoken量化场景示例
 
     ```python
     import numpy as np
@@ -638,7 +638,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id38 -->
   <!-- npu="950" id39 -->
-  - Ascend 950PR/Ascend 950DT：MxA8W4伪量化场景示例
+  - Ascend 950PR&950DT系列产品：MxA8W4伪量化场景示例
 
     ```python
     import numpy as np
@@ -744,7 +744,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id39 -->
   <!-- npu="950" id40 -->
-  - Ascend 950PR/Ascend 950DT：MxA8W4伪量化单多单场景示例
+  - Ascend 950PR&950DT系列产品：MxA8W4伪量化单多单场景示例
 
     ```python
     import numpy as np
@@ -851,7 +851,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - 图模式调用
   <!-- npu="A3,910b" id47 -->
-  - Atlas A2 训练系列产品/Atlas A2 推理系列产品/Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  - Atlas A2系列产品/Atlas A3系列产品
 
     ```python
     import numpy as np
@@ -892,7 +892,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   <!-- end id47 -->
 
   <!-- npu="950" id41 -->
-  - Ascend 950PR/Ascend 950DT：mx量化场景示例-mxfp8
+  - Ascend 950PR&950DT系列产品：mx量化场景示例-mxfp8
 
     ```python
     import os
@@ -966,7 +966,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id41 -->
   <!-- npu="950" id42 -->
-  - Ascend 950PR/Ascend 950DT：mx量化场景示例-mxfp4
+  - Ascend 950PR&950DT系列产品：mx量化场景示例-mxfp4
 
     ```python
     import os
@@ -1088,7 +1088,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
   <!-- end id42 -->
   <!-- npu="950" id43 -->
-  - Ascend 950PR/Ascend 950DT：Pertoken量化场景示例
+  - Ascend 950PR&950DT系列产品：Pertoken量化场景示例
 
     ```python
     import os

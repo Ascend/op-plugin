@@ -3,7 +3,7 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 
 ## 功能说明
@@ -71,7 +71,7 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 - **x2\_dtype**（`int`）：**可选参数**，表示输入的右矩阵的数据类型，对于PyTorch原生不支持的数据类型（如`torch_npu.float4_e2m1fn_x2`）需要通过本参数配置数据类型。
 - **x1\_scale\_dtype**（`int`）：**可选参数**，表示输入左矩阵量化系数的数据类型，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
 - **x2\_scale\_dtype**（`int`）：**可选参数**，表示输入右矩阵量化系数的数据类型，对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
-- **output\_scale\_dtype**（`int`）：**可选参数**，表示代表输出量化系数的数据类型。预留参数，当前版本传默认值即可。
+- **output\_scale\_dtype**（`int`）：**可选参数**，表示输出量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **comm\_scale\_dtype**（`int`）：**可选参数**，表示低比特通信量化系数的数据类型。预留参数，当前版本传默认值即可。
 - **y\_dtype**（`int`）：**可选参数**，表示输出数据类型，取值为5（`torch.float16`）、6（`torch.float32`）、15（`torch.bfloat16`）。
 - **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。取值支持`None`、`ai_cpu`、`ccu`，传入`None`时使用`ai_cpu`通信。

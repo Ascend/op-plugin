@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -27,7 +27,7 @@
     gather\_out = allgather(x1)
     $$
 
-    量化场景（仅<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>支持）：
+    量化场景（仅<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>支持）：
     $$
     output = (allgather(x1\_scale) * x2\_scale) * (allgather(x1) \mathbin{@} x2 + bias)
     $$
@@ -52,51 +52,51 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **x2**（`Tensor`）：**必选参数**，表示矩阵乘法中的右矩阵，数据类型、输入shape维度需要和`input`保持一致。
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据格式支持$ND$、$NZ$，$NZ$仅在`comm_mode`为`aiv`时支持。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据格式支持$ND$、$NZ$，$NZ$仅在`comm_mode`为`aiv`时支持。
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据格式支持$ND$。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据格式支持$ND$。
     <!-- end id5 -->
 
 - **hcom**（`str`）：**必选参数**，通信域handle名，通过get\_hccl\_comm\_name接口获取。
 - **world\_size**（`int`）：**必选参数**，通信域内的rank总数。
 
     <!-- npu="910b" id6 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持2、4、8卡，支持HCCS链路all mesh组网（每张卡和其它卡两两相连）。
+    - <term>Atlas A2系列产品</term>：支持2、4、8卡，支持HCCS链路all mesh组网（每张卡和其它卡两两相连）。
     <!-- end id6 -->
     <!-- npu="A3" id7 -->
-    - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持2、4、8、16、32卡，支持HCCS链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
+    - <term>Atlas A3系列产品</term>：支持2、4、8、16、32卡，支持HCCS链路double ring组网（多张卡按顺序组成一个圈，每张卡只和左右卡相连）。
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持2、4、8、16、32、64卡，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持2、4、8、16、32、64卡，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
     <!-- end id8 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **bias**（`Tensor`）：**可选参数**，表示Matmul计算的偏置。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型需要和`input`保持一致。`bias`仅支持一维，且维度大小与`output`的第1维大小相同。
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：**当前版本暂不支持`bias`输入为非0的场景。**
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：**当前版本暂不支持`bias`输入为非0的场景。**
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持`bias`输入为非0的场景。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持`bias`输入为非0的场景。
     <!-- end id10 -->
 
 - **x1\_scale**（`Tensor`）：**可选参数**，mm左矩阵反量化参数。数据格式支持$ND$。数据维度为\(m, 1\)，支持pertoken量化。
 
     <!-- npu="A3,910b" id11 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：**暂不支持该参数。**
+    - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
     <!-- end id12 -->
 
 - **x2\_scale**（`Tensor`）：**可选参数**，mm右矩阵反量化参数。数据格式支持$ND$。数据维度为\(1, n\)，支持perchannel量化。
 
     <!-- npu="A3,910b" id13 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`int64`数据类型的`x2_scale`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`int64`数据类型的`x2_scale`。
     <!-- end id13 -->
     <!-- npu="950" id14 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：**暂不支持该参数。**
+    - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
     <!-- end id14 -->
 
 - **gather\_index**（`int`）：**可选参数**，表示gather操作对象，0：对`input`做gather，1：对`x2`做gather。默认值0。**当前版本仅支持输入0。**
@@ -105,16 +105,16 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **output\_dtype**（`ScalarType`）：**可选参数**，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
 
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：**暂不支持该参数。**
+    - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
     <!-- end id15 -->
 
 - **comm\_mode**（`str`）：**可选参数**，表示通信模式。默认值为`None`。
 
     <!-- npu="A3,910b" id16 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持`ai_cpu`、`aiv`，`None`表示AI CPU通信。`ai_cpu`模式仅支持基础场景，`aiv`模式支持基础场景和量化场景。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持`ai_cpu`、`aiv`，`None`表示AI CPU通信。`ai_cpu`模式仅支持基础场景，`aiv`模式支持基础场景和量化场景。
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持`ai_cpu`、`ccu`、`None`。当为`None`时，走AI CPU通信。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持`ai_cpu`、`ccu`、`None`。当为`None`时，走AI CPU通信。
     <!-- end id17 -->
 
 ## 返回值说明
@@ -122,10 +122,10 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **output**（`Tensor`）：第一个输出是allgather+matmul的结果。
 
     <!-- npu="A3,910b" id18 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`数据类型时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`数据类型时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：仅支持基础场景，输出数据类型和`input`保持一致。
+    - <term>Ascend 950PR&950DT系列产品</term>：仅支持基础场景，输出数据类型和`input`保持一致。
     <!-- end id19 -->
 
 - **gather\_out**（`Tensor`）：第二个输出是allgather的结果。由`gather_output`参数控制是否输出，`gather_output`为`False`时，返回空Tensor。
@@ -140,13 +140,13 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
       - 该接口支持图模式。
 
       <!-- npu="910b" id20 -->
-      - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
+      - <term>Atlas A2系列产品</term>：一个模型中的通算融合算子（AllGatherMatmul、MatmulReduceScatter、MatmulAllReduce），仅支持相同通信域。
       <!-- end id20 -->
 
   - `comm_mode`为`aiv`时，训练和推理场景均可使用。
 
 <!-- npu="950" id21 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：allgather\(x1\)集合通信数据总量不能超过63\*256MB，集合通信数据总量计算方式为：m \* k \* sizeof\(x1\_dtype\) \* 卡数。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+- <term>Ascend 950PR&950DT系列产品</term>：allgather\(x1\)集合通信数据总量不能超过63\*256MB，集合通信数据总量计算方式为：m \* k \* sizeof\(x1\_dtype\) \* 卡数。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 <!-- end id21 -->
 
 ## 调用示例

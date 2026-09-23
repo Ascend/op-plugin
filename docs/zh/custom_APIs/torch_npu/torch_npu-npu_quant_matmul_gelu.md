@@ -3,10 +3,10 @@
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id2 -->
 
 ## 功能说明
@@ -105,7 +105,7 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
 <!-- npu="A3,910b" id3 -->
 - 输入参数间支持的数据类型组合情况如下：
 
-    **表 1** <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
+    **表 1** <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>
 
     | x1    | x2    | x1_scale | x2_scale  | bias                                | 输出数据类型    |
     |-------|-------|----------|-----------|-------------------------------------|-----------|

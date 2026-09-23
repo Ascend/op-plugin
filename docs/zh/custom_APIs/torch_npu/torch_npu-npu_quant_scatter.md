@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="310p" id3 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -27,50 +27,50 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - **self** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，维数只能是3~8维。
 
     <!-- npu="310p" id4 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`int8`。
     <!-- end id4 -->
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`int8`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`int8`。
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
     <!-- end id6 -->
 
 - **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id7 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float16`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
     <!-- end id7 -->
     <!-- npu="910b" id8 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`float16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`float16`。
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float16`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`。
     <!-- end id9 -->
 
 - **quant_scales** (`Tensor`)：必选输入，量化缩放张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id10 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`float32`。
     <!-- end id10 -->
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`float32`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.float32`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float32`。
     <!-- end id12 -->
 
 - **quant_zero_points** (`Tensor`)：可选输入，量化偏移张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id13 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`int32`。
     <!-- end id13 -->
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：数据类型支持`bfloat16`、`int32`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`int32`。
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.bfloat16`、`torch.int32`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.int32`。
     <!-- end id15 -->
 
 - **axis** (`int`)：可选参数，`updates`上用来更新的轴，默认值为`-2`。
@@ -79,19 +79,19 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - **dst_type** (`int`)：可选参数，指定输出`self`的数据类型，默认值为`None`，表示`torch.int8`。
 
     <!-- npu="910b,310p" id16 -->
-    - <term>Atlas 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，默认按`torch.int8`处理。
+    - <term>Atlas推理系列产品</term>、<term>Atlas A2系列产品</term>：暂不支持该参数，默认按`torch.int8`处理。
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持取值`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
     <!-- end id17 -->
 
 - **round_mode** (`str`)：可选参数，指定量化时的取整方式，默认值为`"rint"`。
 
     <!-- npu="910b,310p" id18 -->
-    - <term>Atlas 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：暂不支持该参数，默认按`"rint"`处理。
+    - <term>Atlas推理系列产品</term>、<term>Atlas A2系列产品</term>：暂不支持该参数，默认按`"rint"`处理。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：当`dst_type`为`torch.int8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`时，支持`"rint"`；当`dst_type`为`torch_npu.hifloat8`时，支持`"round"`、`"hybrid"`。
+    - <term>Ascend 950PR&950DT系列产品</term>：当`dst_type`为`torch.int8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`时，支持`"rint"`；当`dst_type`为`torch_npu.hifloat8`时，支持`"round"`、`"hybrid"`。
     <!-- end id19 -->
 
 ## 返回值说明
@@ -112,8 +112,8 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - `quant_axis`只能为`updates`的最后1维。
 <!-- npu="950,910b" id20 -->
 - `updates`、`quant_scales`、`quant_zero_points`数据类型输入组合包括（适用于如下产品）：
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>
-    - <term>Ascend 950PR/Ascend 950DT</term>
+    - <term>Atlas A2系列产品</term>
+    - <term>Ascend 950PR&950DT系列产品</term>
 
     | updates | quant_scales | quant_zero_points |
     | --- | --- | --- |

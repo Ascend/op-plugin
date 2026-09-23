@@ -3,7 +3,7 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 
 ## 功能说明
@@ -43,32 +43,32 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
 - **x1**(`Tensor`)：必选参数，即矩阵乘中的`x1`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(M,K)和三维(B,M,K)，其他情况支持输入维度为两维(M, K)，多维场景下不满足broadcast条件时batch维度需要保持一致。
 
   <!-- npu="950" id2 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`（HF32）。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`（HF32）。
   <!-- end id2 -->
 
 - **x2**(`Tensor`)：必选参数，即矩阵乘中的`x2`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(K,N)和三维(B,K,N)，其他情况支持输入维度为两维(K, N)，维度需与`x1`保持一致，多维场景下不满足broadcast条件时batch维度需要保持一致。
 
   <!-- npu="950" id3 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型必须与输入的`x1`保持一致。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型必须与输入的`x1`保持一致。
   <!-- end id3 -->
 
 - \*：代表其之前的变量支持按位置输入，也可使用键值对赋值；之后的变量仅支持使用键值对赋值，其中带默认值的变量不赋值时使用默认值，不带默认值的变量必须赋值。
 - **bias**(`Tensor`)：**可选参数**，即矩阵乘中的bias，默认值为None。数据格式支持$ND$，不支持非连续的Tensor，支持输入维度为两维(1, N)或一维(N, )。仅当`fused_op_type`为`""`、`"relu"`、`"add"`、`"mul"`时生效，其他情况请使用默认None。
 
   <!-- npu="950" id4 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。当`x1`数据类型为`torch.bfloat16`，bias可为`torch.float32`、`torch.bfloat16`；当`x1`数据类型为`torch.float16`，bias需为`torch.float16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。当`x1`数据类型为`torch.bfloat16`，bias可为`torch.float32`、`torch.bfloat16`；当`x1`数据类型为`torch.float16`，bias需为`torch.float16`。
   <!-- end id4 -->
 
 - **x3**(`Tensor`)：**可选参数**，即矩阵乘中的`x3`，默认值为None。数据格式支持$ND$，支持非连续的Tensor。如果`fused_op_type`为`"add"`或`"mul"`，则`x3`为必选，其他情况则`x3`必为None。`x3`的维度需与矩阵乘输出`y`的形状一致或满足batch维广播关系，若输出维度为两维(M,N)，`x3`支持两维(M,N)；若输出维度为三维(B,M,N)，`x3`支持(B,M,N)、(1,M,N)或(M,N)。输入维度为(1,M,N)和(M,N)时，`x3`需在batch维进行广播，必须和输出维度保持一致，不支持M或N维广播。
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据类型必须和输入的`x1`保持一致。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型必须和输入的`x1`保持一致。
   <!-- end id5 -->
 
 - **fused_op_type**(`str`)：必选参数，表示算子融合类型。支持取值：`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为FP32，当输入FP16、BF16时会把输出转成FP32）、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`""`、`"16cast32"`、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持取值`""`、`"16cast32"`、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。
   <!-- end id6 -->
   - 当`fused_op_type`取值为`"gelu_erf"`、`"gelu_tanh"`时，`x1`、`x2`数据类型必须为`torch.bfloat16`、`torch.float16`。
   - 当`fused_op_type`取值为`""`、`"relu"`时，`x1`、`x2`数据类型必须为`torch.bfloat16`、`torch.float16`、`torch.float32`（HF32）。

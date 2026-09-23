@@ -3,19 +3,19 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="910" id4 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id4 -->
 <!-- npu="310p" id5 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id5 -->
 
 ## 功能说明
@@ -33,7 +33,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
 - **input**（`Tensor`）：必选参数，待处理的输入张量。
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：数据维度支持2、3维，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2、3维，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
 
 - **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
@@ -42,7 +42,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - 若输入整数，则将`input`的数据格式修改为整数值对应的torch_npu.Format。例如将`input`的数据格式转换为ND格式时，此处可以输入`2`。
 
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：当前仅支持取29（ACL\_FORMAT\_FRACTRAL\_NZ）。
+    - <term>Ascend 950PR&950DT系列产品</term>：当前仅支持取29（ACL\_FORMAT\_FRACTRAL\_NZ）。
     <!-- end id7 -->
 
   - 若输入torch_npu.Format，则将`input`的数据格式修改为该格式。例如将`input`的数据格式转换为ND格式时，此处可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式，torch_npu支持如下数据格式：
@@ -72,30 +72,30 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
 - **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`float32`和`int32`数据类型的默认C0值为16，`int8`数据类型的默认C0值为32。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
+  - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。
+  - <term>Ascend 950PR&950DT系列产品</term>：对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。
   <!-- end id9 -->
 
 <!-- end id14 -->
 - **input\_dtype**（`int`）：表示`input`的真实数据类型，主要用于非torch原生数据类型，例如`float4`。
 
   <!-- npu="A3,910b,910,310p" id10 -->
-  - <term>Atlas 推理系列产品</term>、<term>Atlas 训练系列产品</term>、<term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：暂不支持该参数，使用默认值`None`即可。
+  - <term>Atlas推理系列产品</term>、<term>Atlas训练系列产品</term>、<term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：暂不支持该参数，使用默认值`None`即可。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：支持该参数。默认值`None`表示`input`的真实类型和tensor的数据类型一致。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持该参数。默认值`None`表示`input`的真实类型和tensor的数据类型一致。
   <!-- end id11 -->
 
 ## 约束说明
 
 <!-- npu="950,A3,910b" id15 -->
-`customize_dtype`参数仅在Atlas A2 训练系列产品/Atlas A3 训练系列产品/Ascend 950PR/Ascend 950DT且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
+`customize_dtype`参数仅在Atlas A2训练系列产品/Atlas A3训练系列产品/Ascend 950PR&950DT系列产品且CANN版本为9.1.0及以上的场景下支持。其他产品或CANN 9.1.0以下版本，传入该参数将导致异常。
 
 <!-- end id15 -->
 <!-- npu="950" id12 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：
+- <term>Ascend 950PR&950DT系列产品</term>：
 
   目前输入参数支持如下组合，当传入为第三种组合时，转换出来的format为50（ACL\_FORMAT\_FRACTRAL\_NZ\_C0\_16）。
 
@@ -169,7 +169,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     ```
 
 <!-- npu="950" id13 -->
-- 使用 `input_dtype` （仅<term>Ascend 950PR/Ascend 950DT</term>）：
+- 使用 `input_dtype` （仅<term>Ascend 950PR&950DT系列产品</term>）：
 
     ```python
     >>> import torch
