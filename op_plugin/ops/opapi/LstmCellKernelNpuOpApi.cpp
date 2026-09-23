@@ -15,6 +15,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
@@ -51,7 +52,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _thnn_fused_lstm_cell(const at::T
     const c10::optional<at::Tensor> &hidden_bias_opt)
 {
     auto dtype = i_gates.dtype();
-    TORCH_CHECK(dtype == at::kFloat || dtype == at::kHalf, "lstm_cell input_gates must be float or half")
+    // bf16 仅 ascend950 起支持，最终否决权在 aclnn 层按 SoC 判定（dtype support list）
+    TORCH_CHECK(dtype == at::kFloat || dtype == at::kHalf || dtype == at::kBFloat16,
+        "lstm_cell input_gates must be float, half or bfloat16")
     TORCH_CHECK(h_gates.dtype() == dtype, "lstm_cell input_gates and hidden_gates must have same dtype");
     TORCH_CHECK(c.dtype() == dtype, "lstm_cell input_gates and c must have same dtype");
     at::Tensor storage = at::empty_like(i_gates, LEGACY_CONTIGUOUS_MEMORY_FORMAT);
@@ -65,11 +68,18 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _thnn_fused_lstm_cell(const at::T
 std::tuple<at::Tensor, at::Tensor> lstm_cell(const at::Tensor &input, at::TensorList hx, const at::Tensor &w_ih,
     const at::Tensor &w_hh, const c10::optional<at::Tensor> &b_ih_opt, const c10::optional<at::Tensor> &b_hh_opt)
 {
-    at::Tensor h = hx[0];
-    at::Tensor c = hx[1];
-    auto igates = at::matmul(input, w_ih.t());
-    auto hgates = at::matmul(h, w_hh.t());
-    auto result = at::_thnn_fused_lstm_cell(igates, hgates, c, b_ih_opt, b_hh_opt);
-    return std::make_tuple(std::move(std::get<0>(result)), std::move(std::get<1>(result)));
+    // If aclnn interface is not implemented, call aclop
+    DO_COMPATIBILITY(aclnnThnnFusedLstmCell, acl_op::lstm_cell(input, hx, w_ih, w_hh, b_ih_opt, b_hh_opt));
+
+    if (c10_npu::IsAclnnOnly()) {
+        at::Tensor h = hx[0];
+        at::Tensor c = hx[1];
+        auto igates = at::matmul(input, w_ih.t());
+        auto hgates = at::matmul(h, w_hh.t());
+        auto result = at::_thnn_fused_lstm_cell(igates, hgates, c, b_ih_opt, b_hh_opt);
+        return std::make_tuple(std::move(std::get<0>(result)), std::move(std::get<1>(result)));
+    } else {
+        return acl_op::lstm_cell(input, hx, w_ih, w_hh, b_ih_opt, b_hh_opt);
+    }
 }
 } // namespace op_api
