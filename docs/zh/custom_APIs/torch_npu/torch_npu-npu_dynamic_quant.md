@@ -18,8 +18,12 @@
 
     如果是MoE（Mixture of Experts，混合专家模型）场景，会引入`group_index`，`smooth_scales`中包含多组smooth向量，按`group_index`中的数值作用到`input`的不同行上。具体地，假如`input`包含m个token，`smooth_scales`有n行，`smooth_scales[0]`会作用到`input[0:group_index[0]]`上，`smooth_scales[i]`会作用到`input[group_index[i-1]: group_index[i]]`上，`i=1, 2, ..., n-1`。
 
-    通过`quant_mode`可指定量化模式，支持`pertoken`（默认）、`perchannel`、`pertensor`三种模式。其中`pertoken`表示按token粒度量化，`perchannel`表示按通道量化，`pertensor`表示对整个张量使用同一个scale量化。`perchannel`和`pertensor`模式仅在<term>Ascend 950PR&950DT系列产品</term>上支持，详见参数说明。
+    通过`quant_mode`可指定量化模式，支持`pertoken`（默认）、`perchannel`、`pertensor`三种模式。其中`pertoken`表示按token粒度量化，`perchannel`表示按通道量化，`pertensor`表示对整个张量使用同一个scale量化。
+    
+    <!-- npu="950" id11 -->
+    `perchannel`和`pertensor`模式仅在<term>Ascend 950PR&950DT系列产品</term>上支持，详见参数说明。
 
+    <!-- end id11 -->
 - 计算公式：
     - 若`smooth_scales`不存在：
     $$

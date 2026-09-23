@@ -16,7 +16,9 @@
 
 将`int32`类型的输入Tensor打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
 
+<!-- npu="950" id11 -->
 <term>Ascend 950PR&950DT系列产品</term>：除了上述能力，还支持将`torch.float32`类型输入Tensor打包为`torch_npu.float4_e2m1fn_x2`存放，每8个`torch_npu.float4_e2m1fn_x2`数据通过一个`torch.float32`数据承载，并进行交叠排放。
+<!-- end id11 -->
 
 ## 函数原型
 

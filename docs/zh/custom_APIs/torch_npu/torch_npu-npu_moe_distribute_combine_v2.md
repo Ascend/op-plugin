@@ -61,7 +61,10 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。Atlas A2系列产品不支持共享专家场景。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。
+    <!-- npu="910b" id69 -->
+    - Atlas A2系列产品不支持共享专家场景。
+    <!-- end id69 -->
 
 - **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **assist\_info\_for\_combine**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求为1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
