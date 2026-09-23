@@ -51,7 +51,6 @@ torch_npu.npu_grouped_matmul_add_(self, x, weight, group_list, *, transpose_x=Tr
 - 参数说明里Shape使用的变量说明：
   - g：表示分组数目，取值范围为1-1024。
   - `x`和`weight`矩阵每一维大小在32字节对齐后都应小于torch.int32的最大值2147483647。
-  - `x`和`weight`矩阵最后一位大小应小于65536。
 
 ## 调用示例
 
