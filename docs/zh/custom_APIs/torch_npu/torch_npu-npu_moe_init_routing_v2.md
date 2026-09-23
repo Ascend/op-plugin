@@ -3,16 +3,16 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 
 ## 功能说明<a name="zh-cn_topic_0000002271534921_section1650913464367"></a>
@@ -613,13 +613,13 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **x** (`Tensor`)：必选参数，表示MoE的输入即token特征输入，要求为2维张量，shape为(NUM_ROWS, H)。数据格式要求为$ND$。
 
     <!-- npu="A3,910b" id5 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`。
     <!-- end id5 -->
     <!-- npu="310p" id6 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`（PyTorch原生dtype无法表达的类型通过`x_dtype`参数指定）。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`（PyTorch原生dtype无法表达的类型通过`x_dtype`参数指定）。
     <!-- end id7 -->
 
 - **expert_idx** (`Tensor`)：必选参数，表示[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)输出每一行特征对应的K个处理专家，要求是2维张量，shape为(NUM_ROWS, K)，且专家id不能超过专家数。数据类型支持`torch.int32`，数据格式要求为$ND$。
@@ -643,20 +643,20 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **quant_mode** (`int`)：可选参数，默认值为-1，表示量化模式。不同产品支持的取值如下：
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值-1、0、1。-1表示不量化；0表示静态量化；1表示INT8动态量化。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值-1、0、1。-1表示不量化；0表示静态量化；1表示INT8动态量化。
     <!-- end id8 -->
     <!-- npu="310p" id9 -->
-    - <term>Atlas 推理系列产品</term>：仅支持取值-1，表示不量化。
+    - <term>Atlas推理系列产品</term>：仅支持取值-1，表示不量化。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持取值-1、0、1、2、3、4、5、6、7、8、9、11、12、13、14、15、16、17。-1表示不量化；0表示静态量化；1表示INT8动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；4/5表示FP8 PerGroup量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示INT4动态量化；14/15表示FP8 PerGroup量化并启用Amax下限，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持取值-1、0、1、2、3、4、5、6、7、8、9、11、12、13、14、15、16、17。-1表示不量化；0表示静态量化；1表示INT8动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；4/5表示FP8 PerGroup量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示INT4动态量化；14/15表示FP8 PerGroup量化并启用Amax下限，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`。
     <!-- end id10 -->
 
 - **active_expert_range** (`List[int]`)：可选参数，默认为空, 表示活跃expert的范围。数组内值的范围为[expert_start, expert_end]，左闭右开，表示活跃的expert范围在expert_start到expert_end之间。要求值大于等于0，并且expert_end不大于`expert_num`。drop_pad场景下，expert_start等于0, expert_end等于`expert_num`。传入默认值时，视为活跃的expert范围在0到`expert_num`之间。
 - **row_idx_type** (`int`)：可选参数，默认为0，表示输出`expanded_row_idx`使用的索引类型，支持取值0和1。0表示gather类型的索引；1表示scatter类型的索引。
 
 <!-- npu="950" id11 -->
-- **x_dtype** (`int`)：可选参数，默认值为None，用于指定`x`的非原生数据类型（PyTorch原生dtype无法表达、以`torch.uint8`等原生dtype存储的类型），取值为`torch_npu`的dtype枚举。仅<term>Ascend 950PR/Ascend 950DT</term>支持该参数，支持的全部枚举值为：`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.int4`。
+- **x_dtype** (`int`)：可选参数，默认值为None，用于指定`x`的非原生数据类型（PyTorch原生dtype无法表达、以`torch.uint8`等原生dtype存储的类型），取值为`torch_npu`的dtype枚举。仅<term>Ascend 950PR&950DT系列产品</term>支持该参数，支持的全部枚举值为：`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.int4`。
     - `quant_mode`为-1（不量化透传）时，`x_dtype`支持`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。`torch.float8_e5m2`、`torch.float8_e4m3fn`为PyTorch原生dtype，直接作为`x`的数据类型传入即可，无需通过`x_dtype`指定。
     - `quant_mode`为13（INT4动态量化）时，`x_dtype`仅支持`torch_npu.int4`或None。
     - `quant_mode`为1时不支持传入`torch_npu.int4`，INT4动态量化请使用`quant_mode=13`。
@@ -675,13 +675,13 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **expanded_scale** (`Tensor`)：数据格式要求为$ND$。令available_idx_num为`active_expert_range`范围的元素的个数。不同产品的输出说明如下：
 
     <!-- npu="A3,910b" id12 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型为`torch.float32`，输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型为`torch.float32`，输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。
         - 非量化场景下，当`scale`输入时，前`available_idx_num`个元素为有效数据。
         - 动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据。
         - 静态量化场景下不输出。
     <!-- end id12 -->
     <!-- npu="950" id13 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：默认数据类型为`torch.float32`，默认输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。各量化模式下的数据类型和shape如下：
+    - <term>Ascend 950PR&950DT系列产品</term>：默认数据类型为`torch.float32`，默认输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。各量化模式下的数据类型和shape如下：
         - `quant_mode`为2/3/16/17时数据类型为`torch.float8_e8m0fnu`，shape为[有效输出行数, CeilAlign(CeilDiv(H, 32), 2)]；
         - `quant_mode`为4/5/14/15时数据类型为`torch.float32`，shape为[有效输出行数, CeilDiv(H, 128)]；
         - `quant_mode`为9时数据类型为`torch.float8_e8m0fnu`，shape为[有效输出行数, CeilDiv(H, 64), 2]；
@@ -690,7 +690,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
         - 非量化场景（其余数据类型）下，当`scale`输入时，前`available_idx_num`个元素为有效数据；动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据；静态量化场景下不输出。
     <!-- end id13 -->
     <!-- npu="310p" id14 -->
-    - <term>Atlas 推理系列产品</term>：此输出非`expanded_scale`，而是`expert_tokens_before_capacity`（Tensor，shape为(expert_num,)），表示drop之前每个专家处理的token数量的统计结果。
+    - <term>Atlas推理系列产品</term>：此输出非`expanded_scale`，而是`expert_tokens_before_capacity`（Tensor，shape为(expert_num,)），表示drop之前每个专家处理的token数量的统计结果。
     <!-- end id14 -->
 
 ## 约束说明<a name="zh-cn_topic_0000002271534921_section75102046193618"></a>
@@ -716,7 +716,7 @@ Atlas A2训练系列产品/Atlas A2推理系列产品/Atlas A3训练系列产品
 <!-- end id15 -->
 
 <!-- npu="950" id16 -->
-Ascend 950PR/Ascend 950DT在该接口上有以下特殊约束：
+Ascend 950PR&950DT系列产品在该接口上有以下特殊约束：
 
 - **DropPad模式**（`drop_pad_mode=1`时）：
     - `row_idx_type`仅支持取值为0（gather索引）。

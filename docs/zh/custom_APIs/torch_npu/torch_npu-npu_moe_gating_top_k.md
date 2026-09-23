@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -152,10 +152,10 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 - **norm_type**（`int`）：可选参数，表示norm函数类型，默认值为`0`。
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持取值`0`、`1`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值`0`、`1`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数。
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：支持取值`0`、`1`、`2`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数，`2`表示使用SqrtSoftplus函数。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持取值`0`、`1`、`2`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数，`2`表示使用SqrtSoftplus函数。
     <!-- end id5 -->
 
 - **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。

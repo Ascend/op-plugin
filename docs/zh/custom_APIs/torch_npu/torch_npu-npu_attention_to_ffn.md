@@ -3,7 +3,7 @@
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id1 -->
 
 ## 功能说明
@@ -45,10 +45,10 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
 - 该接口支持推理场景下使用。
 - 该接口支持静态图模式，分离系列算子必须配套使用。
-- 调用接口过程中使用的`group`、`world_size`、`moe_expert_num`参数取值所有卡需保持一致，且网络中不同层中也需保持一致。
+- 调用接口过程中使用的`group`、`world_size`、`moe_expert_num`参数取值所有卡需保持一致，且网络中不同层也需保持一致。
 
 <!-- npu="A3" id2 -->
-- Atlas A3 训练系列产品/Atlas A3 推理系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
+- Atlas A3系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 <!-- end id2 -->
 - 参数里Shape使用的变量如下：
     - X：表示micro batch sequence size，即token组数，当前版本仅支持 X = 1。

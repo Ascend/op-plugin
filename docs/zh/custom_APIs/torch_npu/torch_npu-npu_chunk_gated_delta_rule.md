@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -68,7 +68,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 ## 约束说明
 
 - 该接口仅支持推理场景下使用，当前TND场景，beta、initial_state、actual_seq_lengths必传。
-- initial_state、final_state float32数据类型仅在Ascend 950PR/Ascend 950DT支持。
+- initial_state、final_state float32数据类型仅在Ascend 950PR&950DT系列产品支持。
 - 维度约束：
   - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, 且 $Nv \bmod Nk = 0$
   - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$

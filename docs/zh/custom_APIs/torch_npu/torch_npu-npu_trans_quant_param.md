@@ -3,16 +3,16 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 
 ## 功能说明
@@ -76,10 +76,10 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 - 接口配套使用说明：
 
   <!-- npu="A3,910b,310p" id5 -->
-  - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas 推理系列产品</term>：支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>、<term>Atlas推理系列产品</term>：支持与`matmul`类接口（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）配套使用。
   <!-- end id5 -->
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>：同时支持与[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)和[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)配套使用。
+  - <term>Ascend 950PR&950DT系列产品</term>：同时支持与[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)和[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)配套使用。
   <!-- end id6 -->
 
 - 当不传入`offset`时，输出shape与`scale` shape一致。

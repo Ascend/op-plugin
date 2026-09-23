@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -23,7 +23,7 @@
 - 相比torch_npu.npu_mla_prolog_v2的主要差异如下：
     - 新增输出`query_norm`和`dequant_scale_q_norm`，用于支持DeepSeekV3.2网络。
     - 新增`kv_cache`的pertoken-pergroup量化模式。
-    - 新增query与key的尺度校正因子，分别对应qc_qr_scale（$\alpha_q$）与kc_scale（$\alpha_{kv}$）。
+    - 新增query与key的尺度矫正因子，分别对应qc_qr_scale（$\alpha_q$）与kc_scale（$\alpha_{kv}$）。
     - 新增`cache_mode`对"PA_BLK_BSND"、"PA_BLK_NZ"、"BSND"和"TND"格式的支持。
     - 新增可选参数`weight_quant_mode`、`kv_cache_quant_mode`、`query_quant_mode`、`ckvkr_repo_mode`、`quant_scale_repo_mode`，用于配置量化场景。
     - 调整`cache_index`为可选参数。
@@ -158,7 +158,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`。weight_quant_mode=1/2/4/5时，shape为[1, Hcq]；weight_quant_mode=3时无需赋值。支持非空Tensor。
 
-- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式储存。不支持非连续，数据格式支持ND，数据类型支持`int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
+- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式存储。不支持非连续，数据格式支持ND，数据类型支持`int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
 
 - **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，在部分量化pertoken-pergroup场景和int8全量化pertoken-pergroup场景下使用，其他场景无需赋值。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
 
@@ -198,7 +198,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
   > - token_x、weight_dq、weight_uq_qr、weight_dkv_kr、kv_cache不支持float8_e4m3fn、hifloat8数据类型。
   > - dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr不支持float8_e8m0数据类型。
@@ -217,7 +217,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
   > - query、query_norm不支持float8_e4m3fn、hifloat8数据类型。
   > - dequant_scale_q_norm不支持float8_e8m0数据类型。
@@ -251,7 +251,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   <!-- npu="A3,910b" id4 -->
   > [!NOTE]
   >
-  > <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>、<term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：
+  > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
   > - 当前不支持 fp8/hif8/mxfp8 全量化场景。
   <!-- end id4 -->

@@ -6,16 +6,16 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="310p" id3 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="910" id4 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id4 -->
 
 ## 功能说明
@@ -45,10 +45,10 @@ torch_npu.npu_gelu(self, *, approximate='none') -> Tensor
 - **self** (`Tensor`)：必选参数，对应公式中的$x$，待进行`npu_gelu`计算的入参，数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。输入最大支持8维。
 
     <!-- npu="910,310p" id5 -->
-    - <term>Atlas 训练系列产品</term>、<term>Atlas 推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型支持`float16`、`float32`。
     <!-- end id5 -->
     <!-- npu="950,910b" id6 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Ascend 950PR/Ascend 950DT</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+    - <term>Atlas A2系列产品</term>、<term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
     <!-- end id6 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。

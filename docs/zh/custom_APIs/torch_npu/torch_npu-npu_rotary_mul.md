@@ -3,19 +3,19 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="910" id4 -->
-- <term>Atlas 训练系列产品</term>：支持
+- <term>Atlas训练系列产品</term>：支持
 <!-- end id4 -->
 <!-- npu="310p" id5 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id5 -->
 
 ## 功能说明
@@ -44,7 +44,7 @@
          $$
 
      <!-- npu="950" id6 -->
-     - <term>Ascend 950PR/Ascend 950DT</term>：当`rotary_mode`为`quarter`时，将输入沿最后一维分为四部分 $x_1,x_2,x_3,x_4$：
+     - <term>Ascend 950PR&950DT系列产品</term>：当`rotary_mode`为`quarter`时，将输入沿最后一维分为四部分 $x_1,x_2,x_3,x_4$：
          $$
          \begin{aligned}
          x_1 &= x[..., :D/4], & x_2 &= x[..., D/4:D/2], \\
@@ -55,7 +55,7 @@
          $$
      <!-- end id6 -->
      <!-- npu="950" id7 -->
-     - <term>Ascend 950PR/Ascend 950DT</term>：当`rotary_mode`为`interleave-half`时，先将偶数、奇数位置元素分别拼接为`x_part1`、`x_part2`：
+     - <term>Ascend 950PR&950DT系列产品</term>：当`rotary_mode`为`interleave-half`时，先将偶数、奇数位置元素分别拼接为`x_part1`、`x_part2`：
          $$
          \begin{aligned}
          x_1 &= x[..., ::2], & x_2 &= x[..., 1::2], \\
@@ -108,15 +108,15 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 - **r2** (`Tensor`)：必选参数，表示$sin$旋转系数，输入维度支持3维、4维，数据格式支持$ND$，支持非连续的Tensor，数据类型各产品型号均支持：`torch.float16`、`torch.bfloat16`、`torch.float32`。
 - **rotary_mode** (`str`)：可选参数，用于选择计算模式，支持`half`、`interleave`两种模式。默认值为`half`。
   <!-- npu="950" id8 -->
-  - <term>Ascend 950PR/Ascend 950DT</term>还支持`quarter`、`interleave-half`模式。
+  - <term>Ascend 950PR&950DT系列产品</term>还支持`quarter`、`interleave-half`模式。
   <!-- end id8 -->
 - **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，构造方式参考调用示例，默认值为`None`。
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>：输入维度支持2维，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+    - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：输入维度支持2维，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR/Ascend 950DT</term>：不支持该参数，使用默认值`None`或省略该参数。
+    - <term>Ascend 950PR&950DT系列产品</term>：不支持该参数，使用默认值`None`或省略该参数。
     <!-- end id10 -->
 
 ## 返回值说明
@@ -128,7 +128,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 ## 约束说明
 
 <!-- npu="A3,910b" id11 -->
-- **`jit_compile=False`场景**（适用<term>Atlas A2 训练系列产品</term>，<term>Atlas A3 训练系列产品</term>）：
+- **`jit_compile=False`场景**（适用<term>Atlas A2训练系列产品</term>，<term>Atlas A3训练系列产品</term>）：
     - half模式：
 
         `input`：layout支持：$BNSD、BSND、SBND、TND；D < 896$，且为2的倍数；$B, N < 1000$；当需要计算$cos/sin$的反向梯度时，$B*N <= 1024$。
@@ -155,7 +155,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
         - x为$TND: T1D$。
 <!-- end id11 -->
 <!-- npu="910b,910,310p" id12 -->
-- **`jit_compile=True`场景**（适用<term>Atlas 训练系列产品</term>，<term>Atlas A2 训练系列产品</term>，<term>Atlas 推理系列产品</term>）：
+- **`jit_compile=True`场景**（适用<term>Atlas训练系列产品</term>，<term>Atlas A2训练系列产品</term>，<term>Atlas推理系列产品</term>）：
 
      仅支持`rotary_mode`为half模式，且`r1/r2` layout一般为$11SD、1S1D、S11D$。
 
@@ -164,7 +164,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
      广播场景下，广播轴的总数据量不能超过1024。
 <!-- end id12 -->
 <!-- npu="950" id13 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下。
+- <term>Ascend 950PR&950DT系列产品</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下。
     - 输入张量`input`、`r1`、`r2`及输出张量的D维度大小必须相同，且小于等于1024。half、interleave和interleave-half模式下，D必须能被2整除；quarter模式下，D必须能被4整除。
     - 输入张量`r1`和`r2`的shape必须完全相同，且必须满足下列条件之一：
         - shape为\(1, 1, 1, D\)；
@@ -174,7 +174,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
     - 当`input`为空Tensor时，输出也为空Tensor，且不受上述shape约束限制。
 <!-- end id13 -->
 <!-- npu="A3,910b" id14 -->
-- rotate推荐使用场景（适用<term>Atlas A2 训练系列产品</term>，<term>Atlas A3 训练系列产品</term>）：
+- rotate推荐使用场景（适用<term>Atlas A2训练系列产品</term>，<term>Atlas A3训练系列产品</term>）：
   - interleave模式
   - half模式仅在以下场景时推荐使用：输入矩阵x需要在最后一个维度切分多份时，可以通过构造旋转编码矩阵实现一次调用获得性能收益，以x的layout为BSND需要切分为3份为例：
      x切分为3份，$x = [x1|x2|x3]_{(dim=4)} ∈ R^{B×S×N×D}, x1 ∈ R^{B×S×N×D1},x2 ∈ R^{B×S×N×D2},x3 ∈ R^{B×S×N×D3}, 其中D = D1 + D2 + D3$，
@@ -251,7 +251,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
     ```
 
 <!-- npu="950" id15 -->
-- <term>Ascend 950PR/Ascend 950DT</term>调用示例：
+- <term>Ascend 950PR&950DT系列产品</term>调用示例：
 
     ```python
     >>> import torch
@@ -264,7 +264,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
     ```
 <!-- end id15 -->
 <!-- npu="A3,910b" id16 -->
-- rotate生成示例（仅适用于<term>Atlas A2 训练系列产品</term>、<term>Atlas A3 训练系列产品</term>）：
+- rotate生成示例（仅适用于<term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>）：
 
     ```python
     import torch
@@ -309,7 +309,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
     ```
 <!-- end id16 -->
 <!-- npu="950" id17 -->
-- 图模式调用：仅适用于<term>Ascend 950PR/Ascend 950DT</term>。
+- 图模式调用：仅适用于<term>Ascend 950PR&950DT系列产品</term>。
 
     ```python
     import torch

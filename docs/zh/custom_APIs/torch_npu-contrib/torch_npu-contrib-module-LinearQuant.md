@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="310p" id3 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -32,17 +32,17 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - **offset**（`bool`）：代表是否需要offset计算参数。如果设置成False，则offset不会加入量化matmul的计算。
 - **pertoken_scale**（`bool`）：可选参数，代表是否需要pertoken_scale计算参数。如果设置成False，则pertoken_scale不会加入量化matmul的计算。
     <!-- npu="310p" id4 -->
-    - <term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+    - <term>Atlas推理系列产品</term>当前不支持pertoken_scale。
     <!-- end id4 -->
 - **device**：默认值为None。**预留参数，暂未使用**。
 - **dtype**：默认值为None。**预留参数，暂未使用**。
 - **output_dtype**（`ScalarType`）：表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
 
     <!-- npu="310p" id5 -->
-    - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
+    - <term>Atlas推理系列产品</term>：支持输入`int8`、`float16`。
     <!-- end id5 -->
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
     <!-- end id6 -->
 
 **计算输入**
@@ -50,10 +50,10 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 **x1**（`Tensor`）：数据格式支持$ND$，shape最少是2维，最多是6维。
 
 <!-- npu="310p" id7 -->
-- <term>Atlas 推理系列产品</term>：数据类型支持`int8`。
+- <term>Atlas推理系列产品</term>：数据类型支持`int8`。
 <!-- end id7 -->
 <!-- npu="A3,910b" id8 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`，其中`int32`表示使用本接口进行`int4`类型矩阵乘计算，`int32`类型承载的是`int4`数据，每个`int32`数据存放8个`int4`数据。
+- <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`int8`和`int32`，其中`int32`表示使用本接口进行`int4`类型矩阵乘计算，`int32`类型承载的是`int4`数据，每个`int32`数据存放8个`int4`数据。
 <!-- end id8 -->
 
 ## 变量说明
@@ -61,43 +61,43 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - weight（`Tensor`）：与`x1`的数据类型须保持一致。数据格式支持$ND$，shape需要在2-6维范围。当数据类型为`int32`时，shape必须为2维。
 
     <!-- npu="310p" id9 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`int8`，需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
+    - <term>Atlas推理系列产品</term>：数据类型支持`int8`，需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
     <!-- end id9 -->
     <!-- npu="A3,910b" id10 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int8`和`int32`（同`x1`，表示`int4`的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`int8`和`int32`（同`x1`，表示`int4`的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
     <!-- end id10 -->
 
 - scale（`Tensor`）：量化计算的scale。数据格式支持$ND$，shape需要是1维(t,)，t=1或n，其中n与`weight`的n一致。如需传入`int64`数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取`int64`数据类型的scale。
 
     <!-- npu="310p" id11 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`float32`、`int64`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`float32`、`int64`。
     <!-- end id11 -->
     <!-- npu="A3,910b" id12 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`float32`、`int64`、`bfloat16`。
     <!-- end id12 -->
 
 - offset（`Tensor`）：量化计算的offset。可选参数。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维(t,)，t=1或n，其中n与`weight`的n一致。
 
 - pertoken_scale（`Tensor`）：可选参数，量化计算的pertoken。数据类型支持`float32`，数据格式支持$ND$，shape需要是1维(m,)，其中m与`x1`的m一致。
     <!-- npu="310p" id13 -->
-    - <term>Atlas 推理系列产品</term>当前不支持pertoken_scale。
+    - <term>Atlas推理系列产品</term>当前不支持pertoken_scale。
     <!-- end id13 -->
 - bias（`Tensor`）：可选参数。矩阵乘中的bias。数据格式支持$ND$，shape支持1维(n,)或3维(batch, 1, n)，n与`weight`的n一致，同时batch值需要等于x1，weight broadcast后推导出的batch值。当输出为2、4、5、6维情况下，bias shape为1维；当输出为3维情况下，bias shape为1维或3维。
 
     <!-- npu="310p" id14 -->
-    - <term>Atlas 推理系列产品</term>：数据类型支持`int32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`int32`。
     <!-- end id14 -->
     <!-- npu="A3,910b" id15 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`int32`、`bfloat16`、`float16`、`float32`。
     <!-- end id15 -->
 
 - output_dtype（`ScalarType`）：可选参数。表示输出Tensor的数据类型。默认值为None，代表输出Tensor数据类型为`int8`。
 
     <!-- npu="310p" id16 -->
-    - <term>Atlas 推理系列产品</term>：支持输入`int8`、`float16`。
+    - <term>Atlas推理系列产品</term>：支持输入`int8`、`float16`。
     <!-- end id16 -->
     <!-- npu="A3,910b" id17 -->
-    - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>/<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：支持输入`int8`、`float16`、`bfloat16`、`int32`。
     <!-- end id17 -->
 
 ## 返回值说明
@@ -127,7 +127,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - 输入参数或变量间支持的数据类型组合情况如下：
 
     <!-- npu="310p" id20 -->
-    **表1** <term>Atlas 推理系列产品</term>
+    **表1** <term>Atlas推理系列产品</term>
 
     <a name="zh-cn_topic_0000002021380113_table75025595916"></a>
     <table><thead align="left"><tr id="zh-cn_topic_0000002021380113_row13503185919911"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="zh-cn_topic_0000002021380113_p35036591098"><a name="zh-cn_topic_0000002021380113_p35036591098"></a><a name="zh-cn_topic_0000002021380113_p35036591098"></a>x1（入参）</p>
@@ -184,7 +184,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
     <!-- end id20 -->
     <!-- npu="A3,910b" id21 -->
-    **表2** <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>、<term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
+    **表2** <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>
 
     <a name="zh-cn_topic_0000002021380113_table2504155910917"></a>
     <table><thead align="left"><tr id="zh-cn_topic_0000002021380113_row35048591395"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="zh-cn_topic_0000002021380113_p185044592912"><a name="zh-cn_topic_0000002021380113_p185044592912"></a><a name="zh-cn_topic_0000002021380113_p185044592912"></a>x1（入参）</p>
@@ -331,8 +331,8 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
     <!-- npu="A3,910b" id18 -->
     - int32类型输入场景，示例代码如下，仅支持如下产品：
-        - <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term> 
-        - <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>
+        - <term>Atlas A2系列产品</term> 
+        - <term>Atlas A3系列产品</term>
 
         ```python
         import torch

@@ -3,13 +3,13 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 
 ## 功能说明
@@ -42,17 +42,17 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 ## 约束说明
 
 - 该接口支持推理和训练场景下使用。
-- 该接口仅在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上支持图模式。
+- 该接口仅在Atlas A2系列产品和Atlas A3系列产品上支持图模式。
 - 对于输入数据的shape，存在以下约束：
-    - 当前在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]；在Ascend 950PR/Ascend 950DT平台上，`rotation`的shape支持`[K, K]`和`[block_num, K, K]`两种形式，`K`仅支持32、64、128三种取值, 其中`block_num = N/K`，`N`为输入`x`最后一维的大小。
-    - 输入`x`的最后一维需要能被`K`整除。在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR/Ascend 950DT平台上，`x`的shape支持1～7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
+    - 当前在Atlas A2系列产品和Atlas A3系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]；在Ascend 950PR&950DT系列产品平台上，`rotation`的shape支持`[K, K]`和`[block_num, K, K]`两种形式，`K`仅支持32、64、128三种取值, 其中`block_num = N/K`，`N`为输入`x`最后一维的大小。
+    - 输入`x`的最后一维需要能被`K`整除。在Atlas A2系列产品和Atlas A3系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR&950DT系列产品平台上，`x`的shape支持1～7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
 - 对于输入数据的取值范围，存在以下约束：   
-    - `dst_dtype`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持`torch.int8`和`torch.quint4x2`；在Ascend 950PR/Ascend 950DT平台上仅支持`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`和`torch.float8_e4m3fn`。
-    - `alpha`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持传入None，无实际功能；在Ascend 950PR/Ascend 950DT平台上取值范围为(0.0, 1.0)，传入None或不在有效取值范围内时不做处理。
-    - `axis`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持-1或1；在Ascend 950PR/Ascend 950DT平台上仅支持-1或D-1，D为输入`x`的维度数。
-    - 在Ascend 950PR/Ascend 950DT平台上，当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时，`round_mode`仅支持"rint"。
-    - `scale_alg`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持0；在Ascend 950PR/Ascend 950DT平台上支持取值0、1、2，其中当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时仅支持0和1，当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时仅支持0和2。
-    - `dst_type_max`在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上仅支持0.0；在Ascend 950PR/Ascend 950DT平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
+    - `dst_dtype`在Atlas A2系列产品和Atlas A3系列产品上仅支持`torch.int8`和`torch.quint4x2`；在Ascend 950PR&950DT系列产品平台上仅支持`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`和`torch.float8_e4m3fn`。
+    - `alpha`在Atlas A2系列产品和Atlas A3系列产品上仅支持传入None，无实际功能；在Ascend 950PR&950DT系列产品平台上取值范围为(0.0, 1.0)，传入None或不在有效取值范围内时不做处理。
+    - `axis`在Atlas A2系列产品和Atlas A3系列产品上仅支持-1或1；在Ascend 950PR&950DT系列产品平台上仅支持-1或D-1，D为输入`x`的维度数。
+    - 在Ascend 950PR&950DT系列产品平台上，当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时，`round_mode`仅支持"rint"。
+    - `scale_alg`在Atlas A2系列产品和Atlas A3系列产品上仅支持0；在Ascend 950PR&950DT系列产品平台上支持取值0、1、2，其中当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时仅支持0和1，当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时仅支持0和2。
+    - `dst_type_max`在Atlas A2系列产品和Atlas A3系列产品上仅支持0.0；在Ascend 950PR&950DT系列产品平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
 - `x`和`rotation`的数据类型必须一致。
 
 ## 调用示例
@@ -75,14 +75,14 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
     x, rotation = gen_input_data(M, N, K)
     # int8 quantization, only supported on Atlas A2/A3
     output0_npu, output1_npu = torch_npu.npu_rotate_quant(x.npu(), rotation.npu(), dst_dtype=torch.int8)
-    # mxfp4 quantization, only supported on Ascend 950PR/Ascend 950DT
+    # mxfp4 quantization, only supported on Ascend 950PR&950DT系列产品
     output0_npu, output1_npu = torch_npu.npu_rotate_quant(
         x.npu(), rotation.npu(), dst_dtype=torch_npu.float4_e2m1fn_x2, axis=-1, round_mode="rint"
     )
     ```
 
 <!-- npu="A3,910b" id4 -->
-- 图模式调用（仅在Atlas A2 训练系列产品/Atlas A2 推理系列产品和Atlas A3 训练系列产品/Atlas A3 推理系列产品上支持）：
+- 图模式调用（仅在Atlas A2系列产品和Atlas A3系列产品上支持）：
 
     ```python
     import numpy as np

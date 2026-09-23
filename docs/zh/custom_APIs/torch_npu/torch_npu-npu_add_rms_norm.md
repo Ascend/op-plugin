@@ -3,16 +3,16 @@
 ## 产品支持情况
 
 <!-- npu="950" id1 -->
-- <term>Ascend 950PR/Ascend 950DT</term>：支持
+- <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 训练系列产品/Atlas A3 推理系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
-- <term>Atlas A2 训练系列产品/Atlas A2 推理系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id3 -->
 <!-- npu="310p" id4 -->
-- <term>Atlas 推理系列产品</term>：支持
+- <term>Atlas推理系列产品</term>：支持
 <!-- end id4 -->
 
 ## 功能说明
@@ -60,7 +60,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
   - 当输入是NaN时，输出为NaN。
 
 <!-- npu="310p" id5 -->
-- <term>Atlas 推理系列产品</term>：
+- <term>Atlas推理系列产品</term>：
   - 输入参数`x1`、`x2`、`gamma`、`yOut`、`xOut`的数据类型不支持torch.bfloat16。
   - 参数`rstdOut`在当前产品使用场景下无效。
 <!-- end id5 -->
