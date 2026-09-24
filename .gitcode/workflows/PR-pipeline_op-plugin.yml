@@ -28,14 +28,12 @@ env:
   img_2_10_0_arm: "pytorch_2.10.0_a2_aarch64_builder:20260804"
   img_2_11_0_arm: "pytorch_2.11.0_a2_aarch64_builder:20260804"
   img_2_12_0_arm: "pytorch_2.12.0_a2_aarch64_builder:20260804"
-  img_2_13_0_arm: "pytorch_2.13.0_a2_aarch64_builder:20260922"
   img_master_x86: "pytorch_master_a1_x86_64_builder:20260922"
   img_2_7_1_x86: "pytorch_2.7.1_a1_x86_64_builder:20260804"
   img_2_9_0_x86: "pytorch_2.9.0_a1_x86_64_builder:20260901"
   img_2_10_0_x86: "pytorch_2.10.0_a1_x86_64_builder:20260704"
   img_2_11_0_x86: "pytorch_2.11.0_a1_x86_64_builder:20260704"
   img_2_12_0_x86: "pytorch_2.12.0_a1_x86_64_builder:20260704"
-  img_2_13_0_x86: "pytorch_2.13.0_a1_x86_64_builder:20260922"
 
 permissions:
   project: read
@@ -216,9 +214,6 @@ stages:
               - branch: "v2.12.0"
                 arch: "x86"
                 img: "pytorch_2.12.0_a1_x86_64_builder:20260704"
-              - branch: "v2.13.0"
-                arch: "x86"
-                img: "pytorch_2.13.0_a1_x86_64_builder:20260922"
               - branch: "master"
                 arch: "arm"
                 img: "pytorch_master_a2_aarch64_builder:20260922"
@@ -237,9 +232,6 @@ stages:
               - branch: "v2.12.0"
                 arch: "arm"
                 img: "pytorch_2.12.0_a2_aarch64_builder:20260804"
-              - branch: "v2.13.0"
-                arch: "arm"
-                img: "pytorch_2.13.0_a2_aarch64_builder:20260922"
 
   stage_4:
     name: UT
