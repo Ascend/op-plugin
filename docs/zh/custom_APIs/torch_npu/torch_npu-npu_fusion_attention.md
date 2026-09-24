@@ -33,6 +33,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 - **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。
      - 非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。
      - 若非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可开启alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
+     - TND场景下，每个batch段内部仍按[N, Sq\_i, Skv\_i]生成，但存储与传参时统一flatten。若第i个batch段的真实query长度为Sq\_i、真实key/value长度为Skv\_i，则该段PSE元素个数为N\*Sq_i\*Skv\_i，整段PSE总长度pseTotalLen为sum_i(N\*Sq_i\*Skv_i)。
 - **padding\_mask**（`Tensor`）：暂不支持该传参。
 - **atten\_mask**（`Tensor`）：可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持`bool`、`uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`，默认值为1。
