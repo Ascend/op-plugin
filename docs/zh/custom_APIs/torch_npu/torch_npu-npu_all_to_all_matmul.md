@@ -31,11 +31,11 @@ torch_npu.npu_all_to_all_matmul(x1, x2, hcom, world_size, bias=None, all2all_axe
 
 ## 参数说明
 
-- **x1**（`Tensor`）：**必选参数**，表示融合算子的左矩阵输入，对应公式中的$x1$。该输入进行AlltoAll通信与Permute操作后，结果作为Matmul计算的左矩阵输入。数据类型支持`bfloat16`、`float16`，维度只能为2D，shape为\(BS, H\)，数据格式支持$ND$，不支持非连续Tensor，支持第一维度为0的空Tensor。
+- **x1**（`Tensor`）：**必选参数**，表示融合算子的左矩阵输入，对应公式中的$x1$。该输入进行AlltoAll通信与Permute操作后，结果作为Matmul计算的左矩阵输入。数据类型支持`torch.bfloat16`、`torch.float16`，维度只能为2D，shape为\(BS, H\)，数据格式支持$ND$，不支持非连续Tensor，支持第一维度为0的空Tensor。
 - **x2**（`Tensor`）：**必选参数**，表示融合算子的右矩阵输入，也是Matmul计算的右矩阵，对应公式中的$x2$。数据类型与`x1`一致，维度只能为2D，shape为\(H\*rankSize, N\)，数据格式支持$ND$，支持转置非连续Tensor。
 - **hcom**（`str`）：**必选参数**，Host侧标识列组的字符串，即通信域名称，通过`get_hccl_comm_name`接口获取。
 - **world_size**（`int`）：**必选参数**，通信域内的rank总数，对应公式中的$rankSize$，支持范围\[2, 4, 8, 16\]，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
-- **bias**（`Tensor`）：**可选参数**，矩阵乘运算后累加的偏置，对应公式中的$bias$。数据类型由输入`x1`和`x2`决定，当`x1`和`x2`为`float16`时，`bias`的数据类型为`float16`和`float32`；当`x1`和`x2`为`bfloat16`时，`bias`的数据类型为`bfloat16`和`float32`。维度只能为1D，shape为\(N\)，数据格式支持$ND$。
+- **bias**（`Tensor`）：**可选参数**，矩阵乘运算后累加的偏置，对应公式中的$bias$。数据类型由输入`x1`和`x2`决定，当`x1`和`x2`为`torch.float16`时，`bias`的数据类型为`torch.float16`和`torch.float32`；当`x1`和`x2`为`torch.bfloat16`时，`bias`的数据类型为`torch.bfloat16`和`torch.float32`。维度只能为1D，shape为\(N\)，数据格式支持$ND$。
 - **all2all_axes**（`List[int]`）：**可选参数**，AlltoAll和Permute数据交换的方向，支持为空或者\[-2, -1\]，表示将输入`x1`由\(BS, H\)转为\(BS/rankSize, rankSize\*H\)。
 - **all2all_out_flag**（`bool`）：**可选参数**，表示是否输出AlltoAll和Permute后的结果，默认为`True`。
 - **comm_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。

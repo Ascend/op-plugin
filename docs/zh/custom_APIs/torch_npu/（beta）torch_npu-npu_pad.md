@@ -31,7 +31,7 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 ## 参数说明
 
 - **input** (`Tensor`)：输入张量。
-- **paddings** (`List[int]`)：数据类型为`int32`、`int64`。
+- **paddings** (`List[int]`)：数据类型为`torch.int32`、`torch.int64`。
 
 ## 调用示例
 

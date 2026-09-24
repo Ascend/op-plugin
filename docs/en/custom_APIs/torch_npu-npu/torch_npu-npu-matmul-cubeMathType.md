@@ -30,8 +30,8 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 | Enumeration Value                     | Value  | Description                              |
 | --------------------------- | ---- | ---------------------------------- |
 | CubeMathType.KEEP_DTYPE     | 0    | Retains the original data type without precision conversion.  |
-| CubeMathType.ALLOW_FP32_DOWN_PRECISION | 1    | Allows FP32 precision reduction.                    |
-| CubeMathType.USE_FP16       | 2    | Enables FP16 computation mode.                  |
+| CubeMathType.ALLOW_FP32_DOWN_PRECISION | 1    | Allows `torch.float32` precision reduction.                    |
+| CubeMathType.USE_FP16       | 2    | Enables `torch.float16` computation mode.                  |
 | CubeMathType.USE_HF32       | 3    | Enables HF32 computation mode.                  |
 | CubeMathType.USE_FP32_ADD | 4    | Enables high-precision mode.              |
 

@@ -247,10 +247,10 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 ## Parameters
 
 - **`positions`** (`Tensor`): Required. Position indices used to select position embeddings from the cache, $positions$ in the formulas. 
-  - RoPE mode: This parameter must be 1D with shape `(num_tokens,)`. The data type can be `int32` or `int64`. The data layout is ND. Non-contiguous tensors are supported. 
+  - RoPE mode: This parameter must be 1D with shape `(num_tokens,)`. The data type can be `torch.int32` or `torch.int64`. The data layout is ND. Non-contiguous tensors are supported.
   - MRoPE mode: This parameter must be 2D with shape `(3, num_tokens)` or `(4, num_tokens)`. The first dimension must be equal to the number of sections specified by `mrope_section`. 
   - When position embeddings are selected from `cos_sin_cache` using `positions`, each value serves as a cache row index and must be less than the length of dimension 0 `max_seq_len`.
-- **`query`** (`Tensor`): Required. Query tensor to which RoPE is applied, $query$ in the formulas. This parameter must be 2D with shape `(num_tokens, num_q_heads * head_size)`. The data type can be `float16`, `bfloat16`, or `float32`. The data layout is ND. Non-contiguous tensors are supported.
+- **`query`** (`Tensor`): Required. Query tensor to which RoPE is applied, $query$ in the formulas. This parameter must be 2D with shape `(num_tokens, num_q_heads * head_size)`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout is ND. Non-contiguous tensors are supported.
 - **`key`** (`Tensor`): Required. Key tensor to which RoPE is applied. This parameter must be 2D with shape `(num_tokens, num_k_heads * head_size)`. The data type must be identical to that of `query`. The data layout is ND. Non-contiguous tensors are supported.
 - **`cos_sin_cache`** (`Tensor`): Required. Precomputed position embedding cache, $cosSinCache$ in the formulas. This parameter must be 2D with shape `(max_seq_len, rotary_dim)`. The last dimension is split into cosine and sine halves using `chunk(2, dim=-1)`. Floating-point data types of `query`, `key`, and `cos_sin_cache` must be identical.
 - **`head_size`** (`int`): Required. Size of each attention head, indicating the feature dimension of a single attention head.
@@ -260,15 +260,15 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 
 ## Return Values
 
-- **`query_out`** (`Tensor`): Query tensor after applying RoPE or MRoPE to `query`, $queryOut$ in the formulas. This parameter must be 2D with shape `(num_tokens, num_q_heads * head_size)`. The data type can be `float16`, `bfloat16`, or `float32`. The data layout is ND. Non-contiguous tensors are supported. The shape and data type must be identical to those of the input `query`.
+- **`query_out`** (`Tensor`): Query tensor after applying RoPE or MRoPE to `query`, $queryOut$ in the formulas. This parameter must be 2D with shape `(num_tokens, num_q_heads * head_size)`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout is ND. Non-contiguous tensors are supported. The shape and data type must be identical to those of the input `query`.
 - **`key_out`** (`Tensor`): Key tensor after applying RoPE or MRoPE to `key`. This parameter must be 2D with shape `(num_tokens, num_k_heads * head_size)`. The data type must be identical to that of the input `key`. The data layout is ND. Non-contiguous tensors are supported. The shape and data type must be identical to those of the input `key`.
 
 ## Constraints
 
 - **Dimension**: `rotary_dim` is the size of the last dimension of `cos_sin_cache` and must be less than or equal to `head_size`.
 - **Alignment and multiples**:
-  - `head_size` must be divisible by `32` for `float16` or `bfloat16`, and must be divisible by `16` for `float32`.
-  - `rotary_dim` must be divisible by `32` for `float16` or `bfloat16`, and must be divisible by `16` for `float32`.
+  - `head_size` must be divisible by `32` for `torch.float16` or `torch.bfloat16`, and must be divisible by `16` for `torch.float32`.
+  - `rotary_dim` must be divisible by `32` for `torch.float16` or `torch.bfloat16`, and must be divisible by `16` for `torch.float32`.
 - **MRoPE**: The sum of all elements in `mrope_section` must be identical to **`rotary_dim / 2`** (consistent with the cosine/sine segmentation in the half-rotation dimension).
 - **cache_mode**: When `mrope_section` is set to `[16, 16, 16, 16]`, only `cache_mode="default"` is supported. That is, interleaved concatenation is not supported.
 

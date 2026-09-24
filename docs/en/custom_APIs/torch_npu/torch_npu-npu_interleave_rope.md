@@ -37,7 +37,7 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Tensor to be processed. This parameter must be 4D with shape `(B, N, S, D)`. The data type can be `bfloat16` or `float16`. The data layout can be ND. Non-contiguous tensors are not supported.
+- **`x`** (`Tensor`): Required. Tensor to be processed. This parameter must be 4D with shape `(B, N, S, D)`. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. Non-contiguous tensors are not supported.
 - **`cos`** (`Tensor`): Required. Cosine component of the RoPE rotary position embedding. This parameter must be 4D with shape `(B, N, S, D)`, where the size of the $S$ dimension can be `1` or identical to that of `x`. The data type and data format must be identical to those of `x`. Non-contiguous tensors are not supported.
 - **`sin`** (`Tensor`): Required. Sine component of the RoPE rotary position embedding. The shape, data type, and data format must be identical to those of `cos`. Non-contiguous tensors are not supported.
 

@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-将`int32`类型的输入Tensor打包为`int4`存放，每8个`int4`数据通过一个`int32`数据承载，并进行交叠排放。
+将`torch.int32`类型的输入Tensor打包为`torch_npu.int4`存放，每8个`torch_npu.int4`数据通过一个`torch.int32`数据承载，并进行交叠排放。
 
 <!-- npu="950" id11 -->
 <term>Ascend 950PR&950DT系列产品</term>：除了上述能力，还支持将`torch.float32`类型输入Tensor打包为`torch_npu.float4_e2m1fn_x2`存放，每8个`torch_npu.float4_e2m1fn_x2`数据通过一个`torch.float32`数据承载，并进行交叠排放。
@@ -31,7 +31,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 - **weight**(`Tensor`)：必选参数，待处理的张量。数据格式支持$ND$、$FRACTAL\_NZ$，使用接口torch_npu.npu_format_cast可以将数据格式转换为$FRACTAL\_NZ$，不支持非连续的Tensor。
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`int32`，要求`weight`中元素取值在`int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维度需要8个元素对齐。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维度需要8个元素对齐。
   <!-- end id4 -->
   <!-- npu="950" id5 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维度需要8个元素对齐。
@@ -48,7 +48,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 **out**(`Tensor`)：代表打包后的输出张量，shape为$(k, n/8)$、$(n, k/8)$或$(g, k, n/8)$，数据格式和`weight`一致。
 
 <!-- npu="A3,910b" id6 -->
-- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`int32`。
+- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`。
 <!-- end id6 -->
 <!-- npu="950" id7 -->
 - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`（对应`weight`为`torch.int32`）、`torch.float32`（对应`weight`为`torch.float32`）。
@@ -63,7 +63,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 
 - 单算子模式调用
 
-  - 输入为`int32`场景
+  - 输入为`torch.int32`场景
 
     ```python
     import torch
@@ -134,7 +134,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 
 - 图模式调用
 
-  - $ND$格式，输入类型为`int32`
+  - $ND$格式，输入类型为`torch.int32`
 
     ```python
     import torch
@@ -186,7 +186,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
     npu_out = model(cpu_x.npu(), weight_int4pack, cpu_antiquantscale.npu(), cpu_antiquantoffset.npu(), None, None, None, 0)
     ```
 
-  - $FRACTAL\_NZ$格式，输入类型为`int32`
+  - $FRACTAL\_NZ$格式，输入类型为`torch.int32`
 
     ```python
     import torch

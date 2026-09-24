@@ -48,7 +48,7 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## 参数说明
 
-- **input**(`Tensor`)：必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`float16`，`float32`，`bfloat16`。
+- **input**(`Tensor`)：必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`。
 
 - **num_groups**(`int`)：必选参数，表示将`input`的第1维分为`num_groups`组，`input`的第1维必须能被`num_groups`整除。
   - `num_groups=1`：等价于LayerNorm（层归一化），对整个输入进行归一化，适用于序列建模、全连接层后等场景。
@@ -58,9 +58,9 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
   > 
   > 当需要计算反向梯度时，`input.shape[1] / num_groups` 的结果不能超过4000。违反此约束可能导致训练时的错误。
 
-- **weight**(`Tensor`)：必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
+- **weight**(`Tensor`)：必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`，并且需要与`input`一致。
 
-- **bias**(`Tensor`)：必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`float16`，`float32`，`bfloat16`，并且需要与`input`一致。
+- **bias**(`Tensor`)：必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`，并且需要与`input`一致。
 
 - **eps**(`float`)：可选参数，计算组归一化时加到分母上的值，以保证数值的稳定性。默认值为1e-5。
 
@@ -68,7 +68,7 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## 返回值说明
 
-- **y**(`Tensor`)：组归一化后经过Swish激活的最终输出，用于网络的前向传播。shape与`input`相同，数据类型支持`float16`、`float32`、`bfloat16`。
+- **y**(`Tensor`)：组归一化后经过Swish激活的最终输出，用于网络的前向传播。shape与`input`相同，数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **mean**(`Tensor`)：每个分组的均值，用于反向传播时的梯度计算（需要与`y`一起保存）。shape为\(N, num_groups\)，其中N为`input`第0维大小。数据类型与`input`相同。
 

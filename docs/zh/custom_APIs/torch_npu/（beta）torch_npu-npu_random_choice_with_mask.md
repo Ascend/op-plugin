@@ -30,10 +30,10 @@ torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor,
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，输入张量，数据类型仅支持`bool`。
+- **x** (`Tensor`)：必选参数，输入张量，数据类型仅支持`torch.bool`。
 - **count** (`int`)：可选参数，输出计数，默认值为256。如果值为0，则输出所有非零元素。
-- **seed** (`int`)：可选参数，随机种子值，默认值为0，数据类型支持`int32`，`int64`。
-- **seed2** (`int`)：可选参数，随机种子值，默认值为0，数据类型支持`int32`，`int64`。
+- **seed** (`int`)：可选参数，随机种子值，默认值为0，数据类型支持`torch.int32`，`torch.int64`。
+- **seed2** (`int`)：可选参数，随机种子值，默认值为0，数据类型支持`torch.int32`，`torch.int64`。
 
 ## 返回值说明
 

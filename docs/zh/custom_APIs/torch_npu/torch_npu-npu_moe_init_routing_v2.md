@@ -17,7 +17,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002271534921_section1650913464367"></a>
 
-- API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化、静态量化、MXFP8、HIF8、MXFP4、FP8 PerBlock和INT4动态量化模式。
+- API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化、静态量化、MXFP8、HIF8、MXFP4、FP8 PerBlock和`torch_npu.int4`动态量化模式。
 - 计算公式：  
 
     1. 对输入expertIdx做排序，得出排序后的结果sortedExpertIdx和对应的序号sortedRowIdx：
@@ -643,13 +643,13 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **quant_mode** (`int`)：可选参数，默认值为-1，表示量化模式。不同产品支持的取值如下：
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值-1、0、1。-1表示不量化；0表示静态量化；1表示INT8动态量化。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值-1、0、1。-1表示不量化；0表示静态量化；1表示`torch.int8`动态量化。
     <!-- end id8 -->
     <!-- npu="310p" id9 -->
     - <term>Atlas推理系列产品</term>：仅支持取值-1，表示不量化。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持取值-1、0、1、2、3、4、5、6、7、8、9、11、12、13、14、15、16、17。-1表示不量化；0表示静态量化；1表示INT8动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；4/5表示FP8 PerGroup量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示INT4动态量化；14/15表示FP8 PerGroup量化并启用Amax下限，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持取值-1、0、1、2、3、4、5、6、7、8、9、11、12、13、14、15、16、17。-1表示不量化；0表示静态量化；1表示`torch.int8`动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；4/5表示FP8 PerGroup量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示`torch_npu.int4`动态量化；14/15表示FP8 PerGroup量化并启用Amax下限，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`。
     <!-- end id10 -->
 
 - **active_expert_range** (`List[int]`)：可选参数，默认为空, 表示活跃expert的范围。数组内值的范围为[expert_start, expert_end]，左闭右开，表示活跃的expert范围在expert_start到expert_end之间。要求值大于等于0，并且expert_end不大于`expert_num`。drop_pad场景下，expert_start等于0, expert_end等于`expert_num`。传入默认值时，视为活跃的expert范围在0到`expert_num`之间。
@@ -658,8 +658,8 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 <!-- npu="950" id11 -->
 - **x_dtype** (`int`)：可选参数，默认值为None，用于指定`x`的非原生数据类型（PyTorch原生dtype无法表达、以`torch.uint8`等原生dtype存储的类型），取值为`torch_npu`的dtype枚举。仅<term>Ascend 950PR&950DT系列产品</term>支持该参数，支持的全部枚举值为：`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.int4`。
     - `quant_mode`为-1（不量化透传）时，`x_dtype`支持`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。`torch.float8_e5m2`、`torch.float8_e4m3fn`为PyTorch原生dtype，直接作为`x`的数据类型传入即可，无需通过`x_dtype`指定。
-    - `quant_mode`为13（INT4动态量化）时，`x_dtype`仅支持`torch_npu.int4`或None。
-    - `quant_mode`为1时不支持传入`torch_npu.int4`，INT4动态量化请使用`quant_mode=13`。
+    - `quant_mode`为13（`torch_npu.int4`动态量化）时，`x_dtype`仅支持`torch_npu.int4`或None。
+    - `quant_mode`为1时不支持传入`torch_npu.int4`，`torch_npu.int4`动态量化请使用`quant_mode=13`。
 <!-- end id11 -->
 
 ## 返回值说明<a name="zh-cn_topic_0000002271534921_section18510124618368"></a>
@@ -723,7 +723,7 @@ Ascend 950PR&950DT系列产品在该接口上有以下特殊约束：
     - `active_expert_range`必须为[0, expert_num]。
     - `expert_tokens_num_type`仅支持取值为1（count模式）。
     - `quant_mode`仅支持-1（非量化），且`x`数据类型仅支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`、`torch_npu.hifloat8`。
-- **MXFP4/INT4动态量化**（`quant_mode`为9或13时）：`x`的最后一维H要求为偶数。
+- **MXFP4/`torch_npu.int4`动态量化**（`quant_mode`为9或13时）：`x`的最后一维H要求为偶数。
 <!-- end id16 -->
 
 <!-- npu="310p" id17 -->

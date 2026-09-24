@@ -23,11 +23,11 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 
 - **`features`** (`Tensor`): Required. Feature map to be processed. This parameter must be a 4D tensor.
 - **`rois`** (`Tensor`): Required. RoI locations. This parameter must be a 2D tensor with shape `(N, 4)`. `N` indicates the number of RoIs, and `4` indicates the index of the image where the RoI is located, which are `x0`, `y0`, `x1`, and `y1` respectively.
-- **`spatial_scale`** (`float`): Required. Scaling ratio between `features` and the original image. The data type can be `float32`.
-- **`pooled_height`** (`int`): Required. Height of the output image. The data type can be `int32`.
-- **`pooled_width`** (`int`): Required. Width of the output image. The data type can be `int32`.
-- **`sample_num`** (`int`): Required. Sampling frequency of each output element in the H and W directions. The default value is `2`. If set to `0`, the sampling frequency is equal to the ceiling value of `rois` (a floating-point number). The data type can be `int32`.
-- **`roi_end_mode`** (`int`): Required. The default value is `1`. The data type can be `int32`.
+- **`spatial_scale`** (`float`): Required. Scaling ratio between `features` and the original image. The data type can be `torch.float32`.
+- **`pooled_height`** (`int`): Required. Height of the output image. The data type can be `torch.int32`.
+- **`pooled_width`** (`int`): Required. Width of the output image. The data type can be `torch.int32`.
+- **`sample_num`** (`int`): Required. Sampling frequency of each output element in the H and W directions. The default value is `2`. If set to `0`, the sampling frequency is equal to the ceiling value of `rois` (a floating-point number). The data type can be `torch.int32`.
+- **`roi_end_mode`** (`int`): Required. The default value is `1`. The data type can be `torch.int32`.
 
 ## Constraints
 

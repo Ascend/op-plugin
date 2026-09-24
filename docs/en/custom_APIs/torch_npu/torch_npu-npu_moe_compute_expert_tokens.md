@@ -23,7 +23,7 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 
 ## Parameters
 
-- **`sorted_expert_for_source_row`** (`Tensor`): Required. Expert index corresponding to each source row after sorting, $\mathrm{sortedExpertForSourceRow}$ in the formula. This parameter must be a 1D tensor. The data type must be `int32`. The data layout must be `ND`. The dimension size must be less than `2147483647`.
+- **`sorted_expert_for_source_row`** (`Tensor`): Required. Expert index corresponding to each source row after sorting, $\mathrm{sortedExpertForSourceRow}$ in the formula. This parameter must be a 1D tensor. The data type must be `torch.int32`. The data layout must be `ND`. The dimension size must be less than `2147483647`.
 
 - **`num_expert`** (`int`): Required. Total number of experts, $numExpert$ in the formula.
 

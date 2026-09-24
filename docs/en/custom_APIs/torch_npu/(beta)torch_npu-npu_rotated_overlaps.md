@@ -24,8 +24,8 @@ torch_npu.npu_rotated_overlaps(self, query_boxes, trans=False) -> Tensor
 
 ## Parameters
 
-- **`self`** (`Tensor`): Required. Gradient increment data. This parameter must be a 3D `float32` tensor with shape `(B, 5, N)`.
-- **`query_boxes`** (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 3D `float32` tensor with shape `(B, 5, K)`.
+- **`self`** (`Tensor`): Required. Gradient increment data. This parameter must be a 3D `torch.float32` tensor with shape `(B, 5, N)`.
+- **`query_boxes`** (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 3D `torch.float32` tensor with shape `(B, 5, K)`.
 - **`trans`** (`bool`): Optional. A value of `True` indicates `"xyxyt"` and a value of `False` indicates `"xywht"`. The default value is `False`.
 
 ## Example

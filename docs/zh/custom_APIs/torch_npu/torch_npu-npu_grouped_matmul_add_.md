@@ -50,7 +50,7 @@ torch_npu.npu_grouped_matmul_add_(self, x, weight, group_list, *, transpose_x=Tr
 - 该接口仅支持单算子模式。
 - 参数说明里Shape使用的变量说明：
   - g：表示分组数目，取值范围为1-1024。
-  - `x`和`weight`矩阵每一维大小在32字节对齐后都应小于torch.int32的最大值2147483647。
+  - `x`和`weight`矩阵每一维大小在32字节对齐后都应小于`torch.int32`的最大值2147483647。
 
 ## 调用示例
 

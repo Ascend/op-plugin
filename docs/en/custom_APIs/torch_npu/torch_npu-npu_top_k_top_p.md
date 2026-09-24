@@ -59,15 +59,15 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 ## Parameters
 
-- **`logits`** (`Tensor`): Required. Data to be processed. The data type can be `float16`, `bfloat16`, or `float32`. Non-contiguous tensors are supported. The data layout is ND. The number of dimensions must be 2.
-- **`p`** (`Tensor`): Required. `top-p` tensor. The value range is `[0, 1]`. The data type can be `float16`, `bfloat16`, or `float32`, and must match that of `logits`. The shape must be 1D and must be identical to the first dimension of `logits`. The data layout is ND. Non-contiguous tensors are supported.
-- **`k`** (`Tensor`): Required. `top-k` threshold tensor. The value range is `[1, 1024]`, and the maximum value must be less than or equal to `logits.size(1)`. The data type can be `int32`. The shape must be 1D and must be identical to the first dimension of `logits`. The data layout is ND. Non-contiguous tensors are supported.
+- **`logits`** (`Tensor`): Required. Data to be processed. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. Non-contiguous tensors are supported. The data layout is ND. The number of dimensions must be 2.
+- **`p`** (`Tensor`): Required. `top-p` tensor. The value range is `[0, 1]`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`, and must match that of `logits`. The shape must be 1D and must be identical to the first dimension of `logits`. The data layout is ND. Non-contiguous tensors are supported.
+- **`k`** (`Tensor`): Required. `top-k` threshold tensor. The value range is `[1, 1024]`, and the maximum value must be less than or equal to `logits.size(1)`. The data type can be `torch.int32`. The shape must be 1D and must be identical to the first dimension of `logits`. The data layout is ND. Non-contiguous tensors are supported.
 
 ## Return Values
 
 `Tensor`
 
-Filtered data. The data type can be `float16`, `bfloat16`, or `float32`, and matches that of `logits`. The shape must be 2D and must be identical to that of `logits`. Non-contiguous tensors are supported. The data layout is ND.
+Filtered data. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`, and matches that of `logits`. The shape must be 2D and must be identical to that of `logits`. Non-contiguous tensors are supported. The data layout is ND.
 
 ## Constraints
 

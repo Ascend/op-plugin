@@ -23,18 +23,18 @@ torch_npu.npu_group_quant(x, scale, group_index, *, offset=None, dst_dtype=None)
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Source data tensor to be quantized, $x$ in the formula. The data type can be `float32`, `float16`, or `bfloat16`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 2D tensor. If `dst_dtype` is `quint4x2`, the size of the last dimension of `x` must be divisible by `8`.
-- **`scale`** (`Tensor`): Required. Scaling factor used in quantization, $scale$ in the formula. The data type can be `float32`, `float16`, or `bfloat16`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 2D tensor. The size of the 0th dimension must not be 0, and the size of the 1st dimension of `scale` must be identical to that of the 1st dimension of `x`.
-- **`group_index`** (`Tensor`): Required. Group numbers used in group-wise quantization. The data type can be `int32` or `int64`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 1D tensor. The size of the 0th dimension of `group_index` must be identical to that of the 0th dimension of `scale`.
+- **`x`** (`Tensor`): Required. Source data tensor to be quantized, $x$ in the formula. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 2D tensor. If `dst_dtype` is `torch.quint4x2`, the size of the last dimension of `x` must be divisible by `8`.
+- **`scale`** (`Tensor`): Required. Scaling factor used in quantization, $scale$ in the formula. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 2D tensor. The size of the 0th dimension must not be 0, and the size of the 1st dimension of `scale` must be identical to that of the 1st dimension of `x`.
+- **`group_index`** (`Tensor`): Required. Group numbers used in group-wise quantization. The data type can be `torch.int32` or `torch.int64`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 1D tensor. The size of the 0th dimension of `group_index` must be identical to that of the 0th dimension of `scale`.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`offset`** (`Tensor`): Optional. Offset value used in quantization, $offsetOptional$ in the formula. The data type can be `float32`, `float16`, or `bfloat16`, and must be identical to that of `scale`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 1D tensor, and contains exactly one element.
-- **`dst_dtype`** (`ScalarType`): Optional. Valid values are `int8` or `quint4x2`. The default value is `int8`.
+- **`offset`** (`Tensor`): Optional. Offset value used in quantization, $offsetOptional$ in the formula. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`, and must be identical to that of `scale`. Empty tensors are supported. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be a 1D tensor, and contains exactly one element.
+- **`dst_dtype`** (`ScalarType`): Optional. Valid values are `torch.int8` or `torch.quint4x2`. The default value is `torch.int8`.
 
 ## Return Values
 
 `Tensor`
 
-Computation result of `npu_group_quant`, $y$ in the formula. If `dst_dtype` is `int8`, the output shape is identical to that of `x`. If `dst_dtype` is `quint4x2`, the output data type is `int32`. The size of the 0th dimension is identical to that of the 0th dimension of `x`, and the size of the last dimension is 1/8 of that of the last dimension of `x`. Empty tensors are supported. Non-contiguous tensors are supported.
+Computation result of `npu_group_quant`, $y$ in the formula. If `dst_dtype` is `torch.int8`, the output shape is identical to that of `x`. If `dst_dtype` is `torch.quint4x2`, the output data type is `torch.int32`. The size of the 0th dimension is identical to that of the 0th dimension of `x`, and the size of the last dimension is 1/8 of that of the last dimension of `x`. Empty tensors are supported. Non-contiguous tensors are supported.
 
 ## Constraints
 

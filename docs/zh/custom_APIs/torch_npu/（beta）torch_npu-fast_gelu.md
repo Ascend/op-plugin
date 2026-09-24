@@ -27,7 +27,7 @@ torch_npu.fast_gelu(self) -> Tensor
 
 ## 参数说明
 
-**self** (`Tensor`)：支持的数据类型为`float16`、`float32`。
+**self** (`Tensor`)：支持的数据类型为`torch.float16`、`torch.float32`。
 
 ## 调用示例
 

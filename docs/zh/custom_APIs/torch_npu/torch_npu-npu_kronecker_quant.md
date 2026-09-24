@@ -8,11 +8,11 @@
 
 ## 功能说明
 
-- **API功能**：推理场景下，对输入张量依次进行两次矩阵乘法，并对矩阵乘结果量化至int4类型或torch_npu.float4_e2m1fn_x2类型。
+- **API功能**：推理场景下，对输入张量依次进行两次矩阵乘法，并对矩阵乘结果量化至`torch_npu.int4`类型或`torch_npu.float4_e2m1fn_x2`类型。
 
-  pertoken量化支持int4输出类型，并以8个一组打包成torch.int32类型输出，同时也输出torch.float32的量化缩放系数。
+  pertoken量化支持`torch_npu.int4`输出类型，并以8个一组打包成`torch.int32`类型输出，同时也输出`torch.float32`的量化缩放系数。
 
-  pergroup量化支持输出torch_npu.float4_e2m1fn_x2量化结果和torch_npu.float8_e8m0fnu量化系数，组内的元素共享一个量化参数。
+  pergroup量化支持输出`torch_npu.float4_e2m1fn_x2`量化结果和`torch_npu.float8_e8m0fnu`量化系数，组内的元素共享一个量化参数。
 
 - **pertoken计算公式**：
 
@@ -28,7 +28,7 @@
         x'' = kroneckerP1 @ x'
         $$
 
-    3. 沿着$x''$的0维计算最大绝对值并除以$(7 / clipRatio)$，以计算需量化为int4格式的量化缩放系数`quantScale`：
+    3. 沿着$x''$的0维计算最大绝对值并除以$(7 / clipRatio)$，以计算需量化为`torch_npu.int4`格式的量化缩放系数`quantScale`：
 
         $$
         quantScale = \frac{[\max(\operatorname{abs}(x''[0, :, :])),\ \max(\operatorname{abs}(x''[1, :, :])),\ \ldots,\ \max(\operatorname{abs}(x''[K, :, :]))]}{7 / clipRatio}
@@ -94,8 +94,8 @@ torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio=None, ds
 - **kronecker_p1**(`Tensor`)：必选参数，`x`的左乘矩阵，对应公式中的`kroneckerP1`。数据类型与`x`一致，shape为(M, M)，数据格式支持$ND$。
 - **kronecker_p2**(`Tensor`)：必选参数，`x`的右乘矩阵，对应公式中的`kroneckerP2`。数据类型与`x`一致，shape为(N, N)（`dst_dtype`为`torch_npu.float4_e2m1fn_x2`情况时，shape支持为(0,0)），数据格式支持$ND$。
 - **clip_ratio**(`float`)：**可选参数**，量化的裁剪比例，对应公式中的`clipRatio`。数据类型支持`float`，取值范围为(0, 1.0]，默认值为None表示按1.0比例裁剪。
-- **dst_dtype**(`ScalarType`)：**可选参数**，量化的目标输出类型。如果是torch_npu.float4_e2m1fn_x2类型输出时该值为`torch_npu.float4_e2m1fn_x2`。int类型输出时该项不用填写。
-- **dst_type_max**(`float`)：**可选参数**，表示量化数据目标的最大值。数据类型支持`float`，取值范围为0.0、6.0-12.0，取值为0.0代表不使用该参数；取值为6.0-12.0代表目标数据类型的最大值。仅支持在torch_npu.float4_e2m1fn_x2数据类型时设置该值。
+- **dst_dtype**(`ScalarType`)：**可选参数**，量化的目标输出类型。如果是`torch_npu.float4_e2m1fn_x2`类型输出时该值为`torch_npu.float4_e2m1fn_x2`。`torch.int`类型输出时该项不用填写。
+- **dst_type_max**(`float`)：**可选参数**，表示量化数据目标的最大值。数据类型支持`float`，取值范围为0.0、6.0-12.0，取值为0.0代表不使用该参数；取值为6.0-12.0代表目标数据类型的最大值。仅支持在`torch_npu.float4_e2m1fn_x2`数据类型时设置该值。
 
 ## 返回值说明
 
@@ -120,7 +120,7 @@ torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio=None, ds
 
 - 单算子模式调用
 
-  - 输出为int4类型
+  - 输出为`torch_npu.int4`类型
 
     ```python
     import torch
@@ -159,7 +159,7 @@ torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio=None, ds
 
 - 图模式调用
 
-  - 输出为int4类型
+  - 输出为`torch_npu.int4`类型
 
     ```python
     import torch

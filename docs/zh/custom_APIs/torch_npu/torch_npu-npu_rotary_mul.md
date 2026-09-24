@@ -165,7 +165,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 <!-- end id12 -->
 <!-- npu="950" id13 -->
 - <term>Ascend 950PR&950DT系列产品</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下。
-    - 输入张量`input`、`r1`、`r2`及输出张量的D维度大小必须相同，且小于等于1024。half、interleave和interleave-half模式下，D必须能被2整除；quarter模式下，D必须能被4整除。
+    - 输入张量`input`、`r1`、`r2`及输出张量的D维度大小必须相同，且小于等于1024。`torch.half`、interleave和interleave-`torch.half`模式下，D必须能被2整除；quarter模式下，D必须能被4整除。
     - 输入张量`r1`和`r2`的shape必须完全相同，且必须满足下列条件之一：
         - shape为\(1, 1, 1, D\)；
         - shape为\(B, S, N, D\)；

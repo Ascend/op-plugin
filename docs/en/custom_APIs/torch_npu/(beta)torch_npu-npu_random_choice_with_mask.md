@@ -24,10 +24,10 @@ torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor,
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input tensor. Only the `bool` data type is supported.
+- **`x`** (`Tensor`): Required. Input tensor. Only the `torch.bool` data type is supported.
 - **`count`** (`int`): Optional. Output count. The default value is `256`. If set to `0`, all non-zero elements are output.
-- **`seed`** (`int`): Optional. Random seed value. The default value is `0`. The data type can be `int32` or `int64`.
-- **`seed2`** (`int`): Optional. Random seed value. The default value is `0`. The data type can be `int32` or `int64`.
+- **`seed`** (`int`): Optional. Random seed value. The default value is `0`. The data type can be `torch.int32` or `torch.int64`.
+- **`seed2`** (`int`): Optional. Random seed value. The default value is `0`. The data type can be `torch.int32` or `torch.int64`.
 
 ## Return Values
 

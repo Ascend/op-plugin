@@ -56,7 +56,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，输入张量，数据类型支持`bfloat16`、`float16`、`float`。支持非连续的Tensor，数据格式支持$ND$，shape维度2至8维，且shape需满足最后一维值为偶数且小于等于1024。其他维度的乘积小于等于200000。
+- **input** (`Tensor`)：必选参数，输入张量，数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float`。支持非连续的Tensor，数据格式支持$ND$，shape维度2至8维，且shape需满足最后一维值为偶数且小于等于1024。其他维度的乘积小于等于200000。
 - **approximate** (`String`)：可选参数，指定GELU激活函数的计算模式。默认值为 "none"。支持以下选项：
   - "none"：使用误差函数（erf）模式，计算精度高，适用于对精度要求严格的场景。
   - "tanh"：使用双曲正切（tanh）近似模式，计算效率高，适用于大规模训练或推理加速场景。
@@ -65,7 +65,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 `Tensor`
 
-输出张量，对应公式中的$out$，数据类型支持bfloat16、float16、float。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致。输出的最后一维长度为输入的一半，其余维度保持不变。例如：若 `input.shape = [100, 400]`，则 `output.shape = [100, 200]`。
+输出张量，对应公式中的$out$，数据类型支持`torch.bfloat16`、`torch.float16`、float。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致。输出的最后一维长度为输入的一半，其余维度保持不变。例如：若 `input.shape = [100, 400]`，则 `output.shape = [100, 200]`。
 
 ## 调用示例
 

@@ -25,19 +25,19 @@ torch_npu.npu_quant_matmul_reduce_sum(x1, x2, *, x1_scale=None, x2_scale=None) -
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. The data type can be `int8`. The data layout can be ND. This parameter must be 3D with shape `(batch, m, k)`.
+- **`x1`** (`Tensor`): Required. The data type can be `torch.int8`. The data layout can be ND. This parameter must be 3D with shape `(batch, m, k)`.
 
-- **`x2`** (`Tensor`): Required. The data type can be `int8`. The data layout must be NZ. The parameter can be 3D with shape `(batch, k, n)`. If the input data is in ND layout, `x2` in ND layout can be converted to NZ using `x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`, where `29` is the enumeration value for the NZ layout.
+- **`x2`** (`Tensor`): Required. The data type can be `torch.int8`. The data layout must be NZ. The parameter can be 3D with shape `(batch, k, n)`. If the input data is in ND layout, `x2` in ND layout can be converted to NZ using `x2 = torch_npu.npu_format_cast(x2.contiguous(), 29)`, where `29` is the enumeration value for the NZ layout.
 
-- **`x1_scale`** (`Tensor`): Required keyword parameter, $x1Scale$ in the formula. The data type can be `float32`. The data layout can be ND. This parameter must be 2D with shape `(batch, m)`. During actual computation, `x1_scale` is broadcast to `(batch, m, n)`.
+- **`x1_scale`** (`Tensor`): Required keyword parameter, $x1Scale$ in the formula. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 2D with shape `(batch, m)`. During actual computation, `x1_scale` is broadcast to `(batch, m, n)`.
 
-- **`x2_scale`** (`Tensor`): Required keyword parameter, $x2Scale$ in the formula. The data type can be `bfloat16`. The data layout can be ND. This parameter must be 1D with shape `(n,)`. During actual computation, `x2_scale` is broadcast to `(batch, m, n)`.
+- **`x2_scale`** (`Tensor`): Required keyword parameter, $x2Scale$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. This parameter must be 1D with shape `(n,)`. During actual computation, `x2_scale` is broadcast to `(batch, m, n)`.
 
 ## Return Values
 
 `Tensor`
 
-Computation result of the operator, $out$ in the formula. The output data type is `bfloat16`. The data layout can be ND. This output tensor must be 2D with shape `(m, n)`.
+Computation result of the operator, $out$ in the formula. The output data type is `torch.bfloat16`. The data layout can be ND. This output tensor must be 2D with shape `(m, n)`.
 
 ## Constraints
 
@@ -48,7 +48,7 @@ Computation result of the operator, $out$ in the formula. The output data type i
 
   | x1   | x2   | x1_scale | x2_scale  | out      |
   |------|------|---------|----------|----------|
-  | int8 | int8 | float32 | bfloat16 | bfloat16 |
+  | `torch.int8` | `torch.int8` | `torch.float32` | `torch.bfloat16` | `torch.bfloat16` |
 
 ## Examples
 

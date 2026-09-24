@@ -45,9 +45,9 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data type can be `float16`, `float32`, or `bfloat16`. The shape of this parameter is `[N, C]`, where $N$ is the batch size and $C$ is the number of labels ($C > 0$).
-- **`target`** (`Tensor`): Required. Label tensor, $y$ in the formulas. The data type can be `int64`. The shape of this parameter is `[N]`, which must match the zeroth dimension of `input`. The value range is [0, C).
-- **`weight`** (`Tensor`): Optional. Scaling weight assigned to each class. The data type can be `float32`. The shape of this parameter is `[C]`, which must match the second dimension of `input`. The value range is (0, 1]. If no value is provided, it defaults to all ones.
+- **`input`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`. The shape of this parameter is `[N, C]`, where $N$ is the batch size and $C$ is the number of labels ($C > 0$).
+- **`target`** (`Tensor`): Required. Label tensor, $y$ in the formulas. The data type can be `torch.int64`. The shape of this parameter is `[N]`, which must match the zeroth dimension of `input`. The value range is [0, C).
+- **`weight`** (`Tensor`): Optional. Scaling weight assigned to each class. The data type can be `torch.float32`. The shape of this parameter is `[C]`, which must match the second dimension of `input`. The value range is (0, 1]. If no value is provided, it defaults to all ones.
 - **`reduction`** (`str`): Optional. Reduction method for loss calculation. Valid values are `"mean"` (enables mean reduction), `"sum"` (enables sum reduction), or `"none"` (applies no reduction). The default value is `"mean"`.
 - **`ignore_index`** (`int`): Optional. Label to be ignored during computation. The value must be less than $C$. A value less than 0 indicates that no ignore label is specified. The default value is `-100`.
 - **`label_smoothing`** (`float`): Optional. Smoothing amount used when calculating the loss. The value range is [0.0, 1.0). The default value is `0.0`.

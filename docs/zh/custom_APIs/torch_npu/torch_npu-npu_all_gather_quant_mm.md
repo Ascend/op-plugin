@@ -142,7 +142,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：当前版本仅支持group_sizes为`None`（group_size为0）。
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950DT系列产品</term>：仅当x1_scale和x2_scale输入都是2维及以上数据时group_size取值有效，其他场景需传0。当groupSizeM、groupSizeN、groupSizeK中有1个或多个为0时，接口根据x1/x2/x1_scale/x2_scale的shape重新推导：groupSizeM = m / scaleM（需整除，m为x1的shape第一维，scaleM为x1Scale的shape第一维）、groupSizeK = k / scaleK、groupSizeN = n / scaleN。常见取值组合：x1_scale、x2_scale为2维`torch.float32`时推导为[128, 128, 128]，对应group_size值为549764202624；x1_scale、x2_scale为3维`float8_e8m0`时推导为[1, 1, 32]，对应group_size值为4295032864。
+  - <term>Ascend 950DT系列产品</term>：仅当x1_scale和x2_scale输入都是2维及以上数据时group_size取值有效，其他场景需传0。当groupSizeM、groupSizeN、groupSizeK中有1个或多个为0时，接口根据x1/x2/x1_scale/x2_scale的shape重新推导：groupSizeM = m / scaleM（需整除，m为x1的shape第一维，scaleM为x1Scale的shape第一维）、groupSizeK = k / scaleK、groupSizeN = n / scaleN。常见取值组合：x1_scale、x2_scale为2维`torch.float32`时推导为[128, 128, 128]，对应group_size值为549764202624；x1_scale、x2_scale为3维`torch_npu.float8_e8m0fnu`时推导为[1, 1, 32]，对应group_size值为4295032864。
   <!-- end id16 -->
 
 - **amax_output** (`bool`)：可选参数，是否需要输出MatMul计算结果的最大值amaxOut，默认值为`False`。当前版本仅支持`False`，此时amax返回空Tensor。

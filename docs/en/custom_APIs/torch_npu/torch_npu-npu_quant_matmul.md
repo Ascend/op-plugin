@@ -17,11 +17,11 @@
     $$
     out = x1 \mathbin{@} x2 * \text{scale} + \text{offset}
     $$
-    - When `bias` is `int32`:
+    - When `bias` is `torch.int32`:
     $$
     out = (x1 \mathbin{@} x2 + \text{bias}) * \text{scale} + \text{offset}
     $$
-    - When `bias` is `bfloat16` or `float32` (without `offset`):
+    - When `bias` is `torch.bfloat16` or `torch.float32` (without `offset`):
     $$
     out = x1 \mathbin{@} x2 * \text{scale} + \text{bias}
     $$
@@ -35,32 +35,32 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 ## Parameters
 
 - **`x1`** (`Tensor`): Required. Input tensor representing the left matrix in matrix multiplication. The data layout can be ND. The shape must have 2 to 6 dimensions.
-    - Atlas inference accelerator cards: The data type can be `int8`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `int32`. `int32` indicates `int4` matrix multiplication, where each `int32` element stores eight `int4` values.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `int32`. `int32` indicates `int4` matrix multiplication, where each `int32` element stores eight `int4` values.
+    - Atlas inference accelerator cards: The data type can be `torch.int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8` or `torch.int32`. `torch.int32` indicates `torch_npu.int4` matrix multiplication, where each `torch.int32` element stores eight `torch_npu.int4` values.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8` or `torch.int32`. `torch.int32` indicates `torch_npu.int4` matrix multiplication, where each `torch.int32` element stores eight `torch_npu.int4` values.
 
 - **`x2`** (`Tensor`): Required. Input tensor representing the right matrix in matrix multiplication. Its data type must be identical to that of `x1`. The data layout can be ND. The shape must have 2 to 6 dimensions.
-    - Atlas inference accelerator cards: The data type can be `int8`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `int32`. The meaning of `int32` is identical to that of `x1`, which represents `int4` computation.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `int32`. The meaning of `int32` is identical to that of `x1`, which represents `int4` computation.
+    - Atlas inference accelerator cards: The data type can be `torch.int8`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8` or `torch.int32`. The meaning of `torch.int32` is identical to that of `x1`, which represents `torch_npu.int4` computation.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8` or `torch.int32`. The meaning of `torch.int32` is identical to that of `x1`, which represents `torch_npu.int4` computation.
 
-- **`scale`** (`Tensor`): Required. Quantization scale factor. This parameter must be 1D with shape `(t,)`, where `t` is `1` or `n`, and `n` represents the last dimension of `x2`. To pass a `scale` of type `int64`, call `torch_npu.npu_trans_quant_param` in advance to obtain an `int64` `scale`.
-    - Atlas inference accelerator cards: The data type can be `float32` or `int64`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`, `int64`, or `bfloat16`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`, `int64`, or `bfloat16`.
+- **`scale`** (`Tensor`): Required. Quantization scale factor. This parameter must be 1D with shape `(t,)`, where `t` is `1` or `n`, and `n` represents the last dimension of `x2`. To pass a `scale` of type `torch.int64`, call `torch_npu.npu_trans_quant_param` in advance to obtain an `torch.int64` `scale`.
+    - Atlas inference accelerator cards: The data type can be `torch.float32` or `torch.int64`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`.
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`offset`** (`Tensor`): Required only when `scale` is a 2D tensor. The data type must be `float16`. This parameter must be a 2D tensor and its shape must be identical to that of `scale`. In all other scenarios, this parameter is optional and is used to adjust the quantized value offsets. The data type can be `float32`. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t` equals `1` or `n`, and `n` must match the n-dimension of `x2`.
-- **`pertoken_scale`** (`Tensor`): Optional. Used to scale the original values to match the range of the quantized values. The data type can be `float32`. The data layout can be `ND`. The shape must be 1D with shape `(m,)`, where `m` is the same as the `m` of `x1` and represents the second-to-last dimension of `x1`. Atlas inference accelerator cards currently do not support `pertoken_scale`.
+- **`offset`** (`Tensor`): Required only when `scale` is a 2D tensor. The data type must be `torch.float16`. This parameter must be a 2D tensor and its shape must be identical to that of `scale`. In all other scenarios, this parameter is optional and is used to adjust the quantized value offsets. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `(t,)`, where `t` equals `1` or `n`, and `n` must match the n-dimension of `x2`.
+- **`pertoken_scale`** (`Tensor`): Optional. Used to scale the original values to match the range of the quantized values. The data type can be `torch.float32`. The data layout can be `ND`. The shape must be 1D with shape `(m,)`, where `m` is the same as the `m` of `x1` and represents the second-to-last dimension of `x1`. Atlas inference accelerator cards currently do not support `pertoken_scale`.
 - **`bias`** (`Tensor`): Optional. Bias item. The data layout can be ND. This parameter must be 1D with shape `(n,)` or 3D with shape `(batch, 1, n)`, where `n` must match the n dimension of `x2`. In addition, the `batch` value must equal the `batch` value derived after broadcasting `x1` and `x2`. In scenarios where the output has 2, 4, 5, or 6 dimensions, `bias` must be a 1D tensor. In scenarios where the output has 3 dimensions, `bias` must be a 1D or 3D tensor.
-    - Atlas inference accelerator card: The data type can be `int32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int32`, `bfloat16`, `float16`, or `float32`.
+    - Atlas inference accelerator card: The data type can be `torch.int32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
 
-- **`output_dtype`** (`int`): Optional. Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `int8`.
-    - Atlas inference accelerator cards: The data type can be `int8` or `float16`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8`, `float16`, `bfloat16`, or `int32`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8`, `float16`, `bfloat16`, or `int32`.
+- **`output_dtype`** (`int`): Optional. Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `torch.int8`.
+    - Atlas inference accelerator cards: The data type can be `torch.int8` or `torch.float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
 
 - **`group_sizes`** (`list[int]`): Optional. Quantization group sizes, specifying the quantization group size along the $m$ dimension (the second-to-last dimension of `x1`), $n$ dimension (the last dimension of `x2`), and $k$ dimension (the last dimension of `x1` and the second-to-last dimension of `x2`), respectively. The layout is `[group_m, group_n, group_k]`. The list must contain three elements, each of which must be `0` or a positive integer.
 
@@ -70,10 +70,10 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 
 Output tensor representing the computation result of quantized matrix multiplication.
 
-- If `output_dtype` is `"float16"`, the output data type is `float16`.
-- If `output_dtype` is `"int8"` or `None`, the output data type is `int8`.
-- If `output_dtype` is `"bfloat16"`, the output data type is `bfloat16`.
-- If `output_dtype` is `"int32"`, the output data type is `int32`.
+- If `output_dtype` is `"float16"`, the output data type is `torch.float16`.
+- If `output_dtype` is `"int8"` or `None`, the output data type is `torch.int8`.
+- If `output_dtype` is `"bfloat16"`, the output data type is `torch.bfloat16`.
+- If `output_dtype` is `"int32"`, the output data type is `torch.int32`.
 
 ## Constraints
 
@@ -82,16 +82,16 @@ Output tensor representing the computation result of quantized matrix multiplica
 - The input parameters `x1`, `x2`, and `scale` must not be empty tensors.
 - Data types and data layouts of `x1`, `x2`, `bias`, `scale`, `offset`, `pertoken_scale`, and `output_dtype` must be within the supported ranges.
 - The size of the last dimension of `x1` and `x2` must be less than or equal to `65535`.
-- Currently, when the output data type is `int8` or `float16` and `pertoken_scale` is not provided, graph capture mode does not support passing `scale` directly as a `float32` tensor.
+- Currently, when the output data type is `torch.int8` or `torch.float16` and `pertoken_scale` is not provided, graph capture mode does not support passing `scale` directly as a `torch.float32` tensor.
 - If this API is used in PyTorch graph capture mode and the environment variable `ENABLE_ACLNN=false` is set, `x2` with shape `(n, k // 8)` must be transposed before the API is called. The transpose operation must be included in the graph.
 - Transposing `x2` into an Ascend-optimized data layout is supported to improve data transfer efficiency. Call `torch_npu.npu_format_cast` to convert the input `x2` (`weight`) into the Ascend-optimized data layout.
     - Atlas inference accelerator cards: `x2` must be transposed before being converted into the Ascend-optimized format.
     - Atlas A2 training products/Atlas A2 inference products: Converting `x2` directly into the Ascend-optimized format without transposition is recommended.
     - Atlas A3 training products/Atlas A3 inference products: Converting `x2` directly into the Ascend-optimized format without transposition is recommended.
 
-- Additional constraints for `int4` computation:
+- Additional constraints for `torch_npu.int4` computation:
 
-    When the data types of both `x1` and `x2` are `int32`, each `int32` element stores eight `int4` values. For input `int32` tensors, the size of the last dimension must be one-eighth of that of the original `int4` tensors. The size of the last dimension of the original `int4` tensors must be a multiple of `8`. For example, when performing `int4` matrix multiplication with input shapes `(m, k)` and `(k, n)`, the inputs must be `int32` tensors with shapes `(m, k//8)` and `(k, n//8)`, where both `k` and `n` must be multiples of `8`. `x1` accepts only tensors with shape `(m, k // 8)` and a contiguous data layout, while `x2` accepts either a tensor with shape `(k, n // 8)` and a contiguous data layout, or a tensor with shape `(k // 8, n)` obtained by transposing a contiguous tensor with shape `(n, k // 8)`.
+    When the data types of both `x1` and `x2` are `torch.int32`, each `torch.int32` element stores eight `torch_npu.int4` values. For input `torch.int32` tensors, the size of the last dimension must be one-eighth of that of the original `torch_npu.int4` tensors. The size of the last dimension of the original `torch_npu.int4` tensors must be a multiple of `8`. For example, when performing `torch_npu.int4` matrix multiplication with input shapes `(m, k)` and `(k, n)`, the inputs must be `torch.int32` tensors with shapes `(m, k//8)` and `(k, n//8)`, where both `k` and `n` must be multiples of `8`. `x1` accepts only tensors with shape `(m, k // 8)` and a contiguous data layout, while `x2` accepts either a tensor with shape `(k, n // 8)` and a contiguous data layout, or a tensor with shape `(k // 8, n)` obtained by transposing a contiguous tensor with shape `(n, k // 8)`.
 
     > [!NOTE]  
     > A contiguous data layout means that all adjacent elements in a tensor are stored in contiguous memory locations, including across row boundaries. If `Tensor.is_contiguous()` returns `True`, the tensor layout is considered contiguous.
@@ -102,24 +102,24 @@ Output tensor representing the computation result of quantized matrix multiplica
 
     |x1|x2|scale|offset|bias|pertoken_scale|output_dtype|
     |---------|--------|--------|--------|--------|--------|--------|
-    |int8|int8|int64/float32|None|int32/None|None|float16|
-    |int8|int8|int64/float32|float32/None|int32/None|None|int8|
+    |`torch.int8`|`torch.int8`|`torch.int64`/`torch.float32`|None|`torch.int32`/None|None|`torch.float16`|
+    |`torch.int8`|`torch.int8`|`torch.int64`/`torch.float32`|`torch.float32`/None|`torch.int32`/None|None|`torch.int8`|
 
     **Table 2** Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
     |x1|x2|scale|offset|bias|pertoken_scale|output_dtype|
     |---------|--------|--------|--------|--------|--------|--------|
-    |int8|int8|int64/float32|None|int32/None|None|float16|
-    |int8|int8|int64/float32|float32/None|int32/None|None|int8|
-    |int8|int8|float32/bfloat16|None|int32/bfloat16/float32/None|float32/None|bfloat16|
-    |int8|int8|float32|None|int32/bfloat16/float32/None|float32|float16|
-    |int32|int32|int64/float32|None|int32/None|None|float16|
-    |int8|int8|float32/bfloat16|None|int32/None|None|int32|
+    |`torch.int8`|`torch.int8`|`torch.int64`/`torch.float32`|None|`torch.int32`/None|None|`torch.float16`|
+    |`torch.int8`|`torch.int8`|`torch.int64`/`torch.float32`|`torch.float32`/None|`torch.int32`/None|None|`torch.int8`|
+    |`torch.int8`|`torch.int8`|`torch.float32`/`torch.bfloat16`|None|`torch.int32`/`torch.bfloat16`/`torch.float32`/None|`torch.float32`/None|`torch.bfloat16`|
+    |`torch.int8`|`torch.int8`|`torch.float32`|None|`torch.int32`/`torch.bfloat16`/`torch.float32`/None|`torch.float32`|`torch.float16`|
+    |`torch.int32`|`torch.int32`|`torch.int64`/`torch.float32`|None|`torch.int32`/None|None|`torch.float16`|
+    |`torch.int8`|`torch.int8`|`torch.float32`/`torch.bfloat16`|None|`torch.int32`/None|None|`torch.int32`|
 
 ## Examples
 
 - Single-operator call
-    - Scenarios with `int8` inputs:
+    - Scenarios with `torch.int8` inputs:
 
         ```python
         >>> import torch
@@ -180,7 +180,7 @@ Output tensor representing the computation result of quantized matrix multiplica
         ```
 
 - Graph mode (ND layout)
-    - Scenarios with `float16` outputs:
+    - Scenarios with `torch.float16` outputs:
 
         ```python
         import torch
@@ -247,7 +247,7 @@ Output tensor representing the computation result of quantized matrix multiplica
                 -112.8125]]], device='npu:0', dtype=torch.float16)
         ```
     
-    - Code sample for scenarios with `bfloat16` outputs (supported on the following products):
+    - Code sample for scenarios with `torch.bfloat16` outputs (supported on the following products):
     
         - Atlas A2 training products/Atlas A2 inference products
         - Atlas A3 training products/Atlas A3 inference products

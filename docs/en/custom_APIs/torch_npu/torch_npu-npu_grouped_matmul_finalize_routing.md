@@ -32,21 +32,21 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 ## Parameters<a name="en-us_topic_0000002259406069_section112637109429"></a>
 
-- **`x`** (`Tensor`): Required. Left matrix for matrix computation. Non-contiguous tensors are not supported. The data type can be `int8`. The data layout can be ND. The shape of this parameter is `(m, k)`. The value range of `m` is [1, 16 \* 1024 \* 8].
-- **`w`** (`Tensor`): Required. Right matrix for matrix computation. Non-contiguous tensors are not supported. The data type can be `int8` or `int4`.
+- **`x`** (`Tensor`): Required. Left matrix for matrix computation. Non-contiguous tensors are not supported. The data type can be `torch.int8`. The data layout can be ND. The shape of this parameter is `(m, k)`. The value range of `m` is [1, 16 \* 1024 \* 8].
+- **`w`** (`Tensor`): Required. Right matrix for matrix computation. Non-contiguous tensors are not supported. The data type can be `torch.int8` or `torch_npu.int4`.
     - In A8W8 quantization scenarios, the data layout can be NZ, and the shape of this parameter is `(e, n1, k1, k0, n0)`, where `k0` is fixed at `16` and `n0` is fixed at `32`. The `k` dimension in the shape of `x` and the `k1` dimension in the shape of `w` must satisfy the equation: $\mathrm{ceilDiv}(k, 16) = k1$. The value of `e` must be in the range [1, 256]. The value of `k` must be a multiple of `16`. The value of `n` must be a multiple of `32` and greater than or equal to `256`.
     - In A8W4 quantization scenarios, the data layout can be ND, and the shape of this parameter is `(e, k, n)`, where `k` is fixed at `2048` and `n` is fixed at `7168`.
 
-- **`group_list`** (`Tensor`): Required. Group sizes for `GroupedMatMul`. Non-contiguous tensors are not supported. The data type can be `int64`. The data layout can be ND. The shape of this parameter is `(e,)`, where `e` is identical to that of `w`. The sum of all elements in `group_list` must be less than or equal to `m`.
+- **`group_list`** (`Tensor`): Required. Group sizes for `GroupedMatMul`. Non-contiguous tensors are not supported. The data type can be `torch.int64`. The data layout can be ND. The shape of this parameter is `(e,)`, where `e` is identical to that of `w`. The sum of all elements in `group_list` must be less than or equal to `m`.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`scale`** (`Tensor`): Optional. Dequantization parameter for the weight matrix. In A8W8 scenarios, per-channel quantization is supported. Non-contiguous tensors are not supported. The data type can be `float32`. The data layout can be ND. The shape of this parameter is `(e, n)`, where $n = n1 \times n0$. In A8W4 quantization scenarios, the data type can be `int64`, and the shape is `(e, 1, n)`.
-- **`bias`** (`Tensor`): Optional. Bias parameter for matrix computation. Non-contiguous tensors are not supported. The data type can be `float32`. The data layout can be ND. The shape of this parameter is `(e, n)`. This parameter is supported only in A8W4 quantization scenarios.
-- **`offset`** (`Tensor`): Optional. Offset for matrix quantization parameters. Non-contiguous tensors are not supported. The data type can be `float32`. The data layout can be ND. This parameter must be 3D. This parameter is supported only in A8W4 quantization scenarios.
-- **`pertoken_scale`** (`Tensor`): Optional. Dequantization parameter for the `x` matrix under per-token quantization. Non-contiguous tensors are not supported. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`. The data type can be `float32`. The data layout can be ND.
-- **`shared_input`** (`Tensor`): Optional. Output of the shared expert in MoE computation, which must be combined with the MoE expert output. Non-contiguous tensors are not supported. The data type can be `bfloat16`. The data layout can be ND. This shape of this parameter is `(batch/dp, n)`, where `n` is identical to that of `scale`. The value range of `batch/dp` is [1, 2 \* 1024]. The value range of `batch` is [1, 16 \* 1024].
-- **`logit`** (`Tensor`): Optional. Per-token logit values from MoE experts. The output of matrix multiplication is multiplied by these logit values and then combined based on indices. Non-contiguous tensors are not supported. The data type can be `float32`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
-- **`row_index`** (`Tensor`): Optional. Output of MoE experts is combined based on this row index, where the values serve as indices for scatter-add combination. Non-contiguous tensors are not supported. The data type can be `int32` or `int64`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
-- **`dtype`** (`ScalarType`): Optional. Output type of `GroupedMatMul` computation. Only the default value `float32` is supported.
+- **`scale`** (`Tensor`): Optional. Dequantization parameter for the weight matrix. In A8W8 scenarios, per-channel quantization is supported. Non-contiguous tensors are not supported. The data type can be `torch.float32`. The data layout can be ND. The shape of this parameter is `(e, n)`, where $n = n1 \times n0$. In A8W4 quantization scenarios, the data type can be `torch.int64`, and the shape is `(e, 1, n)`.
+- **`bias`** (`Tensor`): Optional. Bias parameter for matrix computation. Non-contiguous tensors are not supported. The data type can be `torch.float32`. The data layout can be ND. The shape of this parameter is `(e, n)`. This parameter is supported only in A8W4 quantization scenarios.
+- **`offset`** (`Tensor`): Optional. Offset for matrix quantization parameters. Non-contiguous tensors are not supported. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 3D. This parameter is supported only in A8W4 quantization scenarios.
+- **`pertoken_scale`** (`Tensor`): Optional. Dequantization parameter for the `x` matrix under per-token quantization. Non-contiguous tensors are not supported. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`. The data type can be `torch.float32`. The data layout can be ND.
+- **`shared_input`** (`Tensor`): Optional. Output of the shared expert in MoE computation, which must be combined with the MoE expert output. Non-contiguous tensors are not supported. The data type can be `torch.bfloat16`. The data layout can be ND. This shape of this parameter is `(batch/dp, n)`, where `n` is identical to that of `scale`. The value range of `batch/dp` is [1, 2 \* 1024]. The value range of `batch` is [1, 16 \* 1024].
+- **`logit`** (`Tensor`): Optional. Per-token logit values from MoE experts. The output of matrix multiplication is multiplied by these logit values and then combined based on indices. Non-contiguous tensors are not supported. The data type can be `torch.float32`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
+- **`row_index`** (`Tensor`): Optional. Output of MoE experts is combined based on this row index, where the values serve as indices for scatter-add combination. Non-contiguous tensors are not supported. The data type can be `torch.int32` or `torch.int64`. The data layout can be ND. The shape of this parameter is `(m,)`, where `m` is identical to that of `x`.
+- **`dtype`** (`ScalarType`): Optional. Output type of `GroupedMatMul` computation. Only the default value `torch.float32` is supported.
 - **`shared_input_weight`** (`float`): Optional. Factor for combining shared expert output with MoE expert output. The `shared_input` is multiplied by this parameter before accumulating with the MoE expert results. The default value is `1.0`.
 - **`shared_input_offset`** (`int`): Optional. Row offset for combining shared expert and MoE expert outputs. The default value is `0`, indicating no offset.
 - **`output_bs`** (`int`): Optional. Maximum size of the output batch dimension. The default value is `0`.
@@ -56,7 +56,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
 `Tensor`
 
-Return value. Non-contiguous tensors are not supported. The output data type is fixed at `float32`. The shape of this output is `(batch, n)`.
+Return value. Non-contiguous tensors are not supported. The output data type is fixed at `torch.float32`. The shape of this output is `(batch, n)`.
 
 ## Constraints<a name="en-us_topic_0000002259406069_section12345537164214"></a>
 
@@ -66,10 +66,10 @@ Return value. Non-contiguous tensors are not supported. The output data type is 
 
     |x|w|group_list|scale|bias|offset|pertoken_scale|shared_input|logit|row_index|y|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |`int8`|`int8`|`int64`|`float32`|None|None|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
-    |`int8`|`int8`|`int64`|`float32`|None|None|`float32`|None|`float32`|`int64`|`float32`|
-    |`int8`|`int4`|`int64`|`int64`|`float32`|None|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
-    |`int8`|`int4`|`int64`|`int64`|`float32`|`float32`|`float32`|`bfloat16`|`float32`|`int64`|`float32`|
+    |`torch.int8`|`torch.int8`|`torch.int64`|`torch.float32`|None|None|`torch.float32`|`torch.bfloat16`|`torch.float32`|`torch.int64`|`torch.float32`|
+    |`torch.int8`|`torch.int8`|`torch.int64`|`torch.float32`|None|None|`torch.float32`|None|`torch.float32`|`torch.int64`|`torch.float32`|
+    |`torch.int8`|`torch_npu.int4`|`torch.int64`|`torch.int64`|`torch.float32`|None|`torch.float32`|`torch.bfloat16`|`torch.float32`|`torch.int64`|`torch.float32`|
+    |`torch.int8`|`torch_npu.int4`|`torch.int64`|`torch.int64`|`torch.float32`|`torch.float32`|`torch.float32`|`torch.bfloat16`|`torch.float32`|`torch.int64`|`torch.float32`|
 
 ## Examples<a name="en-us_topic_0000002259406069_section14459801435"></a>
 

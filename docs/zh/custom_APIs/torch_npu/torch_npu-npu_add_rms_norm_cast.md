@@ -51,7 +51,7 @@ torch_npu.npu_add_rms_norm_cast(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor
 - 该接口支持训练、推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
 - 维度的边界说明：
-  参数`x1`、`x2`、`gamma`、`y1`、`y2`、 `rstd`、 `x`的shape中每一维大小都不大于int32的最大值2147483647。
+  参数`x1`、`x2`、`gamma`、`y1`、`y2`、 `rstd`、 `x`的shape中每一维大小都不大于`torch.int32`的最大值2147483647。
 - 边界值场景说明：
   - 当输入是Inf时， 输出为Inf。
   - 当输入是NaN，输出为NaN。

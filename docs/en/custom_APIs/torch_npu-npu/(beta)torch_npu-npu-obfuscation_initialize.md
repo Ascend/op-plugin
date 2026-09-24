@@ -35,25 +35,25 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
 
 ## Parameters
 
-- **`hidden_size`** (`int`): Required. Dimension of the hidden layer. The data type is `int32`. Supported input values range from `1` to `10000`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-- **`tp_rank`** (`int`): Required. Tensor parallelism (TP) rank. The data type is `int32`. Supported input values range from `0` to `1024`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-- **`cmd`** (`int`): Required. Instruction ID for resource initialization. The data type is `int32`. Valid values are:
+- **`hidden_size`** (`int`): Required. Dimension of the hidden layer. The data type is `torch.int32`. Supported input values range from `1` to `10000`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+- **`tp_rank`** (`int`): Required. Tensor parallelism (TP) rank. The data type is `torch.int32`. Supported input values range from `0` to `1024`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+- **`cmd`** (`int`): Required. Instruction ID for resource initialization. The data type is `torch.int32`. Valid values are:
     * `1`: initializes resources for floating-point inference mode.
     * `2`: initializes resources for quantized inference mode.
     * `3`: releases resources.
-- **`data_type`** (`int`): Optional. Numeric ID representing the tensor data type. The data type is `int32`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-    Atlas inference products: The data type can be `float16`, `float32`, or `int8`.
-    Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, `bfloat16`, or `int8`.
-- **`model_obf_seed_id`** (`int`): Optional. Model obfuscation factor ID used by the `TA` module to query the model obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-- **`data_obf_seed_id`** (`int`): Optional. Data obfuscation factor ID used by the `TA` module to query the data obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-- **`thread_num`** (`int`): Optional. Number of threads used by the `CA` and `TA` modules for obfuscation processing. The data type is `int32`. Valid values are `{1, 2, 3, 4, 5, 6}`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+- **`data_type`** (`int`): Optional. Numeric ID representing the tensor data type. The data type is `torch.int32`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+    Atlas inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
+    Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+- **`model_obf_seed_id`** (`int`): Optional. Model obfuscation factor ID used by the `TA` module to query the model obfuscation factor from the `TEE KMC`. The data type is `torch.int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+- **`data_obf_seed_id`** (`int`): Optional. Data obfuscation factor ID used by the `TA` module to query the data obfuscation factor from the `TEE KMC`. The data type is `torch.int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
+- **`thread_num`** (`int`): Optional. Number of threads used by the `CA` and `TA` modules for obfuscation processing. The data type is `torch.int32`. Valid values are `{1, 2, 3, 4, 5, 6}`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
 - **`obf_coefficient`** (`float`): Optional. Obfuscation coefficient. The value range is (0.0, 1.0]. The default value is `1.0`.
 
 ## Return Values
 
 `Tensor`
 
-A 1D tensor with shape `(1)` and data type `int32`, representing the socket file descriptor.
+A 1D tensor with shape `(1)` and data type `torch.int32`, representing the socket file descriptor.
 
 ## Example
 

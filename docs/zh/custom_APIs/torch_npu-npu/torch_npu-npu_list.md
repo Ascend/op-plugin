@@ -256,7 +256,7 @@
 </tr>
 <tr id="row174651448111817"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p946574881819"><a name="p946574881819"></a><a name="p946574881819"></a><a href="（beta）torch_npu-npu-get_autocast_dtype.md">（beta）torch_npu.npu.get_autocast_dtype</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p19465848131818"><a name="p19465848131818"></a><a name="p19465848131818"></a>在AMP场景获取设备支持的数据类型，该dtype由torch_npu.npu.set_autocast_dtype设置，若未设置则使用默认数据类型float16。</p>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p19465848131818"><a name="p19465848131818"></a><a name="p19465848131818"></a>在AMP场景获取设备支持的数据类型，该dtype由torch_npu.npu.set_autocast_dtype设置，若未设置则使用默认数据类型`torch.float16`。</p>
 </td>
 </tr>
 <tr id="row1846564819185"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p146584811184"><a name="p146584811184"></a><a name="p146584811184"></a><a href="（beta）torch_npu-npu-set_autocast_dtype.md">（beta）torch_npu.npu.set_autocast_dtype</a></p>

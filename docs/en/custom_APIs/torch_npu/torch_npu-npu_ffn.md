@@ -40,69 +40,69 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. The input tensor must have at least two dimensions $[M, K1]$ and at most eight dimensions.
+- **`x`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. The input tensor must have at least two dimensions $[M, K1]$ and at most eight dimensions.
 
-- **`weight1`** (`Tensor`): Required. Expert weight data, $W_1$ in the formulas. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. The input shapes with and without experts are `[E, K1, N1]` and `[K1, N1]`, respectively.
+- **`weight1`** (`Tensor`): Required. Expert weight data, $W_1$ in the formulas. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. The input shapes with and without experts are `[E, K1, N1]` and `[K1, N1]`, respectively.
 
-- **`weight2`** (`Tensor`): Required. Expert weight data, $W_2$ in the formulas. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. The input shapes with and without experts are `[E, K2, N2]` and `[K2, N2]`, respectively.
+- **`weight2`** (`Tensor`): Required. Expert weight data, $W_2$ in the formulas. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. The input shapes with and without experts are `[E, K2, N2]` and `[K2, N2]`, respectively.
 
     > [!NOTE]  
     > $M$ indicates the number of tokens, corresponding to $B$ (`Batch`, batch size of the input sample) and $S$ (`Seq-Length`, sequence length of the input sample) in the Transformer. $K1$ indicates the number of input channels of the first MatMul, corresponding to $H$ (`Head-Size`, size of the hidden layer) in the Transformer. $N1$ indicates the number of output channels of the first MatMul. $K2$ indicates the number of input channels of the second MatMul. $N2$ indicates the number of output channels of the second MatMul, corresponding to $H$ in the Transformer. $E$ indicates the number of experts in expert scenarios.
 
 - **`activation`** (`str`): Required. The activation function used. Currently, only `fastgelu`, `gelu`, `relu`, `silu`, `geglu`, `swiglu`, and `reglu` are supported.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`expert_tokens`** (`list`): Optional. Number of tokens for each expert. The data type can be `int32`. The data layout can be ND. If this parameter is not empty, its maximum supported length is 256.
-- **`expert_tokens_index`** (`list`): Optional. Token indices calculated by each expert. The data type can be `int32`. The data layout can be ND. If this parameter is not empty, its maximum supported length is 256.
+- **`expert_tokens`** (`list`): Optional. Number of tokens for each expert. The data type can be `torch.int32`. The data layout can be ND. If this parameter is not empty, its maximum supported length is 256.
+- **`expert_tokens_index`** (`list`): Optional. Token indices calculated by each expert. The data type can be `torch.int32`. The data layout can be ND. If this parameter is not empty, its maximum supported length is 256.
 
-- **`bias1`** (`Tensor`): Optional. Weight data correction value, $b_1$ in the formulas. The data type can be `float16`, `float32`, or `int32`. The data layout can be ND. The input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
-- **`bias2`** (`Tensor`): Optional. Weight data correction value, $b_2$ in the formulas. The data type can be `float16`, `float32`, or `int32`. The data layout can be ND. The input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
+- **`bias1`** (`Tensor`): Optional. Weight data correction value, $b_1$ in the formulas. The data type can be `torch.float16`, `torch.float32`, or `torch.int32`. The data layout can be ND. The input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
+- **`bias2`** (`Tensor`): Optional. Weight data correction value, $b_2$ in the formulas. The data type can be `torch.float16`, `torch.float32`, or `torch.int32`. The data layout can be ND. The input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
 
-- **`scale`** (`Tensor`): Optional. Quantization parameter, quantization scaling factor. The data type can be `float32`. The data layout can be ND. In `pertensor` mode, the input is a 1D vector with shapes of `[E]` and `[1]` with and without experts, respectively. In `perchannel` mode, the input is a 2D vector or a 1D vector with shapes of `[E, N1]` and `[N1]` with and without experts, respectively.
-- **`offset`** (`Tensor`): Optional. Quantization parameter, quantization offset. The data type can be `float32`. The data layout can be ND. It is a 1D vector with shape `[E]` or `[1]` with and without experts, respectively.
-- **`deq_scale1`** (`Tensor`): Optional. Quantization parameter, dequantization scaling factor of the first MatMul group. The data type can be `int64`, `float32`, or `bfloat16`. The data layout can be ND. The input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
-- **`deq_scale2`** (`Tensor`): Optional. Quantization parameter, dequantization scaling factor of the second MatMul group. The data type can be `int64`, `float32`, or `bfloat16`. The data layout can be ND. The input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
-- **`antiquant_scale1`** (`Tensor`): Optional. Fake-quantization parameter, scaling factor of the first MatMul group. The data type can be `float16` or `bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
-- **`antiquant_scale2`** (`Tensor`): Optional. Fake-quantization parameter, scaling factor of the second MatMul group. The data type can be `float16` or `bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
-- **`antiquant_offset1`** (`Tensor`): Optional. Fake-quantization parameter, offset of the first MatMul group. The data type can be `float16` or `bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
-- **`antiquant_offset2`** (`Tensor`): Optional. Fake-quantization parameter, offset of the second MatMul group. The data type can be `float16` or `bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
+- **`scale`** (`Tensor`): Optional. Quantization parameter, quantization scaling factor. The data type can be `torch.float32`. The data layout can be ND. In `pertensor` mode, the input is a 1D vector with shapes of `[E]` and `[1]` with and without experts, respectively. In `perchannel` mode, the input is a 2D vector or a 1D vector with shapes of `[E, N1]` and `[N1]` with and without experts, respectively.
+- **`offset`** (`Tensor`): Optional. Quantization parameter, quantization offset. The data type can be `torch.float32`. The data layout can be ND. It is a 1D vector with shape `[E]` or `[1]` with and without experts, respectively.
+- **`deq_scale1`** (`Tensor`): Optional. Quantization parameter, dequantization scaling factor of the first MatMul group. The data type can be `torch.int64`, `torch.float32`, or `torch.bfloat16`. The data layout can be ND. The input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
+- **`deq_scale2`** (`Tensor`): Optional. Quantization parameter, dequantization scaling factor of the second MatMul group. The data type can be `torch.int64`, `torch.float32`, or `torch.bfloat16`. The data layout can be ND. The input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
+- **`antiquant_scale1`** (`Tensor`): Optional. Fake-quantization parameter, scaling factor of the first MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
+- **`antiquant_scale2`** (`Tensor`): Optional. Fake-quantization parameter, scaling factor of the second MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
+- **`antiquant_offset1`** (`Tensor`): Optional. Fake-quantization parameter, offset of the first MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
+- **`antiquant_offset2`** (`Tensor`): Optional. Fake-quantization parameter, offset of the second MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
 
-- **`inner_precise`** (`int`): Optional. Choice between high accuracy and high performance. The data type can be `int64`. This parameter takes effect only for `float16`. `bfloat16` and `int8` do not distinguish between high-precision and high-performance modes.
+- **`inner_precise`** (`int`): Optional. Choice between high accuracy and high performance. The data type can be `torch.int64`. This parameter takes effect only for `torch.float16`. `torch.bfloat16` and `torch.int8` do not distinguish between high-precision and high-performance modes.
 
-    - When `inner_precise` is set to `0`, high-precision mode is enabled, and the operator uses the `float32` data type internally for computation.
+    - When `inner_precise` is set to `0`, high-precision mode is enabled, and the operator uses the `torch.float32` data type internally for computation.
     - When `inner_precise` is set to `1`, high performance mode is enabled.
 
-  In `bfloat16` non-quantization scenarios, `inner_precise` can only be set to `0`. In `float16` non-quantization scenarios, it can be set to `0` or `1`. In quantization or fake-quantization scenarios, `inner_precise` can be set `0` or `1`, but the setting does not take effect.
+  In `torch.bfloat16` non-quantization scenarios, `inner_precise` can only be set to `0`. In `torch.float16` non-quantization scenarios, it can be set to `0` or `1`. In quantization or fake-quantization scenarios, `inner_precise` can be set `0` or `1`, but the setting does not take effect.
 
-- **`output_dtype`** (`ScalarType`): Optional. Data type of the output tensor. This parameter takes effect only in quantization scenarios. The data type can be `float16` or `bfloat16`. The default value is `None`, indicating that the data type of the output tensor is `float16`.
+- **`output_dtype`** (`ScalarType`): Optional. Data type of the output tensor. This parameter takes effect only in quantization scenarios. The data type can be `torch.float16` or `torch.bfloat16`. The default value is `None`, indicating that the data type of the output tensor is `torch.float16`.
 
 ## Return Values
 
 `Tensor`
 
-Output tensor, $y$ in the formula. The data type can be `float16` or `bfloat16`. The data layout can be ND. The number of output dimensions must be identical to that of `x`.
+Output tensor, $y$ in the formula. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The number of output dimensions must be identical to that of `x`.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
 - If there are experts, the total number of experts must match $M$ of `x`.
-- When the activation layer is `geglu`, `swiglu`, or `reglu`, only the `float16` high-performance scenario (the data types of all mandatory `Tensor` parameters are `float16`) is supported without expert grouping. Here, $N1=2*K2$.
-- When the activation function is `gelu`, `fastgelu`, `relu`, or `silu`, the following scenarios are supported, with or without expert grouping: `float16` high-precision, `float16` high-performance, `bfloat16`, quantization, and fake-quantization. Here, $N1=K2$.
-- In all scenarios, the following conditions must be met: $K1 = N2$; $K1 < 65536$; $K2 < 65536$; the $M$ dimension must be less than the maximum value of `int32` after 32-byte alignment. In addition, the relationship between $N1$ and $K2$ depends on the activation function type: $N1=2*K2$ is required for `geglu/swiglu/reglu`, and $N1=K2$ is required for `gelu/fastgelu/relu/silu`.
+- When the activation layer is `geglu`, `swiglu`, or `reglu`, only the `torch.float16` high-performance scenario (the data types of all mandatory `Tensor` parameters are `torch.float16`) is supported without expert grouping. Here, $N1=2*K2$.
+- When the activation function is `gelu`, `fastgelu`, `relu`, or `silu`, the following scenarios are supported, with or without expert grouping: `torch.float16` high-precision, `torch.float16` high-performance, `torch.bfloat16`, quantization, and fake-quantization. Here, $N1=K2$.
+- In all scenarios, the following conditions must be met: $K1 = N2$; $K1 < 65536$; $K2 < 65536$; the $M$ dimension must be less than the maximum value of `torch.int32` after 32-byte alignment. In addition, the relationship between $N1$ and $K2$ depends on the activation function type: $N1=2*K2$ is required for `geglu/swiglu/reglu`, and $N1=K2$ is required for `gelu/fastgelu/relu/silu`.
 - Quantization parameters and fake-quantization parameters cannot be passed in non-quantization scenarios. Fake-quantization parameters cannot be passed in quantization scenarios. Quantization parameters cannot be passed in fake-quantization scenarios.
-- Parameter data types in quantization scenarios: `x` is `int8`, `weight` is `int8`, `bias` is `int32`, `scale` is `float32`, and `offset` is `float32`. Other parameters depend on the type of `y`:
-    - When `y` is `float16`, the data type `deq_scale` can be `uint64`, `int64`, or `float32`.
-    - When `y` is `bfloat16`, `deq_scale` can be `bfloat16`.
+- Parameter data types in quantization scenarios: `x` is `torch.int8`, `weight` is `torch.int8`, `bias` is `torch.int32`, `scale` is `torch.float32`, and `offset` is `torch.float32`. Other parameters depend on the type of `y`:
+    - When `y` is `torch.float16`, the data type `deq_scale` can be `torch.uint64`, `torch.int64`, or `torch.float32`.
+    - When `y` is `torch.bfloat16`, `deq_scale` can be `torch.bfloat16`.
     - The data types of `deq_scale1` and `deq_scale2` must be the same.
 
-- Parameter data types in quantization scenarios supporting the `perchannel` mode for `scale`: `x` is `int8`, `weight` is `int8`, `bias` is `int32`, `scale` is `float32`, and `offset` is `float32`. Other parameters depend on the type of `y`:
-    - When `y` is `float16`, `deq_scale` can be `uint64` or `int64`.
-    - When `y` is `bfloat16`, `deq_scale` can be `bfloat16`.
+- Parameter data types in quantization scenarios supporting the `perchannel` mode for `scale`: `x` is `torch.int8`, `weight` is `torch.int8`, `bias` is `torch.int32`, `scale` is `torch.float32`, and `offset` is `torch.float32`. Other parameters depend on the type of `y`:
+    - When `y` is `torch.float16`, `deq_scale` can be `torch.uint64` or `torch.int64`.
+    - When `y` is `torch.bfloat16`, `deq_scale` can be `torch.bfloat16`.
     - The data types of `deq_scale1` and `deq_scale2` must be the same.
 
 - Fake-quantization scenarios support two parameter configurations:
-    - `y` is `float16`, `x` is `float16`, `bias` is `float16`, `antiquant_scale` is `float16`, `antiquant_offset` is `float16`, and `weight` can be `int8`.
-    - `y` is `bfloat16`, `x` is `bfloat16`, `bias` is `float32`, `antiquant_scale` is `bfloat16`, `antiquant_offset` is `bfloat16`, and `weight` can be `int8`.
+    - `y` is `torch.float16`, `x` is `torch.float16`, `bias` is `torch.float16`, `antiquant_scale` is `torch.float16`, `antiquant_offset` is `torch.float16`, and `weight` can be `torch.int8`.
+    - `y` is `torch.bfloat16`, `x` is `torch.bfloat16`, `bias` is `torch.float32`, `antiquant_scale` is `torch.bfloat16`, `antiquant_offset` is `torch.bfloat16`, and `weight` can be `torch.int8`.
 
 ## Examples
 

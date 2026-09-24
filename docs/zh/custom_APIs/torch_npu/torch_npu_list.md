@@ -194,12 +194,12 @@
 </tr>
 <tr id="row68411842121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384134221114"><a name="p1384134221114"></a><a name="p1384134221114"></a><a href="（beta）torch_npu-npu_sign_bits_pack.md">（beta）torch_npu.npu_sign_bits_pack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p484114213112"><a name="p484114213112"></a><a name="p484114213112"></a>将float类型1位Adam打包为uint8。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p484114213112"><a name="p484114213112"></a><a name="p484114213112"></a>将float类型1位Adam打包为`torch.uint8`。</p>
 </td>
 </tr>
 <tr id="row128412042131111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p784116424113"><a name="p784116424113"></a><a name="p784116424113"></a><a href="（beta）torch_npu-npu_sign_bits_unpack.md">（beta）torch_npu.npu_sign_bits_unpack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>将uint8类型1位Adam拆包为float。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>将`torch.uint8`类型1位Adam拆包为float。</p>
 </td>
 </tr>
 <tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="（beta）torch_npu-npu_slice.md">（beta）torch_npu.npu_slice</a></p>
@@ -314,11 +314,11 @@
 </tr>
 <tr id="npu_anti_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_anti_mx_quant"><a name="p_npu_anti_mx_quant"></a><a name="p_npu_anti_mx_quant"></a><a href="torch_npu-npu_anti_mx_quant.md">torch_npu.npu_anti_mx_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_anti_mx_quant_desc"><a name="p_npu_anti_mx_quant_desc"></a><a name="p_npu_anti_mx_quant_desc"></a><span>将调用npu_dynamic_mx_quant量化得到的float4/float8的Tensor反量化为float16/bfloat16/float32格式，是npu_dynamic_mx_quant的逆过程。</span></p></td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_anti_mx_quant_desc"><a name="p_npu_anti_mx_quant_desc"></a><a name="p_npu_anti_mx_quant_desc"></a><span>将调用npu_dynamic_mx_quant量化得到的float4/float8的Tensor反量化为`torch.float16`/`torch.bfloat16`/`torch.float32`格式，是npu_dynamic_mx_quant的逆过程。</span></p></td>
 </tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_anti_quant.md">torch_npu.npu_anti_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001850161621_p0996174814315"><a name="zh-cn_topic_0000001850161621_p0996174814315"></a><a name="zh-cn_topic_0000001850161621_p0996174814315"></a>对张量x进行反量化操作，即将量化后的低精度数据恢复为浮点数。反量化是量化的逆过程，用于将低精度数据（如torch.int8、torch_npu.int4、torch_npu.hifloat8、torch.float8_e4m3fn、torch.float8_e5m2）转换回高精度浮点数。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001850161621_p0996174814315"><a name="zh-cn_topic_0000001850161621_p0996174814315"></a><a name="zh-cn_topic_0000001850161621_p0996174814315"></a>对张量x进行反量化操作，即将量化后的低精度数据恢复为浮点数。反量化是量化的逆过程，用于将低精度数据（如`torch.int8`、`torch_npu.int4`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`）转换回高精度浮点数。</p>
 </td>
 </tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_attention_to_ffn.md">torch_npu.npu_attention_to_ffn</a></p>
@@ -343,7 +343,7 @@
 </tr>
 <tr id="row16527145114477"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1338142581"><a name="p1338142581"></a><a name="p1338142581"></a><a href="torch_npu-npu_convert_weight_to_int4pack.md">torch_npu.npu_convert_weight_to_int4pack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>将数据类型为int32的输入tensor打包为int4存放，每8个int4数据通过一个int32数据承载，并进行交叠排放。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>将数据类型为`torch.int32`的输入tensor打包为`torch_npu.int4`存放，每8个`torch_npu.int4`数据通过一个`torch.int32`数据承载，并进行交叠排放。</p>
 </td>
 </tr>
 <tr id="row194591911194818"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p633812455816"><a name="p633812455816"></a><a name="p633812455816"></a><a href="torch_npu-npu_dynamic_quant.md">torch_npu.npu_dynamic_quant</a></p>
@@ -435,7 +435,7 @@
 </tr>
 <tr id="npu_grouped_dynamic_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_mx_quant"><a name="p_npu_grouped_dynamic_mx_quant"></a><a name="p_npu_grouped_dynamic_mx_quant"></a><a href="torch_npu-npu_grouped_dynamic_mx_quant.md">torch_npu.npu_grouped_dynamic_mx_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_mx_quant_desc"><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><span>根据传入的分组索引的起始值（group_index）对各个group以基本块（blocksize）为粒度进行目标数据类型为float8/float4的动态MX量化，并输出量化尺度mxscale（float8_e8m0）。</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_mx_quant_desc"><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><span>根据传入的分组索引的起始值（group_index）对各个group以基本块（blocksize）为粒度进行目标数据类型为float8/float4的动态MX量化，并输出量化尺度mxscale（`torch_npu.float8_e8m0fnu`）。</span></p>
 </td>
 </tr>
 <tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul_add.md">torch_npu.npu_grouped_matmul_add</a></p>
@@ -480,7 +480,7 @@
 </tr>
 <tr id="row_npu_kronecker_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_kronecker_quant.md">torch_npu.npu_kronecker_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对输入张量依次进行两次矩阵乘法，并对矩阵乘结果量化至int4类型或float4_e2m1fn_x2类型。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对输入张量依次进行两次矩阵乘法，并对矩阵乘结果量化至`torch_npu.int4`类型或`torch_npu.float4_e2m1fn_x2`类型。</p>
 </td>
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_lightning_indexer.md">torch_npu.npu_lightning_indexer</a></p>
@@ -725,7 +725,7 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_swiglu_quant.md">torch_npu.npu_swiglu_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>在swiglu激活函数后添加quant操作，实现输入x的SwiGluQuant计算，支持int8或int4量化输出，支持MoE场景和非MoE场景（group_index为空），支持分组量化，支持动态/静态量化。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>在swiglu激活函数后添加quant操作，实现输入x的SwiGluQuant计算，支持`torch.int8`或`torch_npu.int4`量化输出，支持MoE场景和非MoE场景（group_index为空），支持分组量化，支持动态/静态量化。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_dequant_swiglu_quant.md">torch_npu.npu_dequant_swiglu_quant</a></p>
@@ -941,7 +941,7 @@
 </tr>
 <tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>根据传入的分组索引的起始值（group_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiFP8），并输出量化参数scale（FP32）。</span></p></td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>根据传入的分组索引的起始值（group_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiFP8），并输出量化参数scale（`torch.float32`）。</span></p></td>
 </tr>
 <tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p>
 </td>

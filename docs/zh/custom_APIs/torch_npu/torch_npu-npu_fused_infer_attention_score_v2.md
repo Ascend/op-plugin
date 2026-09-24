@@ -96,7 +96,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **query**（`Tensor`）：必选参数，表示attention结构的Query输入，对应公式中的`Q`。不支持非连续的Tensor，数据格式支持$ND$。
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.hifloat8`、`torch.float8_e4m3fn`。
@@ -105,7 +105,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **key**（`Tensor`）：必选参数，表示attention结构的Key输入，对应公式中的`K`。除MXFP8单算子直调场景外，均不支持非连续的Tensor，数据格式支持$ND$。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch_npu.int4`（`torch.int32`）。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`）、`torch.hifloat8`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`。
@@ -114,7 +114,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **value**（`Tensor`）：必选参数，表示attention结构的Value输入，对应公式中的`V`。除MXFP8单算子直调场景外，均不支持非连续的Tensor，数据格式支持$ND$。
 
   <!-- npu="A3,910b" id10 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`、`int4`（`int32`）。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch_npu.int4`（`torch.int32`）。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`）、`torch.hifloat8`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`。
@@ -160,7 +160,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **dequant\_scale\_query**（`Tensor`）：可选参数，表示`query`的反量化参数。数据格式支持$ND$，如不使用该功能可传入None，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
   <!-- npu="A3,910b" id15 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持pertoken叠加perhead。数据类型支持`float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持pertoken叠加perhead。数据类型支持`torch.float32`。
   <!-- end id15 -->
   <!-- npu="950" id16 -->
   - <term>Ascend 950PR&950DT系列产品</term>：支持per-token叠加per-head和per-block，此时数据类型为`torch.float32`；支持per-channel-group，此时数据类型为`torch.float8_e8m0fnu`。
@@ -169,7 +169,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **dequant_scale_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据格式支持$ND$。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
   <!-- npu="A3,910b" id17 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
   <!-- end id17 -->
   <!-- npu="950" id18 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.float8_e8m0fnu`。
@@ -179,7 +179,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - **dequant_scale_value**（`Tensor`）：可选参数，kv伪量化参数分离时表示`value`的反量化因子。数据格式支持$ND$。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None，综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
   <!-- npu="A3,910b" id19 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
   <!-- end id19 -->
   <!-- npu="950" id20 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.float8_e8m0fnu`。
@@ -195,7 +195,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：预留参数，暂未使用，使用默认值即可。
   <!-- end id21 -->
   <!-- npu="950" id22 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`float32`。数据格式支持ND。支持per-tensor，shape必须是(1)。如不使用该功能可传入None。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`。数据格式支持ND。支持per-tensor，shape必须是(1)。如不使用该功能可传入None。
   <!-- end id22 -->
 
 - **learnable_sink**（`Tensor`）：可选参数，表示通过可学习的“Sink Token”起到吸收Attention Score的作用，数据类型支持`torch.bfloat16`，数据格式支持$ND$，shape输入为(Q_N,)。默认值为None，综合约束请见[learnable_sink约束](#zh-cn_topic_0000001832267082_section_learnable_sink_constraint)。
@@ -231,7 +231,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     | TND\_NTD | (T, Q\_N, D) | (T, KV\_N, D) | (T, KV\_N, D) | (Q\_N, T, D) | 输入TND，输出NTD |
     | NTD\_TND | (Q\_N, T, D) | (KV\_N, T, D) | (KV\_N, T, D) | (T, Q\_N, D) | 输入NTD，输出TND |
 
-- **sparse_mode**（`int`）：可选参数，表示sparse的模式，默认值为0。数据类型支持`int64`。Q\_S为1且不带rope输入时该参数无效。`input_layout`为TND、TND\_NTD、NTD\_TND时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)；GQA伪量化场景下综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。取值5、6、7、8（分别代表prefix、global、dilated、block\_local）暂未实现，请勿使用。
+- **sparse_mode**（`int`）：可选参数，表示sparse的模式，默认值为0。数据类型支持`torch.int64`。Q\_S为1且不带rope输入时该参数无效。`input_layout`为TND、TND\_NTD、NTD\_TND时，综合约束请见[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)；GQA伪量化场景下综合约束请见[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)。取值5、6、7、8（分别代表prefix、global、dilated、block\_local）暂未实现，请勿使用。
 
     <!-- npu="A3,910b" id25 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
@@ -249,9 +249,9 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     | 2 | leftUpCausal | 左上角因果模式的mask | 优化后的`atten_mask`矩阵(2048\*2048) |
     | 3 | rightDownCausal | 右下角因果模式的mask，对应以右顶点为划分的下三角场景 | 优化后的`atten_mask`矩阵(2048\*2048) |
     | 4 | band | band模式的mask | 优化后的`atten_mask`矩阵(2048\*2048) |
-    | 9 | treeMask | 推测解码场景的树形注意力掩码。仅MLA场景（`query_rope`和`key_rope`不为空）支持。不支持左padding、`pse_shift`、sharedPrefix，输出dtype不支持int8，每个batch需满足Q\_S ≤ KV\_S | 需传入自定义tree mask |
+    | 9 | treeMask | 推测解码场景的树形注意力掩码。仅MLA场景（`query_rope`和`key_rope`不为空）支持。不支持左padding、`pse_shift`、sharedPrefix，输出dtype不支持`torch.int8`，每个batch需满足Q\_S ≤ KV\_S | 需传入自定义tree mask |
 
-- **block_size**（`int`）：可选参数，表示PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持`int64`。
+- **block_size**（`int`）：可选参数，表示PageAttention中KV存储每个block中最大的token个数，默认为0，数据类型支持`torch.int64`。
 - **query_quant_mode**（`int`）：可选参数， 表示`query`的伪量化方式。
 
   <!-- npu="A3,910b" id27 -->
@@ -291,7 +291,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - <term>Ascend 950PR&950DT系列产品</term>：支持取值0、1、2、3、4、5、6、7、8。
     <!-- end id32 -->
 
-- **inner_precise**（`int`）：可选参数，数据类型支持`int64`，支持4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。当Q\_S\>1时，`sparse_mode`为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持取0和1。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
+- **inner_precise**（`int`）：可选参数，数据类型支持`torch.int64`，支持4种模式：0、1、2、3。一共两位bit位，第0位（bit0）表示高精度或者高性能选择，第1位（bit1）表示是否做行无效修正。当Q\_S\>1时，`sparse_mode`为0或1，并传入用户自定义mask的情况下，建议开启行无效；Q\_S为1时该参数仅支持取0和1。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
     - `inner_precise`为0时，代表开启高精度模式，且不做行无效修正。
     - `inner_precise`为1时，代表高性能模式，且不做行无效修正。
@@ -299,7 +299,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - `inner_precise`为3时，代表高性能模式，且做行无效修正。
 
     > [!NOTE]
-    > bfloat16和int8不区分高精度和高性能，行无效修正对`float16`、`bfloat16`和`int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来开启行无效功能以提升精度，但是该配置会导致性能下降。
+    > `torch.bfloat16`和`torch.int8`不区分高精度和高性能，行无效修正对`torch.float16`、`torch.bfloat16`和`torch.int8`均生效。当前0、1为保留配置值，当计算过程中“参与计算的mask部分”存在某整行全为1的情况时，精度可能会有损失。此时可以尝试将该参数配置为2或3来开启行无效功能以提升精度，但是该配置会导致性能下降。
 
 - **return_softmax_lse**（`bool`）：可选参数，表示是否输出`softmax_lse`，支持S轴外切（增加输出）。true表示输出，false表示不输出；默认值为false。
 - **query_dtype**（`int`）：可选参数，表示`query`的数据类型，**预留参数，暂未使用，使用默认值即可。**
@@ -309,7 +309,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：预留参数，暂未使用，使用默认值即可。
   <!-- end id33 -->
   <!-- npu="950" id34 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：`key`的数据类型为`float4_e2m1fn_x2`、`hifloat8`时，需要传值。
+  - <term>Ascend 950PR&950DT系列产品</term>：`key`的数据类型为`torch_npu.float4_e2m1fn_x2`、`torch_npu.hifloat8`时，需要传值。
   <!-- end id34 -->
 
 - **value_dtype**（`int`）：可选参数，表示`value`的数据类型。
@@ -318,7 +318,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：预留参数，暂未使用，使用默认值即可。
   <!-- end id35 -->
   <!-- npu="950" id36 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：`value`的数据类型为`float4_e2m1fn_x2`、`hifloat8`时，需要传值。
+  - <term>Ascend 950PR&950DT系列产品</term>：`value`的数据类型为`torch_npu.float4_e2m1fn_x2`、`torch_npu.hifloat8`时，需要传值。
   <!-- end id36 -->
 
 - **query_rope_dtype**（`int`）：可选参数，表示`query_rope`的数据类型，**预留参数，暂未使用，使用默认值即可。**
@@ -357,7 +357,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 > [!NOTICE]
 > 约束说明按场景组织，可按需查阅：
 >
-> - [**通用约束**](#zh-cn_topic_0000001832267082_section_general_constraint)：入参为空处理、`key/value` shape一致性、int8量化限制。
+> - [**通用约束**](#zh-cn_topic_0000001832267082_section_general_constraint)：入参为空处理、`key/value` shape一致性、`torch.int8`量化限制。
 > - [**MLA场景约束**](#zh-cn_topic_0000001832267082_section_mla_constraint)（`query_rope`和`key_rope`输入时）：D=512约束、D=128约束、TND场景约束。
 > - [**GQA伪量化+KV NZ格式约束**](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)：KV NZ输入格式、dequant_scale约束、`sparse_mode`限制、`num_query_heads/num_key_value_heads`组合限制。
 > - [**learnable_sink约束**](#zh-cn_topic_0000001832267082_section_learnable_sink_constraint)：入参`learnable_sink`在使用时的场景限制。
@@ -371,11 +371,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 - 该接口与PyTorch配合使用时，需要保证CANN相关包与PyTorch相关包的版本匹配。
 - 入参为空的处理：算子内部需要判断参数`query`是否为空，如果是空则直接返回空。参数`query`不为空Tensor，参数`key`、`value`为空Tensor（即S2为0），则`attention_out`按照对应shape大小返回全0。`attention_out`为空Tensor时，返回空。
 - 参数`key`、`value`中对应tensor的shape需要完全一致；非连续场景下`key`、`value`的tensorlist中的batch只能为1，个数等于`query`的B，N和D需要相等。
-- int8量化相关入参数量与输出数据格式的综合限制：
+- `torch.int8`量化相关入参数量与输出数据格式的综合限制：
     - 输出为`torch.int8`的场景：入参`quant_scale_out`需要存在，`quant_offset_out`可选，不传时默认为0。
 
         <!-- npu="A3,910b" id41 -->
-        - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：输入为`int8`。
+        - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：输入为`torch.int8`。
         <!-- end id41 -->
 
     - 输出为`torch.float16`的场景：若存在入参`quant_offset_out`或`quant_scale_out`（即不为None），则报错并返回。
@@ -395,12 +395,12 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
                 - sparse：支持0/3/4/9；
                 - `query_rope`配置时要求`query`的N为1/2/4/8/16/32/64/128，`query_rope`的shape中D为64，其余维度与`query`一致；
                 - `key_rope`配置时要求`key`的N为1、D为512，`key_rope`的shape中D为64，其余维度与`key`一致；
-                - 支持`key`、`value`、`key_rope`的数据格式为$ND$或$NZ$。当数据格式为$NZ$时，若数据类型为`float16`或`bfloat16`，输入参数`key`和`value`的格式为\[blockNum, KV\_N, D/16, blockSize, 16\]；若输入数据类型为`int8`，输入参数`key`和`value`的格式为\[blockNum, KV\_N, D/32, blockSize, 32\]；
+                - 支持`key`、`value`、`key_rope`的数据格式为$ND$或$NZ$。当数据格式为$NZ$时，若数据类型为`torch.float16`或`torch.bfloat16`，输入参数`key`和`value`的格式为\[blockNum, KV\_N, D/16, blockSize, 16\]；若输入数据类型为`torch.int8`，输入参数`key`和`value`的格式为\[blockNum, KV\_N, D/32, blockSize, 32\]；
                 - `input_layout`形状支持BSH、BSND、BNSD、BNSD\_NBSD、BSND\_NBSD、BSH\_NBSD、TND、TND\_NTD；
                 - 支持开启page attention，此时`block_size`支持16的倍数且不大于1024；
                 - 不支持开启左padding、tensorlist、pse、prefix、伪量化、后量化、空Tensor。
-                - 支持全量化场景，即输入`query`/`key`/`value`全为`int8`，`query_rope`和`key_rope`为`bfloat16`，输出为`bfloat16`的场景：
-                    - 入参`dequant_scale_query`、`dequant_scale_key`、`dequant_scale_value`需要同时存在，且其数据类型仅支持`float32`。
+                - 支持全量化场景，即输入`query`/`key`/`value`全为`torch.int8`，`query_rope`和`key_rope`为`torch.bfloat16`，输出为`torch.bfloat16`的场景：
+                    - 入参`dequant_scale_query`、`dequant_scale_key`、`dequant_scale_value`需要同时存在，且其数据类型仅支持`torch.float32`。
                     - 不支持传入`quant_scale_out`、`quant_offset_out`、`dequant_offset_key`、`dequant_offset_value`，否则报错并返回。
                     - `query_quant_mode`仅支持pertoken叠加perhead模式，`key_quant_mode`和`value_quant_mode`仅支持pertensor模式。
                     - 支持`key`、`value`、`key_rope`的`input_layout`格式为$NZ$。
@@ -408,13 +408,13 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             <!-- npu="950" id43 -->
             - <term>Ascend 950PR&950DT系列产品</term>：
                 - sparse：Q_S等于1时只支持sparse=0且不传mask，Q_S大于1时只支持sparse=3且传入mask。
-                - `query_rope`配置时要求`query`的s为1-16、fp8全量化场景n支持32、64、128，int8场景n支持1、2、4、8、16、32、64、128，d为512，`query_rope`的shape中b、n、s与`query`一致，d为64。
+                - `query_rope`配置时要求`query`的s为1-16、fp8全量化场景n支持32、64、128，`torch.int8`场景n支持1、2、4、8、16、32、64、128，d为512，`query_rope`的shape中b、n、s与`query`一致，d为64。
                 - `key_rope`配置时要求`key`的n为1，d为512，`key_rope`的shape中b、n、s与`key`一致，d为64。
                 - sparse：支持sparse=0且不传mask、sparse=3且传入mask。
-                - `key`&`value`支持$ND$输入，int8全量化场景仅支持PANZ输入。
+                - `key`&`value`支持$ND$输入，`torch.int8`全量化场景仅支持PANZ输入。
                 - `input_layout`：BSH、BSND、BNSD、BNSD\_BSND、TND、TND\_NTD。
                 - fp8全量化支持`input_layout`：BSH、BSND、BNSD、TND。
-                - int8全量化支持`input_layout`：BSH、BSND、TND、BSH\_NBSD、BSND\_NBSD、TND\_NTD。
+                - `torch.int8`全量化支持`input_layout`：BSH、BSND、TND、BSH\_NBSD、BSND\_NBSD、TND\_NTD。
                 - 支持`actual_seq_qlen`、`actual_seq_kvlen`参数。
             <!-- end id43 -->
 
@@ -483,7 +483,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     <!-- end id48 -->
     <!-- npu="950" id49 -->
     - <term>Ascend 950PR&950DT系列产品</term>：
-        - 仅支持per-channel模式，query数据类型固定为`torch.bfloat16`，key&value固定为int8；`query&key&value`的D仅支持128；`query` Sequence Length仅支持1-16；
+        - 仅支持per-channel模式，query数据类型固定为`torch.bfloat16`，key&value固定为`torch.int8`；`query&key&value`的D仅支持128；`query` Sequence Length仅支持1-16；
         - `dequant_scale_key`和`dequant_scale_value`的shape：当layout为BSH时，必须传入[H]；layout为BNSD时，必须传入[N,1,D]；输出为BSND时，必须传入[N, D]；
         - 当MTP等于0时，支持`sparse_mode`=0且不传mask；当MTP大于0、小于16时，支持`sparse_mode`=3且传入优化后的`atten_mask`矩阵，`atten_mask`矩阵shape必须传入（2048*2048）；
         - 不支持tensorlist、pse、page attention、后量化；
@@ -527,7 +527,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - D轴限制：
 
             <!-- npu="A3,910b" id54 -->
-            - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`query`、`key`、`value`输入类型包含`int8`时，D轴需要32对齐；`query`、`key`、`value`或attentionOut类型包含`int4`时，D轴需要64对齐；输入类型全为`float16`、`bfloat16`时，D轴需16对齐。
+            - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`query`、`key`、`value`输入类型包含`torch.int8`时，D轴需要32对齐；`query`、`key`、`value`或attentionOut类型包含`torch_npu.int4`时，D轴需要64对齐；输入类型全为`torch.float16`、`torch.bfloat16`时，D轴需16对齐。
             <!-- end id54 -->
             <!-- npu="950" id55 -->
             - <term>Ascend 950PR&950DT系列产品</term>：非量化场景：`query`，`key`，`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch.hifloat8`/`torch.float8_e4m3fn`/`torch.float4_e2m1`/`torch.int4`（`torch.int32`），其中当`key`、`value`类型为`torch.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D 8对齐）。全量化场景：per-block全量化D轴支持1-128，MxFP8全量化D轴仅支持64或128。
@@ -625,8 +625,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
         <!-- npu="A3,910b" id65 -->
         - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
-            - 仅支持pertoken和perchannel模式，pertoken模式下要求两个参数的shape均为\(B, KV\_S\)，数据类型固定为`float32`；perchannel模式下要求两个参数的shape为（KV\_N, D），\(KV\_N, D\)，\(H\)，数据类型固定为`bfloat16`,H为KV\_N*D。
-            - `dequant_scale_key`与`dequant_scale_value`非空场景，要求`query`的s小于等于16；要求`query`的dtype为`bfloat16`，`key`、`value`的dtype为`int8`，输出的dtype为`bfloat16`；不支持tensorlist、page attention特性。
+            - 仅支持pertoken和perchannel模式，pertoken模式下要求两个参数的shape均为\(B, KV\_S\)，数据类型固定为`torch.float32`；perchannel模式下要求两个参数的shape为（KV\_N, D），\(KV\_N, D\)，\(H\)，数据类型固定为`torch.bfloat16`,H为KV\_N*D。
+            - `dequant_scale_key`与`dequant_scale_value`非空场景，要求`query`的s小于等于16；要求`query`的dtype为`torch.bfloat16`，`key`、`value`的dtype为`torch.int8`，输出的dtype为`torch.bfloat16`；不支持tensorlist、page attention特性。
         <!-- end id65 -->
         <!-- npu="950" id66 -->
         - <term>Ascend 950PR&950DT系列产品</term>：
@@ -647,8 +647,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
             | 量化模式 | 该场景下scale和offset条件 | 该场景下`key`和`value`条件 |
             | --- | --- | --- |
-            | per-channel模式 | 两个参数shape支持(N, 1, D)，(N, D)，(H)，(1, N, 1, D)，(1, N, D)，(1, H)数据类型和`query`数据类型相同。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持`key`、`value`数据类型为`int8`。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.hifloat8`、`torch.float8_e4m3fn`时支持。其中，当为`torch.hifloat8`、`torch.float8_e4m3fn`时，不支持带`dequant_offset`。</li> |
-            | per-token模式 | 两个参数的shape均为(B, S)，数据类型固定为`torch.float32`。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持`key`、`value`数据类型为`int8`。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.float8_e4m3fn`时支持。</li> |
+            | per-channel模式 | 两个参数shape支持(N, 1, D)，(N, D)，(H)，(1, N, 1, D)，(1, N, D)，(1, H)数据类型和`query`数据类型相同。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持`key`、`value`数据类型为`torch.int8`。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.hifloat8`、`torch.float8_e4m3fn`时支持。其中，当为`torch.hifloat8`、`torch.float8_e4m3fn`时，不支持带`dequant_offset`。</li> |
+            | per-token模式 | 两个参数的shape均为(B, S)，数据类型固定为`torch.float32`。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：仅支持`key`、`value`数据类型为`torch.int8`。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.float8_e4m3fn`时支持。</li> |
             | per-tensor模式 | 两个参数的shape均为(1,)，数据类型和`query`数据类型相同。 | 当`key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
             | per-tensor叠加per-head模式 | 两个参数的shape均为(N,)，数据类型和`query`数据类型相同。 | 当`key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
             | per-token叠加per-head模式 | 两个参数的shape均为(B, N, S)，数据类型固定为`torch.float32`。 | `key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
@@ -696,8 +696,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - `query`、`key`、`value`输入，功能使用限制如下：
         - 支持B轴小于等于65536，支持N轴小于等于256，支持S轴小于等于262144，支持D轴小于等于512。
         - `query`、`key`、`value`输入类型均为`torch.int8`的场景暂不支持。
-        - 在int4（int32）伪量化场景下，PyTorch入图调用仅支持KV `torch.int4`拼接成`torch.int32`输入（建议通过dynamicQuant生成`torch.int4`格式的数据，算子运行时会将8个`torch.int4`打包存储于一个`torch.int32`中）。
-        - 在int4（int32）伪量化场景下，若KV `torch.int4`拼接成`torch.int32`输入，那么KV的N、D或者H是实际值的八分之一。并且，`torch.int4`伪量化仅支持D 64对齐（`torch.int32`支持D 8对齐）。
+        - 在`torch_npu.int4`（`torch.int32`）伪量化场景下，PyTorch入图调用仅支持KV `torch.int4`拼接成`torch.int32`输入（建议通过dynamicQuant生成`torch.int4`格式的数据，算子运行时会将8个`torch.int4`打包存储于一个`torch.int32`中）。
+        - 在`torch_npu.int4`（`torch.int32`）伪量化场景下，若KV `torch.int4`拼接成`torch.int32`输入，那么KV的N、D或者H是实际值的八分之一。并且，`torch.int4`伪量化仅支持D 64对齐（`torch.int32`支持D 8对齐）。
 
         <!-- npu="950" id69 -->
         - <term>Ascend 950PR&950DT系列产品</term>：`key`、`value`输入类型为`torch.float4_e2m1fn_x2`/`torch.int4`（`torch.int32`）时，`query`的D轴以及`key`、`value`的D轴需要64对齐（`torch.int32`仅支持`key`、`value`的D 8对齐）。
@@ -726,8 +726,8 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
         <!-- npu="A3,910b" id74 -->
         - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
-            - 支持`key`、`value`数据类型为float16、bfloat16、int8。
-            - 不支持Q为`bfloat16`、float16、`key`、`value`为int4（int32）的场景。
+            - 支持`key`、`value`数据类型为`torch.float16`、`torch.bfloat16`、`torch.int8`。
+            - 不支持Q为`torch.bfloat16`、`torch.float16`、`key`、`value`为`torch_npu.int4`（`torch.int32`）的场景。
         <!-- end id74 -->
         <!-- npu="950" id75 -->
         - <term>Ascend 950PR&950DT系列产品</term>：支持`key`、`value`数据类型为`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`（`torch.int32`）、`torch.float8_e4m3fn`、`torch.hifloat8`、`torch.float4_e2m1fn_x2`。
@@ -735,7 +735,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - 该场景下，`block_size`是用户自定义的参数，该参数的取值会影响page attention的性能。通常情况下，page attention可以提高吞吐量，但会带来性能上的下降。
 
             <!-- npu="A3,910b" id76 -->
-            - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`key`、`value`输入类型为float16、bfloat16时需要16对齐，`key`、`value`输入类型为int8时需要32对齐，推荐使用128。
+            - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`key`、`value`输入类型为`torch.float16`、`torch.bfloat16`时需要16对齐，`key`、`value`输入类型为`torch.int8`时需要32对齐，推荐使用128。
             <!-- end id76 -->
             <!-- npu="950" id77 -->
             - <term>Ascend 950PR&950DT系列产品</term>：`key`、`value`输入类型为`torch.float16`/`torch.bfloat16`时需要16对齐；`key`、`value`输入类型为`torch.int8`/`torch.float8_e4m3fn`/`torch.hifloat8`时需要32对齐；`key`、`value`输入类型为`torch.float4_e2m1fn_x2`/`torch.int4`（`torch.int32`）时需要64对齐。
@@ -761,7 +761,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - 除了`key_quant_mode`为0并且`value_quant_mode`为1的场景外，`key_quant_mode`和`value_quant_mode`取值需要保持一致。
         - `dequant_scale_key`和`dequant_scale_value`要么都为空，要么都不为空；`dequant_offset_key`和`dequant_offset_value`要么都为空，要么都不为空。
         - `dequant_scale_key`和`dequant_scale_value`都不为空时，除了`key_quant_mode`为0并且`value_quant_mode`为1的场景外，其shape需要保持一致；`dequant_offset_key`和`dequant_offset_value`都不为空时，除了`key_quant_mode`为0并且`value_quant_mode`为1的场景外，其shape需要保持一致。
-        - int4（int32）伪量化场景不支持后量化。
+        - `torch_npu.int4`（`torch.int32`）伪量化场景不支持后量化。
         - 管理scale/offset的量化模式如下：
     
             > [!NOTE]   
@@ -776,14 +776,14 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
             | 量化模式 | 该场景下scale和offset条件 | 该场景下`key`和value条件 |
             | --- | --- | --- |
-            | per-channel模式 | 两个参数shape支持(1, KV_N, 1, D)，(1, KV_N, D)，(1, H)，数据类型和`query`数据类型相同。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当`key`、`value`数据类型为int4（int32）或int8时支持。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.hifloat8`、`torch.float8_e4m3fn`时支持。其中，当为`torch.hifloat8`、`torch.float8_e4m3fn`时，不支持带`dequant_offset`。</li> |
+            | per-channel模式 | 两个参数shape支持(1, KV_N, 1, D)，(1, KV_N, D)，(1, H)，数据类型和`query`数据类型相同。 | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当`key`、`value`数据类型为`torch_npu.int4`（`torch.int32`）或`torch.int8`时支持。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）、`torch.int8`、`torch.hifloat8`、`torch.float8_e4m3fn`时支持。其中，当为`torch.hifloat8`、`torch.float8_e4m3fn`时，不支持带`dequant_offset`。</li> |
             | per-tensor模式 | 两个参数的shape为(1,)，数据类型和`query`数据类型相同。 | 当`key`、`value`数据类型为`torch.int8`时支持。 |
             | per-token模式 | 两个参数的shape均为(1, B, KV_S)，数据类型固定为`torch.float32`。 | `key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
             | per-tensor叠加per-head模式 | 两个参数的shape为(KV_N,)，数据类型和`query`数据类型相同。 | 当`key`、`value`数据类型为`torch.int8`时支持。 |
             | per-token叠加per-head模式 | 两个参数的shape均为(B, KV_N, KV_S)，数据类型固定为`torch.float32`。 | `key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。 |
             | per-token叠加使用page attention模式 | 两个参数的shape为(blocknum, blocksize)，数据类型固定为`torch.float32`。 | `key`、`value`数据类型为`torch.int8`时支持。 |
             | per-token叠加per head并使用page attention模式 | 两个参数的shape为(blocknum, KV_N, blocksize)，数据类型固定为`torch.float32`。 | `key`、`value`数据类型为`torch.int8`时支持。 |
-            | `key`支持per-channel叠加`value`支持per-token模式 | <li>对于`key`支持per-channel，两个参数的shape可支持(1, KV_N, 1, D)、(1, KV_N, D)、(1, H)，且数据类型和`query`数据类型相同。</li><li>对于`value`支持per-token，两个参数的shape均为(1, B, KV_S)并且数据类型固定为`torch.float32`。</li> | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当`key`、`value`数据类型为int4（int32）或int8时支持；当`key`和`value`的数据类型为int8时，仅支持query和输出的dtype为float16。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。</li> |
+            | `key`支持per-channel叠加`value`支持per-token模式 | <li>对于`key`支持per-channel，两个参数的shape可支持(1, KV_N, 1, D)、(1, KV_N, D)、(1, H)，且数据类型和`query`数据类型相同。</li><li>对于`value`支持per-token，两个参数的shape均为(1, B, KV_S)并且数据类型固定为`torch.float32`。</li> | <li><term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：当`key`、`value`数据类型为`torch_npu.int4`（`torch.int32`）或`torch.int8`时支持；当`key`和`value`的数据类型为`torch.int8`时，仅支持query和输出的dtype为`torch.float16`。</li><li><term>Ascend 950PR&950DT系列产品</term>：当`key`、`value`数据类型为`torch.int4`（`torch.int32`）或`torch.int8`时支持。</li> |
             | per-token-group模式 | `dequant_scale`的shape为(1, B, KV\_N, KV\_S, D/32)，数据类型固定为`torch.float8_e8m0fnu`，不支持带`dequant_offset`。 | 当`key`、`value`数据类型为`torch.float4_e2m1fn_x2`时支持。 |
 
     - `pse_shift`功能使用限制如下：
@@ -798,7 +798,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
 ### 示例 1：MHA + 非量化 + BNSD（PromptFlashAttention）
 
-**场景说明**：`query/key/value`均为`float16`，非量化场景，BNSD layout。无BMM1/BMM2量化参数，也不做输出量化。
+**场景说明**：`query/key/value`均为`torch.float16`，非量化场景，BNSD layout。无BMM1/BMM2量化参数，也不做输出量化。
 
 **关键参数**：
 
@@ -845,15 +845,15 @@ tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
 
 ### 示例 2：GQA + KV NZ + PageAttention
 
-**场景说明**：Decode阶段，Q_S=1（逐token增量推理）。GQA下KV_N=1 < Q_N=10，KV Cache以Page Attention方式管理，`key`/`value` 为int8并通过伪量化反量化为float16计算，选择NZ格式时仅支持高性能模式。
+**场景说明**：Decode阶段，Q_S=1（逐token增量推理）。GQA下KV_N=1 < Q_N=10，KV Cache以Page Attention方式管理，`key`/`value` 为`torch.int8`并通过伪量化反量化为`torch.float16`计算，选择NZ格式时仅支持高性能模式。
 
 **关键参数**：
 
 - `num_query_heads=10, num_key_value_heads=1`：必选参数，GQA支持组合：(10,1)/(64,8)/(80,8)/(128,16)。
 - `block_size=128`：必选参数，开启PageAttention，仅支持128或512。
-- `dequant_scale_value, dequant_scale_key`：使用per-channel伪量化时必选参数，dtype固定为bfloat16。
+- `dequant_scale_value, dequant_scale_key`：使用per-channel伪量化时必选参数，dtype固定为`torch.bfloat16`。
 - `key_quant_mode=0,value_quant_mode=0`：使用per-channel伪量化时必选参数，固定为0。
-- `key, value`: 必选参数，类型为int8，NZ格式[blockNum, KV_N, D/32, blockSize, 32]。
+- `key, value`: 必选参数，类型为`torch.int8`，NZ格式[blockNum, KV_N, D/32, blockSize, 32]。
 - `inner_precise=1`：必选参数，KV NZ格式约束下仅支持高性能模式。
 
 **相关约束**：[GQA伪量化+KV NZ格式约束](#gqa伪量化kv-nz格式约束)，[增量推理约束](#q_s1增量推理约束)
@@ -1014,13 +1014,13 @@ out, _ = torch_npu.npu_fused_infer_attention_score_v2(
 print(out)
 ```
 
-### 示例5：int8后量化
+### 示例5：`torch.int8`后量化
 
-**场景说明**：输入为bfloat16，输出为int8。除参数名称外与`torch_npu.npu_fused_infer_attention_score`同名示例差别不大。
+**场景说明**：输入为`torch.bfloat16`，输出为`torch.int8`。除参数名称外与`torch_npu.npu_fused_infer_attention_score`同名示例差别不大。
 
 **关键参数**：
 
-- `quant_scale_out`: 必选参数，bfloat16输入时同时支持float32 / bfloat16。
+- `quant_scale_out`: 必选参数，`torch.bfloat16`输入时同时支持`torch.float32` / `torch.bfloat16`。
 - `quant_offset_out`: 可选参数，类型和shape与scale一致，不传则默认0。
 
 **相关约束**：[通用约束](#通用约束)

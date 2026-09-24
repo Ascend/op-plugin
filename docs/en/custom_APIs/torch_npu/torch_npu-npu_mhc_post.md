@@ -25,10 +25,10 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Tensor to be processed, representing the input data of the mHC layer in the network. The data type can be `bfloat16` or `float16`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`h_res`** (`Tensor`): Required. mHC `h_res` transformation matrix, which is the doubly stochastic matrix obtained after the Sinkhorn transformation. The data type can be `float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`x`** (`Tensor`): Required. Tensor to be processed, representing the input data of the mHC layer in the network. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`h_res`** (`Tensor`): Required. mHC `h_res` transformation matrix, which is the doubly stochastic matrix obtained after the Sinkhorn transformation. The data type can be `torch.float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
 - **`h_out`** (`Tensor`): Required. Output of the Attention/MLP layer. The data type is the same as that of `x`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`h_post`** (`Tensor`): Required. mHC `h_post` transformation matrix. The data type can be `float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`h_post`** (`Tensor`): Required. mHC `h_post` transformation matrix. The data type can be `torch.float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
 
 ## Return Values
 

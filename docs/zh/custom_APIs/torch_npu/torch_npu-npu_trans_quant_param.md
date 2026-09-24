@@ -17,12 +17,12 @@
 
 ## 功能说明
 
-- API功能：完成量化计算参数`scale`数据类型的转换，将`float32`数据按照bit位存储进一个`int64`数据里。
+- API功能：完成量化计算参数`scale`数据类型的转换，将`torch.float32`数据按照bit位存储进一个`torch.int64`数据里。
 - 计算公式：
 
     1. `out`为64位格式，初始为0。
 
-    2. 根据`round_mode`将`scale`从`float32`转换为FP19：
+    2. 根据`round_mode`将`scale`从`torch.float32`转换为FP19：
         - 若`round_mode`为0（截断填充模式，默认值）：不对`scale`做R_INT舍入。
         - 若`round_mode`为1（R_INT模式）：先对`scale`执行R_INT舍入：
         $$
@@ -57,9 +57,9 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 ## 参数说明
 
-- **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
-- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
-- **round_mode** (`int`)：可选参数，指定`scale`从`float32`转换为FP19的模式，默认值为0。支持以下选项：
+- **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`torch.float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`torch.float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **round_mode** (`int`)：可选参数，指定`scale`从`torch.float32`转换为FP19的模式，默认值为0。支持以下选项：
   - 0：截断填充模式，直接将`scale`截断为FP19后打包。
   - 1：R_INT模式，先将`scale`按R_INT规则舍入为FP19，再截断打包，可提升计算精度。
 
@@ -67,7 +67,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 `Tensor`
 
-代表`trans_quant_param`的计算结果，对应公式中的$out$。数据类型支持`int64`（图模式下为`uint64`），数据格式支持$ND$。
+代表`trans_quant_param`的计算结果，对应公式中的$out$。数据类型支持`torch.int64`（图模式下为`torch.uint64`），数据格式支持$ND$。
 
 ## 约束说明
 
@@ -117,7 +117,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 - 图模式调用
 
-    图模式下，`npu_trans_quant_param`计算出的结果tensor为`uint64`数据类型。由于torch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
+    图模式下，`npu_trans_quant_param`计算出的结果tensor为`torch.uint64`数据类型。由于torch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
 
     ```python
     import torch

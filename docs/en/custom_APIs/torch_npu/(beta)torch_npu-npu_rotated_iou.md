@@ -24,8 +24,8 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 
 ## Parameters
 
-- **`self`** (`Tensor`): Required. Gradient increment data. This parameter must be a 3D `float32` tensor with shape `(B, N, 5)`.
-- **`query_boxes`** (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 3D `float32` tensor with shape `(B, N, 5)`. `K` must not exceed 1600.
+- **`self`** (`Tensor`): Required. Gradient increment data. This parameter must be a 3D `torch.float32` tensor with shape `(B, N, 5)`.
+- **`query_boxes`** (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 3D `torch.float32` tensor with shape `(B, N, 5)`. `K` must not exceed 1600.
 - **`trans`** (`bool`): Optional. A value of `True` indicates `"xyxyt"` and a value of `False` indicates `"xywht"`. The default value is `False`.
 - **`is_cross`** (`bool`): Optional. `True` applies cross computation and `False` applies one-to-one computation. The default value is `True`.
 - **`mode`** (`int`): Optional. Computation mode. Valid values are `0` (IoU) or `1` (IoF). The default value is `0`.

@@ -43,10 +43,10 @@ torch_npu.npu_masked_causal_conv1d(input, weight, *, mask=None) -> Tensor
 >
 > - The dimensions of the `input` and `weight` parameters are as follows: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, and W (Window Size) indicates the size of the convolution window.
 
-- **`input`** (`Tensor`): Required. Convolution input tensor. Non-contiguous tensors are supported. The data format can be $ND$, the data type can be `float16` or `bfloat16`, and the shape is [S, B, H].
+- **`input`** (`Tensor`): Required. Convolution input tensor. Non-contiguous tensors are supported. The data format can be $ND$, the data type can be `torch.float16` or `torch.bfloat16`, and the shape is [S, B, H].
 - **`weight`** (`Tensor`): Required. Convolution weight tensor. Non-contiguous tensors are supported. The data format can be $ND$, the data type must match that of `input`, and the shape is [W, H], where W can only be 3 currently.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`mask`** (`Tensor`): Optional. Mask of the convolution output. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bool`. The shape is `[B, S]`, where `true` indicates a valid position and `false` indicates a position to be zeroed out. The default value is `None`, indicating that no mask operation is performed.
+- **`mask`** (`Tensor`): Optional. Mask of the convolution output. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bool`. The shape is `[B, S]`, where `true` indicates a valid position and `false` indicates a position to be zeroed out. The default value is `None`, indicating that no mask operation is performed.
 
 ## Return Values
 

@@ -30,36 +30,36 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 
 ## 参数说明
 
-- **query**（`Tensor`）：仅支持`float16`。
-- **key**（`Tensor`）：仅支持`float16`。
-- **value**（`Tensor`）：仅支持`float16`。
-- **query_weight**（`Tensor`）：仅支持`float16`。
-- **key_weight**（`Tensor`）：仅支持`float16`。
-- **value_weight**（`Tensor`）：仅支持`float16`。
-- **attn_mask**（`Tensor`）：仅支持`float16`。
-- **out_proj_weight**（`Tensor`）：仅支持`float16`。
-- **query_bias**（`Tensor`）：仅支持`float16`。
-- **key_bias**（`Tensor`）：仅支持`float16`。
-- **value_bias**（`Tensor`）：仅支持`float16`。
-- **out_proj_bias**（`Tensor`）：仅支持`float16`。
-- **dropout_mask**（`Tensor`）：仅支持`float16`。
+- **query**（`Tensor`）：仅支持`torch.float16`。
+- **key**（`Tensor`）：仅支持`torch.float16`。
+- **value**（`Tensor`）：仅支持`torch.float16`。
+- **query_weight**（`Tensor`）：仅支持`torch.float16`。
+- **key_weight**（`Tensor`）：仅支持`torch.float16`。
+- **value_weight**（`Tensor`）：仅支持`torch.float16`。
+- **attn_mask**（`Tensor`）：仅支持`torch.float16`。
+- **out_proj_weight**（`Tensor`）：仅支持`torch.float16`。
+- **query_bias**（`Tensor`）：仅支持`torch.float16`。
+- **key_bias**（`Tensor`）：仅支持`torch.float16`。
+- **value_bias**（`Tensor`）：仅支持`torch.float16`。
+- **out_proj_bias**（`Tensor`）：仅支持`torch.float16`。
+- **dropout_mask**（`Tensor`）：仅支持`torch.float16`。
 - **attn_head_num**（`int`）： Attention Head numbers。
 - **attn_dim_per_head**（`int`）：Attention dim of a Head。
 - **src_len**（`int`）：source length。
 - **tgt_len**（`int`）：target length。
 - **dropout_prob**（`float`）：dropout keep probability。
-- **softmax_use_float**（`bool`）：SoftMax Use Float32 to keep precision。
+- **softmax_use_float**（`bool`）：SoftMax Use `torch.float32` to keep precision。
 
 ## 返回值说明
 
-- **y**（`Tensor`）：仅支持`float16`。
-- **dropout_mask**（`Tensor`）：仅支持`float16`。
-- **query_res**（`Tensor`）：仅支持`float16`。
-- **key_res**（`Tensor`）：仅支持`float16`。
-- **value_res**（`Tensor`）：仅支持`float16`。
-- **attn_scores**（`Tensor`）：仅支持`float16`。
-- **attn_res**（`Tensor`）：仅支持`float16`。
-- **context**（`Tensor`）：仅支持`float16`。
+- **y**（`Tensor`）：仅支持`torch.float16`。
+- **dropout_mask**（`Tensor`）：仅支持`torch.float16`。
+- **query_res**（`Tensor`）：仅支持`torch.float16`。
+- **key_res**（`Tensor`）：仅支持`torch.float16`。
+- **value_res**（`Tensor`）：仅支持`torch.float16`。
+- **attn_scores**（`Tensor`）：仅支持`torch.float16`。
+- **attn_res**（`Tensor`）：仅支持`torch.float16`。
+- **context**（`Tensor`）：仅支持`torch.float16`。
 
 ## 约束说明
 

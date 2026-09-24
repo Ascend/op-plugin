@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-应用NPU兼容的dropout_with_byte_mask操作，仅支持NPU设备。此方法生成无状态随机uint8掩码，并根据该掩码执行dropout。
+应用NPU兼容的dropout_with_byte_mask操作，仅支持NPU设备。此方法生成无状态随机`torch.uint8`掩码，并根据该掩码执行dropout。
 
 ## 函数原型
 

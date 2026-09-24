@@ -41,27 +41,27 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 > $N_k$ indicates the number of key heads, and $N_v$ indicates the number of value heads.<br>
 > $D_k$ indicates the hidden size of the key, and $D_v$ indicates the hidden size of the value.
 
-- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
+- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
 
-- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
+- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
 
-- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$, $D_v$).
+- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$, $D_v$).
 
-- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$).
+- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$).
 
-- **`initial_state`** (`Tensor`): Optional. Initial state matrix $S_0$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
+- **`initial_state`** (`Tensor`): Optional. Initial state matrix $S_0$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
 
-- **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `int32`. The data layout can be ND. The shape is `(B,)`.
+- **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `torch.int32`. The data layout can be ND. The shape is `(B,)`.
 
-- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
+- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `torch.float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
 
-- **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `float32`. The data layout can be ND. The shape is ($T$, $N_v$).
+- **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `torch.float32`. The data layout can be ND. The shape is ($T$, $N_v$).
 
 ## Return Values
 
-- **`out`** (`Tensor`): attention computation result, $o_t$ in the formula. The data type can be `bfloat16`. The data layout is ND. The shape is ($T$, $N_v$, $D_v$).
+- **`out`** (`Tensor`): attention computation result, $o_t$ in the formula. The data type can be `torch.bfloat16`. The data layout is ND. The shape is ($T$, $N_v$, $D_v$).
 
-- **`final_state`** (`Tensor`): final state matrix, $S_L$ in the formula. The data type can be `bfloat16`. The data layout is ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
+- **`final_state`** (`Tensor`): final state matrix, $S_L$ in the formula. The data type can be `torch.bfloat16`. The data layout is ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
 
 ## Constraints
 

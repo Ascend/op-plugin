@@ -33,15 +33,15 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，公式中的$x$，表示待计算的输入，要求为2维/3维张量，数据类型支持`float16`、`bfloat16`、`float32`，数据格式要求为$ND$。
-- **finished** (`Tensor`)：可选参数，表示输入中哪些行不参与计算。维度比`x`少1维（即`x`为2维时`finished`为1维，`x`为3维时`finished`为2维），shape为`x.shape[:-1]`，数据类型支持`bool`，数据格式要求为$ND$，默认值为`None`。其中，`True`表示对应行不参与计算，`False`表示对应行参与计算。
+- **x** (`Tensor`)：必选参数，公式中的$x$，表示待计算的输入，要求为2维/3维张量，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式要求为$ND$。
+- **finished** (`Tensor`)：可选参数，表示输入中哪些行不参与计算。维度比`x`少1维（即`x`为2维时`finished`为1维，`x`为3维时`finished`为2维），shape为`x.shape[:-1]`，数据类型支持`torch.bool`，数据格式要求为$ND$，默认值为`None`。其中，`True`表示对应行不参与计算，`False`表示对应行参与计算。
 - **k** (`int`)：可选参数，公式中的$k$，表示topk的k值，大小为0<k<=x的-1轴大小，k<=1024，默认值为`1`。
 
 ## 返回值说明
 
 - **y** (`Tensor`)：对应公式中的$yOut$，对x做softmax后取的topk值，数据维度支持2维/3维，数据类型与`x`需要保持一致，其非-1轴要求与`x`的对应轴大小一致，其-1轴要求其大小同`k`值。数据格式要求为$ND$。
-- **expert_idx** (`Tensor`)：对应公式中的$expertIdxOut$，对`x`做softmax后取topk值的索引，即专家的序号。shape要求与`y`一致，数据类型支持`int32`，数据格式要求为$ND$。
-- **row_idx** (`Tensor`)：对应公式中的$rowIdxOut$，表示输出的行位置对应输入的行位置，shape要求与`y`一致，数据类型支持`int32`，数据格式要求为$ND$。
+- **expert_idx** (`Tensor`)：对应公式中的$expertIdxOut$，对`x`做softmax后取topk值的索引，即专家的序号。shape要求与`y`一致，数据类型支持`torch.int32`，数据格式要求为$ND$。
+- **row_idx** (`Tensor`)：对应公式中的$rowIdxOut$，表示输出的行位置对应输入的行位置，shape要求与`y`一致，数据类型支持`torch.int32`，数据格式要求为$ND$。
 
 ## 约束说明
 

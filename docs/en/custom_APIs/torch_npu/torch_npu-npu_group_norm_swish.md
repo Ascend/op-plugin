@@ -36,7 +36,7 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Data to be normalized by group. This parameter is 2D to 8D. The data type can be `float16`, `float32`, or `bfloat16`.
+- **`input`** (`Tensor`): Required. Data to be normalized by group. This parameter is 2D to 8D. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
 
 - **`num_groups`** (`int`): Required. Number of groups that the first dimension of `input` is divided into. The size of the first dimension of `input` must be divisible by `num_groups`.
   - `num_groups=1`: Equivalent to LayerNorm (layer normalization), which normalizes the entire input and is suitable for scenarios such as sequence modeling and after fully connected layers.
@@ -46,9 +46,9 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
   >
   > During backward gradient computation, the result of `input.shape[1] / num_groups` must not exceed 4000. Violating this constraint may cause training errors.
 
-- **`weight`** (`Tensor`): Required. Weight tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `float16`, `float32`, or `bfloat16`, which must be identical to that of `input`.
+- **`weight`** (`Tensor`): Required. Weight tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`, which must be identical to that of `input`.
 
-- **`bias`** (`Tensor`): Required. Bias tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `float16`, `float32`, or `bfloat16`, which must be identical to that of `input`.
+- **`bias`** (`Tensor`): Required. Bias tensor. This parameter must be a 1D tensor, and the size of its 0th dimension must be identical to that of the first dimension of `input`. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`, which must be identical to that of `input`.
 
 - **`eps`** (`float`): Optional. Value added to the denominator for numerical stability during group normalization computation. The default value is `1e-5`.
 
@@ -56,7 +56,7 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## Return Values
 
-- **y** (`Tensor`): Final output after GroupNorm and SiLU activation, used for forward propagation in the network. Its shape is identical to that of `input`. The data type can be `float16`, `float32`, or `bfloat16`.
+- **y** (`Tensor`): Final output after GroupNorm and SiLU activation, used for forward propagation in the network. Its shape is identical to that of `input`. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
 
 - **mean** (`Tensor`): Mean of each group, used for gradient computation during backward propagation and must be saved alongside `y`. Its shape is `(N, num_groups)`, where `N` is the size of the 0-th dimension of `input`. Its data type is identical to that of `input`.
 

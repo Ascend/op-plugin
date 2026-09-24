@@ -27,11 +27,11 @@ $y_i[m_i, n_i] =  x_i[m_i, k_i] \times weight_i[k_i, n_i], i = 1 \ldots g$, wher
 
         $y_i = (x_i @ weight_i) \times scale_i + offset_i$
 
-        - `x` with data type `int8` and `bias` with data type `int32` (Formula 2-1):
+        - `x` with data type `torch.int8` and `bias` with data type `torch.int32` (Formula 2-1):
 
             $y_i = (x_i @ weight_i + bias_i) \times scale_i + offset_i$
 
-        - `x` with data type `int8` and `bias` with data type `bfloat16`, `float16`, or `float32`, without `offset` (Formula 2-2):
+        - `x` with data type `torch.int8` and `bias` with data type `torch.bfloat16`, `torch.float16`, or `torch.float32`, without `offset` (Formula 2-2):
 
             $y_i = (x_i @ weight_i) \times scale_i + bias_i$
 
@@ -39,14 +39,14 @@ $y_i[m_i, n_i] =  x_i[m_i, k_i] \times weight_i[k_i, n_i], i = 1 \ldots g$, wher
 
         $y_i = (x_i @ weight_i + bias_i) \times scale_i \times pertokenscale_i$
 
-        - `x` with data type `int8` and `bias` with data type `int32` (Formula 3-1):
+        - `x` with data type `torch.int8` and `bias` with data type `torch.int32` (Formula 3-1):
 
             $y_i = (x_i @ weight_i + bias_i) \times scale_i \times pertokenscale_i$
 
-        - `x` with data type `int8` and `bias` with data type `bfloat16`, `float16`, or `float32` (Formula 3-2):
+        - `x` with data type `torch.int8` and `bias` with data type `torch.bfloat16`, `torch.float16`, or `torch.float32` (Formula 3-2):
 
             $y_i = (x_i @ weight_i) \times scale_i \times pertokenscale_i + bias_i$
-        - `x` with data type `int4`, `weight` with data type `int4`, and layout `NZ` (Formula 3-3):
+        - `x` with data type `torch_npu.int4`, `weight` with data type `torch_npu.int4`, and layout `NZ` (Formula 3-3):
 
             $y_i=x_i@ (weight_i \times scale_i) \times pertokenscale_i$
         
@@ -64,8 +64,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **`x`** (`List[Tensor]`): Required. Input matrix list representing the left matrices in MatMul.
     - Valid data types:
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16`, `float32`, `bfloat16`, `int8`, or `int4`.
-        - Atlas inference products: `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `torch.float16`, `torch.float32`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4`.
+        - Atlas inference products: `torch.float16`.
 
     - The maximum list length is `128`.
     - When `split_item` is set to `0`, each tensor supports 2D to 6D inputs. In other configurations, only 2D inputs are supported.
@@ -73,10 +73,10 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`weight`** (`List[Tensor]`): Required. Weight matrix list representing the right matrices in MatMul.
     - Valid data types:
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
-            - When `group_list` is of type `List[int]`, the data type can be `float16`, `float32`, `bfloat16`, or `int8`.
-            - When `group_list` is of type `Tensor`, the data type can be `float16`, `float32`, `bfloat16`, `int4`, or `int8`.
+            - When `group_list` is of type `List[int]`, the data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+            - When `group_list` is of type `Tensor`, the data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, `torch_npu.int4`, or `torch.int8`.
 
-        - Atlas inference products: `float16`.
+        - Atlas inference products: `torch.float16`.
 
     - The maximum list length is `128`.
     - Each input tensor can be 2D or 3D.
@@ -84,8 +84,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`bias`** (`List[Tensor]`): Optional. Independent bias term for each grouped MatMul output.
     - Valid data types:
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16`, `float32`, or `int32`.
-        - Atlas inference products: `float16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `torch.float16`, `torch.float32`, or `torch.int32`.
+        - Atlas inference products: `torch.float16`.
 
     - The list length must be identical to that of `weight`.
     - Each input tensor must be 1D.
@@ -93,8 +93,8 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, corresponding to Formula (2) and Formula (3).
     - Valid data types:
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
-            - When `group_list` is of type `List[int]`, the data type can be `int64`.
-            - When `group_list` is of type `Tensor`, the data type can be `float32`, `bfloat16`, or `int64`.
+            - When `group_list` is of type `List[int]`, the data type can be `torch.int64`.
+            - When `group_list` is of type `Tensor`, the data type can be `torch.float32`, `torch.bfloat16`, or `torch.int64`.
 
         - Atlas inference products: Only `None` is supported.
 
@@ -104,7 +104,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`offset`** (`List[Tensor]`): Optional. Offset in quantization parameters, used to adjust quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (2). Currently, only `None` is supported.
 - **`antiquant_scale`** (`List[Tensor]`): Optional. Scaling factor in fake-quantization parameters, used to scale original values to match the fake-quantized range, corresponding to Formula (4).
     - Valid data types:
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16` or `bfloat16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `torch.float16` or `torch.bfloat16`.
         - Atlas inference products: Only `None` is supported.
 
     - The list length must be identical to that of `weight`.
@@ -114,7 +114,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - **`antiquant_offset`** (`List[Tensor]`): Optional. Offset in fake-quantization parameters, used to adjust fake-quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (4).
     - Valid data types:
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `float16` or `bfloat16`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: `torch.float16` or `torch.bfloat16`.
         - Atlas inference products: Only `None` is supported.
 
     - The list length must be identical to that of `weight`.
@@ -123,11 +123,11 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`per_token_scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, representing the scaling factor introduced by `x` quantization in `pertoken` quantization parameters, corresponding to Formula (3).
     - When `group_list` is of type `List[int]`, only `None` can be provided.
     - When `group_list` is of type `Tensor`:
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `float32`.
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float32`.
         - The list length must be identical to that of `x`.
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Each input tensor must be 1D.
 
-- **`group_list`** (`List[int]`/`Tensor`): Optional. Grouping index indicating the index mapping of MatMul along dimension `0` of `x`. The data type can be `int64`.
+- **`group_list`** (`List[int]`/`Tensor`): Optional. Grouping index indicating the index mapping of MatMul along dimension `0` of `x`. The data type can be `torch.int64`.
     - Atlas inference products: Only the <code>**Tensor**</code> type is supported. Each input tensor must be 1D. The length must be identical to that of `weight`.
     - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Both **`List[int]`** and **`Tensor`** types are supported. If it is a **`Tensor`**, it must be 1D, and the length must be identical to that of `weight`.
     - Configuration requirements:
@@ -140,28 +140,28 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`activation_input`** (`List[Tensor]`): Optional. Backward input of the activation function. Currently, only `None` is supported.
 - **`activation_quant_scale`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
 - **`activation_quant_offset`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
-- **`split_item`** (`int`): Optional. Specifies the split mode. The data type can be `int32`.
+- **`split_item`** (`int`): Optional. Specifies the split mode. The data type can be `torch.int32`.
     - `0` or `1`: The output contains multiple tensors, and the number matches that of `weight`.
     - `2` or `3`: The output is a single tensor.
 
-- **`group_type`** (`int`): Optional. The grouping axis. The data type can be `int32`.
+- **`group_type`** (`int`): Optional. The grouping axis. The data type can be `torch.int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, and the matrix multiplication is $C[m,n]=A[m,k] \times B[k,n]$, the valid enum values are: `-1` (no grouping), `0` (grouping along the m-axis), and `2` (grouping along the k-axis).
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Currently, the value can be `-1`, `0`, or `2`.
         - Atlas inference products: Currently, only `0` is supported.
 
-- **`group_list_type`** (`int`): Optional. Representation format of `group_list`. The data type can be `int32`.
+- **`group_list_type`** (`int`): Optional. Representation format of `group_list`. The data type can be `torch.int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, valid values are `0`, `1`, or `2`.
         - `0`: Default value. The values in `group_list` indicate the cumulative sum (`cumsum`) results of group sizes along the grouping axis.
         - `1`: The values in `group_list` indicate the size of each group along the grouping axis.
         - `2`: The shape of `group_list` must be `[E, 2]`, where `E` indicates the group size. The data layout must be `[[groupIdx0, groupSize0], [groupIdx1, groupSize1]...]`. `groupSize` indicates the size of each group along the grouping axis.
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The value `2` is supported only when the data type of `x` and `weight` is `INT8`, and `group_type` is set to `0` (m-axis grouping).
+        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The value `2` is supported only when the data type of `x` and `weight` is `torch.int8`, and `group_type` is set to `0` (m-axis grouping).
         - Atlas inference products: The value `2` is not supported.
     
-- **`act_type`** (`int`): Optional. Activation function type. The data type can be `int32`.
+- **`act_type`** (`int`): Optional. Activation function type. The data type can be `torch.int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, valid enum values are: `0` (no activation), `1` (`RELU` activation), `2` (`GELU_TANH` activation), `3` (not supported), `4` (`FAST_GELU` activation), or `5` (`SILU` activation).
@@ -191,14 +191,14 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
 - Usage scenario constraints for `tuning_config`:
 
-    This parameter can be used only in quantization scenarios (where the inputs are `int8`, the outputs can be `int32`, `bfloat16`, `float16`, or `int8`) and only in single-tensor single-expert configurations.
+    This parameter can be used only in quantization scenarios (where the inputs are `torch.int8`, the outputs can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.int8`) and only in single-tensor single-expert configurations.
 
     |x| weight|output_dtype|y|
     |---------|--------|--------|--------|
-    |`int8`|`int8`|`int8`|`int8`|
-    |`int8`|`int8`|`bfloat16`|`bfloat16`|
-    |`int8`|`int8`|`float16`|`float16`|
-    |`int8`|`int8`|`int32`|`int32`|
+    |`torch.int8`|`torch.int8`|`torch.int8`|`torch.int8`|
+    |`torch.int8`|`torch.int8`|`torch.bfloat16`|`torch.bfloat16`|
+    |`torch.int8`|`torch.int8`|`torch.float16`|`torch.float16`|
+    |`torch.int8`|`torch.int8`|`torch.int32`|`torch.int32`|
 
 - Constraints on the input and output data types in different scenarios:
     - **When `group_list` is of type `List[int]`**: Data type constraints for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products apply.
@@ -207,12 +207,12 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
         |Scenario|x|weight|bias|scale|antiquant_scale|antiquant_offset|output_dtype|y|
         |---------|--------|--------|--------|--------|--------|--------|--------|--------|
-        |Non-quantization|`float16`|`float16`|`float16`|Not required|Not required|Not required|`float16`|`float16`|
-        |Non-quantization|`bfloat16`|`bfloat16`|`float32`|Not required|Not required|Not required|`bfloat16`|`bfloat16`|
-        |Non-quantization|`float32`|`float32`|`float32`|Not required|Not required|Not required|`float32`|`float32`|
-        |`perchannel` full quantization|`int8`|`int8`|`int32`|`int64`|Not required|Not required|`int8`|`int8`|
-        |Fake-quantization|`float16`|`int8`|`float16`|Not required|`float16`|`float16`|`float16`|`float16`|
-        |Fake-quantization|`bfloat16`|`int8`|`float32`|Not required|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|
+        |Non-quantization|`torch.float16`|`torch.float16`|`torch.float16`|Not required|Not required|Not required|`torch.float16`|`torch.float16`|
+        |Non-quantization|`torch.bfloat16`|`torch.bfloat16`|`torch.float32`|Not required|Not required|Not required|`torch.bfloat16`|`torch.bfloat16`|
+        |Non-quantization|`torch.float32`|`torch.float32`|`torch.float32`|Not required|Not required|Not required|`torch.float32`|`torch.float32`|
+        |`perchannel` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.int64`|Not required|Not required|`torch.int8`|`torch.int8`|
+        |Fake-quantization|`torch.float16`|`torch.int8`|`torch.float16`|Not required|`torch.float16`|`torch.float16`|`torch.float16`|`torch.float16`|
+        |Fake-quantization|`torch.bfloat16`|`torch.int8`|`torch.float32`|Not required|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|
 
     - **When `group_list` is of type `Tensor`**: Data type constraints for the following products apply:
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
@@ -221,23 +221,23 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
             |Scenario|x|weight|bias|scale|antiquant_scale|antiquant_offset|per_token_scale|output_dtype|y|
             |---------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-            |Non-quantization|`float16`|`float16`|`float16`|Not required|Not required|Not required|Not required|None/`float16`|`float16`|
-            |Non-quantization|`bfloat16`|`bfloat16`|`float32`|Not required|Not required|Not required|Not required|None/`bfloat16`|`bfloat16`|
-            |Non-quantization|`float32`|`float32`|`float32`|Not required|Not required|Not required|Not required|`None`/`float32` (only when `x`/`weight`/`y` is a single tensor)|`float32`|
-            |`perchannel` full quantization|`int8`|`int8`|`int32`|`int64`|Not required|Not required|Not required|None/`int8`|`int8`|
-            |`perchannel` full quantization|`int8`|`int8`|`int32`|`bfloat16`|Not required|Not required|Not required|`bfloat16`|`bfloat16`|
-            |`perchannel` full quantization|`int8`|`int8`|`int32`|`float32`|Not required|Not required|Not required|`float16`|`float16`|
-            |`pertoken` full quantization|`int8`|`int8`|`int32`|`bfloat16`|Not required|Not required|`float32`|`bfloat16`|`bfloat16`|
-            |`pertoken` full quantization|`int8`|`int8`|`int32`|`float32`|Not required|Not required|`float32`|`float16`|`float16`|
-            |`pertoken` full quantization|`int4`|`int4`|Not required|`uint64`|Not required|Not required|None/`float32`|`float16`|`float16`|
-            |`pertoken` full quantization|`int4`|`int4`|Not required|`uint64`|Not required|Not required|None/`float32`|`bfloat16`|`bfloat16`|
-            |Fake-quantization|`float16`|`int8`/`int4`|`float16`|Not required|`float16`|`float16`|Not required|None/`float16`|`float16`|
-            |Fake-quantization|`bfloat16`|`int8`/`int4`|`float32`|Not required|`bfloat16`|`bfloat16`|Not required|None/`bfloat16`|`bfloat16`|
+            |Non-quantization|`torch.float16`|`torch.float16`|`torch.float16`|Not required|Not required|Not required|Not required|None/`torch.float16`|`torch.float16`|
+            |Non-quantization|`torch.bfloat16`|`torch.bfloat16`|`torch.float32`|Not required|Not required|Not required|Not required|None/`torch.bfloat16`|`torch.bfloat16`|
+            |Non-quantization|`torch.float32`|`torch.float32`|`torch.float32`|Not required|Not required|Not required|Not required|`None`/`torch.float32` (only when `x`/`weight`/`y` is a single tensor)|`torch.float32`|
+            |`perchannel` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.int64`|Not required|Not required|Not required|None/`torch.int8`|`torch.int8`|
+            |`perchannel` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.bfloat16`|Not required|Not required|Not required|`torch.bfloat16`|`torch.bfloat16`|
+            |`perchannel` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.float32`|Not required|Not required|Not required|`torch.float16`|`torch.float16`|
+            |`pertoken` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.bfloat16`|Not required|Not required|`torch.float32`|`torch.bfloat16`|`torch.bfloat16`|
+            |`pertoken` full quantization|`torch.int8`|`torch.int8`|`torch.int32`|`torch.float32`|Not required|Not required|`torch.float32`|`torch.float16`|`torch.float16`|
+            |`pertoken` full quantization|`torch_npu.int4`|`torch_npu.int4`|Not required|`torch.uint64`|Not required|Not required|None/`torch.float32`|`torch.float16`|`torch.float16`|
+            |`pertoken` full quantization|`torch_npu.int4`|`torch_npu.int4`|Not required|`torch.uint64`|Not required|Not required|None/`torch.float32`|`torch.bfloat16`|`torch.bfloat16`|
+            |Fake-quantization|`torch.float16`|`torch.int8`/`torch_npu.int4`|`torch.float16`|Not required|`torch.float16`|`torch.float16`|Not required|None/`torch.float16`|`torch.float16`|
+            |Fake-quantization|`torch.bfloat16`|`torch.int8`/`torch_npu.int4`|`torch.float32`|Not required|`torch.bfloat16`|`torch.bfloat16`|Not required|None/`torch.bfloat16`|`torch.bfloat16`|
 
             > [!NOTE]   
-            > - In fake-quantization scenarios, if the data type of `weight` is `int8`, only `perchannel` mode is supported. If the data type of `weight` is `int4`, both `perchannel` and `pergroup` modes are supported. In `pergroup` mode, the `pergroup` count $G$ or $G_i$ must exactly divide the corresponding $k_i$. If `weight` consists of multiple tensors, the `pergroup` length is defined as $s_i= k_i/G_i$, and all $s_i(i=1,2,...g)$ must be equal.
-            > - In fake-quantization scenarios, if the data type of `weight` is `int4`, the size of the last dimension for each tensor group in `weight` must be an even number. The last dimension of <code>weight<sub>i</sub></code> indicates the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed. In `pergroup` mode, when `weight` is transposed, the `pergroup` length $s_i$ must be an even number. A transposed tensor refers to a configuration where a tensor with shape `[M, K]` has a stride of `[1, M]` and a data layout of `[K, M]`. That is, it indicates a non-contiguous tensor.
-            > - PyTorch does not natively support the `int4` data type. To use `int4`, you can represent it using `int32` data through the [torch_npu.npu_quantize](torch_npu-npu_quantize.md) API.
+            > - In fake-quantization scenarios, if the data type of `weight` is `torch.int8`, only `perchannel` mode is supported. If the data type of `weight` is `torch_npu.int4`, both `perchannel` and `pergroup` modes are supported. In `pergroup` mode, the `pergroup` count $G$ or $G_i$ must exactly divide the corresponding $k_i$. If `weight` consists of multiple tensors, the `pergroup` length is defined as $s_i= k_i/G_i$, and all $s_i(i=1,2,...g)$ must be equal.
+            > - In fake-quantization scenarios, if the data type of `weight` is `torch_npu.int4`, the size of the last dimension for each tensor group in `weight` must be an even number. The last dimension of <code>weight<sub>i</sub></code> indicates the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed. In `pergroup` mode, when `weight` is transposed, the `pergroup` length $s_i$ must be an even number. A transposed tensor refers to a configuration where a tensor with shape `[M, K]` has a stride of `[1, M]` and a data layout of `[K, M]`. That is, it indicates a non-contiguous tensor.
+            > - PyTorch does not natively support the `torch_npu.int4` data type. To use `torch_npu.int4`, you can represent it using `torch.int32` data through the [torch_npu.npu_quantize](torch_npu-npu_quantize.md) API.
 
         - Atlas inference products:
 
@@ -245,7 +245,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
             |x|weight|bias|scale|antiquant_scale|antiquant_offset|per_token_scale|output_dtype|y|
             |--------|--------|--------|--------|--------|--------|--------|--------|--------|
-            |`float16`|`float16`|`float16`|Not required|Not required|Not required|`float32`|`float16`|`float16`|
+            |`torch.float16`|`torch.float16`|`torch.float16`|Not required|Not required|Not required|`torch.float32`|`torch.float16`|`torch.float16`|
             
 - The following scenarios are supported based on the variations in the tensor counts of input `x`, input `weight`, and output `y`. In these scenario descriptions, "single" indicates a single tensor, and "multiple" indicates multiple tensors. The naming sequence follows the order of `x`, `weight`, and `y`. For example, "single-multiple-single" indicates that `x` is a single tensor, `weight` is a list of tensors, and `y` is a single tensor.
     - **When `group_list` is of type `List[int]`**: constraints for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products apply.
@@ -273,7 +273,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 
         - Atlas inference products
 
-            The inputs and outputs support only the `float16` data type. The N-axis size of the output `y` must be a multiple of `16`.
+            The inputs and outputs support only the `torch.float16` data type. The N-axis size of the output `y` must be a multiple of `16`.
 
             |group_type|Supported Scenario|Description|Constraints|
             |--------|--------|--------|--------|
@@ -309,7 +309,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         npu_out = torch_npu.npu_grouped_matmul(x, weight, bias=bias, group_list=group_list, split_item=split_item, group_type=-1)
         ```
 
-    - Example with x of type int4, weight of type int4, and layout NZ:
+    - Example with x of type `torch_npu.int4`, weight of type `torch_npu.int4`, and layout NZ:
 
         ```python
         import numpy as np

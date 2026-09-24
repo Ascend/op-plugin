@@ -49,7 +49,7 @@
 
         | dst_type | emax |
         | --- | --- |
-        | float4_e2m1fn_x2 | 2 |
+        | `torch_npu.float4_e2m1fn_x2` | 2 |
 
 ## Prototype
 
@@ -59,17 +59,17 @@ torch_npu.npu_dynamic_dual_level_mx_quant(input, *, smooth_scale=None, round_mod
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Data to be quantized, $x_i$ in the formulas. This parameter must be 1D to 7D, and the last dimension must be even. Non-contiguous tensors are supported. The data layout can be `ND`. The data type can be `bfloat16` or `float16`. Empty tensors are not supported.
+- **`input`** (`Tensor`): Required. Data to be quantized, $x_i$ in the formulas. This parameter must be 1D to 7D, and the last dimension must be even. Non-contiguous tensors are supported. The data layout can be `ND`. The data type can be `torch.bfloat16` or `torch.float16`. Empty tensors are not supported.
 - **`*`**: Position delimiter indicating preceding variables are position-dependent arguments that must be entered in order, while succeeding variables are optional keyword arguments that must be assigned using key-value pairs in any order (omitted arguments will use default values).
 - **`smooth_scale`** (`Tensor`): Optional. Functionality currently not supported (default value can be passed).
 - **`round_mode`** (`str`): Optional. Data conversion mode, corresponding to $round\_mode$ in the formulas. Supported values are `"rint"`, `"round"`, and `"floor"` (default value: `"rint"`).
 
 ## Return Values
 
-- **`y`** (`Tensor`): Quantization result, $y_i$ in the formulas. The logical data type can be `float4_e2m1fn_x2`, but the actual returned data type is `uint8`. The size of the last dimension is half that of the `input` (manual unpacking required to retrieve the actual values). The data layout can be `ND`.
-- **`level0_scale`** (`Tensor`): Scale for first-level quantization, $level0\_scale_i$ in the formulas. The data type can be `float32`. The size of the last dimension equals the size of the last dimension of `input` divided by 512 and rounded up. The data layout can be `ND`.
+- **`y`** (`Tensor`): Quantization result, $y_i$ in the formulas. The logical data type can be `torch_npu.float4_e2m1fn_x2`, but the actual returned data type is `torch.uint8`. The size of the last dimension is `torch.half` that of the `input` (manual unpacking required to retrieve the actual values). The data layout can be `ND`.
+- **`level0_scale`** (`Tensor`): Scale for first-level quantization, $level0\_scale_i$ in the formulas. The data type can be `torch.float32`. The size of the last dimension equals the size of the last dimension of `input` divided by 512 and rounded up. The data layout can be `ND`.
 
-- **`level1_scale`** (`Tensor`): Scale for second-level quantization, $level1\_scale_i$ in the formulas. The logical data type can be `float8_e8m0fnu`, but the actual returned data type is `uint8` (manual conversion required to retrieve the actual values). The number of dimensions is equal to the number of dimensions of `input` plus 1. The sizes of the last two dimensions are `[((ceil(input.shape[-1] / 32) + 2 - 1) / 2), 2]`, with even padding applied using `0` as the padding value. The data layout can be `ND`.
+- **`level1_scale`** (`Tensor`): Scale for second-level quantization, $level1\_scale_i$ in the formulas. The logical data type can be `torch_npu.float8_e8m0fnu`, but the actual returned data type is `torch.uint8` (manual conversion required to retrieve the actual values). The number of dimensions is equal to the number of dimensions of `input` plus 1. The sizes of the last two dimensions are `[((ceil(input.shape[-1] / 32) + 2 - 1) / 2), 2]`, with even padding applied using `0` as the padding value. The data layout can be `ND`.
 
 ## Constraints
 

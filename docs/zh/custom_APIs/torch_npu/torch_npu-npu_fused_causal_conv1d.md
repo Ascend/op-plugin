@@ -160,24 +160,24 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，表示输入序列，即公式中的$x$。数据类型支持`float16`、`bfloat16`，数据格式要求为ND，支持非连续的Tensor。不支持空Tensor。
+- **x**（`Tensor`）：必选参数，表示输入序列，即公式中的$x$。数据类型支持`torch.float16`、`torch.bfloat16`，数据格式要求为ND，支持非连续的Tensor。不支持空Tensor。
 - **weight**（`Tensor`）：必选参数，表示因果1维卷积核，即公式中的$weight$。数据类型、数据格式与`x`保持一致，不支持非连续的Tensor。不支持空Tensor。
 - **conv\_states**（`Tensor`）：必选参数，表示缓存状态张量，存储各序列的历史token数据，各序列计算完成后原地更新，即公式中的$conv\_states$。数据类型、数据格式与`x`保持一致，支持非连续的Tensor。不支持空Tensor。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **query\_start\_loc**（`Tensor`）：可选参数，表示序列起始位置索引，记录各序列在拼接张量`x`中的起始位置。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。当`x`的shape为2维时，不可省略，默认值为None。
-- **cache\_indices**（`Tensor`）：可选参数，表示缓存索引，指定每个序列对应的缓存状态在conv\_states中的索引。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
-- **initial\_state\_mode**（`Tensor`）：可选参数，遗留参数，该参数在当前接口内无作用。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
+- **query\_start\_loc**（`Tensor`）：可选参数，表示序列起始位置索引，记录各序列在拼接张量`x`中的起始位置。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。当`x`的shape为2维时，不可省略，默认值为None。
+- **cache\_indices**（`Tensor`）：可选参数，表示缓存索引，指定每个序列对应的缓存状态在conv\_states中的索引。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
+- **initial\_state\_mode**（`Tensor`）：可选参数，遗留参数，该参数在当前接口内无作用。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
 - **bias**（`Tensor`）：可选参数，遗留参数，该参数在当前接口内无作用。数据类型和数据格式与x保持一致，不支持非连续的Tensor。默认值为None。
-- **num\_accepted\_tokens**（`Tensor`）：可选参数，表示每个batch的随机投机数。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
+- **num\_accepted\_tokens**（`Tensor`）：可选参数，表示每个batch的随机投机数。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
 - **activation**（`str`）：可选参数，表示激活函数类型，该参数在当前接口内无作用。默认值为"None"。
 - **pad\_slot\_id**（`int`）：可选参数，用于跳过不需要参与计算的batch，默认值为-1。
 - **run\_mode**（`int`）：可选参数，该参数在当前接口内无作用。默认值为0。
 - **residual\_connection**（`int`）：可选参数，用于判断输出结果是否要做残差连接。0：不做残差连接；1：输出为卷积结果与输入x之和（残差连接），默认值为0。
 - **max\_query\_len**（`int`）：可选参数，表示所有batch中最大的seq_len，默认值为-1。
-- **num\_computed\_tokens**（`Tensor`）：可选参数，当前batch已经处理的token总数，用于判断初始状态。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。conv_mode为“pangu”或者APC开启时，不可省略，默认值为None。
-- **block\_idx\_first\_scheduled\_token**（`Tensor`）：可选参数，表示当前batch的第一个token对应的block索引。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
-- **block\_idx\_last\_scheduled\_token**（`Tensor`）：可选参数，表示当前batch的最后一个token对应的block索引。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
-- **initial\_state\_idx**（`Tensor`）：可选参数，表示初始索引块的索引。数据类型支持`int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
+- **num\_computed\_tokens**（`Tensor`）：可选参数，当前batch已经处理的token总数，用于判断初始状态。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。conv_mode为“pangu”或者APC开启时，不可省略，默认值为None。
+- **block\_idx\_first\_scheduled\_token**（`Tensor`）：可选参数，表示当前batch的第一个token对应的block索引。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
+- **block\_idx\_last\_scheduled\_token**（`Tensor`）：可选参数，表示当前batch的最后一个token对应的block索引。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
+- **initial\_state\_idx**（`Tensor`）：可选参数，表示初始索引块的索引。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。APC开启时，不可省略，默认值为None。
 - **block\_size**（`int`）：可选参数，表示block块的大小，默认值为128。
 - **conv\_mode**（`str`）：可选参数，支持Qwen3-Next("default")和Pangu V2("pangu")两种实现，默认值为"default"。
 
@@ -328,7 +328,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
   - num_accepted_tokens分为None和非None，非None情况下长度为batch，每个元素取值不超过当前batch的token数-1且大于0。
   - cache_indices的取值范围为[0, conv_states.dim[0]-1],且元素均不能相等。
   - Pangu V2 模式（conv_mode = "pangu"）下，num_computed_tokens不能为None。
-  - 算子入参与中间计算结果，在对应数据类型（float16/bfloat16）下，数值均不会超出该类型值域范围。
+  - 算子入参与中间计算结果，在对应数据类型（`torch.float16`/`torch.bfloat16`）下，数值均不会超出该类型值域范围。
   - 算子输入不支持有±inf和nan的情况。
 
 ## 调用示例

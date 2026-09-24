@@ -35,19 +35,19 @@ torch_npu.npu_dynamic_quant(x, *, smooth_scales=None, group_index=None, dst_type
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `float16` or `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. The dimension of input `x` must be greater than 1. During int4 quantization, the last dimension of `x` must be a multiple of 8.
+- **`x`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. The dimension of input `x` must be greater than 1. During `torch_npu.int4` quantization, the last dimension of `x` must be a multiple of 8.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`smooth_scales`** (`Tensor`): Optional. Scaling tensor for `x`. The data type can be `float16` or `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. For shape constraints, see the Constraints section.
-- **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales`, valid only in MoE scenarios. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`smooth_scales`** (`Tensor`): Optional. Scaling tensor for `x`. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. For shape constraints, see the Constraints section.
+- **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales`, valid only in MoE scenarios. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported.
 
-- **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `int8` if `None` is provided.
-    - Atlas A2 training products/Atlas A2 inference products: Valid values are `int8` or `quint4x2`.
-    - Atlas A3 training products/Atlas A3 inference products: Valid values are `int8` or `quint4x2`.
+- **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `torch.int8` if `None` is provided.
+    - Atlas A2 training products/Atlas A2 inference products: Valid values are `torch.int8` or `torch.quint4x2`.
+    - Atlas A3 training products/Atlas A3 inference products: Valid values are `torch.int8` or `torch.quint4x2`.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `quint4x2`, the data type of `y` is `int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `int32` element contains eight `int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
-- **`scale`** (`Tensor`): Scaling factor computed during the symmetric dynamic quantization process. The data type is `float32`. The shape of this parameter matches that of `x` with its last dimension removed.
+- **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `torch.quint4x2`, the data type of `y` is `torch.int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `torch.int32` element contains eight `torch_npu.int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
+- **`scale`** (`Tensor`): Scaling factor computed during the symmetric dynamic quantization process. The data type is `torch.float32`. The shape of this parameter matches that of `x` with its last dimension removed.
 
 ## Constraints
 

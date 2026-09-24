@@ -21,8 +21,8 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 
 ## Parameters
 
-- **`bboxes`** (`Tensor`): Base bounding boxes. This parameter must be 2D with shape `(N, 4)`. The data type can be `float` or `half`.
-- **`pred_bboxes`** (`Tensor`): Encoded bounding boxes. This parameter must be 2D with shape `(N, 4)`. The data type can be `float` or `half`.
+- **`bboxes`** (`Tensor`): Base bounding boxes. This parameter must be 2D with shape `(N, 4)`. The data type can be `torch.float` or `torch.half`.
+- **`pred_bboxes`** (`Tensor`): Encoded bounding boxes. This parameter must be 2D with shape `(N, 4)`. The data type can be `torch.float` or `torch.half`.
 - **`means`** (`List[float]`): Optional. Mean parameter used to denormalize the target delta coordinates. The default value is `None`. This parameter must be aligned with the encoding parameters.
 - **`stds`** (`List[float]`): Standard deviations used to denormalize delta coordinates. The default value is `None`. This parameter must match the encoding parameters.
 - **`max_shape`** (`Tuple[int]`): Optional. Maximum bounding box shape `(H, W)`, which typically corresponds to the size of the original image. The default value is `[9999, 9999]`, indicating no restriction.

@@ -32,12 +32,12 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 
 `Tensor`
 
-返回NPU上的bool标量。结果为True时，表示存在aicore错误的硬件故障。
+返回NPU上的`torch.bool`标量。结果为True时，表示存在aicore错误的硬件故障。
 
 ## 约束说明
 
 - 该接口仅支持device为NPU的场景。
-- CANN版本为9.2.0及以上，且输入参数`a`、`b`、`c`为2维Tensor时，支持`bfloat16`和`float32`数据类型；其余场景仅支持`bfloat16`数据类型。
+- CANN版本为9.2.0及以上，且输入参数`a`、`b`、`c`为2维Tensor时，支持`torch.bfloat16`和`torch.float32`数据类型；其余场景仅支持`torch.bfloat16`数据类型。
 
 ## 调用示例
 

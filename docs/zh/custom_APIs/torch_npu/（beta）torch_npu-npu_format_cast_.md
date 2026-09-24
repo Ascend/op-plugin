@@ -36,7 +36,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2、3维，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
 
-- **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
+- **src**（`Tensor`/`torch.int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
 
   - 若输入张量，则将`input`的数据格式修改为此张量的格式。例如将`input`的数据格式转换为ND格式时，此处可以输入*ND格式的张量*。
   - 若输入整数，则将`input`的数据格式修改为整数值对应的torch_npu.Format。例如将`input`的数据格式转换为ND格式时，此处可以输入`2`。
@@ -69,10 +69,10 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/programug/Ascendcopdevg/docs/guide/%E6%8A%80%E6%9C%AF%E9%99%84%E5%BD%95/%E6%A6%82%E5%BF%B5%E5%8E%9F%E7%90%86%E5%92%8C%E6%9C%AF%E8%AF%AD/%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E5%92%8C%E7%AE%97%E5%AD%90/%E6%95%B0%E6%8D%AE%E6%8E%92%E5%B8%83%E6%A0%BC%E5%BC%8F.md">数据排布格式</a>”章节。
 
 <!-- npu="950,A3,910b" id14 -->
-- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`float32`和`int32`数据类型的默认C0值为16，`int8`数据类型的默认C0值为32。
+- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
+  - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(`torch.int32`)）时，FRACTAL_NZ格式的C0值为8。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。

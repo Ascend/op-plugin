@@ -103,15 +103,15 @@ torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward(grad, input,
 
 ## 参数说明
 
-- **grad**（`Tensor`）：必选参数，当前节点的梯度，1维Tensor。数据类型支持`float32`，数据格式支持ND。支持空Tensor。
-- **input**（`Tensor`）：必选参数，矩阵乘的输入矩阵，2维Tensor。数据类型支持`float16`、`bfloat16`，数据格式支持ND。第0维长度需与`grad`一致。支持空Tensor。
+- **grad**（`Tensor`）：必选参数，当前节点的梯度，1维Tensor。数据类型支持`torch.float32`，数据格式支持ND。支持空Tensor。
+- **input**（`Tensor`）：必选参数，矩阵乘的输入矩阵，2维Tensor。数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持ND。第0维长度需与`grad`一致。支持空Tensor。
 - **weight**（`Tensor`）：必选参数，矩阵乘的权重矩阵，2维Tensor。数据类型需与`input`一致，数据格式支持ND。第0维长度不支持小于128，第1维长度需与`input`的第1维一致。
-- **target\_mask**（`Tensor`）：必选参数，目标词ID是否在范围内的位掩码，1维Tensor。数据类型支持`uint8`，数据格式支持ND。每1bit代表1个布尔值，shape长度乘以8须不小于`grad`长度。
-- **masked\_target**（`Tensor`）：必选参数，目标词ID映射到当前设备的局部索引，1维Tensor。数据类型支持`int32`、`int64`，数据格式支持ND。shape长度需与`grad`一致。
+- **target\_mask**（`Tensor`）：必选参数，目标词ID是否在范围内的位掩码，1维Tensor。数据类型支持`torch.uint8`，数据格式支持ND。每1bit代表1个布尔值，shape长度乘以8须不小于`grad`长度。
+- **masked\_target**（`Tensor`）：必选参数，目标词ID映射到当前设备的局部索引，1维Tensor。数据类型支持`torch.int32`、`torch.int64`，数据格式支持ND。shape长度需与`grad`一致。
 - **label\_smoothing**（`float`）：可选参数，标签平滑系数，当前仅支持0.0，默认值为0.0。
-- **logits\_max**（`Tensor`）：可选参数，全局logits最大值，1维Tensor。数据类型支持`float32`。`softmax`为None时必须提供。默认值为None。
-- **sum\_exp\_logits**（`Tensor`）：可选参数，处理后的logits，1维Tensor。数据类型支持`float32`。`softmax`为None时必须提供。默认值为None。
-- **softmax**（`Tensor`）：可选参数，Softmax计算结果，2维Tensor。数据类型支持`float32`。传入时走高性能模式，不传时走省显存模式（需提供`logits_max`和`sum_exp_logits`）。默认值为None。
+- **logits\_max**（`Tensor`）：可选参数，全局logits最大值，1维Tensor。数据类型支持`torch.float32`。`softmax`为None时必须提供。默认值为None。
+- **sum\_exp\_logits**（`Tensor`）：可选参数，处理后的logits，1维Tensor。数据类型支持`torch.float32`。`softmax`为None时必须提供。默认值为None。
+- **softmax**（`Tensor`）：可选参数，Softmax计算结果，2维Tensor。数据类型支持`torch.float32`。传入时走高性能模式，不传时走省显存模式（需提供`logits_max`和`sum_exp_logits`）。默认值为None。
 
 ## 返回值说明
 

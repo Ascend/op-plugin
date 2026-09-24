@@ -25,8 +25,8 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input logits. The data type can be `float16`, `float32`, or `bfloat16`. The data layout can be ND or FRACTAL_NZ.
-- **`mask`** (`Tensor`): Required. Input mask. The data type must be `bool`. The data layout can be ND or FRACTAL_NZ.
+- **`x`** (`Tensor`): Required. Input logits. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`. The data layout can be ND or FRACTAL_NZ.
+- **`mask`** (`Tensor`): Required. Input mask. The data type must be `torch.bool`. The data layout can be ND or FRACTAL_NZ.
 - **`scale`** (`float`): Optional. Scaling factor of `x`. The default value is `1.0`.
 - **`fixed_triu_mask`** (`bool`): Reserved parameter. The corresponding feature is not implemented. Currently, only the default value `False` is supported. This parameter will support automatic generation of an upper-triangular `bool` mask after the feature is implemented.
 
@@ -34,7 +34,7 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 
 `Tensor`
 
-Output tensor, which is the Softmax result of the masked `x` on the last dimension. The output shape must be identical to that of `x`. The data type can be `float16`, `float32`, or `bfloat16`. The data layout can be ND or FRACTAL_NZ.
+Output tensor, which is the Softmax result of the masked `x` on the last dimension. The output shape must be identical to that of `x`. The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`. The data layout can be ND or FRACTAL_NZ.
 
 ## Constraints
 

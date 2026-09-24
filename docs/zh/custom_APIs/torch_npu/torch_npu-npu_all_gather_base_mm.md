@@ -50,7 +50,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 
 ## 参数说明
 
-- **input**（`Tensor`）：**必选参数**，表示矩阵乘法中的左矩阵。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，输入shape支持2维，形如\(m, k\)、\(k, n\)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)。
+- **input**（`Tensor`）：**必选参数**，表示矩阵乘法中的左矩阵。数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$，输入shape支持2维，形如\(m, k\)、\(k, n\)，轴满足matmul算子入参要求，k轴相等，且k轴取值范围为\[256, 65535\)。
 - **x2**（`Tensor`）：**必选参数**，表示矩阵乘法中的右矩阵，数据类型、输入shape维度需要和`input`保持一致。
 
     <!-- npu="A3,910b" id4 -->
@@ -74,7 +74,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
     <!-- end id8 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **bias**（`Tensor`）：**可选参数**，表示Matmul计算的偏置。数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型需要和`input`保持一致。`bias`仅支持一维，且维度大小与`output`的第1维大小相同。
+- **bias**（`Tensor`）：**可选参数**，表示Matmul计算的偏置。数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。数据类型需要和`input`保持一致。`bias`仅支持一维，且维度大小与`output`的第1维大小相同。
 
     <!-- npu="A3,910b" id9 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：**当前版本暂不支持`bias`输入为非0的场景。**
@@ -86,7 +86,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **x1\_scale**（`Tensor`）：**可选参数**，mm左矩阵反量化参数。数据格式支持$ND$。数据维度为\(m, 1\)，支持pertoken量化。
 
     <!-- npu="A3,910b" id11 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
@@ -95,7 +95,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **x2\_scale**（`Tensor`）：**可选参数**，mm右矩阵反量化参数。数据格式支持$ND$。数据维度为\(1, n\)，支持perchannel量化。
 
     <!-- npu="A3,910b" id13 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`int64`数据类型的`x2_scale`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.int64`。如需传入`torch.int64`数据类型，需要提前调用torch\_npu.npu\_trans\_quant\_param来获取`torch.int64`数据类型的`x2_scale`。
     <!-- end id13 -->
     <!-- npu="950" id14 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
@@ -104,7 +104,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **gather\_index**（`int`）：**可选参数**，表示gather操作对象，0：对`input`做gather，1：对`x2`做gather。默认值0。**当前版本仅支持输入0。**
 - **gather\_output**（`bool`）：**可选参数**，表示是否需要gather输出。默认值为`True`。`comm_mode`为`ai_cpu`时，`gather_output`支持`True`和`False`；`comm_mode`为`aiv`时，`gather_output`仅支持`True`。
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
-- **output\_dtype**（`ScalarType`）：**可选参数**，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
+- **output\_dtype**（`ScalarType`）：**可选参数**，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`torch.float32`时，可指定输出数据类型为`torch.bfloat16`或`torch.float16`，默认值为`torch.bfloat16`。
 
     <!-- npu="950" id15 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
@@ -124,7 +124,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **output**（`Tensor`）：第一个输出是allgather+matmul的结果。
 
     <!-- npu="A3,910b" id18 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`数据类型时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`torch.int64`数据类型时，输出数据类型为`torch.float16`；当`x1_scale`和`x2_scale`均为`torch.float32`时，输出数据类型由`output_dtype`指定，默认为`torch.bfloat16`。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
     - <term>Ascend 950PR&950DT系列产品</term>：仅支持基础场景，输出数据类型和`input`保持一致。

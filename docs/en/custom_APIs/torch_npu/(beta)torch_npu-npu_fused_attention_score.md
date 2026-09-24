@@ -22,10 +22,10 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 ## Parameters
 
-- **`query_layer`** (`Tensor`): Required. Only `float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, q_seq_len, head_dim)`.
-- **`key_layer`** (`Tensor`): Required. Only `float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, k_seq_len, head_dim)`.
-- **`value_layer`** (`Tensor`): Required. Only `float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, v_seq_len, head_dim)`.
-- **`attention_mask`** (`Tensor`): Required. Only `float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, q_seq_len, k_seq_len)`.
+- **`query_layer`** (`Tensor`): Required. Only `torch.float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, q_seq_len, head_dim)`.
+- **`key_layer`** (`Tensor`): Required. Only `torch.float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, k_seq_len, head_dim)`.
+- **`value_layer`** (`Tensor`): Required. Only `torch.float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, v_seq_len, head_dim)`.
+- **`attention_mask`** (`Tensor`): Required. Only `torch.float16` is supported. If transpose parameters are not considered, the shape must be `(batch_size, num_heads, q_seq_len, k_seq_len)`.
 - **`scale`** (`Scalar`): Required. Scaling factor, which is a floating-point scalar.
 - **`keep_prob`** (`float`): Required. Probability of not performing dropout. The value must be within the range `[0, 1]`, which is a floating-point number.
 - **`query_transpose`** (`bool`): Optional. Specifies whether to transpose `query`. The default value is `False`.
@@ -39,11 +39,11 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 `Tensor`
 
-Output tensor after attention computation. The data type is `float16`. When default values are used, the shape of the output tensor must be identical to that of `query_layer`.
+Output tensor after attention computation. The data type is `torch.float16`. When default values are used, the shape of the output tensor must be identical to that of `query_layer`.
 
 ## Constraints
 
-The format IDs of the input tensors must all be `29`, and the data type must be `float16`. The `num_heads` dimensions of `query_layer`, `key_layer`, and `value_layer` must be identical. The `head_dim` dimensions of `query_layer` and `key_layer` must be identical for computing attention scores, whereas the `head_dim` dimension of `value_layer` can be different and determines the output feature dimension.
+The format IDs of the input tensors must all be `29`, and the data type must be `torch.float16`. The `num_heads` dimensions of `query_layer`, `key_layer`, and `value_layer` must be identical. The `head_dim` dimensions of `query_layer` and `key_layer` must be identical for computing attention scores, whereas the `head_dim` dimension of `value_layer` can be different and determines the output feature dimension.
 
 ## Example
 

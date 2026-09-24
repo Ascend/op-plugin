@@ -28,19 +28,19 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 
 ## Parameters
 
-- **`query_ik`** (`Tensor`): Required. Input tensor, corresponding to `query` in the formula. The data type can be `bfloat16` or `float16`. The data layout can be ND. The input shape can be [B,H,N,M,D].
-- **`key_ij`** (`Tensor`): Required. Input tensor, $key_1$ in the formula, representing the relationship or feature from node i to its direct neighbor j. The data type can be `bfloat16` or `float16`. The data layout can be ND. The input shape can be [B,H,N,K,D].
-- **`value_ij`** (`Tensor`): Required. Input tensor, $value_1$ in the formula, representing the information content from node i to its direct neighbor j. The data type can be `bfloat16` or `float16`. The data layout can be ND. The input shape can be [B,H,N,K,D].
-- **`key_jk`** (`Tensor`): Required. Input tensor, $key_2$ in the formula, representing the relationship or feature from the direct neighbor j to pivot k. The data type can be `bfloat16` or `float16`. The data layout can be ND. The input shape can be [B,H,K,M,D].
-- **`value_jk`** (`Tensor`): (required) input tensor, $value_2$ in the formula, indicating the information from node j to its direct neighbor k. The data type can be `bfloat16`, `float16` or `float32`. The data layout can be ND. The input shape can be [B,H,K,M,D].
-- **`atten_mask`** (`Tensor`): Optional. Input tensor, $atten\_mask$ in the formula. The data type can be `bool` or `uint8`. The data layout can be ND. The input shape must be [B,1,N,1,K]. A value of `1` indicates that the bit is excluded from computation. A value of `0` indicates that the bit is included in computation. The default value is `None`.
+- **`query_ik`** (`Tensor`): Required. Input tensor, corresponding to `query` in the formula. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. The input shape can be [B,H,N,M,D].
+- **`key_ij`** (`Tensor`): Required. Input tensor, $key_1$ in the formula, representing the relationship or feature from node i to its direct neighbor j. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. The input shape can be [B,H,N,K,D].
+- **`value_ij`** (`Tensor`): Required. Input tensor, $value_1$ in the formula, representing the information content from node i to its direct neighbor j. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. The input shape can be [B,H,N,K,D].
+- **`key_jk`** (`Tensor`): Required. Input tensor, $key_2$ in the formula, representing the relationship or feature from the direct neighbor j to pivot k. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. The input shape can be [B,H,K,M,D].
+- **`value_jk`** (`Tensor`): (required) input tensor, $value_2$ in the formula, indicating the information from node j to its direct neighbor k. The data type can be `torch.bfloat16`, `torch.float16` or `torch.float32`. The data layout can be ND. The input shape can be [B,H,K,M,D].
+- **`atten_mask`** (`Tensor`): Optional. Input tensor, $atten\_mask$ in the formula. The data type can be `torch.bool` or `torch.uint8`. The data layout can be ND. The input shape must be [B,1,N,1,K]. A value of `1` indicates that the bit is excluded from computation. A value of `0` indicates that the bit is included in computation. The default value is `None`.
 - **`scale_value`** (`float`): Optional. Scaling factor, $scale\_value$ in the formula. The data type can be `float`. The default value is `1`.
 
 ## Return Values
 
-- **`softmax_max_out`** (`Tensor`): Output tensor, intermediate Max result of Softmax computation, used for backward computation. The data type can be `float`. The output shape is [B,H,N,M,8]. The data layout can be ND.
-- **`softmax_sum_out`** (`Tensor`): Output tensor, intermediate Sum result of Softmax computation, used for backward computation. The data type can be `float`. The output shape is [B,H,N,M,8]. The data layout can be ND.
-- **`attention_out`** (`Tensor`): Output tensor, final computation output, $attention\_out$ in the formula. The data type can be `bfloat16` or `float16`. The data type and shape must match those of `query_ik`. The data layout can be ND. The input shape can be `[B,H,N,M,D]`.
+- **`softmax_max_out`** (`Tensor`): Output tensor, intermediate Max result of Softmax computation, used for backward computation. The data type can be `torch.float`. The output shape is [B,H,N,M,8]. The data layout can be ND.
+- **`softmax_sum_out`** (`Tensor`): Output tensor, intermediate Sum result of Softmax computation, used for backward computation. The data type can be `torch.float`. The output shape is [B,H,N,M,8]. The data layout can be ND.
+- **`attention_out`** (`Tensor`): Output tensor, final computation output, $attention\_out$ in the formula. The data type can be `torch.bfloat16` or `torch.float16`. The data type and shape must match those of `query_ik`. The data layout can be ND. The input shape can be `[B,H,N,M,D]`.
 
 ## Constraints
 

@@ -31,13 +31,13 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 
 ## 参数说明
 
-- **self**（`Tensor`）：必选参数，输入张量。数据类型支持`float16`、`float32`、`bfloat16`，Shape支持0-8维。
+- **self**（`Tensor`）：必选参数，输入张量。数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`，Shape支持0-8维。
 - **p**（`float`）：必选参数，丢弃概率，取值范围为\[0, 1\]。
 
 ## 返回值说明
 
 - **out**（`Tensor`）：dropout后的输出结果，shape和dtype与输入`self`相同。
-- **mask**（`Tensor`）：随机生成的mask张量，dtype为`uint8`，用于反向传播。
+- **mask**（`Tensor`）：随机生成的mask张量，dtype为`torch.uint8`，用于反向传播。
 
 ## 约束说明
 

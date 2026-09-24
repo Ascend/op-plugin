@@ -63,15 +63,15 @@ torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, T
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input token features for MoE. This parameter must be 2D with shape `(NUM_ROWS, H)`. The data type can be `float16`, `bfloat16`, or `float32`. The data layout must be `ND`. The number of elements must be less than `2^24`.
-- **`row_idx`** (`Tensor`): Required. Original row position corresponding to each location. The shape must be identical to the shape of `expert_idx`. The data type is `int32`. The data layout must be ND.
-- **`expert_idx`** (`Tensor`): Required. Output of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md), representing the K processing experts corresponding to each row of features. This parameter must be 2D with shape `(NUM_ROWS, K)`. The data type can be `int32`. The data layout is `ND`.
+- **`x`** (`Tensor`): Required. Input token features for MoE. This parameter must be 2D with shape `(NUM_ROWS, H)`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout must be `ND`. The number of elements must be less than `2^24`.
+- **`row_idx`** (`Tensor`): Required. Original row position corresponding to each location. The shape must be identical to the shape of `expert_idx`. The data type is `torch.int32`. The data layout must be ND.
+- **`expert_idx`** (`Tensor`): Required. Output of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md), representing the K processing experts corresponding to each row of features. This parameter must be 2D with shape `(NUM_ROWS, K)`. The data type can be `torch.int32`. The data layout is `ND`.
 - **`active_num`** (`int`): Required. Maximum number of rows to be processed. The number of rows in `expanded_x` is limited to the value specified by this parameter.
 
 ## Return Values
 
 - **`expanded_x`** (`Tensor`): Expanded features generated according to `expert_idx`. This parameter must be 2D with shape `(min(NUM_ROWS, active_num) * K, H)`. The data type must be identical to that of `x`. The data layout must be ND.
-- **`expanded_row_idx`** (`Tensor`): Mapping between `expanded_x` and `x`. This parameter must be 1D with shape `(NUM_ROWS * K,)`. The data type is `int32`. The data layout must be ND.
+- **`expanded_row_idx`** (`Tensor`): Mapping between `expanded_x` and `x`. This parameter must be 1D with shape `(NUM_ROWS * K,)`. The data type is `torch.int32`. The data layout must be ND.
 - **`expanded_expert_idx`** (`Tensor`): Sorted result of `expert_idx`.
 
 ## Constraints

@@ -70,19 +70,19 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 > - N：表示卡数，取值无限制。
 > - E：表示卡上的专家数，取值无限制。
 
-- **tokens** (`Tensor`)：必选参数，表示待重新排布的token。要求为2维，shape为\[A, H\]，数据类型支持`float16`、`bfloat16`、`int8`，数据格式为$ND$。
-- **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，二维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`int32`、`int64`，数据格式为$ND$。取值必须大于0。
+- **tokens** (`Tensor`)：必选参数，表示待重新排布的token。要求为2维，shape为\[A, H\]，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式为$ND$。
+- **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，二维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`torch.int32`、`torch.int64`，数据格式为$ND$。取值必须大于0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **per\_token\_scales** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token同样进行重新排布。要求为1维，shape为\[A\]，数据类型支持`float32`，数据格式为$ND$。
+- **per\_token\_scales** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token同样进行重新排布。要求为1维，shape为\[A\]，数据类型支持`torch.float32`，数据格式为$ND$。
 - **expert\_token\_num\_type** (`int`)：可选参数，表示输出`expert_token_num`的模式。0为cumsum模式，1为count模式，默认值为1。当前只支持为1。
 - **idx\_type** (`int`)：可选参数，表示输出`permute_token_idx`的索引类型。0为gather索引，1为scatter索引，默认值为0。当前只支持为0。
 
 ## 返回值说明
 
-- **permute\_tokens** (`Tensor`)：表示重新排布后的token。要求为2维，shape为\[A, H\]，数据类型支持`float16`、`bfloat16`、`int8`，数据格式为$ND$。
-- **permute\_per\_token\_scales** (`Tensor`)：表示重新排布后的`per_token_scales`，输入不携带`per_token_scales`的情况下，该输出无效。要求为1维，shape为\[A\]，数据类型支持`float32`，数据格式为$ND$。
-- **permute\_token\_idx** (`Tensor`)：表示每个token在原排布方式的索引。要求为1维，shape为\[A\]，数据类型支持`int32`，数据格式为$ND$。
-- **expert\_token\_num** (`Tensor`)：表示每个专家处理的token数。要求为1维，shape为\[E\]，数据类型支持`int32`、`int64`，数据格式为$ND$。
+- **permute\_tokens** (`Tensor`)：表示重新排布后的token。要求为2维，shape为\[A, H\]，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式为$ND$。
+- **permute\_per\_token\_scales** (`Tensor`)：表示重新排布后的`per_token_scales`，输入不携带`per_token_scales`的情况下，该输出无效。要求为1维，shape为\[A\]，数据类型支持`torch.float32`，数据格式为$ND$。
+- **permute\_token\_idx** (`Tensor`)：表示每个token在原排布方式的索引。要求为1维，shape为\[A\]，数据类型支持`torch.int32`，数据格式为$ND$。
+- **expert\_token\_num** (`Tensor`)：表示每个专家处理的token数。要求为1维，shape为\[E\]，数据类型支持`torch.int32`、`torch.int64`，数据格式为$ND$。
 
 ## 约束说明
 

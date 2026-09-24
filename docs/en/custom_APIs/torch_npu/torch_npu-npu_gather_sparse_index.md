@@ -52,9 +52,9 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 
 ## Parameters
 
-**`input`** (`Tensor`): Required. Input tensor. The data layout can be ND. The data type can be `float32`, `float16`, `bfloat16`, `int64`, `int32`, `int16`, `int8`, `uint8`, `bool`, `float64`, `complex64`, or `complex128`.
+**`input`** (`Tensor`): Required. Input tensor. The data layout can be ND. The data type can be `torch.float32`, `torch.float16`, `torch.bfloat16`, `torch.int64`, `torch.int32`, `torch.int16`, `torch.int8`, `torch.uint8`, `torch.bool`, `torch.float64`, `torch.complex64`, or `torch.complex128`.
 
-**`index`** (`Tensor`): Required. Tensor representing the indices of target elements. This parameter can be up to 7D. The data type can be `int64` or `int32`. Value range: [0, input.shape[0] - 1]. Negative indices are not supported.
+**`index`** (`Tensor`): Required. Tensor representing the indices of target elements. This parameter can be up to 7D. The data type can be `torch.int64` or `torch.int32`. Value range: [0, input.shape[0] - 1]. Negative indices are not supported.
 
 ## Return Values
 

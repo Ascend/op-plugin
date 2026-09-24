@@ -31,7 +31,7 @@ Bool scalar on the NPU. A value of `True` indicates that an AI Core hardware fau
 
 ## Constraints
 
-This API supports only scenarios where the data type is `bfloat16` and the device is NPU.
+This API supports only scenarios where the data type is `torch.bfloat16` and the device is NPU.
 
 ## Example
 

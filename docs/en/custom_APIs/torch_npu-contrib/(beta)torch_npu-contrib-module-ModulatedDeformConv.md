@@ -46,7 +46,7 @@ Convolution computation result.
 
 ## Constraints
 
-`ModulatedDeformConv` supports only the `float32` data type. The weights and biases in `conv_offset` must be initialized to `0`.
+`ModulatedDeformConv` supports only the `torch.float32` data type. The weights and biases in `conv_offset` must be initialized to `0`.
 
 ## Example
 

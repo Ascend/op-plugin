@@ -37,7 +37,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## Return Values
 
 - **`RmsNorm(x)`** (`Tensor`): Final output after normalization, $RmsNorm(x)$ in the formula. The data type and shape must be identical to those of the input `self`. Non-contiguous tensors and empty tensors are supported.
-- **`rstd`** (`Tensor`): Reciprocal of the normalized standard deviation, the intermediate result of `rms_norm` used for backward computation, reciprocal of $Rms(x)$ in the formula. The data type is `float32`. The shape must be identical to the leading dimensions of the input parameter `self`. The leading dimensions refer to the dimensions of $x$ minus the dimensions of `gamma`, representing the dimensions that do not require normalization. Non-contiguous tensors and empty tensors are supported.
+- **`rstd`** (`Tensor`): Reciprocal of the normalized standard deviation, the intermediate result of `rms_norm` used for backward computation, reciprocal of $Rms(x)$ in the formula. The data type is `torch.float32`. The shape must be identical to the leading dimensions of the input parameter `self`. The leading dimensions refer to the dimensions of $x$ minus the dimensions of `gamma`, representing the dimensions that do not require normalization. Non-contiguous tensors and empty tensors are supported.
 
 ## Constraints
 
@@ -47,18 +47,18 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
     | self| gamma|
     | -------- | -------- |
-    | `float16` | `float32` |
-    | `bfloat16` | `float32` |
-    | `float16` | `float16` |
-    | `bfloat16` | `bfloat16` |
-    | `float32` | `float32`  |
+    | `torch.float16` | `torch.float32` |
+    | `torch.bfloat16` | `torch.float32` |
+    | `torch.float16` | `torch.float16` |
+    | `torch.bfloat16` | `torch.bfloat16` |
+    | `torch.float32` | `torch.float32`  |
 
   - Atlas inference products and Atlas training products:
 
     | self| gamma|
     | -------- | -------- |
-    | `float16` | `float16` |
-    | `float32` | `float32` |
+    | `torch.float16` | `torch.float16` |
+    | `torch.float32` | `torch.float32` |
 
 ## Example
 

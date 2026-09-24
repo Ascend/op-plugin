@@ -103,13 +103,13 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **axis**（`int`）：可选参数，表示需要进行量化的elementwise轴，其他的轴做broadcast，指定的轴索引不能超过输入张量的维度数。当前仅支持默认值-1，传其他值均不生效。
 - **epsilon**（`float`）：可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为`torch.double`。建议传较小的正数，默认值为1e-6。
 - **div_mode**（`bool`）：可选参数，公式中决定量化公式是否使用除法的参数，数据类型为`torch.bool`，默认值为True。
-- **dst_type**（`int`）：可选参数，指定量化输出`y1`、`y2`的数据类型，默认值为`torch.int8`。传None时当做int8处理。
+- **dst_type**（`int`）：可选参数，指定量化输出`y1`、`y2`的数据类型，默认值为`torch.int8`。传None时当做`torch.int8`处理。
 
   <!-- npu="A3,910b,310p" id14 -->
-  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>、<term>Atlas推理系列产品</term>：支持None或torch.int8。
+  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>、<term>Atlas推理系列产品</term>：支持None或`torch.int8`。
   <!-- end id14 -->
   <!-- npu="950" id15 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：支持None或torch.int8、torch_npu.hifloat8、torch.float8_e5m2、torch.float8_e4m3fn。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持None或`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id15 -->
 
 ## 返回值说明
@@ -143,7 +143,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
   <!-- end id20 -->
 
 - 维度的边界说明：
-  参数`x1`、`x2`、`gamma`、`scales1`、`zero_points1`、`beta`、`scales2`、`zero_points2`、`y1`、`y2`、`x`的shape中每一维大小都不大于int32的最大值2147483647。  
+  参数`x1`、`x2`、`gamma`、`scales1`、`zero_points1`、`beta`、`scales2`、`zero_points2`、`y1`、`y2`、`x`的shape中每一维大小都不大于`torch.int32`的最大值2147483647。
 
 - 各产品型号数据类型支持说明：
 
@@ -152,28 +152,28 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.float32 |
-    | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.float16 |
-    | torch.float16 | torch.float16 | torch.float16 | torch.float16 | torch.float16 | torch.float16 | torch.float16 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.float16 |
-    | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.float16 |
-    | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
-    | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
-    | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.float32 | torch.float32 | torch.float32 | torch.float32 | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.int8/torch_npu.hifloat8/torch.float8_e5m2/torch.float8_e4m3fn | torch.bfloat16 |
+    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.int32` | `torch.int32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.float16` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.float16` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.float16` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.int32` | `torch.int32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.bfloat16` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.bfloat16` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.bfloat16` |
   <!-- end id21 -->
   <!-- npu="A3,910b" id22 -->
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.float16 | torch.int8 | torch.int8 | torch.float16 |
-    | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 | torch.int8 | torch.int8 | torch.bfloat16 |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.int32` | `torch.int32` | `torch.float16` | `torch.int8` | `torch.int8` | `torch.float16` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `torch.int8` | `torch.bfloat16` |
   <!-- end id22 -->
   <!-- npu="310p" id23 -->
   - <term>Atlas推理系列产品</term>：
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | torch.float16 | torch.float16 | torch.float16 | torch.float32 | torch.float32 | torch.int32 | torch.int32 | torch.float16 | torch.int8 | torch.int8 | torch.float16 |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.int32` | `torch.int32` | `torch.float16` | `torch.int8` | `torch.int8` | `torch.float16` |
   <!-- end id23 -->
 
 ## 调用示例

@@ -27,23 +27,23 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - **self** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，维数只能是3~8维。
 
     <!-- npu="310p" id4 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`int8`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`。
     <!-- end id4 -->
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`int8`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`。
     <!-- end id5 -->
     <!-- npu="950" id6 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
     <!-- end id6 -->
 
-- **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。
+- **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`torch.int32`，数据格式支持$ND$，支持非连续的Tensor。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id7 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`。
     <!-- end id7 -->
     <!-- npu="910b" id8 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`float16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`。
     <!-- end id8 -->
     <!-- npu="950" id9 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`。
@@ -52,10 +52,10 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - **quant_scales** (`Tensor`)：必选输入，量化缩放张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id10 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float32`。
     <!-- end id10 -->
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`float32`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float32`。
@@ -64,10 +64,10 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 - **quant_zero_points** (`Tensor`)：可选输入，量化偏移张量，数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id13 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`int32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.int32`。
     <!-- end id13 -->
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`bfloat16`、`int32`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.bfloat16`、`torch.int32`。
     <!-- end id14 -->
     <!-- npu="950" id15 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.int32`。
@@ -117,8 +117,8 @@ torch_npu.npu_quant_scatter(self, indices, updates, quant_scales, quant_zero_poi
 
     | updates | quant_scales | quant_zero_points |
     | --- | --- | --- |
-    | torch.bfloat16 | torch.bfloat16 | torch.bfloat16 |
-    | torch.float16 | torch.float32 | torch.int32 |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` |
+    | `torch.float16` | `torch.float32` | `torch.int32` |
 <!-- end id20 -->
 
 ## 调用示例

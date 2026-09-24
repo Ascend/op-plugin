@@ -24,36 +24,36 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 
 ## Parameters
 
-- **`query`** (`Tensor`): Only the `float16` data type is supported.
-- **`key`** (`Tensor`): Only the `float16` data type is supported.
-- **`value`** (`Tensor`): Only the `float16` data type is supported.
-- **`query_weight`** (`Tensor`): Only the `float16` data type is supported.
-- **`key_weight`** (`Tensor`): Only the `float16` data type is supported.
-- **`value_weight`** (`Tensor`): Only the `float16` data type is supported.
-- **`attn_mask`** (`Tensor`): Only the `float16` data type is supported.
-- **`out_proj_weight`** (`Tensor`): Only the `float16` data type is supported.
-- **`query_bias`** (`Tensor`): Only the `float16` data type is supported.
-- **`key_bias`** (`Tensor`): Only the `float16` data type is supported.
-- **`value_bias`** (`Tensor`): Only the `float16` data type is supported.
-- **`out_proj_bias`** (`Tensor`): Only the `float16` data type is supported.
-- **`dropout_mask`** (`Tensor`): Only the `float16` data type is supported.
+- **`query`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`key`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`value`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`query_weight`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`key_weight`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`value_weight`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`attn_mask`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`out_proj_weight`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`query_bias`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`key_bias`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`value_bias`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`out_proj_bias`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`dropout_mask`** (`Tensor`): Only the `torch.float16` data type is supported.
 - **`attn_head_num`** (`int`): Attention head numbers.
 - **`attn_dim_per_head`** (`int`): Attention dimension of a head.
 - **`src_len`** (`int`): Source length.
 - **`tgt_len`** (`int`): Target length.
 - **`dropout_prob`** (`float`): Dropout keep probability.
-- **`softmax_use_float`** (`bool`): SoftMax uses `float32` to keep precision.
+- **`softmax_use_float`** (`bool`): SoftMax uses `torch.float32` to keep precision.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Only the `float16` data type is supported.
-- **`dropout_mask`** (`Tensor`): Only the `float16` data type is supported.
-- **`query_res`** (`Tensor`): Only the `float16` data type is supported.
-- **`key_res`** (`Tensor`): Only the `float16` data type is supported.
-- **`value_res`** (`Tensor`): Only the `float16` data type is supported.
-- **`attn_scores`** (`Tensor`): Only the `float16` data type is supported.
-- **`attn_res`** (`Tensor`): Only the `float16` data type is supported.
-- **`context`** (`Tensor`): Only the `float16` data type is supported.
+- **`y`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`dropout_mask`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`query_res`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`key_res`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`value_res`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`attn_scores`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`attn_res`** (`Tensor`): Only the `torch.float16` data type is supported.
+- **`context`** (`Tensor`): Only the `torch.float16` data type is supported.
 
 ## Constraints
 

@@ -250,13 +250,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## 参数说明
 
-- **x**（`Tensor`）：**必选参数**，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token。数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。
+- **x**（`Tensor`）：**必选参数**，表示计算使用的token数据，需根据`expert_ids`来发送给其他卡。要求为2维张量，shape为\(BS, H\)，表示有BS个token。数据格式为$ND$，支持非连续的Tensor。数据类型支持`torch.bfloat16`、`torch.float16`。
 
     <!-- npu="910b" id4 -->
-    - <term>Atlas A2系列产品</term>：额外支持`int32`，每个`int32`元素作为8个int4数据的打包载体，算子内部按位透传。
+    - <term>Atlas A2系列产品</term>：额外支持`torch.int32`，每个`torch.int32`元素作为8个`torch_npu.int4`数据的打包载体，算子内部按位透传。
     <!-- end id4 -->
 
-- **expert\_ids**（`Tensor`）：**必选参数**，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+- **expert\_ids**（`Tensor`）：**必选参数**，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。取值不能和`group_tp`相同。
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size。
 
@@ -281,10 +281,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **scales**（`Tensor`）：**可选参数**，表示每个专家的权重。更多关于shape在不同产品或场景下的要求请参见[quant\_mode相关约束](#quant_mode相关约束)。
-    - 当`x`的数据类型为`int32`时必须传入，表示每个输入token对应的缩放参数。要求为1维张量，shape为\(BS, \)，数据类型支持`float32`，数据格式为$ND$，不支持非连续的Tensor。该参数随对应token一起通信。
+    - 当`x`的数据类型为`torch.int32`时必须传入，表示每个输入token对应的缩放参数。要求为1维张量，shape为\(BS, \)，数据类型支持`torch.float32`，数据格式为$ND$，不支持非连续的Tensor。该参数随对应token一起通信。
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)。数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)。数据类型支持`torch.float`，数据格式为$ND$，不支持非连续的Tensor。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。
@@ -298,27 +298,27 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
     <!-- npu="910b" id11 -->
     - <term>Atlas A2系列产品</term>：
-        - `comm_alg`设置为"fullmesh"时，要求为一个1维张量，shape为\(BS, \)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
+        - `comm_alg`设置为"fullmesh"时，要求为一个1维张量，shape为\(BS, \)。数据类型支持`torch.bool`，数据格式为$ND$，支持非连续的Tensor。参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
         - `comm_alg`设置为"hierarchy"时，当前版本不支持，使用默认值即可。
     <!-- end id11 -->
     <!-- npu="950,A3" id12 -->
-    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`torch.bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`torch.bool`值全为false，表示当前token不会参与通信。默认所有token都会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
     <!-- end id12 -->
 
 - **expert\_scales**（`Tensor`）：**可选参数**，表示每个token的topK个专家权重。
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
     - <term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950DT系列产品</term>：支持传入None或2维张量，传入有效数据时shape为\(BS, K\)。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Ascend 950DT系列产品</term>：支持传入None或2维张量，传入有效数据时shape为\(BS, K\)。数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id15 -->
 
 - **elastic\_info**（`Tensor`）：**可选参数**，预留参数，当前版本不支持，传默认值None即可。
-- **performance\_info**（`Tensor`）：**可选参数**，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1维张量，shape为\(ep\_world\_size, \)，数据类型支持`int64`，数据格式为$ND$，支持非连续的Tensor。
+- **performance\_info**（`Tensor`）：**可选参数**，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1维张量，shape为\(ep\_world\_size, \)，数据类型支持`torch.int64`，数据格式为$ND$，支持非连续的Tensor。
 - **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值""即可。
 
     <!-- npu="910b" id16 -->
@@ -385,7 +385,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - **quant\_mode**（`int`）：**可选参数**，表示量化模式。
 
     <!-- npu="A3,910b" id31 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：0表示非量化（默认），2表示动态量化。当`quant_mode`为2，`dynamic_scales`不为None；当`quant_mode`为0，`dynamic_scales`为None。当`x`的数据类型为`int32`时仅支持取值0，此时`dynamic_scales`不为None。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：0表示非量化（默认），2表示动态量化。当`quant_mode`为2，`dynamic_scales`不为None；当`quant_mode`为0，`dynamic_scales`为None。当`x`的数据类型为`torch.int32`时仅支持取值0，此时`dynamic_scales`不为None。
     <!-- end id31 -->
     <!-- npu="950" id32 -->
     - <term>Ascend 950DT系列产品</term>：0表示非量化（默认），1表示静态量化，2表示动态pertoken量化，3表示pergroup量化，4表示mxfp量化，5表示mxfp量化clip实现。当`quant_mode`为2、3、4、5，`dynamic_scales`不为None；当`quant_mode`为0或1，`dynamic_scales`为None。
@@ -449,22 +449,22 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 ## 返回值说明
 
-- **expand\_x**（`Tensor`）：表示本卡收到的token数据，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，A表示在EP通信域可能收到的最大token数。数据格式为$ND$，支持非连续的Tensor。量化时类型为`int8`，非量化时与`x`数据类型保持一致。
+- **expand\_x**（`Tensor`）：表示本卡收到的token数据，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，A表示在EP通信域可能收到的最大token数。数据格式为$ND$，支持非连续的Tensor。量化时类型为`torch.int8`，非量化时与`x`数据类型保持一致。
 
     <!-- npu="A3,910b" id43 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`bfloat16`、`float16`、`int8`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`。
     <!-- end id43 -->
     <!-- npu="910b" id44 -->
-    - <term>Atlas A2系列产品</term>：非量化场景下还支持`int32`。
+    - <term>Atlas A2系列产品</term>：非量化场景下还支持`torch.int32`。
     <!-- end id44 -->
     <!-- npu="950" id45 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`。
     <!-- end id45 -->
 
-- **dynamic\_scales**（`Tensor`）：表示计算得到的动态量化参数，或随数据类型为`int32`的token通信的缩放参数。当`quant_mode`不为0或1时才有该输出；当`x`的数据类型为`int32`且`quant_mode`为0时有该输出，其中前实际接收token数量个元素有效。数据格式为$ND$，支持非连续的Tensor。
+- **dynamic\_scales**（`Tensor`）：表示计算得到的动态量化参数，或随数据类型为`torch.int32`的token通信的缩放参数。当`quant_mode`不为0或1时才有该输出；当`x`的数据类型为`torch.int32`且`quant_mode`为0时有该输出，其中前实际接收token数量个元素有效。数据格式为$ND$，支持非连续的Tensor。
 
     <!-- npu="A3,910b" id46 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为1维张量，shape为\(A, \)，数据类型支持`float`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为1维张量，shape为\(A, \)，数据类型支持`torch.float`。
     <!-- end id46 -->
     <!-- npu="950" id47 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`，不同场景下的shape要求详见[quant\_mode相关约束](#quant_mode相关约束)部分：
@@ -473,9 +473,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - `quant_mode`取值为4、5时，其shape为\(A, ceil\(H/32\)\)且ceil\(H/32\) % 2 == 0。
     <!-- end id47 -->
 
-- **assist\_info\_for\_combine**（`Tensor`）：表示给同一专家发送的token个数，要求是1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`assist_info_for_combine`输入。
-- **expert\_token\_nums**（`Tensor`）：表示本卡每个专家实际收到的token数量，要求为1维张量，shape为\(local\_expert\_num, \)。数据类型支持`int64`，数据格式为$ND$，支持非连续的Tensor。
-- **ep\_recv\_counts**（`Tensor`）：表示EP通信域各卡收到的token数（token数以前缀和的形式表示），要求为1维张量。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`ep_send_counts`输入。
+- **assist\_info\_for\_combine**（`Tensor`）：表示给同一专家发送的token个数，要求是1维张量，shape为\(A \* 128, \)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`assist_info_for_combine`输入。
+- **expert\_token\_nums**（`Tensor`）：表示本卡每个专家实际收到的token数量，要求为1维张量，shape为\(local\_expert\_num, \)。数据类型支持`torch.int64`，数据格式为$ND$，支持非连续的Tensor。
+- **ep\_recv\_counts**（`Tensor`）：表示EP通信域各卡收到的token数（token数以前缀和的形式表示），要求为1维张量。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`ep_send_counts`输入。
 
     <!-- npu="910b" id48 -->
     - <term>Atlas A2系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
@@ -490,19 +490,19 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：不支持TP通信域，暂无该输出。
     <!-- end id50 -->
     <!-- npu="A3" id51 -->
-    - <term>Atlas A3系列产品</term>：支持TP通信域，要求是1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>：支持TP通信域，要求是1维张量，shape为\(tp\_world\_size, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id51 -->
 
 - **expand\_scales**（`Tensor`）：表示`expert_scales`与`x`一起进行alltoallv之后的输出。
 
     <!-- npu="910b" id52 -->
-    - <term>Atlas A2系列产品</term>：要求是1维张量，shape为\(A, \)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：要求是1维张量，shape为\(A, \)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id52 -->
     <!-- npu="A3" id53 -->
     - <term>Atlas A3系列产品</term>：暂不支持该输出，返回None。
     <!-- end id53 -->
     <!-- npu="950" id54 -->
-    - <term>Ascend 950DT系列产品</term>：仅`expert_scales`输入有效数据时有输出，要求是1维张量，shape为\(A, \)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Ascend 950DT系列产品</term>：仅`expert_scales`输入有效数据时有输出，要求是1维张量，shape为\(A, \)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id54 -->
 
 ## 约束说明
@@ -530,8 +530,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
         <!-- npu="910b" id57 -->
         - <term>Atlas A2系列产品</term>：
-            - 当`x`的数据类型为`int32`时，仅支持`comm_alg`设置为"fullmesh"，`H`的取值范围\(0, 5120\]，且保证是32的整数倍。
-            - `comm_alg`设置为"fullmesh"时（`x`的数据类型不为`int32`），`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
+            - 当`x`的数据类型为`torch.int32`时，仅支持`comm_alg`设置为"fullmesh"，`H`的取值范围\(0, 5120\]，且保证是32的整数倍。
+            - `comm_alg`设置为"fullmesh"时（`x`的数据类型不为`torch.int32`），`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
             - `comm_alg`设置为"hierarchy"且驱动版本不低于25.0.RC1.1时，`H`的取值范围\(0, 10 \* 1024\]，且保证是32的整数倍。
         <!-- end id57 -->
         <!-- npu="A3" id58 -->
@@ -578,8 +578,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
         | quant_mode | 量化模式 | expand_x参数 | scales参数 | dynamic_scales |
         | --- | --- | --- | --- | --- |
-        | 0 | 非量化 | float16/bfloat16 | None | 不输出有效值 |
-        | 2 | 动态量化 | int8 | 支持None或非空。非空时shape为(sharedExpertNum+moeExpertNum, H)或者(moeExpertNum, H)，数据类型为`float32`。 | shape为(A, )。数据类型为`float32`。 |
+        | 0 | 非量化 | `torch.float16`/`torch.bfloat16` | None | 不输出有效值 |
+        | 2 | 动态量化 | `torch.int8` | 支持None或非空。非空时shape为(sharedExpertNum+moeExpertNum, H)或者(moeExpertNum, H)，数据类型为`torch.float32`。 | shape为(A, )。数据类型为`torch.float32`。 |
     <!-- end id65 -->
     <!-- npu="950" id66 -->
     - <term>Ascend 950DT系列产品</term>
@@ -588,13 +588,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
         | quant_mode | 量化模式 | expand_x参数 | scales参数 | dynamic_scales |
         | --- | --- | --- | --- | --- |
-        | 0 | 非量化 | torch.float16/torch.bfloat16/torch_npu.hifloat8/torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 | 如果expand_x类型为torch.float16/torch.bfloat16，则输入None；<br>如果expand_x类型为torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为torch_npu.float8_e8m0fnu；<br>如果expand_x类型为torch_npu.hifloat8且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为torch.float32；否则输入None。 | 如果expand_x类型为torch.float16/torch.bfloat16，则不输出有效值；<br>如果expand_x类型为torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为torch_npu.hifloat8且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
-        | 1 | 静态量化 | torch.int8 | 非空，数据类型为torch.float32。<br>输入scales代表量化系数则shape为(1, )；<br>输入scales代表每个专家共享的平滑权重则shape为(H, )；<br>输入scales代表融了专家共享的平滑权重的量化系数时，其shape在有共享专家卡情况下为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)。 | 不输出有效值。 |
-        | 1 | 静态量化 | torch_npu.hifloat8 | 非空，shape为(1, )，数据类型为torch.float32。 | 不输出有效值。 |
-        | 2 | pertoken动态量化 | torch.int8/torch.float8_e4m3fn/torch.float8_e5m2 | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为torch.float32。 | 输出有效值。shape为(A, )。数据类型为torch.float32。 |
-        | 3 | pergroup动态量化 | torch.float8_e4m3fn/torch.float8_e5m2 | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为torch.float32。 | 输出有效值。shape为(A, Ceil(H, 128))。数据类型为torch.float32。 |
-        | 4 | mx量化 | torch.float8_e4m3fn/torch.float8_e5m2/torch_npu.float4_e2m1fn_x2/torch_npu.float4_e1m2fn_x2 | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为torch_npu.float8_e8m0fnu。 |
-        | 5 | mxfp8量化clip实现 | torch.float8_e4m3fn/torch.float8_e5m2 | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为torch_npu.float8_e8m0fnu。 |
+        | 0 | 非量化 | `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则输入None；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为`torch_npu.float8_e8m0fnu`；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为`torch.float32`；否则输入None。 | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则不输出有效值；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
+        | 1 | 静态量化 | `torch.int8` | 非空，数据类型为`torch.float32`。<br>输入scales代表量化系数则shape为(1, )；<br>输入scales代表每个专家共享的平滑权重则shape为(H, )；<br>输入scales代表融了专家共享的平滑权重的量化系数时，其shape在有共享专家卡情况下为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)。 | 不输出有效值。 |
+        | 1 | 静态量化 | `torch_npu.hifloat8` | 非空，shape为(1, )，数据类型为`torch.float32`。 | 不输出有效值。 |
+        | 2 | pertoken动态量化 | `torch.int8`/`torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, )。数据类型为`torch.float32`。 |
+        | 3 | pergroup动态量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, Ceil(H, 128))。数据类型为`torch.float32`。 |
+        | 4 | mx量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch_npu.float8_e8m0fnu`。 |
+        | 5 | mxfp8量化clip实现 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch_npu.float8_e8m0fnu`。 |
     <!-- end id66 -->
 
 - HCCL通信域缓存区大小：
@@ -604,9 +604,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     <!-- npu="910b" id67 -->
     - <term>Atlas A2系列产品</term>：该场景支持通过环境变量HCCL\_BUFFSIZE配置。
         - `comm_alg`配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
-        - `comm_alg`配置为"fullmesh"且`x`的数据类型为`int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*\(H\*sizeof\(int32\)+32B\)+2MB\)。
-        - `comm_alg`配置为"fullmesh"且`x`的数据类型不为`int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
-        - `comm_alg`配置为"hierarchy"：设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype\_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
+        - `comm_alg`配置为"fullmesh"且`x`的数据类型为`torch.int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*\(H\*sizeof\(`torch.int32`\)+32B\)+2MB\)。
+        - `comm_alg`配置为"fullmesh"且`x`的数据类型不为`torch.int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(`torch.uint16`\)+2MB\)。
+        - `comm_alg`配置为"hierarchy"：设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype\_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
     <!-- end id67 -->
     <!-- npu="A3" id68 -->
     - <term>Atlas A3系列产品</term>：该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。

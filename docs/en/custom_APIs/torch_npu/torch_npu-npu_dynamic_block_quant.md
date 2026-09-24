@@ -23,22 +23,22 @@
   \begin{cases}
   min(FP8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ set to $FP8$} \\
   min(HiF8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ set to $HiF8$} \\
-  min(INT8\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ set to $INT8$}
+  min(`torch.int8`\_MAX / input\_max, 1 / min\_scale), & dst\_type \text{ set to $`torch.int8`$}
   \end{cases}
   $$
 
   $$
-  y = cast\_to\_[FP8/HiF8/INT8](x / scale)
+  y = cast\_to\_[FP8/HiF8/`torch.int8`](x / scale)
   $$
 
-  $block\_reduce\_max$ represents the maximum value within each individual block. `FP8_MAX`, `HiF8_MAX`, and `INT8_MAX` represent the maximum representable positive values for the FP8, HiF8, and INT8 target quantization types, respectively, as determined by `dst_type`.
-  FP8, HiF8, and INT8 are all 8-bit low-precision target quantization types, representing FP8 floating-point, HiF8 floating-point, and INT8 integer formats, respectively. The following table describes the currently supported maximum values.
+  $block\_reduce\_max$ represents the maximum value within each individual block. `FP8_MAX`, `HiF8_MAX`, and `INT8_MAX` represent the maximum representable positive values for the FP8, HiF8, and `torch.int8` target quantization types, respectively, as determined by `dst_type`.
+  FP8, HiF8, and `torch.int8` are all 8-bit low-precision target quantization types, representing FP8 floating-point, HiF8 floating-point, and `torch.int8` integer formats, respectively. The following table describes the currently supported maximum values.
 
   | Target Type | Maximum Positive Value |
   | ----------- | ---------------------- |
   | FP8         | `FP8_MAX = 448`        |
   | HiF8        | `HiF8_MAX = 32768`     |
-  | INT8        | `INT8_MAX = 127`       |
+  | `torch.int8`        | `INT8_MAX = 127`       |
 
 ## Prototype
 
@@ -48,10 +48,10 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input tensor to be quantized. The data type can be `float16` or `bfloat16`. Non-contiguous tensors are supported. The data layout can be ND. The shape of this parameter must have two or three dimensions.
+- **`x`** (`Tensor`): Required. Input tensor to be quantized. The data type can be `torch.float16` or `torch.bfloat16`. Non-contiguous tensors are supported. The data layout can be ND. The shape of this parameter must have two or three dimensions.
 - **`min_scale`** (`float`): Optional. Minimum scale threshold value participating in the `scale` computation. The value must be greater than or equal to 0.
 - **`round_mode`** (`str`): Optional. Rounding conversion mode used when casting to the output format. Currently, only `rint` is supported.
-- **`dst_type`** (`int`): Optional. Target data type of the output tensor `y`. Currently, only the value `1` is supported, indicating that the data type of the output `y` is `int8`.
+- **`dst_type`** (`int`): Optional. Target data type of the output tensor `y`. Currently, only the value `1` is supported, indicating that the data type of the output `y` is `torch.int8`.
 - **`row_block_size`** (`int`): Optional. Row size of a single quantization data block. Currently, only `1` is supported.
 - **`col_block_size`** (`int`): Optional. Column size of a single quantization data block. Currently, only `128` is supported.
 

@@ -10,7 +10,7 @@
 
 ## Function
 
-- Dequantizes the tensor `x`, restoring the quantized integers to floating-point values. Dequantization is the inverse process of quantization and is used to convert low-precision integers (such as int8) back to high-precision floating-point values.
+- Dequantizes the tensor `x`, restoring the quantized integers to floating-point values. Dequantization is the inverse process of quantization and is used to convert low-precision integers (such as `torch.int8`) back to high-precision floating-point values.
 
 - Formulas (`out` is the output, `x` is the quantized input, `scale` is the scaling factor, and `offset` is the offset):
 
@@ -31,28 +31,28 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Input tensor to be dequantized. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported. Up to 8 dimensions are supported.
-  - Atlas inference products: The data type can be `int8`.
-  - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `int32` (where each `int32` element is a packed combination of eight `int4` values).
-  - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `int32` (where each `int32` element is a packed combination of eight `int4` values).
+  - Atlas inference products: The data type can be `torch.int8`.
+  - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8` or `torch.int32` (where each `torch.int32` element is a packed combination of eight `torch_npu.int4` values).
+  - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8` or `torch.int32` (where each `torch.int32` element is a packed combination of eight `torch_npu.int4` values).
 
-- **`scale`** (`Tensor`): Required. Scaling value used in dequantization. This parameter must be 1D with shape `(n,)`, where `n` can be 1. If `n` is not 1, when `x` is of type `int8`, `n` must match the size of the last dimension of `x`; when `x` is of type `int32`, `n` must be exactly 8 times the size of the last dimension of `x`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported.
-  - Atlas inference products: The data type can be `float32`.
-  - Atlas A2 training products/Atlas A2 inference products: The data type can be `float32` or `bfloat16`.
-  - Atlas A3 training products/Atlas A3 inference products: The data type can be `float32` or `bfloat16`.
+- **`scale`** (`Tensor`): Required. Scaling value used in dequantization. This parameter must be 1D with shape `(n,)`, where `n` can be 1. If `n` is not 1, when `x` is of type `torch.int8`, `n` must match the size of the last dimension of `x`; when `x` is of type `torch.int32`, `n` must be exactly 8 times the size of the last dimension of `x`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported.
+  - Atlas inference products: The data type can be `torch.float32`.
+  - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float32` or `torch.bfloat16`.
+  - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float32` or `torch.bfloat16`.
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
 - **`offset`** (`Tensor`): Optional. Offset value used in dequantization. This parameter must be a 1D tensor. The data type and shape must be identical to those of `scale`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported.
 
-- **`dst_dtype`** (`ScalarType`): Optional. Target data type of the output tensor. The default value is `float16`.
-  - Atlas inference products: The data type can be `float16`.
-  - Atlas A2 training products/Atlas A2 inference products: The data type can be `float16` or `bfloat16`.
-  - Atlas A3 training products/Atlas A3 inference products: The data type can be `float16` or `bfloat16`.
+- **`dst_dtype`** (`ScalarType`): Optional. Target data type of the output tensor. The default value is `torch.float16`.
+  - Atlas inference products: The data type can be `torch.float16`.
+  - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
 
-- **`src_dtype`** (`ScalarType`): Optional. Source data type of the input tensor. The default value is `int8`.
-  - Atlas inference products: The data type can be `int8`.
-  - Atlas A2 training products/Atlas A2 inference products: The data type can be `quint4x2` or `int8`.
-  - Atlas A3 training products/Atlas A3 inference products: The data type can be `quint4x2` or `int8`.
+- **`src_dtype`** (`ScalarType`): Optional. Source data type of the input tensor. The default value is `torch.int8`.
+  - Atlas inference products: The data type can be `torch.int8`.
+  - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.quint4x2` or `torch.int8`.
+  - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.quint4x2` or `torch.int8`.
 
 ## Return Values
 

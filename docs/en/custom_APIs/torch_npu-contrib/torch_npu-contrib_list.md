@@ -220,7 +220,7 @@ This section describes common affinity library APIs and provides commonly used c
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1435227155218"><a name="p1435227155218"></a><a name="p1435227155218"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p3914125415512"><a name="p3914125415512"></a><a name="p3914125415512"></a>Applies an NPU-compatible <code>dropout_with_byte_mask</code> operation. This function is supported exclusively on NPU devices. It generates a stateless random <code>uint8</code> mask and performs dropout based on that mask.</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p3914125415512"><a name="p3914125415512"></a><a name="p3914125415512"></a>Applies an NPU-compatible <code>dropout_with_byte_mask</code> operation. This function is supported exclusively on NPU devices. It generates a stateless random <code>`torch.uint8`</code> mask and performs dropout based on that mask.</p>
 </td>
 </tr>
 <tr id="row4342314612"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p23423113616"><a name="p23423113616"></a><a name="p23423113616"></a><a href="torch_npu-contrib-module-LinearQuant.md">torch_npu.contrib.module.LinearQuant</a></p>

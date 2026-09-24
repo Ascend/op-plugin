@@ -24,8 +24,8 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选输入，输入tensor。数据类型支持`bfloat16`和`float16`，数据格式支持ND，支持非连续的Tensor。
-- **rotation**（`Tensor`）：必选输入，旋转矩阵tensor。shape支持2维，数据类型支持`bfloat16`和`float16`，数据格式支持ND，支持非连续的tensor。
+- **x**（`Tensor`）：必选输入，输入tensor。数据类型支持`torch.bfloat16`和`torch.float16`，数据格式支持ND，支持非连续的Tensor。
+- **rotation**（`Tensor`）：必选输入，旋转矩阵tensor。shape支持2维，数据类型支持`torch.bfloat16`和`torch.float16`，数据格式支持ND，支持非连续的tensor。
 - **alpha**（`Tensor`）：可选输入，旋转角度缩放因子，数据类型为1维`Tensor`，默认值为None。
 - **dst_dtype**（`int`）：可选输入，指定量化输出的类型，传None时当做`torch.int8`处理。支持的量化输出类型包括：`torch.int8`、`torch.quint4x2`、`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
 - **axis**（`int`）：可选输入，指定量化输出的轴，默认值为-1。
@@ -37,7 +37,7 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 ## 返回值说明
 
 - **y**（`Tensor`）：输出的量化结果，数据类型根据`dst_dtype`决定。数据格式支持ND，int场景中支持非连续的Tensor。
-- **scale**（`Tensor`）：输出的量化因子，数据类型根据`dst_dtype`决定。当`dst_dtype`为MX类型（float4_e2m1fn_x2/float8_e5m2/float8_e4m3fn）时，`scale`为MX格式量化因子（uint8表示float8_e8m0）；其他类型时，`scale`为pertoken量化因子（float32）。
+- **scale**（`Tensor`）：输出的量化因子，数据类型根据`dst_dtype`决定。当`dst_dtype`为MX类型（`torch_npu.float4_e2m1fn_x2`/`torch.float8_e5m2`/`torch.float8_e4m3fn`）时，`scale`为MX格式量化因子（`torch.uint8`表示`torch_npu.float8_e8m0fnu`）；其他类型时，`scale`为pertoken量化因子（`torch.float32`）。
 
 ## 约束说明
 

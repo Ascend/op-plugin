@@ -84,10 +84,10 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - **out** (`Tensor`)：数据类型和shape与`input`相同，支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id13 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
     <!-- end id13 -->
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
     <!-- end id14 -->
     <!-- npu="950" id15 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
@@ -96,10 +96,10 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - **meanOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id16 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
     <!-- end id16 -->
     <!-- npu="910b" id17 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
     <!-- end id17 -->
     <!-- npu="950" id18 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
@@ -108,10 +108,10 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - **rstdOut** (`Tensor`)：数据类型与`input`相同，shape为\(N, group\)，其中N为`input`第0维度值。数据格式支持$ND$，支持非连续的Tensor。
 
     <!-- npu="310p" id19 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
     <!-- end id19 -->
     <!-- npu="910b" id20 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
     <!-- end id20 -->
     <!-- npu="950" id21 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。

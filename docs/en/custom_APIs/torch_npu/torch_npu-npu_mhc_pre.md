@@ -39,24 +39,24 @@ torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Data to be processed, representing the input data of the mHC layer in the network. The data type can be `bfloat16` or `float16`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
-- **`phi`** (`Tensor`): Required. Parameter matrix of mHC, in the order of `W_pre` `(n, nD)`, `W_post` `(n, nD)`, and `W_res` `(n<sup>2</sup>, nD)`. The data type is `float32`. The shape is `(n<sup>2</sup>+2n, nD)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
-- **`alpha`** (`Tensor`): Required. Scaling parameters of mHC, in the order of `alpha_pre`, `alpha_post`, and `alpha_res`. The data type is `float32`. The shape is `(3)`. Empty tensors are not supported.
-- **`bias`** (`Tensor`): Required. Bias parameter of the mHC layer. The data type is `float32`. The shape is `(n<sup>2</sup>+2n)`. Empty tensors are not supported.
+- **`x`** (`Tensor`): Required. Data to be processed, representing the input data of the mHC layer in the network. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
+- **`phi`** (`Tensor`): Required. Parameter matrix of mHC, in the order of `W_pre` `(n, nD)`, `W_post` `(n, nD)`, and `W_res` `(n<sup>2</sup>, nD)`. The data type is `torch.float32`. The shape is `(n<sup>2</sup>+2n, nD)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
+- **`alpha`** (`Tensor`): Required. Scaling parameters of mHC, in the order of `alpha_pre`, `alpha_post`, and `alpha_res`. The data type is `torch.float32`. The shape is `(3)`. Empty tensors are not supported.
+- **`bias`** (`Tensor`): Required. Bias parameter of the mHC layer. The data type is `torch.float32`. The shape is `(n<sup>2</sup>+2n)`. Empty tensors are not supported.
 - **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
-- **`gamma`** (`Tensor`): Optional. Scaling factor for RmsNorm. The data type is `float32`. The shape is `(n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported.
-- **`norm_eps`** (`float`): Optional. Zero-division prevention parameter for RmsNorm. The default value is `1e-6`. The data type is `float32`.
-- **`hc_eps`** (`float`): Optional. Epsilon parameter applied after the sigmoid operation on H<sub>pre</sub>. The default value is `1e-6`. The data type can be `float32`.
+- **`gamma`** (`Tensor`): Optional. Scaling factor for RmsNorm. The data type is `torch.float32`. The shape is `(n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported.
+- **`norm_eps`** (`float`): Optional. Zero-division prevention parameter for RmsNorm. The default value is `1e-6`. The data type is `torch.float32`.
+- **`hc_eps`** (`float`): Optional. Epsilon parameter applied after the sigmoid operation on H<sub>pre</sub>. The default value is `1e-6`. The data type can be `torch.float32`.
 - **`out_flag`** (`int`): Optional. Specifies whether to output `h_mix`, `inv_rms`, and `h_pre`. The default value is `0`, indicating that these outputs are not generated. `1` indicates that all of these outputs are generated.
 
 ## Return Values
 
-- **`h_in`** (`Tensor`): Output `h_in` serving as the input to the Attention/MLP layer. The data type can be `bfloat16` or `float16`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
-- **`h_post`** (`Tensor`): Output mHC `h_post` transformation matrix. The data type is `float32`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
-- **`h_res`** (`Tensor`): Output mHC `h_res` transformation matrix (without the Sinkhorn transformation). The data type is `float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`.
-- **`inv_rms`** (`Tensor`): Optional output. `1/r` calculated by RmsNorm. The data type is `float32`. The shape can be `(B, S)` or `(T)`. The data layout can be `ND`.
-- **`h_mix`** (`Tensor`): Optional output. Result of multiplying `x` by the `phi` matrix. The data type is `float32`. The shape can be `(B, S, n<sup>2</sup>+2n)` or `(T, n<sup>2</sup>+2n)`. The data layout can be `ND`.
-- **`h_pre`** (`Tensor`): Optional output. `h_pre` matrix after applying the sigmoid operation. The data type is `float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`.
+- **`h_in`** (`Tensor`): Output `h_in` serving as the input to the Attention/MLP layer. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
+- **`h_post`** (`Tensor`): Output mHC `h_post` transformation matrix. The data type is `torch.float32`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
+- **`h_res`** (`Tensor`): Output mHC `h_res` transformation matrix (without the Sinkhorn transformation). The data type is `torch.float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`.
+- **`inv_rms`** (`Tensor`): Optional output. `1/r` calculated by RmsNorm. The data type is `torch.float32`. The shape can be `(B, S)` or `(T)`. The data layout can be `ND`.
+- **`h_mix`** (`Tensor`): Optional output. Result of multiplying `x` by the `phi` matrix. The data type is `torch.float32`. The shape can be `(B, S, n<sup>2</sup>+2n)` or `(T, n<sup>2</sup>+2n)`. The data layout can be `ND`.
+- **`h_pre`** (`Tensor`): Optional output. `h_pre` matrix after applying the sigmoid operation. The data type is `torch.float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`.
 
 ## Constraints
 

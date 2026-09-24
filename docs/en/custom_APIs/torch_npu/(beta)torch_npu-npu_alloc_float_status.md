@@ -30,7 +30,7 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 
 `Tensor`
 
-A tensor containing eight `float32` zero values.
+A tensor containing eight `torch.float32` zero values.
 
 ## Example
 

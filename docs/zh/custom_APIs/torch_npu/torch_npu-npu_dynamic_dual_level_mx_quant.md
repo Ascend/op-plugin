@@ -46,7 +46,7 @@
 
         | dst_type | emax |
         | --- | --- |
-        | float4_e2m1fn_x2 | 2 |
+        | `torch_npu.float4_e2m1fn_x2` | 2 |
 
 ## 函数原型
 
@@ -56,17 +56,17 @@ torch_npu.npu_dynamic_dual_level_mx_quant(input, *, smooth_scale=None, round_mod
 
 ## 参数说明
 
-- **input**（`Tensor`）：必选参数，表示待量化的数据，对应公式中的$x_{i}$，支持1-7维，最后一维必须是偶数。支持非连续Tensor。数据格式支持ND。数据类型支持`bfloat16`、`float16`。不支持空Tensor。
+- **input**（`Tensor`）：必选参数，表示待量化的数据，对应公式中的$x_{i}$，支持1-7维，最后一维必须是偶数。支持非连续Tensor。数据格式支持ND。数据类型支持`torch.bfloat16`、`torch.float16`。不支持空Tensor。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth\_scale**（`Tensor`）：可选参数，当前该功能暂不支持，传入默认值即可。
 - **round\_mode**（`str`）：可选参数，表示数据转换模式，对应公式中的$round\_mode$，支持\{"rint", "round", 'floor'\}，默认值为"rint"。
 
 ## 返回值说明
 
-- **y**（`Tensor`）：表示量化结果，对应公式中的y<sub>i</sub>。数据类型支持`float4_e2m1fn_x2`，但实际返回的数据类型为uint8，且y的尾轴为输入input尾轴的一半，查看具体值需自行解包。数据格式支持ND。
-- **level0\_scale**（`Tensor`）：表示第一级量化的scale，对应公式中的$level0\_scale_{i}$。数据类型支持`float32`，shape在尾轴上的值为`input`尾轴的值除以512并向上取整。数据格式支持ND。
+- **y**（`Tensor`）：表示量化结果，对应公式中的y<sub>i</sub>。数据类型支持`torch_npu.float4_e2m1fn_x2`，但实际返回的数据类型为`torch.uint8`，且y的尾轴为输入input尾轴的一半，查看具体值需自行解包。数据格式支持ND。
+- **level0\_scale**（`Tensor`）：表示第一级量化的scale，对应公式中的$level0\_scale_{i}$。数据类型支持`torch.float32`，shape在尾轴上的值为`input`尾轴的值除以512并向上取整。数据格式支持ND。
 
-- **level1\_scale**（`Tensor`）：表示第二级量化的scale，对应公式中的$level1\_scale_{i}$。数据类型支持`float8_e8m0fnu`，实际返回的数据类型为uint8，查看具体值需自行转换。shape的大小为`input`的dim+1，shape在最后两轴的值为\(\(ceil\(input.shape\[-1\] / 32\) + 2 - 1\) / 2, 2\)，并对其进行偶数pad，pad填充值为0。数据格式支持ND。
+- **level1\_scale**（`Tensor`）：表示第二级量化的scale，对应公式中的$level1\_scale_{i}$。数据类型支持`torch_npu.float8_e8m0fnu`，实际返回的数据类型为`torch.uint8`，查看具体值需自行转换。shape的大小为`input`的dim+1，shape在最后两轴的值为\(\(ceil\(input.shape\[-1\] / 32\) + 2 - 1\) / 2, 2\)，并对其进行偶数pad，pad填充值为0。数据格式支持ND。
 
 ## 约束说明
 

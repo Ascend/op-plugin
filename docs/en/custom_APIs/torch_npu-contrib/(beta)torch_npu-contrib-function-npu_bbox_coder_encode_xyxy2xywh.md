@@ -21,8 +21,8 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 ## Parameters
 
-- **`bboxes`** (`Tensor`): Bounding boxes to be converted. This parameter must be 2D with shape (N, 4). The data type can be `float` or `half`.
-- **`gt_bboxes`** (`Tensor`): Ground truth bounding boxes used as a reference. This parameter must be 2D with shape (N, 4). The data type can be `float` or `half`.
+- **`bboxes`** (`Tensor`): Bounding boxes to be converted. This parameter must be 2D with shape (N, 4). The data type can be `torch.float` or `torch.half`.
+- **`gt_bboxes`** (`Tensor`): Ground truth bounding boxes used as a reference. This parameter must be 2D with shape (N, 4). The data type can be `torch.float` or `torch.half`.
 - **`means`** (`List[float]`): Optional. Mean used to denormalize the target delta coordinates. The default value is `None`.
 - **`stds`** (`List[float]`): Standard deviations used to denormalize delta coordinates. The default value is `None`.
 - **`is_normalized`** (`bool`): Indicates whether the coordinate values have been normalized. The default value is `False`.
@@ -36,7 +36,7 @@ Bounding box transformation deltas.
 
 ## Constraints
 
-Dynamic shapes are not supported. Due to operator semantic limitations, only 2D scenarios with shape (N, 4) are supported. The shapes and data types of `bboxes` and `gt_bboxes` must be identical. The data type must be `float16` or `float32`. The third input (`stride`) must be a 1D tensor, and its first dimension must match that of the first input (`bboxes`).
+Dynamic shapes are not supported. Due to operator semantic limitations, only 2D scenarios with shape (N, 4) are supported. The shapes and data types of `bboxes` and `gt_bboxes` must be identical. The data type must be `torch.float16` or `torch.float32`. The third input (`stride`) must be a 1D tensor, and its first dimension must match that of the first input (`bboxes`).
 
 ## Example
 

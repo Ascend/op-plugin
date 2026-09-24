@@ -68,19 +68,19 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 > - `N`: indicates the number of ranks. The value is not limited.
 > - `E`: indicates the number of experts on a rank. The value is not limited.
 
-- **`tokens`** (`Tensor`): Required. Tokens to be rearranged. This parameter must be 2D with shape `(A, H)`. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND.
-- **`expert_token_num_per_rank`** (`Tensor`): Required. Two-dimensional matrix, where `[i, j]` represents the token count received from rank `i` that is processed by expert `j` on the current rank. This parameter must be 2D with shape `(N, E)`. The data type can be `int32` or `int64`. The data layout must be ND. All values must be greater than 0.
+- **`tokens`** (`Tensor`): Required. Tokens to be rearranged. This parameter must be 2D with shape `(A, H)`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND.
+- **`expert_token_num_per_rank`** (`Tensor`): Required. Two-dimensional matrix, where `[i, j]` represents the token count received from rank `i` that is processed by expert `j` on the current rank. This parameter must be 2D with shape `(N, E)`. The data type can be `torch.int32` or `torch.int64`. The data layout must be ND. All values must be greater than 0.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`per_token_scales`** (`Tensor`): Optional. Scale corresponding to each token, which must be rearranged along with the tokens. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout must be ND.
+- **`per_token_scales`** (`Tensor`): Optional. Scale corresponding to each token, which must be rearranged along with the tokens. This parameter must be 1D with shape `(A,)`. The data type can be `torch.float32`. The data layout must be ND.
 - **`expert_token_num_type`** (`int`): Optional. Output mode of `expert_token_num`. The value `0` enables cumsum mode, and the value `1` (default) enables count mode. Currently, only the value `1` is supported.
 - **`idx_type`** (`int`): Optional. Index type of the output `permute_token_idx`. The value `0` (default) enables gather indices, and the value `1` enables scatter indices. Currently, only the value `0` is supported.
 
 ## Return Values
 
-- **`permute_tokens`** (`Tensor`): Rearranged tokens. This parameter must be 2D with shape `(A, H)`. The data type can be `float16`, `bfloat16`, or `int8`. The data layout must be ND.
-- **`permute_per_token_scales`** (`Tensor`): Rearranged `per_token_scales`. In scenarios where `per_token_scales` is not provided as input, this output is invalid. This parameter must be 1D with shape `(A,)`. The data type can be `float32`. The data layout must be ND.
-- **`permute_token_idx`** (`Tensor`): Index of each token in the original layout. This parameter must be 1D with shape `(A,)`. The data type is `int32`. The data layout must be ND.
-- **`expert_token_num`** (`Tensor`): Token count processed by each expert. This parameter must be 1D with shape `(E,)`. The data type can be `int32` or `int64`. The data layout must be ND.
+- **`permute_tokens`** (`Tensor`): Rearranged tokens. This parameter must be 2D with shape `(A, H)`. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout must be ND.
+- **`permute_per_token_scales`** (`Tensor`): Rearranged `per_token_scales`. In scenarios where `per_token_scales` is not provided as input, this output is invalid. This parameter must be 1D with shape `(A,)`. The data type can be `torch.float32`. The data layout must be ND.
+- **`permute_token_idx`** (`Tensor`): Index of each token in the original layout. This parameter must be 1D with shape `(A,)`. The data type is `torch.int32`. The data layout must be ND.
+- **`expert_token_num`** (`Tensor`): Token count processed by each expert. This parameter must be 1D with shape `(E,)`. The data type can be `torch.int32` or `torch.int64`. The data layout must be ND.
 
 ## Constraints
 

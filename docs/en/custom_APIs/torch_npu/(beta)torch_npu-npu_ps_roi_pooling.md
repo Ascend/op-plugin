@@ -26,9 +26,9 @@ torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale, group_size, output_dim) -> 
 
 - **`x`** (`Tensor`): `NC1HWC0` tensor describing the feature map. The `C1` dimension must be equal to `(int(output_dim + 15) / C0) * group_size`, where `C0` represents the channel block size.
 - **`rois`** (`Tensor`): ROIs. The shape of this parameter is `(batch, 5, rois_num)`. Each RoI consists of five elements: `batch_id`, `x1`, `y1`, `x2`, and `y2`, where `batch_id` indicates the index of the input feature map, and `x1`, `y1`, `x2`, and `y2` must be greater than or equal to `0.0`.
-- **`spatial_scale`** (`float`): Scaling coefficient used to map input coordinates to RoI coordinates. The data type can be `float32`.
-- **`group_size`** (`int`): Number of groups used to encode the position-sensitive score maps. The value must be within the range `(0, 128)`. The data type can be `int32`.
-- `output_dim` (`int`): Number of output channels. The value must be greater than 0. The data type can be `int32`.
+- **`spatial_scale`** (`float`): Scaling coefficient used to map input coordinates to RoI coordinates. The data type can be `torch.float32`.
+- **`group_size`** (`int`): Number of groups used to encode the position-sensitive score maps. The value must be within the range `(0, 128)`. The data type can be `torch.int32`.
+- `output_dim` (`int`): Number of output channels. The value must be greater than 0. The data type can be `torch.int32`.
 
 ## Example
 

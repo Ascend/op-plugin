@@ -10,12 +10,12 @@
 
 ## Function
 
-- Converts the data type of the quantization parameter `scale` by packing the bit representation of `float32` data into an `int64` value.
+- Converts the data type of the quantization parameter `scale` by packing the bit representation of `torch.float32` data into an `torch.int64` value.
 - Formulas:
 
     1. `out` is a 64-bit value and is initialized to `0`.
 
-    2. Convert `scale` from `float32` to FP19 based on `round_mode`:
+    2. Convert `scale` from `torch.float32` to FP19 based on `round_mode`:
         - When `round_mode` is `0` (truncation and padding mode, default), no R_INT rounding is applied to `scale`.
         - When `round_mode` is `1` (R_INT mode), R_INT rounding is first applied to `scale`:
         $$
@@ -50,9 +50,9 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 ## Parameters
 
-- **`scale`** (`Tensor`): Required. $scale$ in the formulas. The data type can be `float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
-- **`offset`** (`Tensor`): Optional. $offset$ in the formula. The data type can be `float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
-- **`round_mode`** (`int`): Optional. Mode for converting `scale` from `float32` to FP19. The default value is `0`. Valid values:
+- **`scale`** (`Tensor`): Required. $scale$ in the formulas. The data type can be `torch.float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
+- **`offset`** (`Tensor`): Optional. $offset$ in the formula. The data type can be `torch.float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
+- **`round_mode`** (`int`): Optional. Mode for converting `scale` from `torch.float32` to FP19. The default value is `0`. Valid values:
   - `0`: Truncation and padding mode. Directly truncates `scale` to FP19 and then packs it.
   - `1`: R_INT mode. Rounds `scale` to FP19 according to the R_INT rules and then truncates and packs it, which can improve computational accuracy.
 
@@ -60,7 +60,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 `Tensor`
 
-The final computation result of `trans_quant_param`, $out$ in the formulas. The data type can be `int64` (`uint64` in graph mode). The data layout can be ND.
+The final computation result of `trans_quant_param`, $out$ in the formulas. The data type can be `torch.int64` (`torch.uint64` in graph mode). The data layout can be ND.
 
 ## Constraints
 
@@ -102,7 +102,7 @@ The final computation result of `trans_quant_param`, $out$ in the formulas. The 
 
 - Graph mode call
 
-    In graph mode, the result tensor computed by `npu_trans_quant_param` is of the `uint64` data type. PyTorch does not support this data type. This API must be used together with other APIs, such as `npu_quant_matmul` in the following code sample.
+    In graph mode, the result tensor computed by `npu_trans_quant_param` is of the `torch.uint64` data type. PyTorch does not support this data type. This API must be used together with other APIs, such as `npu_quant_matmul` in the following code sample.
 
     ```python
     import torch

@@ -32,7 +32,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **x1**（`Tensor`）：**必选参数**，数据格式支持$ND$，输入shape支持2维或者3维。
 
     <!-- npu="910b" id3 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`int8`、`float16`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.bfloat16`。
     <!-- end id3 -->
     <!-- npu="950" id4 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
@@ -53,13 +53,13 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **bias**（`Tensor`）：**可选参数**，默认值为`None`，数据格式支持$ND$。bias当前仅支持一维，且维度大小与`output`/`x2`的最后一维大小相同。
 
     <!-- npu="910b" id7 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`int32`、`float16`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`。
     <!-- end id7 -->
     <!-- npu="950" id8 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`、`torch.float32`。perblock场景，仅支持bias输入空。
     <!-- end id8 -->
 
-- **antiquant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
+- **antiquant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
     - pertensor场景：shape为\[1\]。
     - perchannel场景：shape为\[1,n\]或者\[n\]，n为`x2`最后一维的大小。
     - pergroup场景：shape为\[ceil\(k, antiquant\_group\_size\), n\]。其中k为`x2`第一维的大小，n为`x2`最后一维的大小，`antiquant_group_size`为伪量化场景对输入`x2`进行反量化计算的groupSize输入。
@@ -67,11 +67,11 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         > [!NOTE]
         > ceil\(k, antiquant\_group\_size\)的计算逻辑为：\(k+antiquant\_group\_size-1\)/antiquant\_group\_size，并对计算结果取整数部分。
 
-- **antiquant\_offset**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
+- **antiquant\_offset**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。数据类型、shape需要和`antiquant_scale`保持一致。
 - **x3**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的偏移。数据格式支持$ND$。数据类型、shape需要和输出`output`保持一致。
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
@@ -84,23 +84,23 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - perblock场景：shape为\[ceilDiv\(n, 128\), ceilDiv\(k, 128\)\]。
 
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2系列产品</term>：支持pertensor、perchannel场景。数据类型支持`int64`、`uint64`、`bfloat16`、`float32`。
+    - <term>Atlas A2系列产品</term>：支持pertensor、perchannel场景。数据类型支持`torch.int64`、`torch.uint64`、`torch.bfloat16`、`torch.float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持pertensor、perchannel、mx、perblock场景。数据类型支持`torch.int64`、`uint64`、`torch.bfloat16`、`torch.float32`、`torch_npu.float8_e8m0fnu`。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持pertensor、perchannel、mx、perblock场景。数据类型支持`torch.int64`、`torch.uint64`、`torch.bfloat16`、`torch.float32`、`torch_npu.float8_e8m0fnu`。
     <!-- end id12 -->
 
-- **pertoken\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的pertoken去量化系数。若数据类型为`float32`，当`x1`为\[m,k\]时，`pertoken_scale` shape为\[m\]；当`x1`为\[b, s, k\]时，`pertoken_scale` shape为\[b\*s\]。
+- **pertoken\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的pertoken去量化系数。若数据类型为`torch.float32`，当`x1`为\[m,k\]时，`pertoken_scale` shape为\[m\]；当`x1`为\[b, s, k\]时，`pertoken_scale` shape为\[b\*s\]。
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`。
     <!-- end id13 -->
     <!-- npu="950" id14 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。若数据类型为`torch_npu.float8_e8m0fnu`，mx场景：shape为\[s, ceilDiv\(k, 64\), 2\]或者\[m, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数；perblock场景：shape为\[ceilDiv\(m, 128\), ceilDiv\(k, 128\)\]。
     <!-- end id14 -->
 
-- **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，默认值为`None`，alltoall通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
-- **comm\_quant\_scale\_2**（`Tensor`）：**可选参数**，默认值为`None`，allgather通信前后的量化、去量化系数。支持`float16`、`bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
+- **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，默认值为`None`，alltoall通信前后的量化、去量化系数。支持`torch.float16`、`torch.bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
+- **comm\_quant\_scale\_2**（`Tensor`）：**可选参数**，默认值为`None`，allgather通信前后的量化、去量化系数。支持`torch.float16`、`torch.bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
 - **antiquant\_group\_size**（`int`）：**可选参数**，表示伪量化pre-group算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre-group时传入0；当伪量化算法模式为pre-group时传入值的范围为\[32, min\(k-1, INT\_MAX\)\]且值要求是32的倍数，其中k为`x2`第一维的大小。默认值0，为0则表示非per-group场景。
 - **group\_sizes**（`List[int]`）：**可选参数**，默认值为`None`，用于表示反量化中x1Scale/x2Scale输入的一个数在其所在的对应维度方向上可以用于该方向`x1`/`x2`输入的多少个数的反量化。group\_sizes为\[groupSizeM，groupSizeN，groupSizeK\]。groupSizeM，groupSizeN，groupSizeK表示一个反量化系数在各个维度对应的数的个数。支持参数自动推导，当根据计算公式分解的groupSizeM/groupSizeN/groupSizeK任一或多个参数为0时，算子自动推导对应的参数值，推导原理为：假设groupSizeM=0，表示m方向量化分组值由接口推断，推断公式为groupSizeM = m / scaleM（需保证m能被scaleM整除），其中m与`x1` shape中的m一致，scaleM与`x1Scale` shape中的m一致。
@@ -158,7 +158,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
 `Tensor`
 
-输出张量。数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`float16`或`bfloat16`。shape第0维度和`x1`的0维保持一致，若`x1`为2维，shape第1维度和`x2`的1维保持一致，若`x1`为3维，shape第1维度和`x1`的1维保持一致，shape第2维度和`x2`的1维保持一致。
+输出张量。数据类型非量化场景以及伪量化场景与`x1`保持一致，全量化场景输出数据类型为`torch.float16`或`torch.bfloat16`。shape第0维度和`x1`的0维保持一致，若`x1`为2维，shape第1维度和`x2`的1维保持一致，若`x1`为3维，shape第1维度和`x1`的1维保持一致，shape第2维度和`x2`的1维保持一致。
 
 ## 约束说明
 
@@ -179,7 +179,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
 <!-- npu="910b" id26 -->
 - <term>Atlas A2系列产品</term>：
-  - 数据类型支持`bfloat16`。
+  - 数据类型支持`torch.bfloat16`。
   - `x1`、`x2`不支持为空tensor。
   - 支持1、2、4、8卡，并且仅支持HCCS链路all mesh组网。
   - `comm_quant_scale_1`，`comm_quant_scale_2`的shape应保持一致，dtype与输出的dtype保持一致，且只在全量化场景支持。
@@ -191,7 +191,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
   - 伪量化场景：仅支持k轴为0的空tensor。
   - 仅支持1、2、4、8、16、32、64卡，CCU模式下不支持1卡。
 <!-- end id27 -->
-- 非量化场景：b\*s、m、k、n的值均不得超过2147483647\(INT32\_MAX\)。
+- 非量化场景：b\*s、m、k、n的值均不得超过2147483647\(`torch.int32`\_MAX\)。
 - 全量化场景：b\*s、m取值范围均为\[1, 2147483647\]，`x1`、`x2`的最后一维范围为\[1, 65535\]，即k的取值范围为\[1, 65535\]、仅当x2\(shape=\[n, k\]\)为转置时n可以大于65535。
 - 伪量化场景：b\*s、m取值范围均为\[1, 2147483647\]，k、n的取值范围为\[1, 65535\]。
 - 一个模型中的通算融合MC2算子，仅支持相同通信域。
@@ -206,16 +206,16 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | float16 | float16 | float16 | float16 | float16 | None | None | None | None | None |
-    | bfloat16 | bfloat16 | bfloat16 | bfloat16 | bfloat16 | None | None | None | None | None |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | None | None | None | None | None |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | None | None | None | None | None |
 
     <!-- npu="910b" id29 -->
     **表 2**  伪量化场景(针对<term>Atlas A2系列产品</term>)
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | float16 | int8 | float16 | float16 | float16 | float16 | float16 | None | None | None |
-    | bfloat16 | int8 | bfloat16 | bfloat16 | bfloat16 | bfloat16 | bfloat16 | None | None | None |
+    | `torch.float16` | `torch.int8` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | None | None | None |
+    | `torch.bfloat16` | `torch.int8` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | None | None | None |
     <!-- end id29 -->
 
     <!-- npu="950" id30 -->
@@ -232,8 +232,8 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | pertoken_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | int8 | int8 | int32 | float16 | float16 | None | None | uint64/int64 | None | None/float16 | None/float16 |
-    | int8 | int8 | int32 | bfloat16 | bfloat16 | None | None | bfloat16 | None | None/bfloat16 | None/bfloat16 |
+    | `torch.int8` | `torch.int8` | `torch.int32` | `torch.float16` | `torch.float16` | None | None | `torch.uint64`/`torch.int64` | None | None/`torch.float16` | None/`torch.float16` |
+    | `torch.int8` | `torch.int8` | `torch.int32` | `torch.bfloat16` | `torch.bfloat16` | None | None | `torch.bfloat16` | None | None/`torch.bfloat16` | None/`torch.bfloat16` |
     <!-- end id31 -->
 
     <!-- npu="950" id32 -->
@@ -250,7 +250,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None |
 
     > [!NOTE]
-    > 全量化场景：若`dequant_scale`需要以`float32`类型传入，在调用torch\_npu.npu\_mm\_all\_reduce\_base前，需通过torch\_npu.npu\_trans\_quant\_param接口对`dequant_scale`进行处理为`int64`类型（处理方法见对应的接口使用说明）。
+    > 全量化场景：若`dequant_scale`需要以`torch.float32`类型传入，在调用torch\_npu.npu\_mm\_all\_reduce\_base前，需通过torch\_npu.npu\_trans\_quant\_param接口对`dequant_scale`进行处理为`torch.int64`类型（处理方法见对应的接口使用说明）。
     <!-- end id32 -->
 
 - 全量化场景中，`x1`、`x2`、`dequant_scale`、`pertoken_scale`、groupSize在不同量化场景下的dtype与shape取值关系如下表。

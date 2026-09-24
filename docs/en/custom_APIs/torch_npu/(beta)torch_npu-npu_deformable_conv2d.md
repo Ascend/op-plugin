@@ -81,8 +81,8 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 - **`stride`** (`List[int]`): Required. Sliding window stride for each input dimension, $stride$ in the formula. This parameter must be a list of 4 integers. The dimension order is interpreted based on the data layout of `self`. Each element must be greater than 0. The N dimension and C dimension must be set to `1`.
 - **`padding`** (`List[int]`): Required. Number of pixels added to each side (top, bottom, left, and right) of the input, $padding$ in the formula. This parameter must be a list of 4 integers.
 - **`dilation`** (`List[int]`): Optional. Dilation factor for each input dimension, $dilation$ in the formula. This parameter must be a list of 4 integers. The dimension order is interpreted based on the data layout of `self`. Each element must be greater than 0. The N dimension and C dimension must be set to `1`. The default value is `[1, 1, 1, 1]`.
-- **`groups`** (`int`): Optional. Number of groups connecting input channels to output channels. The data type must be `int32`. Both `in_channels` and `out_channels` must be divisible by `groups`. The value of `groups` must be greater than 0. The default value is `1`.
-- **`deformable_groups`** (`int`): Optional. Number of deformable group partitions. The data type must be `int32`. `in_channels` must be divisible by `deformable_groups`. The value of `deformable_groups` must be greater than 0. The default value is `1`.
+- **`groups`** (`int`): Optional. Number of groups connecting input channels to output channels. The data type must be `torch.int32`. Both `in_channels` and `out_channels` must be divisible by `groups`. The value of `groups` must be greater than 0. The default value is `1`.
+- **`deformable_groups`** (`int`): Optional. Number of deformable group partitions. The data type must be `torch.int32`. `in_channels` must be divisible by `deformable_groups`. The value of `deformable_groups` must be greater than 0. The default value is `1`.
 - **`modulated`** (`bool`): Optional. Specifies whether to include a mask in `offset`. Valid values are `True` (includes a mask) or `False` (excludes a mask). The default value is `True`.
 
 ## Return Values
@@ -92,7 +92,7 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 
 ## Constraints
 
-All tensor inputs are automatically converted to `float32` regardless of their original data types. The output data type is `float32`.
+All tensor inputs are automatically converted to `torch.float32` regardless of their original data types. The output data type is `torch.float32`.
 
 ## Example
 

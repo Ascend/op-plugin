@@ -57,7 +57,7 @@ Returns the modified new tensor.
 
 <term>Ascend 950DT</term>: Conversion of tensors to the `FRACTAL_NZ` layout is subject to the following constraints:
 
-- When the data type of `input` is `float16` or `bfloat16` and its dimensions are represented as `[k, n]`, scenarios where `k = 1` are not supported.
+- When the data type of `input` is `torch.float16` or `torch.bfloat16` and its dimensions are represented as `[k, n]`, scenarios where `k = 1` are not supported.
 - Tensor modifications (including `contiguous`, `pad`, `view`, and `slice`) are not supported after conversion to the `FRACTAL_NZ` layout using this API.
 - Transpose operations are not permitted after conversion to the `FRACTAL_NZ` layout if either of the last two dimensions of `input` has a size of `1`.
 

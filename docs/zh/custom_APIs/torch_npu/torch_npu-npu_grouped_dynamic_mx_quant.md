@@ -39,26 +39,26 @@
       | `torch.float8_e5m2` | 15 |
 
   - 场景2，当scale\_alg为1时（只涉及float8）：
-    - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{fp32}^b$，再把块内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型float8。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
+    - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{`torch.float32`}^b$，再把块内所有元素用同一个$S_{`torch.float32`}^b$映射到目标低精度类型float8。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
     - 找到该块中数值的最大绝对值：
 
     $$
-    Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
+    Amax(D_{`torch.float32`}^b)=max(\{|d_{i}|\}_{i=1}^{k})
     $$
 
-    - 将fp32映射到目标数据类型float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
+    - 将`torch.float32`映射到目标数据类型float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
 
     $$
-    S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
+    S_{`torch.float32`}^b = \frac{Amax(D_{`torch.float32`}^b)}{Amax(DType)}
     $$
 
-    - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，即从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
+    - 将块缩放因子$S_{`torch.float32`}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，即从$S_{`torch.float32`}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
     $$
-    E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
+    E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
     $$
 
-    - 计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$，对每个块内元素$d^i = DType(d_{fp32}^i \cdot R_{fp32}^n)$。最终输出的量化结果是$\left(S^b, [d^i]_{i=1}^k\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$），$[d^i]_{i=1}^k$代表块内量化后的数据。
+    - 计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{`torch.float32`}^b=\frac{1}{`torch.float32`(S_{ue8m0}^b)}$，对每个块内元素$d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^n)$。最终输出的量化结果是$\left(S^b, [d^i]_{i=1}^k\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$），$[d^i]_{i=1}^k$代表块内量化后的数据。
 
   - 场景3，当scale\_alg为2时（只涉及float4类型）：
     - 当dst\_type\_max为0.0/6.0/7.0（`torch_npu.float4_e2m1fn_x2`）或1.875（`torch_npu.float4_e1m2fn_x2`）时：
@@ -74,26 +74,26 @@
 
       - 量化后的$P_i$按对应的$V_i$的位置组成输出y，按对应维度上的分组组成输出mxscale。
     - 当dst\_type\_max不为上述特殊取值时（`torch_npu.float4_e2m1fn_x2`为6.0-12.0中的其它取值，`torch_npu.float4_e1m2fn_x2`为1.75-3.5中的其它取值）：
-      - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{fp32}^b$，再把块内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
+      - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{`torch.float32`}^b$，再把块内所有元素用同一个$S_{`torch.float32`}^b$映射到目标低精度类型。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
       - 找到该块中数值的最大绝对值：
 
       $$
-      Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
+      Amax(D_{`torch.float32`}^b)=max(\{|d_{i}|\}_{i=1}^{k})
       $$
 
-      - 将fp32映射到目标数据类型可表示的范围内，其中当dst\_type\_max为0时，$Amax(DType)$是目标精度能表示的最大值；当dst\_type\_max不为0时，$Amax(DType)$是dst\_type\_max传入值：
+      - 将`torch.float32`映射到目标数据类型可表示的范围内，其中当dst\_type\_max为0时，$Amax(DType)$是目标精度能表示的最大值；当dst\_type\_max不为0时，$Amax(DType)$是dst\_type\_max传入值：
 
       $$
-      S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
+      S_{`torch.float32`}^b = \frac{Amax(D_{`torch.float32`}^b)}{Amax(DType)}
       $$
 
-      - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
+      - 将块缩放因子$S_{`torch.float32`}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{`torch.float32`}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
       $$
-      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b, & \text{否则} \end{cases}
+      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b, & \text{否则} \end{cases}
       $$
 
-      - 计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$，对每个块内元素$d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$。最终输出的量化结果是$\left(S^b, [d^i]_{i=1}^k\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$），$[d^i]_{i=1}^k$代表块内量化后的数据。
+      - 计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{`torch.float32`}^b=\frac{1}{`torch.float32`(S_{ue8m0}^b)}$，对每个块内元素$d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^b)$。最终输出的量化结果是$\left(S^b, [d^i]_{i=1}^k\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$），$[d^i]_{i=1}^k$代表块内量化后的数据。
 
 ## 函数原型
 

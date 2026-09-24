@@ -80,7 +80,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
   - varlen场景支持BNHSkv(H=1024)、1NHSkv(H=1024)、pseTotalLen三种shape；pseTotalLen为所有batch段pse元素个数之和，第i个batch段的pse元素个数为N \* Sq\_i \* Skv\_i。
   - 当`pse_type`为2或3时，数据类型需为`torch.float32`，对应shape支持范围是\[B, N\]或\[N\]。
 - **padding\_mask**（`Tensor`）：可选参数，预留参数，暂未使用，传入None即可。
-- **atten\_mask**（`Tensor`）：可选参数，公式中的$atten\_mask$。取值为1（或True）代表该位不参与计算（被遮蔽），取值为0（或False）代表该位参与计算（被保留），数据类型支持`bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。
+- **atten\_mask**（`Tensor`）：可选参数，公式中的$atten\_mask$。取值为1（或True）代表该位不参与计算（被遮蔽），取值为0（或False）代表该位参与计算（被保留），数据类型支持`torch.bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。
 - **query\_rope**（`Tensor`）：可选参数，公式中的$query\_rope$，为query的RoPE扩展输入，需与`key_rope`同时传入，默认值为None。仅在varlen场景（input\_layout为TND）下支持，此时必须传入`atten_mask`。数据格式支持$ND$，shape类型支持\[TND\]。Head-Dim必须满足(qRoPED == kRoPED)、D为8的整数倍且小于等于query、key、value的D。数据类型支持如下：
 
   <!-- npu="950" id5 -->

@@ -11,7 +11,7 @@
 
 ## Function
 
-Obtains the data types supported by the device in the `AMP` scenario. This `dtype` is specified by `torch_npu.npu.set_autocast_dtype`. If omitted, the default data type `float16` is used.
+Obtains the data types supported by the device in the `AMP` scenario. This `dtype` is specified by `torch_npu.npu.set_autocast_dtype`. If omitted, the default data type `torch.float16` is used.
 
 ## Prototype
 

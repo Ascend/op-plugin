@@ -163,24 +163,24 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input sequence, $x$ in the formulas. The data type can be `float16` or `bfloat16`. The data layout must be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
+- **`x`** (`Tensor`): Required. Input sequence, $x$ in the formulas. The data type can be `torch.float16` or `torch.bfloat16`. The data layout must be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
 - **`weight`** (`Tensor`): Required. Causal 1D convolution kernel, $weight$ in the formulas. The data type and data layout are the same as those of `x`. Non-contiguous tensors are not supported. Empty tensors are not supported.
 - **`conv_states`** (`Tensor`): Required. Cache state tensor for storing historical token data of each sequence, updated in place after computation for each sequence, $conv\_states$ in the formulas. The data type and data layout are the same as those of `x`. Non-contiguous tensors are supported. Empty tensors are not supported.
 - **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
-- **`query_start_loc`** (`Tensor`): Optional. Sequence start position indices recording the starting positions of sequences in concatenated tensor `x`. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when `x` is a 2D tensor. The default value is `None`.
-- **`cache_indices`** (`Tensor`): Optional. Cache indices specifying the index of the cache state for each sequence in `conv_states`. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
-- **`initial_state_mode`** (`Tensor`): Optional. Legacy parameter with no effect in the current API. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
+- **`query_start_loc`** (`Tensor`): Optional. Sequence start position indices recording the starting positions of sequences in concatenated tensor `x`. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when `x` is a 2D tensor. The default value is `None`.
+- **`cache_indices`** (`Tensor`): Optional. Cache indices specifying the index of the cache state for each sequence in `conv_states`. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
+- **`initial_state_mode`** (`Tensor`): Optional. Legacy parameter with no effect in the current API. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
 - **`bias`** (`Tensor`): Optional. Legacy parameter with no effect in the current API. The data type and data layout are the same as those of `x`. Non-contiguous tensors are not supported. The default value is `None`.
-- **`num_accepted_tokens`** (`Tensor`): Optional. Number of accepted speculative tokens for each batch. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
+- **`num_accepted_tokens`** (`Tensor`): Optional. Number of accepted speculative tokens for each batch. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. The default value is `None`.
 - **`activation`** (`str`): Optional. Activation function type. This parameter has no effect in the current API. The default value is `"None"`.
 - **`pad_slot_id`** (`int`): Optional. Used to skip batches that do not need to participate in computation. The default value is `-1`.
 - **`run_mode`** (`int`): Optional. This parameter has no effect in the current API. The default value is `0`.
 - **`residual_connection`** (`int`): Optional. Determines whether to apply residual connection to the output. `0`: No residual connection. `1`: Output is the sum of the convolution result and input `x` (residual connection). The default value is `0`.
 - **`max_query_len`** (`int`): Optional. Maximum `seq_len` across all batches. The default value is `-1`.
-- **`num_computed_tokens`** (`Tensor`): Optional. Total number of tokens already processed in the current batch, used to determine the initial state. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when `conv_mode` is `"pangu"` or APC is enabled. The default value is `None`.
-- **`block_idx_first_scheduled_token`** (`Tensor`): Optional. Block index corresponding to the first scheduled token of the current batch. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
-- **`block_idx_last_scheduled_token`** (`Tensor`): Optional. Block index corresponding to the last scheduled token of the current batch. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
-- **`initial_state_idx`** (`Tensor`): Optional. Index of the initial state block. The data type can be `int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
+- **`num_computed_tokens`** (`Tensor`): Optional. Total number of tokens already processed in the current batch, used to determine the initial state. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when `conv_mode` is `"pangu"` or APC is enabled. The default value is `None`.
+- **`block_idx_first_scheduled_token`** (`Tensor`): Optional. Block index corresponding to the first scheduled token of the current batch. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
+- **`block_idx_last_scheduled_token`** (`Tensor`): Optional. Block index corresponding to the last scheduled token of the current batch. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
+- **`initial_state_idx`** (`Tensor`): Optional. Index of the initial state block. The data type can be `torch.int32`. The data layout must be `ND`. Non-contiguous tensors are not supported. This parameter cannot be omitted when APC is enabled. The default value is `None`.
 - **`block_size`** (`int`): Optional. Block size. The default value is `128`.
 - **`conv_mode`** (`str`): Optional. Supports two implementations: Qwen3-Next (`"default"`) and Pangu V2 (`"pangu"`). The default value is `"default"`.
 
@@ -331,7 +331,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
   - `num_accepted_tokens` can be `None` or non-`None`. When non-`None`, its length must be `batch`, and each element must be greater than `0` and no greater than the number of tokens in the current batch minus `1`.
   - Values of `cache_indices` must be in the range `[0, conv_states.dim[0]-1]`, and all elements must be distinct.
   - In Pangu V2 mode (`conv_mode = "pangu"`), `num_computed_tokens` cannot be `None`.
-  - The operator inputs and intermediate computation results must remain within the value range of the corresponding data type (`float16` or `bfloat16`).
+  - The operator inputs and intermediate computation results must remain within the value range of the corresponding data type (`torch.float16` or `torch.bfloat16`).
   - Operator inputs must not contain `±inf` or `nan`.
 
 ## Examples

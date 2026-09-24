@@ -24,7 +24,7 @@ torch_npu.npu_get_float_status(self) -> Tensor
 
 ## Parameters
 
-**`self`** (`Tensor`): A tensor containing the data memory address. The data type is `float32`.
+**`self`** (`Tensor`): A tensor containing the data memory address. The data type is `torch.float32`.
 
 ## Return Values
 

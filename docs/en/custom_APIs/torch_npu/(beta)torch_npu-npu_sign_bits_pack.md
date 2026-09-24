@@ -14,7 +14,7 @@
 
 ## Function
 
-- Packs `float` type inputs into `uint8` types. Every 8 floating-point numbers are packed into one `uint8` value, `-1.0` is encoded as binary bit `0`, and `1.0` is encoded as binary bit `1`, and packed in little-endian order.
+- Packs `float` type inputs into `torch.uint8` types. Every 8 floating-point numbers are packed into one `torch.uint8` value, `-1.0` is encoded as binary bit `0`, and `1.0` is encoded as binary bit `1`, and packed in little-endian order.
 
 - Equivalent computation logic:
     
@@ -40,7 +40,7 @@ torch_npu.npu_sign_bits_pack(self, size) -> Tensor
 
 ## Parameters
 
-- **`self`** (`Tensor`): Required. 1D float tensor. The data type can be `float32` and `float16`.
+- **`self`** (`Tensor`): Required. 1D `torch.float` tensor. The data type can be `torch.float32` and `torch.float16`.
 - **`size`** (`int`): Required. Used to reshape the first dimension of the output tensor.
 
 ## Return Values

@@ -28,15 +28,15 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input to be processed, $x$ in the formulas. This parameter must be a 2D or 3D tensor. The data type can be `float16`, `bfloat16`, or `float32`. The data layout must be ND.
-- **`finished`** (`Tensor`): Optional. Rows in the input that are excluded from the computation. This parameter must be a 2D or 3D tensor. The data type must be `bool`. The shape is `gating_shape[:-1]`. The data layout must be `ND`. The default value is `None`. `True` indicates that the corresponding row does not participate in the computation, while `False` indicates that the corresponding row participates in the computation.
+- **`x`** (`Tensor`): Required. Input to be processed, $x$ in the formulas. This parameter must be a 2D or 3D tensor. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout must be ND.
+- **`finished`** (`Tensor`): Optional. Rows in the input that are excluded from the computation. This parameter must be a 2D or 3D tensor. The data type must be `torch.bool`. The shape is `gating_shape[:-1]`. The data layout must be `ND`. The default value is `None`. `True` indicates that the corresponding row does not participate in the computation, while `False` indicates that the corresponding row participates in the computation.
 - **`k`** (`int`): Optional. Top-K selection count, $k$ in the formulas. The conditions `0 < k <= x.shape[-1]` and `k <= 1024` must be satisfied. The default value is `1`.
 
 ## Return Values
 
 - **`y`** (`Tensor`): Top-K values obtained after performing Softmax computation on `x`, $yOut$ in the formulas. This parameter must be a 2D or 3D tensor. The data type must be identical to that of `x`. The sizes of its non-last dimensions must match the corresponding dimension sizes of `x`. The size of its last dimension must match `k`. The data layout must be ND.
-- **`expert_idx`** (`Tensor`): Indices of the Top-K values obtained after performing Softmax computation on `x` (expert IDs), $expertIdxOut$ in the formula. The shape must be identical to the shape of `y`. The data type is `int32`. The data layout must be ND.
-- **`row_idx`** (`Tensor`): Positional mapping between output row locations and input row locations, $rowIdxOut$ in the formula. The shape must be identical to the shape of `y`. The data type is `int32`. The data layout must be ND.
+- **`expert_idx`** (`Tensor`): Indices of the Top-K values obtained after performing Softmax computation on `x` (expert IDs), $expertIdxOut$ in the formula. The shape must be identical to the shape of `y`. The data type is `torch.int32`. The data layout must be ND.
+- **`row_idx`** (`Tensor`): Positional mapping between output row locations and input row locations, $rowIdxOut$ in the formula. The shape must be identical to the shape of `y`. The data type is `torch.int32`. The data layout must be ND.
 
 ## Constraints
 

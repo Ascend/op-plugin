@@ -52,7 +52,7 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 
 ## 约束说明
 
-ModulatedDeformConv仅实现float32数据类型的操作。conv_offset中权重和偏置必须初始化为0。
+ModulatedDeformConv仅实现`torch.float32`数据类型的操作。conv_offset中权重和偏置必须初始化为0。
 
 ## 调用示例
 

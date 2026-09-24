@@ -47,10 +47,10 @@
 
     | 数据类型 | maxValue |
     | :---: | :---: |
-    | torch.int8 | 127 |
-    | torch.float8_e4m3fn | 448 |
-    | torch.float8_e5m2 | 57344 |
-    | torch_npu.hifloat8 | 32768 |
+    | `torch.int8` | 127 |
+    | `torch.float8_e4m3fn` | 448 |
+    | `torch.float8_e5m2` | 57344 |
+    | `torch_npu.hifloat8` | 32768 |
 
 ## 函数原型
 

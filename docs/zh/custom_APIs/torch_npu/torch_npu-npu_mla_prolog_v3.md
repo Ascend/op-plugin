@@ -118,49 +118,49 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   >
   > - B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、He（Head Size）表示隐藏层大小、N（Head Num）表示多头数、Hcq表示q低秩矩阵维度、Hckv表示kv低秩矩阵维度、Dtile表示kv_cache的D轴维度、D表示qk不含位置编码维度、Dr表示qk位置编码维度、Nkv表示kv的head数、BlockNum表示PagedAttention场景下的块数、BlockSize表示PagedAttention场景下的块大小、T表示BS合轴后的大小。
 
-- **token_x**（`Tensor`）：必选参数，公式中用于计算Query和Key的输入tensor。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。BS合轴时，shape为[T, He]；BS非合轴时，shape为[B, S, He]。
+- **token_x**（`Tensor`）：必选参数，公式中用于计算Query和Key的输入tensor。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。BS合轴时，shape为[T, He]；BS非合轴时，shape为[B, S, He]。
 
-- **weight_dq**（`Tensor`）：必选参数，公式中用于计算Query的下采样权重矩阵$W^{DQ}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[He, Hcq]。
+- **weight_dq**（`Tensor`）：必选参数，公式中用于计算Query的下采样权重矩阵$W^{DQ}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，shape为[He, Hcq]。
 
-- **weight_uq_qr**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重矩阵$W^{UQ}$和位置编码权重矩阵$W^{QR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[Hcq, N*(D+Dr)]。
+- **weight_uq_qr**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重矩阵$W^{UQ}$和位置编码权重矩阵$W^{QR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，shape为[Hcq, N*(D+Dr)]。
 
-- **weight_uk**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重$W^{UK}$。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`，shape为[N, D, Hckv]。
+- **weight_uk**（`Tensor`）：必选参数，公式中用于计算Query的上采样权重$W^{UK}$。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`，shape为[N, D, Hckv]。
 
-- **weight_dkv_kr**（`Tensor`）：必选参数，公式中用于计算Key的下采样权重矩阵$W^{DKV}$和位置编码权重矩阵$W^{KR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，shape为[He, Hckv+Dr]。
+- **weight_dkv_kr**（`Tensor`）：必选参数，公式中用于计算Key的下采样权重矩阵$W^{DKV}$和位置编码权重矩阵$W^{KR}$。不支持非连续，数据格式支持FRACTAL_NZ，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，shape为[He, Hckv+Dr]。
 
-- **rmsnorm_gamma_cq**（`Tensor`）：必选参数，计算$c^Q$的RmsNorm公式中的$\gamma$参数。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`，shape为[Hcq]。
+- **rmsnorm_gamma_cq**（`Tensor`）：必选参数，计算$c^Q$的RmsNorm公式中的$\gamma$参数。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`，shape为[Hcq]。
 
-- **rmsnorm_gamma_ckv**（`Tensor`）：必选参数，计算$c^{KV}$的RmsNorm公式中的$\gamma$参数。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`，shape为[Hckv]。
+- **rmsnorm_gamma_ckv**（`Tensor`）：必选参数，计算$c^{KV}$的RmsNorm公式中的$\gamma$参数。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`，shape为[Hckv]。
 
-- **rope_sin**（`Tensor`）：必选参数，用于计算旋转位置编码的正弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`。BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
+- **rope_sin**（`Tensor`）：必选参数，用于计算旋转位置编码的正弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`。BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
 
-- **rope_cos**（`Tensor`）：必选参数，用于计算旋转位置编码的余弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`；BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
+- **rope_cos**（`Tensor`）：必选参数，用于计算旋转位置编码的余弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`；BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
 
-- **kv_cache**（`Tensor`）：必选参数，表示cache的索引，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor;当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
+- **kv_cache**（`Tensor`）：必选参数，表示cache的索引，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor;当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
-- **kr_cache**（`Tensor`）：必选参数，用于key位置编码的cache，计算结果原地更新（对应公式中的$k^R$）。不支持非连续，数据格式支持ND，数据类型支持`bfloat16`、`int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dr]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dr]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dr]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
+- **kr_cache**（`Tensor`）：必选参数，用于key位置编码的cache，计算结果原地更新（对应公式中的$k^R$）。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dr]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dr]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dr]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内; 当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
+- **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`torch.int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内; 当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
 
-- **dequant_scale_x**（`Tensor`）：可选参数，token_x的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[T, 1]或[B\*S, 1]；weight_quant_mode=3时，shape为[T, He/32]或[B*S, He/32]；weight_quant_mode=1时无需赋值。支持B=0,S=0,T=0的空Tensor。
+- **dequant_scale_x**（`Tensor`）：可选参数，token_x的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。weight_quant_mode=2/4/5时，shape为[T, 1]或[B\*S, 1]；weight_quant_mode=3时，shape为[T, He/32]或[B*S, He/32]；weight_quant_mode=1时无需赋值。支持B=0,S=0,T=0的空Tensor。
 
-- **dequant_scale_w_dq**（`Tensor`）：可选参数，weight_dq的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[1,Hcq]；weight_quant_mode=3时，shape为[Hcq, He/32]；weight_quant_mode=1时无需赋值。
+- **dequant_scale_w_dq**（`Tensor`）：可选参数，weight_dq的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。weight_quant_mode=2/4/5时，shape为[1,Hcq]；weight_quant_mode=3时，shape为[Hcq, He/32]；weight_quant_mode=1时无需赋值。
 
-- **dequant_scale_w_uq_qr**（`Tensor`）：可选参数，用于MatmulQcQr矩阵乘后反量化操作的perchannel参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=1/2/4/5时，shape为[1,N*(D+Dr)]；weight_quant_mode=3时，shape为[N*(D+Dr), Hcq/32]。
+- **dequant_scale_w_uq_qr**（`Tensor`）：可选参数，用于MatmulQcQr矩阵乘后反量化操作的perchannel参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。weight_quant_mode=1/2/4/5时，shape为[1,N*(D+Dr)]；weight_quant_mode=3时，shape为[N*(D+Dr), Hcq/32]。
 
-- **dequant_scale_w_dkv_kr**（`Tensor`）：可选参数，weight_dkv_kr的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`float`、`float8_e8m0`。weight_quant_mode=2/4/5时，shape为[(1,Hckv+Dr)]；weight_quant_mode=3时，shape为[Hckv+Dr, He/32]。weight_quant_mode=1时无需赋值。
+- **dequant_scale_w_dkv_kr**（`Tensor`）：可选参数，weight_dkv_kr的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。weight_quant_mode=2/4/5时，shape为[(1,Hckv+Dr)]；weight_quant_mode=3时，shape为[Hckv+Dr, He/32]。weight_quant_mode=1时无需赋值。
 
-- **quant_scale_ckv**（`Tensor`）：可选参数，用于对kv_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`，kv_cache_quant_mode=1时shape为[1]；kv_cache_quant_mode=2时shape为[1, Hckv]；kv_cache_quant_mode=3时无需赋值。支持非空Tensor。
+- **quant_scale_ckv**（`Tensor`）：可选参数，用于对kv_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`，kv_cache_quant_mode=1时shape为[1]；kv_cache_quant_mode=2时shape为[1, Hckv]；kv_cache_quant_mode=3时无需赋值。支持非空Tensor。
 
-- **quant_scale_ckr**（`Tensor`）：可选参数，用于对kr_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`。kv_cache_quant_mode=2时，shape为[1, Dr]；kv_cache_quant_mode=1/3时无需赋值。支持非空Tensor。
+- **quant_scale_ckr**（`Tensor`）：可选参数，用于对kr_cache输出数据做量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`。kv_cache_quant_mode=2时，shape为[1, Dr]；kv_cache_quant_mode=1/3时无需赋值。支持非空Tensor。
 
-- **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`float`。weight_quant_mode=1/2/4/5时，shape为[1, Hcq]；weight_quant_mode=3时无需赋值。支持非空Tensor。
+- **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`。weight_quant_mode=1/2/4/5时，shape为[1, Hcq]；weight_quant_mode=3时无需赋值。支持非空Tensor。
 
-- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式存储。不支持非连续，数据格式支持ND，数据类型支持`int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
+- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式存储。不支持非连续，数据格式支持ND，数据类型支持`torch.int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
 
-- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，在部分量化pertoken-pergroup场景和int8全量化pertoken-pergroup场景下使用，其他场景无需赋值。不支持非连续，数据格式支持ND，数据类型支持`float`，shape为[1]。
+- **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，在部分量化pertoken-pergroup场景和`torch.int8`全量化pertoken-pergroup场景下使用，其他场景无需赋值。不支持非连续，数据格式支持ND，数据类型支持`torch.float`，shape为[1]。
 
 - **rmsnorm_epsilon_cq**（`double`）：可选参数，计算$c^Q$的RmsNorm公式中的$\epsilon$参数。默认值为1e-05。
 
@@ -170,7 +170,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **query_norm_flag**（`bool`）：可选参数，表示是否输出query_norm。仅支持bool类型，False表示不输出query_norm，True表示输出query_norm（量化场景下伴随输出dequant_scale_q_norm），默认值为False。
 
-- **weight_quant_mode**（`int`）：可选参数，表示weight_dq、weight_uq_qr、weight_uk、weight_dkv_kr的量化模式。0表示非量化，1表示weightUqQr量化，2表示weightDq、weightUqQr、weightDkvKr int8量化，3表示weightDq、weightUqQr、weightDkvKr mxfp8量化，4表示weightDq、weightUqQr、weightDkvKr fp8量化，5表示weightDq、weightUqQr、weightDkvKr hif8量化，默认值为0。
+- **weight_quant_mode**（`int`）：可选参数，表示weight_dq、weight_uq_qr、weight_uk、weight_dkv_kr的量化模式。0表示非量化，1表示weightUqQr量化，2表示weightDq、weightUqQr、weightDkvKr `torch.int8`量化，3表示weightDq、weightUqQr、weightDkvKr mxfp8量化，4表示weightDq、weightUqQr、weightDkvKr fp8量化，5表示weightDq、weightUqQr、weightDkvKr hif8量化，默认值为0。
 
 - **kv_cache_quant_mode**（`int`）：可选参数，表示kv_cache的量化模式。0表示非量化，1表示pertensor量化，2表示perchannel量化，3-表示pertoken-pergroup量化，默认值为0。
 
@@ -186,44 +186,44 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **kc_scale**（`double`）：可选参数，表示Key的尺度矫正系数，默认值为1.0。
 
-- **token_x_dtype**（`int`）：可选参数，表示参数token_x的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+- **token_x_dtype**（`int`）：可选参数，表示参数token_x的传入dtype，在hif8全量化场景为`torch_npu.hifloat8`，其他场景为None。
 
-- **weight_dq_dtype**（`int`）：可选参数，表示参数weight_dq的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+- **weight_dq_dtype**（`int`）：可选参数，表示参数weight_dq的传入dtype，在hif8全量化场景为`torch_npu.hifloat8`，其他场景为None。
 
-- **weight_uq_qr_dtype**（`int`）：可选参数，表示参数weight_uq_qr的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+- **weight_uq_qr_dtype**（`int`）：可选参数，表示参数weight_uq_qr的传入dtype，在hif8全量化场景为`torch_npu.hifloat8`，其他场景为None。
 
-- **weight_dkv_kr_dtype**（`int`）：可选参数，表示参数weight_dkv_kr的传入dtype，在hif8全量化场景为torch_npu.hifloat8，其他场景为None。
+- **weight_dkv_kr_dtype**（`int`）：可选参数，表示参数weight_dkv_kr的传入dtype，在hif8全量化场景为`torch_npu.hifloat8`，其他场景为None。
 
-- **kv_cache_dtype**（`int`）：可选参数，表示参数kv_cache的传入dtype，在hif8 kv_cache pertensor量化和hif8 kv_cache pertoken-pergroup量化场景为torch_npu.hifloat8，其他场景为None。
+- **kv_cache_dtype**（`int`）：可选参数，表示参数kv_cache的传入dtype，在hif8 kv_cache pertensor量化和hif8 kv_cache pertoken-pergroup量化场景为`torch_npu.hifloat8`，其他场景为None。
 
   <!-- npu="A3,910b" id5 -->
   > [!NOTE]
   >
   > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
-  > - token_x、weight_dq、weight_uq_qr、weight_dkv_kr、kv_cache不支持float8_e4m3fn、hifloat8数据类型。
-  > - dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr不支持float8_e8m0数据类型。
+  > - token_x、weight_dq、weight_uq_qr、weight_dkv_kr、kv_cache不支持`torch.float8_e4m3fn`、`torch_npu.hifloat8`数据类型。
+  > - dequant_scale_x、dequant_scale_w_dq、dequant_scale_w_uq_qr、dequant_scale_w_dkv_kr不支持`torch.float8_e8m0fnu`数据类型。
   <!-- end id5 -->
 
 ## 返回值说明
 
-- **query_out**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
+- **query_out**（`Tensor`）：表示Query的输出Tensor，即公式中q<sup>N</sup>。数据格式支持ND，dtype支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。shape支持3维和4维，格式为[T, N, Hckv]和[B, S, N, Hckv]。
 
-- **query_rope_out**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。数据格式支持ND，dtype支持`bfloat16`。shape支持3维和4维，格式为[T, N, Dr]和[B, S, N, Dr]。
+- **query_rope_out**（`Tensor`）：表示Query位置编码的输出Tensor，即公式中q<sup>R</sup>。数据格式支持ND，dtype支持`torch.bfloat16`。shape支持3维和4维，格式为[T, N, Dr]和[B, S, N, Dr]。
 
-- **dequant_scale_q_nope**（`Tensor`）：表示Query的输出Tensor的反量化参数。数据格式支持ND，dtype支持`float`。shape支持3维，weightQuantMode=2/3/4/5时，其shape为[T, N, 1]和[B*S, N, 1]；weightQuantMode=0/1时为nullptr。
+- **dequant_scale_q_nope**（`Tensor`）：表示Query的输出Tensor的反量化参数。数据格式支持ND，dtype支持`torch.float`。shape支持3维，weightQuantMode=2/3/4/5时，其shape为[T, N, 1]和[B*S, N, 1]；weightQuantMode=0/1时为nullptr。
 
-- **query_norm**（`Tensor`）：Query做RmsNorm_cq后的输出tensor（对应$q^C$）。数据格式支持ND，dtype支持`bfloat16`、`int8`、`float8_e4m3fn`、`hifloat8`。shape支持2维和3维，`query_norm_flag=True`时有效，shape为[T, Hcq]或[B, S, Hcq]；`query_norm_flag=False`时为nullptr。
+- **query_norm**（`Tensor`）：Query做RmsNorm_cq后的输出tensor（对应$q^C$）。数据格式支持ND，dtype支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。shape支持2维和3维，`query_norm_flag=True`时有效，shape为[T, Hcq]或[B, S, Hcq]；`query_norm_flag=False`时为nullptr。
 
-- **dequant_scale_q_norm**（`Tensor`）：Query做RmsNorm_cq后的反量化参数。数据格式支持ND，数据类型支持`float`、`float8_e8m0`。shape支持2维，`query_norm_flag=True`且`weight_quant_mode=1/2/3/4/5`时有效。`weight_quant_mode=0`时为nullptr。`weight_quant_mode=1/2/4/5`时，shape为[T,1]或[B\*S,1]；`weightQuantMode=3`时，shape为[T, Hcq/32]或[B*S, Hcq/32]。
+- **dequant_scale_q_norm**（`Tensor`）：Query做RmsNorm_cq后的反量化参数。数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。shape支持2维，`query_norm_flag=True`且`weight_quant_mode=1/2/3/4/5`时有效。`weight_quant_mode=0`时为nullptr。`weight_quant_mode=1/2/4/5`时，shape为[T,1]或[B\*S,1]；`weightQuantMode=3`时，shape为[T, Hcq/32]或[B*S, Hcq/32]。
 
   <!-- npu="A3,910b" id6 -->
   > [!NOTE]
   >
   > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：
   > 
-  > - query、query_norm不支持float8_e4m3fn、hifloat8数据类型。
-  > - dequant_scale_q_norm不支持float8_e8m0数据类型。
+  > - query、query_norm不支持`torch.float8_e4m3fn`、`torch_npu.hifloat8`数据类型。
+  > - dequant_scale_q_norm不支持`torch.float8_e8m0fnu`数据类型。
   <!-- end id6 -->
 
 ## 约束说明
@@ -301,7 +301,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       </td>
     </tr>
     <tr>
-      <td rowspan="3"><em>int8/fp8/hif8全量化</em></td>
+      <td rowspan="3"><em>`torch.int8`/fp8/hif8全量化</em></td>
       <td> kv_cache非量化</td>
       <td>
           weight_quant_mode=2/4/5, kv_cache_quant_mode=0, query_quant_mode=0<br>
@@ -362,7 +362,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <th rowspan="2">参数名</th>
       <th><em>非量化</em></th>
       <th colspan="3"><em>部分量化</em></th>
-      <th colspan="3"><em>int8全量化</em></th>
+      <th colspan="3"><em>`torch.int8`全量化</em></th>
       <th colspan="3"><em>mxfp8全量化</em></th>
       <th colspan="3"><em>fp8全量化</em></th>
       <th colspan="3"><em>hif8全量化</em></th>
@@ -387,231 +387,231 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     </tr>
     <tr>
       <td>token_x</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td>weight_dq</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td>weight_uq_qr</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td>weight_uk</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td>weight_dkv_kr</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td> rmsnorm_gamma_cq </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> rmsnorm_gamma_ckv </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> rope_sin </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> rope_cos </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> kv_cache </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>bfloat16</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>bfloat16</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>bfloat16</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td> kr_cache </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> cache_index </td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
-      <td>int64</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
+      <td>`torch.int64`</td>
     </tr>
     <tr>
       <td> dequant_scale_x </td>
@@ -619,18 +619,18 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> dequant_scale_w_dq </td>
@@ -638,37 +638,37 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> dequant_scale_w_uq_qr </td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> dequant_scale_w_dkv_kr </td>
@@ -676,43 +676,43 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td> 无需赋值 </td>
       <td> 无需赋值 </td>
       <td> 无需赋值 </td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> quant_scale_ckv </td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
     </tr>
     <tr>
       <td> quant_scale_ckr </td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
@@ -730,97 +730,97 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td> smooth_scales_cq </td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> actual_seq_len </td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
-      <td>int32</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
+      <td>`torch.int32`</td>
     </tr>
     <tr>
       <td> k_nope_clip_alpha </td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
     </tr>
     <tr>
       <td> query_out </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>float8_e4m3fn</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>float8_e4m3fn</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>hifloat8</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> query_rope_out </td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
-      <td>bfloat16</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.bfloat16`</td>
     </tr>
     <tr>
       <td> dequant_scale_q_nope_out </td>
@@ -829,55 +829,55 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>无需赋值</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
       <td>无需赋值</td>
-      <td>float</td>
+      <td>`torch.float`</td>
       <td>无需赋值</td>
     </tr>
     <tr>
       <td> query_norm_out </td>
-      <td>bfloat16</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>int8</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>float8_e4m3fn</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
-      <td>hifloat8</td>
+      <td>`torch.bfloat16`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.int8`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch.float8_e4m3fn`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
+      <td>`torch_npu.hifloat8`</td>
     </tr>
     <tr>
       <td> dequant_scale_q_norm_out </td>
       <td>无需赋值</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float8_e8m0</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
-      <td>float</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float8_e8m0fnu`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
+      <td>`torch.float`</td>
     </tr>
   </table>
   </div>

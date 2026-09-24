@@ -26,13 +26,13 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. The data type can be `int8`, `float16`, or `bfloat16`. The data layout can be ND. This parameter must be a 2D or 3D tensor.
-- **`x2`** (`Tensor`): Required. The data type can be `float16`, `int8`, or `bfloat16`. The data layout can be NZ (Ascend-optimized layout) or ND. In non-quantization scenarios, the data type must be identical to that of `x1`. The size of the 0th dimension must be identical to that of the last dimension of `x1`.
+- **`x1`** (`Tensor`): Required. The data type can be `torch.int8`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. This parameter must be a 2D or 3D tensor.
+- **`x2`** (`Tensor`): Required. The data type can be `torch.float16`, `torch.int8`, or `torch.bfloat16`. The data layout can be NZ (Ascend-optimized layout) or ND. In non-quantization scenarios, the data type must be identical to that of `x1`. The size of the 0th dimension must be identical to that of the last dimension of `x1`.
 - **`hcom`** (`str`): Required. Communicator handle name obtained by calling the `get_hccl_comm_name` API.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`reduce_op`** (`str`): Optional. Type of the reduce operation. Currently, only the default value `sum` is supported.
-- **`bias`** (`Tensor`): Optional. The data type can be `int32`, `float16`, or `bfloat16`. The data layout can be ND. This parameter must be a 1D tensor, where the size must match the last dimension of `output` or `x2`.
-- **`antiquant_scale`** (`Tensor`): Optional. Dequantization scale for `x2` in fake-quantization scenarios, $antiquantScale$ in the formula. The data type can be `float16` or `bfloat16`. The data layout can be ND. In fake-quantization scenarios, the data type must be identical to that of `x1`.
+- **`bias`** (`Tensor`): Optional. The data type can be `torch.int32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. This parameter must be a 1D tensor, where the size must match the last dimension of `output` or `x2`.
+- **`antiquant_scale`** (`Tensor`): Optional. Dequantization scale for `x2` in fake-quantization scenarios, $antiquantScale$ in the formula. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In fake-quantization scenarios, the data type must be identical to that of `x1`.
     - `pertensor` scenario: The shape is `[1]`.
     - `perchannel` scenario: The shape is `[1, n]` or `[n]`, where `n` indicates the size of the last dimension of `x2`.
     - `pergroup` scenario: The shape is `[ceil(k, antiquant_group_size), n]`, where `k` indicates the size of the first dimension of `x2`, `n` indicates the size of the last dimension of `x2`, and `antiquant_group_size` is the group size input for the dequantization computation of the input `x2`.
@@ -40,17 +40,17 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
         > [!NOTE]  
         > The calculation logic for $ceil(k, antiquant\_group\_size)$ is $(k + antiquant\_group\_size - 1)/antiquant\_group\_size$, where only the integer part of the result is taken.
 
-- **`antiquant_offset`** (`Tensor`): Optional. Dequantization offset for `x2` in fake-quantization scenarios, $antiquantOffset$ in the formula. The data type can be `float16` or `bfloat16`. The data layout can be ND. The data type and shape must be identical to those of `antiquant_scale`.
-- **`x3`** (`Tensor`): Optional. Offset added after MatMul computation. The data type can be `float16` or `bfloat16`. The data layout can be ND. The data type and shape must be identical to those of `output`.
+- **`antiquant_offset`** (`Tensor`): Optional. Dequantization offset for `x2` in fake-quantization scenarios, $antiquantOffset$ in the formula. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The data type and shape must be identical to those of `antiquant_scale`.
+- **`x3`** (`Tensor`): Optional. Offset added after MatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The data type and shape must be identical to those of `output`.
   
-- **`dequant_scale`** (`Tensor`): Optional. Dequantization scale applied after MatMul computation. The data type can be `int64`, `uint64`, `bfloat16`, or `float32`. The data layout can be ND.
+- **`dequant_scale`** (`Tensor`): Optional. Dequantization scale applied after MatMul computation. The data type can be `torch.int64`, `torch.uint64`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND.
     - `pertensor` scenario: The shape is `[1]`.
     - `perchannel` scenario: The shape is `[n]` or `[1, n]`, where `n` indicates the size of the last dimension of `x2`.
 
-- **`pertoken_scale`** (`Tensor`): Optional. Per-token dequantization scale applied after MatMul computation. The data type can be `float32`. When `x1` is `[m, k]`, the shape is `[m]`. When `x1` is `[b, s, k]`, the shape is `[b * s]`.
+- **`pertoken_scale`** (`Tensor`): Optional. Per-token dequantization scale applied after MatMul computation. The data type can be `torch.float32`. When `x1` is `[m, k]`, the shape is `[m]`. When `x1` is `[b, s, k]`, the shape is `[b * s]`.
   
-- **`comm_quant_scale_1`** (`Tensor`): Optional. Quantization and dequantization scale before and after AlltoAll communication. The data type can be `float16` or `bfloat16`. The data layout can be ND. When `x2` is `[k, n]`, the shape is `[1, n]` or `[n]`. Ensure that the data on each rank is consistent and correct.
-- **`comm_quant_scale_2`** (`Tensor`): Optional. Quantization and dequantization scale before and after AllGather communication. The data type can be `float16` or `bfloat16`. The data layout can be ND. When `x2` is `[k, n]`, the shape is `[1, n]` or `[n]`. Ensure that the data on each rank is consistent and correct.
+- **`comm_quant_scale_1`** (`Tensor`): Optional. Quantization and dequantization scale before and after AlltoAll communication. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. When `x2` is `[k, n]`, the shape is `[1, n]` or `[n]`. Ensure that the data on each rank is consistent and correct.
+- **`comm_quant_scale_2`** (`Tensor`): Optional. Quantization and dequantization scale before and after AllGather communication. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. When `x2` is `[k, n]`, the shape is `[1, n]` or `[n]`. Ensure that the data on each rank is consistent and correct.
 - **`comm_turn`** (`int`): Optional. Communication splitting granularity between ranks. The default value is `0`, indicating the default splitting mode. Currently, only the value `0` is supported.
 - **`antiquant_group_size`** (`int`): Optional. Group size for dequantizing `x2` in `pergroup` fake-quantization. It describes the size of the data block to be dequantized along the $k$ axis corresponding to a single set of dequantization parameters. When the fake-quantization mode is not `pergroup`, the value of this parameter must be `0`. When the fake-quantization mode is `pergroup`, the value of this parameter must be a multiple of 32 and must be in the range [32, min(k-1, INT_MAX)], where `k` indicates the size of the first dimension of `x2`. The default value is `0`, indicating a non-`pergroup` scenario.
 
@@ -58,7 +58,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 
 `Tensor`
 
-In non-quantization and fake-quantization scenarios, the data type is identical to that of `x1`. In full quantization scenarios, the output data type can be `float16` or `bfloat16`. The size of the 0th dimension is identical to that of the 0th dimension of `x1`. When `x1` is 2D, the size of the 1st dimension is identical to that of the 1st dimension of `x2`. When `x1` is 3D, the size of the 1st dimension is identical to that of the 1st dimension of `x1`, and the size of the 2nd dimension is identical to that of the 1st dimension of `x2`.
+In non-quantization and fake-quantization scenarios, the data type is identical to that of `x1`. In full quantization scenarios, the output data type can be `torch.float16` or `torch.bfloat16`. The size of the 0th dimension is identical to that of the 0th dimension of `x1`. When `x1` is 2D, the size of the 1st dimension is identical to that of the 1st dimension of `x2`. When `x1` is 3D, the size of the 1st dimension is identical to that of the 1st dimension of `x1`, and the size of the 2nd dimension is identical to that of the 1st dimension of `x2`.
 
 ## Constraints
 
@@ -69,7 +69,7 @@ In non-quantization and fake-quantization scenarios, the data type is identical 
 - `x1` does not support transposed input. If `x2` is transposed, the size of its first dimension must match the last dimension of `x1`, satisfying the requirements of the MatMul operation.
 - The value range of $k$ in `antiquant_group_size` is identical to that in the MatMul operation, `[1, 65535]`. `INT_MAX` must be greater than $(k-1)$.
 - Atlas A2 training products/Atlas A2 inference products:
-    - The data type can be `bfloat16`.
+    - The data type can be `torch.bfloat16`.
     - Empty tensors are not supported for `x1` and `x2`.
     - Configurations of 1, 2, 4, and 8 ranks are supported. Only all-mesh networking over HCCS links is supported.
     - In non-quantization scenarios, the value ranges of $m$, $k$, and $n$ are all [1, 2147483647].
@@ -85,27 +85,27 @@ In non-quantization and fake-quantization scenarios, the data type is identical 
 
     |Product|x1|x2|bias|x3|output|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 training products/Atlas A2 inference products|`float16`|`float16`|`float16`|`float16`|`float16`|None|None|None|
-    |Atlas A2 training products/Atlas A2 inference products|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|None|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.float16`|`torch.float16`|`torch.float16`|`torch.float16`|`torch.float16`|None|None|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|None|None|None|
     
     **Table 2** Fake-quantization scenarios
 
     |Product|x1|x2|bias|x3|output|antiquant_scale|antiquant_offset|dequant_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 training products/Atlas A2 inference products|`float16`|`int8`|`float16`|`float16`|`float16`|`float16`|`float16`|None|
-    |Atlas A2 training products/Atlas A2 inference products|`bfloat16`|`int8`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|`bfloat16`|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.float16`|`torch.int8`|`torch.float16`|`torch.float16`|`torch.float16`|`torch.float16`|`torch.float16`|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.bfloat16`|`torch.int8`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|`torch.bfloat16`|None|
     
     **Table 3** Full-quantization scenarios
 
     |Product|x1|x2|bias|x3|output|antiquant_scale|antiquant_offset|dequant_scale|pertoken_scale|
     |--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|
-    |Atlas A2 training products/Atlas A2 inference products|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`uint64` or `int64`|None|
-    |Atlas A2 training products/Atlas A2 inference products|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|None|
-    |Atlas A2 training products/Atlas A2 inference products|`int8`|`int8`|`int32`|`float16`|`float16`|None|None|`float32`|`float32`|
-    |Atlas A2 training products/Atlas A2 inference products|`int8`|`int8`|`int32`|`bfloat16`|`bfloat16`|None|None|`bfloat16`|`float32`|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.int8`|`torch.int8`|`torch.int32`|`torch.float16`|`torch.float16`|None|None|`torch.uint64` or `torch.int64`|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.int8`|`torch.int8`|`torch.int32`|`torch.bfloat16`|`torch.bfloat16`|None|None|`torch.bfloat16`|None|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.int8`|`torch.int8`|`torch.int32`|`torch.float16`|`torch.float16`|None|None|`torch.float32`|`torch.float32`|
+    |Atlas A2 training products/Atlas A2 inference products|`torch.int8`|`torch.int8`|`torch.int32`|`torch.bfloat16`|`torch.bfloat16`|None|None|`torch.bfloat16`|`torch.float32`|
 
     > [!NOTE]  
-    > In full quantization scenarios, if `dequant_scale` is provided as a `float32` value, convert it into `int64` by using the `torch_npu.npu_trans_quant_param` API before calling `torch_npu.npu_mm_all_reduce_base`. For details about the conversion method, see the corresponding API documentation.
+    > In full quantization scenarios, if `dequant_scale` is provided as a `torch.float32` value, convert it into `torch.int64` by using the `torch_npu.npu_trans_quant_param` API before calling `torch_npu.npu_mm_all_reduce_base`. For details about the conversion method, see the corresponding API documentation.
 
 ## Examples
 

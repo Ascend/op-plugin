@@ -66,20 +66,20 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`。
-- **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
-- **expand\_idx**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求是1维张量，shape为\(A \* 128, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
-- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1维张量，shape为\(ep\_world\_size\*local\_expert\_num, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
-- **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重，要求是2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
-- **residual\_x**（`Tensor`）：**必选参数**，表示处理后的token需要add的参数，要求是3维张量，shape为\(BS, 1, H\)。数据类型支持`bfloat16`，数据格式为$ND$，支持非连续的Tensor。
-- **gamma**（`Tensor`）：**必选参数**，表示rms\_norm的权重，要求是1维张量，shape为\(H, \)。数据类型支持`bfloat16`，数据格式为$ND$，支持非连续的Tensor。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`torch.bfloat16`。
+- **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+- **expand\_idx**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求是1维张量，shape为\(A \* 128, \)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`assist_info_for_combine`输出。
+- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的数据量，要求是1维张量，shape为\(ep\_world\_size\*local\_expert\_num, \)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`ep_recv_counts`输出。
+- **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重，要求是2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+- **residual\_x**（`Tensor`）：**必选参数**，表示处理后的token需要add的参数，要求是3维张量，shape为\(BS, 1, H\)。数据类型支持`torch.bfloat16`，数据格式为$ND$，支持非连续的Tensor。
+- **gamma**（`Tensor`）：**必选参数**，表示rms\_norm的权重，要求是1维张量，shape为\(H, \)。数据类型支持`torch.bfloat16`，数据格式为$ND$，支持非连续的Tensor。
 - **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size，取值范围为\[2, 768\]。
 - **ep\_rank\_id**（`int`）：**必选参数**，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的`ep_rank_id`不重复。
 - **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，取值范围\[1, 1024\]，并且满足moe\_expert\_num\%\(ep\_world\_size-shared\_expert\_rank\_num\)=0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。预留参数，当前版本不支持，传默认值None即可。
-- **x\_active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信，默认所有token参与通信，要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`bool`值全为false，表示当前token不会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
+- **x\_active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信，默认所有token参与通信，要求是一个1维或2维张量。当输入为1维时，shape为\(BS, \)；当输入为2维时，shape为\(BS, K\)。数据类型支持`torch.bool`，数据格式为$ND$，支持非连续的Tensor。当输入为1维时，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；当输入为2维时，参数为true表示当前token对应的`expert_ids`参与通信，若当前token对应的K个`torch.bool`值全为false，表示当前token不会参与通信。当每张卡的BS数量不一致时，所有token必须全部有效。
 - **activation\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
 - **weight\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
 - **group\_list**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -109,7 +109,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 ## 返回值说明
 
 - **y**（`Tensor`）：表示combine处理后的token进行add\_rms\_norm计算后的结果，要求是3维张量，shape为\(BS, 1, H\)，数据类型与输入`residual_x`保持一致，数据格式为$ND$，不支持非连续的Tensor。
-- **rstd\_out**（`Tensor`）：表示add\_rms\_norm的输出结果，要求是3维张量，shape为\(BS, 1, 1\)，数据类型支持`float`，数据格式为$ND$，不支持非连续的Tensor。
+- **rstd\_out**（`Tensor`）：表示add\_rms\_norm的输出结果，要求是3维张量，shape为\(BS, 1, 1\)，数据类型支持`torch.float`，数据格式为$ND$，不支持非连续的Tensor。
 - **x**（`Tensor`）：表示combine处理后的token进行add计算后的结果，要求是3维张量，shape为\(BS, 1, H\)，数据类型与输入`residual_x`保持一致，数据格式为$ND$，不支持非连续的Tensor。
 
 ## 约束说明
