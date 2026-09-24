@@ -70,6 +70,7 @@ jobs:
           support_730="v2.6.0 v2.7.1 v2.8.0 v2.9.0"
           support_2600="v2.7.1 v2.8.0 v2.9.0 v2.10.0"
           support_2610="v2.7.1 v2.9.0 v2.10.0 v2.11.0 v2.12.0"
+          support_2620="v2.7.1 v2.9.0 v2.10.0 v2.11.0 v2.12.0 v2.13.0 v2.14.0"
           suffix="${TARGET_BRANCH//./}"
           list="support_${suffix}"
           if [[ ! " ${!list} " =~ " ${PYTORCH_BRANCH} " ]]; then

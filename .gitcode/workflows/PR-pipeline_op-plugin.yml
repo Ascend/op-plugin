@@ -22,20 +22,20 @@ env:
   repo: ${{ atomgit.event.repository.name }}
   pr_id: ${{ atomgit.event.pull_request.number }}
   org_name: "Ascend"
-  img_master_arm: "pytorch_master_a2_aarch64_builder:20260804"
+  img_master_arm: "pytorch_master_a2_aarch64_builder:20260922"
   img_2_7_1_arm: "pytorch_2.7.1_a2_aarch64_builder:20260804"
   img_2_9_0_arm: "pytorch_2.9.0_a2_aarch64_builder:20260901"
   img_2_10_0_arm: "pytorch_2.10.0_a2_aarch64_builder:20260804"
   img_2_11_0_arm: "pytorch_2.11.0_a2_aarch64_builder:20260804"
   img_2_12_0_arm: "pytorch_2.12.0_a2_aarch64_builder:20260804"
-  img_2_13_0_arm: "pytorch_2.13.0_a2_aarch64_builder:20260804"
-  img_master_x86: "pytorch_master_a1_x86_64_builder:20260804"
+  img_2_13_0_arm: "pytorch_2.13.0_a2_aarch64_builder:20260922"
+  img_master_x86: "pytorch_master_a1_x86_64_builder:20260922"
   img_2_7_1_x86: "pytorch_2.7.1_a1_x86_64_builder:20260804"
   img_2_9_0_x86: "pytorch_2.9.0_a1_x86_64_builder:20260901"
   img_2_10_0_x86: "pytorch_2.10.0_a1_x86_64_builder:20260704"
   img_2_11_0_x86: "pytorch_2.11.0_a1_x86_64_builder:20260704"
   img_2_12_0_x86: "pytorch_2.12.0_a1_x86_64_builder:20260704"
-  img_2_13_0_x86: "pytorch_2.13.0_a1_x86_64_builder:20260709"
+  img_2_13_0_x86: "pytorch_2.13.0_a1_x86_64_builder:20260922"
 
 permissions:
   project: read
@@ -200,7 +200,7 @@ stages:
             include:
               - branch: "master"
                 arch: "x86"
-                img: "pytorch_master_a1_x86_64_builder:20260804"
+                img: "pytorch_master_a1_x86_64_builder:20260922"
               - branch: "v2.7.1"
                 arch: "x86"
                 img: "pytorch_2.7.1_a1_x86_64_builder:20260804"
@@ -216,9 +216,12 @@ stages:
               - branch: "v2.12.0"
                 arch: "x86"
                 img: "pytorch_2.12.0_a1_x86_64_builder:20260704"
+              - branch: "v2.13.0"
+                arch: "x86"
+                img: "pytorch_2.13.0_a1_x86_64_builder:20260922"
               - branch: "master"
                 arch: "arm"
-                img: "pytorch_master_a2_aarch64_builder:20260804"
+                img: "pytorch_master_a2_aarch64_builder:20260922"
               - branch: "v2.7.1"
                 arch: "arm"
                 img: "pytorch_2.7.1_a2_aarch64_builder:20260804"
@@ -234,6 +237,9 @@ stages:
               - branch: "v2.12.0"
                 arch: "arm"
                 img: "pytorch_2.12.0_a2_aarch64_builder:20260804"
+              - branch: "v2.13.0"
+                arch: "arm"
+                img: "pytorch_2.13.0_a2_aarch64_builder:20260922"
 
   stage_4:
     name: UT
@@ -252,11 +258,11 @@ stages:
           matrix:
             include:
               - branch: "master"
-                img: "pytorch_master_a2_aarch64_builder:20260804"
+                img: "pytorch_master_a2_aarch64_builder:20260922"
                 TEST_RANK: "1"
                 TEST_WORLD_SIZE: "2"
               - branch: "master"
-                img: "pytorch_master_a2_aarch64_builder:20260804"
+                img: "pytorch_master_a2_aarch64_builder:20260922"
                 TEST_RANK: "2"
                 TEST_WORLD_SIZE: "2"
               - branch: "v2.7.1"
