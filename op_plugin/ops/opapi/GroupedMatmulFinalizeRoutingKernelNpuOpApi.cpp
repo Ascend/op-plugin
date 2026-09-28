@@ -19,6 +19,8 @@
 namespace op_api {
 constexpr size_t LAST_SECOND_DIM_INDEX = 2;
 constexpr int64_t INT4_NUMS_IN_INT32 = 8;
+constexpr int64_t OUTPUT_DTYPE_FLOAT32 = 0;
+constexpr int64_t OUTPUT_DTYPE_BFLOAT16 = 2;
 using npu_preparation = at_npu::native::OpPreparation;
 
 static bool is_nz_format(const at::Tensor& w)
@@ -162,20 +164,23 @@ at::Tensor npu_grouped_matmul_finalize_routing(
     TensorWrapper pertoken_scale_wrapper = make_wrapper(pertoken_scale_real, pertoken_scale_dtype);
 
     at::ScalarType dst_type = c10::value_or_else(dtype, [] {return at::ScalarType::Float;});
-    TORCH_CHECK(dst_type == at::ScalarType::Float,
-        "The dtype should be float", OPS_ERROR(ErrCode::PARAM));
-
-    if (shared_input.has_value()) {
-        TORCH_CHECK(dst_type == at::ScalarType::Float,
-                    "When shared_input and logit is not None, the dtype must be float32",
-                    OPS_ERROR(ErrCode::PARAM));
+    // The public API uses 0/2 for float32/bfloat16. Normalize these values before
+    // creating the output tensor because PyTorch ScalarType enum values differ.
+    if (static_cast<int64_t>(dst_type) == OUTPUT_DTYPE_BFLOAT16) {
+        dst_type = at::ScalarType::BFloat16;
+    } else if (static_cast<int64_t>(dst_type) == OUTPUT_DTYPE_FLOAT32) {
+        dst_type = at::ScalarType::Float;
     }
+    bool is_bfloat16_output = dst_type == at::ScalarType::BFloat16;
+    TORCH_CHECK(dst_type == at::ScalarType::Float || is_bfloat16_output,
+        "The dtype should be float32 or bfloat16", OPS_ERROR(ErrCode::PARAM));
+
     c10::TensorOptions options = x.options().dtype(dst_type);
     at::Tensor result = npu_preparation::apply_tensor_without_format(output_size, options);
 
     bool transposeX = false;
     bool transposeW = false;
-    int64_t dtype_real = 0;
+    int64_t dtype_real = is_bfloat16_output ? OUTPUT_DTYPE_BFLOAT16 : OUTPUT_DTYPE_FLOAT32;
     if (is_weight_nz) {
         static const bool is_v2_available = check_aclnn_kernel_available("aclnnGroupedMatmulFinalizeRoutingWeightNzV2");
         if (is_v2_available) {
