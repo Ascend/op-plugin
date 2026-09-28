@@ -2,6 +2,7 @@ import torch
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
+from torch_npu.testing.common_utils import SupportedDevices
 
 
 class TestDropout(TestCase):
@@ -99,6 +100,32 @@ class TestDropout(TestCase):
 
         self.assertTrue(input_tensor is output_inplace)
         self.assertTrue(torch.all(input_tensor == 0))
+
+    @SupportedDevices(['Ascend950'])
+    def test_native_dropout_graph(self, device="npu"):
+        torch.npu.manual_seed(558)
+        s = torch.npu.get_rng_state()
+
+        x = torch.randn(2, 5, device="npu")
+        output = torch.native_dropout(x, 0.2, True)
+        output1 = output[0].clone()
+
+        x = torch.randn(2, 5, device="npu")
+        output = torch.native_dropout(x, 0.2, True)
+        output2 = output[0].clone()
+
+        g = torch_npu.npu.NPUGraph()
+        with torch_npu.npu.graph(g):
+            x = torch.randn(2, 5, device="npu")
+            output = torch.native_dropout(x, 0.2, True)
+
+        torch.npu.set_rng_state(s)
+        output[0].copy_(torch.zeros(2, 5, device="npu"))
+        output[1].copy_(torch.zeros_like(output[1], device="npu"))
+        g.replay()
+        self.assertEqual(output[0], output1)
+        g.replay()
+        self.assertEqual(output[0], output2)
 
 
 if __name__ == '__main__':

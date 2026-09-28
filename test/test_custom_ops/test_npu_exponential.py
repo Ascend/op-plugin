@@ -55,6 +55,31 @@ class TestExponential(TestCase):
         with self.assertRaises(RuntimeError):
             torch.empty((1,), device="npu", dtype=torch.float32).exponential_(-0.5)
 
+    @SupportedDevices(['Ascend950'])
+    def test_exponential_graph(self, device="npu"):
+        torch.npu.manual_seed(558)
+        s = torch.npu.get_rng_state()
+
+        x = torch.randn(2, 5, device="npu")
+        x.exponential_(lambd=1.0)
+        output1 = x.clone()
+
+        x = torch.randn(2, 5, device="npu")
+        x.exponential_(lambd=1.0)
+        output2 = x.clone()
+
+        g = torch_npu.npu.NPUGraph()
+        with torch_npu.npu.graph(g):
+            x = torch.randn(2, 5, device="npu")
+            x.exponential_(lambd=1.0)
+
+        torch.npu.set_rng_state(s)
+        x.copy_(torch.zeros(2, 5, device="npu"))
+        g.replay()
+        self.assertEqual(x, output1)
+        g.replay()
+        self.assertEqual(x, output2)
+
 
 if __name__ == "__main__":
     run_tests()

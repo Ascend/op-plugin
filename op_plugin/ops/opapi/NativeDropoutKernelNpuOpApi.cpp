@@ -51,12 +51,23 @@ std::tuple<at::Tensor, at::Tensor> _npu_dropout(const at::Tensor& self, double p
     int64_t counterOffset = randomness_compatible
         ? op_plugin::utils::calc_counter_offset(nelem, op_plugin::utils::UNROLL_4)
         : op_plugin::utils::LEGACY_RAND_COUNTER_OFFSET;
-    auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(counterOffset);
-    const uint64_t seed = pair.first;
-    const uint64_t offset = pair.second;
     c10::optional<at::Tensor> noiseOpt = c10::nullopt;
     at::Tensor optionalNoiseShape = c10::value_or_else(noiseOpt, [] { return at::Tensor(); });
-    EXEC_NPU_CMD(aclnnDropoutV3, self, optionalNoiseShape, p, seed, offset, result, mask);
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+      auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(counterOffset);
+      const uint64_t seed = pair.first;
+      const uint64_t offset = pair.second;
+      EXEC_NPU_CMD(aclnnDropoutV3, self, optionalNoiseShape, p, seed, offset, result, mask);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+      auto gen_state_ = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_npu_state(counterOffset);
+      const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+      const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+      const int64_t offset_intragraph = static_cast<int64_t>(gen_state_.offset_intragraph_);
+      EXEC_NPU_CMD(aclnnDropoutV3Tensor, self, optionalNoiseShape, p, *seed_ptr, *offset_ptr, offset_intragraph, result, mask);
+#endif
+    }
     return std::tie(result, mask);
   }
 
