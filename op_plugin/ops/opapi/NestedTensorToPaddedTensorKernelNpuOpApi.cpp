@@ -21,7 +21,7 @@ at::Tensor to_padded_tensor(
     const at::Tensor& self,
     double padding,
     at::OptionalIntArrayRef output_size) {
-  // 调用 PyTorch 原生 CPU 实现
+  // 调用 PyTorch 原生实现
   return at::native::NestedTensor_to_padded_tensor_generic(
       self, padding, output_size);
 }
