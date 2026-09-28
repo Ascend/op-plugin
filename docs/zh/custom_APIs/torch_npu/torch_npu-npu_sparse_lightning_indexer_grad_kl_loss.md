@@ -113,7 +113,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 - **sinks**(`float`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`torch.float32`，shape为$(N1)$。
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2训练系列产品/Atlas A3训练系列产品</term>：暂不支持可选输入sinks，传默认值即可
+  - <term>Atlas A2训练系列产品</term>/<term>Atlas A3训练系列产品</term>：暂不支持可选输入sinks，传默认值即可。
   <!-- end id4 -->
 
 ## 返回值说明

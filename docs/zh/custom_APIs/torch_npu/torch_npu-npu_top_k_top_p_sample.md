@@ -289,9 +289,9 @@
     \end{cases}
     $$
 
-  * 该采样过程以aclnn.Multinomial为基准，可参见<https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>。
+  * 该采样过程以aclnn.Multinomial为基准，可参见<https://gitcode.com/cann/ops-math/blob/9.2.0/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>。
 
-  * TorchNPU调用时，采样种子和偏移默认使用内建值，可参见<https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
+  * TorchNPU调用时，采样种子和偏移默认使用内建值，可参见<https://gitcode.com/Ascend/op-plugin/blob/26.2.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
 
 ## 函数原型
 

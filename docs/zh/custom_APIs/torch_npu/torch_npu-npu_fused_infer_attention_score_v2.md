@@ -1109,7 +1109,7 @@ print(out.shape)   # torch.Size([1, 8, 1, 128])
 
 ### 示例7：通用约束+aclgraph模式
 
-**场景说明**：当显式传入`backend="npugraph_ex"`时，使用[aclgraph模式](https://gitcode.com/Ascend/torchair/blob/master/docs/zh/npugraph_ex/quick_start.md)。
+**场景说明**：当显式传入`backend="npugraph_ex"`时，使用[aclgraph模式](https://gitcode.com/Ascend/torchair/blob/26.2.0/docs/zh/npugraph_ex/quick_start.md)。
 
 **关键参数**：`backend="npugraph_ex"`：`torch.compile`的必选参数，使用aclgraph模式。
 

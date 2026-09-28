@@ -225,8 +225,8 @@
 
 PyTorch原生社区已提供LibTorch Stable ABI能力，提供一组稳定的二进制接口，让自定义算子和C++扩展无需绑定特定PyTorch版本也能跨版本兼容。TorchNPU在此基础上补充NPU侧能力，对外提供以下接口：
 
-- [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/c/shim.h)：补充NPU设备类型及NPU相关Stable ABI接口。
-- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/generated/v2r13/c_shim_npu.h)：提供NPU算子的Stable ABI声明，接口名形如`aoti_torch_npu_*`。
+- [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/torch_npu/csrc/inductor/aoti_torch/c/shim.h)：补充NPU设备类型及NPU相关Stable ABI接口。
+- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/torch_npu/csrc/inductor/aoti_torch/generated/v2r13/c_shim_npu.h)：提供NPU算子的Stable ABI声明，接口名形如`aoti_torch_npu_*`。
 - `libtorch_npu.so`：导出上述NPU新增Stable ABI接口符号。
 
 ## ATB C++接口说明
