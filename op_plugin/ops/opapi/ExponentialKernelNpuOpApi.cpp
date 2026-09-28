@@ -37,13 +37,24 @@ at::Tensor& exponential_(at::Tensor& self, double lambd, c10::optional<at::Gener
         at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
     // Remove false after aclnnSimThreadExponential supports aclnnSetPytorchRandom.
     auto counter_offset = op_plugin::utils::calc_final_counter_offset(self, false);
-    auto pair = gen->philox_engine_inputs(counter_offset);
-    int64_t seed = static_cast<int64_t>(pair.first);
-    int64_t offset = static_cast<int64_t>(pair.second);
-    int64_t count = self.numel();
-    ASCEND_LOGI("count:%lld, lambd:%lf, seed:%lld, offset:%lld", count, lambd, seed, offset);
+    auto is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+    if (is_capture == c10_npu::CaptureStatus::None) {
+      auto pair = gen->philox_engine_inputs(counter_offset);
+      int64_t seed = static_cast<int64_t>(pair.first);
+      int64_t offset = static_cast<int64_t>(pair.second);
+      int64_t count = self.numel();
+      ASCEND_LOGI("count:%lld, lambd:%lf, seed:%lld, offset:%lld", count, lambd, seed, offset);
 
-    EXEC_NPU_CMD(aclnnSimThreadExponential, self, count, lambd, seed, offset);
+      EXEC_NPU_CMD(aclnnSimThreadExponential, self, count, lambd, seed, offset);
+    } else {
+#if VERSION_BETWEEN(V2R5, VERSION_NEWEST)
+      auto gen_state_ = gen->philox_npu_state(counter_offset);
+      const at::Tensor* seed_ptr = gen_state_.seed_.ptr;
+      const at::Tensor* offset_ptr = gen_state_.offset_.ptr;
+      const int64_t offset_intragraph = static_cast<int64_t>(gen_state_.offset_intragraph_);
+      EXEC_NPU_CMD(aclnnStatelessExponentialTensor, self, *seed_ptr, *offset_ptr, offset_intragraph, lambd);
+#endif
+    }
     return self;
   }
   TORCH_CHECK(lambd > 0.0, "exponential_ expects lambd > 0.0, but found lambd=", lambd, OPS_ERROR(ErrCode::PARAM));
