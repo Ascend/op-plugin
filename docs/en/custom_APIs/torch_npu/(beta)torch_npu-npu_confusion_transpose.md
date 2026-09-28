@@ -24,7 +24,7 @@ torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 
 ## Parameters
 
-- **`self`** (`Tensor`): Input tensor. The data type can be `float16`, `float32`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, or `uint64`.
+- **`self`** (`Tensor`): Input tensor. The data type can be `torch.float16`, `torch.float32`, `torch.int8`, `torch.int16`, `torch.int32`, `torch.int64`, `torch.uint8`, `torch.uint16`, `torch.uint32`, or `torch.uint64`.
 - **`perm`** (`List[int]`): Dimension permutation of the `self` tensor.
 - **`shape`** (`List[int]`): The target shape after the reshape operation.
 - **`transpose_first`** (`bool`): If set to `True`, transpose is executed first. Otherwise, reshape is executed first.

@@ -33,7 +33,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **in_channels**（`int`）：必选参数，Conv2d输入的channel值。
 - **out_channels**（`int`）：必选参数，Conv2d输出的channel值。
 - **kernel_size**（`int`/`tuple`）：必选参数，卷积核大小，支持单个数字输入或者2维tuple输入。当前仅支持kernel_size范围为[1, 255]。
-- **output_dtype**（`torch.dtype`）：必选参数，输出数据类型，当前仅支持`float16`。
+- **output_dtype**（`torch.dtype`）：必选参数，输出数据类型，当前仅支持`torch.float16`。
 - **stride**（`int`/`tuple`）：可选参数，默认值为1，Conv2d的stride，支持单个数字输入或者2维tuple输入。当前仅支持stride范围为[1, 63]。
 - **padding**（`int`/`tuple`）：可选参数，默认值为0，Conv2d的padding，支持单个数字输入或者2维tuple输入。当前仅支持padding范围为[0, 255]。
 - **dilation**（`int`/`tuple`）：可选参数，默认值为1，Conv2d的dilation，支持单个数字输入或者2维tuple输入。当前仅支持dilation范围为[1, 255]。
@@ -52,13 +52,13 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 **计算输入**
 
-**quant_conv2d_input**（`Tensor`）：数据类型支持`int8`，数据格式支持$NCHW$，shape为4维。
+**quant_conv2d_input**（`Tensor`）：数据类型支持`torch.int8`，数据格式支持$NCHW$，shape为4维。
 
 ## 变量说明
 
-- **weight**（`Tensor`）：数据类型支持`int8`。数据格式支持$NCHW$，shape为4维。
-- **scale**（`Tensor`）：数据类型支持`float32`和`int64`。数据格式支持$ND$，shape是1维(n,)，其中n与`weight`的`out_channels`一致。
-- **bias**（`Tensor`）：可选参数。数据类型支持`int32`，数据格式支持$ND$，shape支持1维(n,)，n与`weight`的`out_channels`一致。
+- **weight**（`Tensor`）：数据类型支持`torch.int8`。数据格式支持$NCHW$，shape为4维。
+- **scale**（`Tensor`）：数据类型支持`torch.float32`和`torch.int64`。数据格式支持$ND$，shape是1维(n,)，其中n与`weight`的`out_channels`一致。
+- **bias**（`Tensor`）：可选参数。数据类型支持`torch.int32`，数据格式支持$ND$，shape支持1维(n,)，n与`weight`的`out_channels`一致。
 
 ## 输出说明
 
@@ -66,7 +66,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 代表QuantConv2d的计算结果：
 
-- 如果output_dtype为`float16`，输出的数据类型为`float16`。
+- 如果output_dtype为`torch.float16`，输出的数据类型为`torch.float16`。
 - 如果output_dtype非以上数据类型，则不支持。
 
 ## 约束说明

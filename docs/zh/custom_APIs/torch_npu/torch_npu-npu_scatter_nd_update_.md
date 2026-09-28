@@ -33,35 +33,35 @@ torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor(a!)
 - **input** (`Tensor`)：必选输入，源数据张量，数据格式支持$ND$，支持非连续的Tensor，数据类型需要与`updates`一致，维度只能是1~8维。
 
   <!-- npu="310p" id6 -->
-  - <term>Atlas推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
+  - <term>Atlas推理系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`。
   <!-- end id6 -->
   <!-- npu="910" id7 -->
-  - <term>Atlas训练系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
+  - <term>Atlas训练系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`。
   <!-- end id7 -->
   <!-- npu="910b" id8 -->
-  - <term>Atlas A2系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
+  - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`。
   <!-- end id8 -->
   <!-- npu="A3" id9 -->
-  - <term>Atlas A3系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
+  - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`。
   <!-- end id9 -->
   <!-- npu="950" id10 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`。
   <!-- end id10 -->
 
-- **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`int32`、`int64`，数据格式支持$ND$，支持非连续的Tensor，`indices`中的索引数据不支持越界。
+- **indices** (`Tensor`)：必选输入，索引张量，数据类型支持`torch.int32`、`torch.int64`，数据格式支持$ND$，支持非连续的Tensor，`indices`中的索引数据不支持越界。
 - **updates** (`Tensor`)：必选输入，更新数据张量，数据格式支持$ND$，支持非连续的Tensor，数据类型需要与`input`一致。
 
   <!-- npu="310p" id11 -->
-  - <term>Atlas推理系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
+  - <term>Atlas推理系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`。
   <!-- end id11 -->
   <!-- npu="910" id12 -->
-  - <term>Atlas训练系列产品</term>：数据类型支持`float32`、`float16`、`bool`。
+  - <term>Atlas训练系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`。
   <!-- end id12 -->
   <!-- npu="910b" id13 -->
-  - <term>Atlas A2系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
+  - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`。
   <!-- end id13 -->
   <!-- npu="A3" id14 -->
-  - <term>Atlas A3系列产品</term>：数据类型支持`float32`、`float16`、`bool`、`bfloat16`、`int64`、`int8`。
+  - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`。
   <!-- end id14 -->
   <!-- npu="950" id15 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bool`、`torch.bfloat16`、`torch.int64`、`torch.int8`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`。

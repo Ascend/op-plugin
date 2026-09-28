@@ -26,22 +26,22 @@
   \begin{cases}
   min(input\_max / FP8\_MAX, 1 / min\_scale), & dst\_type \text{ 指定为 FP8} \\
   min(input\_max / HiF8\_MAX, 1 / min\_scale), & dst\_type \text{ 指定为 HiF8} \\
-  min(input\_max / INT8\_MAX, 1 / min\_scale), & dst\_type \text{ 指定为 INT8}
+  min(input\_max / `torch.int8`\_MAX, 1 / min\_scale), & dst\_type \text{ 指定为 `torch.int8`}
   \end{cases}
   $$
 
   $$
-  y = cast\_to\_[FP8/HiF8/INT8](x / scale)
+  y = cast\_to\_[FP8/HiF8/`torch.int8`](x / scale)
   $$
 
-  其中$block\_reduce\_max$代表求每个`block`中的最大值。`FP8_MAX`、`HiF8_MAX`、`INT8_MAX`分别表示FP8、HiF8、INT8目标量化类型可表示的最大正数值，由`dst_type`决定。当`dst_type_max`不为0时，使用`dst_type_max`的值作为目标类型的最大值。
-  FP8、HiF8、INT8均为8-bit低精度量化目标类型，分别表示FP8浮点、HiF8浮点和INT8整数格式。当前支持的最大值如下：
+  其中$block\_reduce\_max$代表求每个`block`中的最大值。`FP8_MAX`、`HiF8_MAX`、`INT8_MAX`分别表示FP8、HiF8、`torch.int8`目标量化类型可表示的最大正数值，由`dst_type`决定。当`dst_type_max`不为0时，使用`dst_type_max`的值作为目标类型的最大值。
+  FP8、HiF8、`torch.int8`均为8-bit低精度量化目标类型，分别表示FP8浮点、HiF8浮点和`torch.int8`整数格式。当前支持的最大值如下：
 
   | 目标类型 | 最大正数值 |
   | --- | --- |
   | FP8 | FP8_MAX = 448 |
   | HiF8 | HiF8_MAX = 32768 |
-  | INT8 | INT8_MAX = 127 |
+  | `torch.int8` | INT8_MAX = 127 |
 
 ## 函数原型
 
@@ -51,7 +51,7 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，输入张量，数据类型支持`float16`、`bfloat16`，支持非连续的Tensor，数据格式支持$ND$。当前shape支持2维和3维。不支持空Tensor。
+- **x** (`Tensor`)：必选参数，输入张量，数据类型支持`torch.float16`、`torch.bfloat16`，支持非连续的Tensor，数据格式支持$ND$。当前shape支持2维和3维。不支持空Tensor。
 - **min_scale** (`float`)：可选参数，参与`scale`计算的最小`scale`值。当前支持取值大于等于0。
 - **round_mode** (`str`)：可选参数，指定类型转换到输出的转换方式，默认值为`"rint"`。
 
@@ -64,7 +64,7 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
       - 当`dst_type`为`torch_npu.hifloat8`时，仅支持取值`"round"`。
     <!-- end id5 -->
 
-- **dst_type** (`int`)：可选参数，指定输出`y`的数据类型，默认值为`int8`。
+- **dst_type** (`int`)：可选参数，指定输出`y`的数据类型，默认值为`torch.int8`。
 
     <!-- npu="A3,910b" id6 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`。

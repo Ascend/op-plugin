@@ -21,7 +21,7 @@ torch_npu.fast_gelu(self) -> Tensor
 
 ## Parameters
 
-**`self`** (`Tensor`): The data type can be `float16` or `float32`.
+**`self`** (`Tensor`): The data type can be `torch.float16` or `torch.float32`.
 
 ## Examples
 

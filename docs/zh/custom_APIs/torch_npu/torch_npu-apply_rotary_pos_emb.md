@@ -27,7 +27,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 ## 参数说明
 
-- **query**（`Tensor`）：必选参数，待执行旋转位置编码的第一个张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+- **query**（`Tensor`）：必选参数，待执行旋转位置编码的第一个张量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
 
   <!-- npu="A3,910b,310p" id5 -->
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
@@ -36,7 +36,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - Ascend 950DT系列产品：支持空Tensor，shape最后一维（D）小于等于1024。
   <!-- end id6 -->
 
-- **key**（`Tensor`）：必选参数，待执行旋转位置编码的第二个张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+- **key**（`Tensor`）：必选参数，待执行旋转位置编码的第二个张量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
 
   <!-- npu="A3,910b,310p" id7 -->
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：不支持空Tensor，shape最后一维（D）必须等于128或者64。
@@ -45,7 +45,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - Ascend 950DT系列产品：支持空Tensor，shape最后一维（D）小于等于1024。
   <!-- end id8 -->
 
-- **cos**（`Tensor`）：必选参数，旋转位置编码余弦值张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+- **cos**（`Tensor`）：必选参数，旋转位置编码余弦值张量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
 
   <!-- npu="A3,910b,310p" id9 -->
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：不支持空Tensor，shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
@@ -54,7 +54,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - Ascend 950DT系列产品：支持空Tensor，shape中B维度与`query`、`key`的B维度一致，或者等于1，shape中N维度必须等于1，shape最后一维（D）小于等于1024。
   <!-- end id10 -->
 
-- **sin**（`Tensor`）：必选参数，旋转位置编码正弦值张量。数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
+- **sin**（`Tensor`）：必选参数，旋转位置编码正弦值张量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$。`layout`为TND时，shape为3维，其他`layout`场景下shape为4维。
 
   <!-- npu="A3,910b,310p" id11 -->
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：不支持空Tensor，shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
@@ -102,7 +102,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - `rotary_mode`为"half"和"interleave"时，输入shape最后一维必须被2整除；`rotary_mode`为"quarter"时，输入shape最后一维必须被4整除。
 <!-- end id18 -->
 <!-- npu="310p" id19 -->
-- Atlas推理系列产品不支持`bfloat16`。
+- Atlas推理系列产品不支持`torch.bfloat16`。
 <!-- end id19 -->
 
 ## 调用示例

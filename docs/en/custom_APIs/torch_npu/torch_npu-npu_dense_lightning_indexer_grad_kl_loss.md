@@ -73,53 +73,53 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 ## Parameters
 
-- **`query`** (`Tensor`): Required. Query in the attention, $Q$ in the formula. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S1, N1, D)` or `(T1, N1, D)`.
+- **`query`** (`Tensor`): Required. Query in the attention, $Q$ in the formula. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S1, N1, D)` or `(T1, N1, D)`.
 
-- **`key`** (`Tensor`): Required. Key in the attention, $K$ in the formula. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S2, N2, D)` or `(T2, N2, D)`.
+- **`key`** (`Tensor`): Required. Key in the attention, $K$ in the formula. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S2, N2, D)` or `(T2, N2, D)`.
 
-- **`query_index`** (`Tensor`): Required. Forward input query of the Lightning Indexer, $\tilde{Q}$ in the formula. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S1, N1index, D)` or `(T1, N1index, D)`.
+- **`query_index`** (`Tensor`): Required. Forward input query of the Lightning Indexer, $\tilde{Q}$ in the formula. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S1, N1index, D)` or `(T1, N1index, D)`.
 
-- **`key_index`** (`Tensor`): Required. Forward input key of the Lightning Indexer, $\tilde{K}$ in the formula. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S2, N2index, D)` or `(T2, N2index, D)`.
+- **`key_index`** (`Tensor`): Required. Forward input key of the Lightning Indexer, $\tilde{K}$ in the formula. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S2, N2index, D)` or `(T2, N2index, D)`.
 
-- **`weights`** (`Tensor`): Required. Weight coefficients of the Lightning Indexer, $W$ in the formula. The data layout can be ND. The data type can be `bfloat16`, `float16`, or `float32`. The shape can be `(B, S1, N1index)` or `(T1, N1index)`.
+- **`weights`** (`Tensor`): Required. Weight coefficients of the Lightning Indexer, $W$ in the formula. The data layout can be ND. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`. The shape can be `(B, S1, N1index)` or `(T1, N1index)`.
 
-- **`softmax_max`** (`Tensor`): Required. Maximum value in the attention Softmax results. The data layout can be ND. The data type can be `float32`. The shape can be `(B, N2, S1, G)` or `(N2, T1, G)`. $G$ is equal to $N1/N2$.
+- **`softmax_max`** (`Tensor`): Required. Maximum value in the attention Softmax results. The data layout can be ND. The data type can be `torch.float32`. The shape can be `(B, N2, S1, G)` or `(N2, T1, G)`. $G$ is equal to $N1/N2$.
 
-- **`softmax_sum`** (`Tensor`): Required. Sum of the attention Softmax results. The data layout can be ND. The data type can be `float32`. The shape can be `(B, N2, S1, G)` or `(N2, T1, G)`. $G$ is equal to $N1/N2$.
+- **`softmax_sum`** (`Tensor`): Required. Sum of the attention Softmax results. The data layout can be ND. The data type can be `torch.float32`. The shape can be `(B, N2, S1, G)` or `(N2, T1, G)`. $G$ is equal to $N1/N2$.
 
-- **`softmax_max_index`** (`Tensor`): Required. Maximum value in the index attention Softmax results. The data layout can be ND. The data type can be `float32`. The shape can be `(B, N2index, S1)` or `(N2index, T1)`.
+- **`softmax_max_index`** (`Tensor`): Required. Maximum value in the index attention Softmax results. The data layout can be ND. The data type can be `torch.float32`. The shape can be `(B, N2index, S1)` or `(N2index, T1)`.
 
-- **`softmax_sum_index`** (`Tensor`): Required. Sum of the index attention Softmax results. The data layout can be ND. The data type can be `float32`. The shape can be `(B, N2index, S1)` or `(N2index, T1)`.
+- **`softmax_sum_index`** (`Tensor`): Required. Sum of the index attention Softmax results. The data layout can be ND. The data type can be `torch.float32`. The shape can be `(B, N2index, S1)` or `(N2index, T1)`.
 
-- **`scale_value`** (`float`): Required. Scaling coefficient. The data type can be `float32`.
+- **`scale_value`** (`float`): Required. Scaling coefficient. The data type can be `torch.float32`.
 
-- **`query_rope`** (`Tensor`): Optional. RoPE information of the query in the MLA structure. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S1, N1, Dr)` or `(T1, N1, Dr)`.
+- **`query_rope`** (`Tensor`): Optional. RoPE information of the query in the MLA structure. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S1, N1, Dr)` or `(T1, N1, Dr)`.
 
-- **`key_rope`** (`Tensor`): Optional. RoPE information of the key in the MLA structure. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape can be `(B, S2, N2, Dr)` or `(T2, N2, Dr)`.
+- **`key_rope`** (`Tensor`): Optional. RoPE information of the key in the MLA structure. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S2, N2, Dr)` or `(T2, N2, Dr)`.
 
-- **`actual_seq_qlen`** (`list[int]`): Optional. Accumulated sum of sequence lengths for each $S$ in the query tensor. This parameter is required in the `TND` scenario. The data type can be `int64`. The data layout can be ND. The default value is `None`.
+- **`actual_seq_qlen`** (`list[int]`): Optional. Accumulated sum of sequence lengths for each $S$ in the query tensor. This parameter is required in the `TND` scenario. The data type can be `torch.int64`. The data layout can be ND. The default value is `None`.
 
-- **`actual_seq_klen`** (`list[int]`): Optional. Accumulated sum of sequence lengths for each $S$ in the key tensor. This parameter is required in the TND scenario. The data type can be `int64`. The data layout can be ND. The default value is `None`.
+- **`actual_seq_klen`** (`list[int]`): Optional. Accumulated sum of sequence lengths for each $S$ in the key tensor. This parameter is required in the TND scenario. The data type can be `torch.int64`. The data layout can be ND. The default value is `None`.
 
 - **`layout`** (`str`): Optional. Data layout format of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
-- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int32`. The default value is `3`. Currently, only mode `3` is supported.
+- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `torch.int32`. The default value is `3`. Currently, only mode `3` is supported.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
 
 ## Return Values
 
-- **`d_query_index`** (`Tensor`): Gradient of `query_index`, $d\tilde{Q}$ in the formula. The data type can be `bfloat16` or `float16`.
-- **`d_key_index`** (`Tensor`): Gradient of `key_index`, $d\tilde{K}$ in the formula. The data type can be `bfloat16` or `float16`.
-- **`d_weights`** (`Tensor`): Gradient of `weights`, $dW$ in the formula. The data type can be `bfloat16`, `float16`, or `float32`.
-- **`loss`** (`Tensor`): Loss tensor representing the difference between the forward network output and the target distribution, $Loss$ in the formula. The data type can be `float32`.
+- **`d_query_index`** (`Tensor`): Gradient of `query_index`, $d\tilde{Q}$ in the formula. The data type can be `torch.bfloat16` or `torch.float16`.
+- **`d_key_index`** (`Tensor`): Gradient of `key_index`, $d\tilde{K}$ in the formula. The data type can be `torch.bfloat16` or `torch.float16`.
+- **`d_weights`** (`Tensor`): Gradient of `weights`, $dW$ in the formula. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`.
+- **`loss`** (`Tensor`): Loss tensor representing the difference between the forward network output and the target distribution, $Loss$ in the formula. The data type can be `torch.float32`.
 
 ## Constraints
 
 - The data types of `query`, `key`, `query_index`, and `key_index` must be identical.
-- When the data type of `weights` is not `float32`, the data types of `query`, `key`, `query_index`, `key_index`, and `weights` must be identical.
+- When the data type of `weights` is not `torch.float32`, the data types of `query`, `key`, `query_index`, `key_index`, and `weights` must be identical.
 - Shape variable constraints:
 
 | Item   | Value      | Description        |

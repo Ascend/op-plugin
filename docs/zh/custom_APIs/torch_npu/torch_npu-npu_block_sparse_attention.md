@@ -30,7 +30,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 ## 参数说明
 
-- **query** (`Tensor`)：必选参数，表示Attention中的query，对应公式中的$query$。数据格式为$ND$；数据类型支持`float16`、`bfloat16`。
+- **query** (`Tensor`)：必选参数，表示Attention中的query，对应公式中的$query$。数据格式为$ND$；数据类型支持`torch.float16`、`torch.bfloat16`。
   - TND：shape为`[totalQTokens, headNum, headDim]`；
   - BNSD：shape为`[batch, headNum, maxQSeqLength, headDim]`；
 
@@ -40,7 +40,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **value** (`Tensor`)：必选参数，表示Attention中的value，对应公式中的$value$。shape和数据类型与`key`一致。
 
-- **block_sparse_mask** (`Tensor`)：必选参数，块稀疏掩码。shape为`[batch, headNum, ceilDiv(maxQSeqLength, blockShapeX), ceilDiv(maxKvSeqLength, blockShapeY)]`，表示按块划分后哪些块参与计算（当取值为1则对应的块参与注意力计算，当取值为0则表示不参与）。数据类型为`int8`。
+- **block_sparse_mask** (`Tensor`)：必选参数，块稀疏掩码。shape为`[batch, headNum, ceilDiv(maxQSeqLength, blockShapeX), ceilDiv(maxKvSeqLength, blockShapeY)]`，表示按块划分后哪些块参与计算（当取值为1则对应的块参与注意力计算，当取值为0则表示不参与）。数据类型为`torch.int8`。
 
 - **block_shape** (`list[int]`)：必选参数，稀疏块shape。至少需要包含两个元素，如`[blockShapeX, blockShapeY]`，且均大于0。blockShapeX：Q方向块大小；blockShapeY：KV方向块大小。
   <!-- npu="A3,910b" id4 -->
@@ -60,7 +60,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **scale_value** (`float`)：可选参数，缩放系数，默认值为`0.0`，通常设置为$D^{-0.5}$。
 
-- **inner_precise** (`int`)：可选参数，Softmax计算精度，默认值为`1`。`0`表示float32中间结果（高精度），`1`表示float16中间结果（性能更优），`4`表示混合精度运算。**当`query`/`key`/`value`为`bfloat16`时，仅支持`0`**。
+- **inner_precise** (`int`)：可选参数，Softmax计算精度，默认值为`1`。`0`表示`torch.float32`中间结果（高精度），`1`表示`torch.float16`中间结果（性能更优），`4`表示混合精度运算。**当`query`/`key`/`value`为`torch.bfloat16`时，仅支持`0`**。
   <!-- npu="950" id5 -->
   - <term>Ascend 950DT系列产品</term>仅支持`4`。
   <!-- end id5 -->
@@ -80,13 +80,13 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 ## 返回值说明
 
 - **attention_out** (`Tensor`)：公式中的$attentionOut$，与`query`的数据类型和排布一致，最后一维与`value`的headDim一致。
-- **softmax_lse** (`Tensor`)：Softmax计算的log-sum-exp中间结果，当`softmax_lse_flag=1`时有效；**数据类型为`float32`**。
+- **softmax_lse** (`Tensor`)：Softmax计算的log-sum-exp中间结果，当`softmax_lse_flag=1`时有效；**数据类型为`torch.float32`**。
   - TND时，shape为`[totalQTokens, headNum, 1]`；
   - BNSD时，shape为`[batch, headNum, maxQSeqLength, 1]`。
 
 ## 约束说明
 
-- `query`、`key`、`value`数据类型必须一致，且为`float16`或`bfloat16`。
+- `query`、`key`、`value`数据类型必须一致，且为`torch.float16`或`torch.bfloat16`。
 - `query`的head数$N1$与`key`/`value`的head数$N2$需满足$N1 ≥ N2$且$N1 \% N2 = 0$。
 - `actual_seq_lengths`与`actual_seq_lengths_kv`当前必须同时配置或同时不配置，仅配置其中之一会被算子拦截。
 - 序列长度不需要被`block_shape`整除，分块数按向上取整计算。

@@ -37,16 +37,16 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 
 ## 参数说明
 
-- **features** (`Tensor`)：必选参数，输入特征，大小为`[1, batch_size * num_classes]`的矩阵。对应公式中的$x_i$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持2维。支持空Tensor。数据类型支持float、float16、bfloat16。
+- **features** (`Tensor`)：必选参数，输入特征，大小为`[1, batch_size * num_classes]`的矩阵。对应公式中的$x_i$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持2维。支持空Tensor。数据类型支持float、`torch.float16`、`torch.bfloat16`。
 
   <!-- npu="910,310p" id5 -->
-  - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型不支持bfloat16。
+  - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型不支持`torch.bfloat16`。
   <!-- end id5 -->
 
-- **labels** (`Tensor`)：必选参数，输入标签，shape和数据类型与`features`保持一致。对应公式中的$y_i$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持2维。支持空Tensor。数据类型支持float、float16、bfloat16。
+- **labels** (`Tensor`)：必选参数，输入标签，shape和数据类型与`features`保持一致。对应公式中的$y_i$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持2维。支持空Tensor。数据类型支持float、`torch.float16`、`torch.bfloat16`。
 
   <!-- npu="910,310p" id6 -->
-  - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型不支持bfloat16。
+  - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型不支持`torch.bfloat16`。
   <!-- end id6 -->
 
 ## 返回值说明

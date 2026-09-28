@@ -32,38 +32,38 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 
 - **query** (`Tensor`)：必选参数，对应公式中的输入$Q$，数据类型与`key`的数据类型需满足数据类型推导规则，即保持与`key`、`value`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     <!-- npu="310p" id20 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`。
     <!-- end id20 -->
 
     <!-- npu="910b" id3 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id3 -->
     <!-- npu="A3" id4 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id4 -->
 
 - **key** (`Tensor`)：必选参数，对应公式中的输入$K$，数据类型与`query`的数据类型需满足数据类型推导规则，即保持与`query`、`value`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     <!-- npu="310p" id21 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`。
     <!-- end id21 -->
 
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id5 -->
     <!-- npu="A3" id6 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id6 -->
 
 - **value** (`Tensor`)：必选参数，对应公式中的输入$V$，数据类型与`query`的数据类型需满足数据类型推导规则，即保持与`query`、`key`的数据类型一致。不支持非连续的`Tensor`，数据格式支持$ND$。
     <!-- npu="310p" id22 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`float16`。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`。
     <!-- end id22 -->
 
     <!-- npu="910b" id7 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id7 -->
     <!-- npu="A3" id8 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id8 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -74,15 +74,15 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     <!-- end id23 -->
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`bfloat16`。当`pse_shift`为`float16`时，要求`query`为`float16`或`int8`；当`pse_shift`为`bfloat16`时，要求`query`为`bfloat16`。在`query`、`key`、`value`为`float16`且`pse_shift`存在的情况下，默认走高精度模式。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。当`pse_shift`为`torch.float16`时，要求`query`为`torch.float16`或`torch.int8`；当`pse_shift`为`torch.bfloat16`时，要求`query`为`torch.bfloat16`。在`query`、`key`、`value`为`torch.float16`且`pse_shift`存在的情况下，默认走高精度模式。
     <!-- end id9 -->
     <!-- npu="A3" id10 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`。当`pse_shift`为`float16`时，要求`query`为`float16`或`int8`；当`pse_shift`为`bfloat16`时，要求`query`为`bfloat16`。在`query`、`key`、`value`为`float16`且`pse_shift`存在的情况下，默认走高精度模式。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。当`pse_shift`为`torch.float16`时，要求`query`为`torch.float16`或`torch.int8`；当`pse_shift`为`torch.bfloat16`时，要求`query`为`torch.bfloat16`。在`query`、`key`、`value`为`torch.float16`且`pse_shift`存在的情况下，默认走高精度模式。
     <!-- end id10 -->
 
 - **padding_mask**：预留参数，暂未使用，默认值为`None`。
-- **atten_mask** (`Tensor`)：可选参数，对应公式中$atten\_mask$，代表下三角全为0、上三角全为负无穷的倒三角mask矩阵，数据类型支持`bool`、`int8`和`uint8`。数据格式支持$ND$，不支持非连续的`Tensor`。如果不使用该功能可传入`None`。通常建议shape输入$(Q\_S, KV\_S)$、$(B, Q\_S, KV\_S)$、$(1, Q\_S, KV\_S)$、$(B, 1, Q\_S, KV\_S)$、$(1, 1, Q\_S, KV\_S)$，其中$Q\_S$为`query`的shape中的$S$，$KV\_S$为`key`和`value`的shape中的$S$，对于`atten_mask`的$KV\_S$为非32字节对齐的场景，建议padding到32字节对齐来提高性能，多余部分填充成1。综合约束请见[约束说明](#section12345537164214)。
-- **actual_seq_lengths** (`List[int]`)：可选参数，代表不同Batch中`query`的有效Sequence Length，数据类型支持`int64`。如果不指定`seqlen`可以传入`None`，表示和`query`的shape的s长度相同。限制：该入参中每个batch的有效Sequence Length应该不大于`query`中对应batch的Sequence Length。`seqlen`的传入长度为1时，每个Batch使用相同`seqlen`；传入长度大于等于Batch数时取`seqlen`的前Batch个数。其它长度不支持。
+- **atten_mask** (`Tensor`)：可选参数，对应公式中$atten\_mask$，代表下三角全为0、上三角全为负无穷的倒三角mask矩阵，数据类型支持`torch.bool`、`torch.int8`和`torch.uint8`。数据格式支持$ND$，不支持非连续的`Tensor`。如果不使用该功能可传入`None`。通常建议shape输入$(Q\_S, KV\_S)$、$(B, Q\_S, KV\_S)$、$(1, Q\_S, KV\_S)$、$(B, 1, Q\_S, KV\_S)$、$(1, 1, Q\_S, KV\_S)$，其中$Q\_S$为`query`的shape中的$S$，$KV\_S$为`key`和`value`的shape中的$S$，对于`atten_mask`的$KV\_S$为非32字节对齐的场景，建议padding到32字节对齐来提高性能，多余部分填充成1。综合约束请见[约束说明](#section12345537164214)。
+- **actual_seq_lengths** (`List[int]`)：可选参数，代表不同Batch中`query`的有效Sequence Length，数据类型支持`torch.int64`。如果不指定`seqlen`可以传入`None`，表示和`query`的shape的s长度相同。限制：该入参中每个batch的有效Sequence Length应该不大于`query`中对应batch的Sequence Length。`seqlen`的传入长度为1时，每个Batch使用相同`seqlen`；传入长度大于等于Batch数时取`seqlen`的前Batch个数。其它长度不支持。
     <!-- npu="310p" id24 -->
     - <term>Atlas推理系列产品</term>：暂不支持该参数。
     <!-- end id24 -->
@@ -94,15 +94,15 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A3系列产品</term>：支持TND格式。当`query`的`input_layout`为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlen和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
     <!-- end id12 -->
 
-- **deq_scale1** (`Tensor`)：可选参数，表示BMM1后面的反量化因子，支持pertensor。数据类型支持`uint64`、`float32`，数据格式支持$ND$。如不使用该功能时可传入`None`。
+- **deq_scale1** (`Tensor`)：可选参数，表示BMM1后面的反量化因子，支持pertensor。数据类型支持`torch.uint64`、`torch.float32`，数据格式支持$ND$。如不使用该功能时可传入`None`。
     <!-- npu="310p" id25 -->
     - <term>Atlas推理系列产品</term>暂不支持该参数。
     <!-- end id25 -->
-- **quant_scale1** (`Tensor`)：可选参数，数据类型支持`float32`。数据格式支持$ND$，表示BMM2前面的量化因子，支持pertensor。如不使用该功能时可传入`None`。
+- **quant_scale1** (`Tensor`)：可选参数，数据类型支持`torch.float32`。数据格式支持$ND$，表示BMM2前面的量化因子，支持pertensor。如不使用该功能时可传入`None`。
     <!-- npu="310p" id26 -->
     - <term>Atlas推理系列产品</term>暂不支持该参数。
     <!-- end id26 -->
-- **deq_scale2** (`Tensor`)：可选参数，数据类型支持`uint64`、`float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持pertensor。如不使用该功能时可传入`None`。
+- **deq_scale2** (`Tensor`)：可选参数，数据类型支持`torch.uint64`、`torch.float32`。数据格式支持$ND$，表示BMM2后面的反量化因子，支持pertensor。如不使用该功能时可传入`None`。
     - <term>Atlas推理系列产品</term>暂不支持该参数。
 - **quant_scale2** (`Tensor`)：可选参数，数据格式支持$ND$，表示输出的量化因子，支持pertensor、perchannel。如不使用该功能时可传入`None`。
     <!-- npu="310p" id27 -->
@@ -110,10 +110,10 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     <!-- end id27 -->
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。当输入为`torch.bfloat16`时，同时支持`torch.float32`和`torch.bfloat16`，否则仅支持`torch.float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float32`、`bfloat16`。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。当输入为`torch.bfloat16`时，同时支持`torch.float32`和`torch.bfloat16`，否则仅支持`torch.float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape建议传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。
     <!-- end id14 -->
 
 - **quant_offset2** (`Tensor`)：可选参数，数据格式支持$ND$，表示输出的量化偏移，支持pertensor、perchannel。若传入 `quant_offset2`，需保证其类型和`shape`信息与`quant_scale2`一致。如不使用该功能时可传入`None`。
@@ -122,28 +122,28 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     <!-- end id28 -->
 
     <!-- npu="910b" id15 -->
-    - <term>Atlas A2系列产品</term>：数据类型支持`float32`、`bfloat16`。
+    - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。
     <!-- end id15 -->
     <!-- npu="A3" id16 -->
-    - <term>Atlas A3系列产品</term>：数据类型支持`float32`、`bfloat16`。
+    - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。
     <!-- end id16 -->
 
-- **num_heads** (`int`)：可选参数，代表`query`的head个数，数据类型支持`int64`。
+- **num_heads** (`int`)：可选参数，代表`query`的head个数，数据类型支持`torch.int64`。
 - **scale_value** (`float`)：可选参数，对应公式中$scale$，值通常是$d$开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`。数据类型与`query`的数据类型需满足数据类型推导规则。默认值为`1.0`。
-- **pre_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention（注意力机制）需要和前几个Token计算关联，数据类型支持`int64`。默认值为2147483647。
+- **pre_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention（注意力机制）需要和前几个Token计算关联，数据类型支持`torch.int64`。默认值为2147483647。
     <!-- npu="310p" id29 -->
     - <term>Atlas推理系列产品</term>仅支持默认值2147483647。
     <!-- end id29 -->
-- **next_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为`0`。
+- **next_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个Token计算关联。数据类型支持`torch.int64`。默认值为`0`。
     <!-- npu="310p" id30 -->
     - <term>Atlas推理系列产品</term>仅支持0和2147483647。
     <!-- end id30 -->
 - **input_layout** (`str`)：可选参数，用于标识输入`query`、`key`、`value`的数据排布格式，当前支持$BSH$、$BSND$、$BNSD$、$BNSD\_BSND$（输入为$BNSD$时，输出格式为$BSND$）。默认值为`"BSH"`。
-- **num_key_value_heads**：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，GQA是介于MHA（Multi-Head Attention，多头注意力）和MQA（Multi-Query Attention，多查询注意力）之间的折中方案：多个query head共享同一组key/value head，从而在保持模型效果接近MHA的同时，显著降低KV Cache显存占用和访存开销，数据类型支持`int64`。默认值为`0`，表示`key`/`value`和`query`的head个数相等。限制：需要满足`num_key_value_heads`整除`num_heads`，`num_heads`与`num_key_value_heads`的比值不能大于64，且在$BSND$、$BNSD$、$BNSD\_BSND$场景下，需要与shape中的`key`/`value`的$N$轴shape值相同，否则报错。
+- **num_key_value_heads**：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，GQA是介于MHA（Multi-Head Attention，多头注意力）和MQA（Multi-Query Attention，多查询注意力）之间的折中方案：多个query head共享同一组key/value head，从而在保持模型效果接近MHA的同时，显著降低KV Cache显存占用和访存开销，数据类型支持`torch.int64`。默认值为`0`，表示`key`/`value`和`query`的head个数相等。限制：需要满足`num_key_value_heads`整除`num_heads`，`num_heads`与`num_key_value_heads`的比值不能大于64，且在$BSND$、$BNSD$、$BNSD\_BSND$场景下，需要与shape中的`key`/`value`的$N$轴shape值相同，否则报错。
     <!-- npu="310p" id32 -->
     - <term>Atlas推理系列产品</term>仅支持默认值`0`。
     <!-- end id32 -->
-- **actual_seq_lengths_kv** (`List[int]`)：可选参数，代表不同batch中`key`/`value`的有效seqlenKV。数据类型支持`int64`。限制：该入参中每个batch的有效seqlenKV应该不大于`key`/`value`中对应batch的seqlenKV。seqlenKV的传入长度为1时，每个Batch使用相同seqlenKV；传入长度大于等于Batch数时取seqlenKV的前Batch个数，其它长度不支持。
+- **actual_seq_lengths_kv** (`List[int]`)：可选参数，代表不同batch中`key`/`value`的有效seqlenKV。数据类型支持`torch.int64`。限制：该入参中每个batch的有效seqlenKV应该不大于`key`/`value`中对应batch的seqlenKV。seqlenKV的传入长度为1时，每个Batch使用相同seqlenKV；传入长度大于等于Batch数时取seqlenKV的前Batch个数，其它长度不支持。
     <!-- npu="310p" id31 -->
     - <term>Atlas推理系列产品</term>：暂不支持该参数。
     <!-- end id31 -->
@@ -155,7 +155,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A3系列产品</term>：支持TND格式。当key/value的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKV和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
     <!-- end id18 -->
 
-- **sparse_mode** (`int`)：可选参数，表示sparse的模式，数据类型支持`int64`。默认值为`0`，综合约束请见[约束说明](#section12345537164214)。          
+- **sparse_mode** (`int`)：可选参数，表示sparse的模式，数据类型支持`torch.int64`。默认值为`0`，综合约束请见[约束说明](#section12345537164214)。
 
     <!-- npu="310p" id33 -->
     - <term>Atlas推理系列产品</term>仅支持默认值`0`。
@@ -208,20 +208,20 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - `sparse_mode`为2、3、4时，`atten_mask`的shape需要为$(S, S)$或$(1, S, S)$或$(1, 1, S, S)$，其中$S$的值需要固定为2048，且需要用户保证传入的`atten_mask`为下三角，不传入`atten_mask`或者传入的shape不正确报错。
     - `sparse_mode`为1、2、3的场景忽略入参`pre_tokens`、`next_tokens`并按照相关规则赋值。
 
-- `int8`量化相关入参数量与输入、输出数据格式的综合限制：
-    - 输入为`int8`，输出为`int8`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`、`quant_scale2`需要同时存在，`quant_offset2`可选，不传时默认为`0`。
-    - 输入为`int8`，输出为`float16`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`需要同时存在，若存在入参`quant_offset2`或`quant_scale2`（即不为`None`），则报错并返回。
-    - 输入为`float16`或`bfloat16`，输出为`int8`的场景：入参`quant_scale2`需存在，`quant_offset2`可选，不传时默认为`0`，若存在入参`deq_scale1`或`quant_scale1`或`deq_scale2`（即不为`None`），则报错并返回。
-    - 入参 `quant_offset2`和`quant_scale2`支持pertensor/perchannel两种格式和`float32`/`bfloat16`两种数据类型。若传入`quant_offset2`，需保证其类型和shape信息与`quant_scale2`一致。当输入为`bfloat16`时，同时支持`float32`和`bfloat16`，否则仅支持`float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。pertensor格式，建议$D$轴对齐到32Byte。
+- `torch.int8`量化相关入参数量与输入、输出数据格式的综合限制：
+    - 输入为`torch.int8`，输出为`torch.int8`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`、`quant_scale2`需要同时存在，`quant_offset2`可选，不传时默认为`0`。
+    - 输入为`torch.int8`，输出为`torch.float16`的场景：入参`deq_scale1`、`quant_scale1`、`deq_scale2`需要同时存在，若存在入参`quant_offset2`或`quant_scale2`（即不为`None`），则报错并返回。
+    - 输入为`torch.float16`或`torch.bfloat16`，输出为`torch.int8`的场景：入参`quant_scale2`需存在，`quant_offset2`可选，不传时默认为`0`，若存在入参`deq_scale1`或`quant_scale1`或`deq_scale2`（即不为`None`），则报错并返回。
+    - 入参 `quant_offset2`和`quant_scale2`支持pertensor/perchannel两种格式和`torch.float32`/`torch.bfloat16`两种数据类型。若传入`quant_offset2`，需保证其类型和shape信息与`quant_scale2`一致。当输入为`torch.bfloat16`时，同时支持`torch.float32`和`torch.bfloat16`，否则仅支持`torch.float32`。perchannel格式，当输出layout为$BSH$时，要求`quant_scale2`所有维度的乘积等于$H$；其他layout要求乘积等于$N*D$。当输出layout为$BSH$，`quant_scale2` shape传入$(1, 1, H)$或$(H,)$；输出为$BNSD$时，建议传入$(1, N, 1, D)$或$(N, D)$；输出为$BSND$时，建议传入$(1, 1, N, D)$或$(N, D)$。pertensor格式，建议$D$轴对齐到32Byte。
     - perchannel格式，入参`quant_scale2`和`quant_offset2`暂不支持左padding、Ring Attention（一种面向超长序列的分布式注意力计算方案，将KV序列切分到多张卡上，通过卡间环形传递KV分块来完成注意力计算）或者$D$非32Byte对齐的场景。
-    - 输出为`int8`时，暂不支持sparse为`band`且`pre_tokens`/`next_tokens`为负数。
+    - 输出为`torch.int8`时，暂不支持sparse为`band`且`pre_tokens`/`next_tokens`为负数。
 
 - `pse_shift`功能使用限制如下：
-    - 支持`query`数据类型为`float16`或`bfloat16`或`int8`场景下使用该功能。
-    - `query`，`key`，`value`数据类型为`float16`且`pse_shift`存在时，强制走高精度模式，对应的限制继承自高精度模式的限制。
+    - 支持`query`数据类型为`torch.float16`或`torch.bfloat16`或`torch.int8`场景下使用该功能。
+    - `query`，`key`，`value`数据类型为`torch.float16`且`pse_shift`存在时，强制走高精度模式，对应的限制继承自高精度模式的限制。
     - $Q\_S$需大于等于`query`的$S$长度，$KV\_S$需大于等于`key`的$S$长度。
 
-- 输出为`int8`，入参`quant_offset2`传入非空指针和非空`Tensor`值，并且`sparse_mode`、`pre_tokens`和`next_tokens`满足以下条件，矩阵会存在某几行不参与计算的情况，导致计算结果误差，该场景会拦截：
+- 输出为`torch.int8`，入参`quant_offset2`传入非空指针和非空`Tensor`值，并且`sparse_mode`、`pre_tokens`和`next_tokens`满足以下条件，矩阵会存在某几行不参与计算的情况，导致计算结果误差，该场景会拦截：
     - `sparse_mode=0`，`atten_mask`如果非空指针，每个batch `actual_seq_lengths-actual_seq_lengths_kv-pre_tokens>0`或`next_tokens<0`时，满足拦截条件。
     - `sparse_mode=1`或`2`，不会出现满足拦截条件的情况。
     - `sparse_mode=3`，每个batch `actual_seq_lengths_kv-actual_seq_lengths<0`，满足拦截条件。

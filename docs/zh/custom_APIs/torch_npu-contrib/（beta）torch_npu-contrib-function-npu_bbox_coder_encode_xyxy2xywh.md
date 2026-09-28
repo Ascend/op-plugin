@@ -27,8 +27,8 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 ## 参数说明
 
-- **bboxes** (`Tensor`)：待转换的框，shape为\(N, 4\)。支持的数据类型为`float`，`half`。
-- **gt_bboxes** (`Tensor`)：用作基准的gt\_bboxes，shape为\(N, 4\)。支持的数据类型为`float`，`half`。
+- **bboxes** (`Tensor`)：待转换的框，shape为\(N, 4\)。支持的数据类型为`torch.float`，`torch.half`。
+- **gt_bboxes** (`Tensor`)：用作基准的gt\_bboxes，shape为\(N, 4\)。支持的数据类型为`torch.float`，`torch.half`。
 - **means** (`List[float]`)：对delta坐标的目标去归一化的均值，默认值为None。
 - **stds** (`List[float]`)：对delta坐标的目标去归一化的标准差，默认值为None。
 - **is_normalized** (`bool`)：坐标值是否已归一化，默认值为False。
@@ -42,7 +42,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 ## 约束说明
 
-不支持动态shape。由于算子语义限制，仅支持二维\(n, 4\)场景。`bboxes`和`gt_bboxes`的shape和dtype必须相同，dtype只可为float16和float32。第三个输入（步长）仅支持1D，且第一个维度与第一个输入（`bboxes`）相同。
+不支持动态shape。由于算子语义限制，仅支持二维\(n, 4\)场景。`bboxes`和`gt_bboxes`的shape和dtype必须相同，dtype只可为`torch.float16`和`torch.float32`。第三个输入（步长）仅支持1D，且第一个维度与第一个输入（`bboxes`）相同。
 
 ## 调用示例
 

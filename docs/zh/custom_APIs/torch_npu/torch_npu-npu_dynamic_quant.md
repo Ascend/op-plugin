@@ -47,13 +47,13 @@ torch_npu.npu_dynamic_quant(input, *, smooth_scales=None, group_index=None, dst_
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。输入`input`的维度必须大于1。进行`int4`量化时，要求`input`形状的最后一维是8的整数倍。
+- **input** (`Tensor`)：必选参数，需要进行量化的源数据张量，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$，支持非连续的Tensor。输入`input`的维度必须大于1。进行`torch_npu.int4`量化时，要求`input`形状的最后一维是8的整数倍。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **smooth_scales** (`Tensor`)：可选参数，用于对`input`进行缩放的张量，数据类型支持`float16`、`bfloat16`，数据格式支持$ND$，支持非连续的Tensor。shape见约束说明。
-- **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组的下标，仅在MoE场景下生效。数据类型支持`int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`为1维Tensor，元素数量与`smooth_scales`的第一维一致；`group_index`不为`None`时，`smooth_scales`必须不为`None`。
-- **dst_type** (`int`)：可选参数，指定量化输出的类型，传`None`时当作`int8`处理。
+- **smooth_scales** (`Tensor`)：可选参数，用于对`input`进行缩放的张量，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$，支持非连续的Tensor。shape见约束说明。
+- **group_index** (`Tensor`)：可选参数，对`smooth_scales`进行分组的下标，仅在MoE场景下生效。数据类型支持`torch.int32`，数据格式支持$ND$，支持非连续的Tensor。`group_index`为1维Tensor，元素数量与`smooth_scales`的第一维一致；`group_index`不为`None`时，`smooth_scales`必须不为`None`。
+- **dst_type** (`int`)：可选参数，指定量化输出的类型，传`None`时当作`torch.int8`处理。
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值`int8`、`quint4x2`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值`torch.int8`、`torch.quint4x2`。
     <!-- end id4 -->
     <!-- npu="950" id6 -->
     - <term>Ascend 950PR&950DT系列产品</term>：支持取值`torch.int8`、`torch.quint4x2`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
@@ -79,11 +79,11 @@ torch_npu.npu_dynamic_quant(input, *, smooth_scales=None, group_index=None, dst_
 
 ## 返回值说明
 
-- **y** (`Tensor`)：量化后的输出Tensor，数据类型由`dst_type`指定。当`dst_type`是`quint4x2`时，`y`的数据类型为`int32`，形状最后一维为`input`最后一维除以8，其余维度与`input`一致，每个`int32`元素包含8个`int4`结果。其他场景下`y`形状与输入`input`一致，数据类型由`dst_type`指定。
+- **y** (`Tensor`)：量化后的输出Tensor，数据类型由`dst_type`指定。当`dst_type`是`torch.quint4x2`时，`y`的数据类型为`torch.int32`，形状最后一维为`input`最后一维除以8，其余维度与`input`一致，每个`torch.int32`元素包含8个`torch_npu.int4`结果。其他场景下`y`形状与输入`input`一致，数据类型由`dst_type`指定。
     <!-- npu="950" id5 -->
     - 在<term>Ascend 950PR&950DT系列产品</term>上，当`dst_type`为`torch_npu.hifloat8`时，`y`的数据类型为`torch.uint8`（实际承载`torch_npu.hifloat8`类型）。
     <!-- end id5 -->
-- **scale** (`Tensor`)：对称动态量化过程中计算出的缩放系数，数据类型为`float32`。
+- **scale** (`Tensor`)：对称动态量化过程中计算出的缩放系数，数据类型为`torch.float32`。
   - 当`quant_mode`为`"pertoken"`时，形状为`input`的形状剔除最后一维。
   - 当`quant_mode`为`"perchannel"`时，形状为`input`的形状剔除倒数第二维，最后一维保持与`input`一致。
   - 当`quant_mode`为`"pertensor"`时，形状为`(1,)`。

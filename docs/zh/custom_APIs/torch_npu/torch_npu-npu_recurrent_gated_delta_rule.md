@@ -37,33 +37,33 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 ## 参数说明
 
-- **query** (`Tensor`)：必选输入，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
+- **query** (`Tensor`)：必选输入，对应公式中的$q$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
 
-- **key** (`Tensor`)：必选输入，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
+- **key** (`Tensor`)：必选输入，对应公式中的$k$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$）。不支持空tensor。
 
-- **value** (`Tensor`)：必选输入，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。不支持空tensor。
+- **value** (`Tensor`)：必选输入，对应公式中的$v$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$）。不支持空tensor。
 
-- **state** (`Tensor`)：必选输入&输出，对应公式中的状态矩阵$S$，数据类型支持`bfloat16`、`float32`，数据格式支持ND，shape为（$BlockNum$, $N_v$, $D_v$, $D_k$）。不支持空tensor。
+- **state** (`Tensor`)：必选输入&输出，对应公式中的状态矩阵$S$，数据类型支持`torch.bfloat16`、`torch.float32`，数据格式支持ND，shape为（$BlockNum$, $N_v$, $D_v$, $D_k$）。不支持空tensor。
 
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **beta** (`Tensor`)：可选输入。对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
+- **beta** (`Tensor`)：可选输入。对应公式中的$β$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
 
-- **scale** (`float`)：可选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`float32`。
+- **scale** (`float`)：可选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`torch.float32`。
 
-- **actual_seq_lengths** (`Tensor`)：可选输入。表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$）。不支持空tensor。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
+- **actual_seq_lengths** (`Tensor`)：可选输入。表示各batch的输入序列长度。数据类型支持`torch.int32`，数据格式支持ND，shape为（$B$）。不支持空tensor。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
 
-- **ssm_state_indices** (`Tensor`)：可选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。`ssm_state_indices[i]`要求取值大于等于0且小于$BlockNum$。数据类型支持`int32`，数据格式支持ND，shape为（$T$）。不支持空tensor。
+- **ssm_state_indices** (`Tensor`)：可选输入。表示输入序列到状态矩阵的映射索引。`state[ssm_state_indices[i]]`表示第i个token的状态矩阵。`ssm_state_indices[i]`要求取值大于等于0且小于$BlockNum$。数据类型支持`torch.int32`，数据格式支持ND，shape为（$T$）。不支持空tensor。
 
-- **num_accepted_tokens** (`Tensor`)：可选输入，`num_accepted_tokens[i]`表示投机推理第i个batch接受的token数量，要求取值大于等于1且不大于$L_i$。默认为None，表示每个batch接受的token数为1。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。不支持空tensor。
+- **num_accepted_tokens** (`Tensor`)：可选输入，`num_accepted_tokens[i]`表示投机推理第i个batch接受的token数量，要求取值大于等于1且不大于$L_i$。默认为None，表示每个batch接受的token数为1。数据类型支持`torch.int32`，数据格式支持ND，shape为（$B$,）。不支持空tensor。
 
-- **g** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
+- **g** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`torch.float32`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
 
-- **gk** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^{gk}$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$, $D_k$）。不支持空tensor。
+- **gk** (`Tensor`)：可选输入，衰减系数，对应公式中的$α=e^{gk}$。默认为None，表示全0。数据类型支持`torch.float32`，数据格式支持ND，shape为（$T$, $N_v$, $D_k$）。不支持空tensor。
 
 ## 返回值说明
 
-**out** (`Tensor`)：表示计算结果，公式中的$o$，注意力计算结果。输出的数据类型为`bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
+**out** (`Tensor`)：表示计算结果，公式中的$o$，注意力计算结果。输出的数据类型为`torch.bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
 
 ## 约束说明
 

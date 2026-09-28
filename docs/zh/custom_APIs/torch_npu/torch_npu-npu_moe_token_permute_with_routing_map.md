@@ -103,13 +103,13 @@ torch_npu.npu_moe_token_permute_with_routing_map(tokens, routing_map, *, probs=N
 
 ## 参数说明
 
-- **tokens**（`Tensor`）：必选参数，表示输入token特征。要求是一个2D的Tensor，shape为(tokens_num, hidden_size)。支持空tensor。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$，支持非连续Tensor。
-- **routing_map**（`Tensor`）：必选参数，表示token到expert的映射关系。要求是一个2D的Tensor，shape为(tokens_num, experts_num)。支持空tensor。数据类型支持`int8`、`bool`：数据类型为`int8`时取值支持0、1，数据类型为`bool`时取值支持true、false。数据格式支持$ND$，支持非连续Tensor。
+- **tokens**（`Tensor`）：必选参数，表示输入token特征。要求是一个2D的Tensor，shape为(tokens_num, hidden_size)。支持空tensor。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$，支持非连续Tensor。
+- **routing_map**（`Tensor`）：必选参数，表示token到expert的映射关系。要求是一个2D的Tensor，shape为(tokens_num, experts_num)。支持空tensor。数据类型支持`torch.int8`、`torch.bool`：数据类型为`torch.int8`时取值支持0、1，数据类型为`torch.bool`时取值支持true、false。数据格式支持$ND$，支持非连续Tensor。
   - 非drop_and_pad模式下，要求每行中为1或true的个数固定，该个数记为topK。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **probs**（`Tensor`）：可选参数，表示与routing_map对应的概率值，默认值为`None`。支持空tensor。要求元素个数与routing_map相同（shape为(tokens_num, experts_num)）。数据类型支持`float16`、`bfloat16`、`float32`：仅当probs的数据类型为`float32`且tokens的数据类型为`bfloat16`时，probs的数据类型可以不和tokens一致，其他场景probs的数据类型需要和tokens一致。数据格式支持$ND$，支持非连续Tensor。当probs为`None`时，输出permuted_probs为空。
+- **probs**（`Tensor`）：可选参数，表示与routing_map对应的概率值，默认值为`None`。支持空tensor。要求元素个数与routing_map相同（shape为(tokens_num, experts_num)）。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`：仅当probs的数据类型为`torch.float32`且tokens的数据类型为`torch.bfloat16`时，probs的数据类型可以不和tokens一致，其他场景probs的数据类型需要和tokens一致。数据格式支持$ND$，支持非连续Tensor。当probs为`None`时，输出permuted_probs为空。
 
 - **num_out_tokens**（`int`）：可选参数，表示有效输出token数，用于计算topK和capacity，默认值为`None`，此时等效于tokens_num。取值范围为[0, tokens_num * experts_num]。
   - 非drop_and_pad模式下，topK = num_out_tokens // tokens_num，实际输出token数outToken = topK * tokens_num。
@@ -123,7 +123,7 @@ torch_npu.npu_moe_token_permute_with_routing_map(tokens, routing_map, *, probs=N
 
 - **permuted_tokens**（`Tensor`）：根据routing_map进行扩展并排序筛选过的tokens。要求是一个2D的Tensor，shape为(outToken, hidden_size)。数据类型同tokens，数据格式支持$ND$。
 - **permuted_probs**（`Tensor`）：根据routing_map进行排序并筛选过的probs。Shape为(outToken)，数据类型同probs。当probs为`None`时，该输出为空。
-- **sorted_indices**（`Tensor`）：permuted_tokens和tokens的映射关系。要求是一个1D的Tensor，Shape为(outToken)，数据类型支持`int32`，数据格式支持$ND$。非drop_and_pad模式下，sorted_indices[i]表示tokens的第i // topK行在permuted_tokens中的位置，即permuted_tokens[sorted_indices[i]] = tokens[i // topK]。
+- **sorted_indices**（`Tensor`）：permuted_tokens和tokens的映射关系。要求是一个1D的Tensor，Shape为(outToken)，数据类型支持`torch.int32`，数据格式支持$ND$。非drop_and_pad模式下，sorted_indices[i]表示tokens的第i // topK行在permuted_tokens中的位置，即permuted_tokens[sorted_indices[i]] = tokens[i // topK]。
 
 ## 约束说明
 

@@ -39,8 +39,8 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 | 枚举值                      | 值   | 说明                               |
 | --------------------------- | ---- | ---------------------------------- |
 | CubeMathType.KEEP_DTYPE     | 0    | 保持原始数据类型，不进行精度转换   |
-| CubeMathType.ALLOW_FP32_DOWN_PRECISION | 1    | 允许FP32降精度                     |
-| CubeMathType.USE_FP16       | 2    | 使用FP16计算模式                   |
+| CubeMathType.ALLOW_FP32_DOWN_PRECISION | 1    | 允许`torch.float32`降精度                     |
+| CubeMathType.USE_FP16       | 2    | 使用`torch.float16`计算模式                   |
 | CubeMathType.USE_HF32       | 3    | 使用HF32计算模式                   |
 | CubeMathType.USE_FP32_ADD | 4    | 使用高精度模式               |
 

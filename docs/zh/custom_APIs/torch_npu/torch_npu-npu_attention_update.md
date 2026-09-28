@@ -49,7 +49,7 @@ torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 ## 返回值说明
 
 - **out**(`Tensor`)：输出的tensor，对应公式中的$O$。shape为$(batch \times seqLen \times headNum, head\_dim)$，数据类型与输入`local_out`中的Tensor数据类型一致，数据格式为$ND$。
-- **lse_out**(`Tensor`)：可选输出，对应公式中的$lse_m$。shape为$(batch \times seqLen \times headNum)$，数据类型为`float32`，数据格式为$ND$。仅当`update_type=1`时有效。
+- **lse_out**(`Tensor`)：可选输出，对应公式中的$lse_m$。shape为$(batch \times seqLen \times headNum)$，数据类型为`torch.float32`，数据格式为$ND$。仅当`update_type=1`时有效。
 
 ## 约束说明
 

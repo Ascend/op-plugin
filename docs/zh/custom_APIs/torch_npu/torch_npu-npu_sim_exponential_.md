@@ -26,7 +26,7 @@ torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 
 ## 参数说明
 
-- **input**(`Tensor`)：必选参数，源数据张量，公式中的$f(x)$。要求为连续的Tensor，数据类型支持`bfloat16`、`float16`、`float32`，数据格式支持$ND$，shape支持0~8维。
+- **input**(`Tensor`)：必选参数，源数据张量，公式中的$f(x)$。要求为连续的Tensor，数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$，shape支持0~8维。
 
 - **lambd**(`double`)：可选参数，指数分布的参数，公式中的$λ$，可配置为任意正实数，默认值为1。
 

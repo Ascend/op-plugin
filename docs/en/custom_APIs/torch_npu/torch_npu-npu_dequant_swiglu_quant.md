@@ -75,17 +75,17 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 >- `H`: Length of the embedding vector. The value is greater than 0.
 >- `groupNum`: Length of the `group_index` input. The value is greater than 0.
 
-- **`x`** (`Tensor`): Required. Target input tensor. This parameter must be 2D with shape `[TokensNum, 2H]`, and the last dimension must be an even number. The data type can be `int32`, `float16`, or `bfloat16`. The data layout can be ND.
+- **`x`** (`Tensor`): Required. Target input tensor. This parameter must be 2D with shape `[TokensNum, 2H]`, and the last dimension must be an even number. The data type can be `torch.int32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`weight_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to weight quantization. This parameter must be 2D with shape `[groupNum, 2H]`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, provide `weight_scale` for dequantization.
-- **`activation_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to `pertoken` activation quantization. This parameter must be 2D with shape `[TokensNum, 1]`, where the last dimension is `1` and the remaining dimensions match those of `x`. The data type can be `float32`. The data layout can be ND. When `x` is `int32`, provide this parameter for dequantization.
-- **`bias`** (`Tensor`): Optional. Bias tensor for `x`. The data type can be `int32`. The data layout can be ND. When `group_index` is provided, `bias` must be `None`.
-- **`quant_scale`** (`Tensor`): Optional. Smooth quantization coefficient. This parameter must be 2D with shape `[groupNum, H]`. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND.
+- **`weight_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to weight quantization. This parameter must be 2D with shape `[groupNum, 2H]`. The data type can be `torch.float32`. The data layout can be ND. When `x` is `torch.int32`, provide `weight_scale` for dequantization.
+- **`activation_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to `pertoken` activation quantization. This parameter must be 2D with shape `[TokensNum, 1]`, where the last dimension is `1` and the remaining dimensions match those of `x`. The data type can be `torch.float32`. The data layout can be ND. When `x` is `torch.int32`, provide this parameter for dequantization.
+- **`bias`** (`Tensor`): Optional. Bias tensor for `x`. The data type can be `torch.int32`. The data layout can be ND. When `group_index` is provided, `bias` must be `None`.
+- **`quant_scale`** (`Tensor`): Optional. Smooth quantization coefficient. This parameter must be 2D with shape `[groupNum, H]`. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND.
 
-> **Note:** For static quantization, `quant_scale` supports only the `float32` data type.
+> **Note:** For static quantization, `quant_scale` supports only the `torch.float32` data type.
 
-- **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
-- **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `int64`. The data layout can be ND.
+- **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
+- **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `torch.int64`. The data layout can be ND.
 - **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode=0`. The default value is `False`.
     - `True`: `out=swish(split[x, -1, 2][0]) * split[x, -1, 2][1]`
     - `False`: `out=swish(split[x, -1, 2][1]) * split[x, -1, 2][0]`
@@ -98,8 +98,8 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 
 ## Return Values
 
-- **`out`** (`Tensor`): Quantized output tensor. This parameter must be 2D with shape `[TokensNum, H]`. The data type can be `int8`. The data layout can be ND.
-- **`scale`** (`Tensor`): Quantization scale. This parameter must be 1D with shape `[TokensNum]`. The data type can be `float32`. The data layout can be ND.
+- **`out`** (`Tensor`): Quantized output tensor. This parameter must be 2D with shape `[TokensNum, H]`. The data type can be `torch.int8`. The data layout can be ND.
+- **`scale`** (`Tensor`): Quantization scale. This parameter must be 1D with shape `[TokensNum]`. The data type can be `torch.float32`. The data layout can be ND.
 
 ## Constraints
 
@@ -109,8 +109,8 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
     - Only `count` mode is supported for `group_index`. The calling network must ensure that the sum of all elements in `group_index` does not exceed the `TokensNum` dimension of `x`. Otherwise, out-of-bounds memory access will occur.
     - `H-axis size constraint`: $H \le 10496$ and must be aligned to 64. Configurations failing to meet these specifications will trigger an input validation error.
     - The portions of the output tensors `out` and `scale` that exceed the total sum of `group_index` are not cleared. These memory regions contain garbage data and may exhibit `inf` or `nan` anomalies. The network logic must account for this impact during deployment.
-- If `x` is of type `int32`, provide `weight_scale` for dequantization.
-- If `x` is of type `float16` or `bfloat16`, `weight_scale` is optional (usually `None`, can be provided); `activation_scale` and `bias` must be set to `None`.
+- If `x` is of type `torch.int32`, provide `weight_scale` for dequantization.
+- If `x` is of type `torch.float16` or `torch.bfloat16`, `weight_scale` is optional (usually `None`, can be provided); `activation_scale` and `bias` must be set to `None`.
 - The last dimension size of `x` must be an even number.
 - When the activation dimension is not the last dimension of `x`, `group_index` must be `None`.
 - If `group_index` is not `None`, only dynamic quantization (`quant_mode=1`) is supported, and `bias` and `quant_offset` must be `None`.

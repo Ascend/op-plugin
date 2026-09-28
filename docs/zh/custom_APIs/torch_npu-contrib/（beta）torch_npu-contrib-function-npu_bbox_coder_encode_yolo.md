@@ -27,9 +27,9 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 
 ## 参数说明
 
-- **bboxes** (`Tensor`)：源框，例如锚点框。支持的数据类型为`float`、`half`。
-- **gt_bboxes** (`Tensor`)：转换目标框，例如真值框。支持的数据类型为`float`、`half`。
-- **stride** (`Tensor`)：bbox步长。仅支持`int`张量。
+- **bboxes** (`Tensor`)：源框，例如锚点框。支持的数据类型为`torch.float`、`torch.half`。
+- **gt_bboxes** (`Tensor`)：转换目标框，例如真值框。支持的数据类型为`torch.float`、`torch.half`。
+- **stride** (`Tensor`)：bbox步长。仅支持`torch.int`张量。
 
 ## 返回值说明
 

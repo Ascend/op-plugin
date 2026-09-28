@@ -119,8 +119,8 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
   <!-- end id9 -->
 
 - **x_out**(`Tensor`)：Add计算的结果，对应公式中的$x$。数据类型和shape与输入`x1`保持一致。
-- **scale1**(`Tensor`)：第一路动态量化的缩放系数，对应公式中的$scale1Out$。有效输出的条件与`y1`一致，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当output_mask[0]为False时则不输出，返回空Tensor。
-- **scale2**(`Tensor`)：第二路动态量化的缩放系数，对应公式中的$scale2Out$。有效输出的条件与`y2`一致，数据类型为`float32`，shape为`x1`的shape剔除最后一维；当output_mask[1]为False时则不输出，返回空Tensor。
+- **scale1**(`Tensor`)：第一路动态量化的缩放系数，对应公式中的$scale1Out$。有效输出的条件与`y1`一致，数据类型为`torch.float32`，shape为`x1`的shape剔除最后一维；当output_mask[0]为False时则不输出，返回空Tensor。
+- **scale2**(`Tensor`)：第二路动态量化的缩放系数，对应公式中的$scale2Out$。有效输出的条件与`y2`一致，数据类型为`torch.float32`，shape为`x1`的shape剔除最后一维；当output_mask[1]为False时则不输出，返回空Tensor。
 
 ## 约束说明
 

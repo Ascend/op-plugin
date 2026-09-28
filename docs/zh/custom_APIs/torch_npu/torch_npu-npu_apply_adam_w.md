@@ -47,19 +47,19 @@ torch_npu.npu_apply_adam_w(beta1_power, beta2_power, lr, weight_decay, beta1, be
 
 ## 参数说明
 
-- **beta1_power**(`Scalar`)：必选参数，一阶矩指数衰减率`beta1`的幂，对应公式中的$\beta_1^{power}$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **beta2_power**(`Scalar`)：必选参数，二阶矩指数衰减率`beta2`的幂，对应公式中的$\beta_2^{power}$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **lr**(`Scalar`)：必选参数，学习率，对应公式中的$lr$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **weight_decay**(`Scalar`)：必选参数，权重衰减系数，对应公式中的$weight\_decay$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **beta1**(`Scalar`)：必选参数，一阶矩估计的指数衰减率，对应公式中的$\beta_1$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **beta2**(`Scalar`)：必选参数，二阶矩估计的指数衰减率，对应公式中的$\beta_2$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **epsilon**(`Scalar`)：必选参数，添加到分母中以提高数值稳定性的项，对应公式中的$\epsilon$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **grad**(`Tensor`)：必选参数，当前梯度，对应公式中的$grad$。数据格式支持$ND$。数据类型支持`float32`、`float16`、`bfloat16`。
-- **max_grad_norm**(`Tensor`)：**可选参数**，AMSGrad修正所需的历史二阶矩最大值，对应公式中的$max\_grad\_norm$。数据格式支持$ND$，shape与数据类型与`grad`保持一致，支持`float32`、`float16`、`bfloat16`。默认值为`None`；当`amsgrad`为`True`时**必须传入**。
+- **beta1_power**(`Scalar`)：必选参数，一阶矩指数衰减率`beta1`的幂，对应公式中的$\beta_1^{power}$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **beta2_power**(`Scalar`)：必选参数，二阶矩指数衰减率`beta2`的幂，对应公式中的$\beta_2^{power}$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **lr**(`Scalar`)：必选参数，学习率，对应公式中的$lr$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **weight_decay**(`Scalar`)：必选参数，权重衰减系数，对应公式中的$weight\_decay$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **beta1**(`Scalar`)：必选参数，一阶矩估计的指数衰减率，对应公式中的$\beta_1$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **beta2**(`Scalar`)：必选参数，二阶矩估计的指数衰减率，对应公式中的$\beta_2$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **epsilon**(`Scalar`)：必选参数，添加到分母中以提高数值稳定性的项，对应公式中的$\epsilon$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **grad**(`Tensor`)：必选参数，当前梯度，对应公式中的$grad$。数据格式支持$ND$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
+- **max_grad_norm**(`Tensor`)：**可选参数**，AMSGrad修正所需的历史二阶矩最大值，对应公式中的$max\_grad\_norm$。数据格式支持$ND$，shape与数据类型与`grad`保持一致，支持`torch.float32`、`torch.float16`、`torch.bfloat16`。默认值为`None`；当`amsgrad`为`True`时**必须传入**。
 - **amsgrad**(`bool`)：**可选参数**，是否使用AMSGrad修正。默认值为`None`（等效于`False`）。当前版本仅支持`False`。
 - **maximize**(`bool`)：**可选参数**，是否对优化目标进行最大化（等效于对梯度`grad`取反）。默认值为`None`（等效于`False`）。
 - **out**(`tuple(Tensor, Tensor, Tensor)`)：**必选参数**，指定输出张量`(var, m, v)`，计算结果原地写回该组张量：
-  - **var**(`Tensor`)：待优化参数，对应公式中的$var$。数据格式支持$ND$，数据类型支持`float32`、`float16`、`bfloat16`。
+  - **var**(`Tensor`)：待优化参数，对应公式中的$var$。数据格式支持$ND$，数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。
   - **m**(`Tensor`)：一阶矩，对应公式中的$m$。Shape与数据类型与`var`一致。
   - **v**(`Tensor`)：二阶矩，对应公式中的$v$。Shape与数据类型与`var`一致。
 

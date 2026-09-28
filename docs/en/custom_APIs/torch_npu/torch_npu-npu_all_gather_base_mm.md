@@ -42,26 +42,26 @@ torch_npu.npu_all_gather_base_mm(x1, x2, hcom, world_size, bias=None, x1_scale=N
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. Left matrix in matrix multiplication. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. This parameter must be 2D with shape `(m, k)`. The axis dimensions must satisfy the matmul input requirements, where the second axis matches the first axis of `x2`, and the value range of `k` is [256, 65535).
+- **`x1`** (`Tensor`): Required. Left matrix in matrix multiplication. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. This parameter must be 2D with shape `(m, k)`. The axis dimensions must satisfy the matmul input requirements, where the second axis matches the first axis of `x2`, and the value range of `k` is [256, 65535).
 - **`x2`** (`Tensor`): Required. Right matrix in matrix multiplication. The data type must be identical to `x1`. The data layout can be ND or NZ. NZ is supported only when `comm_mode` is set to `'aiv'`. This parameter must be 2D with shape `(k, n)`. The axis dimensions must satisfy the matmul input requirements, where the first axis matches the second axis of `x1`, and the value range of `k` is [256, 65535).
 - **`hcom`** (`string`): Required. Name of the communication domain handle, which is obtained by calling the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
     - Atlas A2 training products: Configurations of 2, 4, and 8 ranks are supported. All-mesh networking over HCCS links is supported, where each rank connects to all other ranks.
     - Atlas A3 training products/Atlas A3 inference products: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
-- **`bias`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. The data type must be identical to `x1`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. **The current version does not support non-zero bias inputs.**
-- **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix. The data type can be `float32`. The data layout is ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
-- **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix. The data type can be `float32` or `int64`. The data layout is ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `x2_scale`.
+- **`bias`** (`Tensor`): Optional. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The data type must be identical to `x1`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. **The current version does not support non-zero bias inputs.**
+- **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix. The data type can be `torch.float32`. The data layout is ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
+- **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix. The data type can be `torch.float32` or `torch.int64`. The data layout is ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `torch.int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `torch.int64` `x2_scale`.
 - **`gather_index`** (`int`): Optional. Target operand for the gather operation, where `0` indicates gathering `x1` and `1` indicates gathering `x2`. The default value is `0`. **The current version only supports an input value of 0.**
 - **`gather_output`** (`bool`): Optional. Specifies whether to return the gathered output. The default value is `True`. When `comm_mode` is `ai_cpu`, `gather_output` can be `True` or `False`. When `comm_mode` is `aiv`, `gather_output` can only be `True`.
 - **`comm_turn`** (`int`): Optional. Communication slicing granularity between ranks. The default value is `0`, indicating the default slicing method. **The current version only supports an input value of 0.**
-- **`output_dtype`** (`ScalarType`): Optional. Data type of the first output tensor. This parameter can be specified as `bfloat16` or `float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `float32`. The default value is `bfloat16`.
+- **`output_dtype`** (`ScalarType`): Optional. Data type of the first output tensor. This parameter can be specified as `torch.bfloat16` or `torch.float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `torch.float32`. The default value is `torch.bfloat16`.
 - **`comm_mode`** (`string`): Optional. Communication mode. Valid values are `'ai_cpu'` or `'aiv'`. The `ai_cpu` mode supports only the basic scenario. The `aiv` mode supports both the basic scenario and the quantization scenario. The default value is `ai_cpu`.
 
 ## Return Values<a name="en-us_topic_0000001694916914_section15236153161410"></a>
 
 - **`output`** (`Tensor`): The first output tensor, representing the result of `allgather` + `matmul`.
 In basic scenarios, the data type is identical to `x1`.
-In quantization scenarios, if the data type of `x2_scale` is `int64`, the output data type is `float16`. If both `x1_scale` and `x2_scale` are `float32`, the output data type is specified by `output_dtype`, and the default value is `bfloat16`.
+In quantization scenarios, if the data type of `x2_scale` is `torch.int64`, the output data type is `torch.float16`. If both `x1_scale` and `x2_scale` are `torch.float32`, the output data type is specified by `output_dtype`, and the default value is `torch.bfloat16`.
 - **`gather_out`** (`Tensor`): The second output tensor, representing the result of `allgather`. Whether this tensor is returned is controlled by the `gather_output` parameter. If `gather_output` is `False`, an empty tensor is returned.
 
 ## Constraints

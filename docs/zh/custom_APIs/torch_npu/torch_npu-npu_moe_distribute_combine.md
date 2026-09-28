@@ -38,14 +38,14 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
 
 ## 参数说明
 
-- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`bfloat16`、`float16`。
+- **expand\_x**（`Tensor`）：**必选参数**，根据`expert_ids`进行扩展过的token特征，要求为2维张量，shape为\(max\(tp\_world\_size, 1\) \* A, H\)，数据格式为$ND$，支持非连续的Tensor。数据类型支持`torch.bfloat16`、`torch.float16`。
     <!-- npu="910b" id53 -->
     - Atlas A2系列产品不支持共享专家场景。
     <!-- end id53 -->
 
-- **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
-- **expand\_idx**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求是1维张量，shape为\(BS \* K, \)。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`expand_idx`输出。
-- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的token数（token数以前缀和的形式表示），要求是1维张量。数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`ep_recv_counts`输出。
+- **expert\_ids**（`Tensor`）：**必选参数**，每个token的topK个专家索引，要求为2维张量，shape为\(BS, K\)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
+- **expand\_idx**（`Tensor`）：**必选参数**，表示给同一专家发送的token个数，要求是1维张量，shape为\(BS \* K, \)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`expand_idx`输出。
+- **ep\_send\_counts**（`Tensor`）：**必选参数**，表示本卡每个专家发给EP（Expert Parallelism）域每个卡的token数（token数以前缀和的形式表示），要求是1维张量。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`ep_recv_counts`输出。
 
     <!-- npu="910b" id4 -->
     - <term>Atlas A2系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
@@ -54,7 +54,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
     <!-- end id5 -->
 
-- **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重，要求是2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+- **expert\_scales**（`Tensor`）：**必选参数**，表示每个token的topK个专家的权重，要求是2维张量，shape为\(BS, K\)，其中共享专家不需要乘权重系数，直接相加即可。数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
 - **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)，不能和`group_tp`相同。
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size。
 
@@ -82,7 +82,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：不支持TP通信域，使用默认输入。
     <!-- end id10 -->
     <!-- npu="A3" id11 -->
-    - <term>Atlas A3系列产品</term>：支持TP通信域，要求是一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`int32`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A3系列产品</term>：支持TP通信域，要求是一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id11 -->
 
 - **x\_active\_mask**（`Tensor`）：**可选参数**，表示输出x中的token是否有效，false表示无效，不接收。
@@ -91,7 +91,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：**预留参数，暂未使用，使用默认值即可。**
     <!-- end id12 -->
     <!-- npu="A3" id13 -->
-    - <term>Atlas A3系列产品</term>：要求是一个1维张量，shape为\(BS, \)，数据类型支持`bool`，数据格式为$ND$，支持非连续的Tensor。当每张卡的BS数量不一致时，所有token必须全部有效。
+    - <term>Atlas A3系列产品</term>：要求是一个1维张量，shape为\(BS, \)，数据类型支持`torch.bool`，数据格式为$ND$，支持非连续的Tensor。当每张卡的BS数量不一致时，所有token必须全部有效。
     <!-- end id13 -->
 
 - **activation\_scale**（`Tensor`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -100,7 +100,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
 - **expand\_scales**（`Tensor`）：**可选参数**，对应[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)的`expand_scales`输出。
 
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2系列产品</term>：必选参数，要求是1维张量，shape为\(A, \)，数据类型支持`float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：必选参数，要求是1维张量，shape为\(A, \)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id14 -->
     <!-- npu="950,A3" id15 -->
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：暂不支持该参数，使用默认值即可。
@@ -188,10 +188,10 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
 - **comm\_quant\_mode**（`int`）：**可选参数**，表示通信量化类型。
 
     <!-- npu="910b" id34 -->
-    - <term>Atlas A2系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。仅当`HCCL_INTRA_PCIE_ENABLE`=1且`HCCL_INTRA_ROCE_ENABLE`=0且驱动版本不低于25.0.RC1.1时才支持取2。
+    - <term>Atlas A2系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`torch.int8`量化。仅当`HCCL_INTRA_PCIE_ENABLE`=1且`HCCL_INTRA_ROCE_ENABLE`=0且驱动版本不低于25.0.RC1.1时才支持取2。
     <!-- end id34 -->
     <!-- npu="950,A3" id35 -->
-    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`int8`量化。当且仅当`tp_world_size`不等于2时，可以开启int8量化。
+    - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：支持取0和2。0表示通信时不量化，2表示通信时进行`torch.int8`量化。当且仅当`tp_world_size`不等于2时，可以开启`torch.int8`量化。
     <!-- end id35 -->
 
 - **group\_list\_type**（`int`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -274,7 +274,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     > CANN环境变量HCCL\_BUFFSIZE：表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。
 
     <!-- npu="910b" id47 -->
-    - <term>Atlas A2系列产品</term>：要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(uint16\)+2MB\)。
+    - <term>Atlas A2系列产品</term>：要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(`torch.uint16`\)+2MB\)。
     <!-- end id47 -->
     <!-- npu="A3" id48 -->
     - <term>Atlas A3系列产品</term>：要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
@@ -284,7 +284,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     <!-- end id49 -->
 
 <!-- npu="910b" id50 -->
-- <term>Atlas A2系列产品</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(uint32\)\)+4MB+100MB。并且，对于入参`moe_expert_num`，只要求moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
+- <term>Atlas A2系列产品</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB。并且，对于入参`moe_expert_num`，只要求moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
 <!-- end id50 -->
 - 通信域使用约束：
     - 一个模型中的`npu_moe_distribute_dispatch`和`npu_moe_distribute_combine`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。

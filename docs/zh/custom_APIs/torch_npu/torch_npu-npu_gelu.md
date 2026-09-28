@@ -45,7 +45,7 @@ torch_npu.npu_gelu(self, *, approximate='none') -> Tensor
 - **self** (`Tensor`)：必选参数，对应公式中的$x$，待进行`npu_gelu`计算的入参，数据格式支持$ND$，支持非连续的Tensor，支持空Tensor。输入最大支持8维。
 
     <!-- npu="910,310p" id5 -->
-    - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型支持`float16`、`float32`。
+    - <term>Atlas训练系列产品</term>、<term>Atlas推理系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
     <!-- end id5 -->
     <!-- npu="950,910b" id6 -->
     - <term>Atlas A2系列产品</term>、<term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。

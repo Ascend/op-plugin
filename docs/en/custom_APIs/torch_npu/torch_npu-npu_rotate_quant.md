@@ -22,15 +22,15 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=0.0, dst_dtype=None) -> (Tensor
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Input tensor. This parameter must be 2D with shape `[m, n]`. The data type can be `bfloat16` or `float16`. The data layout can be ND. Non-contiguous tensors are supported.
-- **`rotation`** (`Tensor`): Required. Rotation matrix tensor. This parameter must be 2D with shape `[k, k]`. The data type can be `bfloat16` or `float16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`x`** (`Tensor`): Required. Input tensor. This parameter must be 2D with shape `[m, n]`. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`rotation`** (`Tensor`): Required. Rotation matrix tensor. This parameter must be 2D with shape `[k, k]`. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`alpha`** (`float`): Optional. Scaling factor for the rotation angle. The data type can be `float`. The default value is `0.0`.
 - **`dst_dtype`** (`int`): Optional. Data type of the quantization output. Processed as `torch.int8` if `None` is passed.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Output quantization result. This parameter must be 2D with shape `[m, n]` and the shape must be identical to that of `x`. The data type can be `int4` or `int8`. The data layout can be ND. Non-contiguous tensors are supported.
-- **`scale`** (`Tensor`): Output quantization factor. This parameter must be 1D with shape `[m]`. The data type can be `float32`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`y`** (`Tensor`): Output quantization result. This parameter must be 2D with shape `[m, n]` and the shape must be identical to that of `x`. The data type can be `torch_npu.int4` or `torch.int8`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`scale`** (`Tensor`): Output quantization factor. This parameter must be 1D with shape `[m]`. The data type can be `torch.float32`. The data layout can be ND. Non-contiguous tensors are supported.
 
 ## Constraints
 
@@ -41,10 +41,10 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=0.0, dst_dtype=None) -> (Tensor
 
     |x|rotation|dst_dtype|y|scale|
     |--------|--------|--------|--------|--------|
-    |`bfloat16`|`bfloat16`|torch.qint8|`int8`|`float32`|
-    |`bfloat16`|`bfloat16`|torch.quint4X2|`int4`|`float32`|
-    |`float16`|`float16`|torch.qint8|`int8`|`float32`|
-    |`float16`|`float16`|torch.quint4X2|`int4`|`float32`|
+    |`torch.bfloat16`|`torch.bfloat16`|`torch.qint8`|`torch.int8`|`torch.float32`|
+    |`torch.bfloat16`|`torch.bfloat16`|`torch.quint4X2`|`torch_npu.int4`|`torch.float32`|
+    |`torch.float16`|`torch.float16`|`torch.qint8`|`torch.int8`|`torch.float32`|
+    |`torch.float16`|`torch.float16`|`torch.quint4X2`|`torch_npu.int4`|`torch.float32`|
 
 ## Example
 

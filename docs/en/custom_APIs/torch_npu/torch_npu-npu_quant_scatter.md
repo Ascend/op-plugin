@@ -20,19 +20,19 @@ torch_npu.npu_quant_scatter(input, indices, updates, quant_scales, quant_zero_po
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Source data tensor. Non-contiguous tensors are supported. The data layout can be ND. The shape must have 3 to 8 dimensions.
-    - Atlas inference products, Atlas A2 training products, and Atlas 800I A2 inference products: The data type can be `int8`.
-- **`indices`** (`Tensor`): Required. Index tensor. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported.
+    - Atlas inference products, Atlas A2 training products, and Atlas 800I A2 inference products: The data type can be `torch.int8`.
+- **`indices`** (`Tensor`): Required. Index tensor. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `float16`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `float16`.
+    - Atlas inference products: The data type can be `torch.float16`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.float16`.
 
 - **`quant_scales`** (`Tensor`): Required. Quantization scale tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `float32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `float32`.
+    - Atlas inference products: The data type can be `torch.float32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.float32`.
 
 - **`quant_zero_points`** (`Tensor`): Optional. Quantization offset tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `int32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `bfloat16` or `int32`.
+    - Atlas inference products: The data type can be `torch.int32`.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.int32`.
 
 - **`axis`** (`int`): Optional. Axis on `updates` used for updating. The default value is `0`.
 - **`quant_axis`** (`int`): Optional. Axis on `updates` used for quantization. The default value is `1`.

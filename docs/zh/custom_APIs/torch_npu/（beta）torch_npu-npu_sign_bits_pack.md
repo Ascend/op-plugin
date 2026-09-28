@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-- API功能：将`float`类型的输入打包为`uint8`类型。每8个浮点数打包为一个`uint8`数值，-1.0编码为二进制位0，1.0编码为二进制位1，并按小端序进行打包。
+- API功能：将`float`类型的输入打包为`torch.uint8`类型。每8个浮点数打包为一个`torch.uint8`数值，-1.0编码为二进制位0，1.0编码为二进制位1，并按小端序进行打包。
 
 - 等价计算逻辑：
     
@@ -46,7 +46,7 @@ torch_npu.npu_sign_bits_pack(self, size) -> Tensor
 
 ## 参数说明
 
-- **self** (`Tensor`): 必选参数，1D float张量。 支持`float32`和`float16`类型输入。
+- **self** (`Tensor`): 必选参数，1D `torch.float`张量。 支持`torch.float32`和`torch.float16`类型输入。
 - **size**(`int`): 必选参数，用于reshape输出张量的第一个维度。
 
 ## 返回值说明

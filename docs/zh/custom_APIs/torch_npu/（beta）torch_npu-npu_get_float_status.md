@@ -30,7 +30,7 @@ torch_npu.npu_get_float_status(self) -> Tensor
 
 ## 参数说明
 
-**self** (`Tensor`)：数据内存地址张量，数据类型为`float32`。
+**self** (`Tensor`)：数据内存地址张量，数据类型为`torch.float32`。
 
 ## 返回值说明
 

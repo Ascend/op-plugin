@@ -63,9 +63,9 @@ torch_npu.npu_fused_infer_attention_score(
 | GQA | `query, key, value, num_heads, num_key_value_heads` | — | [通用基础约束](#base_constraints) |
 | MLA | `query, key, value, query_rope, key_rope` | `num_heads, scale, input_layout` | [MLA约束](#mla_constraints) |
 | Prefix（共享前缀） | `query, key, value, key_shared_prefix, value_shared_prefix` | `actual_shared_prefix_len` | [Prefix约束](#prefix_constraints) |
-| int8全量化 | `query, key, value, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2` | `quant_offset2` | [int8量化约束](#int8_constraints) |
-| int8后量化 | `query, key, value, quant_scale2` | `quant_offset2` | [int8量化约束](#int8_constraints) |
-| 伪量化（KV由`int8`反量化为`float16`） | `query, key, value, antiquant_scale` | `antiquant_offset, antiquant_mode` | [伪量化约束](#pseudo_quant_constraints) |
+| `torch.int8`全量化 | `query, key, value, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2` | `quant_offset2` | [`torch.int8`量化约束](#int8_constraints) |
+| `torch.int8`后量化 | `query, key, value, quant_scale2` | `quant_offset2` | [`torch.int8`量化约束](#int8_constraints) |
+| 伪量化（KV由`torch.int8`反量化为`torch.float16`） | `query, key, value, antiquant_scale` | `antiquant_offset, antiquant_mode` | [伪量化约束](#pseudo_quant_constraints) |
 | 伪量化分离模式 | `query, key, value, key_antiquant_scale, value_antiquant_scale` | `key_antiquant_mode, value_antiquant_mode` | [Q_S > 1约束](#qs_gt_1) / [Q_S = 1约束](#qs_eq_1) |
 | 左Padding | `query, key, value, actual_seq_lengths, query_padding_size` | `kv_padding_size` | [Padding约束](#padding_constraints) |
 | Ring Attention | `query, key, value, softmax_lse_flag=True` | — | — |
@@ -111,8 +111,8 @@ torch_npu.npu_fused_infer_attention_score(
   <!-- end id6 -->
   <!-- npu="950" id7 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - Q_S不为1，要求在`pse_shift`为`float16`类型时，此时的`query`为`float16`类型；而在`pse_shift`为`bfloat16`类型时，要求此时`query`为`bfloat16`类型。输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S)，其中Q_S为query的shape中的S，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
-    - Q_S为1，要求在`pse_shift`为`float16`类型时，此时的`query`为`float16`类型；而在`pse_shift`为`bfloat16`类型时，要求此时`query`为`bfloat16`类型。输入shape类型需为(B, N, 1, KV_S)或(1, N, 1, KV_S)，其中N为num_heads，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
+    - Q_S不为1，要求在`pse_shift`为`torch.float16`类型时，此时的`query`为`torch.float16`类型；而在`pse_shift`为`torch.bfloat16`类型时，要求此时`query`为`torch.bfloat16`类型。输入shape类型需为(B, N, Q_S, KV_S)或(1, N, Q_S, KV_S)，其中Q_S为query的shape中的S，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
+    - Q_S为1，要求在`pse_shift`为`torch.float16`类型时，此时的`query`为`torch.float16`类型；而在`pse_shift`为`torch.bfloat16`类型时，要求此时`query`为`torch.bfloat16`类型。输入shape类型需为(B, N, 1, KV_S)或(1, N, 1, KV_S)，其中N为num_heads，KV_S为key和value的shape中的S。对于`pse_shift`的KV_S为非32对齐的场景，建议padding到32字节来提高性能，多余部分的填充值不做要求。
   <!-- end id7 -->
 
 #### Mask与序列长度参数
@@ -141,7 +141,7 @@ torch_npu.npu_fused_infer_attention_score(
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：约束同`actual_seq_lengths`。PageAttention场景下必须传入。
   <!-- end id11 -->
 
-#### int8量化参数
+#### `torch.int8`量化参数
 
 - **dequant_scale1** (`Tensor`,可选)：BMM1后面的反量化因子，支持pertensor。数据类型：`torch.uint64`、`torch.float32`。默认值：None。
 
@@ -347,7 +347,7 @@ torch_npu.npu_fused_infer_attention_score(
 - `key`与`value`的shape必须完全一致；非连续场景下`key/value` tensorlist中batch只能为1，个数等于`query`的B，N和D需相等。
 - `scale`默认值1.0，通常应设置为**1/√D**，否则计算结果不正确。
 
-### <a id="int8_constraints"></a>int8量化约束
+### <a id="int8_constraints"></a>`torch.int8`量化约束
 
 入参与输入/输出数据类型组合限制：
 
@@ -408,7 +408,7 @@ torch_npu.npu_fused_infer_attention_score(
   <!-- end id22 -->
   <!-- npu="950" id23 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - 开启per-token叠加per-head模式：两个参数的shape均为(B, N, S)，数据类型固定为float32，当key、value数据类型为int8、int4(int32)时支持。
+    - 开启per-token叠加per-head模式：两个参数的shape均为(B, N, S)，数据类型固定为`torch.float32`，当key、value数据类型为`torch.int8`、`torch_npu.int4`(`torch.int32`)时支持。
   <!-- end id23 -->
 
 ### <a id="mla_constraints"></a>MLA约束
@@ -535,7 +535,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **D对齐**：
 
   <!-- npu="A3,910b" id33 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`int8` 须32字节对齐，`int4` 须64字节对齐，`float16`/`bfloat16` 须16字节对齐。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`torch.int8` 须32字节对齐，`torch_npu.int4` 须64字节对齐，`torch.float16`/`torch.bfloat16` 须16字节对齐。
   <!-- end id33 -->
   <!-- npu="950" id34 -->
   - <term>Ascend 950PR&950DT系列产品</term>：非量化场景：`query`，`key`，`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch.int4`（`torch.int32`），其中当`key`、`value`类型为`torch.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D轴8对齐）。
@@ -614,7 +614,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **D轴**：≤ 512。
 - **S轴**（KV）：≤ 262144。
 - **qkv全`torch.int8`**：不支持。
-- **`int4`（`int32`）伪量化**：
+- **`torch_npu.int4`（`torch.int32`）伪量化**：
   - PyTorch入图调用仅支持KV `torch.int4`拼接为`torch.int32`输入（建议通过dynamic_quant生成：1个`torch.int32`包含8个`torch.int4`）。
   - KV N、D或H为实际值的1/8（prefix同理）。
   - `torch.int4`仅支持D 64字节对齐（`torch.int32`支持D 8字节对齐）。
@@ -646,7 +646,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **`torch.int4` kv**：
 
   <!-- npu="A3,910b" id44 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：不支持左padding、page attention（Q: `bfloat16`/`float16` + KV: `int4`）。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：不支持左padding、page attention（Q: `torch.bfloat16`/`torch.float16` + KV: `torch_npu.int4`）。
   <!-- end id44 -->
 
 <!-- npu="950" id45 -->
@@ -656,7 +656,7 @@ torch_npu.npu_fused_infer_attention_score(
     - 除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，`key_antiquant_mode`与`value_antiquant_mode`取值需要保持一致。
     - `key_antiquant_scale`和`value_antiquant_scale`要么都为空，要么都不为空；`key_antiquant_offset`和`value_antiquant_offset`要么都为空，要么都不为空。
     - `key_antiquant_scale`和`value_antiquant_scale`都不为空时，除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，其shape需要保持一致；`key_antiquant_offset`和`value_antiquant_offset`都不为空时，除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，其shape需要保持一致。
-    - int4（int32）伪量化场景不支持后量化。
+    - `torch_npu.int4`（`torch.int32`）伪量化场景不支持后量化。
     - 管理scale/offset的量化模式如下：
 
       > [!NOTE]
@@ -828,7 +828,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 
 > **关键参数说明**：
 >
-> - `atten_mask`：shape (1, Q_S, KV_S)，bool类型。更多mask shape选项见[atten_mask参数说明](#详细参数说明)。
+> - `atten_mask`：shape (1, Q_S, KV_S)，`torch.bool`类型。更多mask shape选项见[atten_mask参数说明](#详细参数说明)。
 >
 > - `sparse_mode=0`：defaultMask模式，使用`pre_tokens`/`next_tokens`控制计算范围。此处为完整双向attention。
 >
@@ -881,9 +881,9 @@ print(out.shape)  # torch.Size([1, 16, 1, 512])
 >
 > -此场景不支持：softmax_lse、左padding、pse、prefix、伪量化、全量化。
 
-### 示例5：int8后量化
+### 示例5：`torch.int8`后量化
 
-仅对输出做int8量化（post-training quantization），输入保持fp16。
+仅对输出做`torch.int8`量化（post-training quantization），输入保持`torch.float16`。
 
 ```python
 import torch
@@ -919,15 +919,15 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 
 > **关键参数说明**：
 >
-> - `quant_scale2`：传入即触发后量化（输出int8）。不传`quant_offset2`则偏移为0。
+> - `quant_scale2`：传入即触发后量化（输出`torch.int8`）。不传`quant_offset2`则偏移为0。
 >
-> - int8输出场景下，**禁止**同时传入`dequant_scale1`/`quant_scale1`/`dequant_scale2`。约束详见[int8量化约束](#int8_constraints)。
+> - `torch.int8`输出场景下，**禁止**同时传入`dequant_scale1`/`quant_scale1`/`dequant_scale2`。约束详见[`torch.int8`量化约束](#int8_constraints)。
 >
 > -如需perchannel量化，shape建议(Q_N, D)。详见[quant_scale2参数说明](#详细参数说明)。
 
-### 示例6：int8全量化
+### 示例6：`torch.int8`全量化
 
-输入`int8`，内部反量化为`float16`计算，再量化输出`int8`。
+输入`torch.int8`，内部反量化为`torch.float16`计算，再量化输出`torch.int8`。
 
 ```python
 import torch
@@ -975,11 +975,11 @@ print(out.dtype)  # torch.int8
 >
 > - D轴需32字节对齐。input_layout仅支持BSH/BNSD/BSND/BNSD_BSND。
 >
-> -约束详见[int8量化约束](#int8_constraints)。
+> -约束详见[`torch.int8`量化约束](#int8_constraints)。
 
 ### 示例7：伪量化（KV分离模式）+ Decode
 
-key/value为int8，通过perchannel反量化因子转为float16参与计算。使用推荐的KV分离模式。
+key/value为`torch.int8`，通过perchannel反量化因子转为`torch.float16`参与计算。使用推荐的KV分离模式。
 
 ```python
 import torch
@@ -1020,7 +1020,7 @@ print(out.shape)   # torch.Size([1, 8, 1, 128])
 >
 > -使用KV分离模式（优于`antiquant_scale`和`antiquant_offset`模式）。
 >
-> - `key_antiquant_mode=0`：perchannel模式。此处Q_S=1 + query `bfloat16` + kv `int8` + key/value_antiquant_scale `bfloat16` → 满足[Q_S = 1约束](#qs_eq_1)中的kv 伪量化参数分离条件。
+> - `key_antiquant_mode=0`：perchannel模式。此处Q_S=1 + query `torch.bfloat16` + kv `torch.int8` + key/value_antiquant_scale `torch.bfloat16` → 满足[Q_S = 1约束](#qs_eq_1)中的kv 伪量化参数分离条件。
 >
 > -当`key_antiquant_scale`和`value_antiquant_scale`与`antiquant_scale`同时传入时，以KV分离参数为准。
 
@@ -1067,7 +1067,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > -如果S2（KV_S + prefix_S）超出原KV_S限制则报错。若传入`atten_mask`，S2需大于prefix_S + KV_S。
 >
-> -不支持PageAttention、左padding、tensorlist、qkv全int8。
+> -不支持PageAttention、左padding、tensorlist、qkv全`torch.int8`。
 
 ### 示例9：ACL Graph模式（torch_npu.npu.NPUGraph）
 

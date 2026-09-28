@@ -11,7 +11,7 @@
 
 ## Function
 
-- Quantizes each group at block granularity based on the starting values of the group indices (`group_list`) to FP8/HiFP8 and outputs the quantization parameter `scale` (FP32).
+- Quantizes each group at block granularity based on the starting values of the group indices (`group_list`) to FP8/HiFP8 and outputs the quantization parameter `scale` (`torch.float32`).
 
 - Formulas:
 
@@ -29,23 +29,23 @@ torch_npu.npu_grouped_dynamic_block_quant(input, group_list, *, min_scale=0.0, r
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Input tensor, $input$ in the formula. The tensor must be 2D or 3D, with shape `[M, N]` or `[B, M, N]`. The data layout can be `ND`. The data type can be `bfloat16` or `float16`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`group_list`** (`Tensor`): Required. Starting indices of the quantization groups. Values must be greater than or equal to `0` and non-decreasing, and the last value must equal the size of the second-to-last dimension of `input`. The tensor must be 1D. The data layout can be `ND`. The data type can be `int32`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`input`** (`Tensor`): Required. Input tensor, $input$ in the formula. The tensor must be 2D or 3D, with shape `[M, N]` or `[B, M, N]`. The data layout can be `ND`. The data type can be `torch.bfloat16` or `torch.float16`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`group_list`** (`Tensor`): Required. Starting indices of the quantization groups. Values must be greater than or equal to `0` and non-decreasing, and the last value must equal the size of the second-to-last dimension of `input`. The tensor must be 1D. The data layout can be `ND`. The data type can be `torch.int32`. Non-contiguous tensors are supported. Empty tensors are supported.
 - **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
-- **`min_scale`** (`float`): Optional. Minimum value used in computing `scale`, $min\_scale$ in the formula. The value must be greater than or equal to `0`. The default value is `0.0`. The data type can be `float32`.
+- **`min_scale`** (`float`): Optional. Minimum value used in computing `scale`, $min\_scale$ in the formula. The value must be greater than or equal to `0`. The default value is `0.0`. The data type can be `torch.float32`.
 - **`round_mode`** (`str`): Optional. Approximation mode used when casting from the higher-bit data type to the target data type. The default value is `"rint"`.
-  - When `dst_type` is `float8_e5m2` or `float8_e4m3fn`, `"rint"` is supported.
-  - When `dst_type` is `hifloat8`, `"round"` and `"hybrid"` are supported.
+  - When `dst_type` is `torch.float8_e5m2` or `torch.float8_e4m3fn`, `"rint"` is supported.
+  - When `dst_type` is `torch_npu.hifloat8`, `"round"` and `"hybrid"` are supported.
 
-- **`dst_type`** (`int`): Optional. Data type of `y` after data conversion. Supported values are `290` (`hifloat8`), `291` (`float8_e5m2`), and `292`/`36` (`float8_e4m3fn`). The default data type is `float8_e5m2`.
+- **`dst_type`** (`int`): Optional. Data type of `y` after data conversion. Supported values are `290` (`torch_npu.hifloat8`), `291` (`torch.float8_e5m2`), and `292`/`36` (`torch.float8_e4m3fn`). The default data type is `torch.float8_e5m2`.
 - **`row_block_size`** (`int`): Optional. Quantization granularity along the `M` axis. Currently supported values are `1`, `128`, `256`, and `512`. The default value is `1`.
 - **`col_block_size`** (`int`): Optional. Quantization granularity along the `N` axis. Currently supported values are `64`, `128`, `192`, and `256`. The default value is `128`.
 - **`group_list_type`** (`int`): Optional. Function type of `group_list`. The default value is `0`, indicating that `group_list` is in cumulative-sum mode.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Quantized output tensor, $y$ in the formula. The number of dimensions is the same as that of `input`. The data type can be `hifloat8`, `float8_e5m2`, or `float8_e4m3fn`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`scale`** (`Tensor`): Quantization scale for each group, $scale$ in the formula. The data type can be `float32`. Non-contiguous tensors are supported. Empty tensors are supported. If `input` has shape `[M, N]` and `group_list` has shape `[g]`, `scale` has shape `[(M // row_block_size + g), (N / col_block_size)]`. If `input` has shape `[B, M, N]` and `group_list` has shape `[g]`, `scale` has shape `[B, (M // row_block_size + g), (N / col_block_size)]`.
+- **`y`** (`Tensor`): Quantized output tensor, $y$ in the formula. The number of dimensions is the same as that of `input`. The data type can be `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`scale`** (`Tensor`): Quantization scale for each group, $scale$ in the formula. The data type can be `torch.float32`. Non-contiguous tensors are supported. Empty tensors are supported. If `input` has shape `[M, N]` and `group_list` has shape `[g]`, `scale` has shape `[(M // row_block_size + g), (N / col_block_size)]`. If `input` has shape `[B, M, N]` and `group_list` has shape `[g]`, `scale` has shape `[B, (M // row_block_size + g), (N / col_block_size)]`.
 
 ## Constraints
 

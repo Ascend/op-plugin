@@ -13,7 +13,7 @@
 
 ## Function
 
-- Adds a quantization operation after the SwiGLU activation function to perform `SwiGluQuant` computation on the input `x`. This API supports `int8` or `int4` quantized outputs, MoE and non-MoE scenarios (when `group_index` is omitted), group quantization, and dynamic or static quantization.
+- Adds a quantization operation after the SwiGLU activation function to perform `SwiGluQuant` computation on the input `x`. This API supports `torch.int8` or `torch_npu.int4` quantized outputs, MoE and non-MoE scenarios (when `group_index` is omitted), group quantization, and dynamic or static quantization.
 - Formulas:
     - SwiGLU activation: Perform SwiGLU on `x`. `activate_left` controls left or right activation. The following example shows the left activation equation:
         $$
@@ -59,20 +59,20 @@ torch_npu.npu_swiglu_quant(x, *, smooth_scales=None, offsets=None, group_index=N
 > - `G`: The number of `group_index` groups. The value is greater than 0.
 > - `N`: Half the size of the last dimension of the input `x`. The value is greater than 0.
 
-- **`x`** (`Tensor`): Required. Target input tensor. The data type can be `float16`, `bfloat16`, or `float32`. Non-contiguous tensors are supported. The data layout is ND. The number of dimensions must be greater than 1. The size of the last dimension must be even and cannot exceed 8192. When `dst_type` is `int4`, the last dimension of `x` must be a multiple of 4.
+- **`x`** (`Tensor`): Required. Target input tensor. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. Non-contiguous tensors are supported. The data layout is ND. The number of dimensions must be greater than 1. The size of the last dimension must be even and cannot exceed 8192. When `dst_type` is `torch_npu.int4`, the last dimension of `x` must be a multiple of 4.
 - **`*`**: Position delimiter used to distinguish positional parameters from keyword parameters. Variables before **`*`** are positional parameters and must be specified in order. Variables after **`*`** are optional parameters and can be specified in any order using key-value pairs; if not specified, their default values are used.
-- **`smooth_scales`** (`Tensor`): Optional. Smooth quantization coefficients. The data type can be `float32`. Non-contiguous tensors are supported. The data layout is ND. The shape can be `[G, N]` or `[G,]`.
-- **`offsets`** (`Tensor`): Optional. Quantization offsets. This parameter does not take effect in dynamic quantization scenarios. Pass `None`. In static quantization scenarios: The data type can be `float`. Non-contiguous tensors are supported. The data layout is ND. The shape must be `[G, N]` in `per_channel` mode and `[G]` in `per_tensor` mode. The data type and shape must be identical to those of `smooth_scales`.
-- **`group_index`** (`Tensor`): Optional. Currently, `cumsum` and `count` modes are supported. The data type can be `int32`. The data layout is ND. This parameter must be 1D with shape `[G]`. Elements within `group_index` must be non-decreasing, and the maximum value cannot exceed the product of all dimensions of input `x` except the last dimension.
+- **`smooth_scales`** (`Tensor`): Optional. Smooth quantization coefficients. The data type can be `torch.float32`. Non-contiguous tensors are supported. The data layout is ND. The shape can be `[G, N]` or `[G,]`.
+- **`offsets`** (`Tensor`): Optional. Quantization offsets. This parameter does not take effect in dynamic quantization scenarios. Pass `None`. In static quantization scenarios: The data type can be `torch.float`. Non-contiguous tensors are supported. The data layout is ND. The shape must be `[G, N]` in `per_channel` mode and `[G]` in `per_tensor` mode. The data type and shape must be identical to those of `smooth_scales`.
+- **`group_index`** (`Tensor`): Optional. Currently, `cumsum` and `count` modes are supported. The data type can be `torch.int32`. The data layout is ND. This parameter must be 1D with shape `[G]`. Elements within `group_index` must be non-decreasing, and the maximum value cannot exceed the product of all dimensions of input `x` except the last dimension.
 - **`activate_left`** (`bool`): Optional. Specifies whether to perform left activation during the SwiGLU process. The default value is `False`.
 - **`quant_mode`** (`int`): Optional. The quantization type. The default value is `0`. Valid values are `0` (static quantization) or `1` (dynamic quantization).
 - **`group_list_type`** (`int`): Optional. Type of `group_index`. The default value is `0`. Valid values are `0` (`cumsum` mode) or `1` (`count` mode).
-- **`dst_type`** (`ScalarType`): Optional. Output quantization data type. Valid values are `int8` or `int4`. If `None` is passed, it is treated as `int8`. The default value is `None`.
+- **`dst_type`** (`ScalarType`): Optional. Output quantization data type. Valid values are `torch.int8` or `torch_npu.int4`. If `None` is passed, it is treated as `torch.int8`. The default value is `None`.
 
 ## Return Values
 
-- **`out`** (`Tensor`): Quantized output tensor. The data type can be `int8` or `int4`. Non-contiguous tensors are supported. The data layout is ND.
-- **`scale`** (`Tensor`): Quantization scale. Compared with the input `x`, the output `scale` lacks the final dimension, while all other dimensions remain identical to those of `x`. The data type can be `float32`. The data layout is ND.
+- **`out`** (`Tensor`): Quantized output tensor. The data type can be `torch.int8` or `torch_npu.int4`. Non-contiguous tensors are supported. The data layout is ND.
+- **`scale`** (`Tensor`): Quantization scale. Compared with the input `x`, the output `scale` lacks the final dimension, while all other dimensions remain identical to those of `x`. The data type can be `torch.float32`. The data layout is ND.
 
 ## Example
 

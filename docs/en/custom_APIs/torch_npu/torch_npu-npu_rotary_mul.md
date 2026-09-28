@@ -71,11 +71,11 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Input tensor. The shape must have 3 or 4 dimensions. The data type can be `float16`, `bfloat16`, or `float32`.
-- **`r1`** (`Tensor`): Required. Cosine rotation coefficient. The shape must have 3 or 4 dimensions. The data type can be `float16`, `bfloat16`, or `float32`.
-- **`r2`** (`Tensor`): Required. Sine rotation coefficient. The shape must have 3 or 4 dimensions. The data type can be `float16`, `bfloat16`, or `float32`.
+- **`input`** (`Tensor`): Required. Input tensor. The shape must have 3 or 4 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
+- **`r1`** (`Tensor`): Required. Cosine rotation coefficient. The shape must have 3 or 4 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
+- **`r2`** (`Tensor`): Required. Sine rotation coefficient. The shape must have 3 or 4 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 - **`rotary_mode`** (`str`): Optional. Computation mode. Valid values are `half` and `interleave`. The default value is `half`.
-- **`rotate`** (`Tensor`): Optional. Equivalent transformation matrix used to apply positional transformations to `input`. The shape must have 2 dimensions. The data type can be `float16`, `bfloat16`, or `float32`. For construction details, see the examples.
+- **`rotate`** (`Tensor`): Optional. Equivalent transformation matrix used to apply positional transformations to `input`. The shape must have 2 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. For construction details, see the examples.
 
 ## Return Values
 

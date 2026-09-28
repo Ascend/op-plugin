@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-- API功能：将`uint8`类型的输入拆包为`float`类型。将`uint8`数值中的8个二进制位解码为8个浮点数，0解码为-1.0，1解码为1.0，并以小端序返回。
+- API功能：将`torch.uint8`类型的输入拆包为`float`类型。将`torch.uint8`数值中的8个二进制位解码为8个浮点数，0解码为-1.0，1解码为1.0，并以小端序返回。
 
 - 等价计算逻辑：
     
@@ -45,9 +45,9 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，1D `uint8`张量。
+- **x** (`Tensor`)：必选参数，1D `torch.uint8`张量。
 - **size** (`int`)：必选参数，用于reshape输出张量的第一个维度。
-- **dtype** (`torch.dtype`)：必选参数，值为`torch.float16`设置输出类型为`float16`，值为`torch.float32`设置输出类型为`float32`。
+- **dtype** (`torch.dtype`)：必选参数，值为`torch.float16`设置输出类型为`torch.float16`，值为`torch.float32`设置输出类型为`torch.float32`。
 
 ## 返回值说明
 
@@ -57,7 +57,7 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 ## 约束说明
 
-`size`应能被`x`的`uint8`拆包输出大小整除。`x`的`uint8`拆包输出大小为(size of x) * 8。
+`size`应能被`x`的`torch.uint8`拆包输出大小整除。`x`的`torch.uint8`拆包输出大小为(size of x) * 8。
 
 ## 调用示例
 

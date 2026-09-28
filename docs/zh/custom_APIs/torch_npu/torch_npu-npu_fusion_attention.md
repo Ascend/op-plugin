@@ -25,33 +25,33 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 
 ## 参数说明<a name="zh-cn_topic_0000001742717129_section112637109429"></a>
 
-- **query**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **key**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **value**（`Tensor`）：数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **head\_num**（`int`）：代表head个数，数据类型支持`int64`。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **query**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **key**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **value**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **head\_num**（`int`）：代表head个数，数据类型支持`torch.int64`。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **input\_layout**（`string`）：代表输入`query`、`key`、`value`的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（`actual_seq_qlen`/`actual_seq_kvlen`需传值，`input_layout`为TND时即为varlen场景）；后续章节如无特殊说明，S表示`query`或`key`、`value`的sequence length，Sq表示query的sequence length，Skv表示`key`、`value`的sequence length，SS表示Sq\*Skv。
-- **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`float16`、`bfloat16`、`float32`，数据格式支持$ND$。
+- **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。
      - 非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。
      - 若非varlen场景Sq大于1024或varlen场景、每个batch的Sq与Skv等长且是sparse\_mode为0、2、3的下三角掩码场景，可开启alibi位置编码压缩，此时只需要输入原始PSE最后1024行进行内存优化，即alibi\_compress = ori\_pse\[:, :, -1024:, :\]，参数每个batch不相同时，输入BNHSkv\(H=1024\)，每个batch相同时，输入1NHSkv\(H=1024\)。
      - TND场景下，每个batch段内部仍按[N, Sq\_i, Skv\_i]生成，但存储与传参时统一flatten。若第i个batch段的真实query长度为Sq\_i、真实key/value长度为Skv\_i，则该段PSE元素个数为N\*Sq_i\*Skv\_i，整段PSE总长度pseTotalLen为sum_i(N\*Sq_i\*Skv_i)。
 - **padding\_mask**（`Tensor`）：暂不支持该传参。
-- **atten\_mask**（`Tensor`）：可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持`bool`、`uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **atten\_mask**（`Tensor`）：可选参数，取值为1代表该位不参与计算（不生效），为0代表该位参与计算，数据类型支持`torch.bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`，默认值为1。
 - **keep\_prob**（`float`）：可选参数，代表Dropout中1的比例，取值范围为\(0, 1\] 。数据类型支持`float`，默认值为1，表示全部保留。
-- **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参考`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **inner\_precise**（`int`）：用于提升精度，数据类型支持`int64`，默认值为0。
+- **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`torch.int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`torch.int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参考`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **inner\_precise**（`int`）：用于提升精度，数据类型支持`torch.int64`，默认值为0。
 
     > [!NOTE]  
     > 当前0、1为保留配置值，2为开启无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。
     >如果算子可判断出存在无效行场景，会自动开启无效行计算，例如`sparse_mode`为3，Sq \> Skv场景。
 
-- **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`query`每个S的累加和长度，数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值。数据类型支持`torch.int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`query`每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     比如真正的S长度列表为：2 2 2 2 2，则`actual_seq_qlen`传：2 4 6 8 10。
 
-- **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`key`/`value`每个S的累加和长度。数据类型支持`int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数。表示`key`/`value`每个S的累加和长度。数据类型支持`torch.int64`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 
     比如真正的S长度列表为：2 2 2 2 2，则actual\_seq\_kvlen传：2 4 6 8 10。
 
@@ -137,18 +137,18 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 - **gen\_mask\_parallel**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为True：同AI Core并行计算；设为False：同AI Core串行计算。
 - **sync**（`bool`）：DSA生成dropout随机数向量mask的控制开关。默认值为False：dropout mask异步生成；设为True：dropout mask同步生成。
 - **softmax_layout**（`string`）：可选参数，用于控制TND场景下softmax的输出（softmax_max和softmax_sum）的数据排布方式。当前仅在input_layout=“TND”时进行配置，仅支持传入“TND”。默认情况下，softmax的输出排布为NTD排布；传入TND时，softmax的输出排布为TND排布。此参数为TorchNPU 7.2.0版本新增参数，支持在CANN8.3.RC1及以上版本使用。
-- **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`float32`。此参数为TorchNPU 7.3.0版本新增参数，支持在CANN8.5.0及以上版本使用。
-- **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout掩码，用于控制dropout行为。当传入此参数时，将使用外部掩码而非内部生成，实现可复现的dropout效果。数据类型支持`uint8`，数据格式支持$ND$。若不传入此参数，则由算子内部根据`seed`和`offset`自动生成dropout mask。若传入此参数，则需要使用内部接口[_npu_dropout_gen_mask](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp)生成dropout_mask。
-- **seed**（`int`）：可选参数，DSA生成dropout mask中Philox算法的种子值，数据类型支持`int64`，默认值为0。当`dropout_mask`参数未传入时，若`seed`为0，则使用默认随机种子；若`seed`非0，则使用指定的种子值生成dropout mask。当传入dropout_mask时，需传入生成dropout_mask所需的seed值。
-- **offset**（`int`）：可选参数，DSA生成dropout mask中Philox算法的偏移值，数据类型支持`int64`，默认值为0。配合`seed`参数使用，用于控制dropout mask的生成位置。当传入dropout_mask时，需传入生成dropout_mask所需的offset值。
+- **sink**（`Tensor`）：可选参数，每个注意力头的偏置。shape为`[head_num]`，数据类型仅支持`torch.float32`。此参数为TorchNPU 7.3.0版本新增参数，支持在CANN8.5.0及以上版本使用。
+- **dropout\_mask**（`Tensor`）：可选参数，外部传入的dropout掩码，用于控制dropout行为。当传入此参数时，将使用外部掩码而非内部生成，实现可复现的dropout效果。数据类型支持`torch.uint8`，数据格式支持$ND$。若不传入此参数，则由算子内部根据`seed`和`offset`自动生成dropout mask。若传入此参数，则需要使用内部接口[_npu_dropout_gen_mask](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp)生成dropout_mask。
+- **seed**（`int`）：可选参数，DSA生成dropout mask中Philox算法的种子值，数据类型支持`torch.int64`，默认值为0。当`dropout_mask`参数未传入时，若`seed`为0，则使用默认随机种子；若`seed`非0，则使用指定的种子值生成dropout mask。当传入dropout_mask时，需传入生成dropout_mask所需的seed值。
+- **offset**（`int`）：可选参数，DSA生成dropout mask中Philox算法的偏移值，数据类型支持`torch.int64`，默认值为0。配合`seed`参数使用，用于控制dropout mask的生成位置。当传入dropout_mask时，需传入生成dropout_mask所需的offset值。
 
 ## 输出说明<a name="zh-cn_topic_0000001742717129_section22231435517"></a>
 
 共7个输出，类型依次为**Tensor、Tensor、Tensor、Tensor、int、int、int。**
 
-- 第1个输出为`Tensor`，计算公式的最终输出$attention\_out$，数据类型支持`float16`、`bfloat16`、`float32`。
-- 第2个输出为`Tensor`，Softmax计算的Max中间结果，用于反向计算，数据类型支持`float`。
-- 第3个输出为`Tensor`，Softmax计算的Sum中间结果，用于反向计算，数据类型支持`float`。
+- 第1个输出为`Tensor`，计算公式的最终输出$attention\_out$，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+- 第2个输出为`Tensor`，Softmax计算的Max中间结果，用于反向计算，数据类型支持`torch.float`。
+- 第3个输出为`Tensor`，Softmax计算的Sum中间结果，用于反向计算，数据类型支持`torch.float`。
 - 第4个输出为`Tensor`，预留参数，暂未使用。
 - 第5个输出为`int`，DSA生成dropout mask中，Philox算法的seed。
 - 第6个输出为`int`，DSA生成dropout mask中，Philox算法的offset。

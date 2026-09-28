@@ -40,7 +40,7 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **bool c10_npu::NPUEvent::isCreated()**
 
-    Queries whether the event is created for `NPUEvent`. The return type is `bool`. Valid values are `True` (the event is created) or `False` (the event is not created). This function is identical to `bool at::cuda::CUDAEvent::isCreated()`.
+    Queries whether the event is created for `NPUEvent`. The return type is `torch.bool`. Valid values are `True` (the event is created) or `False` (the event is not created). This function is identical to `bool at::cuda::CUDAEvent::isCreated()`.
 
 - **c10::DeviceIndex c10_npu::NPUEvent::device_index()**
 
@@ -52,7 +52,7 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **bool c10_npu::NPUEvent::query()**
 
-    Queries whether the event is complete for `NPUEvent`. The return type is `bool`. Valid values are `True` (all submitted work is complete) or `False` (the work is not complete). This function is identical to `bool at::cuda::CUDAEvent::query()`.
+    Queries whether the event is complete for `NPUEvent`. The return type is `torch.bool`. Valid values are `True` (all submitted work is complete) or `False` (the work is not complete). This function is identical to `bool at::cuda::CUDAEvent::query()`.
 
 - **void c10_npu::NPUEvent::record()**
 
@@ -78,7 +78,7 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **float c10_npu::NPUEvent::elapsed_time(const c10_npu::NPUEvent& other)**
 
-    Queries the elapsed time between `NPUEvent` events. The return type is `float`, which represents the elapsed time in milliseconds from the recorded event to the current event. This function is identical to `float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent& other)`.
+    Queries the elapsed time between `NPUEvent` events. The return type is `torch.float`, which represents the elapsed time in milliseconds from the recorded event to the current event. This function is identical to `float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent& other)`.
 
     **`other`** (`NPUEvent`): Destination event used to compute the elapsed time.
 

@@ -49,16 +49,16 @@ torch_npu.npu_fast_gelu(self) -> Tensor
 - **self**(`Tensor`)：必选参数，对应公式中的$x$。数据格式支持$ND$，支持非连续的Tensor。输入最大支持8维。支持空Tensor。
 
   <!-- npu="910" id8 -->
-  - <term>Atlas训练系列产品</term>：数据类型支持`float16`、`float32`。
+  - <term>Atlas训练系列产品</term>：数据类型支持`torch.float16`、`torch.float32`。
   <!-- end id8 -->
   <!-- npu="910b" id9 -->
-  - <term>Atlas A2系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+  - <term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
   <!-- end id9 -->
   <!-- npu="A3" id10 -->
-  - <term>Atlas A3系列产品</term>：数据类型支持`float16`、`float32`、`bfloat16`。
+  - <term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
   <!-- end id10 -->
   <!-- npu="310p" id11 -->
-  - <term>Atlas推理系列产品</term>：数据类型仅支持`float16`、`float32`。
+  - <term>Atlas推理系列产品</term>：数据类型仅支持`torch.float16`、`torch.float32`。
   <!-- end id11 -->
   <!-- npu="950" id12 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。

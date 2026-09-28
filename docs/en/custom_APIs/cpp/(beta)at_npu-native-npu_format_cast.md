@@ -24,7 +24,7 @@ Converts the format of an NPU tensor. The return value type is `Tensor`, which r
 
 In <term>Ascend 950DT</term> scenarios, the following special cases are currently not supported when converting a tensor to the `FRACTAL_NZ` format:
 
-- If the `dtype` of `self` is `float16` or `bfloat16`, and the dimensions of `self` are represented as `[k, n]`, the case where `k` is 1 is not supported.
+- If the `dtype` of `self` is `torch.float16` or `torch.bfloat16`, and the dimensions of `self` are represented as `[k, n]`, the case where `k` is 1 is not supported.
 - After calling this API to convert a tensor to the `FRACTAL_NZ` format, operations that modify the tensor, including `contiguous`, `pad`, `view`, and `slice`, are not supported.
 - If either of the last two dimensions of the shape of `self` is 1, `transpose` is not supported after converting to the `FRACTAL_NZ` format.
 

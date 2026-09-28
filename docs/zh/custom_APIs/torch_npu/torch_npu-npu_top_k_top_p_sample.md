@@ -271,7 +271,7 @@
     \text{logitsSelectIdx}[b] = \text{LogitsIdx}[b][\text{sampleIdx}[b]]
     $$
 
-  * 对于采样种子，当attr.optional.Str.post_sample="multiNomial"时，q约束为INT64，分别从第一列和第二列获取multiNomial采样的seed和offset：
+  * 对于采样种子，当attr.optional.Str.post_sample="multiNomial"时，q约束为`torch.int64`，分别从第一列和第二列获取multiNomial采样的seed和offset：
 
     $$
     \text{seed}[b] =
@@ -301,17 +301,17 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 
 ## 参数说明
 
-- **logits**（`Tensor`）：必选参数，表示待采样的输入词频，目前支持2维，词频索引固定为最后一维。数据类型支持`float16`、`bfloat16`和`float32`，数据格式支持$ND$，支持非连续Tensor。
-- **top_k**（`Tensor`）：必选参数，表示每个batch采样的k值，有效范围为1≤top_k[batch]≤min(voc_size[batch], 1024)，无效范围则跳过topK，目前支持1维。数据类型支持`int32`，数据格式支持$ND$，支持非连续Tensor。
+- **logits**（`Tensor`）：必选参数，表示待采样的输入词频，目前支持2维，词频索引固定为最后一维。数据类型支持`torch.float16`、`torch.bfloat16`和`torch.float32`，数据格式支持$ND$，支持非连续Tensor。
+- **top_k**（`Tensor`）：必选参数，表示每个batch采样的k值，有效范围为1≤top_k[batch]≤min(voc_size[batch], 1024)，无效范围则跳过topK，目前支持1维。数据类型支持`torch.int32`，数据格式支持$ND$，支持非连续Tensor。
 - **top_p**（`Tensor`）：必选参数，表示每个batch采样的p值，有效范围为0<top\_p[batch]<1，目前支持1维。数据类型和数据格式与`logits`保持一致，支持非连续Tensor。
     - 在任何情况下，topP对每个batch的输出都会保留至少1个token。
     - top_p[batch] ≤0时，对当前batch仅保留概率最大的1个token。
     - top_p[batch]处于合法值范围(0,1)时，对当前batch执行标准topP采样。
     - p>=1时跳过相应batch的topP步骤，提取整个batch信息并生成ones掩模作为输出。
-- **q**（`Tensor`）：可选参数，topK-topP采样输出的随机采样权重分布矩阵，数据类型支持`float32`，数据格式支持$ND$，支持非连续Tensor，默认值为None, 此时跳过后继采样，从probs计算logits_select_idx。
+- **q**（`Tensor`）：可选参数，topK-topP采样输出的随机采样权重分布矩阵，数据类型支持`torch.float32`，数据格式支持$ND$，支持非连续Tensor，默认值为None, 此时跳过后继采样，从probs计算logits_select_idx。
     - 根据post_sample的模式不同，该参数约束如下：
-    - post_sample = qSample时, 尺寸约束为[batch, voc_size], 数据类型必须为float32，指数分布采样矩阵，维度需与logits的一致。
-    - post_sample = multiNomial时, multiNomial随机采样参数矩阵，数据类型必须为int64，用于为aclnnMultinomial采样提供控制参数。合法的尺寸为[q_row, 2]，其中q_row≥1：
+    - post_sample = qSample时, 尺寸约束为[batch, voc_size], 数据类型必须为`torch.float32`，指数分布采样矩阵，维度需与logits的一致。
+    - post_sample = multiNomial时, multiNomial随机采样参数矩阵，数据类型必须为`torch.int64`，用于为aclnnMultinomial采样提供控制参数。合法的尺寸为[q_row, 2]，其中q_row≥1：
         - 第1列对应aclnnMultinomial.seed参数：对应当前batch的随机数种子。
         - 第2列对应aclnnMultinomial.offset参数：随机数生成器的偏移量，它影响生成的随机数序列的位置。设置偏移量后，生成的随机数序列会从指定位置开始。
         - 如果q_row \< batch，则默认使用最后一个batch的采样参数作为后续batch的multiNomial采样参数。
@@ -330,8 +330,8 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 
 ## 返回值说明
 
-- **logits_select_idx**（`Tensor`）：表示经过topK-topP-sample计算流程后，每个batch中词频最大元素max(probs_opt[batch, :])在输入`logits`中的位置索引。数据类型支持`int64`，数据格式支持$ND$。
-- **logits_top_kp_select**（`Tensor`）：表示经过topK-topP-minP采样获得mask，对原输入`logits`中高频token的过滤结果。仅在`is_need_logits=true`时输出计算和搬运，否则直接输出相应尺寸的空tensor。数据类型支持`float32`，数据格式支持$ND$。
+- **logits_select_idx**（`Tensor`）：表示经过topK-topP-sample计算流程后，每个batch中词频最大元素max(probs_opt[batch, :])在输入`logits`中的位置索引。数据类型支持`torch.int64`，数据格式支持$ND$。
+- **logits_top_kp_select**（`Tensor`）：表示经过topK-topP-minP采样获得mask，对原输入`logits`中高频token的过滤结果。仅在`is_need_logits=true`时输出计算和搬运，否则直接输出相应尺寸的空tensor。数据类型支持`torch.float32`，数据格式支持$ND$。
 
 ## 约束说明
 

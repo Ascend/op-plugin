@@ -36,7 +36,7 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 
 `Tensor`
 
-一个包含8个float32类型全零值的Tensor。
+一个包含8个`torch.float32`类型全零值的Tensor。
 
 ## 调用示例
 

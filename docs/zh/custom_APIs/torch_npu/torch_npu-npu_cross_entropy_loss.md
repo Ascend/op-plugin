@@ -46,9 +46,9 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
 ## 参数说明
 
-- **input**（`Tensor`）: 必选参数，表示输入，对应公式中*x*；数据类型支持`float16`、`float32`、`bfloat16`；shape为[N, C]，N为批处理大小，C为标签数，必须大于0。
-- **target**（`Tensor`）: 必选参数，表示标签，对应公式中*y*；数据类型支持`int64`；shape为[N]，与`input`第零维相同，取值范围[0, C)。
-- **weight**（`Tensor`）: 可选参数，表示每个类别指定的缩放权重；数据类型支持`float32`；shape为[C]，与`input`第二维相同，取值范围(0, 1]，不指定值时默认为全一。
+- **input**（`Tensor`）: 必选参数，表示输入，对应公式中*x*；数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`；shape为[N, C]，N为批处理大小，C为标签数，必须大于0。
+- **target**（`Tensor`）: 必选参数，表示标签，对应公式中*y*；数据类型支持`torch.int64`；shape为[N]，与`input`第零维相同，取值范围[0, C)。
+- **weight**（`Tensor`）: 可选参数，表示每个类别指定的缩放权重；数据类型支持`torch.float32`；shape为[C]，与`input`第二维相同，取值范围(0, 1]，不指定值时默认为全一。
 - **reduction**（`str`）: 可选参数，表示loss的归约方式；支持范围["mean", "sum", "none"]，`mean`表示平均归约，`sum`表示求和归约，`none`表示无归约，默认为`mean`。
 - **ignore_index**（`int`）: 可选参数，表示指定忽略的标签；数值必须小于C，当小于0时表示不指定忽略标签；默认值为-100。
 - **label_smoothing**（`float`）: 可选参数，表示计算loss时的平滑量；取值范围[0.0, 1.0)；默认值为0.0。

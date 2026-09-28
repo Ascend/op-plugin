@@ -14,7 +14,7 @@
 
 ## Function
 
-Applies an NPU-compatible `dropout_with_byte_mask` operation. This function is supported exclusively on NPU devices. It generates a stateless random `uint8` mask and performs dropout based on that mask.
+Applies an NPU-compatible `dropout_with_byte_mask` operation. This function is supported exclusively on NPU devices. It generates a stateless random `torch.uint8` mask and performs dropout based on that mask.
 
 ## Prototype
 

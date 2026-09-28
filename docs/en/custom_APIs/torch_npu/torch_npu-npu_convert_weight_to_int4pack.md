@@ -9,7 +9,7 @@
 
 ## Function
 
-Packs the `int32` input tensor for `int4` storage. Every eight `int4` elements are stored in a single `int32` element and arranged in an interleaved format.
+Packs the `torch.int32` input tensor for `torch_npu.int4` storage. Every eight `torch_npu.int4` elements are stored in a single `torch.int32` element and arranged in an interleaved format.
 
 ## Prototype
 
@@ -19,14 +19,14 @@ torch_npu.npu_convert_weight_to_int4pack(weight,inner_k_tiles=0) -> Tensor
 
 ## Parameters
 
-- **`weight`** (`Tensor`): Required. Input weight. The data layout can be ND or FRACTAL_NZ. The data type can be `int32`. Non-contiguous tensors are not supported. This parameter must be 2D with shape `(k, n)` or `(n, k)`. The size of the last dimension must be a multiple of 8. Individual element values must be within the `int4` representation range of [-8, 7].
+- **`weight`** (`Tensor`): Required. Input weight. The data layout can be ND or FRACTAL_NZ. The data type can be `torch.int32`. Non-contiguous tensors are not supported. This parameter must be 2D with shape `(k, n)` or `(n, k)`. The size of the last dimension must be a multiple of 8. Individual element values must be within the `torch_npu.int4` representation range of [-8, 7].
 - **`inner_k_tiles`** (`int`): Optional. Number of K-tiles that are packed together in the internal packing format. The default value is `0`. **Reserved parameter, currently not used.**
 
 ## Return Values
 
 `Tensor`
 
-Packed `int4` output tensor. The data type is `int32`. The shape must be `(k, n / 8)` or `(n, k / 8)`. The data layout can be ND.
+Packed `torch_npu.int4` output tensor. The data type is `torch.int32`. The shape must be `(k, n / 8)` or `(n, k / 8)`. The data layout can be ND.
 
 ## Constraints
 

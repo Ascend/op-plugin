@@ -50,22 +50,22 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
 ## Parameters
 
-  - **`x1`** (`Tensor`): Required. Source data tensor in the normalization process, $x1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `float16` or `bfloat16`. The shape must have 1 to 8 dimensions.
-  - **`x2`** (`Tensor`): Required. Source data tensor in the normalization process, $x2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `float16` or `bfloat16`. The shape must have 1 to 8 dimensions. The data type and shape must be identical to those of `x1`.
-  - **`gamma`** (`Tensor`): Required. Weight tensor in the normalization process, $gamma$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `float16` or `bfloat16`. The shape must have 1 to 8 dimensions. The shape must be identical to the dimensions of `x1` that require normalization. The data type must be identical to that of `x1`.
-  - **`scales1`** (`Tensor`): Required. Scales tensor obtained during `y1` quantization, $scales1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `float32` or `bfloat16`. The shape must be identical to that of `gamma`. When `div_mode` is set to `True`, this parameter value must not be 0.
-  - **`zero_points1`** (`Tensor`): Optional. Offset tensor obtained during `y1` quantization, $zero\_points1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `int32` or `bfloat16`. The shape must be identical to that of `gamma`.
-  - **`beta`** (`Tensor`): Optional. Bias term in the normalization process, $beta$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `gamma` and can be `float16` or `bfloat16`. The shape must be identical to that of `gamma`. The default value is `None`.
-  - **`scales2`** (`Tensor`): Optional. Scales tensor obtained during `y2` quantization, $scales2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `scales1` and can be `float32` or `bfloat16`. The shape must be identical to that of `gamma`. When `div_mode` is set to `True`, this parameter value must not be 0. The default value is `None`.
-  - **`zero_points2`** (`Tensor`): Optional. Offset tensor obtained during `y2` quantization, $zero\_points2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `zero_points1` and can be `int32` or `bfloat16`. The shape must be identical to that of `gamma`. The default value is `None`.
+  - **`x1`** (`Tensor`): Required. Source data tensor in the normalization process, $x1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `torch.float16` or `torch.bfloat16`. The shape must have 1 to 8 dimensions.
+  - **`x2`** (`Tensor`): Required. Source data tensor in the normalization process, $x2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `torch.float16` or `torch.bfloat16`. The shape must have 1 to 8 dimensions. The data type and shape must be identical to those of `x1`.
+  - **`gamma`** (`Tensor`): Required. Weight tensor in the normalization process, $gamma$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `torch.float16` or `torch.bfloat16`. The shape must have 1 to 8 dimensions. The shape must be identical to the dimensions of `x1` that require normalization. The data type must be identical to that of `x1`.
+  - **`scales1`** (`Tensor`): Required. Scales tensor obtained during `y1` quantization, $scales1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `torch.float32` or `torch.bfloat16`. The shape must be identical to that of `gamma`. When `div_mode` is set to `True`, this parameter value must not be 0.
+  - **`zero_points1`** (`Tensor`): Optional. Offset tensor obtained during `y1` quantization, $zero\_points1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type can be `torch.int32` or `torch.bfloat16`. The shape must be identical to that of `gamma`.
+  - **`beta`** (`Tensor`): Optional. Bias term in the normalization process, $beta$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `gamma` and can be `torch.float16` or `torch.bfloat16`. The shape must be identical to that of `gamma`. The default value is `None`.
+  - **`scales2`** (`Tensor`): Optional. Scales tensor obtained during `y2` quantization, $scales2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `scales1` and can be `torch.float32` or `torch.bfloat16`. The shape must be identical to that of `gamma`. When `div_mode` is set to `True`, this parameter value must not be 0. The default value is `None`.
+  - **`zero_points2`** (`Tensor`): Optional. Offset tensor obtained during `y2` quantization, $zero\_points2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `zero_points1` and can be `torch.int32` or `torch.bfloat16`. The shape must be identical to that of `gamma`. The default value is `None`.
   - **`axis`** (`int64_t`): Optional. Elementwise axis along which quantization is performed, while other axes are broadcast. The specified axis index must not exceed the number of dimensions of the input tensor. Currently, only the default value `-1` is supported. Other values do not take effect.
   - **`epsilon`** (`double`): Optional. Input $epsilon$ in the formulas, used to prevent division-by-zero errors. The data type must be `double`. A small positive number is recommended. The default value is `1e-6`.
   - **`div_mode`** (`bool`): Optional. Determines whether the quantization formula uses division. The data type must be `bool`. The default value is `True`.
 
 ## Return Values
 
-  - **`y1`** (`Tensor`): Output tensor after quantization, $y1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type is `int8`. The shape must be identical to that of the input `x1`.
-  - **`y2`** (`Tensor`): Output tensor after quantization, $y2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type is `int8`. The shape must be identical to that of the input `x1`.
+  - **`y1`** (`Tensor`): Output tensor after quantization, $y1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type is `torch.int8`. The shape must be identical to that of the input `x1`.
+  - **`y2`** (`Tensor`): Output tensor after quantization, $y2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type is `torch.int8`. The shape must be identical to that of the input `x1`.
   - **`x`** (`Tensor`): Sum of `x1` and `x2`, $x$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. The data type and shape must be identical to those of the input `x1`.
 
 ## Constraints
@@ -79,21 +79,21 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 
 - **Dimension boundaries**
 
-  The size of each dimension in the shapes of `x1`, `x2`, `gamma`, `scales1`, `zero_points1`, `beta`, `scales2`, `zero_points2`, `y1`, `y2`, and `x` must be less than or equal to 2147483647, which is the maximum value of `int32`. 
+  The size of each dimension in the shapes of `x1`, `x2`, `gamma`, `scales1`, `zero_points1`, `beta`, `scales2`, `zero_points2`, `y1`, `y2`, and `x` must be less than or equal to 2147483647, which is the maximum value of `torch.int32`.
 
 - **Data types supported by different product models**
   - Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components and Atlas A3 training products/Atlas A3 inference products:
 
      | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
      | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |
-     | float16    | float16    | float16       | float32         | float32                 | int32                       | int32                       | float16              | int8          | int8          | float16      |
-     | bfloat16   | bfloat16   | bfloat16      | bfloat16        | bfloat16                | bfloat16                    | bfloat16                    | bfloat16             | int8          | int8          | bfloat16     |
+     | `torch.float16`    | `torch.float16`    | `torch.float16`       | `torch.float32`         | `torch.float32`                 | `torch.int32`                       | `torch.int32`                       | `torch.float16`              | `torch.int8`          | `torch.int8`          | `torch.float16`      |
+     | `torch.bfloat16`   | `torch.bfloat16`   | `torch.bfloat16`      | `torch.bfloat16`        | `torch.bfloat16`                | `torch.bfloat16`                    | `torch.bfloat16`                    | `torch.bfloat16`             | `torch.int8`          | `torch.int8`          | `torch.bfloat16`     |
 
   - Atlas inference products
 
     | x1 | x2 | gamma | scales1| scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |
-    | float16    | float16    | float16       | float32         | float32                 | int32                       | int32                       | float16              | int8          | int8          | float16      |
+    | `torch.float16`    | `torch.float16`    | `torch.float16`       | `torch.float32`         | `torch.float32`                 | `torch.int32`                       | `torch.int32`                       | `torch.float16`              | `torch.int8`          | `torch.int8`          | `torch.float16`      |
     
 ## Example
 

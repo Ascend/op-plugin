@@ -21,7 +21,7 @@ torch_npu.npu_sim_exponential_(input, lambd=1, *, generator=None) -> Tensor
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Source data tensor, $f(x)$ in the formula. This parameter must be a continuous tensor. The data type can be `bfloat16`, `float16`, or `float32`. The data layout can be ND. The shape can have 0 to 8 dimensions.
+- **`input`** (`Tensor`): Required. Source data tensor, $f(x)$ in the formula. This parameter must be a continuous tensor. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`. The data layout can be ND. The shape can have 0 to 8 dimensions.
 
 - **`lambd`** (`double`): Optional. Parameter of the exponential distribution, $λ$ in the formula. This parameter can be set to any positive real number. The default value is `1`.
 

@@ -53,31 +53,31 @@
 
                 | dst_type | emax |
                 | --- | --- |
-                | float4_e2m1fn_x2 | 2 |
-                | float4_e1m2fn_x2 | 0 |
-                | float8_e4m3fn | 8 |
-                | float8_e5m2 | 15 |
+                | `torch_npu.float4_e2m1fn_x2` | 2 |
+                | `torch_npu.float4_e1m2fn_x2` | 0 |
+                | `torch.float8_e4m3fn` | 8 |
+                | `torch.float8_e5m2` | 15 |
 
         - **场景2：当scale_alg为1时，支持float8的动态MX量化。**
-            - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{fp32}^b$，再把块内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型fp8。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
+            - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{`torch.float32`}^b$，再把块内所有元素用同一个$S_{`torch.float32`}^b$映射到目标低精度类型fp8。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
             - 找到该块中数值的最大绝对值：
 
                 $$
-                Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
+                Amax(D_{`torch.float32`}^b)=max(\{|d_{i}|\}_{i=1}^{k})
                 $$
 
-            - 将FP32映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值
+            - 将`torch.float32`映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值
 
                 $$
-                S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
+                S_{`torch.float32`}^b = \frac{Amax(D_{`torch.float32`}^b)}{Amax(DType)}
                 $$
 
-            - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$；
-            - 从块的浮点缩放因子$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$；
+            - 将块缩放因子$S_{`torch.float32`}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$；
+            - 从块的浮点缩放因子$S_{`torch.float32`}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$；
             - 为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
                 $$
-                E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
+                E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
                 $$
 
             - 计算块缩放因子：
@@ -86,9 +86,9 @@
 
             - 计算块转换因子：
 
-                $R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$
+                $R_{`torch.float32`}^b=\frac{1}{`torch.float32`(S_{ue8m0}^b)}$
 
-            - 应用到量化的最终步骤，对于每个块内元素，$d^i = DType(d_{fp32}^i \cdot R_{fp32}^n)$，最终输出的量化结果是$(S^b, [d^i]_{i=1}^{k})$，其中$S^b$代表块的缩放因子，这里指$S_{ue8m0}^b$，$[d^i]_{i=1}^{k}$代表块内量化后的数据。
+            - 应用到量化的最终步骤，对于每个块内元素，$d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^n)$，最终输出的量化结果是$(S^b, [d^i]_{i=1}^{k})$，其中$S^b$代表块的缩放因子，这里指$S_{ue8m0}^b$，$[d^i]_{i=1}^{k}$代表块内量化后的数据。
 
 ## 函数原型
 
@@ -104,13 +104,13 @@ torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilio
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **beta**（`Tensor`）：可选参数，表示添加到RmsNorm结果上的偏置张量，公式中的$beta$。若存在，shape、数据类型和数据格式需要与`gamma`保持一致，支持空Tensor，支持非连续Tensor。
 - **epsilon**（`float`）：可选参数，表示添加到分母中的值，以确保数值稳定，公式中的$epsilon$，数据类型为`torch.double`，默认值为1e-06。
-- **scale_alg**（`int`）：可选参数，int类型，表示`mxscale_out`的计算方法，仅支持取值0(表示场景1，OCP实现)和1（表示场景2，cuBLAS实现）。当`dst_type`为296(torch.float4_e2m1fn_x2)、297(torch.float4_e1m2fn_x2)时仅支持取值为0，当`dst_type`为291(torch.float8_e5m2)、292(torch.float8_e4m3fn)时支持取值为0和1，默认值为0。
-- **round_mode**（`str`）：可选参数，string类型，表示指定量化结果cast到输出y的数据类型模式；当`dst_type`为296(torch.float4_e2m1fn_x2)、297(torch.float4_e1m2fn_x2)时，模式支持"rint"、"floor"、"round"；当`dst_type`为291(torch.float8_e5m2)、292(torch.float8_e4m3fn)时，模式仅支持"rint"，默认值为"rint"。
-- **dst_type**（`int`）：可选参数，int类型，指定输出`y`的数据类型，输入范围为{291、292、296、297}，分别对应输出y的数据类型为{291：torch.float8_e5m2，292：torch.float8_e4m3fn，296：torch.float4_e2m1fn_x2，297：torch.float4_e1m2fn_x2}。默认值为296（torch.float4_e2m1fn_x2）。
+- **scale_alg**（`int`）：可选参数，int类型，表示`mxscale_out`的计算方法，仅支持取值0(表示场景1，OCP实现)和1（表示场景2，cuBLAS实现）。当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch.float4_e1m2fn_x2`)时仅支持取值为0，当`dst_type`为291(`torch.float8_e5m2`)、292(`torch.float8_e4m3fn`)时支持取值为0和1，默认值为0。
+- **round_mode**（`str`）：可选参数，string类型，表示指定量化结果cast到输出y的数据类型模式；当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch.float4_e1m2fn_x2`)时，模式支持"rint"、"floor"、"round"；当`dst_type`为291(`torch.float8_e5m2`)、292(`torch.float8_e4m3fn`)时，模式仅支持"rint"，默认值为"rint"。
+- **dst_type**（`int`）：可选参数，int类型，指定输出`y`的数据类型，输入范围为{291、292、296、297}，分别对应输出y的数据类型为{291：`torch.float8_e5m2`，292：`torch.float8_e4m3fn`，296：`torch.float4_e2m1fn_x2`，297：`torch.float4_e1m2fn_x2`}。默认值为296（`torch.float4_e2m1fn_x2`）。
 
 ## 返回值说明
 
-- **y**（`Tensor`）：表示Add和RmsNorm归一化后与beta相加，再进行DynamicMxQuant量化后的输出结果，支持空Tensor，shape和数据格式与输入`x1`保持一致，数据类型由`dst_type`指定，当`dst_type`为296(torch.float4_e2m1fn_x2)、297(torch.float4_e1m2fn_x2)时，`y`的数据类型实际为`torch.uint8`。
+- **y**（`Tensor`）：表示Add和RmsNorm归一化后与beta相加，再进行DynamicMxQuant量化后的输出结果，支持空Tensor，shape和数据格式与输入`x1`保持一致，数据类型由`dst_type`指定，当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch.float4_e1m2fn_x2`)时，`y`的数据类型实际为`torch.uint8`。
 - **x_out**（`Tensor`）：表示`x1`和`x2`相加的结果，支持空Tensor，shape、数据类型和数据格式与输入`x1`保持一致。
 - **mxscale_out**（`Tensor`）：表示每个分组对应的量化尺度，数据类型为`torch.float8_e8m0`，实际数据类型为`torch.uint8`，支持空Tensor，shape支持2-8维，数据格式要求为$ND$。shape在尾轴上为`x1`对应值除以32向上取整，并对其进行偶数pad，pad填充值为0，具体计算过程见约束说明。
 - **rstd_out**（`Tensor`）：表示RmsNorm归一化后的标准差的倒数，用于归一化操作，对应公式中的$RMS(x)$的倒数。支持空Tensor，shape与`x1`的前几维保持一致，前几维表示不需要norm的维度，数据格式要求为$ND$。`rstd_out`shape与`x1`shape、`gamma`shape关系举例：若`x1`shape=(2,3,4,8)，`gamma`shape=(8,)，`rstd_out`shape=(2,3,4,1)。
@@ -119,7 +119,7 @@ torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilio
 
 - 该接口支持训练、推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
-- 输出`y`的类型为float4_e2m1fn_x2和float4_e1m2fn_x2，即dst_type为296和297时，`x1`的最后一维必须是偶数。
+- 输出`y`的类型为`torch_npu.float4_e2m1fn_x2`和`torch_npu.float4_e1m2fn_x2`，即dst_type为296和297时，`x1`的最后一维必须是偶数。
 - 量化轴和norm轴都是输入`x1`的最后1维。
 - 输出`mxscale_out`和输入`x1`的shape约束关系：
   - rank(mxscale_out)  = rank(x1) + 1

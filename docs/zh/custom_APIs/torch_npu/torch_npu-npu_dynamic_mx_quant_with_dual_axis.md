@@ -51,25 +51,25 @@
       | `torch.float8_e5m2` | 15 |
 
   - 场景2，当scale\_alg为1时，只涉及float8（CuBALS Scale计算算法）：
-    - -1轴量化：将输入x在-1轴上按照32个数进行分组，每组长度为32，对每组单独计算一个块缩放因子$S_{fp32}^b$，再把组内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型float8。如果最后一组不足32个元素，把缺失值视为0，按照完整组处理。找到该组中数值的最大绝对值：
+    - -1轴量化：将输入x在-1轴上按照32个数进行分组，每组长度为32，对每组单独计算一个块缩放因子$S_{`torch.float32`}^b$，再把组内所有元素用同一个$S_{`torch.float32`}^b$映射到目标低精度类型float8。如果最后一组不足32个元素，把缺失值视为0，按照完整组处理。找到该组中数值的最大绝对值：
 
       $$
-      Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{32})
+      Amax(D_{`torch.float32`}^b)=max(\{|d_{i}|\}_{i=1}^{32})
       $$
 
-      将fp32映射到目标数据类型为float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
+      将`torch.float32`映射到目标数据类型为float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
 
       $$
-      S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
+      S_{`torch.float32`}^b = \frac{Amax(D_{`torch.float32`}^b)}{Amax(DType)}
       $$
 
-      将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
+      将块缩放因子$S_{`torch.float32`}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{`torch.float32`}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
       $$
-      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
+      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
       $$
 
-      计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$，对每个组内元素$d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$，最终-1轴输出的量化结果是$\left(S^b, [d^i]_{i=1}^{32}\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$）。
+      计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{`torch.float32`}^b=\frac{1}{`torch.float32`(S_{ue8m0}^b)}$，对每个组内元素$d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^b)$，最终-1轴输出的量化结果是$\left(S^b, [d^i]_{i=1}^{32}\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$）。
     - -2轴量化：同时，将输入x在-2轴上按照32个数进行分组，采用与-1轴相同的CuBALS Scale计算算法，对每组独立计算块缩放因子并量化，-2轴输出的量化结果是$\left(S^b, [d^j]_{j=1}^{32}\right)$。
     - -1轴量化结果组成输出y1，对应的块缩放因子组成输出mxscale1。-2轴量化结果组成输出y2，对应的块缩放因子组成输出mxscale2。
 
@@ -84,19 +84,19 @@
       P_i = cast\_to\_dst\_type(V_i/mxscale, round\_mode), \space i\space from\space 1\space to\space 32
       $$
 
-    - 当dst\_type\_max不为上述特殊取值时，将输入x在-1轴和-2轴上分别按照32个数进行分组，每组长度为32，采用与场景2相同的块缩放算法：对每组单独计算块缩放因子$S_{fp32}^b$，映射到目标低精度类型`torch_npu.float4_e2m1fn_x2`。其中$Amax(DType)$在dst\_type\_max为0时是目标精度能表示的最大值，不为0时是dst\_type\_max传入值：
+    - 当dst\_type\_max不为上述特殊取值时，将输入x在-1轴和-2轴上分别按照32个数进行分组，每组长度为32，采用与场景2相同的块缩放算法：对每组单独计算块缩放因子$S_{`torch.float32`}^b$，映射到目标低精度类型`torch_npu.float4_e2m1fn_x2`。其中$Amax(DType)$在dst\_type\_max为0时是目标精度能表示的最大值，不为0时是dst\_type\_max传入值：
 
       $$
-      S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
+      S_{`torch.float32`}^b = \frac{Amax(D_{`torch.float32`}^b)}{Amax(DType)}
       $$
 
       指数向上取整规则为：
 
       $$
-      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b, & \text{否则} \end{cases}
+      E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{`torch.float32`}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b, & \text{否则} \end{cases}
       $$
 
-      其余步骤（计算$S_{ue8m0}^b$、$R_{fp32}^b$、$d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$）与场景2相同。
+      其余步骤（计算$S_{ue8m0}^b$、$R_{`torch.float32`}^b$、$d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^b)$）与场景2相同。
     - -1轴量化结果组成输出y1，对应的块缩放因子组成输出mxscale1。-2轴量化结果组成输出y2，对应的块缩放因子组成输出mxscale2。
 
 ## 函数原型

@@ -60,7 +60,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 
 - \*：代表其之前的变量支持按位置输入，也可使用键值对赋值；之后的变量仅支持使用键值对赋值，其中带默认值的变量不赋值时使用默认值，不带默认值的变量必须赋值。
 - **bias**(`Tensor`)：**可选参数**，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
-- **scale**(`Tensor`)：**可选参数**，表示量化输入。数据格式支持$ND$，数据类型支持`torch.int64`、`uint64`，shape维度支持1维(B*N)。支持非连续的Tensor。
+- **scale**(`Tensor`)：**可选参数**，表示量化输入。数据格式支持$ND$，数据类型支持`torch.int64`、`torch.uint64`，shape维度支持1维(B*N)。支持非连续的Tensor。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：B*N的取值范围为[1, 65536)。

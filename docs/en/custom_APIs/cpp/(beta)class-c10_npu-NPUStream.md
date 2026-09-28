@@ -64,7 +64,7 @@ Implements NPU stream management functionality as an NPU stream class. An NPU st
 
 - **bool c10_npu::NPUStream::query()**
 
-    Queries whether the stream has completed for `NPUStream`. The return type is `bool`. A return value of `True` indicates that all submitted work has completed. This function is identical to `bool c10::cuda::CUDAStream::query()`.
+    Queries whether the stream has completed for `NPUStream`. The return type is `torch.bool`. A return value of `True` indicates that all submitted work has completed. This function is identical to `bool c10::cuda::CUDAStream::query()`.
 
 - **void c10_npu::NPUStream::synchronize()**
 
@@ -100,7 +100,7 @@ Implements NPU stream management functionality as an NPU stream class. An NPU st
 
 - **bool c10_npu::NPUStream::isDataPreprocessStream()**
 
-    Queries whether the stream is a data preprocessing stream for `NPUStream`. The return type is `bool`. A return value of `True` indicates that it is a data preprocessing stream.
+    Queries whether the stream is a data preprocessing stream for `NPUStream`. The return type is `torch.bool`. A return value of `True` indicates that it is a data preprocessing stream.
 
 - **aclrtStream c10_npu::NPUStream::stream(const bool need_empty)**
 

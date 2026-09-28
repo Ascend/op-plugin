@@ -30,13 +30,13 @@ torch_npu.npu_clear_float_status(self) -> Tensor
 
 ## 参数说明
 
-**self**(`Tensor`)：数据类型为`float32`的张量。
+**self**(`Tensor`)：数据类型为`torch.float32`的张量。
 
 ## 返回值说明
 
 `Tensor`
 
-一个包含8个float32类型全零值的Tensor。
+一个包含8个`torch.float32`类型全零值的Tensor。
 
 ## 调用示例
 

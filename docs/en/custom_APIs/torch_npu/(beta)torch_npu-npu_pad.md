@@ -25,7 +25,7 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 ## Parameters
 
 - **`input`** (`Tensor`): Input tensor.
-- **`paddings`** (`List[int]`): The data type can be `int32` or `int64`.
+- **`paddings`** (`List[int]`): The data type can be `torch.int32` or `torch.int64`.
 
 ## Example
 

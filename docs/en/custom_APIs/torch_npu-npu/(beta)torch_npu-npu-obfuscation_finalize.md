@@ -35,13 +35,13 @@ torch_npu.npu.obfuscation_finalize(fd_to_close) -> Tensor
 
 ## Parameters
 
-**`fd_to_close`** (`Tensor`): Socket file descriptor returned by the [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md) API. The data type is `int32`.
+**`fd_to_close`** (`Tensor`): Socket file descriptor returned by the [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md) API. The data type is `torch.int32`.
 
 ## Return Values
 
 `Tensor`
 
-Result of closing the socket connection. This is a 1D tensor with shape `(1)` and data type `int32`.
+Result of closing the socket connection. This is a 1D tensor with shape `(1)` and data type `torch.int32`.
 
 ## Example
 

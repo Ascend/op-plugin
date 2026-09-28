@@ -43,33 +43,33 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 > $N_k$ 表示key的头数，$N_v$ 表示value的头数。<br>
 > $D_k$ 表示key的hidden size，$D_v$ 表示value的hidden size。
 
-- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
+- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
 
-- **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
+- **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
 
-- **value** (`Tensor`)：必选参数，对应公式中的$v$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$），不支持空tensor。
+- **value** (`Tensor`)：必选参数，对应公式中的$v$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_v$, $D_v$），不支持空tensor。
 
-- **beta** (`Tensor`)：可选参数，对应公式中的$β$，数据类型支持`bfloat16`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
+- **beta** (`Tensor`)：可选参数，对应公式中的$β$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
 
-- **initial_state** (`Tensor`)：可选参数，对应公式中的状态矩阵$S_0$，数据类型支持`bfloat16`、`float32`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$），不支持空tensor。
+- **initial_state** (`Tensor`)：可选参数，对应公式中的状态矩阵$S_0$，数据类型支持`torch.bfloat16`、`torch.float32`，数据格式支持ND，shape为（$B$, $N_v$, $D_v$, $D_k$），不支持空tensor。
 
-- **actual_seq_lengths** (`Tensor`)：可选参数，表示各batch的输入序列长度。数据类型支持`int32`，数据格式支持ND，shape为（$B$,）。
+- **actual_seq_lengths** (`Tensor`)：可选参数，表示各batch的输入序列长度。数据类型支持`torch.int32`，数据格式支持ND，shape为（$B$,）。
 
-- **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$。
+- **scale** (`float`)：可选参数，表示query的缩放因子，对应公式中的 $scale$。数据类型支持`torch.float32`。默认值None表示为1.0。实际场景一般设为 $1/\sqrt{D_k}$。
 
-- **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`float32`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
+- **g** (`Tensor`)：可选参数，衰减系数，对应公式中的$α=e^g$。默认为None，表示全0。数据类型支持`torch.float32`，数据格式支持ND，shape为（$T$, $N_v$），不支持空tensor。
 
 ## 返回值说明
 
-- **out** (`Tensor`)：公式中的$o_t$，注意力计算结果。数据类型为`bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
+- **out** (`Tensor`)：公式中的$o_t$，注意力计算结果。数据类型为`torch.bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
 
-- **final_state** (`Tensor`)：最终的状态矩阵$S_L$，数据类型为`bfloat16`、`float32`，数据格式为ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
+- **final_state** (`Tensor`)：最终的状态矩阵$S_L$，数据类型为`torch.bfloat16`、`torch.float32`，数据格式为ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
 
 ## 约束说明
 
 - 该接口仅支持推理场景下使用，当前TND场景，beta、initial_state、actual_seq_lengths必传。
 <!-- npu="950" id4 -->
-- initial_state、final_state float32数据类型仅在Ascend 950PR&950DT系列产品支持。
+- initial_state、final_state `torch.float32`数据类型仅在Ascend 950PR&950DT系列产品支持。
 <!-- end id4 -->
 - 维度约束：
   - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, 且 $Nv \bmod Nk = 0$

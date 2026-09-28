@@ -269,7 +269,7 @@
     \text{logitsSelectIdx}[b] = \text{LogitsIdx}[b][\text{sampleIdx}[b]]
     $$
 
-  * For the sampling seed, when `attr.optional.Str.post_sample="multiNomial"`, `q` must be of type `INT64`. The seed and offset for multiNomial sampling are obtained from the first and second columns of `q`, respectively:
+  * For the sampling seed, when `attr.optional.Str.post_sample="multiNomial"`, `q` must be of type `torch.int64`. The seed and offset for multiNomial sampling are obtained from the first and second columns of `q`, respectively:
 
     $$
     \text{seed}[b] =
@@ -299,17 +299,17 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 
 ## Parameters
 
-- **`logits`** (`Tensor`): Required. Input logit tensor to be sampled. Currently, 2D tensors are supported, and the vocabulary dimension is fixed as the last dimension. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. Non-contiguous tensors are supported.
-- **`top_k`** (`Tensor`): Required. `k` value used for sampling each batch. The valid range is `1≤top_k[batch]≤min(voc_size[batch], 1024)`. If the value falls outside this range, the top-K stage is skipped for the corresponding batch. Currently, 1D tensors are supported. The data type can be `int32`, The data layout can be ND. Non-contiguous tensors are supported.
+- **`logits`** (`Tensor`): Required. Input logit tensor to be sampled. Currently, 2D tensors are supported, and the vocabulary dimension is fixed as the last dimension. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`top_k`** (`Tensor`): Required. `k` value used for sampling each batch. The valid range is `1≤top_k[batch]≤min(voc_size[batch], 1024)`. If the value falls outside this range, the top-K stage is skipped for the corresponding batch. Currently, 1D tensors are supported. The data type can be `torch.int32`, The data layout can be ND. Non-contiguous tensors are supported.
 - **`top_p`** (`Tensor`): Required. `p` value used for sampling each batch. The valid range is `0 < top\_p[batch] < 1`. Currently, 1D tensors are supported. The data type and data layout match those of `logits`. Non-contiguous tensors are supported.
     - In all cases, the top-P output for each batch retains at least 1 token.
     - When `top_p[batch] ≤ 0`, only 1 token with the maximum logit value is retained for the current batch.
     - When `top_p[batch]` falls within the valid range (0, 1), standard top-P sampling is performed for the current batch.
     - When `top_p[batch] ≥ 1`, the top-P stage is skipped for the corresponding batch. The entire batch information is extracted, and an all-ones mask is generated as the output.
-- **`q`** (`Tensor`): Optional. Random sampling weight distribution matrix for the top-K-top-P sampling output. The data type can be `float32`. The data layout can be ND. Non-contiguous tensors are supported. The default value is `None`. When `None` is provided, subsequent sampling is skipped, and `logits_select_idx` is computed directly from `probs`.
+- **`q`** (`Tensor`): Optional. Random sampling weight distribution matrix for the top-K-top-P sampling output. The data type can be `torch.float32`. The data layout can be ND. Non-contiguous tensors are supported. The default value is `None`. When `None` is provided, subsequent sampling is skipped, and `logits_select_idx` is computed directly from `probs`.
     - The constraints on this parameter depend on the `post_sample` mode:
-    - When `post_sample = "qSample"`, the shape must be `[batch, voc_size]`, the data type must be `float32`, and the exponential distribution sampling matrix must have dimensions identical to those of `logits`.
-    - When `post_sample = "multiNomial"`, `q` represents the multiNomial random sampling parameter matrix used to provide control parameters for `aclnnMultinomial` sampling. The data type must be `int64`. The valid shape is `[q_row, 2]`, where $q\_row \ge 1$.
+    - When `post_sample = "qSample"`, the shape must be `[batch, voc_size]`, the data type must be `torch.float32`, and the exponential distribution sampling matrix must have dimensions identical to those of `logits`.
+    - When `post_sample = "multiNomial"`, `q` represents the multiNomial random sampling parameter matrix used to provide control parameters for `aclnnMultinomial` sampling. The data type must be `torch.int64`. The valid shape is `[q_row, 2]`, where $q\_row \ge 1$.
         - The 1st column corresponds to the `aclnnMultinomial.seed` parameter, representing the random seed for the current batch.
         - The 2nd column corresponds to the `aclnnMultinomial.offset` parameter, representing the offset of the random number generator, which affects the starting position of the generated random number sequence. After the offset is set, the generated random number sequence starts from the specified position.
         - If `q_row < batch`, the sampling parameters of the last row are used by default as the multiNomial sampling parameters for all subsequent batches.
@@ -328,8 +328,8 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 
 ## Return Values
 
-- **`logits_select_idx`** (`Tensor`): Indicates the position index in the input `logits` of the element with the maximum logit value, `max(probs_opt[batch, :])`, for each batch after the top-K-top-P sampling computation process. The data type can be `int64`. The data layout can be ND.
-- **`logits_top_kp_select`** (`Tensor`): Filtering result for high-frequency tokens in the original input `logits`, obtained by applying the mask generated through top-K-top-P-min-P sampling. This output is computed and transferred only when `is_need_logits` is set to `True`; otherwise, an empty tensor of the corresponding size is returned. The data type can be `float32`. The data layout can be `ND`.
+- **`logits_select_idx`** (`Tensor`): Indicates the position index in the input `logits` of the element with the maximum logit value, `max(probs_opt[batch, :])`, for each batch after the top-K-top-P sampling computation process. The data type can be `torch.int64`. The data layout can be ND.
+- **`logits_top_kp_select`** (`Tensor`): Filtering result for high-frequency tokens in the original input `logits`, obtained by applying the mask generated through top-K-top-P-min-P sampling. This output is computed and transferred only when `is_need_logits` is set to `True`; otherwise, an empty tensor of the corresponding size is returned. The data type can be `torch.float32`. The data layout can be `ND`.
 
 ## Constraints
 

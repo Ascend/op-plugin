@@ -30,7 +30,7 @@
   - `x2`是矩阵乘matmul的右矩阵。
   - `x3`是向量计算的矩阵，当`fused_op_type`是`"add"`和`"mul"`时生效。
   - `bias`是矩阵乘的偏置。
-  - `fused_op_type`是输入的string类型，支持`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为FP32，当输入FP16、BF16时会把输出转成FP32）、`"mul"`、`"gelu_erf"`、`"gelu_tanh"`和`"relu"`。
+  - `fused_op_type`是输入的string类型，支持`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为`torch.float32`，当输入`torch.float16`、`torch.bfloat16`时会把输出转成`torch.float32`）、`"mul"`、`"gelu_erf"`、`"gelu_tanh"`和`"relu"`。
 
 ## 函数原型
 
@@ -65,7 +65,7 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型必须和输入的`x1`保持一致。
   <!-- end id5 -->
 
-- **fused_op_type**(`str`)：必选参数，表示算子融合类型。支持取值：`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为FP32，当输入FP16、BF16时会把输出转成FP32）、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。
+- **fused_op_type**(`str`)：必选参数，表示算子融合类型。支持取值：`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为`torch.float32`，当输入`torch.float16`、`torch.bfloat16`时会把输出转成`torch.float32`）、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。
 
   <!-- npu="950" id6 -->
   - <term>Ascend 950PR&950DT系列产品</term>：支持取值`""`、`"16cast32"`、`"add"`、`"mul"`、`"gelu_tanh"`、`"gelu_erf"`和`"relu"`。

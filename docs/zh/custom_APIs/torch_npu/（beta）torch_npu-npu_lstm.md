@@ -27,12 +27,12 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## 参数说明
 
-- **x** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **weight** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **bias** (`Tensor`)：1D张量。数据类型支持`float16`，`float32`；格式支持ND。
-- **seqMask** (`Tensor`)：张量。仅支持FRACTAL_NZ格式的`float16`和ND格式的`int32`类型。
-- **h** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **c** (`Tensor`)： 4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
+- **x** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **weight** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **bias** (`Tensor`)：1D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持ND。
+- **seqMask** (`Tensor`)：张量。仅支持FRACTAL_NZ格式的`torch.float16`和ND格式的`torch.int32`类型。
+- **h** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **c** (`Tensor`)： 4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
 - **has_biases** (`bool`)：如果值为True，则存在偏置。
 - **num_layers** (`int`)：循环层数，目前只支持单层。
 - **dropout** (`float`)：如果值为非零，则在除去最后一层以外的每个LSTM层的输出上引入一个dropout层，丢弃概率等于dropout参数值。目前不支持。
@@ -44,11 +44,11 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## 输出说明
 
-- **y** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **output_h** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **output_c** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`；格式支持FRACTAL_NZ。
-- **i** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
-- **j** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
-- **f** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
-- **o** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
-- **tanhct** (`Tensor`)：4D张量。数据类型支持`float16`，`float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+- **y** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **output_h** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **output_c** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`；格式支持FRACTAL_NZ。
+- **i** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+- **j** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+- **f** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+- **o** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+- **tanhct** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。

@@ -28,8 +28,8 @@ torch_npu.npu_slice(self, offsets, size) -> Tensor
 ## Parameters
 
 - **`self`** (`Tensor`): Input tensor.
-- **`offsets`** (`List[int]`): The data type can be `int32` or `int64`.
-- **`size`** (`List[int]`): The data type can be `int32` or `int64`.
+- **`offsets`** (`List[int]`): The data type can be `torch.int32` or `torch.int64`.
+- **`size`** (`List[int]`): The data type can be `torch.int32` or `torch.int64`.
 
 ## Example
 

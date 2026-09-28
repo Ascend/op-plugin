@@ -246,7 +246,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </tr>
 <tr id="row174651448111817"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p946574881819"><a name="p946574881819"></a><a name="p946574881819"></a><a href="(beta)torch_npu-npu-get_autocast_dtype.md">(beta) torch_npu.npu.get_autocast_dtype</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p19465848131818"><a name="p19465848131818"></a><a name="p19465848131818"></a>Obtains the data types supported by the device in the <code>AMP</code> scenario. This <code>dtype</code> is specified by <code>torch_npu.npu.set_autocast_dtype</code>. If omitted, the default data type <code>torch.float16</code> is used.</p>
+<td class="cellrowborder" valign="top" width="62.33%" headers="mcps1.2.3.1.2 "><p id="p19465848131818"><a name="p19465848131818"></a><a name="p19465848131818"></a>Obtains the data types supported by the device in the <code>AMP</code> scenario. This <code>dtype</code> is specified by <code>torch_npu.npu.set_autocast_dtype</code>. If omitted, the default data type <code>`torch.float16`</code> is used.</p>
 </td>
 </tr>
 <tr id="row1846564819185"><td class="cellrowborder" valign="top" width="37.669999999999995%" headers="mcps1.2.3.1.1 "><p id="p146584811184"><a name="p146584811184"></a><a name="p146584811184"></a><a href="(beta)torch_npu-npu-set_autocast_dtype.md">(beta) torch_npu.npu.set_autocast_dtype</a></p>

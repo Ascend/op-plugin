@@ -24,7 +24,7 @@
     `x1`（即`input`）代表Matmul计算的左矩阵，`x2`代表Matmul计算的右矩阵，`bias`代表Matmul计算的偏置。场景由`comm_mode`与`input`数据类型共同决定：
 
     <!-- npu="A3,910b" id5 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`comm_mode`为`ai_cpu`时，始终为基础场景；`comm_mode`为`aiv`（aiv模式下使用AI Vector核完成通信任务）时，`input`为`float16`或`bfloat16`走基础场景，`input`为`int8`走量化场景。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`comm_mode`为`ai_cpu`时，始终为基础场景；`comm_mode`为`aiv`（aiv模式下使用AI Vector核完成通信任务）时，`input`为`torch.float16`或`torch.bfloat16`走基础场景，`input`为`torch.int8`走量化场景。
     <!-- end id5 -->
     <!-- npu="950" id6 -->
     - <term>Ascend 950PR&950DT系列产品</term>：仅支持基础场景。
@@ -67,7 +67,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **input**（`Tensor`）：**必选参数**，表示Matmul计算的左矩阵输入。数据格式支持$ND$，输入shape支持2维，形如\(m, k\)。
 
     <!-- npu="A3,910b" id7 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float16`、`bfloat16`、`int8`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
     <!-- end id7 -->
     <!-- npu="950" id8 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`。
@@ -109,7 +109,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **x1\_scale**（`Tensor`）：**可选参数**，mm左矩阵反量化参数。数据维度为\(m, 1\)，支持pertoken量化。数据格式支持$ND$。
 
     <!-- npu="A3,910b" id16 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。
     <!-- end id16 -->
     <!-- npu="950" id17 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
@@ -118,14 +118,14 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 - **x2\_scale**（`Tensor`）：**可选参数**，mm右矩阵反量化参数。数据维度为\(1, n\)，支持perchannel量化。数据格式支持$ND$。
 
     <!-- npu="A3,910b" id18 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`、`int64`。如需传入`int64`数据类型，需要提前调用torch_npu.npu_trans_quant_param来获取`int64`数据类型的`x2_scale`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.int64`。如需传入`torch.int64`数据类型，需要提前调用torch_npu.npu_trans_quant_param来获取`torch.int64`数据类型的`x2_scale`。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
     <!-- end id19 -->
 
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
-- **output\_dtype**（`ScalarType`）：**可选参数**，表示输出数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`float32`时，可指定输出数据类型为`bfloat16`或`float16`，默认值为`bfloat16`。
+- **output\_dtype**（`ScalarType`）：**可选参数**，表示输出数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`torch.float32`时，可指定输出数据类型为`torch.bfloat16`或`torch.float16`，默认值为`torch.bfloat16`。
 
     <!-- npu="950" id20 -->
     - <term>Ascend 950PR&950DT系列产品</term>：**暂不支持该参数。**
@@ -147,7 +147,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 输出shape为\(m // world\_size, n\)。
 
 <!-- npu="A3,910b" id23 -->
-- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`int64`时，输出数据类型为`float16`；当`x1_scale`和`x2_scale`均为`float32`时，输出数据类型由`output_dtype`指定，默认为`bfloat16`。
+- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：基础场景下，数据类型和`input`保持一致。量化场景下，当`x2_scale`为`torch.int64`时，输出数据类型为`torch.float16`；当`x1_scale`和`x2_scale`均为`torch.float32`时，输出数据类型由`output_dtype`指定，默认为`torch.bfloat16`。
 <!-- end id23 -->
 <!-- npu="950" id24 -->
 - <term>Ascend 950PR&950DT系列产品</term>：仅支持基础场景，数据类型和`input`保持一致。
@@ -173,28 +173,28 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
     - 场景：基础场景
     - `comm_mode`：`ai_cpu` 
-    - `input`数据类型：`float16` / `bfloat16`
+    - `input`数据类型：`torch.float16` / `torch.bfloat16`
     - 是否支持：支持
   <!-- end id27 -->
   <!-- npu="A3,910b" id28 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
     - 场景：量化场景
     - `comm_mode`：`ai_cpu` 
-    - `input`数据类型：`int8`
+    - `input`数据类型：`torch.int8`
     - 是否支持：不支持
   <!-- end id28 -->
   <!-- npu="A3,910b" id29 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
     - 场景：基础场景
     - `comm_mode`：`aiv` 
-    - `input`数据类型：`float16` / `bfloat16`
+    - `input`数据类型：`torch.float16` / `torch.bfloat16`
     - 是否支持：支持
   <!-- end id29 -->
   <!-- npu="A3,910b" id30 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
     - 场景：量化场景
     - `comm_mode`：`aiv` 
-    - `input`数据类型：`int8`
+    - `input`数据类型：`torch.int8`
     - 是否支持：支持
   <!-- end id30 -->
   <!-- npu="950" id31 -->
@@ -217,10 +217,10 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
     |  场景   |  `x1_scale`  | `x2_scale`  |     输出数据类型 |
     | ------- | ---------- | --------- |   ----------- |
     | 基础场景 |    不传    |  不传     |   与`input`一致 |
-    | 量化场景 |  不传      | `float32` |  由`output_dtype`指定，默认`bfloat16` |
-    | 量化场景 | `float32` | `float32` |  由`output_dtype`指定，默认`bfloat16` |
-    | 量化场景 | `float32` |  `int64`  |  由`output_dtype`指定，默认`bfloat16` |
-    | 量化场景 |  不传     |  `int64`  |   由`output_dtype`指定，默认`bfloat16` |
+    | 量化场景 |  不传      | `torch.float32` |  由`output_dtype`指定，默认`torch.bfloat16` |
+    | 量化场景 | `torch.float32` | `torch.float32` |  由`output_dtype`指定，默认`torch.bfloat16` |
+    | 量化场景 | `torch.float32` |  `torch.int64`  |  由`output_dtype`指定，默认`torch.bfloat16` |
+    | 量化场景 |  不传     |  `torch.int64`  |   由`output_dtype`指定，默认`torch.bfloat16` |
 <!-- end id33 -->
 
 ## 调用示例

@@ -35,10 +35,10 @@ torch_npu.npu_fast_gelu(input) -> Tensor
 
 **`input`** (`Tensor`): $x$ in the formula. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 8D. Empty tensors are supported.
 
-- Atlas training products: The data type can be `float16` or `float32`.
-- Atlas A2 training products/Atlas A2 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
-- Atlas A3 training products/Atlas A3 inference products: The data type can be `float16`, `float32`, or `bfloat16`.
-- Atlas inference products: The data type must be `float16` or `float32`.
+- Atlas training products: The data type can be `torch.float16` or `torch.float32`.
+- Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+- Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+- Atlas inference products: The data type must be `torch.float16` or `torch.float32`.
 
 ## Return Values
 

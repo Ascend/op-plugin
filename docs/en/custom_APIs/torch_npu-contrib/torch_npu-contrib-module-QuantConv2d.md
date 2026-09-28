@@ -29,7 +29,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - **`in_channels`** (`int`): Required. Number of input channels of `Conv2d`.
 - **`out_channels`** (`int`): Required. Number of output channels of `Conv2d`.
 - **`kernel_size`** (`int`/`tuple`): Required. Size of the convolution kernel. It can be provided as a single value or a 2D tuple. The value range of `kernel_size` is [1, 255].
-- **`output_dtype`** (`torch.dtype`): Required. Output data type. Currently, only `float16` is supported.
+- **`output_dtype`** (`torch.dtype`): Required. Output data type. Currently, only `torch.float16` is supported.
 - **`stride`** (`int`/`tuple`): Optional. Stride of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. The value range of `stride` is [1, 63].
 - **`padding`** (`int`/`tuple`): Optional. Padding of `Conv2d`. The default value is `0`. It can be provided as a single value or a 2D tuple. The value range of `padding` is [0, 255].
 - **`dilation`** (`int`/`tuple`): Optional. Dilation of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. The value range of `dilation` is [1, 255].
@@ -48,13 +48,13 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 **Computation Input**
 
-**`quant_conv2d_input`** (`Tensor`): The data type can be `int8`. The data layout can be NCHW. The shape must have four dimensions.
+**`quant_conv2d_input`** (`Tensor`): The data type can be `torch.int8`. The data layout can be NCHW. The shape must have four dimensions.
 
 ## Variable Description
 
-- **`weight`** (`Tensor`): The data type can be `int8`. The data layout can be NCHW. This parameter must be 4D.
-- **`scale`** (`Tensor`): The data type can be `float32` or `int64`. The data layout can be ND. This parameter must be 1D with shape `(n,)`, where `n` matches the `out_channels` of `weight`.
-- **`bias`** (`Tensor`): Optional. The data type can be `int32`. The data layout can be ND. This parameter must be 1D with shape `(n,)`, where `n` matches the `out_channels` of `weight`.
+- **`weight`** (`Tensor`): The data type can be `torch.int8`. The data layout can be NCHW. This parameter must be 4D.
+- **`scale`** (`Tensor`): The data type can be `torch.float32` or `torch.int64`. The data layout can be ND. This parameter must be 1D with shape `(n,)`, where `n` matches the `out_channels` of `weight`.
+- **`bias`** (`Tensor`): Optional. The data type can be `torch.int32`. The data layout can be ND. This parameter must be 1D with shape `(n,)`, where `n` matches the `out_channels` of `weight`.
 
 ## Output Description
 
@@ -62,7 +62,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 Computation result of QuantConv2d.
 
-- If `output_dtype` is `"float16"`, the output data type is `float16`.
+- If `output_dtype` is `"float16"`, the output data type is `torch.float16`.
 - Other data types are not supported.
 
 ## Constraints

@@ -14,7 +14,7 @@
     - `pertoken` quantization: For activation tensors, independent quantization parameters are maintained for each token along the sequence length dimension (`Sequence Length / Token`).
 
 - Calculation formulas:  
-    $x_1$ represents the input `input`. The scenario is determined jointly by `comm_mode` and the data type of `x1`: when `comm_mode` is `ai_cpu`, the basic scenario always applies; when `comm_mode` is `aiv`, the basic scenario applies if `x1` is `float16` or `bfloat16`, and the quantization scenario applies if `x1` is `int8`.
+    $x_1$ represents the input `input`. The scenario is determined jointly by `comm_mode` and the data type of `x1`: when `comm_mode` is `ai_cpu`, the basic scenario always applies; when `comm_mode` is `aiv`, the basic scenario applies if `x1` is `torch.float16` or `torch.bfloat16`, and the quantization scenario applies if `x1` is `torch.int8`.
 
     - Basic scenario:
         $$
@@ -47,7 +47,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. The data type can be `float16`, `bfloat16`, or `int8`. The data layout can be ND. This parameter must be 2D with shape `(m, k)`.
+- **`input`** (`Tensor`): Required. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. This parameter must be 2D with shape `(m, k)`.
 - **`x2`** (`Tensor`): Required. The data type must be identical to that of `input`. The data layout can be `ND` or `NZ`. `NZ` is supported only when `comm_mode` is set to `aiv`. This parameter must be 2D with shape `(k, n)`. The axes must satisfy the input requirements of the MatMul operator, with the `k` dimensions equal (that is, the last dimension of `input` must equal the first dimension of `x2`). The value of `k` must be in the range `[256, 65535)`, and the `m` dimension of `input` must be divisible by `world_size`.
 - **`hcom`** (`str`): Required. Communicator handle name obtained by calling the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
@@ -56,11 +56,11 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`reduce_op`** (`str`): Optional. Type of the reduce operation. Only the default value `'sum'` is supported.
-- **`bias`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. The data type must be identical to that of `input`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. In the current version, non-zero `bias` inputs are not supported.
-- **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix of the MatMul operation. The data type can be `float32`. The data layout can be ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
-- **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix of the MatMul operation. The data type can be `float32` or `int64`. The data layout can be ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `int64` `x2_scale`.
+- **`bias`** (`Tensor`): Optional. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The data type must be identical to that of `input`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. In the current version, non-zero `bias` inputs are not supported.
+- **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix of the MatMul operation. The data type can be `torch.float32`. The data layout can be ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
+- **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix of the MatMul operation. The data type can be `torch.float32` or `torch.int64`. The data layout can be ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `torch.int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `torch.int64` `x2_scale`.
 - **`comm_turn`** (`int`): Optional. Communication splitting granularity between ranks. The default value is `0`, indicating the default splitting mode. Currently, only the value `0` is supported.
-- **`output_dtype`** (`ScalarType`): Optional. Output data type. This parameter can be specified as `bfloat16` or `float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `float32`. The default value is `bfloat16`.
+- **`output_dtype`** (`ScalarType`): Optional. Output data type. This parameter can be specified as `torch.bfloat16` or `torch.float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `torch.float32`. The default value is `torch.bfloat16`.
 - **`comm_mode`** (`str`): Optional. Communication mode. Valid values are `ai_cpu` or `aiv`. The `ai_cpu` mode supports only the basic scenario. The `aiv` mode supports both the basic scenario and the quantization scenario. The default value is `ai_cpu`.
 
 ## Return Values
@@ -69,7 +69,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 The shape of the output tensor is `(m // world_size, n)`.
 In the basic scenario, the output data type is identical to that of `input`.
-In quantization scenarios, if the data type of `x2_scale` is `int64`, the output data type is `float16`. If both `x1_scale` and `x2_scale` are `float32`, the output data type is specified by `output_dtype`, and the default value is `bfloat16`.
+In quantization scenarios, if the data type of `x2_scale` is `torch.int64`, the output data type is `torch.float16`. If both `x1_scale` and `x2_scale` are `torch.float32`, the output data type is specified by `output_dtype`, and the default value is `torch.bfloat16`.
 
 ## Constraints
 
@@ -86,20 +86,20 @@ In quantization scenarios, if the data type of `x2_scale` is `int64`, the output
 
 | Scenario | `comm_mode` | `input` Data Type | Supported |
 | --- | --- | --- | --- |
-| Basic scenario | `ai_cpu` | `float16` / `bfloat16` | Yes |
-| Quantization scenario | `ai_cpu` | `int8` | No |
-| Basic scenario | `aiv` | `float16` / `bfloat16` | Yes |
-| Quantization scenario | `aiv` | `int8` | Yes |
+| Basic scenario | `ai_cpu` | `torch.float16` / `torch.bfloat16` | Yes |
+| Quantization scenario | `ai_cpu` | `torch.int8` | No |
+| Basic scenario | `aiv` | `torch.float16` / `torch.bfloat16` | Yes |
+| Quantization scenario | `aiv` | `torch.int8` | Yes |
 
 - **Scale Parameter Combination Constraints**
 
 | Scenario | `x1_scale` | `x2_scale` | Output Data Type |
 | --- | --- | --- | --- |
 | Basic scenario | Not provided | Not provided | Same as `input` |
-| Quantization scenario | Not provided | `float32` | Specified by `output_dtype`; defaults to `bfloat16` |
-| Quantization scenario | `float32` | `float32` | Specified by `output_dtype`; defaults to `bfloat16` |
-| Quantization scenario | `float32` | `int64` | Specified by `output_dtype`; defaults to `bfloat16` |
-| Quantization scenario | Not provided | `int64` | Specified by `output_dtype`; defaults to `bfloat16` |
+| Quantization scenario | Not provided | `torch.float32` | Specified by `output_dtype`; defaults to `torch.bfloat16` |
+| Quantization scenario | `torch.float32` | `torch.float32` | Specified by `output_dtype`; defaults to `torch.bfloat16` |
+| Quantization scenario | `torch.float32` | `torch.int64` | Specified by `output_dtype`; defaults to `torch.bfloat16` |
+| Quantization scenario | Not provided | `torch.int64` | Specified by `output_dtype`; defaults to `torch.bfloat16` |
 
 ## Examples
 

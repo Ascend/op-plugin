@@ -23,7 +23,7 @@ This member function can be called only on NPU `Event` objects.
 
 ## Return Values
 
-- An integer (`uint64`) representing the recorded timestamp in microseconds.
+- An integer (`torch.uint64`) representing the recorded timestamp in microseconds.
 
 - If "INTERNALError" is returned, it indicates that the `Event` object must be recorded before its timestamp is obtained.
 

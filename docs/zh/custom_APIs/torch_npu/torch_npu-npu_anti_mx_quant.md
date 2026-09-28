@@ -25,7 +25,7 @@ torch_npu.npu_anti_mx_quant(x, mxscale, *, axis=-1, dst_type=15, src_type=292) -
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，待反量化的输入Tensor。数据类型支持`torch_npu.float4_e2m1`、`torch_npu.float4_e1m2`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式支持ND。当前shape支持1-7维。`torch.float8`输入时，`x`的数据类型为对应的`torch.float8`类型，支持非连续的Tensor；`torch_npu.float4`输入时，`x`的实际数据类型为`torch.uint8`（每两个`float4`数据打包为一个`uint8`，shape的最后一维为真实元素个数的一半），不支持非连续的Tensor。
+- **x**（`Tensor`）：必选参数，待反量化的输入Tensor。数据类型支持`torch_npu.float4_e2m1`、`torch_npu.float4_e1m2`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式支持ND。当前shape支持1-7维。`torch.float8`输入时，`x`的数据类型为对应的`torch.float8`类型，支持非连续的Tensor；`torch_npu.float4`输入时，`x`的实际数据类型为`torch.uint8`（每两个`float4`数据打包为一个`torch.uint8`，shape的最后一维为真实元素个数的一半），不支持非连续的Tensor。
 - **mxscale**（`Tensor`）：必选参数，参与反量化计算的量化尺度，由`npu_dynamic_mx_quant`输出得到。数据类型为`torch_npu.float8_e8m0`（实际存储数据类型为`torch.uint8`），数据格式支持ND。当前shape支持2-8维。
 - **\***：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **axis**（`int`）：可选参数，指定反量化轴。当前仅支持尾轴，即取值为`-1`或`D-1`，其中`D`为输入`x`的维度数，默认值为`-1`。

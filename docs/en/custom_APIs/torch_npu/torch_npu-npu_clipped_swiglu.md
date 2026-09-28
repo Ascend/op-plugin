@@ -78,9 +78,9 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Target input tensor. The data type can be `float16`, `bfloat16`, or `float32`. Non-contiguous tensors are not supported. The data layout can be ND. `x` must have more than one dimension, and the size of the `dim` axis must be even.
+- **`x`** (`Tensor`): Required. Target input tensor. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. Non-contiguous tensors are not supported. The data layout can be ND. `x` must have more than one dimension, and the size of the `dim` axis must be even.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`group_index`** (`Tensor`): Optional. Grouping configuration of `x`. This parameter must be 1D, where the $i$-th element represents the number of tokens in the $i$-th group of `x` after axis fusion. The data type can be `int64`. The data layout can be ND. The default value is `None`, indicating that no grouping processing is applied to `x`.
+- **`group_index`** (`Tensor`): Optional. Grouping configuration of `x`. This parameter must be 1D, where the $i$-th element represents the number of tokens in the $i$-th group of `x` after axis fusion. The data type can be `torch.int64`. The data layout can be ND. The default value is `None`, indicating that no grouping processing is applied to `x`.
 - **`dim`** (`int`): Optional. Dimension index along which `x` is split. The value range is `[-x.dim(), x.dim() - 1]`. The default value is `-1`.
 - **`alpha`** (`float`): Optional. GLU activation function coefficient. The default value is `1.702`.
 - **`limit`** (`float`): Optional. Input threshold limit for the variant SwiGLU. The default value is `7.0`.
@@ -91,7 +91,7 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 
 `Tensor`
 
-Output of the activation function, $y$ in the formula. The data type must be identical to that of `x`. Regarding its shape, the dimension size along the `dim` axis is exactly half (`1/2`) that of `x`, while all other dimensions remain identical to those of `x`. The data layout can be ND.
+Output of the activation function, $y$ in the formula. The data type must be identical to that of `x`. Regarding its shape, the dimension size along the `dim` axis is exactly `torch.half` (`1/2`) that of `x`, while all other dimensions remain identical to those of `x`. The data layout can be ND.
 
 ## Constraints
 

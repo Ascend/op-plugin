@@ -24,8 +24,8 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 
 ## Parameters
 
-- **`anchor_box`** (`Tensor`): Required. Input tensor. Anchor boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `float32`. `N` indicates the number of bounding boxes, and `4` indicates `x0`, `x1`, `y0`, and `y1`.
-- **`ground_truth_box`** (`Tensor`): Required. Input tensor. Ground-truth boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `float32`. `N` indicates the number of bounding boxes, and `4` indicates `x0`, `x1`, `y0`, and `y1`.
+- **`anchor_box`** (`Tensor`): Required. Input tensor. Anchor boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `torch.float32`. `N` indicates the number of bounding boxes, and `4` indicates `x0`, `x1`, `y0`, and `y1`.
+- **`ground_truth_box`** (`Tensor`): Required. Input tensor. Ground-truth boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `torch.float32`. `N` indicates the number of bounding boxes, and `4` indicates `x0`, `x1`, `y0`, and `y1`.
 - **`means0`** (`float`): Offset value for `x0`.
 - **`means1`** (`float`): Offset value for `y0`.
 - **`means2`** (`float`): Offset value for `x1`.
@@ -39,7 +39,7 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 
 `Tensor`
 
-Output tensor representing the encoded coordinate tensor with shape `(N, 4)`, where 4 indicates `x0`, `y0`, `x1`, and `y1`. The data type is `float32`.
+Output tensor representing the encoded coordinate tensor with shape `(N, 4)`, where 4 indicates `x0`, `y0`, `x1`, and `y1`. The data type is `torch.float32`.
 
 ## Example
 

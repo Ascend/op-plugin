@@ -33,22 +33,22 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `float16` or `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. The dimension of input `x` must be greater than 1. During int4 quantization, the last dimension of `x` must be a multiple of 8.
+- **`x`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. The dimension of input `x` must be greater than 1. During `torch_npu.int4` quantization, the last dimension of `x` must be a multiple of 8.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`smooth_scales`** (`Tensor`): Optional. A tensor that provides scaling factors (`scales`). The data type can be `float16` or `bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`smooth_scales`** (`Tensor`): Optional. A tensor that provides scaling factors (`scales`). The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
     - In non-MoE scenarios, this parameter must be 1D and match the last dimension of `x`.
     - In MoE scenarios, this parameter must be 2D with shape `[E, H]`, where `E` indicates the number of experts ranging from 1 to 1024 (matching the first dimension of `group_index`), and `H` indicates the last dimension of `x`.
     - In single-operator mode, the `dtype` of `smooth_scales` must match that of `x`. In graph mode, they can be different.
-- **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales` (representing the row index of `x`), valid only in MoE scenarios. The data type can be `int32`. The data layout can be ND. Non-contiguous tensors are supported. The shape must be `[E,]`, where `E` ranges from 1 to 1024 and matches the first dimension of `smooth_scales`. The tensor values must be strictly incrementing within the range [1, S], and the last value must equal `S` (`S` indicates the number of rows in the input `x`, which is the product of the dimensions of `x` except the last dimension).
-- **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `int8` if `None` is provided.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `int8` or `quint4x2`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `int8` or `quint4x2`.
+- **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales` (representing the row index of `x`), valid only in MoE scenarios. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported. The shape must be `[E,]`, where `E` ranges from 1 to 1024 and matches the first dimension of `smooth_scales`. The tensor values must be strictly incrementing within the range [1, S], and the last value must equal `S` (`S` indicates the number of rows in the input `x`, which is the product of the dimensions of `x` except the last dimension).
+- **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `torch.int8` if `None` is provided.
+    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8` or `torch.quint4x2`.
+    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8` or `torch.quint4x2`.
 
 ## Return Values
 
-- **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `quint4x2`, the data type of `y` is `int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `int32` element contains eight `int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
-- **`scale`** (`Tensor`): Scaling factors calculated during the asymmetric dynamic quantization process. The data type can be `float32`. In `pertoken` mode, the shape is the shape of `x` with its last dimension removed.
-- **`offset`** (`Tensor`): Offset factor calculated during the asymmetric dynamic quantization process. The data type can be `float32`, and its shape must match that of `scale`.
+- **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `torch.quint4x2`, the data type of `y` is `torch.int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `torch.int32` element contains eight `torch_npu.int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
+- **`scale`** (`Tensor`): Scaling factors calculated during the asymmetric dynamic quantization process. The data type can be `torch.float32`. In `pertoken` mode, the shape is the shape of `x` with its last dimension removed.
+- **`offset`** (`Tensor`): Offset factor calculated during the asymmetric dynamic quantization process. The data type can be `torch.float32`, and its shape must match that of `scale`.
 
 ## Constraints
 
@@ -59,7 +59,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
 ## Examples
 
 - Single-operator call
-    - Perform `int8` quantization with only one input `x`.
+    - Perform `torch.int8` quantization with only one input `x`.
 
         ```python
         import torch
@@ -69,7 +69,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `int4` quantization with only one input `x`.
+    - Perform `torch_npu.int4` quantization with only one input `x`.
 
         ```python
         import torch
@@ -79,7 +79,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `int8` quantization with the `smooth_scales` input in non-MoE scenarios (without using `group_index`).
+    - Perform `torch.int8` quantization with the `smooth_scales` input in non-MoE scenarios (without using `group_index`).
 
         ```python
         import torch
@@ -90,7 +90,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `int8` quantization with the `smooth_scales` input in MoE scenarios (using `group_index`).
+    - Perform `torch.int8` quantization with the `smooth_scales` input in MoE scenarios (using `group_index`).
 
         ```python
         import torch

@@ -194,12 +194,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row68411842121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384134221114"><a name="p1384134221114"></a><a name="p1384134221114"></a><a href="(beta)torch_npu-npu_sign_bits_pack.md">(beta)torch_npu.npu_sign_bits_pack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p484114213112"><a name="p484114213112"></a><a name="p484114213112"></a>Packs float-type 1-bit Adam parameters into uint8.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p484114213112"><a name="p484114213112"></a><a name="p484114213112"></a>Packs float-type 1-bit Adam parameters into `torch.uint8`.</p>
 </td>
 </tr>
 <tr id="row128412042131111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p784116424113"><a name="p784116424113"></a><a name="p784116424113"></a><a href="(beta)torch_npu-npu_sign_bits_unpack.md">(beta)torch_npu.npu_sign_bits_unpack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>Unpacks uint8-type 1-bit Adam parameters into float.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>Unpacks `torch.uint8`-type 1-bit Adam parameters into float.</p>
 </td>
 </tr>
 <tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="(beta)torch_npu-npu_slice.md">(beta)torch_npu.npu_slice</a></p>
@@ -289,7 +289,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_anti_quant.md">torch_npu.npu_anti_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001850161621_p0996174814315"><a name="en-us_topic_0000001850161621_p0996174814315"></a><a name="en-us_topic_0000001850161621_p0996174814315"></a>Dequantizes <code>int4</code> or <code>int8</code> data into <code>float16</code> or <code>bfloat16</code> data. When the input data type is <code>int4</code>, every eight elements are treated as one <code>int32</code> element.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001850161621_p0996174814315"><a name="en-us_topic_0000001850161621_p0996174814315"></a><a name="en-us_topic_0000001850161621_p0996174814315"></a>Dequantizes <code>`torch_npu.int4`</code> or <code>`torch.int8`</code> data into <code>`torch.float16`</code> or <code>`torch.bfloat16`</code> data. When the input data type is <code>`torch_npu.int4`</code>, every eight elements are treated as one <code>`torch.int32`</code> element.</p>
 </td>
 </tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_attention_to_ffn.md">torch_npu.npu_attention_to_ffn</a></p>
@@ -314,7 +314,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row16527145114477"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1338142581"><a name="p1338142581"></a><a name="p1338142581"></a><a href="torch_npu-npu_convert_weight_to_int4pack.md">torch_npu.npu_convert_weight_to_int4pack</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>Packs an <code>int32</code> input tensor into the <code>int4</code> data type. Every eight <code>int4</code> elements are carried by a single <code>int32</code> element and stored in an interleaved format.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16338242582"><a name="p16338242582"></a><a name="p16338242582"></a>Packs an <code>`torch.int32`</code> input tensor into the <code>`torch_npu.int4`</code> data type. Every eight <code>`torch_npu.int4`</code> elements are carried by a single <code>`torch.int32`</code> element and stored in an interleaved format.</p>
 </td>
 </tr>
 <tr id="row194591911194818"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p633812455816"><a name="p633812455816"></a><a name="p633812455816"></a><a href="torch_npu-npu_dynamic_quant.md">torch_npu.npu_dynamic_quant</a></p>
@@ -464,7 +464,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_quant_lightning_indexer.md">torch_npu.npu_quant_lightning_indexer</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Performs preprocessing computation for SparseFlashAttention (SFA) in inference scenarios. This API selects key sparse tokens and quantizes the input <code>query</code> and <code>key</code> to implement INT8 storage and INT8 computation to maximize performance gains.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Performs preprocessing computation for SparseFlashAttention (SFA) in inference scenarios. This API selects key sparse tokens and quantizes the input <code>query</code> and <code>key</code> to implement `torch.int8` storage and `torch.int8` computation to maximize performance gains.</p>
 </td>
 </tr>
 <tr id="row9719124019218"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p14326218132919"><a name="p14326218132919"></a><a name="p14326218132919"></a><a href="torch_npu-npu_quant_matmul.md">torch_npu.npu_quant_matmul</a></p>
@@ -604,7 +604,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_swiglu_quant.md">torch_npu.npu_swiglu_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Adds a quantization operation after the SwiGLU activation function to perform <code>SwiGluQuant</code> computation on the input <code>x</code>. This API supports <code>int8</code> or <code>int4</code> quantized outputs, MoE and non-MoE scenarios (when <code>group_index</code> is omitted), group quantization, and dynamic or static quantization.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Adds a quantization operation after the SwiGLU activation function to perform <code>SwiGluQuant</code> computation on the input <code>x</code>. This API supports <code>`torch.int8`</code> or <code>`torch_npu.int4`</code> quantized outputs, MoE and non-MoE scenarios (when <code>group_index</code> is omitted), group quantization, and dynamic or static quantization.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_dequant_swiglu_quant.md">torch_npu.npu_dequant_swiglu_quant</a></p>
@@ -775,7 +775,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr> 
 <tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p> 
 </td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiFP8 and outputs the quantization parameter <code>scale</code> (FP32).</span></p></td> 
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiFP8 and outputs the quantization parameter <code>scale</code> (`torch.float32`).</span></p></td>
 </tr> 
 <tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p> 
 </td> 

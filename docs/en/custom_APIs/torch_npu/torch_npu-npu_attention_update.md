@@ -41,14 +41,14 @@ torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 
 ## Parameters
 
-- **`lse`** (`List[Tensor]`): Required. Local `lse` values from each SP domain, $lse_i$ in the formulas. The length of the tensor list must equal `SP`. The shape of each tensor must be $(batch \times seqLen \times headNum)$. The data type can be `float32`. The data layout can be ND. Empty tensors are supported.
-- **`local_out`** (`List[Tensor]`): Required. Local attention outputs from each SP domain, $O_i$ in the formula. The length of the tensor list must equal `SP`. The shape of each tensor must be $(batch \times seqLen \times headNum, head\_dim)$. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. Empty tensors are supported.
+- **`lse`** (`List[Tensor]`): Required. Local `lse` values from each SP domain, $lse_i$ in the formulas. The length of the tensor list must equal `SP`. The shape of each tensor must be $(batch \times seqLen \times headNum)$. The data type can be `torch.float32`. The data layout can be ND. Empty tensors are supported.
+- **`local_out`** (`List[Tensor]`): Required. Local attention outputs from each SP domain, $O_i$ in the formula. The length of the tensor list must equal `SP`. The shape of each tensor must be $(batch \times seqLen \times headNum, head\_dim)$. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. Empty tensors are supported.
 - **`update_type`** (`int`): Required. Operation type to be executed. Valid values are `0` (outputs only the merged `out` tensor) or `1` (outputs both the merged `out` and `lse_out` tensors).
 
 ## Return Values
 
 - **`out`** (`Tensor`): Output tensor, $O$ in the formula. The shape must be $(batch \times seqLen \times headNum, head\_dim)$. The data type must be identical to the tensors within `local_out`. The data layout can be ND.
-- **`lse_out`** (`Tensor`): Optional output tensor, $lse_m$ in the formula. The shape must be $(batch \times seqLen \times headNum)$. The data type is `float32`. The data layout can be ND. This tensor is returned only when `update_type` is set to `1`.
+- **`lse_out`** (`Tensor`): Optional output tensor, $lse_m$ in the formula. The shape must be $(batch \times seqLen \times headNum)$. The data type is `torch.float32`. The data layout can be ND. This tensor is returned only when `update_type` is set to `1`.
 
 ## Constraints
 

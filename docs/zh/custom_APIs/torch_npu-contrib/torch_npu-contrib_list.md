@@ -220,7 +220,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1435227155218"><a name="p1435227155218"></a><a name="p1435227155218"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p3914125415512"><a name="p3914125415512"></a><a name="p3914125415512"></a>应用NPU兼容的dropout_with_byte_mask操作，仅支持NPU设备。这个dropout_with_byte_mask方法生成无状态随机uint8掩码，并根据掩码做dropout。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p3914125415512"><a name="p3914125415512"></a><a name="p3914125415512"></a>应用NPU兼容的dropout_with_byte_mask操作，仅支持NPU设备。这个dropout_with_byte_mask方法生成无状态随机`torch.uint8`掩码，并根据掩码做dropout。</p>
 </td>
 </tr>
 <tr id="row4342314612"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p23423113616"><a name="p23423113616"></a><a name="p23423113616"></a><a href="torch_npu-contrib-module-LinearQuant.md">torch_npu.contrib.module.LinearQuant</a></p>

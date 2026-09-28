@@ -46,11 +46,11 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 
 ## Parameters
 
-- **`key`** (`Tensor`): Required. Key values to be updated, which are the keys of multiple tokens in the current step. The shape must have 3 or 4 dimensions. The data type can be `float16`, `float`, `bfloat16`, `int8`, `uint8`, `int16`, `uint16`, `int32`, `uint32`, `hifloat8`, `float8_e5m2`, or `float8_e4m3fn`. The data layout can be ND.
+- **`key`** (`Tensor`): Required. Key values to be updated, which are the keys of multiple tokens in the current step. The shape must have 3 or 4 dimensions. The data type can be `torch.float16`, `torch.float`, `torch.bfloat16`, `torch.int8`, `torch.uint8`, `torch.int16`, `torch.uint16`, `torch.int32`, `torch.uint32`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data layout can be ND.
 - **`value`** (`Tensor`): Required. Value values to be updated, which are the values of multiple tokens in the current step. The shape must have 3 or 4 dimensions. The data type and data layout must be identical to those of `key`.
 - **`key_cache`** (`Tensor`): Required. Key cache to be updated, which is the key cache of the current layer. The shape must have 4 dimensions. The data type and data layout must be identical to those of `key`.
 - **`value_cache`** (`Tensor`): Required. Value cache to be updated, which is the value cache of the current layer. The shape must have 4 dimensions. The data type and data layout must be identical to those of `key`.
-- **`slot_mapping`** (`Tensor`): Required. Storage offsets of each token key or value in the cache. The data type can be `int32` or `int64`. The data layout can be ND.
+- **`slot_mapping`** (`Tensor`): Required. Storage offsets of each token key or value in the cache. The data type can be `torch.int32` or `torch.int64`. The data layout can be ND.
 - **`compress_lens`** (`Tensor`): Optional. Compression lengths. The data type must be identical to that of `slot_mapping`. The data layout can be ND. The default value is `None`.
 - **`compress_seq_offsets`** (`Tensor`): Optional. Compression start points for each head in each batch. The data type must be identical to that of `slot_mapping`. The data layout can be ND. The default value is `None`.
 - **`seq_lens`** (`Tensor`): Optional. Actual sequence lengths of each batch. The data type must be identical to that of `slot_mapping`. The data layout can be ND. The default value is `None`.

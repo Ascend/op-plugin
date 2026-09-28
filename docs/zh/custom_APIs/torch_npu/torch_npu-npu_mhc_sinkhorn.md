@@ -45,17 +45,17 @@ torch_npu.npu_mhc_sinkhorn(x, eps=1e-6, num_iters=20, out_flag=0) -> (Tensor, Te
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，待计算的张量，表示网络中mHC层的输入数据，数据类型支持`float32`，shape为\[B, S, n, n\]或\[T, n, n\]，数据格式支持ND，支持非连续Tensor，不支持空Tensor。shape的n仅支持4、6、8三个值。
-- **eps**（float）：可选参数，归一化防除零的参数，数据类型支持`float32`，默认值为1e-6。
+- **x**（`Tensor`）：必选参数，待计算的张量，表示网络中mHC层的输入数据，数据类型支持`torch.float32`，shape为\[B, S, n, n\]或\[T, n, n\]，数据格式支持ND，支持非连续Tensor，不支持空Tensor。shape的n仅支持4、6、8三个值。
+- **eps**（float）：可选参数，归一化防除零的参数，数据类型支持`torch.float32`，默认值为1e-6。
 - **num\_iters**（`int`）：可选参数，指代迭代次数，默认值20，数据范围\[1,100\]。
 - **out\_flag**（`int`）：可选参数，决定是否输出中间结果。支持取值0（默认）和1，当值为0时，仅输出最终变换结果；当值为1时，输出y+normOut+sumOut。
 
 ## 返回值说明
 
-- **y**（`Tensor`）：必选输出，MhcSinkhorn变换最终结果，数据类型支持`float32`，shape为\[B, S, n, n\]或者\[T, n, n\]，数据格式支持ND，支持非连续Tensor。要求维度与输入`x`一致。shape的n仅支持4、6、8三个值。
-- **norm\_out**（`Tensor`）：可选输出，迭代过程中的归一化中间结果，数据类型支持`float32`，shape为\[2numIters, n, n, B, S\]或者\[2numIters, n, n, T\]，数据格式支持ND，支持非连续Tensor。当且仅当`out_flag`为1时有效。在训练及推理prefill时，B\*S支持\[512, 65536\], \[1, 512\]，在推理场景下，B\*S支持\[1, 512\]。
+- **y**（`Tensor`）：必选输出，MhcSinkhorn变换最终结果，数据类型支持`torch.float32`，shape为\[B, S, n, n\]或者\[T, n, n\]，数据格式支持ND，支持非连续Tensor。要求维度与输入`x`一致。shape的n仅支持4、6、8三个值。
+- **norm\_out**（`Tensor`）：可选输出，迭代过程中的归一化中间结果，数据类型支持`torch.float32`，shape为\[2numIters, n, n, B, S\]或者\[2numIters, n, n, T\]，数据格式支持ND，支持非连续Tensor。当且仅当`out_flag`为1时有效。在训练及推理prefill时，B\*S支持\[512, 65536\], \[1, 512\]，在推理场景下，B\*S支持\[1, 512\]。
 
-- **sumOut**（`Tensor`）：可选输出，迭代过程中的求和中间结果，数据类型支持`float32`，shape为\[2numIters, n, B, S\]或者\[2numIters, n, T\]，数据格式支持ND，支持非连续Tensor。当且仅当`out_flag`为1时有效。
+- **sumOut**（`Tensor`）：可选输出，迭代过程中的求和中间结果，数据类型支持`torch.float32`，shape为\[2numIters, n, B, S\]或者\[2numIters, n, T\]，数据格式支持ND，支持非连续Tensor。当且仅当`out_flag`为1时有效。
 
 ## 约束说明
 

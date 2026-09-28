@@ -22,8 +22,8 @@ acl_format：int64_t类型，转换后的目标格式。
 
 customize_dtype：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`c10::nullopt`。
 
-- 不传参时默认值为`c10::nullopt`，float32和int32数据类型的默认C0值为16，int8数据类型的默认C0值为32；
-- 传入`3`（对应int(torch.int32)）时，FRACTAL_NZ格式的C0值为8。
+- 不传参时默认值为`c10::nullopt`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32；
+- 传入`3`（对应int(`torch.int32`)）时，FRACTAL_NZ格式的C0值为8。
 
 ## 约束说明
 
@@ -33,7 +33,7 @@ customize_dtype：可选参数，用于指定格式转换时的目标数据类�
 
 <term>Ascend 950DT系列产品</term>场景下，将张量转为FRACTAL_NZ格式时，当前不支持以下特殊场景：
 
-- 当`self`的dtype与`customize_dtype`相同且类型为float16、bfloat16时，若`self`维度表示为[k, n]，则k为1场景暂不支持。
+- 当`self`的dtype与`customize_dtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若`self`维度表示为[k, n]，则k为1场景暂不支持。
 - 调用本接口转为FRACTAL_NZ格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
 - `self`的shape后两维任意一维度shape等于1场景，不允许转FRACTAL_NZ后进行transpose。
 

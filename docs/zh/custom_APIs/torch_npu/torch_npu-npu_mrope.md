@@ -252,10 +252,10 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 ## 参数说明
 
 - **positions**（`Tensor`）：必选参数，位置索引，用于从cache中选取位置编码，对应公式中的$positions$。  
-  - RoPE模式：1维张量，shape`(num_tokens)`，数据类型为`int32`、`int64`，格式$ND$，支持非连续张量。  
+  - RoPE模式：1维张量，shape`(num_tokens)`，数据类型为`torch.int32`、`torch.int64`，格式$ND$，支持非连续张量。
   - MRoPE模式：2维张量，shape`(3, num_tokens)`或`(4, num_tokens)`，要求与`mrope_section`分段数一致。  
   - 通过`positions`从`cos_sin_cache`中选取位置编码时，每个取值作为cache行索引，应均小于第0维长度`max_seq_len`。
-- **query**（`Tensor`）：必选参数，待施加RoPE的Query，对应公式中的$query$。2维张量，shape`(num_tokens, num_q_heads * head_size)`，类型`float16`、`bfloat16`、`float32`，格式$ND$，支持非连续张量。
+- **query**（`Tensor`）：必选参数，待施加RoPE的Query，对应公式中的$query$。2维张量，shape`(num_tokens, num_q_heads * head_size)`，类型`torch.float16`、`torch.bfloat16`、`torch.float32`，格式$ND$，支持非连续张量。
 - **key**（`Tensor`）：必选参数，待施加RoPE的Key。2维张量，shape`(num_tokens, num_k_heads * head_size)`，类型与`query`一致，格式$ND$，支持非连续张量。
 - **cos_sin_cache**（`Tensor`）：必选参数，预计算的位置编码cache，对应公式中的$cosSinCache$。2维张量，shape`(max_seq_len, rotary_dim)`。最后一维经`chunk(2, dim=-1)`拆成cos、sin两半。`query`、`key`、`cos_sin_cache`的浮点类型须一致。
 - **head_size**（`int`）：必选参数，单头维度大小，即每个注意力头的特征维长度。
@@ -265,15 +265,15 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 
 ## 返回值说明
 
-- **query_out**（`Tensor`）：对`query`施加RoPE/MRoPE后的Query，对应公式中的$queryOut$，2维张量，shape`(num_tokens, num_q_heads * head_size)`，类型`float16`、`bfloat16`、`float32`，格式$ND$，支持非连续张量，与输入`query`的shape与数据类型一致。
+- **query_out**（`Tensor`）：对`query`施加RoPE/MRoPE后的Query，对应公式中的$queryOut$，2维张量，shape`(num_tokens, num_q_heads * head_size)`，类型`torch.float16`、`torch.bfloat16`、`torch.float32`，格式$ND$，支持非连续张量，与输入`query`的shape与数据类型一致。
 - **key_out**（`Tensor`）：对`key`施加RoPE/MRoPE后的Key，2维张量，shape`(num_tokens, num_k_heads * head_size)`，类型与输入`key`一致，格式$ND$，支持非连续张量，与输入`key`的shape与数据类型一致。
 
 ## 约束说明
 
 - **维度**：`rotary_dim`为`cos_sin_cache`最后一维大小，且满足`rotary_dim <= head_size`。
 - **对齐与倍数**：
-  - `head_size`：`float16`/`bfloat16`时为**32**的倍数；`float32`时为**16**的倍数。
-  - `rotary_dim`：`float16`/`bfloat16`时为**32**的倍数；`float32`时为**16**的倍数。
+  - `head_size`：`torch.float16`/`torch.bfloat16`时为**32**的倍数；`torch.float32`时为**16**的倍数。
+  - `rotary_dim`：`torch.float16`/`torch.bfloat16`时为**32**的倍数；`torch.float32`时为**16**的倍数。
 - **MRoPE**：`mrope_section`各元素之和应等于**`rotary_dim / 2`**（与half维度的cos/sin分段一致）。
 - **cache_mode**：当`mrope_section`为**`[16, 16, 16, 16]`时，仅支持`cache_mode='default'`（即不支持交错拼接）。
 

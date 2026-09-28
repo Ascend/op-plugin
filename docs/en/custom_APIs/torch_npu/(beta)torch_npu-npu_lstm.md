@@ -21,12 +21,12 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## Parameters
 
-- **`x`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`weight`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`bias`** (`Tensor`): This parameter must be a 1D tensor. The data type can be `float16` or `float32`. The data layout can be ND.
-- **`seqMask`** (`Tensor`): Only the `float16` data type with the `FRACTAL_NZ` data layout and the `int32` data type with the ND data layout are supported.
-- **`h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
+- **`x`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`weight`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`bias`** (`Tensor`): This parameter must be a 1D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be ND.
+- **`seqMask`** (`Tensor`): Only the `torch.float16` data type with the `FRACTAL_NZ` data layout and the `torch.int32` data type with the ND data layout are supported.
+- **`h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
 - **`has_biases`** (`bool`): If set to `True`, biases exist.
 - **`num_layers`** (`int`): Number of recurrent layers. Currently, only a single layer is supported.
 - **`dropout`** (`float`): If the value is non-zero, a dropout layer is introduced on the output of each LSTM layer except the last one, and the dropout discard probability is equal to the value of the `dropout` parameter. Currently, this parameter is not supported.
@@ -38,11 +38,11 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## Output Description
 
-- **`y`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`output_h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`output_c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. The data layout can be `FRACTAL_NZ`.
-- **`i`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`j`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`f`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`o`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`tanhct`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `float16` or `float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`y`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`output_h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`output_c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`i`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`j`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`f`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`o`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`tanhct`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.

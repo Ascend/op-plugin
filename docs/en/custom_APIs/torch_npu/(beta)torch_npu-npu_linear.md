@@ -21,9 +21,9 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `float32`, `float16`, `int32`, or `int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
-- **`weight`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `float32`, `float16`, `int32`, or `int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
-- **`bias`** (`Tensor`): Optional. This parameter must be a 1D tensor. The data type can be `float32`, `float16`, or `int32`. The data layout can be ND or `NHWC`. The default value is `None`.
+- **`input`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `torch.float32`, `torch.float16`, `torch.int32`, or `torch.int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
+- **`weight`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `torch.float32`, `torch.float16`, `torch.int32`, or `torch.int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
+- **`bias`** (`Tensor`): Optional. This parameter must be a 1D tensor. The data type can be `torch.float32`, `torch.float16`, or `torch.int32`. The data layout can be ND or `NHWC`. The default value is `None`.
 
 ## Example
 

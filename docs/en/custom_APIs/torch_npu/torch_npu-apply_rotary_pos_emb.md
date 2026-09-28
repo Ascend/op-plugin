@@ -24,16 +24,16 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 ## Parameters
 
-- **`query`** (`Tensor`): Required. First tensor for rotary position embedding. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
+- **`query`** (`Tensor`): Required. First tensor for rotary position embedding. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
   - Atlas inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: Empty tensors are not supported. The last dimension (`D`) of `shape` must be `128` or `64`.
   - Ascend 950DT: Empty tensors are supported. The last dimension (`D`) of `shape` must be less than or equal to `1024`.
-- **`key`** (`Tensor`): Required. Second tensor for rotary position embedding. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
+- **`key`** (`Tensor`): Required. Second tensor for rotary position embedding. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
   - Atlas inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: Empty tensors are not supported. The last dimension (`D`) of `shape` must be `128` or `64`.
   - Ascend 950DT: Empty tensors are supported. The last dimension (`D`) of `shape` must be less than or equal to `1024`.
-- **`cos`** (`Tensor`): Required. Cosine value tensor for rotary position embedding. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
+- **`cos`** (`Tensor`): Required. Cosine value tensor for rotary position embedding. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
   - Atlas inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: Empty tensors are not supported. The B dimension in the shape must match that of `query` and `key`. The third dimension (N) in the shape must be `1`, and the last dimension (D) must be `128` or `64`.
   - Ascend 950DT: Empty tensors are supported. The B dimension in the shape must match that of `query` and `key`, or be `1`. The N dimension in the shape must be `1`, and the last dimension (D) must be less than or equal to `1024`.
-- **`sin`** (`Tensor`): Required. Sine value tensor for rotary position embedding. The data type can be `float32`, `float16`, or `bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
+- **`sin`** (`Tensor`): Required. Sine value tensor for rotary position embedding. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. The shape has 3 dimensions when `layout` is `TND`, and 4 dimensions in other `layout` scenarios.
   - Atlas inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: Empty tensors are not supported. The B dimension in the shape must match that of `query` and `key`. The third dimension (N) in the shape must be `1`, and the last dimension (D) must be `128` or `64`.
   - Ascend 950DT: Empty tensors are supported. The B dimension in the shape must match that of `query` and `key`, or be `1`. The last dimension (D) in the shape must be less than or equal to 1024.
 - **`layout`** (`str`): Optional. Tensor layout format. Valid values: `"BSND"`, `"SBND"`, `"BNSD"`, or `"TND"`. Default value: `"BSND"`.
@@ -60,7 +60,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - For any `layout`, the dimensions of `query` and `key` must match except for the N dimension. The last dimension (D) of the input shapes for `query` and `key` must match. The last dimension (D) of the input shapes for `cos` and `sin` must match, and must be less than or equal to the last dimension (D) of the input shapes for `query` and `key`.
   - The input tensors `query`, `key`, `cos`, and `sin` must have the same data type.
   - When `rotary_mode` is `"half"` or `"interleave"`, the last dimension of the input shape must be divisible by 2. When `rotary_mode` is `"quarter"`, the last dimension of the input shape must be divisible by 4.
-- `bfloat16` is not supported on Atlas inference products.
+- `torch.bfloat16` is not supported on Atlas inference products.
 
 ## Example
 

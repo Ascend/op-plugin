@@ -26,11 +26,11 @@ torch_npu.npu_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, all2all_axe
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. Left matrix input of the fused operator and the left operand of MatMul computation, $x1$ in the formulas. This parameter must be 2D with shape `(BS, H1)`. The data type can be `bfloat16` or `float16`. The data layout is ND. Non-contiguous tensors are not supported. Empty tensors where the first dimension size is `0` are supported.
+- **`x1`** (`Tensor`): Required. Left matrix input of the fused operator and the left operand of MatMul computation, $x1$ in the formulas. This parameter must be 2D with shape `(BS, H1)`. The data type can be `torch.bfloat16` or `torch.float16`. The data layout is ND. Non-contiguous tensors are not supported. Empty tensors where the first dimension size is `0` are supported.
 - **`x2`** (`Tensor`): Required. Right matrix input of the fused operator and the right operand of MatMul computation, $x2$ in the formulas. This parameter must be 2D with shape `(H1, H2)`. The data type must be identical to that of `x1`. The data layout is ND. Transposed non-contiguous tensors are supported.
 - **`hcom`** (`str`): Required. Communication domain identifier string on the host side, representing the communication domain name obtained using the `get_hccl_comm_name` API.
 - **`world_size`** (`int`): Required. Total number of ranks within the communication domain, $rankSize$ in the formulas. Valid values are `2`, `4`, `8`, or `16`.
-- **`bias`** (`Tensor`): Optional. Accumulative bias added after the matrix multiplication computation, $bias$ in the formulas. When the data type of `x1` and `x2` is `float16`, the data type of `bias` is `float16`. When the data type of `x1` and `x2` is `bfloat16`, the data type of `bias` is `float32`. This parameter must be 1D with shape `(H2,)`. The data layout can be ND.
+- **`bias`** (`Tensor`): Optional. Accumulative bias added after the matrix multiplication computation, $bias$ in the formulas. When the data type of `x1` and `x2` is `torch.float16`, the data type of `bias` is `torch.float16`. When the data type of `x1` and `x2` is `torch.bfloat16`, the data type of `bias` is `torch.float32`. This parameter must be 1D with shape `(H2,)`. The data layout can be ND.
 - **`all2all_axes`** (`List[int]`): Optional. Data exchange axis configuration for the AlltoAll and Permute operations. This parameter can be empty or be set to `[-1, -2]`, indicating that the MatMul computation result is converted from `(BS, H2)` to `(BS * rankSize, H2/rankSize)`.
 
 ## Return Values

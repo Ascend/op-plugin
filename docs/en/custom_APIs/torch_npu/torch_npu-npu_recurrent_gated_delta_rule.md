@@ -32,33 +32,33 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 ## Parameters
 
-- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_k$, $D_k$).
+- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `torch.bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_k$, $D_k$).
 
-- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_k$, $D_k$).
+- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `torch.bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_k$, $D_k$).
 
-- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_v$, $D_v$).
+- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `torch.bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_v$, $D_v$).
 
-- **`state`** (`Tensor`): Required. Input and output parameter corresponding to the state matrix $S$ in the formula. The data type can be `bfloat16`. The data layout can be ND. The shape of this parameter is `(BlockNum, N_v, D_v, D_k)`. 
+- **`state`** (`Tensor`): Required. Input and output parameter corresponding to the state matrix $S$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape of this parameter is `(BlockNum, N_v, D_v, D_k)`.
 
-- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_v$).
+- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `torch.bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_v$).
 
-- **`scale`** (`float`): Optional. Scaling factor of `query`, $1/\sqrt{D_k}$ in the formula. The data type can be `float32`.
+- **`scale`** (`float`): Optional. Scaling factor of `query`, $1/\sqrt{D_k}$ in the formula. The data type can be `torch.float32`.
 
-- **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `int32`. The data layout can be ND. The shape of this parameter is `(B,)`. Each value $L_i$ must remain within `[1, 8]`, where $L_i$ represents the value of the i-th element in `actual_seq_lengths`.
+- **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `torch.int32`. The data layout can be ND. The shape of this parameter is `(B,)`. Each value $L_i$ must remain within `[1, 8]`, where $L_i$ represents the value of the i-th element in `actual_seq_lengths`.
 
-- **`ssm_state_indices`** (`Tensor`): Optional. Mapping indices from the input sequence to the state matrix, where `state[ssm_state_indices[i]]` represents the state matrix corresponding to the i-th token. Each value of `ssm_state_indices[i]` must be greater than or equal to 0 and less than $BlockNum$. This parameter must be 1D with shape `(T,)`. The data type can be `int32`. The data layout can be ND.
+- **`ssm_state_indices`** (`Tensor`): Optional. Mapping indices from the input sequence to the state matrix, where `state[ssm_state_indices[i]]` represents the state matrix corresponding to the i-th token. Each value of `ssm_state_indices[i]` must be greater than or equal to 0 and less than $BlockNum$. This parameter must be 1D with shape `(T,)`. The data type can be `torch.int32`. The data layout can be ND.
 
-- **`num_accepted_tokens`** (`Tensor`): Optional. Number of tokens accepted by the i-th batch during speculative decoding, where each value must be greater than or equal to 1 and less than or equal to $L_i$. The default value is `None`, indicating that each batch accepts one token. The data type can be `int32`. The data layout can be ND. The shape is `(B,)`.
+- **`num_accepted_tokens`** (`Tensor`): Optional. Number of tokens accepted by the i-th batch during speculative decoding, where each value must be greater than or equal to 1 and less than or equal to $L_i$. The default value is `None`, indicating that each batch accepts one token. The data type can be `torch.int32`. The data layout can be ND. The shape is `(B,)`.
 
-- **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `float32`. The data layout can be ND. The shape is ($T$, $N_v$).
+- **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `torch.float32`. The data layout can be ND. The shape is ($T$, $N_v$).
 
-- **`gk`** (`Tensor`): Optional. Decay coefficient, $\alpha = e^{gk}$ in the formula. The default value is `None`, indicating all zeros. The data type can be `float32`. The data layout can be ND. The shape is ($T$, $N_v$, $D_k$).
+- **`gk`** (`Tensor`): Optional. Decay coefficient, $\alpha = e^{gk}$ in the formula. The default value is `None`, indicating all zeros. The data type can be `torch.float32`. The data layout can be ND. The shape is ($T$, $N_v$, $D_k$).
 
 ## Return Value
 
 `Tensor`
 
-Attention computation result, $o$ in the formula. The output data type can be `bfloat16`. The data layout is ND. The shape is ($T$, $N_v$, $D_v$).
+Attention computation result, $o$ in the formula. The output data type can be `torch.bfloat16`. The data layout is ND. The shape is ($T$, $N_v$, $D_v$).
 
 ## Constraints
 

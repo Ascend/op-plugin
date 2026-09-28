@@ -24,8 +24,8 @@ torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 
 ## Parameters
 
-- **`self`** (`Tensor`): Matrix tensor. The shape must have 2 or more dimensions. The data type can be `float16`, `float32`, or `int32`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
-- **`mat2`** (`Tensor`): Matrix tensor. The shape must have 2 or more dimensions. The data type can be `float16`, `float32`, or `int32`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
+- **`self`** (`Tensor`): Matrix tensor. The shape must have 2 or more dimensions. The data type can be `torch.float16`, `torch.float32`, or `torch.int32`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
+- **`mat2`** (`Tensor`): Matrix tensor. The shape must have 2 or more dimensions. The data type can be `torch.float16`, `torch.float32`, or `torch.int32`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
 - **`output_sizes`** (`List[int]`): Output shape used for matmul backpropagation. The default value is `[]`.
 
 ## Examples

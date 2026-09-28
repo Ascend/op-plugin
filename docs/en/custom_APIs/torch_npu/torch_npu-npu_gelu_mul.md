@@ -51,7 +51,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Input tensor. The data type can be `bfloat16`, `float16`, or `float`. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be 2D to 8D. The last dimension value must be an even number less than or equal to `1024`. The product of the other dimensions must be less than or equal to `200000`.
+- **`input`** (`Tensor`): Required. Input tensor. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float`. Non-contiguous tensors are supported. The data layout can be ND. This parameter must be 2D to 8D. The last dimension value must be an even number less than or equal to `1024`. The product of the other dimensions must be less than or equal to `200000`.
 - **`approximate`** (`str`): Optional. Specifies the computation mode of the GELU activation function. Default value: `"none"`. Valid values:
   - `"none"`: enables error function (`erf`) mode, providing high computation precision, which is applicable to scenarios with strict precision requirements.
   - `"tanh"`: enables the hyperbolic tangent (`tanh`) approximation mode, providing high computational efficiency, which is applicable to large-scale training or inference acceleration.
@@ -60,7 +60,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 `Tensor`
 
-Output tensor, $\text{out}$ in the formulas. The data type can be `bfloat16`, `float16`, or `float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is the same as that of `input`. The length of the last dimension of `output` is half that of `input`, with the remaining dimensions unchanged. For example, if `input.shape = [100, 400]`, then `output.shape = [100, 200]`.
+Output tensor, $\text{out}$ in the formulas. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is the same as that of `input`. The length of the last dimension of `output` is `torch.half` that of `input`, with the remaining dimensions unchanged. For example, if `input.shape = [100, 400]`, then `output.shape = [100, 200]`.
 
 ## Examples
 

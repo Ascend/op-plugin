@@ -37,29 +37,29 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
 
 ## 参数说明
 
-- **hidden_size**（`int`）：必选参数，隐藏层的维度，数据类型为`int32`，支持输入范围为1-10000，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
-- **tp_rank**（`int`）：必选参数，张量并行TP Rank，数据类型为`int32`，支持输入范围为0-1024，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
-- **cmd**（`int`）：必选参数，资源初始化的指令编号，数据类型为`int32`，取值范围为{1, 2, 3}。
+- **hidden_size**（`int`）：必选参数，隐藏层的维度，数据类型为`torch.int32`，支持输入范围为1-10000，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- **tp_rank**（`int`）：必选参数，张量并行TP Rank，数据类型为`torch.int32`，支持输入范围为0-1024，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- **cmd**（`int`）：必选参数，资源初始化的指令编号，数据类型为`torch.int32`，取值范围为{1, 2, 3}。
     * 1：进行浮点推理模式资源初始化。
     * 2：进行量化推理模式资源初始化。
     * 3：进行资源释放。
-- **data_type**（`int`）：可选参数，代表Tensor数据类型的编号，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- **data_type**（`int`）：可选参数，代表Tensor数据类型的编号，数据类型为`torch.int32`，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
     <!-- npu="310p" id3 -->
-    * <term>Atlas推理系列产品</term>：Tensor数据类型支持`float16`、`float32`、`int8`。
+    * <term>Atlas推理系列产品</term>：Tensor数据类型支持`torch.float16`、`torch.float32`、`torch.int8`。
     <!-- end id3 -->
     <!-- npu="910b" id4 -->
-    * <term>Atlas A2系列产品</term>：Tensor数据类型支持`float16`、`float32`、`bfloat16`、`int8`。
+    * <term>Atlas A2系列产品</term>：Tensor数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int8`。
     <!-- end id4 -->
-- **model_obf_seed_id**（`int`）：可选参数，模型混淆因子id，用于`TA`从`TEE KMC`查询模型混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
-- **data_obf_seed_id**（`int`）：可选参数，数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
-- **thread_num**（`int`）：可选参数，`CA`/`TA`进行混淆处理使用的线程数，数据类型为`int32`，取值范围为{1, 2, 3, 4, 5, 6}，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- **model_obf_seed_id**（`int`）：可选参数，模型混淆因子id，用于`TA`从`TEE KMC`查询模型混淆因子，数据类型为`torch.int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
+- **data_obf_seed_id**（`int`）：可选参数，数据混淆因子id，用于`TA`从`TEE KMC`查询数据混淆因子，数据类型为`torch.int32`，仅在`cmd`设置为1或2时需要填写已注册的有效混淆因子id，否则填0。
+- **thread_num**（`int`）：可选参数，`CA`/`TA`进行混淆处理使用的线程数，数据类型为`torch.int32`，取值范围为{1, 2, 3, 4, 5, 6}，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
 - **obf_coefficient**（`float`）：可选参数，混淆系数，支持输入范围为0-1，默认值1.0。
 
 ## 返回值说明
 
 `Tensor`
 
-返回1D、shape为(1)、数据类型为`int32`的Tensor。当`cmd`为1或2（资源初始化）时，该返回值代表socket连接符，供后续的模型混淆计算及资源释放使用；当`cmd`为3（资源释放）时，接口用于断开与混淆引擎CA的socket连接，该返回值不再作为socket连接符使用。
+返回1D、shape为(1)、数据类型为`torch.int32`的Tensor。当`cmd`为1或2（资源初始化）时，该返回值代表socket连接符，供后续的模型混淆计算及资源释放使用；当`cmd`为3（资源释放）时，接口用于断开与混淆引擎CA的socket连接，该返回值不再作为socket连接符使用。
 
 ## 调用示例
 

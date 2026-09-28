@@ -73,8 +73,8 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. First input for Add computation, $x1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `float16` or `bfloat16`. The shape must have 2 to 8 dimensions.
-- **`x2`** (`Tensor`): Required. Second input for Add computation, $x2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `float16` or `bfloat16`. The shape must be identical to that of `x1`.
+- **`x1`** (`Tensor`): Required. First input for Add computation, $x1$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `torch.float16` or `torch.bfloat16`. The shape must have 2 to 8 dimensions.
+- **`x2`** (`Tensor`): Required. Second input for Add computation, $x2$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `torch.float16` or `torch.bfloat16`. The shape must be identical to that of `x1`.
 - **`gamma`** (`Tensor`): Required. Scaling factor (weight) for RMSNorm, $gamma$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type must be identical to that of `x1`. The shape must be 1-dimensional, and the number of elements must equal the size of the last dimension of `x1`.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`smooth_scale1`** (`Tensor`): Optional. Smooth scaling factor for the first quantization path, $smoothScale1Optional$ in the formulas. The data type must be identical to that of `x1`. The shape must be 1-dimensional, and the number of elements must equal the size of the last dimension of `x1`. The default value is `None`. If set to `None`, no smooth operation is executed on the quantization branch.
@@ -82,15 +82,15 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 - **`beta`** (`Tensor`): Optional. Bias term of RMSNorm, $beta$ in the formulas. The data type must be identical to that of `x1`. The shape must be 1-dimensional, and the number of elements must equal the size of the last dimension of `x1`. The default value is `None`. If set to `None`, no bias is added.
 - **`epsilon`** (`float`): Optional. Value added to the denominator to ensure numerical stability, $epsilon$ in the formulas. The default value is `1e-6`.
 - **`output_mask`** (`List[bool]`): Optional. Boolean array of length 2 used to control whether to compute the two quantization outputs, $outputMask$ in the formulas. `output_mask[0]` controls the first quantization output (`y1`, `scale1`), and `output_mask[1]` controls the second quantization output (`y2`, `scale2`).
-- **`y_dtype`** (`ScalarType`): Optional. Quantized output data type of `y1` and `y2`. `None` or `torch.int8` indicates `int8`. `torch.quint4x2` indicates `int4`. For the `int4` scenario, the last dimension of `x1` must be divisible by 8. The default value is `None`.
+- **`y_dtype`** (`ScalarType`): Optional. Quantized output data type of `y1` and `y2`. `None` or `torch.int8` indicates `torch.int8`. `torch.quint4x2` indicates `torch_npu.int4`. For the `torch_npu.int4` scenario, the last dimension of `x1` must be divisible by 8. The default value is `None`.
 
 ## Return Values
 
-- **`y1`** (`Tensor`): Output tensor of the first dynamic quantization path, $y1Out$ in the formulas. When `output_mask[0]` is `True`, the data type can be `int8` or `int4`, and the shape must be identical to that of `x1`. When `output_mask[0]` is `False`, an empty tensor is returned.
-- **`y2`** (`Tensor`): Output tensor of the second dynamic quantization path, $y2Out$ in the formulas. When `output_mask[1]` is `True`, the data type can be `int8` or `int4`, and the shape must be identical to that of `x1`. When `output_mask[1]` is `False`, an empty tensor is returned.
+- **`y1`** (`Tensor`): Output tensor of the first dynamic quantization path, $y1Out$ in the formulas. When `output_mask[0]` is `True`, the data type can be `torch.int8` or `torch_npu.int4`, and the shape must be identical to that of `x1`. When `output_mask[0]` is `False`, an empty tensor is returned.
+- **`y2`** (`Tensor`): Output tensor of the second dynamic quantization path, $y2Out$ in the formulas. When `output_mask[1]` is `True`, the data type can be `torch.int8` or `torch_npu.int4`, and the shape must be identical to that of `x1`. When `output_mask[1]` is `False`, an empty tensor is returned.
 - **`x_out`** (`Tensor`): Result of Add computation, $x$ in the formulas. The data type and shape must be identical to those of the input `x1`.
-- **`scale1`** (`Tensor`): Scaling factor of the first dynamic quantization path, $scale1Out$ in the formulas. When `output_mask[0]` is `True`, the data type is `float32`, and the shape is the shape of `x1` with the last dimension removed. When `output_mask[0]` is `False`, an empty tensor is returned.
-- **`scale2`** (`Tensor`): Scaling factor of the second dynamic quantization path, $scale2Out$ in the formulas. When `output_mask[1]` is `True`, the data type is `float32`, and the shape is the shape of `x1` with the last dimension removed. When `output_mask[1]` is `False`, an empty tensor is returned.
+- **`scale1`** (`Tensor`): Scaling factor of the first dynamic quantization path, $scale1Out$ in the formulas. When `output_mask[0]` is `True`, the data type is `torch.float32`, and the shape is the shape of `x1` with the last dimension removed. When `output_mask[0]` is `False`, an empty tensor is returned.
+- **`scale2`** (`Tensor`): Scaling factor of the second dynamic quantization path, $scale2Out$ in the formulas. When `output_mask[1]` is `True`, the data type is `torch.float32`, and the shape is the shape of `x1` with the last dimension removed. When `output_mask[1]` is `False`, an empty tensor is returned.
 
 ## Constraints
 

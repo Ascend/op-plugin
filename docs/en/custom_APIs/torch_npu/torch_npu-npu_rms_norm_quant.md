@@ -36,40 +36,40 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Input tensor representing the source data tensor in the normalization process, $x$ in the formula. The data layout can be ND. The shape must have 1 to 8 dimensions. Non-contiguous tensors are supported. Empty tensors are not supported.
-  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `float16`.
-  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `float16` or `bfloat16`.
-  - Ascend 950DT: The data type can be `float16`, `bfloat16`, or `float32`.
+  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `torch.float16`.
+  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Ascend 950DT: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
 - **`gamma`** (`Tensor`): Required. Scaling tensor in the normalization process, $g$ in the formula. The shape must have 1 or 2 dimensions. If the shape is 1D, its size must be identical to the last dimension size of `x`. If the shape is 2D, the first dimension size must be 1, and the second dimension size must be identical to the last dimension size of `x`. The data type must be identical to that of `x`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported.
-  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `float16`.
-  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `float16` or `bfloat16`.
-  - Ascend 950DT: The data type can be `float16`, `bfloat16`, or `float32`.
+  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `torch.float16`.
+  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Ascend 950DT: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
 - **`beta`** (`Tensor`): Required. Offset tensor in the normalization process, $b$ in the formula. The shape must have 1 or 2 dimensions, following the identical structural requirements as those of `gamma`. The data type must be identical to that of `x`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported.
-  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `float16`.
-  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `float16` or `bfloat16`.
-  - Ascend 950DT: The data type can be `float16`, `bfloat16`, or `float32`.
+  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `torch.float16`.
+  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Ascend 950DT: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
 - **`scale`** (`Tensor`): Required. Scale tensor used during quantization to produce `y`, $scale$ in the formula. This parameter must be 1D with shape `(1,)`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The value of this parameter must not be 0.
-  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `float16`.
-  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `float16` or `bfloat16`.
-  - Ascend 950DT: The data type can be `float16`, `bfloat16`, or `float32`.
+  - Atlas inference products and Atlas 200I/500 A2 inference products: The data type can be `torch.float16`.
+  - Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Ascend 950DT: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
 - **`offset`** (`Tensor`): Required. Offset tensor in the quantization process, $offset$ in the formula. Its shape must be identical to that of `scale`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. 
-  - Atlas inference products, Atlas 200I/500 A2 inference products, Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `int8`.
-  - Ascend 950DT: The data type can be `int8`, `int32`, `float16`, `bfloat16`, or `float32`.
+  - Atlas inference products, Atlas 200I/500 A2 inference products, Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components, and Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8`.
+  - Ascend 950DT: The data type can be `torch.int8`, `torch.int32`, `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
 - **`epsilon`** (`double`): Optional. Parameter used to prevent division-by-zero errors, $eps$ in the formula. The default value is `1e-6`. A small positive value is recommended.
 
-- **`dst_dtype`** (`int`): Optional. Output quantization data type. The default value is `int8`. When set to `None`, this parameter is processed as `int8`. Valid values are `"int8"` or `"quint4x2"`.
-  - Atlas inference products, Atlas 200I/500 A2 inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: The value can be `int8` or `quint4x2`.
-  - Ascend 950DT: The value can be `int8`, `quint4x2`, `float8_e4m3fn`, `float8_e5m2`, or `hifloat8`.
+- **`dst_dtype`** (`int`): Optional. Output quantization data type. The default value is `torch.int8`. When set to `None`, this parameter is processed as `torch.int8`. Valid values are `"int8"` or `"quint4x2"`.
+  - Atlas inference products, Atlas 200I/500 A2 inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products: The value can be `torch.int8` or `torch.quint4x2`.
+  - Ascend 950DT: The value can be `torch.int8`, `torch.quint4x2`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
 
 ## Return Values
   
   `Tensor`
   
-  Calculation result ($y$ in the formula), representing the final quantization output tensor. Its data type is specified by the `dst_dtype` parameter. When `dst_dtype` is `quint4x2`, the data type of `y` is `int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `int32` element contains eight `int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_dtype`.
+  Calculation result ($y$ in the formula), representing the final quantization output tensor. Its data type is specified by the `dst_dtype` parameter. When `dst_dtype` is `torch.quint4x2`, the data type of `y` is `torch.int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `torch.int32` element contains eight `torch_npu.int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_dtype`.
 
 ## Constraints
 
@@ -81,31 +81,31 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
-    | float16   | float16       | float16       | float16       | int8           | double      |int8      |
-    | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int8      |
-    | float16   | float16       | float16       | float16       | int8           | double      |int32      |
-    | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int32      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int8`      |
+    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | double      |`torch.int8`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int32`      |
+    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | double      |`torch.int32`      |
 
   - Atlas inference series products and Atlas 200I/500 A2 inference series products:
 
     | x | gamma | beta | scale | offset | epsilon | y
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
-    | float16   | float16       | float16       | float16       | int8           | double      |int8      |
-    | float16   | float16       | float16       | float16       | int8           | double      |int32      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int8`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int32`      |
 
   - <term>Ascend 950DT</term>：
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-    | float16 | float16 | float16 | float16 | int8 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | bfloat16 | bfloat16 | bfloat16 | bfloat16 | int8 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | float16 | float16 | float16 | float16 | float16 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | bfloat16 | bfloat16 | bfloat16 | bfloat16 | bfloat16 | double | int8, int4, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | float32 | float32 | float32 | float32 | float32 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | float16 | float16 | float16 | float32 | int32 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | bfloat16 | bfloat16 | bfloat16 | float32 | int32 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | float16 | float16 | float16 | float32 | float32 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
-    | bfloat16 | bfloat16 | bfloat16 | float32 | float32 | double | int8, int32, float8_e4m3fn, float8_e5m2, hifloat8 |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | double | `torch.int8`, `torch_npu.int4`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.int32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.int32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
 
 ## Examples
 

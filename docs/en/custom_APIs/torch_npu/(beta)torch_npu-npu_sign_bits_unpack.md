@@ -14,7 +14,7 @@
 
 ## Function
 
-- Unpacks a `uint8` type input into a `float` type output. Each `uint8` value is decoded into eight floating-point numbers from its eight binary bits, where `0` is decoded as `-1.0`, and `1` is decoded as `1.0`. The decoded values are returned in little-endian order.
+- Unpacks a `torch.uint8` type input into a `torch.float` type output. Each `torch.uint8` value is decoded into eight floating-point numbers from its eight binary bits, where `0` is decoded as `-1.0`, and `1` is decoded as `1.0`. The decoded values are returned in little-endian order.
 
 - Equivalent computation logic:
     
@@ -39,9 +39,9 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. 1D `uint8` tensor.
+- **`x`** (`Tensor`): Required. 1D `torch.uint8` tensor.
 - **`size`** (`int`): Required. Used to reshape the first dimension of the output tensor.
-- **`dtype`** (`torch.dtype`): Required. If set to `torch.float16`, the output data type is `float16`. If set to `torch.float32`, the output data type is `float32`.
+- **`dtype`** (`torch.dtype`): Required. If set to `torch.float16`, the output data type is `torch.float16`. If set to `torch.float32`, the output data type is `torch.float32`.
 
 ## Return Values
 
@@ -51,7 +51,7 @@ Unpacked tensor.
 
 ## Constraints
 
-`size` must be divisible by the unpacked `uint8` output size of `x`. The unpacked `uint8` output size of `x` is $(\text{size of } x) * 8$.
+`size` must be divisible by the unpacked `torch.uint8` output size of `x`. The unpacked `torch.uint8` output size of `x` is $(\text{size of } x) * 8$.
 
 ## Example
 
