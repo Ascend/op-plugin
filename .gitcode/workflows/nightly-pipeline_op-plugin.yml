@@ -1,4 +1,4 @@
-name: Nightly-pipeline_op-plugin
+name: Op-plugin Test Nightly
 
 concurrency:
   max: 5
@@ -14,14 +14,21 @@ on:
   schedule:
     - cron: "0 6 * * *"
 
-  # 测试阶段：PR 触发
+  # 仅当 PR 涉及 nightly 流水线相关文件时触发
   pull_request:
-    types: [open, update, reopen]
     branches: [ 'master' ]
-
-  # 测试阶段：Push 触发
-  push:
-    branches: [ 'master' ]
+    paths:
+      - '.gitcode/workflows/nightly-pipeline_op-plugin.yml'
+      - '.gitcode/workflows/nightly_build_job.yml'
+      - '.gitcode/workflows/nightly_collect_testcases.yml'
+      - '.gitcode/workflows/nightly_ut_exec_job.yml'
+      - '.gitcode/workflows/nightly_report_job.yml'
+      # nightly 相关脚本
+      - '.gitcode/scripts/*.py'
+      # nightly 相关配置
+      - '.gitcode/config/disabled_testcases.json'
+      # nightly 构建脚本
+      - 'ci/build.sh'
 
 env:
   repo: ${{ atomgit.event.repository.name }}
