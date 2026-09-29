@@ -1,20 +1,6 @@
 # （beta）c10_npu::device_count
 
-## 定义文件
-
-torch_npu\csrc\core\npu\NPUFunctions.h
-
-## 函数原型
-
-```cpp
-c10::DeviceIndex c10_npu::device_count()
-```
-
-## 功能说明
-
-获取可使用的NPU数量，返回值类型DeviceIndex。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -28,3 +14,17 @@ c10::DeviceIndex c10_npu::device_count()
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+获取可使用的NPU数量，返回值类型DeviceIndex。
+
+## 定义文件
+
+torch_npu\csrc\core\npu\NPUFunctions.h
+
+## 函数原型
+
+```cpp
+c10::DeviceIndex c10_npu::device_count()
+```

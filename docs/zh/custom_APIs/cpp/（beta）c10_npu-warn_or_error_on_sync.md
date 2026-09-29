@@ -1,20 +1,6 @@
 # （beta）c10_npu::warn_or_error_on_sync
 
-## 定义文件
-
-torch_npu\csrc\core\npu\NPUFunctions.h
-
-## 函数原型
-
-```cpp
-void c10_npu::warn_or_error_on_sync()
-```
-
-## 功能说明
-
-NPU同步时警告，无返回值，根据当前警告等级进行报错或警告，与void c10::cuda::warn_or_error_on_sync()相同。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -28,3 +14,17 @@ NPU同步时警告，无返回值，根据当前警告等级进行报错或警�
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+NPU同步时警告，无返回值，根据当前警告等级进行报错或警告，与void c10::cuda::warn_or_error_on_sync()相同。
+
+## 定义文件
+
+torch_npu\csrc\core\npu\NPUFunctions.h
+
+## 函数原型
+
+```cpp
+void c10_npu::warn_or_error_on_sync()
+```

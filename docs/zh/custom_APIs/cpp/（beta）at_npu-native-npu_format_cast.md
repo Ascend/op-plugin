@@ -1,5 +1,27 @@
 # （beta）at_npu::native::npu_format_cast
 
+## 产品支持情况
+
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT系列产品</term>
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3训练系列产品</term>
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2训练系列产品</term>
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas训练系列产品</term>
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- <term>Atlas推理系列产品</term>
+<!-- end id5 -->
+
+## 功能说明
+
+NPU tensor格式转换，返回值类型Tensor，表示转换后的tensor。
+
 ## 定义文件
 
 torch_npu\csrc\core\npu\NPUFormat.h
@@ -9,10 +31,6 @@ torch_npu\csrc\core\npu\NPUFormat.h
 ```cpp
 at::Tensor at_npu::native::npu_format_cast(const at::Tensor& self, int64_t acl_format, c10::optional<int64_t> customize_dtype = c10::nullopt)
 ```
-
-## 功能说明
-
-NPU tensor格式转换，返回值类型Tensor，表示转换后的tensor。
 
 ## 参数说明
 
@@ -36,21 +54,3 @@ customize_dtype：可选参数，用于指定格式转换时的目标数据类�
 - 当`self`的dtype与`customize_dtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若`self`维度表示为[k, n]，则k为1场景暂不支持。
 - 调用本接口转为FRACTAL_NZ格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
 - `self`的shape后两维任意一维度shape等于1场景，不允许转FRACTAL_NZ后进行transpose。
-
-## 支持的型号
-
-<!-- npu="950" id1 -->
-- <term>Ascend 950DT系列产品</term>
-<!-- end id1 -->
-<!-- npu="A3" id2 -->
-- <term>Atlas A3训练系列产品</term>
-<!-- end id2 -->
-<!-- npu="910b" id3 -->
-- <term>Atlas A2训练系列产品</term>
-<!-- end id3 -->
-<!-- npu="910" id4 -->
-- <term>Atlas训练系列产品</term>
-<!-- end id4 -->
-<!-- npu="310p" id5 -->
-- <term>Atlas推理系列产品</term>
-<!-- end id5 -->

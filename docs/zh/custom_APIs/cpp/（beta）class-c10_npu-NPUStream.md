@@ -1,12 +1,27 @@
 # （beta）class c10_npu::NPUStream
 
-## 定义文件
+## 产品支持情况
 
-torch_npu\csrc\core\npu\NPUStream.h
+<!-- npu="910" id1 -->
+- <term>Atlas训练系列产品</term>
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2训练系列产品</term>
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3训练系列产品</term>
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas推理系列产品</term>
+<!-- end id4 -->
 
 ## 功能说明
 
 NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NPU设备的线性执行序列。
+
+## 定义文件
+
+torch_npu\csrc\core\npu\NPUStream.h
 
 ## 成员函数
 
@@ -107,18 +122,3 @@ NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NP
     NPUStream aclrtStream流查询，返回值类型aclrtStream，允许输入参数need_empty。
 
     need_empty：bool类型。false表示直接返回当前stream；true表示确保当前stream关联的任务队列清空后，再返回当前stream。
-
-## 支持的型号
-
-<!-- npu="910" id1 -->
-- <term>Atlas训练系列产品</term>
-<!-- end id1 -->
-<!-- npu="910b" id2 -->
-- <term>Atlas A2训练系列产品</term>
-<!-- end id2 -->
-<!-- npu="A3" id3 -->
-- <term>Atlas A3训练系列产品</term>
-<!-- end id3 -->
-<!-- npu="310p" id4 -->
-- <term>Atlas推理系列产品</term>
-<!-- end id4 -->

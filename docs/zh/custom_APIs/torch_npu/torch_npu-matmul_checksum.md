@@ -42,12 +42,12 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 ## 调用示例
 
    ```python
-    >>> import torch
-    >>> import torch_npu
-    >>> matrix1 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
-    >>> matrix2 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
-    >>> product = torch.matmul(matrix1, matrix2)
-    >>> checksum = torch_npu.matmul_checksum(matrix1, matrix2, product)
-    >>> print(checksum)
-    tensor(False, device='npu:0')
+   >>> import torch
+   >>> import torch_npu
+   >>> matrix1 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
+   >>> matrix2 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
+   >>> product = torch.matmul(matrix1, matrix2)
+   >>> checksum = torch_npu.matmul_checksum(matrix1, matrix2, product)
+   >>> print(checksum)
+   tensor(False, device='npu:0')
    ```

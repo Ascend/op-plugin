@@ -1,7 +1,7 @@
 # 自定义API参考
 
 - [概述](./overview.md)
-- [Python接口](./Python_interface.md)
+- [Python接口<a npu_parse_enabled="true"></a>](./Python_interface.md)
   - [torch_npu](./torch_npu/torch_npu.md)
     - [torch_npu接口列表](./torch_npu/torch_npu_list.md)
     - [（beta）torch_npu._npu_dropout](./torch_npu/（beta）torch_npu-_npu_dropout.md)
@@ -385,7 +385,7 @@
     - [（beta）torch_npu.distributed.reduce_scatter_tensor_uneven](./distributed/torch_npu-distributed-reduce_scatter_tensor_uneven.md)
     - [（beta）torch_npu.distributed.all_gather_into_tensor_uneven](./distributed/（beta）torch_npu-distributed-all_gather_into_tensor_uneven.md)
     - [（beta）torch_npu.distributed.all_to_all_vc](./distributed/torch_npu-distributed-all_to_all_vc.md)
-- [C++接口](./cpp/C_interface.md)
+- [C++接口<a npu_parse_enabled="true"></a>](./cpp/C_interface.md)
   - [C++接口列表](./cpp/C_list.md)
   - [（beta）torch_npu::init_npu](./cpp/（beta）torch_npu-init_npu.md)
   - [（beta）torch_npu::finalize_npu](./cpp/（beta）torch_npu-finalize_npu.md)

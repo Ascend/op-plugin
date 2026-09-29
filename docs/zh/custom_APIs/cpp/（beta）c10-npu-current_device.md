@@ -1,20 +1,6 @@
 # （beta）c10::npu::current_device
 
-## 定义文件
-
-torch_npu\csrc\libs\init_npu.h
-
-## 函数原型
-
-```cpp
-c10::DeviceIndex c10::npu::current_device()
-```
-
-## 功能说明
-
-获取当前NPU设备，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::current_device()相同。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -28,3 +14,17 @@ c10::DeviceIndex c10::npu::current_device()
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+获取当前NPU设备，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::current_device()相同。
+
+## 定义文件
+
+torch_npu\csrc\libs\init_npu.h
+
+## 函数原型
+
+```cpp
+c10::DeviceIndex c10::npu::current_device()
+```

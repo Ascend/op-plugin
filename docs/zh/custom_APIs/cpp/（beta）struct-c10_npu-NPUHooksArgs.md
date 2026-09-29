@@ -1,14 +1,6 @@
 # （beta）struct c10_npu::NPUHooksArgs
 
-## 定义文件
-
-torch_npu\csrc\core\npu\NPUHooksInterface.h
-
-## 功能说明
-
-NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -22,3 +14,11 @@ NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
+
+## 定义文件
+
+torch_npu\csrc\core\npu\NPUHooksInterface.h
