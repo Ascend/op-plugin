@@ -1,24 +1,6 @@
 # （beta）torch::npu::synchronize
 
-## 定义文件
-
-torch_npu\csrc\libs\init_npu.h
-
-## 函数原型
-
-```cpp
-void torch::npu::synchronize(int64_t device_index = -1)
-```
-
-## 功能说明
-
-NPU设备同步接口，该接口会阻塞当前线程，直到所有已提交给NPU设备的计算任务执行完毕，与void torch::cuda::synchronize(int64_t device_index = -1)相同。
-
-## 参数说明
-
-device_index：int64_t类型，用来同步设备的index，默认-1，即同步当前设备。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -32,3 +14,21 @@ device_index：int64_t类型，用来同步设备的index，默认-1，即同步
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+NPU设备同步接口，该接口会阻塞当前线程，直到所有已提交给NPU设备的计算任务执行完毕，与void torch::cuda::synchronize(int64_t device_index = -1)相同。
+
+## 定义文件
+
+torch_npu\csrc\libs\init_npu.h
+
+## 函数原型
+
+```cpp
+void torch::npu::synchronize(int64_t device_index = -1)
+```
+
+## 参数说明
+
+device_index：int64_t类型，用来同步设备的index，默认-1，即同步当前设备。

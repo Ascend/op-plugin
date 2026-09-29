@@ -1,20 +1,6 @@
 # （beta）c10_npu::current_device
 
-## 定义文件
-
-torch_npu\csrc\core\npu\NPUFunctions.h
-
-## 函数原型
-
-```cpp
-c10::DeviceIndex c10_npu::current_device()
-```
-
-## 功能说明
-
-NPU设备ID获取，返回值类型为DeviceIndex，表示获取到的设备ID，与PyTorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。
-
-## 支持的型号
+## 产品支持情况
 
 <!-- npu="910" id1 -->
 - <term>Atlas训练系列产品</term>
@@ -28,3 +14,17 @@ NPU设备ID获取，返回值类型为DeviceIndex，表示获取到的设备ID�
 <!-- npu="310p" id4 -->
 - <term>Atlas推理系列产品</term>
 <!-- end id4 -->
+
+## 功能说明
+
+NPU设备ID获取，返回值类型为DeviceIndex，表示获取到的设备ID，与PyTorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。
+
+## 定义文件
+
+torch_npu\csrc\core\npu\NPUFunctions.h
+
+## 函数原型
+
+```cpp
+c10::DeviceIndex c10_npu::current_device()
+```

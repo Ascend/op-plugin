@@ -1,12 +1,27 @@
 # （beta）class at_npu::NPUGeneratorImpl
 
-## 定义文件
+## 产品支持情况
 
-torch_npu\csrc\aten\NPUGeneratorImpl.h
+<!-- npu="910" id1 -->
+- <term>Atlas训练系列产品</term>
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2训练系列产品</term>
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3训练系列产品</term>
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas推理系列产品</term>
+<!-- end id4 -->
 
 ## 功能说明
 
 NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的相关功能，可用于众多依赖随机数的方法。
+
+## 定义文件
+
+torch_npu\csrc\aten\NPUGeneratorImpl.h
 
 ## 成员函数
 
@@ -108,18 +123,3 @@ PyTorch2.5.1及以上版本，新增以下成员函数：
 - **void unregister_graph(c10_npu::NPUGraph\* graph)**
 
     为NPUGeneratorImpl对象移除aclgraph图对象，在图对象的析构时会调用，与void at::CUDAGeneratorImpl::unregister_graph(CUDAGraph* graph)功能相同。
-
-## 支持的型号
-
-<!-- npu="910" id1 -->
-- <term>Atlas训练系列产品</term>
-<!-- end id1 -->
-<!-- npu="910b" id2 -->
-- <term>Atlas A2训练系列产品</term>
-<!-- end id2 -->
-<!-- npu="A3" id3 -->
-- <term>Atlas A3训练系列产品</term>
-<!-- end id3 -->
-<!-- npu="310p" id4 -->
-- <term>Atlas推理系列产品</term>
-<!-- end id4 -->
