@@ -95,7 +95,7 @@ None.
         
         def forward(self, x):
             x = torch.add(x, x)
-            torch_npu.save_npugraph_tensor(x, save_path="/home/dump/output.pt")
+            torch_npu.save_npugraph_tensor(x, save_path="./output.pt")
             x = torch.add(x, 2)
             torch_npu.save_npugraph_tensor(x)
             return x
