@@ -21,7 +21,7 @@
 
 - 计算公式：
 
-  公式中的x1Scale、x2Scale、yScale分别对应参数`pertoken_scale`、`scale`、`y_scale`；x2Offset和yOffset均由参数`offset`提供，具体含义由量化场景决定。量化模式的具体介绍参见[《CANN算子库》](https://hiascend.com/document/redirect/CannCommercialOplist)中的“基本概念 > 量化介绍”。
+  公式中的x1Scale、x2Scale、yScale分别对应参数`pertoken_scale`、`scale`、`y_scale`；x2Offset和yOffset均由参数`offset`提供，具体含义由量化场景决定。量化模式的具体介绍参见《CANN算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/master/docs/zh/context/quant_mode_introduction.md)。
 
   <!-- npu="A3,910b" id5 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：

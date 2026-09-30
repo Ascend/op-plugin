@@ -14,7 +14,7 @@
 
 - **计算公式**：
 
-  不同量化场景公式如下，更多关于量化技术的介绍参见[《CANN算子库》](https://hiascend.com/document/redirect/CannCommercialOplist)中“基本概念 > 量化介绍”。
+  不同量化场景公式如下，更多关于量化技术的介绍参见《CANN算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/master/docs/zh/context/quant_mode_introduction.md)。
 
   - T-T/T-C量化场景：
 
