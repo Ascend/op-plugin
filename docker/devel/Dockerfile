@@ -88,17 +88,17 @@ RUN case "${PY_VERSION}" in \
     pip${PY_VERSION} install pyyaml && \
     pip${PY_VERSION} install setuptools wheel && \
     case "${TORCH_VERSION}" in \
-        *.dev*) pip${PY_VERSION} install torch==${TORCH_VERSION} --index-url https://download.pytorch.org/whl/nightly/cpu ;; \
-        *) pip${PY_VERSION} install torch==${TORCH_VERSION} --index-url https://download.pytorch.org/whl/cpu ;; \
+        *.dev*) pip${PY_VERSION} install torch==${TORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/nightly/cpu ;; \
+        *) pip${PY_VERSION} install torch==${TORCH_VERSION} --extra-index-url https://download.pytorch.org/whl/cpu ;; \
     esac && \
     pip${PY_VERSION} install numpy==${NUMPY_VER}
 
 FROM builder AS dev
 
-ARG CANN_VERSION=9.1.0_beta.1
+ARG CANN_VERSION=9.1.0
 ARG CANN_PRODUCT=910b
 ARG INSTALL_NNAL=0
-ARG CANN_RELEASE_TRAIN=CANN%209.1.T1
+ARG CANN_RELEASE_TRAIN=CANN%209.1.0
 
 RUN CANN_FILE_VER=$(echo ${CANN_VERSION} | sed 's/_beta/-beta/') && \
     ARCH_NAME=$(uname -m) && \
