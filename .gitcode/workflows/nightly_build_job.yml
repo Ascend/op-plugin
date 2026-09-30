@@ -93,6 +93,10 @@ jobs:
           ccache -z
           ccache -s
 
+      - name: install nanobind
+        run: |
+          python3.10 -m pip install nanobind
+
       - name: compile
         run: |
           ls -al
