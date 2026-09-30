@@ -22,7 +22,7 @@
 ## 函数原型
 
 ```python
-torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, record_shapes=False, profile_memory=False, with_stack=False, with_modules=False, with_flops=False, experimental_config=None, custom_trace_id_callback=None, custom_trace_id_callback=None)
+torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, record_shapes=False, profile_memory=False, with_stack=False, with_modules=False, with_flops=False, experimental_config=None, execution_trace_observer=None, custom_trace_id_callback=None)
 ```
 
 ## 参数说明
@@ -81,7 +81,7 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
 
 - **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md)。
 
-- **custom_trace_id_callback** (`Callable`)：可选参数，PyTorch执行轨迹观测器对象。PyTorch执行轨迹以图的形式表示AI/ML工作负载，支持回放基准测试、模拟器和仿真器。当包含此参数时，观测器的start()和stop()方法将在与PyTorch剖析器相同的时间窗口内被调用，调用方式见下文示例。
+- **execution_trace_observer** (`ExecutionTraceObserver`)：可选参数，PyTorch执行轨迹观测器对象。PyTorch执行轨迹以图的形式表示AI/ML工作负载，支持回放基准测试、模拟器和仿真器。当包含此参数时，观测器的start()和stop()方法将在与PyTorch剖析器相同的时间窗口内被调用，调用方式见下文示例。
 
 - **custom_trace_id_callback** (`Callable`)：可选参数，为每一份Profiler数据生成一个trace_id进行标识。trace_id输出在profiler_metadata.json文件中，调用方式见下文示例。
 
@@ -100,16 +100,16 @@ torch_npu.profiler.profile采集的性能数据会自动解析到torch_npu.profi
   ```python
   import torch
   import torch_npu
-  
+
   ...
-  
+
   # 添加Profiling采集扩展配置参数，详细参数介绍可参考上文的参数说明
   experimental_config = torch_npu.profiler._ExperimentalConfig(
       export_type=torch_npu.profiler.ExportType.Text,
       profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
       aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone
   )
-  
+
   # 添加Profiling采集基础配置参数，详细参数介绍可参考上文的参数说明
   with torch_npu.profiler.profile(
       activities=[
@@ -121,44 +121,44 @@ torch_npu.profiler.profile采集的性能数据会自动解析到torch_npu.profi
       profile_memory=False,
       with_modules=False,
       experimental_config=experimental_config) as prof:
-  
+
       # 启动性能数据采集
       for step in range(steps):    # 训练函数
           train_one_step()    # 训练函数
           prof.step()    # 与schedule配套使用
   ```
-  
+
 - 生成标识Profiler数据的trace_id
 
   ```python
   import torch
   import torch_npu
   ...
-  
+
   # 自定义trace_id生成器
   class RepeatTraceIdGenerator:
       def __init__(self):
           self.repeat_count = 0    #从0开始计数
-  
+
       def __call__(self) -> str:
           # 每一轮profile启动，计数+1
           current_id = self.repeat_count
           self.repeat_count += 1
           return str(current_id)
-  
+
   # 创建trace_id生成器
   trace_id_gen = RepeatTraceIdGenerator()
-  
+
   if __name__ == "__main__":
       device = torch.device('npu:1')
       torch.npu.set_device(device)
       x0 =torch.rand(3, 4).npu()
       x1 =torch.rand(3, 4).npu()
-  
-  
+
+
       stream = torch.npu.current_stream()
       stream.synchronize()
-  
+
   # 添加Profiling采集基础配置参数
   with torch_npu.profiler.profile(
       activities=[
@@ -173,15 +173,15 @@ torch_npu.profiler.profile采集的性能数据会自动解析到torch_npu.profi
           add(x0, x1)  # 训练函数
           prof.step()
   ```
-  
-- 设置执行轨迹观测器custom_trace_id_callback
+
+- 设置执行轨迹观测器execution_trace_observer
 
   ```python
   import torch
   import torch_npu
   from torch.profiler import ExecutionTraceObserver
   ...
-  
+
   with torch_npu.profiler.profile(
       ...
       execution_trace_observer=(
