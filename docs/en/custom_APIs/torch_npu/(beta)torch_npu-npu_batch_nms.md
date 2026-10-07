@@ -34,15 +34,15 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 ## Return Values
 
 - **`nmsed_boxes`** (`Tensor`): NMS boxes output for each batch. This parameter must be a 3D tensor with shape `(batch, max_total_size, 4)`. The data type is `torch.float16`.
-- **`nmsed_scores`** (`Tensor`): NMS scores output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`.
+- **`nmsed_scores`** (`Tensor`): NMS scores output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`, `batch`和参数`nmsed_boxes`的 `batch`保持一致.
 - **`nmsed_classes`** (`Tensor`): NMS classes output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`.
-- `nmsed_num` (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
+- `nmsed_num` (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be  a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
 
 ## Example
 
 ```python
 >>> import torch, torch_npu
 >>> boxes = torch.randn(8, 2, 4, 4, dtype = torch.float32).to("npu")
->>> scores = torch.randn(3, 2, 4, dtype = torch.float32).to("npu")
+>>> scores = torch.randn(8, 2, 4, dtype = torch.float32).to("npu")
 >>> nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = torch_npu.npu_batch_nms(boxes, scores, 0.3, 0.5, 3, 4)
 ```
