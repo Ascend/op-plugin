@@ -36,7 +36,7 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 ## 返回值说明
 
 - **nmsed_boxes** (`Tensor`)：shape为\(batch, max\_total\_size, 4\)的3D张量，指定每批次输出的nms框，数据类型`torch.float16`。
-- **nmsed_scores** (`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms分数，数据类型`torch.float16`。
+- **nmsed_scores** (`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms分数，数据类型`torch.float16`，batch和参数`nmsed_boxes`的 batch保持一致。
 - **nmsed_classes**(`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms类，数据类型`torch.float16`。
 - **nmsed_num**(`Tensor`)：shape为\(batch\)的1D张量，指定nmsed\_boxes的有效数量，数据类型为`torch.int32`。
 
@@ -45,6 +45,6 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 ```python
 >>> import torch, torch_npu
 >>> boxes = torch.randn(8, 2, 4, 4, dtype = torch.float32).to("npu")
->>> scores = torch.randn(3, 2, 4, dtype = torch.float32).to("npu")
+>>> scores = torch.randn(8, 2, 4, dtype = torch.float32).to("npu")
 >>> nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = torch_npu.npu_batch_nms(boxes, scores, 0.3, 0.5, 3, 4)
 ```
