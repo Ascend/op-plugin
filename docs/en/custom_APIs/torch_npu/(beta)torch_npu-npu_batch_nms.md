@@ -34,9 +34,9 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 ## Return Values
 
 - **`nmsed_boxes`** (`Tensor`): NMS boxes output for each batch. This parameter must be a 3D tensor with shape `(batch, max_total_size, 4)`. The data type is `torch.float16`.
-- **`nmsed_scores`** (`Tensor`): NMS scores output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`, `batch`和参数`nmsed_boxes`的 `batch`保持一致.
+- **`nmsed_scores`** (`Tensor`): NMS scores output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`, and the `batch` must be consistent with the `batch` of the parameter `nmsed_boxes`.
 - **`nmsed_classes`** (`Tensor`): NMS classes output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`.
-- `nmsed_num` (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be  a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
+- `nmsed_num` (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
 
 ## Example
 
