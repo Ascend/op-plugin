@@ -253,7 +253,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：取值范围\[0, ep\_world\_size\)。取0表示无共享专家，不取0需满足shared\_expert\_rank\_num\%shared\_expert\_num=0。
     <!-- end id43 -->
 
-- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 - **comm\_quant\_mode**（`int`）：**可选参数**，表示通信量化类型。
 
     <!-- npu="910b" id44 -->

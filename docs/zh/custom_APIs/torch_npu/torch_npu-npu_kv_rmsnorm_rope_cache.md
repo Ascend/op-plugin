@@ -143,7 +143,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：hidden\_size取值仅支持576，rms\_size取值仅支持512，rope\_size取值仅支持64。
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：hidden\_size、rms\_size、rope\_size大小由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
+  - <term>Ascend 950PR&950DT系列产品</term>：hidden\_size、rms\_size、rope\_size由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
   <!-- end id13 -->
 
 - 量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`torch.int8`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），`k_rope_scale`和`c_kv_scale`必须同时非空。
