@@ -1,4 +1,4 @@
-﻿# torch_npu.npu_sparse_flash_attention
+# torch_npu.npu_sparse_flash_attention
 
 ## 产品支持情况
 
