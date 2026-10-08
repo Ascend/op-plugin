@@ -226,6 +226,23 @@ void PrepareWritableOutput(at::TensorList tensors) {
 
 bool AddScalar(const at::Tensor& self, const at::Scalar& other, const at::Scalar& alpha, at::Tensor* out);
 
+// DVM Store cannot resize self. Check broadcastability into self without
+// allocating an inferred shape; leave invalid-input diagnostics to eager.
+bool CanBroadcastInplace(const at::Tensor& self, const at::Tensor& other) {
+  const auto& self_shape = self.sizes();
+  const auto& other_shape = other.sizes();
+  if (other_shape.size() > self_shape.size()) {
+    return false;
+  }
+  const auto offset = self_shape.size() - other_shape.size();
+  for (size_t i = 0; i < other_shape.size(); ++i) {
+    if (other_shape[i] != 1 && other_shape[i] != self_shape[offset + i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool Add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alpha, at::Tensor* out = nullptr) {
   if (IsCPUScalar(other)) {
     return AddScalar(self, other.item(), alpha, out);
@@ -241,6 +258,9 @@ bool Add(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alph
   } else if (alpha_type == at::ScalarType::Double) {
     scalar = static_cast<float>(alpha.toDouble());
   } else {
+    return false;
+  }
+  if (out == nullptr && !CanBroadcastInplace(self, other)) {
     return false;
   }
   if (out == nullptr) {
@@ -281,6 +301,9 @@ bool Sub(const at::Tensor& self, const at::Tensor& other, const at::Scalar& alph
     scalar = static_cast<float>(alpha.toDouble());
     cast_fp32 = true;
   } else {
+    return false;
+  }
+  if (out == nullptr && !CanBroadcastInplace(self, other)) {
     return false;
   }
   if (out == nullptr) {
@@ -388,6 +411,9 @@ bool BinaryTensor(
   }
   if (!InputCheck(self, type_check, /*allow_non_contig=*/true) ||
       !InputCheck(other, type_check, /*allow_non_contig=*/true)) {
+    return false;
+  }
+  if (out == nullptr && !CanBroadcastInplace(self, other)) {
     return false;
   }
   if (out == nullptr) {
@@ -508,6 +534,9 @@ bool ForeachAddc(
         tensors2[i].scalar_type() != input[i].scalar_type()) {
       return false;
     }
+    if (!CanBroadcastInplace(input[i], tensors1[i]) || !CanBroadcastInplace(input[i], tensors2[i])) {
+      return false;
+    }
   }
   if (HasStorageAlias(input, tensors1, tensors2)) {
     ASCEND_LOGD("DVM lazy fusion: foreach addc lists alias; flush and fall back to op_api");
@@ -546,6 +575,9 @@ bool ForeachAddc(
     if (!InputCheck(input[i], IsFloat16_32) || !InputCheck(tensors1[i], IsFloat16_32) ||
         !InputCheck(tensors2[i], IsFloat16_32) || tensors1[i].scalar_type() != input[i].scalar_type() ||
         tensors2[i].scalar_type() != input[i].scalar_type() || !GetScalarValue(scalars[i], &scalar_values[i])) {
+      return false;
+    }
+    if (!CanBroadcastInplace(input[i], tensors1[i]) || !CanBroadcastInplace(input[i], tensors2[i])) {
       return false;
     }
   }
@@ -668,7 +700,9 @@ void DumpOp(const std::string& op_name, const Args&... inputs) {
   RECORD_FUNCTION(std::string("Dvm::") + op_name, {});
   if (g_lazy_fusion_manager.flags_.dump_as_text) {
     auto k = g_lazy_fusion_manager.Get();
-    k->DumpOp(op_name, inputs...);
+    if (k->ShouldDump()) {
+      k->DumpOp(op_name, inputs...);
+    }
   }
 }
 } // namespace
@@ -982,6 +1016,9 @@ bool FloorDivideTensor(const at::Tensor& self, const at::Tensor& other, at::Tens
       !InputCheck(other, IsFloatType, /*allow_non_contig=*/true)) {
     return false;
   }
+  if (out == nullptr && !CanBroadcastInplace(self, other)) {
+    return false;
+  }
   if (out == nullptr) {
     PrepareWritableOutput(self);
   }
@@ -1248,6 +1285,12 @@ at::Tensor& where_out(const at::Tensor& condition, const at::Tensor& self, const
   if (!enable || !cond_ok || !InputCheck(self, IsFloatType) || !InputCheck(other, IsFloatType) || !OutputCheck(out)) {
     return op_api::where_out(condition, self, other, out);
   }
+  auto broadcast_shape = op_infer::broadcast_ops_npu_output_size(self, other);
+  auto output_shape = op_infer::broadcast_ops_npu_output_size(condition.sizes(), broadcast_shape);
+  if (out.sizes() != c10::IntArrayRef(output_shape) ||
+      out.scalar_type() != at::native::result_type(self, other)) {
+    return op_api::where_out(condition, self, other, out);
+  }
   PrepareWritableOutput(out);
   PrepareFusionInputs(condition, self, other);
   auto k = g_lazy_fusion_manager.Get();
@@ -1365,7 +1408,7 @@ at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& output
 at::Tensor& gelu_out(const at::Tensor& self, c10::string_view approximate, at::Tensor& out) {
   static auto enable = IsEnabled("gelu");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out) ||
-      approximate != "tanh") {
+      approximate != "tanh" || out.sizes() != self.sizes() || out.scalar_type() != self.scalar_type()) {
     return op_api::gelu_out(self, approximate, out);
   }
   PrepareWritableOutput(out);

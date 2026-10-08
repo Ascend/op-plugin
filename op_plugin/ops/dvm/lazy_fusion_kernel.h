@@ -26,6 +26,7 @@
 #include <torch/csrc/autograd/graph_task.h>
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/ops/dvm/lazy_fusion_flags.h"
+#include "op_plugin/ops/dvm/lazy_fusion_control.h"
 #include "third_party/dvm/dvm/include/dvm.h"
 #include "torch_npu/csrc/core/NPUBridge.h"
 
@@ -38,9 +39,10 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   ~LazyFusionKernel();
   void Flush();
 
-  void Reset(aclrtStream stream, size_t id) {
+  void Reset(aclrtStream stream, size_t id, bool dump_enabled) {
     stream_ = stream;
     id_ = id;
+    dump_enabled_ = dump_enabled;
   }
   size_t id() const {
     return id_;
@@ -56,8 +58,23 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   void Output(const at::Tensor& tensor, dvm::NDObject* obj, bool inplace = false);
   bool NeedFlushForInput(const at::Tensor& x, dvm::ShapeRef* shape = nullptr) const;
   bool NeedFlushForWritableOutput(const at::Tensor& tensor) const;
+  bool IsAllocatingOutput() const { return output_allocation_depth_ != 0; }
+  void CheckOutputAllocationState(size_t expected_id) const;
+  bool ShouldDump() const { return dump_enabled_; }
   at::Tensor Output(dvm::NDObject* obj, c10::IntArrayRef shape, const c10::TensorOptions& options) {
+    // Allocator GC / allocation retries may synchronize and re-enter Manager::Flush.
+    // obj (and sometimes shape) already belongs to this graph, but its output has
+    // not been registered yet. Flushing here would clear/recycle a half-built graph
+    // and leave the caller using freed NDObjects. Drain previously submitted work
+    // as usual, but keep this graph pending until output allocation has finished.
+    struct AllocationGuard {
+      explicit AllocationGuard(size_t& depth) : depth_(depth) { ++depth_; }
+      ~AllocationGuard() { --depth_; }
+      size_t& depth_;
+    } guard(output_allocation_depth_);
+    const auto allocation_graph_id = id_;
     at::Tensor tensor = at_npu::native::OpPreparation::apply_tensor_without_format(shape, options);
+    CheckOutputAllocationState(allocation_graph_id);
     Output(tensor, obj);
     return tensor;
   }
@@ -293,6 +310,8 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   size_t dvm_ops_used_{0};
   size_t cache_shape_used_{0};
   size_t dump_idx_{0};
+  size_t output_allocation_depth_{0};
+  bool dump_enabled_{false};
   size_t id_{0};
   bool flushed_{false};
   aclrtStream stream_;
@@ -343,17 +362,23 @@ class Manager {
     current_ = NewKernel();
     current_stream_ = stream;
     auto kid = id_.fetch_add(1, std::memory_order_relaxed);
-    current_->Reset(stream, kid);
+    current_->Reset(stream, kid, flags_.dump_as_text && dump_enabled_.load(std::memory_order_relaxed));
     ASCEND_LOGD("dvm Manager: new kernel id=%zu, stream=%p", kid, stream);
     return current_;
   }
 
   void Flush() {
     if (auto k = current_; k != nullptr) {
+      if (k->IsAllocatingOutput()) {
+        return;
+      }
       current_ = nullptr;
       k->Flush();
     }
   }
+
+  bool SetDumpEnabled(bool enabled);
+  bool IsCurrent(const LazyFusionKernel* kernel) const { return current_ == kernel; }
 
   bool Empty() {
     return current_ == nullptr;
@@ -382,6 +407,7 @@ class Manager {
   aclrtStream current_stream_{nullptr};
   std::mutex mutex_;
   std::atomic<size_t> id_{0};
+  std::atomic<bool> dump_enabled_{true};
 };
 
 extern Manager g_lazy_fusion_manager;
@@ -390,7 +416,16 @@ inline void LazyFusionFlush() {
   g_lazy_fusion_manager.Flush();
 }
 
+extern std::atomic<bool> g_lazy_fusion_disabled;
+
+inline bool IsLazyFusionDisabled() {
+  return g_lazy_fusion_disabled.load(std::memory_order_relaxed);
+}
+
 inline bool IsEnabled() {
+  if (IsLazyFusionDisabled()) {
+    return false;
+  }
   const bool global_enabled =
       g_lazy_fusion_manager.flags_.enabled && c10_npu::option::OptionsManager::GetTaskQueueEnable();
   if (!global_enabled) {
