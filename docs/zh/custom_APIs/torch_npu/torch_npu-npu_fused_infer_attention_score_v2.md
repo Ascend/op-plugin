@@ -6,17 +6,11 @@
 - <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3训练系列产品</term>：支持
+- <term>Atlas A3系列产品</term>：支持
 <!-- end id2 -->
-<!-- npu="A3" id3 -->
-- <term>Atlas A3推理系列产品</term>：支持
-<!-- end id3 -->
 <!-- npu="910b" id4 -->
-- <term>Atlas A2训练系列产品</term>：支持
+- <term>Atlas A2系列产品</term>：支持
 <!-- end id4 -->
-<!-- npu="910b" id5 -->
-- <term>Atlas A2推理系列产品</term>：支持
-<!-- end id5 -->
 
 ## 功能说明<a name="zh-cn_topic_0000001832267082_section14441124184110"></a>
 

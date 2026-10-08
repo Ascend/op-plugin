@@ -22,7 +22,9 @@
 
 确认JIT编译模式是否被禁用，如果被禁用，返回True，否则返回False。
 
+<!-- npu="950" id6 -->
 <term>Ascend 950DT系列产品</term>仅返回True，即JIT编译模式默认禁用。
+<!-- end id6 -->
 
 ## 函数原型
 
