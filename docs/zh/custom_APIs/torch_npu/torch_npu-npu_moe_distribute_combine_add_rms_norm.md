@@ -96,7 +96,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **expert\_shard\_type**（`int`）：**可选参数**，表示共享专家卡排布类型。当前仅支持0，表示共享专家卡排在MoE专家卡前面。
 - **shared\_expert\_num**（`int`）：**可选参数**，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
 - **shared\_expert\_rank\_num**（`int`）：**可选参数**，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
-- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 - **out\_dtype**（`int`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
 - **comm\_quant\_mode**（`int`）：**可选参数**，表示通信量化类型。**预留参数，暂未使用，使用默认值即可。**
 - **group\_list\_type**（`int`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**

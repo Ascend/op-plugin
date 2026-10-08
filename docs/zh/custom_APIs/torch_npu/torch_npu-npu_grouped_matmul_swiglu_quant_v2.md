@@ -458,7 +458,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     <!-- npu="A3,910b" id44 -->
     **表 1** Atlas A2系列产品、Atlas A3系列产品
 
-    | x | weight | group_list | weight_scale | x_scale | bias | weight_assit_matrix | smooth_scale | output | output_scale |
+    | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
     | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.float32` | `torch.int32` | `torch.float32` | `torch.float32` | `torch.int8` | `torch.float32` |
     <!-- end id44 -->
@@ -466,7 +466,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     <!-- npu="950" id45 -->
     **表 2** Ascend 950PR&950DT系列产品
 
-    | 量化模式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assit_matrix | smooth_scale | output | output_scale |
+    | 量化模式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
     | MXFP8量化（ND格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` |
     | MXFP4量化（ND格式） | `torch.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` |

@@ -97,7 +97,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache_v2(kv, gamma, cos, sin, index, k_cache, ckv_
   - cache\_length：Norm模式下有效，表示KVCache支持的最大长度。
   - block\_num：PagedAttention模式下有效，表示Block的个数。
   - block\_size：PagedAttention模式下有效，表示Block的大小。
-  - hidden\_size、rms\_size、rope\_size大小由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
+  - hidden\_size、rms\_size、rope\_size由实际业务场景决定，用户按需设置，其中rope\_size必须为偶数，并且满足rms\_size+rope\_size=hidden\_size。
 
 - 量化模式：当`k_rope_scale`和`c_kv_scale`非空时，`k_cache`和`ckv_cache`的dtype为`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，缓存形状的最后一个维度需要为32（Cache数据格式为FRACTAL\_NZ模式），k\_rope\_scale和c\_kv\_scale必须同时非空，k\_rope\_offset和c\_kv\_offset必须同时为None为非空。
 - 非量化模式：当`k_rope_scale`和`c_kv_scale`为空时，`k_cache`和`ckv_cache`的dtype为`torch.bfloat16`或`torch.float16`。

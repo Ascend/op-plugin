@@ -66,8 +66,8 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：B*N的取值范围为[1, 65536)。
   <!-- end id8 -->
 
-- **perm_x1**(`List[int]`)：**可选参数**，表示矩阵乘的第一个矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持$ND$，支持[0, 1, 2]、[1, 0, 2]。
-- **perm_x2**(`List[int]`)：**可选参数**，表示矩阵乘的第二个矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持$ND$。
+- **perm_x1**(`List[int]`)：**可选参数**，表示矩阵乘的第一个矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持$ND$，支持[0, 1, 2]、[1, 0, 2]。
+- **perm_x2**(`List[int]`)：**可选参数**，表示矩阵乘的第二个矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持$ND$。
 
   <!-- npu="A3,910b" id9 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：只支持[0, 1, 2]。
@@ -76,7 +76,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
   - <term>Ascend 950PR&950DT系列产品</term>：支持[0, 1, 2]、[0, 2, 1]。
   <!-- end id10 -->
 
-- **perm_y**(`List[int]`)：**可选参数**，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持$ND$，只支持[1, 0, 2]。
+- **perm_y**(`List[int]`)：**可选参数**，表示矩阵乘输出矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持$ND$，只支持[1, 0, 2]。
 - **batch_split_factor**(`int`)：**可选参数**，用于指定矩阵乘输出矩阵中B维的切分大小。数据类型支持`torch.int32`。取值范围为[1, B]且能被B整除，默认值为1。注：当`scale`有值时，`batch_split_factor`只能为1。
 
 ## 返回值说明

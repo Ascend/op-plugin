@@ -391,7 +391,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Ascend 950DT系列产品</term>：0表示非量化（默认），1表示静态量化，2表示动态pertoken量化，3表示pergroup量化，4表示mxfp量化，5表示mxfp量化clip实现。当`quant_mode`为2、3、4、5，`dynamic_scales`不为None；当`quant_mode`为0或1，`dynamic_scales`为None。
     <!-- end id32 -->
 
-- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size大小。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
+- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 - **expert\_token\_nums\_type**（`int`）：**可选参数**，表示输出`expert_token_nums`的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
 - **comm\_alg**（`str`）：**可选参数**，表示通信亲和内存布局算法。
 

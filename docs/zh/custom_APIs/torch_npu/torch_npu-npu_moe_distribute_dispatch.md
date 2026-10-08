@@ -205,7 +205,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     <!-- end id30 -->
 
 - **quant\_mode**（`int`）：**可选参数**，表示量化模式。支持取值：0表示非量化（默认），2表示动态量化。当`quant_mode`为2，`dynamic_scales`不为None；当`quant_mode`为0，`dynamic_scales`为None。
-- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size大小。
+- **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size。
 
     <!-- npu="910b" id31 -->
     - <term>Atlas A2系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size或者256\*ep\_world\_size，其中max\_bs表示单rank BS最大值，建议按max\_bs\*ep\_world\_size传入；若固定按256\*ep\_world\_size传入，在后续版本BS大于256的场景下会无法支持；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。

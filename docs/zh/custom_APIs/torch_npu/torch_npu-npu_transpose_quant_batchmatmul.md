@@ -37,9 +37,9 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
   - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与`x1` shape中的m一致，scale_m与`x1_scale` shape中的m一致。
   - 仅在mx量化模式需要传入，目前\[group\_m, group\_n, group\_k\]仅支持\[0,0,32\]、\[0,1,32\]、\[1,0,32\]、\[1,1,32\]。
 
-- **perm\_x1**（List\[int\]）：可选参数，表示矩阵乘第一个矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持ND，只支持\[1, 0, 2\]。
-- **perm\_x2**（List\[int\]）：可选参数，表示矩阵乘第二个矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持ND。支持\[0, 1, 2\]或\[0, 2, 1\]。
-- **perm\_y**（List\[int\]）：可选参数，表示矩阵乘输出矩阵的转置序列，size大小为3，数据类型为`torch.int64`，数据格式支持ND，只支持\[1, 0, 2\]。
+- **perm\_x1**（List\[int\]）：可选参数，表示矩阵乘第一个矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持ND，只支持\[1, 0, 2\]。
+- **perm\_x2**（List\[int\]）：可选参数，表示矩阵乘第二个矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持ND。支持\[0, 1, 2\]或\[0, 2, 1\]。
+- **perm\_y**（List\[int\]）：可选参数，表示矩阵乘输出矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持ND，只支持\[1, 0, 2\]。
 - **batch\_split\_factor**（`int`）：可选参数，用于指定矩阵乘输出矩阵中b维的切分大小。数据类型为`torch.int32`。默认值为1，当前仅支持配置为1。
 - **x1_dtype**（`int`）：可选参数，表示x1的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
 - **x2_dtype**（`int`）：可选参数，表示x2的数据类型，支持传值`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。

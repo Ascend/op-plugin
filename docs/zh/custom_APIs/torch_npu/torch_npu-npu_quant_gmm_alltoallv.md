@@ -51,8 +51,8 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 
 - **gmm\_x**（`Tensor`）：**必选参数**，表示GroupedMatmul计算的左矩阵Tensor。数据类型支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`。支持2维，shape为\(A, H1\)，数据格式支持$ND$，其中数据类型为float4时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
 - **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatmul的右矩阵。数据类型与`gmm_x`一致。支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$，全量化场景下，当`gmm_x`、`gmm_weight`均为float4系列时，仅支持推理场景，此时输入`gmm_x`的H1需要为偶数，且当`gmm_weight`不转置时内轴N1需为偶数，转置时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
-- **gmm\_x\_scale**（`Tensor`）：**必选参数**，表示左矩阵的量化缩放系数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(A, ceil\(H1/64\), 2\)。数据格式为$ND$。
-- **gmm\_weight\_scale**（`Tensor`）：**必选参数**，表示右矩阵的量化参数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持4维，shape为\(e, ceil\(H1/64\), N1, 2\)。数据格式为$ND$。
+- **gmm\_x\_scale**（`Tensor`）：**必选参数**，表示左矩阵的量化缩放系数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(A, ceil\(H1/64\), 2\)。数据格式为$ND$。
+- **gmm\_weight\_scale**（`Tensor`）：**必选参数**，表示右矩阵的量化参数，数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持4维，shape为\(e, ceil\(H1/64\), N1, 2\)。数据格式为$ND$。
 - **hcom**（`str`）：**必选参数**，表示专家并行（EP）的通信域名称，字符串长度需在\(0,128\)范围内。
 - **ep\_world\_size**（`int`）：**必选参数**，表示EP通信域的size，取值支持2、4、8、16、32、64、128、256，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
 - **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数列表，数据类型支持`torch.int64`，数组大小为e \* ep\_world\_size。
@@ -76,12 +76,12 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 
 - **gmm\_x\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家左矩阵`gmm_x`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
 - **gmm\_weight\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家右矩阵`gmm_weight`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
-- **gmm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家左矩阵量化系数`gmm_x_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
-- **gmm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家右矩阵量化系数`gmm_weight_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
+- **gmm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家左矩阵量化系数`gmm_x_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
+- **gmm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`。表示路由专家右矩阵量化系数`gmm_weight_scale`的实际数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **mm\_x\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵`mm_x`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
 - **mm\_weight\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家右矩阵`mm_weight`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）需要指定该参数取值。
-- **mm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
-- **mm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0`）需要指定该参数取值。
+- **mm\_x\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵量化系数`mm_x_scale`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
+- **mm\_weight\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家右矩阵量化系数`mm_weight_scale`的数据类型。对于PyTorch原生不支持的数据类型（如`torch_npu.float8_e8m0fnu`）需要指定该参数取值。
 - **comm\_quant\_dtype**（`int`）：**可选参数**，默认值为`None`，低比特通信量化后的数据类型，当前暂不支持。
 - **mm\_y\_dtype**（`int`）：**可选参数**，默认值为`None`，表示共享专家输出张量`mm_y`的数据类型，数据类型支持`torch.float16`、`torch.bfloat16`。
 - **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。取值支持`None`、`ai_cpu`和`ccu`，当为`None`时，使用AI CPU通信。
@@ -144,16 +144,16 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 
     | gmm_x | gmm_weight | gmm_x_scale | gmm_weight_scale | gmm_x_quant_mode/gmm_weight_quant_mode | gmm_y | mm_x | mm_weight | mm_x_scale | mm_weight_scale | mm_x_quant_mode/mm_weight_quant_mode | mm_y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` |
-    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` | `torch.float8_e4m3fn` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` |
-    | `torch.float8_e5m2` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` | `torch.float8_e5m2` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` |
-    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` | `torch.float8_e5m2` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` |
-    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` | `torch.float8_e4m3fn` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` |
-    | `torch.float8_e5m2` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float8_e5m2` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` |
-    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float8_e4m3fn` | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` |
-    | float4_e2m1_x2 | float4_e2m1_x2 | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` | float4_e2m1_x2 | float4_e2m1_x2 | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.float16` |
-    | float4_e2m1_x2 | float4_e2m1_x2 | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` | float4_e2m1_x2 | float4_e2m1_x2 | float8_e8m0nu | float8_e8m0nu | [6, 6] | `torch.bfloat16` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` |
+    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` |
+    | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` |
+    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` |
+    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` |
+    | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` |
+    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.float16` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | [6, 6] | `torch.bfloat16` |
 
 ## 调用示例
 
