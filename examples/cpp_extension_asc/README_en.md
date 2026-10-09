@@ -36,7 +36,7 @@ Before getting started, ensure that you have completed the installation of the f
 The following steps use the Add operator as an example.
 
 1. Implement the C++ operator code, adaptation code, custom operator schema registration, and implementation binding in the corresponding `*.asc` file (such as `add_custom.asc`) under the operator adaptation layer C++ directory (`csrc`). A namespace named `cpp_extension_acs` is defined in `add_custom.asc`, where the `ascendc_add` function is registered. Within the `ascendc_add` function, the current NPU stream is obtained through `c10_npu::getCurrentNPUStream()`, and the custom kernel function `add_custom` is launched by using the kernel launch syntax `<<<>>>` to execute the operator on the NPU. PyTorch provides the `TORCH_LIBRARY` macro to define a new namespace and register the schema within the namespace. Note that the namespace name must be unique. The code sample is as follows:
-<!--The code sample does not include `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`. Is this required?-->
+    <!--The code sample does not include `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`. Is this required?-->
     > [!NOTE]
     > 
     > In multi-device scenarios, you must add `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))` to the adaptation code to ensure proper cross-device access. This statement can be omitted in single-device scenarios.
