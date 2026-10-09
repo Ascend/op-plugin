@@ -36,7 +36,7 @@
 以下步骤均以add算子为例。
 
 1. 在算子适配层C++代码目录（csrc）中的*.asc文件（如add_custom.asc）完成C++侧算子代码、适配代码、注册自定义算子schema及绑定具体实现。在add_custom.asc中定义了一个名为cpp_extension_asc的命名空间，并在其中注册了ascendc_add函数。在ascendc_add函数中通过`c10_npu::getCurrentNPUStream()`函数获取当前NPU上的流，并通过内核调用符<<<>>>调用自定义的Kernel函数add_custom，在NPU上执行算子。PyTorch提供TORCH_LIBRARY宏来定义新的命名空间，并在该命名空间里注册schema。注意命名空间的名字必须是唯一的。具体示例如下：
-<!-- 代码中没有const c10::OptionalDeviceGuard device_guard(device_of(Tensor))，是否需要增加 -->
+    <!-- 代码中没有const c10::OptionalDeviceGuard device_guard(device_of(Tensor))，是否需要增加 -->
     > [!NOTE]
     > 
     > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`保障跨device访问，单卡场景可不加此代码。
