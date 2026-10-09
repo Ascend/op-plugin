@@ -6735,9 +6735,10 @@ def npu_dynamic_mx_quant_with_dual_axis(input_dummy, *, round_mode="rint", dst_t
     mxscale2_shape.append(2)
 
     block_size = 32
-    last_dim_size = int(math.ceil(mxscale1_shape[last_axis_change] / block_size))
+    # Keep scale shapes symbolic for unbacked input dimensions during tracing.
+    last_dim_size = (mxscale1_shape[last_axis_change] + block_size - 1) // block_size
     last_dim_size = (last_dim_size + 2 - 1) // 2
-    second_to_last_dim_size = int(math.ceil(mxscale2_shape[second_to_last_axis_change] / block_size))
+    second_to_last_dim_size = (mxscale2_shape[second_to_last_axis_change] + block_size - 1) // block_size
     second_to_last_dim_size = (second_to_last_dim_size + 2 - 1) // 2
     mxscale1_shape[last_axis_change] = last_dim_size
     mxscale2_shape[second_to_last_axis_change] = second_to_last_dim_size
