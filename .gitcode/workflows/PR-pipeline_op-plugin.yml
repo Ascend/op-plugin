@@ -89,9 +89,10 @@ stages:
 
           - name: set build skip flag
             id: set-skip
+            env:
+              CHANGED_FILES: ${{ steps.filter.outputs.changed_files }}
+              NON_DOC: ${{ steps.filter.outputs.non-doc }}
             run: |
-              CHANGED_FILES="${{ steps.filter.outputs.changed_files }}"
-              NON_DOC="${{ steps.filter.outputs.non-doc }}"
               echo "changed: $CHANGED_FILES"
               echo "non-doc: $NON_DOC"
               if [ "$NON_DOC" = "true" ]; then
@@ -99,7 +100,7 @@ stages:
               else
                 echo "need_build_ut=no" >> "$ATOMGIT_OUTPUT"
               fi
-              echo "$CHANGED_FILES" | tr -d '[]" ' | tr ',' '\n' > modify_files.txt
+              printf '%s' "$CHANGED_FILES" | python3 -c "import json,sys; print('\n'.join(json.load(sys.stdin)))" > modify_files.txt
               cat modify_files.txt
 
           - name: upload modify_files.txt
