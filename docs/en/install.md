@@ -41,7 +41,57 @@
 
 ## Installation Dependency
 
-The system dependency and official PyTorch framework must be installed during installation. You are advised to use the Docker image provided by TorchNPU for compilation. For details about the dependency installation and image usage guide, see the [TorchNPU](https://gitcode.com/Ascend/pytorch/blob/master/README.md#from-source).
+You are advised to use the development image provided by TorchNPU for compilation. The image can be obtained in either of the following ways: directly pull the pre-built image from the Ascend image repository, or build the image by yourself using the Dockerfile.
+
+- Pull the image directly
+
+    A ready-to-use development image is provided for compiling OpPlugin. You can pull it directly from the Ascend image repository: [torch-npu-devel](https://www.hiascend.com/developer/ascendhub/detail/3b0ca76864884546acd07845f6153ee6)
+
+    Taking the Atlas A2 training products as an example, run the following command to pull the image:
+
+    ```bash
+    docker pull swr.cn-south-1.myhuaweicloud.com/ascendhub/torch-npu-devel:2.13.0-cann9.1.0-910b-manylinux_2_28
+    ```
+
+    After the image is pulled, use the following command to start and access the Docker container and mount the OpPlugin source code to the container:
+
+    ```bash
+    docker run -it -v /{code_path}/op-plugin:/home/op-plugin swr.cn-south-1.myhuaweicloud.com/ascendhub/torch-npu-devel:2.13.0-cann9.1.0-910b-manylinux_2_28 bash
+    ```
+
+- Build the image by yourself
+
+    This repository (op-plugin/docker/devel) provides a ready-to-use Dockerfile that can automatically detect the architecture to pull the base image. You can read the README file in that directory for more information and build your own development environment as instructed.
+
+    ```bash
+    cd op-plugin/docker/devel
+    export DOCKER_BUILDKIT=1
+    docker build -t op-plugin-builder:v1 .
+    ```
+
+    Alternatively, use the one-click container creation script builder.sh:
+
+    ```bash
+    cd op-plugin/docker/devel
+    export DOCKER_BUILDKIT=1
+    bash builder.sh --cann
+    ```
+
+    After the image is built, use the following command to start and access the Docker container and mount the OpPlugin source code to the container:
+
+    ```bash
+    docker run -it -v /{code_path}/op-plugin:/home/op-plugin op-plugin-builder:v1 bash
+    ```
+
+_{code_path}_ indicates the path of the OpPlugin source code. Replace it based on the actual situation.
+
+> [!NOTE]
+>
+> - The container started directly can only be used for compiling the OpPlugin plug-in.
+> - To run OpPlugin in the NPU environment inside the container, ensure that the driver exists on the host (which can be confirmed by the `npu-smi` command) and mount the driver when starting the container. For details, see the README in the directory (op-plugin/docker/devel).
+> - In the container scenario, the image and source code need to be obtained from the external network. For network issues such as proxy configuration, see the [Docker official documentation](https://docs.docker.com/engine/cli/proxy/).
+
+In the physical machine and virtual machine scenarios, you need to install the system dependencies and the official PyTorch framework by yourself. For details about the dependency installation, see the [TorchNPU](https://gitcode.com/Ascend/pytorch/blob/master/README.md#from-source).
 
 ## Operation Procedure
 
@@ -61,10 +111,10 @@ The system dependency and official PyTorch framework must be installed during in
     cd op-plugin
     ```
     
-    Run the following commands to compile and build the PyTorch 2.10.0:
+    Run the following commands to compile and build the plug-in. The following uses PyTorch 2.13.0 and Python 3.10 as an example.
     
     ```bash
-    bash ci/build.sh --python=3.9 --pytorch=v2.10.0
+    bash ci/build.sh --python=3.10 --pytorch=v2.13.0-26.2.0
     ```
     
     > [!NOTICE]
@@ -76,7 +126,7 @@ The system dependency and official PyTorch framework must be installed during in
     ```bash
     pip3 install --upgrade dist/torch_npu-{torch_npu_version}-{Python_version}-{arch}.whl
     # Replace it with the name of the generated whl package. {torch_npu_version} indicates the TorchNPU version, {Python_version} indicates the Python version, and {arch} indicates the target architecture.
-    # A typical whl package name is similar to torch_npu-2.7.1.post13-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.
+    # A typical whl package name is similar to torch_npu-2.13.0rc1-cp310-cp310-linux_aarch64.whl.
     ```
 
 ## Uninstalling
