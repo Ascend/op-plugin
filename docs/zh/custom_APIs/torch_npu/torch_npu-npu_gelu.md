@@ -1,6 +1,7 @@
 # torch_npu.npu_gelu
 
 > [!NOTICE]  
+> 此接口在本版本中有变更，具体变更内容请参考《版本说明》中的“[接口变更说明](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/release_notes.md#%E6%8E%A5%E5%8F%A3%E5%8F%98%E6%9B%B4%E8%AF%B4%E6%98%8E)”。<br>
 > 在NPU环境下使用PyTorch原生接口gelu时，approximate参数不起作用且默认为tanh，如果需要将approximate的默认值设定为None，或者需要区分不同的approximate方法，则需使用此接口。
 
 ## 产品支持情况
