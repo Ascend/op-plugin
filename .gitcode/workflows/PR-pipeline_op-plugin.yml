@@ -21,6 +21,7 @@ on:
 env:
   repo: ${{ atomgit.event.repository.name }}
   pr_id: ${{ atomgit.event.pull_request.number }}
+  TARGET_BRANCH: ${{ atomgit.event.pull_request.base.ref }}
   org_name: "Ascend"
   img_master_arm: "pytorch_master_a2_aarch64_builder:20260922"
   img_2_7_1_arm: "pytorch_2.7.1_a2_aarch64_builder:20260804"
@@ -278,6 +279,13 @@ stages:
                 img: "pytorch_2.11.0_a2_aarch64_builder:20260804"
               - branch: "v2.12.0"
                 img: "pytorch_2.12.0_a2_aarch64_builder:20260804"
+
+      UT_212_CPP:
+        if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' && ( env.TARGET_BRANCH == 'master' || env.TARGET_BRANCH == '26.2.0' ) }}
+        uses: .gitcode/workflows/ut_cpp_job.yml
+        with:
+          pytorch_branch: "v2.12.0"
+          CP_DOCKER_IMG: "pytorch_2.12.0_a2_aarch64_builder:20260804"
 
 post:
   jobs:

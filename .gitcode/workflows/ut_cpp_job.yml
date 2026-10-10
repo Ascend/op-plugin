@@ -1,0 +1,82 @@
+name: UT Cpp Job
+
+on:
+  workflow_call:
+    inputs:
+      py_version:
+        required: false
+        type: string
+        default: "3.10"
+      REMOTE_URL:
+        required: false
+        type: string
+        default: ${{ env.ATOMGIT_REPOSITORY_URL }}
+      pr_id:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.number }}
+      CP_DOCKER_IMG:
+        required: true
+        type: string
+      pytorch_branch:
+        required: true
+        type: string
+      runs_on_arch:
+        required: false
+        type: string
+        default: "x64"
+      runs_on_os:
+        required: false
+        type: string
+        default: "euler"
+      runs_on_spec:
+        required: false
+        type: string
+        default: "large"
+      TEST_RANK:
+        required: false
+        type: string
+      TEST_WORLD_SIZE:
+        required: false
+        type: string
+      TARGET_BRANCH:
+        required: false
+        type: string
+        default: ${{ atomgit.event.pull_request.base.ref }}
+
+jobs:
+  JOB_UT:
+    name: JOB_UT_CPP
+    select: selected_by_default
+    runs-on: [ self-hosted, default, npu=1 ]
+    container:
+      image: swr.cn-north-4.myhuaweicloud.com/frameworkptadapter/${{ inputs.CP_DOCKER_IMG }}
+    steps:
+      - name: Download build artifact
+        uses: download-artifact
+        with:
+          name: op-plugin-${{ inputs.pytorch_branch }}-arm
+          path: ../output/${{ inputs.pr_id }}
+
+      - name: checkout op-plugin
+        uses: checkout
+        with:
+          ref: refs/merge-requests/${{ inputs.pr_id }}/merge
+          fetch-depth: 1
+          path: ./CODE
+          allow-unsafe-pr-checkout: true
+
+      - name: UT op-plugin
+        run: |
+          python_path=$(dirname $(dirname $(readlink -f $(which python${{ inputs.py_version }}))))
+          echo "python_path=${python_path}"
+          export PATH=${python_path}/bin:$PATH
+          cp -rf ../output/${{ inputs.pr_id }}/* ./CODE
+          pip"${{ inputs.py_version }}" install CODE/torch_npu*.whl
+          pip"${{ inputs.py_version }}" list
+          echo "------------------------------------- ENV PATH -------------------------------------"
+          echo ${PATH}
+          echo "------------------------------------------------------------------------------------"
+          source /usr/local/Ascend/cann/set_env.sh
+          source /usr/local/Ascend/nnal/atb/set_env.sh
+          bash CODE/examples/parallel_build_test.sh
