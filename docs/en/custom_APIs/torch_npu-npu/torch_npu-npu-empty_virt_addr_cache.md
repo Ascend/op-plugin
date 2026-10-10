@@ -36,8 +36,10 @@ This API takes effect only when the environment variable `PYTORCH_NPU_ALLOC_CONF
 ## Example
 
 ```python
+>>> import os
 >>> import torch
 >>> import torch_npu
+>>> os.environ["PYTORCH_NPU_ALLOC_CONF"] = "expandable_segments:True"
 >>> x = torch.empty((15000, 1024, 1024), device="npu")
 >>> del x
 >>> torch_npu.npu.empty_virt_addr_cache()
