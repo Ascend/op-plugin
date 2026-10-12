@@ -51,9 +51,9 @@
 > [!NOTE]
 >
 > - 本接口为确定性计算。
-<!-- npu="950" id5 -->
+> <!-- npu="950" id5 -->
 > - 在<term>Ascend 950PR&950DT系列产品</term>上调用本接口时，框架内部会转调用aclnnMoeFinalizeRoutingV2接口，参数映射关系如下：permuted_tokens等同于aclnnMoeFinalizeRoutingV2接口的expandedX输入，sorted_indices等同于expandedRowIdx输入，probs等同于scalesOptional输入，padded_mode等同于dropPadMode输入，输出out等同于aclnnMoeFinalizeRoutingV2接口的out输出。如出现参数错误提示，请参考该映射关系。
-<!-- end id5 -->
+> <!-- end id5 -->
 
 ## 函数原型
 

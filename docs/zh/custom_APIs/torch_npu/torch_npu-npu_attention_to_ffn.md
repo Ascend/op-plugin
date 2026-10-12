@@ -39,7 +39,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
 ## 返回值说明
 
-- 无
+无
 
 ## 约束说明
 
