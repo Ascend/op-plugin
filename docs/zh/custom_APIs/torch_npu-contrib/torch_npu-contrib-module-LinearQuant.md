@@ -146,34 +146,34 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     </th>
     </tr>
     </thead>
-    <tbody><tr id="zh-cn_topic_0000002021380113_row4503125913910"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p150320591294"><a name="zh-cn_topic_0000002021380113_p150320591294"></a><a name="zh-cn_topic_0000002021380113_p150320591294"></a>`torch.int8`</p>
+    <tbody><tr id="zh-cn_topic_0000002021380113_row4503125913910"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p150320591294"><a name="zh-cn_topic_0000002021380113_p150320591294"></a><a name="zh-cn_topic_0000002021380113_p150320591294"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1450395915920"><a name="zh-cn_topic_0000002021380113_p1450395915920"></a><a name="zh-cn_topic_0000002021380113_p1450395915920"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1450395915920"><a name="zh-cn_topic_0000002021380113_p1450395915920"></a><a name="zh-cn_topic_0000002021380113_p1450395915920"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="13.991399139913991%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p115031259296"><a name="zh-cn_topic_0000002021380113_p115031259296"></a><a name="zh-cn_topic_0000002021380113_p115031259296"></a>`torch.int64`/`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="13.991399139913991%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p115031259296"><a name="zh-cn_topic_0000002021380113_p115031259296"></a><a name="zh-cn_topic_0000002021380113_p115031259296"></a>torch.int64/torch.float32</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.931293129312932%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p1050319597913"><a name="zh-cn_topic_0000002021380113_p1050319597913"></a><a name="zh-cn_topic_0000002021380113_p1050319597913"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.41154115411541%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p85035591799"><a name="zh-cn_topic_0000002021380113_p85035591799"></a><a name="zh-cn_topic_0000002021380113_p85035591799"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.41154115411541%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p85035591799"><a name="zh-cn_topic_0000002021380113_p85035591799"></a><a name="zh-cn_topic_0000002021380113_p85035591799"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.001700170017003%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p750312591699"><a name="zh-cn_topic_0000002021380113_p750312591699"></a><a name="zh-cn_topic_0000002021380113_p750312591699"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.47174717471747%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p550365911917"><a name="zh-cn_topic_0000002021380113_p550365911917"></a><a name="zh-cn_topic_0000002021380113_p550365911917"></a>`torch.float16`</p>
+    <td class="cellrowborder" valign="top" width="17.47174717471747%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p550365911917"><a name="zh-cn_topic_0000002021380113_p550365911917"></a><a name="zh-cn_topic_0000002021380113_p550365911917"></a>torch.float16</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row750310595920"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p1750315599914"><a name="zh-cn_topic_0000002021380113_p1750315599914"></a><a name="zh-cn_topic_0000002021380113_p1750315599914"></a>`torch.int8`</p>
+    <tr id="zh-cn_topic_0000002021380113_row750310595920"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p1750315599914"><a name="zh-cn_topic_0000002021380113_p1750315599914"></a><a name="zh-cn_topic_0000002021380113_p1750315599914"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1850317591393"><a name="zh-cn_topic_0000002021380113_p1850317591393"></a><a name="zh-cn_topic_0000002021380113_p1850317591393"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1850317591393"><a name="zh-cn_topic_0000002021380113_p1850317591393"></a><a name="zh-cn_topic_0000002021380113_p1850317591393"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="13.991399139913991%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p95034598912"><a name="zh-cn_topic_0000002021380113_p95034598912"></a><a name="zh-cn_topic_0000002021380113_p95034598912"></a>`torch.int64`/`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="13.991399139913991%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p95034598912"><a name="zh-cn_topic_0000002021380113_p95034598912"></a><a name="zh-cn_topic_0000002021380113_p95034598912"></a>torch.int64/torch.float32</p>
     </td>
-    <td class="cellrowborder" valign="top" width="12.931293129312932%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p14503359395"><a name="zh-cn_topic_0000002021380113_p14503359395"></a><a name="zh-cn_topic_0000002021380113_p14503359395"></a>`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="12.931293129312932%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p14503359395"><a name="zh-cn_topic_0000002021380113_p14503359395"></a><a name="zh-cn_topic_0000002021380113_p14503359395"></a>torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.41154115411541%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p25033591296"><a name="zh-cn_topic_0000002021380113_p25033591296"></a><a name="zh-cn_topic_0000002021380113_p25033591296"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.41154115411541%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p25033591296"><a name="zh-cn_topic_0000002021380113_p25033591296"></a><a name="zh-cn_topic_0000002021380113_p25033591296"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.001700170017003%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p115035592090"><a name="zh-cn_topic_0000002021380113_p115035592090"></a><a name="zh-cn_topic_0000002021380113_p115035592090"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.47174717471747%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p75033595916"><a name="zh-cn_topic_0000002021380113_p75033595916"></a><a name="zh-cn_topic_0000002021380113_p75033595916"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="17.47174717471747%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p75033595916"><a name="zh-cn_topic_0000002021380113_p75033595916"></a><a name="zh-cn_topic_0000002021380113_p75033595916"></a>torch.int8</p>
     </td>
     </tr>
     <tr id="zh-cn_topic_0000002021380113_row183492120464"><td class="cellrowborder" colspan="7" valign="top" headers="mcps1.2.8.1.1 mcps1.2.8.1.2 mcps1.2.8.1.3 mcps1.2.8.1.4 mcps1.2.8.1.5 mcps1.2.8.1.6 mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p16486127124614"><a name="zh-cn_topic_0000002021380113_p16486127124614"></a><a name="zh-cn_topic_0000002021380113_p16486127124614"></a>注：None表示传入参数或变量为False的场景。</p>
@@ -203,94 +203,94 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     </th>
     </tr>
     </thead>
-    <tbody><tr id="zh-cn_topic_0000002021380113_row1850445912918"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p105042591492"><a name="zh-cn_topic_0000002021380113_p105042591492"></a><a name="zh-cn_topic_0000002021380113_p105042591492"></a>`torch.int8`</p>
+    <tbody><tr id="zh-cn_topic_0000002021380113_row1850445912918"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p105042591492"><a name="zh-cn_topic_0000002021380113_p105042591492"></a><a name="zh-cn_topic_0000002021380113_p105042591492"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1550412593911"><a name="zh-cn_topic_0000002021380113_p1550412593911"></a><a name="zh-cn_topic_0000002021380113_p1550412593911"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1550412593911"><a name="zh-cn_topic_0000002021380113_p1550412593911"></a><a name="zh-cn_topic_0000002021380113_p1550412593911"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p35044591897"><a name="zh-cn_topic_0000002021380113_p35044591897"></a><a name="zh-cn_topic_0000002021380113_p35044591897"></a>`torch.int64`/`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p35044591897"><a name="zh-cn_topic_0000002021380113_p35044591897"></a><a name="zh-cn_topic_0000002021380113_p35044591897"></a>torch.int64/torch.float32</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p2231164184310"><a name="zh-cn_topic_0000002021380113_p2231164184310"></a><a name="zh-cn_topic_0000002021380113_p2231164184310"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p175042059793"><a name="zh-cn_topic_0000002021380113_p175042059793"></a><a name="zh-cn_topic_0000002021380113_p175042059793"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p175042059793"><a name="zh-cn_topic_0000002021380113_p175042059793"></a><a name="zh-cn_topic_0000002021380113_p175042059793"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p15627147184415"><a name="zh-cn_topic_0000002021380113_p15627147184415"></a><a name="zh-cn_topic_0000002021380113_p15627147184415"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p1950435916910"><a name="zh-cn_topic_0000002021380113_p1950435916910"></a><a name="zh-cn_topic_0000002021380113_p1950435916910"></a>`torch.float16`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p1950435916910"><a name="zh-cn_topic_0000002021380113_p1950435916910"></a><a name="zh-cn_topic_0000002021380113_p1950435916910"></a>torch.float16</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row1650414599917"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p135041599910"><a name="zh-cn_topic_0000002021380113_p135041599910"></a><a name="zh-cn_topic_0000002021380113_p135041599910"></a>`torch.int8`</p>
+    <tr id="zh-cn_topic_0000002021380113_row1650414599917"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p135041599910"><a name="zh-cn_topic_0000002021380113_p135041599910"></a><a name="zh-cn_topic_0000002021380113_p135041599910"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p950413591090"><a name="zh-cn_topic_0000002021380113_p950413591090"></a><a name="zh-cn_topic_0000002021380113_p950413591090"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p950413591090"><a name="zh-cn_topic_0000002021380113_p950413591090"></a><a name="zh-cn_topic_0000002021380113_p950413591090"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p2504105916914"><a name="zh-cn_topic_0000002021380113_p2504105916914"></a><a name="zh-cn_topic_0000002021380113_p2504105916914"></a>`torch.int64`/`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p2504105916914"><a name="zh-cn_topic_0000002021380113_p2504105916914"></a><a name="zh-cn_topic_0000002021380113_p2504105916914"></a>torch.int64/torch.float32</p>
     </td>
-    <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p2050415914911"><a name="zh-cn_topic_0000002021380113_p2050415914911"></a><a name="zh-cn_topic_0000002021380113_p2050415914911"></a>`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p2050415914911"><a name="zh-cn_topic_0000002021380113_p2050415914911"></a><a name="zh-cn_topic_0000002021380113_p2050415914911"></a>torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p18504105920916"><a name="zh-cn_topic_0000002021380113_p18504105920916"></a><a name="zh-cn_topic_0000002021380113_p18504105920916"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p18504105920916"><a name="zh-cn_topic_0000002021380113_p18504105920916"></a><a name="zh-cn_topic_0000002021380113_p18504105920916"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p550512597915"><a name="zh-cn_topic_0000002021380113_p550512597915"></a><a name="zh-cn_topic_0000002021380113_p550512597915"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p1750585915914"><a name="zh-cn_topic_0000002021380113_p1750585915914"></a><a name="zh-cn_topic_0000002021380113_p1750585915914"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p1750585915914"><a name="zh-cn_topic_0000002021380113_p1750585915914"></a><a name="zh-cn_topic_0000002021380113_p1750585915914"></a>torch.int8</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row175059594912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p550515591592"><a name="zh-cn_topic_0000002021380113_p550515591592"></a><a name="zh-cn_topic_0000002021380113_p550515591592"></a>`torch.int8`</p>
+    <tr id="zh-cn_topic_0000002021380113_row175059594912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p550515591592"><a name="zh-cn_topic_0000002021380113_p550515591592"></a><a name="zh-cn_topic_0000002021380113_p550515591592"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p115052059396"><a name="zh-cn_topic_0000002021380113_p115052059396"></a><a name="zh-cn_topic_0000002021380113_p115052059396"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p115052059396"><a name="zh-cn_topic_0000002021380113_p115052059396"></a><a name="zh-cn_topic_0000002021380113_p115052059396"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p050514591297"><a name="zh-cn_topic_0000002021380113_p050514591297"></a><a name="zh-cn_topic_0000002021380113_p050514591297"></a>`torch.float32`/`torch.bfloat16`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p050514591297"><a name="zh-cn_topic_0000002021380113_p050514591297"></a><a name="zh-cn_topic_0000002021380113_p050514591297"></a>torch.float32/torch.bfloat16</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p1750595915910"><a name="zh-cn_topic_0000002021380113_p1750595915910"></a><a name="zh-cn_topic_0000002021380113_p1750595915910"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p650595920913"><a name="zh-cn_topic_0000002021380113_p650595920913"></a><a name="zh-cn_topic_0000002021380113_p650595920913"></a>`torch.int32`/`torch.bfloat16`/`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p650595920913"><a name="zh-cn_topic_0000002021380113_p650595920913"></a><a name="zh-cn_topic_0000002021380113_p650595920913"></a>torch.int32/torch.bfloat16/torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p1050518593911"><a name="zh-cn_topic_0000002021380113_p1050518593911"></a><a name="zh-cn_topic_0000002021380113_p1050518593911"></a>`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p1050518593911"><a name="zh-cn_topic_0000002021380113_p1050518593911"></a><a name="zh-cn_topic_0000002021380113_p1050518593911"></a>torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p19505959695"><a name="zh-cn_topic_0000002021380113_p19505959695"></a><a name="zh-cn_topic_0000002021380113_p19505959695"></a>`torch.bfloat16`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p19505959695"><a name="zh-cn_topic_0000002021380113_p19505959695"></a><a name="zh-cn_topic_0000002021380113_p19505959695"></a>torch.bfloat16</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row950520592912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p2505175915915"><a name="zh-cn_topic_0000002021380113_p2505175915915"></a><a name="zh-cn_topic_0000002021380113_p2505175915915"></a>`torch.int8`</p>
+    <tr id="zh-cn_topic_0000002021380113_row950520592912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p2505175915915"><a name="zh-cn_topic_0000002021380113_p2505175915915"></a><a name="zh-cn_topic_0000002021380113_p2505175915915"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p15051859596"><a name="zh-cn_topic_0000002021380113_p15051859596"></a><a name="zh-cn_topic_0000002021380113_p15051859596"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p15051859596"><a name="zh-cn_topic_0000002021380113_p15051859596"></a><a name="zh-cn_topic_0000002021380113_p15051859596"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p750515599915"><a name="zh-cn_topic_0000002021380113_p750515599915"></a><a name="zh-cn_topic_0000002021380113_p750515599915"></a>`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p750515599915"><a name="zh-cn_topic_0000002021380113_p750515599915"></a><a name="zh-cn_topic_0000002021380113_p750515599915"></a>torch.float32</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p85051595912"><a name="zh-cn_topic_0000002021380113_p85051595912"></a><a name="zh-cn_topic_0000002021380113_p85051595912"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p1150511596912"><a name="zh-cn_topic_0000002021380113_p1150511596912"></a><a name="zh-cn_topic_0000002021380113_p1150511596912"></a>`torch.int32`/`torch.float16`/`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p1150511596912"><a name="zh-cn_topic_0000002021380113_p1150511596912"></a><a name="zh-cn_topic_0000002021380113_p1150511596912"></a>torch.int32/torch.float16/torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p1505135911914"><a name="zh-cn_topic_0000002021380113_p1505135911914"></a><a name="zh-cn_topic_0000002021380113_p1505135911914"></a>`torch.float32`/None</p>
+    <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p1505135911914"><a name="zh-cn_topic_0000002021380113_p1505135911914"></a><a name="zh-cn_topic_0000002021380113_p1505135911914"></a>torch.float32/None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p850516591099"><a name="zh-cn_topic_0000002021380113_p850516591099"></a><a name="zh-cn_topic_0000002021380113_p850516591099"></a>`torch.float16`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p850516591099"><a name="zh-cn_topic_0000002021380113_p850516591099"></a><a name="zh-cn_topic_0000002021380113_p850516591099"></a>torch.float16</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row750514591599"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p105051659594"><a name="zh-cn_topic_0000002021380113_p105051659594"></a><a name="zh-cn_topic_0000002021380113_p105051659594"></a>`torch.int32`</p>
+    <tr id="zh-cn_topic_0000002021380113_row750514591599"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p105051659594"><a name="zh-cn_topic_0000002021380113_p105051659594"></a><a name="zh-cn_topic_0000002021380113_p105051659594"></a>torch.int32</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1550525916920"><a name="zh-cn_topic_0000002021380113_p1550525916920"></a><a name="zh-cn_topic_0000002021380113_p1550525916920"></a>`torch.int32`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p1550525916920"><a name="zh-cn_topic_0000002021380113_p1550525916920"></a><a name="zh-cn_topic_0000002021380113_p1550525916920"></a>torch.int32</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p750512591997"><a name="zh-cn_topic_0000002021380113_p750512591997"></a><a name="zh-cn_topic_0000002021380113_p750512591997"></a>`torch.int64`/`torch.float32`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p750512591997"><a name="zh-cn_topic_0000002021380113_p750512591997"></a><a name="zh-cn_topic_0000002021380113_p750512591997"></a>torch.int64/torch.float32</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p250517591991"><a name="zh-cn_topic_0000002021380113_p250517591991"></a><a name="zh-cn_topic_0000002021380113_p250517591991"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p19505195914919"><a name="zh-cn_topic_0000002021380113_p19505195914919"></a><a name="zh-cn_topic_0000002021380113_p19505195914919"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p19505195914919"><a name="zh-cn_topic_0000002021380113_p19505195914919"></a><a name="zh-cn_topic_0000002021380113_p19505195914919"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p550510599919"><a name="zh-cn_topic_0000002021380113_p550510599919"></a><a name="zh-cn_topic_0000002021380113_p550510599919"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p55058595918"><a name="zh-cn_topic_0000002021380113_p55058595918"></a><a name="zh-cn_topic_0000002021380113_p55058595918"></a>`torch.float16`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p55058595918"><a name="zh-cn_topic_0000002021380113_p55058595918"></a><a name="zh-cn_topic_0000002021380113_p55058595918"></a>torch.float16</p>
     </td>
     </tr>
-    <tr id="zh-cn_topic_0000002021380113_row550595915912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p6505175913912"><a name="zh-cn_topic_0000002021380113_p6505175913912"></a><a name="zh-cn_topic_0000002021380113_p6505175913912"></a>`torch.int8`</p>
+    <tr id="zh-cn_topic_0000002021380113_row550595915912"><td class="cellrowborder" valign="top" width="11.32113211321132%" headers="mcps1.2.8.1.1 "><p id="zh-cn_topic_0000002021380113_p6505175913912"><a name="zh-cn_topic_0000002021380113_p6505175913912"></a><a name="zh-cn_topic_0000002021380113_p6505175913912"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p55051559192"><a name="zh-cn_topic_0000002021380113_p55051559192"></a><a name="zh-cn_topic_0000002021380113_p55051559192"></a>`torch.int8`</p>
+    <td class="cellrowborder" valign="top" width="11.871187118711871%" headers="mcps1.2.8.1.2 "><p id="zh-cn_topic_0000002021380113_p55051559192"><a name="zh-cn_topic_0000002021380113_p55051559192"></a><a name="zh-cn_topic_0000002021380113_p55051559192"></a>torch.int8</p>
     </td>
-    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p75054591913"><a name="zh-cn_topic_0000002021380113_p75054591913"></a><a name="zh-cn_topic_0000002021380113_p75054591913"></a>`torch.float32`/`torch.bfloat16`</p>
+    <td class="cellrowborder" valign="top" width="14.161416141614161%" headers="mcps1.2.8.1.3 "><p id="zh-cn_topic_0000002021380113_p75054591913"><a name="zh-cn_topic_0000002021380113_p75054591913"></a><a name="zh-cn_topic_0000002021380113_p75054591913"></a>torch.float32/torch.bfloat16</p>
     </td>
     <td class="cellrowborder" valign="top" width="12.921292129212922%" headers="mcps1.2.8.1.4 "><p id="zh-cn_topic_0000002021380113_p45064591697"><a name="zh-cn_topic_0000002021380113_p45064591697"></a><a name="zh-cn_topic_0000002021380113_p45064591697"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p7506259691"><a name="zh-cn_topic_0000002021380113_p7506259691"></a><a name="zh-cn_topic_0000002021380113_p7506259691"></a>`torch.int32`/None</p>
+    <td class="cellrowborder" valign="top" width="15.251525152515253%" headers="mcps1.2.8.1.5 "><p id="zh-cn_topic_0000002021380113_p7506259691"><a name="zh-cn_topic_0000002021380113_p7506259691"></a><a name="zh-cn_topic_0000002021380113_p7506259691"></a>torch.int32/None</p>
     </td>
     <td class="cellrowborder" valign="top" width="17.461746174617463%" headers="mcps1.2.8.1.6 "><p id="zh-cn_topic_0000002021380113_p115061359097"><a name="zh-cn_topic_0000002021380113_p115061359097"></a><a name="zh-cn_topic_0000002021380113_p115061359097"></a>None</p>
     </td>
-    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p250625911912"><a name="zh-cn_topic_0000002021380113_p250625911912"></a><a name="zh-cn_topic_0000002021380113_p250625911912"></a>`torch.int32`</p>
+    <td class="cellrowborder" valign="top" width="17.01170117011701%" headers="mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p250625911912"><a name="zh-cn_topic_0000002021380113_p250625911912"></a><a name="zh-cn_topic_0000002021380113_p250625911912"></a>torch.int32</p>
     </td>
     </tr>
     <tr id="zh-cn_topic_0000002021380113_row8523104511"><td class="cellrowborder" colspan="7" valign="top" headers="mcps1.2.8.1.1 mcps1.2.8.1.2 mcps1.2.8.1.3 mcps1.2.8.1.4 mcps1.2.8.1.5 mcps1.2.8.1.6 mcps1.2.8.1.7 "><p id="zh-cn_topic_0000002021380113_p1899351015458"><a name="zh-cn_topic_0000002021380113_p1899351015458"></a><a name="zh-cn_topic_0000002021380113_p1899351015458"></a>注：None表示传入参数或变量为False的场景。</p>

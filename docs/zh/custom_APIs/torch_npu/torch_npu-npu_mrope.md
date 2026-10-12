@@ -314,7 +314,7 @@ query_out, key_out = torch_npu.npu_mrope(
 
 - MRoPE示例（四段`mrope_section`）：
 
-  `positions`为`(4, num_tokens)`，与`[16, 16, 16, 16]`等四段配置对应；该配置下**`cache_mode`仅支持`'default'`**。
+  `positions`为`(4, num_tokens)`，与`[16, 16, 16, 16]`等四段配置对应；该配置下`cache_mode`仅支持`'default'`。
 
 ```python
 import torch

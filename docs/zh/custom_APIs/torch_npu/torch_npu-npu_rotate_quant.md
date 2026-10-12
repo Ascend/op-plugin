@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-API功能：`npu_rotate_quant`是一种融合旋转（Rotate）和量化（Quant）的计算方法。该方法适用于需要对输入数据进行旋转变换后进行量化的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
+`npu_rotate_quant`是一种融合旋转（Rotate）和量化（Quant）的计算方法。该方法适用于需要对输入数据进行旋转变换后进行量化的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
 
 ## 函数原型
 
@@ -44,15 +44,53 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 - 该接口支持推理和训练场景下使用。
 - 该接口仅在Atlas A2系列产品和Atlas A3系列产品上支持图模式。
 - 对于输入数据的shape，存在以下约束：
-    - 当前在Atlas A2系列产品和Atlas A3系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]；在Ascend 950PR&950DT系列产品平台上，`rotation`的shape支持`[K, K]`和`[block_num, K, K]`两种形式，`K`仅支持32、64、128三种取值, 其中`block_num = N/K`，`N`为输入`x`最后一维的大小。
-    - 输入`x`的最后一维需要能被`K`整除。在Atlas A2系列产品和Atlas A3系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除；在Ascend 950PR&950DT系列产品平台上，`x`的shape支持1～7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
+    <!-- npu="A3,910b" id5 -->
+    - 在Atlas A2系列产品和Atlas A3系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]。
+    <!-- end id5 -->
+    <!-- npu="950" id6 -->
+    - 在Ascend 950PR&950DT系列产品平台上，`rotation`的shape支持`[K, K]`和`[block_num, K, K]`两种形式，`K`仅支持32、64、128三种取值, 其中`block_num = N/K`，`N`为输入`x`最后一维的大小。
+    <!-- end id6 -->
+    - 输入`x`的最后一维需要能被`K`整除。
+      <!-- npu="A3,910b" id7 -->
+      - 在Atlas A2系列产品和Atlas A3系列产品上，`x`的shape仅支持2维，最后一维的大小需要在128~16000之间且必须同时可被8整除。
+      <!-- end id7 -->
+      <!-- npu="950" id8 -->
+      - 在Ascend 950PR&950DT系列产品平台上，`x`的shape支持1～7维，且当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时，输入`x`的最后一维必须同时可被2整除。
+      <!-- end id8 -->
 - 对于输入数据的取值范围，存在以下约束：   
-    - `dst_dtype`在Atlas A2系列产品和Atlas A3系列产品上仅支持`torch.int8`和`torch.quint4x2`；在Ascend 950PR&950DT系列产品平台上仅支持`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`和`torch.float8_e4m3fn`。
-    - `alpha`在Atlas A2系列产品和Atlas A3系列产品上仅支持传入None，无实际功能；在Ascend 950PR&950DT系列产品平台上取值范围为(0.0, 1.0)，传入None或不在有效取值范围内时不做处理。
-    - `axis`在Atlas A2系列产品和Atlas A3系列产品上仅支持-1或1；在Ascend 950PR&950DT系列产品平台上仅支持-1或D-1，D为输入`x`的维度数。
+    <!-- npu="A3,910b" id9 -->
+    - `dst_dtype`在Atlas A2系列产品和Atlas A3系列产品上仅支持`torch.int8`和`torch.quint4x2`。
+    <!-- end id9 -->
+    <!-- npu="950" id10 -->
+    - `dst_dtype`在Ascend 950PR&950DT系列产品平台上仅支持`torch_npu.float4_e2m1fn_x2`、`torch.float8_e5m2`和`torch.float8_e4m3fn`。
+    <!-- end id10 -->
+    <!-- npu="A3,910b" id11 -->
+    - `alpha`在Atlas A2系列产品和Atlas A3系列产品上仅支持传入None，无实际功能。
+    <!-- end id11 -->
+    <!-- npu="950" id12 -->
+    - `alpha`在Ascend 950PR&950DT系列产品平台上取值范围为(0.0, 1.0)，传入None或不在有效取值范围内时不做处理。
+    <!-- end id12 -->
+    <!-- npu="A3,910b" id13 -->
+    - `axis`在Atlas A2系列产品和Atlas A3系列产品上仅支持-1或1。
+    <!-- end id13 -->
+    <!-- npu="950" id14 -->
+    - `axis`在Ascend 950PR&950DT系列产品平台上仅支持-1或D-1，D为输入`x`的维度数。
+    <!-- end id14 -->
+    <!-- npu="950" id15 -->
     - 在Ascend 950PR&950DT系列产品平台上，当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时，`round_mode`仅支持"rint"。
-    - `scale_alg`在Atlas A2系列产品和Atlas A3系列产品上仅支持0；在Ascend 950PR&950DT系列产品平台上支持取值0、1、2，其中当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时仅支持0和1，当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时仅支持0和2。
-    - `dst_type_max`在Atlas A2系列产品和Atlas A3系列产品上仅支持0.0；在Ascend 950PR&950DT系列产品平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
+    <!-- end id15 -->
+    <!-- npu="A3,910b" id16 -->
+    - `scale_alg`在Atlas A2系列产品和Atlas A3系列产品上仅支持0。
+    <!-- end id16 -->
+    <!-- npu="950" id17 -->
+    - `scale_alg`在Ascend 950PR&950DT系列产品平台上支持取值0、1、2，其中当`dst_dtype`为`torch.float8_e5m2`或`torch.float8_e4m3fn`时仅支持0和1，当`dst_dtype`为`torch_npu.float4_e2m1fn_x2`时仅支持0和2。
+    <!-- end id17 -->
+    <!-- npu="A3,910b" id18 -->
+    - `dst_type_max`在Atlas A2系列产品和Atlas A3系列产品上仅支持0.0。
+    <!-- end id18 -->
+    <!-- npu="950" id19 -->
+    - `dst_type_max`在在Ascend 950PR&950DT系列产品平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
+    <!-- end id19 -->
 - `x`和`rotation`的数据类型必须一致。
 
 ## 调用示例

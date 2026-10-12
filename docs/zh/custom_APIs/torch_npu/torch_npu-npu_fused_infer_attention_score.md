@@ -48,7 +48,7 @@ torch_npu.npu_fused_infer_attention_score(
 ) -> (Tensor, Tensor)
 ```
 
-  > [!NOTE]
+  > [!NOTE]  
   > `*`之前的`query, key, value`为位置参数（必须按顺序传入）；`*`之后的为关键字参数（键值对赋值，可选，不传使用默认值）。
 
 ## 参数说明
@@ -73,7 +73,9 @@ torch_npu.npu_fused_infer_attention_score(
 
 ### 各轴取值范围速查
 
-> **维度约定**：B = Batch Size, S = Sequence Length, H = Hidden Size, N = Head Num, D = Head Dim（满足D = H / N）, T =所有Batch序列长度的累加和。
+> [!NOTE]  
+> B = Batch Size, S = Sequence Length, H = Hidden Size, N = Head Num, D = Head Dim（满足D = H / N）, T =所有Batch序列长度的累加和。
+>
 > Q_S/S1 = `query`的S, KV_S/S2 = `key/value`的S, Q_N = num_query_heads, KV_N = `num_key_value_heads`。
 
 | 轴 | 含义 | Q_S > 1上限 | Q_S = 1上限 | 对齐要求 |
@@ -217,7 +219,7 @@ torch_npu.npu_fused_infer_attention_score(
   | 4 | pertoken + page attention | pertoken叠加page attention管理scale/offset。 |
   | 5 | pertoken + perhead + page attention | pertoken叠加perhead并使用page attention管理scale/offset。 |
 
-> **特殊约束**：
+> [!NOTE]  
 >
 ><!-- npu="A3,910b" id47 -->
 > - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：Q_S ≥ 2时仅支持0、1；Q_S = 1时支持0~5。
@@ -269,7 +271,7 @@ torch_npu.npu_fused_infer_attention_score(
   | `"NTD_TND"` | (Q_N, T, D) | (KV_N, T, D) | (T, Q_N, D) | 变长序列+ transpose |
 
 <!-- npu="950" id46 -->
-> **特殊约束**：
+> [!NOTE]  
 >
 > - <term>Ascend 950PR&950DT系列产品</term>：支持BSH、BSND、BNSD、BNSD_BSND、TND（不支持左padding、tensorlist、pse）。
 <!-- end id46 -->
@@ -303,7 +305,8 @@ torch_npu.npu_fused_infer_attention_score(
   | 7 | dilated | **暂不支持** | — |
   | 8 | block_local | **暂不支持** | — |
 
-> **特殊约束**：Q_S = 1且不带rope输入时，`sparse_mode`参数无效。
+> [!NOTE]  
+> Q_S = 1且不带rope输入时，`sparse_mode`参数无效。
 
 - **inner_precise** (`int`,可选)：精度/性能模式，详见表格，默认值：0。
 
@@ -592,7 +595,7 @@ torch_npu.npu_fused_infer_attention_score(
     - `key_antiquant_offset`和`value_antiquant_offset`都不为空时，除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，其shape需要保持一致。
     - 管理scale/offset的量化模式如下：
 
-      > [!NOTE]
+      > [!NOTE]  
       > 注意scale、offset具体指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`参数。
 
       | 量化模式 | 该场景下scale和offset条件 | 该场景下`key`和`value`条件 |
@@ -659,7 +662,7 @@ torch_npu.npu_fused_infer_attention_score(
     - `torch_npu.int4`（`torch.int32`）伪量化场景不支持后量化。
     - 管理scale/offset的量化模式如下：
 
-      > [!NOTE]
+      > [!NOTE]  
       > 注意scale、offset两个参数指`key_antiquant_scale`、`value_antiquant_scale`、`key_antiquant_offset`、`value_antiquant_offset`。
       > 当Q_S等于1时，支持下表所示的量化模式。
 
@@ -719,7 +722,7 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.shape)  # torch.Size([1, 8, 164, 128])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `scale=1/√128`：必设，控制softmax之前QK^T的缩放。设错会导致attention分布异常。
 >
@@ -779,7 +782,7 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.shape)  # torch.Size([1, 1, 1024])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `num_key_value_heads=2`：启用GQA，num_heads / num_key_value_heads = 4。该参数不传时默认为0（即MHA），见[参数说明](#详细参数说明)。
 >
@@ -789,7 +792,7 @@ print(out.shape)  # torch.Size([1, 1, 1024])
 >
 > - `actual_seq_lengths_kv`：PageAttention场景必须传入，对应约束见[PageAttention约束](#pa_constraints)。
 >
-> -此场景Q_S=1，走IncreFlashAttention分支，约束见[Q_S = 1约束](#qs_eq_1)。
+> - 此场景Q_S=1，走IncreFlashAttention分支，约束见[Q_S = 1约束](#qs_eq_1)。
 
 ### 示例3：MHA + Causal Mask（带atten_mask）
 
@@ -826,13 +829,13 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.shape)  # torch.Size([1, 8, 164, 128])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `atten_mask`：shape (1, Q_S, KV_S)，`torch.bool`类型。更多mask shape选项见[atten_mask参数说明](#详细参数说明)。
 >
 > - `sparse_mode=0`：defaultMask模式，使用`pre_tokens`/`next_tokens`控制计算范围。此处为完整双向attention。
 >
-> -也可使用`sparse_mode=3`（rightDownCausal）+ 2048×2048优化mask。
+> - 也可使用`sparse_mode=3`（rightDownCausal）+ 2048×2048优化mask。
 
 ### 示例4：MLA + Decode（Multi-head Latent Attention）
 
@@ -873,13 +876,13 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.shape)  # torch.Size([1, 16, 1, 512])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `query_rope` + `key_rope`：传入即进入MLA分支，必须同时传入。RoPE维度固定64。二者dtype/format须与query/key一致。
 >
 > - D=512：MLA prefill场景的D为512或128。D=512时可开启PageAttention、支持NZ格式等。约束详见[MLA约束](#mla_constraints)。
 >
-> -此场景不支持：softmax_lse、左padding、pse、prefix、伪量化、全量化。
+> - 此场景不支持：softmax_lse、左padding、pse、prefix、伪量化、全量化。
 
 ### 示例5：`torch.int8`后量化
 
@@ -917,13 +920,13 @@ print(out.dtype)  # torch.int8
 print(out.shape)  # torch.Size([1, 8, 164, 128])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `quant_scale2`：传入即触发后量化（输出`torch.int8`）。不传`quant_offset2`则偏移为0。
 >
 > - `torch.int8`输出场景下，**禁止**同时传入`dequant_scale1`/`quant_scale1`/`dequant_scale2`。约束详见[`torch.int8`量化约束](#int8_constraints)。
 >
-> -如需perchannel量化，shape建议(Q_N, D)。详见[quant_scale2参数说明](#详细参数说明)。
+> - 如需perchannel量化，shape建议(Q_N, D)。详见[quant_scale2参数说明](#详细参数说明)。
 
 ### 示例6：`torch.int8`全量化
 
@@ -969,13 +972,13 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.dtype)  # torch.int8
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
-> -四个量化参数必须**同时存在**。`quant_offset2`可选，不传时偏移为0。
+> - 四个量化参数必须**同时存在**。`quant_offset2`可选，不传时偏移为0。
 >
 > - D轴需32字节对齐。input_layout仅支持BSH/BNSD/BSND/BNSD_BSND。
 >
-> -约束详见[`torch.int8`量化约束](#int8_constraints)。
+> - 约束详见[`torch.int8`量化约束](#int8_constraints)。
 
 ### 示例7：伪量化（KV分离模式）+ Decode
 
@@ -1016,13 +1019,13 @@ print(out.dtype)   # torch.bfloat16
 print(out.shape)   # torch.Size([1, 8, 1, 128])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
-> -使用KV分离模式（优于`antiquant_scale`和`antiquant_offset`模式）。
+> - 使用KV分离模式（优于`antiquant_scale`和`antiquant_offset`模式）。
 >
 > - `key_antiquant_mode=0`：perchannel模式。此处Q_S=1 + query `torch.bfloat16` + kv `torch.int8` + key/value_antiquant_scale `torch.bfloat16` → 满足[Q_S = 1约束](#qs_eq_1)中的kv 伪量化参数分离条件。
 >
-> -当`key_antiquant_scale`和`value_antiquant_scale`与`antiquant_scale`同时传入时，以KV分离参数为准。
+> - 当`key_antiquant_scale`和`value_antiquant_scale`与`antiquant_scale`同时传入时，以KV分离参数为准。
 
 ### 示例8：Prefix + Prefill（共享前缀）
 
@@ -1061,13 +1064,13 @@ out, _ = torch_npu.npu_fused_infer_attention_score(
 print(out.shape)  # torch.Size([1, 8, 164, 128])
 ```
 
-> **关键参数说明**：
+> [!NOTE]  
 >
 > - `key_shared_prefix` + `value_shared_prefix`：必须同时传入。shape第一维batch=1。约束见[Prefix约束](#prefix_constraints)。
 >
-> -如果S2（KV_S + prefix_S）超出原KV_S限制则报错。若传入`atten_mask`，S2需大于prefix_S + KV_S。
+> - 如果S2（KV_S + prefix_S）超出原KV_S限制则报错。若传入`atten_mask`，S2需大于prefix_S + KV_S。
 >
-> -不支持PageAttention、左padding、tensorlist、qkv全`torch.int8`。
+> - 不支持PageAttention、左padding、tensorlist、qkv全`torch.int8`。
 
 ### 示例9：ACL Graph模式（torch_npu.npu.NPUGraph）
 
