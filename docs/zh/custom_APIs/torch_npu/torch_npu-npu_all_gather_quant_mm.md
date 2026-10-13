@@ -80,9 +80,9 @@
 
 ## 函数原型
 
-​```python
+```python
 torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_scale=None, x2_scale=None, quant_scale=None, block_size=0, gather_index=0, gather_output=True, comm_turn=0, group_sizes=None, amax_output=False, y_dtype=None, x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None, comm_mode=None) -> (Tensor, Tensor, Tensor)
-​```
+```
 
 ## 参数说明
 
