@@ -65,7 +65,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 `Tensor`
 
-输出张量，对应公式中的$out$，数据类型支持`torch.bfloat16`、`torch.float16`、float。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致。输出的最后一维长度为输入的一半，其余维度保持不变。例如：若 `input.shape = [100, 400]`，则 `output.shape = [100, 200]`。
+输出张量，对应公式中的$out$，数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float`。shape维度2至8维。支持非连续的Tensor，数据格式支持$ND$，输出的数据类型与输入`input`保持一致。输出的最后一维长度为输入的一半，其余维度保持不变。例如：若 `input.shape = [100, 400]`，则 `output.shape = [100, 200]`。
 
 ## 调用示例
 

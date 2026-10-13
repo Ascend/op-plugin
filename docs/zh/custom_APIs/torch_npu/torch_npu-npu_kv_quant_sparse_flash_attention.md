@@ -18,7 +18,7 @@
 
 - 计算公式：
     $$
-    Attention=\text{softmax}(\frac{Q @ \text{Dequant}({\tilde{K}^{`torch.int8`}},{Scale_K})^T}{\sqrt{d_k}})@\text{Dequant}(\tilde{V}^{`torch.int8`},{Scale_V}),
+    Attention=\text{softmax}(\frac{Q @ \text{Dequant}({\tilde{K}^{INT8}},{Scale_K})^T}{\sqrt{d_k}})@\text{Dequant}(\tilde{V}^{INT8},{Scale_V}),
     $$
     其中$\tilde{K},\tilde{V}$为基于某种选择算法（如`LightningIndexer`）得到的重要性较高的Key和Value，一般具有稀疏或分块稀疏的特征，$d_k$为$Q,\tilde{K}$每一个头的维度，$\text{Dequant}(\cdot,\cdot)$为反量化函数。
 本次公布的`kv_quant_sparse_flash_attention`是面向Sparse Attention的全新算子，针对离散访存进行了指令缩减及搬运聚合的细致优化。
@@ -46,9 +46,9 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **scale\_value**（`double`）：必选参数，公式中$d_k$开根号的倒数，代表缩放系数，作为query和key矩阵乘后Muls的scalar值，数据类型支持`double`。
 
-- **key\_quant\_mode**（`int`）：必选参数，代表key的量化模式，数据类型支持`torch.int64`，仅支持传入2，代表per_tile量化模式。
+- **key\_quant\_mode**（`int`）：必选参数，代表key的量化模式，数据类型支持`int64`，仅支持传入2，代表per_tile量化模式。
 
-- **value\_quant\_mode**（`int`）：必选参数，代表value的量化模式，数据类型支持`torch.int64`，仅支持传入2，代表per_tile量化模式。
+- **value\_quant\_mode**（`int`）：必选参数，代表value的量化模式，数据类型支持`int64`，仅支持传入2，代表per_tile量化模式。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
@@ -62,27 +62,27 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，当`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
-- **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`torch.int64`。sparse\_block\_size为1时，为Token-wise稀疏化场景；sparse\_block\_size大于1且小于等于128时，为Block-wise稀疏化场景，块内token共享相同的稀疏化决策。
+- **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`。sparse\_block\_size为1时，为Token-wise稀疏化场景；sparse\_block\_size大于1且小于等于128时，为Block-wise稀疏化场景，块内token共享相同的稀疏化决策。
 
 - **layout\_query**（`str`）：可选参数，用于标识输入`query`的数据排布格式，默认值"BSND"，支持传入BSND和TND。
 
 - **layout\_kv**（`str`）：可选参数，用于标识输入`key`的数据排布格式，默认值"BSND"，支持传入BSND、TND和PA\_BSND，PA\_BSND在开启PageAttention时使用。
 
-- **sparse\_mode**（`int`）：可选参数，表示sparse的模式。数据类型支持`torch.int64`。
+- **sparse\_mode**（`int`）：可选参数，表示sparse的模式。数据类型支持`int64`。
     - sparse\_mode为0时，代表全部计算。
     - sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右下顶点往左上为划分线的下三角场景。
 
-- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`torch.int64`，仅支持默认值2^63-1。
+- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
 
-- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`torch.int64`，仅支持默认值2^63-1。
+- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
 
-- **attention\_mode**（`int`）：可选参数，表示attention的模式。数据类型支持`torch.int64`，仅支持传入2，表示MLA-absorb模式，即QK的D包含rope和nope两部分，且KV是同一份，默认值为0。
+- **attention\_mode**（`int`）：可选参数，表示attention的模式。数据类型支持`int64`，仅支持传入2，表示MLA-absorb模式，即QK的D包含rope和nope两部分，且KV是同一份，默认值为0。
 
-- **quant\_scale\_repo\_mode**（`int`）：可选参数，表示量化参数的存放模式。数据类型支持`torch.int64`，仅支持传入1，表示combine模式，即量化参数和数据混合存放，默认值1。
+- **quant\_scale\_repo\_mode**（`int`）：可选参数，表示量化参数的存放模式。数据类型支持`int64`，仅支持传入1，表示combine模式，即量化参数和数据混合存放，默认值1。
 
-- **tile\_size**（`int`）：可选参数，表示per_tile时每个参数对应的数据块大小，仅在per_tile时有效。数据类型支持`torch.int64`，仅支持默认值128。
+- **tile\_size**（`int`）：可选参数，表示per_tile时每个参数对应的数据块大小，仅在per_tile时有效。数据类型支持`int64`，仅支持默认值128。
 
-- **rope\_head\_dim**（`int`）：可选参数，表示MLA架构下的rope\_head\_dim大小，仅在attention\_mode为2时有效。数据类型支持`torch.int64`，仅支持默认值64。
+- **rope\_head\_dim**（`int`）：可选参数，表示MLA架构下的rope\_head\_dim大小，仅在attention\_mode为2时有效。数据类型支持`int64`，仅支持默认值64。
 
 - **key\_dtype**（`int`）：可选参数，表示key传入的数据类型，支持传入`torch_npu.hifloat8`数据类型或不传。当传入`torch_npu.hifloat8`时，表示key传入数据类型为`torch_npu.hifloat8`，当不传时，表示key传入数据类型为`torch.int8`或`torch.float8_e4m3fn`，具体数据类型根据key进行推导。
 

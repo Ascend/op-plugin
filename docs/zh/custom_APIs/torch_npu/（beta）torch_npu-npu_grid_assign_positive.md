@@ -37,7 +37,7 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **argmax_overlaps** (`Tensor`)：必选参数，支持`torch.int32`数据类型。
 - **gt_max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
 - **gt_argmax_overlaps** (`Tensor`)：必选参数，支持`torch.int32`数据类型。
-- **num_gts** (`Tensor`)：必选参数，支持`torch.int32`数据类型，表示真实GT数量，shape为(1, )。
+- **num_gts** (`int`)：必选参数，表示真实GT数量，以 Python `int` 传入。
 - **pos_iou_thr** (`float`)：必选参数，正检测框的IoU阈值。
 - **min_pos_iou** (`float`)：必选参数，检测框被视为正检测框的最小IoU。
 - **gt_max_assign_all** (`bool`)：必选参数，是否将与某个gt有相同最高重叠的所有检测框分配给该gt。

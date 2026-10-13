@@ -36,7 +36,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2、3维，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
 
-- **src**（`Tensor`/`torch.int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
+- **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
 
   - 若输入张量，则将`input`的数据格式修改为此张量的格式。例如将`input`的数据格式转换为ND格式时，此处可以输入*ND格式的张量*。
   - 若输入整数，则将`input`的数据格式修改为整数值对应的torch_npu.Format。例如将`input`的数据格式转换为ND格式时，此处可以输入`2`。

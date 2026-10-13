@@ -65,9 +65,9 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
 - **expert\_scales**（`Tensor`）：**可选参数**，每个token的topK个专家的scale权重，用户需保证scale在token内部按照降序排列，可选择传入有效数据或不传，该参数传入有效数据时，`pruning_threshold`也需要传入有效数据。shape为\(BS, K\)。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
 - **pruning\_threshold**（`Tensor`）：**可选参数**，专家scale权重的最小阈值，当某个token对应的某个topK专家scale小于阈值时，该token将对该专家进行剪枝，即token不发送至该专家处理，可选择传入有效数据或None。该参数传入有效数据时，`expert_scales`也需要传入有效数据。shape为\(K, \)或\(1, K\)。数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
 - **active\_mask**（`Tensor`）：**可选参数**，表示token是否参与通信，可选择传入有效数据或None。传入有效数据时，`expert_scales`、`pruning_threshold`也必须传入有效数据，参数为true表示对应的token参与通信，true必须排到false之前，例：\{true, false, true\}为非法输入；传入None时表示所有token都会参与通信。shape为\(BS, \)。数据类型支持`torch.bool`，数据格式为$ND$，支持非连续的Tensor。
-- **local\_rank\_id**（`int`）：**可选参数**，本卡ID。数据类型支持`torch.int64`，当`balance_mode`设置为0时，本属性取值范围为\[0, `world_size`\)。
-- **world\_size**（`int`）：**可选参数**，通信域size。数据类型支持`torch.int64`，当`balance_mode`设置为0时，本属性取值范围为\[2, 768\]。
-- **balance\_mode**（`int`）：**可选参数**，均衡规则。数据类型支持`torch.int64`，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
+- **local\_rank\_id**（`int`）：**可选参数**，本卡ID。数据类型支持`int64`，当`balance_mode`设置为0时，本属性取值范围为\[0, `world_size`\)。
+- **world\_size**（`int`）：**可选参数**，通信域size。数据类型支持`int64`，当`balance_mode`设置为0时，本属性取值范围为\[2, 768\]。
+- **balance\_mode**（`int`）：**可选参数**，均衡规则。数据类型支持`int64`，取值支持0和1，0表示用`local_rank_id`进行负载均衡，1表示使用`token_id`进行负载均衡。当本属性取值为0时，`local_rank_id`和`world_size`必须传入有效值。
 
 ## 返回值说明
 

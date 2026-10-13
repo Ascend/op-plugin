@@ -115,17 +115,17 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 
 - **block_table** (`Tensor`)：可选参数。数据类型支持`torch.int32`，数据格式支持$ND$。`block_table`为2维`Tensor`，表示page attention中KV存储使用的block映射表，具体约束和使用方法可见[约束说明](#zh-cn_topic_0000001711274864_section12345537164214)。如不使用该功能时可不传或传入`None`。
 - **kv_padding_size** (`Tensor`)：可选参数。数据类型支持`torch.int64`，数据格式支持$ND$，表示KV左`padding`场景开启时，最后一个有效`token`到$S$的距离。如不使用该功能时可传入`None`。
-- **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；数据类型为`torch.int64`。
-- **scale_value** (`float`)：可选参数。代表缩放系数，用来约束梯度，默认值为`1.0`，典型值为$\frac{1}{\sqrt{D}}$；数据类型为`torch.float32`。
+- **num_heads** (`int`)：可选参数。代表`query`的头数，即`query`的$N$，默认值为`1`；以 Python `int` 传入。
+- **scale_value** (`float`)：可选参数。代表缩放系数，用来约束梯度，默认值为`1.0`，典型值为$\frac{1}{\sqrt{D}}$；数据类型为`float32`。
 - **input_layout** (`str`)：可选参数。代表`query`、`key`、`value`的布局，根据输入的`query`、`key`、`value`的`shape`确定，三维`Tensor`是$BSH$，四维`Tensor`是$BNSD$或$BSND$，默认值为$BSH$，不支持其他值；数据类型为`str`。
 
     > [!NOTE]  
     > `query`、`key`、`value`支持多种排布格式，其中$B$（Batch Size）表示输入样本批量大小、$S$（Seq-Length）表示输入样本序列长度、$H$（Hidden Size）表示隐藏层总维度、$N$（Head-Num）表示多头数、$D$（Head-Dim）表示每个Head的隐藏维度。
     > 当`input_layout`为$BSH$时，`query`、`key`、`value`的`shape`为$(B, S, H)$；当为$BNSD$时，`shape`为$(B, N, S, D)$；当为$BSND$时，`shape`为$(B, S, N, D)$。
 
-- **num_key_value_heads** (`int`)：可选参数。表示`key`、`value`使用的头数，用于支持 **GQA**（Grouped-Query Attention，分组查询注意力）场景。默认值为`0`，表示`key`、`value`的头数与`query`的头数相同；否则表示`key`、`value`的头数为`num_key_value_heads`。在GQA中，多个查询头会共享同一组键/值头，以减少KV缓存占用和计算开销。此时`query`的头数为`num_heads`，`key`、`value`的头数为`num_key_value_heads`，并满足`num_heads`可以被`num_key_value_heads`整除；另外，`num_heads`与`num_key_value_heads`的比值不能大于`64`。数据类型为`torch.int64`。
-- **block_size** (`int`)：可选参数。page attention中KV存储每个block中最大的token个数，默认值为`0`，通常为128、256等值，数据类型支持`torch.int64`。
-- **inner_precise** (`int`)：可选参数。代表高精度/高性能选择，`0`代表高精度，`1`代表高性能，默认值为`1`（高性能），数据类型支持`torch.int64`。
+- **num_key_value_heads** (`int`)：可选参数。表示`key`、`value`使用的头数，用于支持 **GQA**（Grouped-Query Attention，分组查询注意力）场景。默认值为`0`，表示`key`、`value`的头数与`query`的头数相同；否则表示`key`、`value`的头数为`num_key_value_heads`。在GQA中，多个查询头会共享同一组键/值头，以减少KV缓存占用和计算开销。此时`query`的头数为`num_heads`，`key`、`value`的头数为`num_key_value_heads`，并满足`num_heads`可以被`num_key_value_heads`整除；另外，`num_heads`与`num_key_value_heads`的比值不能大于`64`。以 Python `int` 传入。
+- **block_size** (`int`)：可选参数。page attention中KV存储每个block中最大的token个数，默认值为`0`，通常为128、256等值，数据类型支持`int64`。
+- **inner_precise** (`int`)：可选参数。代表高精度/高性能选择，`0`代表高精度，`1`代表高性能，默认值为`1`（高性能），数据类型支持`int64`。
 
 ## 返回值说明
 

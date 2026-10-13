@@ -14,7 +14,7 @@
 
 ## Function
 
-- Packs `float` type inputs into `torch.uint8` types. Every 8 floating-point numbers are packed into one `torch.uint8` value, `-1.0` is encoded as binary bit `0`, and `1.0` is encoded as binary bit `1`, and packed in little-endian order.
+- Packs `torch.float` type inputs into `torch.uint8` types. Every 8 floating-point numbers are packed into one `torch.uint8` value, `-1.0` is encoded as binary bit `0`, and `1.0` is encoded as binary bit `1`, and packed in little-endian order.
 
 - Equivalent computation logic:
     
@@ -51,7 +51,7 @@ Packed tensor.
 
 ## Constraints
 
-`size` can be divided by the packed `float` output. If the size of `self` is divisible by 8, the size of the output is $(\text{size of }self)/8$. Otherwise, the size of the output is $(\text{size of }self // 8) + 1$. A `-1` floating-point value will be added at the little-endian position to fill divisibility.
+`size` can be divided by the packed `torch.float` output. If the size of `self` is divisible by 8, the size of the output is $(\text{size of }self)/8$. Otherwise, the size of the output is $(\text{size of }self // 8) + 1$. A `-1` floating-point value will be added at the little-endian position to fill divisibility.
 
 ## Example
 

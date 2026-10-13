@@ -286,7 +286,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.bfloat16`。shape需要是1维$(t, )$，其中$t=1$或$n$，$n$表示`x2`的最后一维。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.float16`、`torch.bfloat16`、`torch_npu.float8_e8m0fnu`（需配置可选参数scale\_dtype为对应类型，此时scale本身dtype不再生效，但仍需保证scale dtype为8bit位数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(t, \)，t=1或n，其中n与x2的n一致；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.float16`、`torch.bfloat16`、`torch.float8_e8m0fnu`（需配置可选参数scale\_dtype为对应类型，此时scale本身dtype不再生效，但仍需保证scale dtype为8bit位数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(t, \)，t=1或n，其中n与x2的n一致；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
     <!-- end id19 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -305,7 +305,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。shape需要是1维\(m,\)，其中m与`x1`的m一致。
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`（需配置可选参数`pertoken_scale_dtype`为对应类型，此时`pertoken_scale`本身的dtype不再生效，但仍需保证`pertoken_scale`本身的dtype为8bit位的数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(m,\)或\(1,\)；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`（需配置可选参数`pertoken_scale_dtype`为对应类型，此时`pertoken_scale`本身的dtype不再生效，但仍需保证`pertoken_scale`本身的dtype为8bit位的数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(m,\)或\(1,\)；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
   <!-- end id23 -->
 
 - **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是4、5、6维时，`bias`的shape必须为1维$(n,)$；当输出是3维时，`bias`的shape可以为1维$(n,)$或3维$(batch, 1, n)$；当输出是2维时，<term>Ascend 950PR&950DT系列产品</term>的`bias`支持1维$(n,)$或2维$(1, n)$，其他产品仅支持1维$(n,)$。
@@ -378,7 +378,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   - <term>Atlas A3系列产品</term>：预留参数，当前不支持设置。
   <!-- end id39 -->
   <!-- npu="950" id40 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：支持`torch_npu.float8_e8m0fnu`类型。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持`torch.float8_e8m0fnu`类型。
   <!-- end id40 -->
 
 - **scale\_dtype**（`int`）：可选参数，表示`scale`实际数据类型，传入值时表示忽略scale本身的dtype，将scale中的数据视为scale\_dtype传入的类型进行计算，不传入时则直接取scale的dtype进行计算。
@@ -393,7 +393,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   - <term>Atlas A3系列产品</term>：预留参数，当前不支持设置。
   <!-- end id43 -->
   <!-- npu="950" id44 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：支持`torch_npu.float8_e8m0fnu`类型。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持`torch.float8_e8m0fnu`类型。
   <!-- end id44 -->
 
 - **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度，用于输入$m$（`x1`倒数第二维）、$n$（`x2`最后一维）、$k$（`x1`最后一维/`x2`倒数第二维）方向上的量化分组大小，格式为 [group_m, group_n, group_k]，列表必须包含3个元素，且每个元素须为0或正整数。
@@ -552,18 +552,18 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 
     | 量化模式 | x1 | x2 | scale | pertoken_scale | offset | bias | output_dtype |
     | --- | --- | --- | --- | --- | --- | --- | --- |
-    | mx全量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
-    | mx全量化 | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
-    | mx伪量化 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2`/`torch.float32` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None/`torch.bfloat16`/`torch.float16` | `torch.bfloat16`/`torch.float16` |
+    | mx全量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
+    | mx全量化 | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
+    | mx伪量化 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2`/`torch.float32` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None/`torch.bfloat16`/`torch.float16` | `torch.bfloat16`/`torch.float16` |
 
     **表8** mx量化参数shape和dtype的关系<a id="table8"></a>
 
     | 量化模式 | x1_dtype | x2_dtype | scale数据类型 | pertoken_scale数据类型 | y_scale数据类型 | x1 shape | x2 shape | scale shape | pertoken_scale shape | y_scale shape | group_sizes值 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | mx全量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | (batch, m, k) | (batch, k, n) | (batch, ceil(k/64), n, 2) | (batch, m, ceil(k/64), 2) | None | [1,1,32] |
-    | mx全量化 | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | (batch, m, k) | (batch, k, n) | (batch, ceil(k/64), n, 2) | (batch, m, ceil(k/64), 2) | None | [1,1,32] |
-    | mx伪量化 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | (m, k) | (n, k/2) | (n, k/64, 2) | (m, k/64, 2) | None | [1,1,32] |
-    | mx伪量化 | `torch.float8_e4m3fn` | `torch.float32` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | (m, k) | (n, k/8) | (n, k/64, 2) | (m, k/64, 2) | None | [1,1,32] |
+    | mx全量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | (batch, m, k) | (batch, k, n) | (batch, ceil(k/64), n, 2) | (batch, m, ceil(k/64), 2) | None | [1,1,32] |
+    | mx全量化 | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | (batch, m, k) | (batch, k, n) | (batch, ceil(k/64), n, 2) | (batch, m, ceil(k/64), 2) | None | [1,1,32] |
+    | mx伪量化 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | (m, k) | (n, k/2) | (n, k/64, 2) | (m, k/64, 2) | None | [1,1,32] |
+    | mx伪量化 | `torch.float8_e4m3fn` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | (m, k) | (n, k/8) | (n, k/64, 2) | (m, k/64, 2) | None | [1,1,32] |
 
     > **mx量化场景说明**：
     > - mx全量化场景下，`x1`与`x2`的输入类型均为`torch_npu.float4_e2m1fn_x2`时，内轴必须为偶数，k必须大于2。

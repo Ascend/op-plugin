@@ -17,9 +17,9 @@
 - API功能：QuantLightningIndexer是推理场景下SparseFlashAttention（SFA）的前处理计算模块，用于选出关键的稀疏token，并对输入query和key进行量化实现存8算8，获取最大收益。
 
 - 计算公式：
-    $$out = \text{Top-}k\left\{[1]_{1\times g}@\left[(W@[1]_{1\times S_{k}})\odot\text{ReLU}\left(\left(Scale_Q@Scale_K^T\right)\odot\left(Q_{index}^{`torch.int8`}@{\left(K_{index}^{`torch.int8`}\right)}^T\right)\right)\right]\right\}$$
+    $$out = \text{Top-}k\left\{[1]_{1\times g}@\left[(W@[1]_{1\times S_{k}})\odot\text{ReLU}\left(\left(Scale_Q@Scale_K^T\right)\odot\left(Q_{index}^{INT8}@{\left(K_{index}^{INT8}\right)}^T\right)\right)\right]\right\}$$
     主要计算过程为：
-    1. 将某个token对应的输入参数`query`（$Q_{index}^{`torch.int8`}\in\R^{g\times d}$）乘以给定上下文`key`（$K_{index}^{`torch.int8`}\in\R^{S_{k}\times d}$），得到相关性。
+    1. 将某个token对应的输入参数`query`（$Q_{index}^{INT8}\in\R^{g\times d}$）乘以给定上下文`key`（$K_{index}^{INT8}\in\R^{S_{k}\times d}$），得到相关性。
     2. 相关性结果与`query`和`key`对应的反量化系数`query_dequant_scale`（$Scale_Q$）和`key_dequant_scale`（$Scale_K^T$）相乘，通过激活函数$ReLU$过滤无效负相关信号后，得到当前Token与所有前序Token的相关性分数向量。
     3. 将其与权重系数`weights`（$W$）相乘后，沿g的方向，选取前$Top-k$个索引值得到输出$out$，作为SparseFlashAttention的输入。
 
@@ -37,9 +37,9 @@ query_dtype=None, key_dtype=None) -> Tensor
 > - query、key、weights、query_dequant_scale、key_dequant_scale参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、N（Head Num）表示多头数、D（Head Dim）表示hidden层最小的单元尺寸，且满足D=H/N、T表示所有Batch输入样本序列长度的累加和。
 > - 使用S1和S2分别表示query和key的输入样本序列长度，N1和N2分别表示query和key对应的多头数，k表示最后选取的索引个数。参数query中的D和参数key中的D值相等为128。T1和T2分别表示query和key的输入样本序列长度的累加和。
 >
-- **query**（`Tensor`）：必选参数，表示输入Index Query，对应公式中的$Q_{index}^{`torch.int8`}\in\R^{g\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1支持[1, 64]。
+- **query**（`Tensor`）：必选参数，表示输入Index Query，对应公式中的$Q_{index}^{INT8}\in\R^{g\times d}$。不支持非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1支持[1, 64]。
 
-- **key**（`Tensor`）：必选参数，表示输入Index Key，对应公式中的$K_{index}^{`torch.int8`}\in\R^{S_{k}\times d}$。在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
+- **key**（`Tensor`）：必选参数，表示输入Index Key，对应公式中的$K_{index}^{INT8}\in\R^{S_{k}\times d}$。在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
 
 - **weights**（`Tensor`）：必选参数，表示权重系数，对应公式中的$W$。不支持非连续，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.bfloat16`，支持输入shape[B,S1,N1]、[T,N1]。
 
@@ -63,13 +63,13 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **layout\_key**（`str`）：可选参数，用于标识输入`key`的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"。在非PageAttention场景下，layout\_key应与layout\_query保持一致。
 
-- **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的token索引数量，支持[1, 2048]，数据类型支持`torch.int32`。
+- **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的token索引数量，支持[1, 2048]，数据类型支持`int32`。
 
-- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`torch.int32`。 sparse\_mode为0时，代表defaultMask模式。sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
+- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`int32`。 sparse\_mode为0时，代表defaultMask模式。sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
 
-- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`torch.int64`，仅支持默认值2^63-1。
+- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
 
-- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`torch.int64`，仅支持默认值2^63-1。
+- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
 
 - **query\_dtype**（`int`）：可选参数，表示query实际传入的数据类型，支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
 

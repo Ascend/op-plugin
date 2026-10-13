@@ -75,9 +75,9 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
     <!-- end id12 -->
 
-- **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。数据类型支持`torch.int64`。
+- **group** (`int`)：必选参数，表示将输入`input`的第1维度分为group组，group需大于0。数据类型支持`int64`。
 
-- **eps** (`float`)：可选参数，为保持数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。数据类型支持`torch.float32`。
+- **eps** (`float`)：可选参数，为保持数值稳定性而加到分母上的值，若保持精度，则eps需大于0。默认值为0.00001。数据类型支持`float32`。
 
 ## 返回值说明
 

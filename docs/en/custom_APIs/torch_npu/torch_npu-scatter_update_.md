@@ -31,7 +31,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
     - Atlas A3 training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     - Atlas training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
 
-- **`axis`** (`int`): Required. Axis that specifies the dimension on which the scatter update is performed. The data type can be `torch.int64`.
+- **`axis`** (`int`): Required. Axis that specifies the dimension on which the scatter update is performed. The data type can be `int64`.
 
 ## Return Values
 

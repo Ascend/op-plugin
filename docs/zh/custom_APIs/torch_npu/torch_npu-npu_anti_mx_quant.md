@@ -8,14 +8,14 @@
 
 ## 功能说明
 
-- API功能：将调用`npu_dynamic_mx_quant`量化得到的`torch_npu.float4`/`torch.float8`的Tensor反量化为`torch.float16`/`torch.bfloat16`/`torch.float32`格式，是`npu_dynamic_mx_quant`的逆过程。
+- API功能：将调用`npu_dynamic_mx_quant`量化得到的`float4`/`float8`的Tensor反量化为`torch.float16`/`torch.bfloat16`/`torch.float32`格式，是`npu_dynamic_mx_quant`的逆过程。
 
 - 计算公式：
   $$
   X_{dq} = X_q \times 2^{sf - bias}
   $$
 
-  其中$sf$是缩放因子，由输入`mxscale`提供；$bias$是指数位的偏移，对于`torch_npu.float8_e8m0`格式，$bias=127$；$X_q$是量化得到的`torch_npu.float4`/`torch.float8`张量；$X_{dq}$是反量化得到的`torch.float16`/`torch.bfloat16`/`torch.float32`张量。
+  其中$sf$是缩放因子，由输入`mxscale`提供；$bias$是指数位的偏移，对于`torch.float8_e8m0fnu`格式，$bias=127$；$X_q$是量化得到的`float4`/`float8`张量；$X_{dq}$是反量化得到的`torch.float16`/`torch.bfloat16`/`torch.float32`张量。
 
 ## 函数原型
 
@@ -25,18 +25,18 @@ torch_npu.npu_anti_mx_quant(x, mxscale, *, axis=-1, dst_type=15, src_type=292) -
 
 ## 参数说明
 
-- **x**（`Tensor`）：必选参数，待反量化的输入Tensor。数据类型支持`torch_npu.float4_e2m1`、`torch_npu.float4_e1m2`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式支持ND。当前shape支持1-7维。`torch.float8`输入时，`x`的数据类型为对应的`torch.float8`类型，支持非连续的Tensor；`torch_npu.float4`输入时，`x`的实际数据类型为`torch.uint8`（每两个`float4`数据打包为一个`torch.uint8`，shape的最后一维为真实元素个数的一半），不支持非连续的Tensor。
-- **mxscale**（`Tensor`）：必选参数，参与反量化计算的量化尺度，由`npu_dynamic_mx_quant`输出得到。数据类型为`torch_npu.float8_e8m0`（实际存储数据类型为`torch.uint8`），数据格式支持ND。当前shape支持2-8维。
+- **x**（`Tensor`）：必选参数，待反量化的输入Tensor。数据类型支持`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式支持ND。当前shape支持1-7维。`float8`输入时，`x`的数据类型为对应的`float8`类型，支持非连续的Tensor；`float4`输入时，`x`的实际数据类型为`torch.uint8`（每两个`float4`数据打包为一个`torch.uint8`，shape的最后一维为真实元素个数的一半），不支持非连续的Tensor。
+- **mxscale**（`Tensor`）：必选参数，参与反量化计算的量化尺度，由`npu_dynamic_mx_quant`输出得到。逻辑数据类型为`torch.float8_e8m0fnu`（实际存储数据类型为`torch.uint8`），数据格式支持ND。当前shape支持2-8维。
 - **\***：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **axis**（`int`）：可选参数，指定反量化轴。当前仅支持尾轴，即取值为`-1`或`D-1`，其中`D`为输入`x`的维度数，默认值为`-1`。
 - **dst\_type**（`int`）：可选参数，指定输出结果的数据类型。当前支持取值为`{5, 6, 15}`，分别对应输出的数据类型为`{5: torch.float16, 6: torch.float32, 15: torch.bfloat16}`，默认值为`15`（`torch.bfloat16`）。也支持直接传入`torch.float16`、`torch.float32`、`torch.bfloat16`。
-- **src\_type**（`int`）：可选参数，指定输入`x`的数据类型。当前支持取值为`{291, 292, 296, 297}`，分别对应输入`x`的数据类型为`{291: torch.float8_e5m2, 292: torch.float8_e4m3fn, 296: torch_npu.float4_e2m1, 297: torch_npu.float4_e1m2}`，默认值为`292`（`torch.float8_e4m3fn`）。
+- **src\_type**（`int`）：可选参数，指定输入`x`的数据类型。当前支持取值为`{291, 292, 296, 297}`，分别对应输入`x`的数据类型为`{291: torch.float8_e5m2, 292: torch.float8_e4m3fn, 296: torch_npu.float4_e2m1fn_x2, 297: torch_npu.float4_e1m2fn_x2}`，默认值为`292`（`torch.float8_e4m3fn`）。
 
 ## 返回值说明
 
 `Tensor`
 
-反量化结果。数据类型由`dst_type`指定，支持`torch.float16`/`torch.bfloat16`/`torch.float32`，数据格式支持ND。`torch.float8`输入时，结果的shape与输入`x`保持一致；`torch_npu.float4`输入时，结果的shape最后一维为输入`x`（`torch.uint8`存储）最后一维的2倍，其余维度与输入`x`保持一致。
+反量化结果。数据类型由`dst_type`指定，支持`torch.float16`/`torch.bfloat16`/`torch.float32`，数据格式支持ND。`float8`输入时，结果的shape与输入`x`保持一致；`float4`输入时，结果的shape最后一维为输入`x`（`torch.uint8`存储）最后一维的2倍，其余维度与输入`x`保持一致。
 
 ## 约束说明
 

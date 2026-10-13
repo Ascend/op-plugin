@@ -51,17 +51,17 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu/（beta）torch_npu-npu_conv3d.md">torch_npu.npu_conv3d</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，可以使用`torch.nn.functional.conv3d`接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，可以使用<code>torch.nn.functional.conv3d</code>接口进行替换。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu/（beta）torch_npu-npu_bmmV2.md">torch_npu.npu_bmmV2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，其内部通过`torch.view`/`torch.Tensor.expand`对输入张量进行形状变换（1D扩展、batch维度广播），再调用`torch.bmm`等价操作（BatchMatMul），最后`torch.view`至目标形状。可使用`torch.bmm`和`Tensor.view()`接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，其内部通过<code>torch.view</code>/<code>torch.Tensor.expand</code>对输入张量进行形状变换（1D扩展、batch维度广播），再调用<code>torch.bmm</code>等价操作（BatchMatMul），最后<code>torch.view</code>至目标形状。可使用<code>torch.bmm</code>和<code>Tensor.view()</code>接口进行替换。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu/（beta）torch_npu-npu_confusion_transpose.md">torch_npu.npu_confusion_transpose</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，可以使用`Tensor.view()`和`torch.permute`接口进行替换。</p>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，可以使用<code>Tensor.view()</code>和<code>torch.permute</code>接口进行替换。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p11977252111717"><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu-npu/torch_npu-npu-ExternalEvent().reset().md">torch_npu-npu-ExternalEvent().reset()</a></p>

@@ -104,13 +104,13 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 - **layout**(`str`)：可选参数，用于标识输入`query`的数据排布格式。当前支持$BSND$、$TND$，默认值为"BSND"。
 
-- **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`torch.int32`，默认值为`3`。
+- **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`int32`，默认值为`3`。
 
-- **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`torch.int64`，默认值为2^63-1。
+- **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
-- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`torch.int64`，默认值2^63-1。
+- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
 
-- **sinks**(`float`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`torch.float32`，shape为$(N1)$。
+- **sinks**(`Tensor`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`torch.float32`，shape为$(N1)$。
 
   <!-- npu="A3,910b" id4 -->
   - <term>Atlas A2训练系列产品</term>/<term>Atlas A3训练系列产品</term>：暂不支持可选输入sinks，传默认值即可

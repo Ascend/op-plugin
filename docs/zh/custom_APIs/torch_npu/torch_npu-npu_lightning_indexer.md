@@ -56,16 +56,16 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **layout\_key**（`str`）：可选参数，用于标识输入`key`的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"，在非PageAttention场景下，该参数值应与**layout\_query**值保持一致。
 
-- **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的block数量，支持[1, 2048]以及3072、4096、5120、6144、7168、8192，数据类型支持`torch.int32`。
+- **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的block数量，支持[1, 2048]以及3072、4096、5120、6144、7168、8192，数据类型支持`int32`。
 
-- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`torch.int32`。
+- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`int32`。
     
     - sparse\_mode为0时，代表defaultMask模式。
     - sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
 
-- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`torch.int64`。仅支持默认值2^63-1。
+- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`。仅支持默认值2^63-1。
 
-- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`torch.int64`。仅支持默认值2^63-1。
+- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`。仅支持默认值2^63-1。
 
 - **return\_value**（`bool`）：可选参数，表示是否输出`sparse_values`。True表示输出，False表示不输出；默认值为False。该参数仅在训练且`layout_key`不为PA_BSND场景下支持。
 

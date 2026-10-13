@@ -145,7 +145,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **`query_norm_flag`** (`bool`): Optional. Specifies whether to output `query_norm`. Only the `bool` data type is supported. When set to `False`, `query_norm` is not output. When set to `True`, `query_norm` is output and is accompanied by the output of `dequant_scale_q_norm` in quantization scenarios. The default value is `False`.
 
-- **`weight_quant_mode`** (`int`): Optional. Quantization mode for `weight_dq`, `weight_uq_qr`, `weight_uk`, and `weight_dkv_kr`. This parameter is of type `torch.int32` and has a default value of `0`. A value of `0` indicates no quantization; `1` indicates `weight_uq_qr` quantization; `2` indicates `torch.int8` quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `3` indicates MXFP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `4` indicates FP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; and `5` indicates HiF8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`.
+- **`weight_quant_mode`** (`int`): Optional. Quantization mode for `weight_dq`, `weight_uq_qr`, `weight_uk`, and `weight_dkv_kr`. This parameter is of type `int32` and has a default value of `0`. A value of `0` indicates no quantization; `1` indicates `weight_uq_qr` quantization; `2` indicates `torch.int8` quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `3` indicates MXFP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `4` indicates FP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; and `5` indicates HiF8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`.
 
 - **`kv_cache_quant_mode`** (`int`): Optional. Quantization mode of `kv_cache`. Valid values are `0` (non-quantization), `1` (`pertensor` quantization), `2` (`perchannel` quantization) or `3` (`pertoken-pergroup` quantization). The default value is `0`.
 
@@ -270,7 +270,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       </td>
     </tr>
     <tr>
-      <td rowspan="3"><em>`torch.int8`/fp8/hif8 Full quantization</em></td>
+      <td rowspan="3"><em><code>torch.int8</code>/fp8/hif8 Full quantization</em></td>
       <td><code>kv_cache</code> non-quantized</td>
       <td>
           - <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
@@ -331,7 +331,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <th rowspan="2">Parameter</th>
       <th><em>Non-quantization</em></th>
       <th colspan="3"><em>Partial Quantization</em></th>
-      <th colspan="3"><em>`torch.int8` Full Quantization</em></th>
+      <th colspan="3"><em><code>torch.int8</code> Full Quantization</em></th>
       <th colspan="3"><em>mxfp8 Full Quantization</em></th>
       <th colspan="3"><em>fp8 Full Quantization</em></th>
       <th colspan="3"><em>hif8 Full Quantization</em></th>
@@ -356,231 +356,231 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     </tr>
     <tr>
       <td>token_x</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td>weight_dq</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td>weight_uq_qr</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td>weight_uk</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td>weight_dkv_kr</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td> rmsnorm_gamma_cq </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> rmsnorm_gamma_ckv </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> rope_sin </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> rope_cos </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> kv_cache </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td> kr_cache </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> cache_index </td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
-      <td>`torch.int64`</td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
+      <td><code>torch.int64</code></td>
     </tr>
     <tr>
       <td> dequant_scale_x </td>
@@ -588,18 +588,18 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> dequant_scale_w_dq </td>
@@ -607,37 +607,37 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> dequant_scale_w_uq_qr </td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> dequant_scale_w_dkv_kr </td>
@@ -645,43 +645,43 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> quant_scale_ckv </td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
     </tr>
     <tr>
       <td> quant_scale_ckr </td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
@@ -699,97 +699,97 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td> smooth_scales_cq </td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> actual_seq_len </td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
-      <td>`torch.int32`</td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
+      <td><code>torch.int32</code></td>
     </tr>
     <tr>
       <td> k_nope_clip_alpha </td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
     </tr>
     <tr>
       <td> query_out </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> query_rope_out </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.bfloat16`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.bfloat16</code></td>
     </tr>
     <tr>
       <td> dequant_scale_q_nope</td>
@@ -798,55 +798,55 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>Not required</td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
       <td>Not required</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
       <td>Not required</td>
     </tr>
     <tr>
       <td> query_norm </td>
-      <td>`torch.bfloat16`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.int8`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch.float8_e4m3fn`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
-      <td>`torch_npu.hifloat8`</td>
+      <td><code>torch.bfloat16</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.int8</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch.float8_e4m3fn</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
+      <td><code>torch_npu.hifloat8</code></td>
     </tr>
     <tr>
       <td> dequant_scale_q_norm </td>
       <td>Not required</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float8_e8m0fnu`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
-      <td>`torch.float`</td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float8_e8m0fnu</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
+      <td><code>torch.float</code></td>
     </tr>
   </table>
   </div>

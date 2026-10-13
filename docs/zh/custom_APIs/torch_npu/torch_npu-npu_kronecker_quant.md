@@ -12,7 +12,7 @@
 
   pertoken量化支持`torch_npu.int4`输出类型，并以8个一组打包成`torch.int32`类型输出，同时也输出`torch.float32`的量化缩放系数。
 
-  pergroup量化支持输出`torch_npu.float4_e2m1fn_x2`量化结果和`torch_npu.float8_e8m0fnu`量化系数，组内的元素共享一个量化参数。
+  pergroup量化支持输出`torch_npu.float4_e2m1fn_x2`量化结果和`torch.float8_e8m0fnu`量化系数，组内的元素共享一个量化参数。
 
 - **pertoken计算公式**：
 
@@ -101,11 +101,11 @@ torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio=None, ds
 
 - **out**(`Tensor`)：量化后的输出，对应公式中的`out`。数据格式支持$ND$。
   - pertoken量化方式：数据类型支持`torch.int32`，shape为(K, M, N / 8)。
-  - pergroup量化方式：数据类型支持`torch_npu.float4_e2m1`，shape为(K, M*N)。
+  - pergroup量化方式：数据类型支持`torch_npu.float4_e2m1fn_x2`，shape为(K, M*N)。
 
 - **quant_scale**(`Tensor`)：量化缩放系数，对应公式中的`quantScale`。数据格式支持$ND$。
   - pertoken量化方式：数据类型支持`torch.float32`，shape为(K,)。
-  - pergroup量化方式：数据类型支持`torch_npu.float8_e8m0fnu`，shape为(K, ceilDiv(M*N, 64), 2)。比如输入的shape是(16, 128, 64)，`out`的shape是(16, 8192)，`quant_scale`的shape是(16, 128, 2)。
+  - pergroup量化方式：数据类型支持`torch.float8_e8m0fnu`，shape为(K, ceilDiv(M*N, 64), 2)。比如输入的shape是(16, 128, 64)，`out`的shape是(16, 8192)，`quant_scale`的shape是(16, 128, 2)。
 
 ## 约束说明
 

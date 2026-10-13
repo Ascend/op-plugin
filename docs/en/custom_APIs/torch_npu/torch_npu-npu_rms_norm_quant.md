@@ -81,31 +81,31 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
-    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int8`      |
-    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | double      |`torch.int8`      |
-    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int32`      |
-    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | double      |`torch.int32`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | `double`      |`torch.int8`      |
+    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | `double`      |`torch.int8`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | `double`      |`torch.int32`      |
+    | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | `double`      |`torch.int32`      |
 
   - Atlas inference series products and Atlas 200I/500 A2 inference series products:
 
     | x | gamma | beta | scale | offset | epsilon | y
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
-    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int8`      |
-    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | double      |`torch.int32`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | `double`      |`torch.int8`      |
+    | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | `double`      |`torch.int32`      |
 
   - <term>Ascend 950DT</term>：
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | double | `torch.int8`, `torch_npu.int4`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.int32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.int32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | double | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `double` | `torch.int8`, `torch_npu.int4`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.int32` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.int32` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `double` | `torch.int8`, `torch.int32`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8` |
 
 ## Examples
 

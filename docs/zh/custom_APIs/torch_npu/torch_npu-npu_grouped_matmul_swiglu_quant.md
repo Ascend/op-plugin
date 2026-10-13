@@ -54,7 +54,7 @@
     Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil
     $$
 
-- 量化场景**A8W4**（A指激活矩阵，W指权重矩阵，4指`torch.int4`数据类型）：激活为`torch.int8`、权重为`torch.int4`，通过将左矩阵拆分为高低4bit两部分分别与权重做矩阵乘，再结合离线生成的辅助矩阵bias还原结果，其余计算过程与A8W8一致。该场景下`weight_scale`支持2维（perchannel）或3维（pergroup）输入。
+- 量化场景**A8W4**（A指激活矩阵，W指权重矩阵，4指`torch_npu.int4`数据类型）：激活为`torch.int8`、权重为`torch_npu.int4`，通过将左矩阵拆分为高低4bit两部分分别与权重做矩阵乘，再结合离线生成的辅助矩阵bias还原结果，其余计算过程与A8W8一致。该场景下`weight_scale`支持2维（perchannel）或3维（pergroup）输入。
   - 输入：
     - $X∈\mathbb{Z_8}^{M \times K}$：激活矩阵（左矩阵），M是总token数，K是特征维度；
     - $W∈\mathbb{Z_4}^{E \times K \times N}$：分组权重矩阵（右矩阵），E是专家个数，K是特征维度，N是输出维度；
@@ -156,7 +156,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 ## 参数说明
 
 - **x**（`Tensor`）：必选参数，左矩阵，公式中的$X$。shape支持2维[M, K]，数据类型支持`torch.int8`，数据格式支持ND，支持非连续Tensor。A8W8场景K必须小于65536，A8W4场景K必须小于20000。
-- **weight**（`Tensor`）：必选参数，权重矩阵，公式中的$W$。需先通过`torch_npu.npu_format_cast(weight, 29)`转换为FRACTAL\_NZ格式（5维存储shape），数据类型支持`torch.int8`、`torch.int4`、`torch.int32`（`torch.int32`为适配用途，实际1个`torch.int32`会被解释为8个`torch.int4`数据），支持非连续Tensor。该接口会忽略weight的数据格式，强制视为FRACTAL\_NZ格式。
+- **weight**（`Tensor`）：必选参数，权重矩阵，公式中的$W$。需先通过`torch_npu.npu_format_cast(weight, 29)`转换为FRACTAL\_NZ格式（5维存储shape），数据类型支持`torch.int8`、`torch_npu.int4`、`torch.int32`（`torch.int32`为适配用途，实际1个`torch.int32`会被解释为8个`torch_npu.int4`数据），支持非连续Tensor。该接口会忽略weight的数据格式，强制视为FRACTAL\_NZ格式。
 - **group\_list**（`Tensor`）：必选参数，指示每个分组参与计算的Token个数，公式中的$groupList$。shape支持1维，长度需与weight的首轴维度（专家数E）相等，数据类型支持`torch.int64`，数据格式支持ND，支持非连续Tensor。为cumsum形式的分组索引列表，最后一个值约束了输出数据的有效部分。
 - **weight\_scale**（`Tensor`）：必选参数，右矩阵的量化因子，公式中的$w\_scale$。shape支持2维（perchannel）或3维（pergroup），首轴长度需与weight的首轴维度相等，尾轴长度需要与weight还原为ND格式的尾轴（N）相同。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`、`torch.int64`（perchannel），数据格式支持ND，支持非连续Tensor。
 - **x\_scale**（`Tensor`）：必选参数，左矩阵的量化因子，公式中的$x\_scale$。shape支持1维，长度需与x的首轴维度（M）相等。数据类型支持`torch.float32`，数据格式支持ND，支持非连续Tensor。

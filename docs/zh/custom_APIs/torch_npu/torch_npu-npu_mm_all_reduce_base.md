@@ -80,14 +80,14 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **dequant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的去量化系数。数据格式支持$ND$。支持的量化场景如下：
     - pertensor场景：shape为\[1\]。
     - perchannel场景：shape为\[n\]/\[1,n\]，n为`x2`最后一维的大小。
-    - mx量化场景：数据类型为`torch_npu.float8_e8m0fnu`时，仅支持转置，`x2` shape为\[n, k\]时，x2Scale的shape为\[n, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数。
+    - mx量化场景：数据类型为`torch.float8_e8m0fnu`时，仅支持转置，`x2` shape为\[n, k\]时，x2Scale的shape为\[n, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数。
     - perblock场景：shape为\[ceilDiv\(n, 128\), ceilDiv\(k, 128\)\]。
 
     <!-- npu="910b" id11 -->
     - <term>Atlas A2系列产品</term>：支持pertensor、perchannel场景。数据类型支持`torch.int64`、`torch.uint64`、`torch.bfloat16`、`torch.float32`。
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持pertensor、perchannel、mx、perblock场景。数据类型支持`torch.int64`、`torch.uint64`、`torch.bfloat16`、`torch.float32`、`torch_npu.float8_e8m0fnu`。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持pertensor、perchannel、mx、perblock场景。数据类型支持`torch.int64`、`torch.uint64`、`torch.bfloat16`、`torch.float32`、`torch.float8_e8m0fnu`。
     <!-- end id12 -->
 
 - **pertoken\_scale**（`Tensor`）：**可选参数**，默认值为`None`，matmul计算后的pertoken去量化系数。若数据类型为`torch.float32`，当`x1`为\[m,k\]时，`pertoken_scale` shape为\[m\]；当`x1`为\[b, s, k\]时，`pertoken_scale` shape为\[b\*s\]。
@@ -96,7 +96,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - <term>Atlas A2系列产品</term>：数据类型支持`torch.float32`。
     <!-- end id13 -->
     <!-- npu="950" id14 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。若数据类型为`torch_npu.float8_e8m0fnu`，mx场景：shape为\[s, ceilDiv\(k, 64\), 2\]或者\[m, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数；perblock场景：shape为\[ceilDiv\(m, 128\), ceilDiv\(k, 128\)\]。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。若数据类型为`torch.float8_e8m0fnu`，mx场景：shape为\[s, ceilDiv\(k, 64\), 2\]或者\[m, ceilDiv\(k, 64\), 2\]，且必须保证ceilDiv\(k, 32\)为偶数；perblock场景：shape为\[ceilDiv\(m, 128\), ceilDiv\(k, 128\)\]。
     <!-- end id14 -->
 
 - **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，默认值为`None`，alltoall通信前后的量化、去量化系数。支持`torch.float16`、`torch.bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
@@ -127,13 +127,13 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - <term>Atlas A2系列产品</term>：**暂不支持该参数。**
     <!-- end id18 -->
 
-- **dequant\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`dequant_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
+- **dequant\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`dequant_scale`数据类型为`torch.float8_e8m0fnu`时，需输入`torch.float8_e8m0fnu`类型。
 
     <!-- npu="910b" id19 -->
     - <term>Atlas A2系列产品</term>：**暂不支持该参数。**
     <!-- end id19 -->
 
-- **pertoken\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`pertoken_scale`数据类型为`torch_npu.float8_e8m0fnu`时，需输入`torch_npu.float8_e8m0fnu`类型。
+- **pertoken\_scale\_dtype**（`int`）：**可选参数**，默认值为`None`，代表输入数据类型，当`pertoken_scale`数据类型为`torch.float8_e8m0fnu`时，需输入`torch.float8_e8m0fnu`类型。
 
     <!-- npu="910b" id20 -->
     - <term>Atlas A2系列产品</term>：**暂不支持该参数。**
@@ -191,7 +191,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
   - 伪量化场景：仅支持k轴为0的空tensor。
   - 仅支持1、2、4、8、16、32、64卡，CCU模式下不支持1卡。
 <!-- end id27 -->
-- 非量化场景：b\*s、m、k、n的值均不得超过2147483647\(`torch.int32`\_MAX\)。
+- 非量化场景：b\*s、m、k、n的值均不得超过2147483647\(INT32\_MAX\)。
 - 全量化场景：b\*s、m取值范围均为\[1, 2147483647\]，`x1`、`x2`的最后一维范围为\[1, 65535\]，即k的取值范围为\[1, 65535\]、仅当x2\(shape=\[n, k\]\)为转置时n可以大于65535。
 - 伪量化场景：b\*s、m取值范围均为\[1, 2147483647\]，k、n的取值范围为\[1, 65535\]。
 - 一个模型中的通算融合MC2算子，仅支持相同通信域。
@@ -245,9 +245,9 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     | `torch.int8` | `torch.int8` | `torch.int32` | `torch.bfloat16` | `torch.bfloat16` | None | None | `torch.bfloat16` | `torch.float32` | None/`torch.bfloat16` | None/`torch.bfloat16` |
     | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float32` | `torch.float32` | None | None |
     | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float32` | `torch.float32` | None | None |
-    | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None |
-    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None |
-    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | None | None |
+    | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None |
+    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None |
 
     > [!NOTE]
     > 全量化场景：若`dequant_scale`需要以`torch.float32`类型传入，在调用torch\_npu.npu\_mm\_all\_reduce\_base前，需通过torch\_npu.npu\_trans\_quant\_param接口对`dequant_scale`进行处理为`torch.int64`类型（处理方法见对应的接口使用说明）。

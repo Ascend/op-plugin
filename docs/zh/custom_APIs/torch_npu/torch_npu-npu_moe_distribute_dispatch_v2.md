@@ -287,7 +287,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)。数据类型支持`torch.float`，数据格式为$ND$，不支持非连续的Tensor。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`。
+    - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。
         - 当`quant_mode`取值为0时，可传None或有效数据，传入有效数据时要求2维Tensor，且第一维为bs，第二维要求小于H。
         - 当`quant_mode`取值为1时，必须传入有效数据，其shape为\(1, \)、\(H, \)、\(shared\_expert\_num+moe\_expert\_num, H\)、\(moe\_expert\_num, H\)。
         - 当`quant_mode`取值为2或3时，可传入None或者有效数据，传入有效数据时，其shape为\(shared\_expert\_num+moe\_expert\_num, H\)、\(moe\_expert\_num, H\)。
@@ -467,7 +467,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为1维张量，shape为\(A, \)，数据类型支持`torch.float`。
     <!-- end id46 -->
     <!-- npu="950" id47 -->
-    - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch_npu.float8_e8m0fnu`，不同场景下的shape要求详见[quant\_mode相关约束](#quant_mode相关约束)部分：
+    - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`，不同场景下的shape要求详见[quant\_mode相关约束](#quant_mode相关约束)部分：
         - `quant_mode`取值为0时，如果输入`x`类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`/`torch_npu.hifloat8`且`expand_x`类型和输入的`x`类型保持一致，要求2维Tensor且第一维为A，否则不输出有效值。
         - `quant_mode`取值为2时，其shape为\(A, \)；`quant_mode`取值为3时，其shape为\(A, ceil\(H/128\)\)。
         - `quant_mode`取值为4、5时，其shape为\(A, ceil\(H/32\)\)且ceil\(H/32\) % 2 == 0。
@@ -588,13 +588,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
         | quant_mode | 量化模式 | expand_x参数 | scales参数 | dynamic_scales |
         | --- | --- | --- | --- | --- |
-        | 0 | 非量化 | `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则输入None；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为`torch_npu.float8_e8m0fnu`；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为`torch.float32`；否则输入None。 | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则不输出有效值；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
+        | 0 | 非量化 | `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则输入None；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为`torch.float8_e8m0fnu`；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为`torch.float32`；否则输入None。 | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则不输出有效值；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
         | 1 | 静态量化 | `torch.int8` | 非空，数据类型为`torch.float32`。<br>输入scales代表量化系数则shape为(1, )；<br>输入scales代表每个专家共享的平滑权重则shape为(H, )；<br>输入scales代表融了专家共享的平滑权重的量化系数时，其shape在有共享专家卡情况下为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)。 | 不输出有效值。 |
         | 1 | 静态量化 | `torch_npu.hifloat8` | 非空，shape为(1, )，数据类型为`torch.float32`。 | 不输出有效值。 |
         | 2 | pertoken动态量化 | `torch.int8`/`torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, )。数据类型为`torch.float32`。 |
         | 3 | pergroup动态量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, Ceil(H, 128))。数据类型为`torch.float32`。 |
-        | 4 | mx量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch_npu.float8_e8m0fnu`。 |
-        | 5 | mxfp8量化clip实现 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch_npu.float8_e8m0fnu`。 |
+        | 4 | mx量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch.float8_e8m0fnu`。 |
+        | 5 | mxfp8量化clip实现 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch.float8_e8m0fnu`。 |
     <!-- end id66 -->
 
 - HCCL通信域缓存区大小：

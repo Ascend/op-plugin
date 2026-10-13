@@ -31,7 +31,7 @@ torch_npu.npu_add_rms_norm_v2(x1, x2, gamma, epsilon=1e-6) -> Tensor
 - **x1**（`Tensor`）：必选参数/输出，对应公式中的$x1$和$RmsNorm(x)$，表示用于Add计算的第一个输入和归一化后的最终输出结果。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持1-8维度。数据格式支持$ND$。不支持空Tensor。
 - **x2**（`Tensor`）：必选参数/输出，对应公式中的$x2$和$x$，表示用于Add计算的第二个输入和Add计算的结果。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape和`x1`保持一致。数据格式支持$ND$。不支持空Tensor。
 - **gamma**（`Tensor`）：必选参数，对应公式中的$gamma$，表示RmsNorm的缩放因子（权重）。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape要与`x1`需要Norm的维度保持一致。数据格式支持$ND$。不支持空Tensor。
-- **epsilon**（`float`）：可选参数，对应公式中的$epsilon$，数据类型支持`torch.double`，默认值为1e-6。
+- **epsilon**（`float`）：可选参数，对应公式中的$epsilon$，数据类型支持`double`，默认值为1e-6。
 
 ## 返回值说明
 

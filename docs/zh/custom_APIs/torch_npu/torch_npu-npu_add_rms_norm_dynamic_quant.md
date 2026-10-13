@@ -106,16 +106,16 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch.hifloat8`、`torch.float_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id7 -->
 
 - **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask`为None并且`smooth_scale2`不为None，或者output_mask[1]为True时有效输出，数据类型和shape与`y1`的有效输出一致。当output_mask[1]为False时则不输出，返回空Tensor。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.int4`。
+  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch_npu.hifloat8`、`torch.float_e5m2`、`torch.float8_e4m3fn`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id9 -->
 
 - **x_out**(`Tensor`)：Add计算的结果，对应公式中的$x$。数据类型和shape与输入`x1`保持一致。

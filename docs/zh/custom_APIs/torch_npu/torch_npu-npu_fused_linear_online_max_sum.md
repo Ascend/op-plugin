@@ -63,7 +63,7 @@
      $$
      alignNum = (input.size(0) + 7) / 8 * 8\\
      maskBit[p] = \begin{cases}
-     `torch.uint8`(targetMask[p]) & \text{p < input.size(0)}\\
+     uint8(targetMask[p]) & \text{p < input.size(0)}\\
      1 & \text{input.size(0) <= p < alignNum}
      \end{cases} \\
      targetMaskOut[k] = 0b(maskBit[8*k:8*k+8])

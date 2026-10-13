@@ -30,7 +30,7 @@ torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
 
 - **input** (`Tensor`)：必选参数，表示待计算的数据，对应公式中的$x$。shape支持1-8维，且shape必须在入参`dim`对应维度上可被2整除。不支持非连续的Tensor，不支持空Tensor。数据类型支持`torch.float32`、`torch.float16`或`torch.bfloat16`类型。
 
-- **dim** (`int`)：可选参数，默认为-1。需要进行切分的维度序号，对`input`相应轴进行对半切。数据类型为`torch.int64`，取值范围为\[-input.dim\(\), input.dim\(\)-1\]。
+- **dim** (`int`)：可选参数，默认为-1。需要进行切分的维度序号，对`input`相应轴进行对半切。数据类型为`int64`，取值范围为\[-input.dim\(\), input.dim\(\)-1\]。
 
 ## 返回值说明
 

@@ -58,7 +58,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.uint8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
     <!-- end id12 -->
 
-- **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`torch.int64`。取值范围为\(-data\_rank, data\_rank\)（data\_rank为data的维度数）且axis不能为0。
+- **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`int64`。取值范围为\(-data\_rank, data\_rank\)（data\_rank为data的维度数）且axis不能为0。
 
 ## 返回值说明
 

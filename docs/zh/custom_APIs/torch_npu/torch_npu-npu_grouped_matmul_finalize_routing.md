@@ -62,7 +62,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，数据类型支持`torch_npu.float8_e8m0fnu`，其中`torch_npu.float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
+    - mx量化场景下，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
     - pertoken量化场景下，数据类型支持`torch.float32`、`torch.bfloat16`。维度为\(e, 1, n\)，`e`、`n`与`w`的`e`、`n`一致。
   <!-- end id9 -->
 
@@ -91,38 +91,38 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id14 -->
   <!-- npu="950" id15 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，**必选参数**，数据类型支持`torch_npu.float8_e8m0fnu`，其中`torch_npu.float8_e8m0fnu`需配置`scale_dtype`为对应类型，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
+    - mx量化场景下，**必选参数**，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`pertoken_scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
     - pertoken量化场景下，**可选参数**，数据类型支持`torch.float32`。维度为\(m,\)。
   <!-- end id15 -->
 
-- **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，支持非连续的Tensor。数据类型支持`bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
+- **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，支持非连续的Tensor。数据类型支持`torch.bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
 - **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，支持非连续的Tensor。数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
 
   <!-- npu="A3,910b" id16 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`float32`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。
   <!-- end id16 -->
   <!-- npu="950" id17 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：该参数必须传入。数据类型支持`float32`；mx量化且输出为`bfloat16`场景下，还支持`bfloat16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：该参数必须传入。数据类型支持`torch.float32`；mx量化且输出为`torch.bfloat16`场景下，还支持`torch.bfloat16`。
   <!-- end id17 -->
 
 - **`row_index`**（`Tensor`）：**可选参数**，MoE专家输出按照该rowIndex进行combine，其中的值即为combine做scatter add的索引，支持非连续的Tensor。数据格式支持$ND$，维度为\(m,\)，`m`与`x`的`m`一致。
 
   <!-- npu="A3,910b" id18 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`int32`、`int64`。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`、`torch.int64`。
   <!-- end id18 -->
   <!-- npu="950" id19 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，必选参数，输出为`float32`时数据类型支持`int64`；输出为`bfloat16`时数据类型支持`int32`。
-    - pertoken量化场景下，**必选参数**。当输入的`x`数据类型为`int8`时，`row_index`数据类型支持`int64`和`int32`；当输入的`x`数据类型为`float8_e4m3fn`或`hifloat8`时，`row_index`数据类型支持`int64`；
+    - mx量化场景下，必选参数，输出为`torch.float32`时数据类型支持`torch.int64`；输出为`torch.bfloat16`时数据类型支持`torch.int32`。
+    - pertoken量化场景下，**必选参数**。当输入的`x`数据类型为`torch.int8`时，`row_index`数据类型支持`torch.int64`和`torch.int32`；当输入的`x`数据类型为`torch.float8_e4m3fn`或`torch_npu.hifloat8`时，`row_index`数据类型支持`torch.int64`；
   <!-- end id19 -->
 
 - **`dtype`**（`ScalarType`）：**可选参数**，指定GroupedMatMul计算的输出类型。当前接口仅支持`dtype`为0或2，不支持1。
 
   <!-- npu="A3,910b" id20 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：0表示`float32`，1表示`float16`，2表示`bfloat16`。默认值为0。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：0表示`torch.float32`，1表示`torch.float16`，2表示`torch.bfloat16`。默认值为0。
   <!-- end id20 -->
   <!-- npu="950" id21 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：0表示`float32`，1表示`float16`，2表示`bfloat16`。默认值为0。mx量化、权重为FRACTAL\_NZ格式且`bias`为None场景下支持输出`bfloat16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：0表示`torch.float32`，1表示`torch.float16`，2表示`torch.bfloat16`。默认值为0。mx量化、权重为FRACTAL\_NZ格式且`bias`为None场景下支持输出`torch.bfloat16`。
   <!-- end id21 -->
 
 - **`shared_input_weight`**（`float`）：**可选参数**，共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
@@ -136,8 +136,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id22 -->
   <!-- npu="950" id23 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`float4_e2m1fn_x2`。
-    - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`hifloat8`。
+    - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`torch_npu.float4_e2m1fn_x2`。
+    - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`torch_npu.hifloat8`。
   <!-- end id23 -->
 
 - **`w_dtype`**（`int`）：**可选参数**，输入`w`的真实数据类型，默认为None。
@@ -147,8 +147,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id24 -->
   <!-- npu="950" id25 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`float4_e2m1fn_x2`。
-    - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`hifloat8`。
+    - mx量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`torch_npu.float4_e2m1fn_x2`。
+    - pertoken量化场景下，若传入None表示输入`x`的真实数据类型与输入的`dtype`相同；若非None，`x`的真实数据类型支持`torch_npu.hifloat8`。
   <!-- end id25 -->
 
 - **`scale_dtype`**（`int`）：**可选参数**，输入`scale`的真实数据类型，默认为None。
@@ -157,7 +157,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id26 -->
   <!-- npu="950" id27 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：mx量化场景下，若传入None表示输入`scale`的真实数据类型与输入的`dtype`相同；若非None，`scale`的真实数据类型支持`float8_e8m0`。
+  - <term>Ascend 950PR&950DT系列产品</term>：mx量化场景下，若传入None表示输入`scale`的真实数据类型与输入的`dtype`相同；若非None，该参数须传入`torch_npu.float8_e8m0fnu`，表示`scale`采用`torch.float8_e8m0fnu`格式。
   <!-- end id27 -->
 
 - **`pertoken_scale_dtype`**（`int`）：**可选参数**，输入`pertoken_scale`的真实数据类型，默认为None。
@@ -166,7 +166,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id28 -->
   <!-- npu="950" id29 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：mx量化场景下，若传入None表示输入`pertoken_scale`的真实数据类型与输入的`dtype`相同；若非None，`pertoken_scale`的真实数据类型支持`float8_e8m0`。
+  - <term>Ascend 950PR&950DT系列产品</term>：mx量化场景下，若传入None表示输入`pertoken_scale`的真实数据类型与输入的`dtype`相同；若非None，该参数须传入`torch_npu.float8_e8m0fnu`，表示`pertoken_scale`采用`torch.float8_e8m0fnu`格式。
   <!-- end id29 -->
 
 ## 返回值说明
@@ -174,16 +174,16 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 **`y`**（`Tensor`）：一个2D的Tensor，支持非连续的Tensor，维度为\(batch, n\)。
 
 <!-- npu="A3,910b" id30 -->
-- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：输出的数据类型支持`float32`。
+- <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：输出的数据类型支持`torch.float32`。
 <!-- end id30 -->
 <!-- npu="950" id31 -->
-- <term>Ascend 950PR&950DT系列产品</term>：输出的数据类型支持`float32`；mx量化、权重为FRACTAL\_NZ格式且`bias`为None场景下还支持`bfloat16`。
+- <term>Ascend 950PR&950DT系列产品</term>：输出的数据类型支持`torch.float32`；mx量化、权重为FRACTAL\_NZ格式且`bias`为None场景下还支持`torch.bfloat16`。
 <!-- end id31 -->
 
 ## 约束说明
 
 - 该接口支持推理和训练场景下使用。
-- 该接口支持单算子模式和TorchAir图模式；输出为`bfloat16`时，仅支持单算子模式，暂不支持图模式。
+- 该接口支持单算子模式和TorchAir图模式；输出为`torch.bfloat16`时，仅支持单算子模式，暂不支持图模式。
 - 输入和输出Tensor支持的数据类型组合如下：
 
   <!-- npu="A3,910b" id32 -->
@@ -191,38 +191,38 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | int8 | int8 | int64 | float32 | None | None | float32 | bfloat16 | float32 | int64 | float32 |
-    | int8 | int8 | int64 | float32 | None | None | float32 | None | None | int64 | float32 |
-    | int8 | int4 | int64 | int64 | float32 | None | float32 | bfloat16 | float32 | int64 | float32 |
-    | int8 | int4 | int64 | int64 | float32 | float32 | float32 | bfloat16 | float32 | int64 | float32 |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | None | None | `torch.float32` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | None | None | `torch.float32` | None | None | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch_npu.int4` | `torch.int64` | `torch.int64` | `torch.float32` | None | `torch.float32` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch_npu.int4` | `torch.int64` | `torch.int64` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
   <!-- end id32 -->
   <!-- npu="950" id33 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | float8_e5m2 | float8_e5m2 | int64 | float8_e8m0 | bfloat16 | float32 | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
-    | float8_e5m2 | float8_e4m3fn | int64 | float8_e8m0 | bfloat16 | float32 | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
-    | float8_e4m3fn | float8_e5m2 | int64 | float8_e8m0 | bfloat16 | float32 | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
-    | float8_e4m3fn | float8_e4m3fn | int64 | float8_e8m0 | bfloat16 | float32 | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
-    | float4_e2m1fn_x2 | float4_e2m1fn_x2 | int64 | float8_e8m0 | bfloat16 | float32 | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
-    | float8_e4m3fn | float8_e4m3fn | int64 | float8_e8m0 | None | float32 | float8_e8m0 | bfloat16/None | float32/bfloat16 | int32 | bfloat16 |
-    | float4_e2m1fn_x2 | float4_e2m1fn_x2 | int64 | float8_e8m0 | None | float32 | float8_e8m0 | bfloat16/None | float32/bfloat16 | int32 | bfloat16 |
-    | int8 | int8 | int64 | float32 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | int8 | int8 | int64 | bfloat16 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | int8 | int8 | int64 | float32 | bfloat16/None | None | float32/None | bfloat16 | float32 | int32 | float32 |
-    | int8 | int8 | int64 | bfloat16 | bfloat16/None | None | float32/None | bfloat16 | float32 | int32 | float32 |
-    | float8_e4m3fn | float8_e4m3fn | int64 | float32 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | float8_e4m3fn | float8_e4m3fn | int64 | bfloat16 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | hifloat8 | hifloat8 | int64 | float32 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | hifloat8 | hifloat8 | int64 | bfloat16 | bfloat16/None | None | float32/None | bfloat16 | float32 | int64 | float32 |
-    | float8_e4m3fn | float4_e2m1fn_x2 | int64 | float8_e8m0 | bfloat16/None | None | float8_e8m0 | bfloat16 | float32 | int64 | float32 |
+    | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | None | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | None | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
 
     > **MxA8W4场景说明**：
     > - `x`数据类型为`torch.float8_e4m3fn`，`w`数据类型为`torch_npu.float4_e2m1fn_x2`。`w`数据格式要求FRACTAL\_NZ格式，可通过torch\_npu.npu\_format\_cast接口实现ND转FRACTAL\_NZ格式。
     > - `x`要求非转置，`w`要求转置，`w`的shape支持\(e, n, k\), 要求e<=1024、k和n满足32对齐。图模式场景下要求e不等于1，同时k\>64。
     > - `shared_input_offset`+`shared_input`的第一维度总和不允许超过`output_bs`。
-    > - mx量化输出为`bfloat16`时，`w`数据格式要求FRACTAL\_NZ格式，`bias`必须为None，`row_index`必须为`int32`，仅支持单算子模式，暂不支持图模式。
+    > - mx量化输出为`torch.bfloat16`时，`w`数据格式要求FRACTAL\_NZ格式，`bias`必须为None，`row_index`必须为`torch.int32`，仅支持单算子模式，暂不支持图模式。
   <!-- end id33 -->
 
 ## 调用示例
@@ -320,7 +320,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     ```
   <!-- end id35 -->
   <!-- npu="950" id36 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：pertoken量化weightNZ场景示例-int8
+  - <term>Ascend 950PR&950DT系列产品</term>：pertoken量化weightNZ场景示例-`torch.int8`
 
     ```python
     import torch
@@ -562,7 +562,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     ```
   <!-- end id39 -->
   <!-- npu="950" id40 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：pertoken量化weightNZ场景示例-int8图模式调用
+  - <term>Ascend 950PR&950DT系列产品</term>：pertoken量化weightNZ场景示例-`torch.int8`图模式调用
 
     ```python
     import numpy as np

@@ -118,7 +118,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
         - 若输入为`torch.int64`，`x`数据类型必须为`torch.float16`且不带transpose输入，同时`weight`数据类型必须为`torch.int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#zh-cn_topic_0000001771071862_section14459801435)。此时只支持perchannel场景，M范围为\[1, 96\]，且K和N要求64对齐。
     <!-- end id15 -->
     <!-- npu="950" id16 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`，其数据类型需与`x`保持一致。在MX场景，要求`antiquant_scale`类型为`torch.uint8`，用以承载`torch_npu.float8_e8m0fnu`数据，此时`x`类型为`torch.float16`或`torch.bfloat16`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`，其数据类型需与`x`保持一致。在MX场景，要求`antiquant_scale`类型为`torch.uint8`，用以承载`torch.float8_e8m0fnu`数据，此时`x`类型为`torch.float16`或`torch.bfloat16`。
     <!-- end id16 -->
 
 - **antiquant\_offset** (`Tensor`)：可选参数。反量化的偏移量，用于weight矩阵反量化。对应反量化公式中的$antiquantOffset$，默认值为None，数据格式支持$ND$，支持带transpose的非连续的Tensor，支持输入维度为两维\(1, N\)或一维\(N, \)、\(1, \)。
