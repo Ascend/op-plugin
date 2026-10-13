@@ -4973,6 +4973,9 @@
   "func: _thnn_fused_gru_cell(Tensor input_gates, Tensor hidden_gates, Tensor hx, Tensor? input_bias=None, Tensor? hidden_bias=None) -> (Tensor, Tensor)": {
     "version": ["v2.5", "newest"]
   },
+  "func: _thnn_fused_gru_cell_backward(Tensor grad_hy, Tensor workspace, bool has_bias) -> (Tensor, Tensor, Tensor, Tensor, Tensor)": {
+    "version": ["v2.5", "newest"]
+  },
   "func: npu_moe_token_unpermute_with_routing_map(Tensor permuted_tokens, Tensor sorted_indices, int[] restore_shape, *, Tensor? probs=None, Tensor? routing_map=None, bool drop_and_pad=False) -> Tensor": {
     "version": ["all_version"]
   },
