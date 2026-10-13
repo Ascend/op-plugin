@@ -72,15 +72,15 @@ torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, *, offset, beta, epsilon=1e-06,
 
     | x | gamma | scale | offset | beta | epsilon | y | rstd |
     | :------: | :------: | :------: | :------: | :------: | :------: | :------: | :------: |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8` | `torch.float16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `torch.bfloat16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.float16` | `torch.float16` | `torch.float32` | `torch.int32` | `torch.float16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.bfloat16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.float16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
-    | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.bfloat16` | torch.double | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.int8` | `torch.float16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `torch.bfloat16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float32` | `torch.int32` | `torch.float16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.bfloat16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float32` | `torch.float32` | `torch.float16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.bfloat16` | `double` | `torch.int8`/`torch.int32`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` | `torch.float32` |
 
 - **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是PyTorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
 

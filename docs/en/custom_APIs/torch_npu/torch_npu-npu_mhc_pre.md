@@ -45,8 +45,8 @@ torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=
 - **`bias`** (`Tensor`): Required. Bias parameter of the mHC layer. The data type is `torch.float32`. The shape is `(n<sup>2</sup>+2n)`. Empty tensors are not supported.
 - **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
 - **`gamma`** (`Tensor`): Optional. Scaling factor for RmsNorm. The data type is `torch.float32`. The shape is `(n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported.
-- **`norm_eps`** (`float`): Optional. Zero-division prevention parameter for RmsNorm. The default value is `1e-6`. The data type is `torch.float32`.
-- **`hc_eps`** (`float`): Optional. Epsilon parameter applied after the sigmoid operation on H<sub>pre</sub>. The default value is `1e-6`. The data type can be `torch.float32`.
+- **`norm_eps`** (`float`): Optional. Zero-division prevention parameter for RmsNorm. The default value is `1e-6`. The data type is `float32`.
+- **`hc_eps`** (`float`): Optional. Epsilon parameter applied after the sigmoid operation on H<sub>pre</sub>. The default value is `1e-6`. The data type can be `float32`.
 - **`out_flag`** (`int`): Optional. Specifies whether to output `h_mix`, `inv_rms`, and `h_pre`. The default value is `0`, indicating that these outputs are not generated. `1` indicates that all of these outputs are generated.
 
 ## Return Values

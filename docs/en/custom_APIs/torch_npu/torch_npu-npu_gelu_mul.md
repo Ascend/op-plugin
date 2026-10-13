@@ -60,7 +60,7 @@ torch_npu.npu_gelu_mul(input, *, approximate="none") -> Tensor
 
 `Tensor`
 
-Output tensor, $\text{out}$ in the formulas. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is the same as that of `input`. The length of the last dimension of `output` is `torch.half` that of `input`, with the remaining dimensions unchanged. For example, if `input.shape = [100, 400]`, then `output.shape = [100, 200]`.
+Output tensor, $\text{out}$ in the formulas. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float`. This parameter must be 2D to 8D. Non-contiguous tensors are supported. The data layout can be ND. The output data type is the same as that of `input`. The length of the last dimension of `output` is half that of `input`, with the remaining dimensions unchanged. For example, if `input.shape = [100, 400]`, then `output.shape = [100, 200]`.
 
 ## Examples
 

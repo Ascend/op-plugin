@@ -52,7 +52,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 - **beta** (`Tensor`)：可选输入。对应公式中的$β$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_v$）。不支持空tensor。
 
-- **scale** (`float`)：可选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`torch.float32`。
+- **scale** (`float`)：可选输入。表示query的缩放因子，对应公式中的 $1/\sqrt{D_k}$。数据类型支持`float32`。
 
 - **actual_seq_lengths** (`Tensor`)：可选输入。表示各batch的输入序列长度。数据类型支持`torch.int32`，数据格式支持ND，shape为（$B$）。不支持空tensor。要求$1 \le L_i \le 8$，$L_i$ 表示第i个actual_seq_lengths的值。
 

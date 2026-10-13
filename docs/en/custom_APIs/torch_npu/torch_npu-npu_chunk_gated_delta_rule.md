@@ -53,7 +53,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 - **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `torch.int32`. The data layout can be ND. The shape is `(B,)`.
 
-- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `torch.float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
+- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
 
 - **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `torch.float32`. The data layout can be ND. The shape is ($T$, $N_v$).
 

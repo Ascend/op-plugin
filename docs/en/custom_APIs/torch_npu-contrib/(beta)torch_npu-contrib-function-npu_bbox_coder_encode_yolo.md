@@ -23,7 +23,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 
 - **`bboxes`** (`Tensor`): Source bounding boxes, such as anchor boxes. The data type can be `torch.float` or `torch.half`.
 - **`gt_bboxes`** (`Tensor`): Target bounding boxes, such as ground truth bounding boxes. The data type can be `torch.float` or `torch.half`.
-- **`stride`** (`Tensor`): Bounding box stride. Only `int` tensors are supported.
+- **`stride`** (`Tensor`): Bounding box stride. Only `torch.int` tensors are supported.
 
 ## Return Values
 

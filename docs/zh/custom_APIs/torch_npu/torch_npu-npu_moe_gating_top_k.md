@@ -135,7 +135,7 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 
 - **x**（`Tensor`）：必选参数，表示待计算的输入。要求是一个2D的Tensor，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式要求为ND。支持非连续Tensor。最后一维的大小（即专家数）要求不大于`2048`。
 
-- **k**（`int`）：必选参数，表示每个token最终筛选得到的专家个数，数据类型为`torch.int64`。要求`1 <= k <= x_shape[-1] / group_count * k_group`。
+- **k**（`int`）：必选参数，表示每个token最终筛选得到的专家个数，数据类型为`int64`。要求`1 <= k <= x_shape[-1] / group_count * k_group`。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
  
@@ -145,9 +145,9 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 
 - **tid2eid**（`Tensor`）：可选参数，表示Hash映射表，存储预计算的专家索引。要求是2D的Tensor，要求shape值的最后一维与`k`相等。数据类型支持`torch.int32`、`torch.int64`，数据格式要求为ND。支持非连续`Tensor`。
 
-- **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`torch.int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
+- **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 
-- **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`torch.int64`，默认值为`1`。要求group_count > 0，x_shape[-1]能够被`group_count`整除且整除后的结果大于`group_select_mode`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
+- **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求group_count > 0，x_shape[-1]能够被`group_count`整除且整除后的结果大于`group_select_mode`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
 
 - **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 

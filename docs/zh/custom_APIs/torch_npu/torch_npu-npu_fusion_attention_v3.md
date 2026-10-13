@@ -27,7 +27,7 @@ torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse
 - **query**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **key**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **value**（`Tensor`）：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **head\_num**（`int`）：代表head个数，数据类型支持`torch.int64`。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **head\_num**（`int`）：代表head个数，以 Python `int` 传入。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **input\_layout**（`string`）：代表输入`query`、`key`、`value`的数据排布格式，支持BSH、SBH、BSND、BNSD、TND（`actual_seq_qlen`/`actual_seq_kvlen`需传值，`input_layout`为TND时即为varlen场景）；后续章节如无特殊说明，S表示`query`或`key`、`value`的sequence length，Sq表示query的sequence length，Skv表示`key`、`value`的sequence length，SS表示Sq\*Skv。
 - **pse**（`Tensor`）：可选参数，表示位置编码。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。
      - 非varlen场景支持四维输入，包含BNSS格式、BN1Skv格式、1NSS格式。
@@ -36,9 +36,9 @@ torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse
 - **atten\_mask**（`Tensor`）：可选参数，取值为1（或True）代表该位不参与计算（被遮蔽），取值为0（或False）代表该位参与计算（被保留），数据类型支持`torch.bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型支持BNSS格式、B1SS格式、11SS格式、SS格式。varlen场景只支持SS格式，SS分别是maxSq和maxSkv。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
 - **scale**（`float`）：可选参数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`，默认值为1。
 - **keep\_prob**（`float`）：可选参数，代表Dropout中1的比例，取值范围为\(0, 1\] 。数据类型支持`float`，默认值为1，表示全部保留。
-- **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`torch.int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`torch.int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
-- **inner\_precise**（`int`）：用于提升精度，数据类型支持`torch.int64`，默认值为0。
+- **pre\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **next\_tockens**（`int`）：用于稀疏计算的参数，可选参数，数据类型支持`int64`，默认值为2147483647。`next_tockens`和`pre_tockens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。综合约束请见[约束说明](#zh-cn_topic_0000001742717129_section12345537164214)。
+- **inner\_precise**（`int`）：用于提升精度，数据类型支持`int64`，默认值为0。
 
     > [!NOTE]  
     > 当前0、1为保留配置值，2为开启无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。

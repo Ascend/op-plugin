@@ -86,8 +86,8 @@
 
     |   数据类型    | emax |
     |:------------:|:----:|
-    | float4_e2m1  |  2   |
-    | float4_e1m2  |  0   |
+    | `torch_npu.float4_e2m1fn_x2`  |  2   |
+    | `torch_npu.float4_e1m2fn_x2`  |  0   |
     | `torch.float8_e4m3fn`|  8   |
     | `torch.float8_e5m2`  |  15  |
 
@@ -98,13 +98,13 @@
     $$
 
     $$
-    S_{`torch.float32`}^b = \frac{Amax(D^b)}{Amax(DType)}
+    S_{fp32}^b = \frac{Amax(D^b)}{Amax(DType)}
     $$
 
-    将$S_{`torch.float32`}^b$转换为FP8可表示的$S_{ue8m0}^b = 2^{E_{int}^b}$，并对块内元素量化：
+    将$S_{fp32}^b$转换为FP8可表示的$S_{ue8m0}^b = 2^{E_{int}^b}$，并对块内元素量化：
 
     $$
-    d^i = DType(d_{`torch.float32`}^i \cdot R_{`torch.float32`}^b),\quad R_{`torch.float32`}^b = \frac{1}{`torch.float32`(S_{ue8m0}^b)}
+    d^i = DType(d_{fp32}^i \cdot R_{fp32}^b),\quad R_{fp32}^b = \frac{1}{fp32(S_{ue8m0}^b)}
     $$
 
 ## 函数原型
@@ -128,13 +128,13 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - **axis**(`int`)：可选参数，DynamicMxQuant量化发生的轴。取值范围为$[-1,-2,x.dim()-2,x.dim()-1]$。默认值为`-1`。
 - **dst_type**(`int`)：可选参数，输出`y`的数据类型。`296`表示`torch_npu.float4_e2m1fn_x2`，`297`表示`torch_npu.float4_e1m2fn_x2`，`292`表示`torch.float8_e4m3fn`，`291`表示`torch.float8_e5m2`。默认值为`296`。
 - **round_mode**(`str`)：可选参数，输出`y`的舍入模式。取值为`"rint"`、`"round"`、`"floor"`。当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时仅支持`"rint"`。默认值为`"rint"`。
-- **scale_alg**(`int`)：可选参数，`mxscale`的计算方法。取值范围为$[0,2]$：`0`代表OCP算法，对应上述`scale_alg=0`场景；`1`代表cuBLAS算法，对应上述`scale_alg=1`场景；`2`代表RNE算法，为预留取值。当前仅支持取值`0`和`1`。当`dst_type`为`float4_e2m1`或`float4_e1m2`时仅支持`0`。默认值为`0`。
-- **max_dtype_value**(`float`)：可选参数，预留参数，表示DynamicMxQuant过程中指定的目标数据类型最大值。取值不小于0，仅当`scale_alg=2`且`dst_type`为`float4_e2m1`或`float4_e1m2`时生效。默认值为`0`。
+- **scale_alg**(`int`)：可选参数，`mxscale`的计算方法。取值范围为$[0,2]$：`0`代表OCP算法，对应上述`scale_alg=0`场景；`1`代表cuBLAS算法，对应上述`scale_alg=1`场景；`2`代表RNE算法，为预留取值。当前仅支持取值`0`和`1`。当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时仅支持`0`。默认值为`0`。
+- **max_dtype_value**(`float`)：可选参数，预留参数，表示DynamicMxQuant过程中指定的目标数据类型最大值。取值不小于0，仅当`scale_alg=2`且`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时生效。默认值为`0`。
 
 ## 返回值说明
 
 - **y**(`Tensor`)：量化后的输出，对应公式中的$P_i$或$d^i$。数据类型由`dst_type`决定，数据格式为$ND$。当`activate_dim`为尾轴时，shape为$[X_1,\dots,X_n,H]$（即在`activate_dim`轴上为输入的一半）；当`activate_dim`非尾轴时，`activate_dim`轴为输入对应轴的一半。
-- **mxscale**(`Tensor`)：每个分组对应的量化尺度，对应公式中的$mxscale$或$S^b$。数据类型为`torch_npu.float8_e8m0`，数据格式为$ND$。
+- **mxscale**(`Tensor`)：每个分组对应的量化尺度，对应公式中的$mxscale$或$S^b$。数据类型为`torch.float8_e8m0fnu`，数据格式为$ND$。
 
 ## 约束说明
 
@@ -143,7 +143,7 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - 输入`x`对应`activate_dim`轴的维度需为2的倍数，且`x`的维数必须大于1维。
 - 当`activate_dim`为非尾轴时，`swiglu_mode`必须为`0`。
 - 当`swiglu_mode`为`2`或`3`时，`axis`必须为`-1`。
-- 当`dst_type`为`float4_e2m1`或`float4_e1m2`时，`y`的最后一维需为2的倍数，且`scale_alg`必须为`0`。
+- 当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，`y`的最后一维需为2的倍数，且`scale_alg`必须为`0`。
 - 当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时，`round_mode`必须为`"rint"`。
 - `group_index`所有元素之和不能大于输入`x`除尾轴外剩余轴的乘积，每个元素需大于0。
 - 当`activate_dim`或`axis`为非尾轴且`group_index`存在时，`x`必须为2维。

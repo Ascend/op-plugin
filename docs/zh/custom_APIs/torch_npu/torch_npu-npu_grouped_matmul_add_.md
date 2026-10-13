@@ -36,8 +36,8 @@ torch_npu.npu_grouped_matmul_add_(self, x, weight, group_list, *, transpose_x=Tr
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **transpose_x**(`bool`)：**可选参数**，代表`x`矩阵是否转置，True表示`x`转置（默认），False表示`x`非转置。当前仅支持True。
 - **transpose_weight**(`bool`)：**可选参数**，代表`weight`矩阵是否转置，False表示`weight`不转置（当前仅支持），True表示`weight`转置。
-- **group_type**(`int`)：**可选参数**，代表需要分组的轴。数据类型支持`torch.int64`，仅支持2（默认）。
-- **group_list_type**(`int`)：**可选参数**，代表`group_list`的表达形式。数据类型支持`torch.int64`。
+- **group_type**(`int`)：**可选参数**，代表需要分组的轴。数据类型支持`int64`，仅支持2（默认）。
+- **group_list_type**(`int`)：**可选参数**，代表`group_list`的表达形式。数据类型支持`int64`。
   - 0（默认）：`group_list`中数值为分组轴大小的cumsum结果（累积和）。
   - 1：`group_list`中数值为分组轴上每组大小。
 

@@ -31,7 +31,7 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **`argmax_overlaps`** (`Tensor`): Required. The data type can be `torch.int32`.
 - **`gt_max_overlaps`** (`Tensor`): Required. The data type must be identical to that of `self`.
 - **`gt_argmax_overlaps`** (`Tensor`): Required. The data type can be `torch.int32`.
-- **`num_gts`** (`Tensor`): Required. Number of ground-truth (GT) instances. The data type can be `torch.int32`. The shape is `(1,)`.
+- **`num_gts`** (`int`): Required. Number of ground-truth (GT) instances, passed as a Python `int`.
 - **`pos_iou_thr`** (`float`): Required. IoU threshold for positive bounding boxes.
 - **`min_pos_iou`** (`float`): Required. Minimum IoU for a bounding box to be considered a positive bounding box.
 - **`gt_max_assign_all`** (`bool`): Required. Specifies whether to assign all bounding boxes that have the same maximum overlap with a ground-truth box to that ground-truth box.

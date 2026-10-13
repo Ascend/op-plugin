@@ -37,7 +37,7 @@
     gatherOut=AllGather(x1)
     $$
 
-  - 场景2：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`的pertensor场景，或x1和x2数据类型为`torch.int8`/`torch.int4`的perchannel、pertoken场景，且不输出amaxOut时，对入参x1进行AllGather后，对x1、x2进行MatMul计算，然后进行dequant操作：
+  - 场景2：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`的pertensor场景，或x1和x2数据类型为`torch.int8`/`torch_npu.int4`的perchannel、pertoken场景，且不输出amaxOut时，对入参x1进行AllGather后，对x1、x2进行MatMul计算，然后进行dequant操作：
 
     $$
     output=(x1Scale*x2Scale)*(AllGather(x1)@x2 + bias)
@@ -76,7 +76,7 @@
 > <!-- npu="A3,910b" id23 -->
 > - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：支持pertoken、perchannel量化方式。
 > <!-- end id23 -->
-> - 对于PyTorch原生不支持的数据类型（`torch.int4`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`等），需要通过x1_dtype、x2_dtype、x1_scale_dtype、x2_scale_dtype参数指定实际数据类型。
+> - 对于PyTorch原生不支持的数据类型（`torch_npu.int4`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`等），需要通过x1_dtype、x2_dtype、x1_scale_dtype、x2_scale_dtype参数指定实际数据类型。
 
 ## 函数原型
 
@@ -92,7 +92,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
   <!-- end id5 -->
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch.int4`。
+  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`、`torch_npu.int4`。
   <!-- end id6 -->
 
 - **x2** (`Tensor`)：必选参数，MM右矩阵，即计算公式中的$x2$。shape为2维，转置时为$(n, k)$，非转置时为$(k, n)$，支持转置/不转置场景，仅转置场景支持非连续Tensor，数据格式支持$ND$。数据类型支持范围与`self`一致，且x1和x2的数据类型需保持一致（`torch.float8_e4m3fn`与`torch.float8_e5m2`可混用）。
@@ -145,12 +145,12 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：当前版本仅支持group_sizes为`None`（group_size为0）。
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950DT系列产品</term>：仅当x1_scale和x2_scale输入都是2维及以上数据时group_size取值有效，其他场景需传0。当groupSizeM、groupSizeN、groupSizeK中有1个或多个为0时，接口根据x1/x2/x1_scale/x2_scale的shape重新推导：groupSizeM = m / scaleM（需整除，m为x1的shape第一维，scaleM为x1Scale的shape第一维）、groupSizeK = k / scaleK、groupSizeN = n / scaleN。常见取值组合：x1_scale、x2_scale为2维`torch.float32`时推导为[128, 128, 128]，对应group_size值为549764202624；x1_scale、x2_scale为3维`torch_npu.float8_e8m0fnu`时推导为[1, 1, 32]，对应group_size值为4295032864。
+  - <term>Ascend 950DT系列产品</term>：仅当x1_scale和x2_scale输入都是2维及以上数据时group_size取值有效，其他场景需传0。当groupSizeM、groupSizeN、groupSizeK中有1个或多个为0时，接口根据x1/x2/x1_scale/x2_scale的shape重新推导：groupSizeM = m / scaleM（需整除，m为x1的shape第一维，scaleM为x1Scale的shape第一维）、groupSizeK = k / scaleK、groupSizeN = n / scaleN。常见取值组合：x1_scale、x2_scale为2维`torch.float32`时推导为[128, 128, 128]，对应group_size值为549764202624；x1_scale、x2_scale为3维`torch.float8_e8m0fnu`时推导为[1, 1, 32]，对应group_size值为4295032864。
   <!-- end id16 -->
 
 - **amax_output** (`bool`)：可选参数，是否需要输出MatMul计算结果的最大值amaxOut，默认值为`False`。当前版本仅支持`False`，此时amax返回空Tensor。
-- **y_dtype** (`int`)：可选参数，输出y的数据类型（例如：`torch.float16`），默认值为`None`。当x1为`torch.float16`/`torch.bfloat16`时，y的数据类型与x1保持一致，若指定y_dtype必须与x1一致；当x1为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch.int8`/`torch.int4`等低精度类型时，必须指定y_dtype，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
-- **x1_dtype** (`int`)：可选参数，x1（self）实际参与计算的数据类型，默认值为`None`。当x1为PyTorch原生不支持的数据类型（如`torch.int4`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）时需指定，且该数据类型的itemsize须与x1 Tensor的itemsize一致。
+- **y_dtype** (`int`)：可选参数，输出y的数据类型（例如：`torch.float16`），默认值为`None`。当x1为`torch.float16`/`torch.bfloat16`时，y的数据类型与x1保持一致，若指定y_dtype必须与x1一致；当x1为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch.int8`/`torch_npu.int4`等低精度类型时，必须指定y_dtype，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
+- **x1_dtype** (`int`)：可选参数，x1（self）实际参与计算的数据类型，默认值为`None`。当x1为PyTorch原生不支持的数据类型（如`torch_npu.int4`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`）时需指定，且该数据类型的itemsize须与x1 Tensor的itemsize一致。
 - **x2_dtype** (`int`)：可选参数，x2实际参与计算的数据类型，默认值为`None`，取值规则同x1_dtype。
 - **x1_scale_dtype** (`int`)：可选参数，x1_scale的实际数据类型，默认值为`None`。当x1_dtype为`torch_npu.float4_e2m1fn_x2`时，必须为`torch.float8_e8m0fnu`。
 - **x2_scale_dtype** (`int`)：可选参数，x2_scale的实际数据类型，默认值为`None`。当x2_dtype为`torch_npu.float4_e2m1fn_x2`时，必须为`torch.float8_e8m0fnu`。
@@ -191,7 +191,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   - 支持2、4、8卡。
   - bias仅支持传入`None`。
   - 不支持空Tensor。
-  - 当x1和x2数据类型为`torch.int4`时，k与n必须为偶数。
+  - 当x1和x2数据类型为`torch_npu.int4`时，k与n必须为偶数。
   - comm_mode仅支持`"aiv"`。
   - 通信缓冲区大于等于200MB。
 <!-- end id20 -->

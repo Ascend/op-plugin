@@ -99,7 +99,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - **softmax_sum_index**(`Tensor`)：必选参数，表示Index attention softmax结果的求和。数据格式支持$ND$，数据类型支持`torch.float32`。shape支持$(B, N2index, S1)$、$(N2index, T1)$。
 
-- **scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`torch.float32`。
+- **scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`float32`。
 
 - **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的rope信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
 
@@ -111,11 +111,11 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - **layout**(`str`)：可选参数，用于标识输入`query`的数据排布格式。当前支持$BSND$、$TND$，默认值为$BSND$。
 
-- **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`torch.int32`，默认值为`3`。当前仅支持模式`3`。
+- **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`int32`，默认值为`3`。当前仅支持模式`3`。
 
-- **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`torch.int64`，默认值2^63-1。
+- **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值2^63-1。
 
-- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`torch.int64`，默认值2^63-1。
+- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
 
 ## 返回值说明
 

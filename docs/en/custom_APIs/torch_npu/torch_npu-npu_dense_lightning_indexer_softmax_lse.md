@@ -47,11 +47,11 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 - **`layout`** (`str`): Optional. Data layout format of the input `query_index`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
-- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `torch.int32`. The default value is `3`. Currently, only mode `3` is supported.
+- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int32`. The default value is `3`. Currently, only mode `3` is supported.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
 
 ## Return Values
 

@@ -140,18 +140,18 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
 - **`activation_input`** (`List[Tensor]`): Optional. Backward input of the activation function. Currently, only `None` is supported.
 - **`activation_quant_scale`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
 - **`activation_quant_offset`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
-- **`split_item`** (`int`): Optional. Specifies the split mode. The data type can be `torch.int32`.
+- **`split_item`** (`int`): Optional. Specifies the split mode. The data type can be `int32`.
     - `0` or `1`: The output contains multiple tensors, and the number matches that of `weight`.
     - `2` or `3`: The output is a single tensor.
 
-- **`group_type`** (`int`): Optional. The grouping axis. The data type can be `torch.int32`.
+- **`group_type`** (`int`): Optional. The grouping axis. The data type can be `int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, and the matrix multiplication is $C[m,n]=A[m,k] \times B[k,n]$, the valid enum values are: `-1` (no grouping), `0` (grouping along the m-axis), and `2` (grouping along the k-axis).
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: Currently, the value can be `-1`, `0`, or `2`.
         - Atlas inference products: Currently, only `0` is supported.
 
-- **`group_list_type`** (`int`): Optional. Representation format of `group_list`. The data type can be `torch.int32`.
+- **`group_list_type`** (`int`): Optional. Representation format of `group_list`. The data type can be `int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, valid values are `0`, `1`, or `2`.
@@ -161,7 +161,7 @@ npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, antiquant_s
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The value `2` is supported only when the data type of `x` and `weight` is `torch.int8`, and `group_type` is set to `0` (m-axis grouping).
         - Atlas inference products: The value `2` is not supported.
     
-- **`act_type`** (`int`): Optional. Activation function type. The data type can be `torch.int32`.
+- **`act_type`** (`int`): Optional. Activation function type. The data type can be `int32`.
     - When `group_list` is of type `List[int]`, only `None` is supported.
 
     - When `group_list` is of type `Tensor`, valid enum values are: `0` (no activation), `1` (`RELU` activation), `2` (`GELU_TANH` activation), `3` (not supported), `4` (`FAST_GELU` activation), or `5` (`SILU` activation).

@@ -128,18 +128,18 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.bfloat16`。
     <!-- end id16 -->
 
-- **num_heads** (`int`)：可选参数，代表`query`的head个数，数据类型支持`torch.int64`。
+- **num_heads** (`int`)：可选参数，代表`query`的head个数，以 Python `int` 传入。
 - **scale_value** (`float`)：可选参数，对应公式中$scale$，值通常是$d$开根号的倒数，代表缩放系数，作为计算流中Muls的scalar值，数据类型支持`float`。数据类型与`query`的数据类型需满足数据类型推导规则。默认值为`1.0`。
-- **pre_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention（注意力机制）需要和前几个Token计算关联，数据类型支持`torch.int64`。默认值为2147483647。
+- **pre_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention（注意力机制）需要和前几个Token计算关联，数据类型支持`int64`。默认值为2147483647。
     <!-- npu="310p" id29 -->
     - <term>Atlas推理系列产品</term>仅支持默认值2147483647。
     <!-- end id29 -->
-- **next_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个Token计算关联。数据类型支持`torch.int64`。默认值为`0`。
+- **next_tokens** (`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个Token计算关联。数据类型支持`int64`。默认值为`0`。
     <!-- npu="310p" id30 -->
     - <term>Atlas推理系列产品</term>仅支持0和2147483647。
     <!-- end id30 -->
 - **input_layout** (`str`)：可选参数，用于标识输入`query`、`key`、`value`的数据排布格式，当前支持$BSH$、$BSND$、$BNSD$、$BNSD\_BSND$（输入为$BNSD$时，输出格式为$BSND$）。默认值为`"BSH"`。
-- **num_key_value_heads**：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，GQA是介于MHA（Multi-Head Attention，多头注意力）和MQA（Multi-Query Attention，多查询注意力）之间的折中方案：多个query head共享同一组key/value head，从而在保持模型效果接近MHA的同时，显著降低KV Cache显存占用和访存开销，数据类型支持`torch.int64`。默认值为`0`，表示`key`/`value`和`query`的head个数相等。限制：需要满足`num_key_value_heads`整除`num_heads`，`num_heads`与`num_key_value_heads`的比值不能大于64，且在$BSND$、$BNSD$、$BNSD\_BSND$场景下，需要与shape中的`key`/`value`的$N$轴shape值相同，否则报错。
+- **num_key_value_heads**（`int`）：可选参数，代表`key`、`value`中head个数，用于支持GQA（Grouped-Query Attention，分组查询注意力）场景，GQA是介于MHA（Multi-Head Attention，多头注意力）和MQA（Multi-Query Attention，多查询注意力）之间的折中方案：多个query head共享同一组key/value head，从而在保持模型效果接近MHA的同时，显著降低KV Cache显存占用和访存开销，以 Python `int` 传入。默认值为`0`，表示`key`/`value`和`query`的head个数相等。限制：需要满足`num_key_value_heads`整除`num_heads`，`num_heads`与`num_key_value_heads`的比值不能大于64，且在$BSND$、$BNSD$、$BNSD\_BSND$场景下，需要与shape中的`key`/`value`的$N$轴shape值相同，否则报错。
     <!-- npu="310p" id32 -->
     - <term>Atlas推理系列产品</term>仅支持默认值`0`。
     <!-- end id32 -->
@@ -155,7 +155,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     - <term>Atlas A3系列产品</term>：支持TND格式。当key/value的input_layout为TND时，该入参必须传入，且以该入参元素的数量作为Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKV和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
     <!-- end id18 -->
 
-- **sparse_mode** (`int`)：可选参数，表示sparse的模式，数据类型支持`torch.int64`。默认值为`0`，综合约束请见[约束说明](#section12345537164214)。
+- **sparse_mode** (`int`)：可选参数，表示sparse的模式，数据类型支持`int64`。默认值为`0`，综合约束请见[约束说明](#section12345537164214)。
 
     <!-- npu="310p" id33 -->
     - <term>Atlas推理系列产品</term>仅支持默认值`0`。
@@ -197,7 +197,7 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
     <p id="zh-cn_topic_0000001798619409_p16629103195810"><a name="zh-cn_topic_0000001798619409_p16629103195810"></a><a name="zh-cn_topic_0000001798619409_p16629103195810"></a><span id="zh-cn_topic_0000001798619409_ph1464135665612"><a name="zh-cn_topic_0000001798619409_ph1464135665612"></a><a name="zh-cn_topic_0000001798619409_ph1464135665612"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term1253731311225_7"></a><a name="zh-cn_topic_0000001798619409_zh-cn_topic_0000001312391781_term1253731311225_7"></a><term>Atlas A3系列产品</term></span></p>
     </td>
     <td class="cellrowborder" valign="top" width="69.43%" headers="mcps1.1.3.1.2 "><a name="zh-cn_topic_0000001798619409_ul103175710575"></a><a name="zh-cn_topic_0000001798619409_ul103175710575"></a><ul id="zh-cn_topic_0000001798619409_ul103175710575"><li>支持B轴小于等于65536(64k)，D轴32byte不对齐时仅支持到128。</li><li>支持N轴小于等于256。</li><li>支持S轴小于等于20971520（20M）。长序列场景下，如果计算量过大可能会导致PFA算子执行超时（AI Core error类型报错，errorStr为timeout or trap error），此场景下建议做S切分处理，注：这里计算量会受B、S、N、D等的影响，值越大计算量越大。典型的会超时的长序列（即B、S、N、D的乘积较大）场景包括但不限于：<a name="zh-cn_topic_0000001798619409_ul103175718575"></a><a name="zh-cn_topic_0000001798619409_ul103175718575"></a><ul id="zh-cn_topic_0000001798619409_ul103175718575"><li>B=1，Q<sub>N</sub>=20，Q<sub>S</sub>=1048576，D = 256，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li><li>B=1，Q<sub>N</sub>=2，Q<sub>S</sub>=10485760，D = 256，KV<sub>N</sub>=2，KV<sub>S</sub>=10485760。</li><li>B=20，Q<sub>N</sub>=1，Q<sub>S</sub>=1048576，D = 256，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li><li>B=1，Q<sub>N</sub>=10，Q<sub>S</sub>=1048576，D = 512，KV<sub>N</sub>=1，KV<sub>S</sub>=1048576。</li></ul>
-    </li><li>支持D轴小于等于512。`input_layout`为BSH或者BSND时，要求N*D小于65535。</li></ul>
+    </li><li>支持D轴小于等于512。<code>input_layout</code>为BSH或者BSND时，要求N*D小于65535。</li></ul>
     </td>
     </tr>
     </tbody>

@@ -68,7 +68,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - **antiquant_offset1** (`Tensor`)：可选参数，伪量化参数，第一组matmul的偏移量，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N1]$/$[N1]$。
 - **antiquant_offset2** (`Tensor`)：可选参数，伪量化参数，第二组matmul的偏移量，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$，perchannel下输入在有/无专家时分别为$[E, N2]$/$[N2]$。
 
-- **inner_precise** (`int`)：可选参数，表示高精度或者高性能选择。数据类型支持`torch.int64`。该参数仅对`torch.float16`生效，`torch.bfloat16`和`torch.int8`不区分高精度和高性能。
+- **inner_precise** (`int`)：可选参数，表示高精度或者高性能选择。数据类型支持`int64`。该参数仅对`torch.float16`生效，`torch.bfloat16`和`torch.int8`不区分高精度和高性能。
 
     - `inner_precise`为0时，代表开启高精度模式，算子内部采用`torch.float32`数据类型计算。
     - `inner_precise`为1时，代表高性能模式。

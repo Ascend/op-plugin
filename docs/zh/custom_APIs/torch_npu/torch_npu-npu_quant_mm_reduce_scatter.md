@@ -158,8 +158,8 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **y\_dtype**（`int`）：可选参数，输出数据类型（ScalarType枚举值）。当输入为`torch.float16`或`torch.bfloat16`时，输出应与输入数据类型保持一致（可不传）；输入为其他数据类型时必须传入。支持取值`torch.float16`、`torch.bfloat16`、`torch.float32`。默认值为None。
 - **x1\_dtype**（`int`）：可选参数，x1的数据类型（ScalarType枚举值），用于将x1的存储类型解释为指定低精度类型。mx量化场景（MXFP4）下必须传入，取值须为`torch_npu.float4_e2m1fn_x2`。默认值为None。
 - **x2\_dtype**（`int`）：可选参数，x2的数据类型（ScalarType枚举值），用于将x2的存储类型解释为指定低精度类型。mx量化场景（MXFP4）下必须传入，取值须为`torch_npu.float4_e2m1fn_x2`。默认值为None。
-- **x1\_scale\_dtype**（`int`）：可选参数，x1\_scale的数据类型（ScalarType枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch.float8_e8m0fnu`。默认值为None。
-- **x2\_scale\_dtype**（`int`）：可选参数，x2\_scale的数据类型（ScalarType枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch.float8_e8m0fnu`。默认值为None。
+- **x1\_scale\_dtype**（`int`）：可选参数，x1\_scale的数据类型（TorchNPU数据类型枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch_npu.float8_e8m0fnu`。默认值为None。
+- **x2\_scale\_dtype**（`int`）：可选参数，x2\_scale的数据类型（TorchNPU数据类型枚举值）。mx量化场景（MXFP4）下必须传入，取值须为`torch_npu.float8_e8m0fnu`。默认值为None。
 - **comm\_mode**（`str`）：可选参数，通信模式。
 
   <!-- npu="A3,910b" id19 -->
@@ -206,7 +206,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - `world_size`取值必须在[2, 4, 8, 16, 32, 64]范围内。
 - 输入self和x2的K轴必须相等，且self的M轴必须能被world\_size整除。
 - `group_sizes`必须传长度为3的列表，每个元素取值范围[0, 65535]。
-- mx量化场景（MXFP4）下，`x1_dtype`、`x2_dtype`、`x1_scale_dtype`、`x2_scale_dtype`为必传参数，且x1\_dtype与x2\_dtype必须为`torch_npu.float4_e2m1fn_x2`，x1\_scale\_dtype与x2\_scale\_dtype必须为`torch.float8_e8m0fnu`。
+- mx量化场景（MXFP4）下，`x1_dtype`、`x2_dtype`、`x1_scale_dtype`、`x2_scale_dtype`为必传参数，且x1\_dtype与x2\_dtype必须为`torch_npu.float4_e2m1fn_x2`，x1\_scale\_dtype与x2\_scale\_dtype必须为`torch_npu.float8_e8m0fnu`。
 
 ## 调用示例
 
@@ -371,7 +371,7 @@ None
 
 > [!NOTE]
 >
-> 场景4的MXFP4场景（x1、x2数据类型为`torch_npu.float4_e2m1fn_x2`）还需额外传入`x1_dtype`、`x2_dtype`（取值为`torch_npu.float4_e2m1fn_x2`）以及`x1_scale_dtype`、`x2_scale_dtype`（取值为`torch.float8_e8m0fnu`），且k须为偶数。
+> 场景4的MXFP4场景（x1、x2数据类型为`torch_npu.float4_e2m1fn_x2`）还需额外传入`x1_dtype`、`x2_dtype`（取值为`torch_npu.float4_e2m1fn_x2`）以及`x1_scale_dtype`、`x2_scale_dtype`（取值为`torch_npu.float8_e8m0fnu`），且k须为偶数。
 
 ```python
 import torch

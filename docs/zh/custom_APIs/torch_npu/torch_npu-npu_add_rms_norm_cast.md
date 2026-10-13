@@ -38,7 +38,7 @@ torch_npu.npu_add_rms_norm_cast(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor
 - **x1**（`Tensor`）：必选参数，表示需要归一化的原始数据输入，公式中的$x1$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型支持`torch.float16`、`torch.bfloat16`。shape支持1-8维。
 - **x2**（`Tensor`）：必选参数，表示需要归一化的原始数据输入，公式中的$x2$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。shape和数据类型需要与`x1`一致。
 - **gamma**（`Tensor`）：必选参数，表示标准化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型需要与`x1`一致。shape支持1-8维，shape与`x1`需要norm的维度一致。
-- **epsilon**（`float`）：可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为`torch.double`。建议传较小的正数，默认值为1e-6。
+- **epsilon**（`float`）：可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为`double`。建议传较小的正数，默认值为1e-6。
 
 ## 返回值说明
 

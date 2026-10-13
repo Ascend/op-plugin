@@ -77,7 +77,7 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
   - 在<term>Ascend 950PR&950DT系列产品</term>上调用本接口且`tokens`数据类型为`torch.int8`时，元素表示expert ID，取值范围为[0, 10240)，最大值为10239，不支持10240。
   <!-- end id7 -->
 
-- **num_out_tokens**（`int`）：可选参数，表示有效输出token数，默认值为`None`，数据类型为`torch.int64`。
+- **num_out_tokens**（`int`）：可选参数，表示有效输出token数，默认值为`None`，数据类型为`int64`。
   - 值为`None`或`0`时，表示不会删除任何token。
   - 值大于`0`时，会按照num_out_tokens对按照专家排序好的token进行切片，保留前num_out_tokens个token。
   - 值小于`0`时，按负的切片索引进行处理。

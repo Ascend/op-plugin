@@ -66,7 +66,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - **`antiquant_offset1`** (`Tensor`): Optional. Fake-quantization parameter, offset of the first MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N1]` and `[N1]`, respectively.
 - **`antiquant_offset2`** (`Tensor`): Optional. Fake-quantization parameter, offset of the second MatMul group. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. In `perchannel` mode, the input shapes with and without experts are `[E, N2]` and `[N2]`, respectively.
 
-- **`inner_precise`** (`int`): Optional. Choice between high accuracy and high performance. The data type can be `torch.int64`. This parameter takes effect only for `torch.float16`. `torch.bfloat16` and `torch.int8` do not distinguish between high-precision and high-performance modes.
+- **`inner_precise`** (`int`): Optional. Choice between high accuracy and high performance. The data type can be `int64`. This parameter takes effect only for `torch.float16`. `torch.bfloat16` and `torch.int8` do not distinguish between high-precision and high-performance modes.
 
     - When `inner_precise` is set to `0`, high-precision mode is enabled, and the operator uses the `torch.float32` data type internally for computation.
     - When `inner_precise` is set to `1`, high performance mode is enabled.
