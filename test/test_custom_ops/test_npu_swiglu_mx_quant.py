@@ -20,9 +20,9 @@ class TestSwigluMxQuant(TestCase):
                                              scale_alg=scale_alg, max_dtype_value=max_dtype_value)
 
     def golden_op_exec(self, input_tensor):
-        if torch.all(torch.eq(input_tensor, 0.0)) and input_tensor.shape == torch.Size([1, 2, 2]):
+        if torch.all(torch.eq(input_tensor, 1.0)) and input_tensor.shape == torch.Size([4, 8]):
             device = input_tensor.device
-            y = torch.tensor([[119, 119], [119, 119], [119, 119], [119, 119]], dtype=torch_npu.float4_e2m1fn_x2,
+            y = torch.tensor([[119, 119], [119, 119], [119, 119], [119, 119]], dtype=torch.uint8,
                              device=device)
             mxscale = torch.tensor([[[124, 0]], [[124, 0]], [[124, 0]], [[124, 0]]], dtype=torch.uint8,
                                    device=device)
@@ -38,14 +38,14 @@ class TestSwigluMxQuant(TestCase):
         return input_tensor
 
     @SupportedDevices(['Ascend950'])
-    def test_npu_add_rms_norm_quant_float8_e5m2_with_rstd(self, device="npu"):
+    def test_npu_swiglu_mx_quant_bfloat16_float4_e2m1fn_x2(self, device="npu"):
         x = self.generate_input(input=[4, 8], value=1, dtype="bfloat16")
         x = x.to(device).requires_grad_(True)
 
         golden_output = self.golden_op_exec(x.clone().detach())
         npu_output = self.npu_op_exec(x)
         y = npu_output[0].view([4, 2]).view(torch.uint8)
-        mxscale = npu_output[2].view([4, 1, 2]).to(torch.uint8)
+        mxscale = npu_output[1].view([4, 1, 2]).to(torch.uint8)
 
         assert torch.all(y == golden_output[0].view(torch.uint8))
         assert torch.all(mxscale == golden_output[1].view(torch.uint8))
