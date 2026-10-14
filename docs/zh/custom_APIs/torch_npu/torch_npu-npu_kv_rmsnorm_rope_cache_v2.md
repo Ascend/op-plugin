@@ -43,7 +43,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_kv_rmsnorm_rope_cache_v2(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None, c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5, cache_mode='Norm', is_output_kv=False，k_cache_dtype=None, ckv_cache_dtype=None) -> (Tensor, Tensor)
+torch_npu.npu_kv_rmsnorm_rope_cache_v2(kv, gamma, cos, sin, index, k_cache, ckv_cache, *, k_rope_scale=None, c_kv_scale=None, k_rope_offset=None, c_kv_offset=None, epsilon=1e-5, cache_mode='Norm', is_output_kv=False, k_cache_dtype=None, ckv_cache_dtype=None) -> (Tensor, Tensor)
 ```
 
 ## 参数说明

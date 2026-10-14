@@ -54,7 +54,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None, scales2=None, zero_points2=None, *, axis=-1, epsilon=1e-06, div_mode=True， dst_type=None) -> (y1, y2, x)
+torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None, scales2=None, zero_points2=None, *, axis=-1, epsilon=1e-06, div_mode=True, dst_type=None) -> (y1, y2, x)
 ```
 
 ## 参数说明
