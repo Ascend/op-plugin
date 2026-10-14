@@ -674,6 +674,18 @@ class TestGroupedMatmul(TestCase):
         with self.assertRaises(RuntimeError):
             custom_output = self.custom_op_exec(x, weight, bias=bias, group_list=group_list, split_item=split_item)
 
+    @SupportedDevices(['Ascend910B', 'Ascend950'])
+    def test_npu_grouped_matmul_invalid_single_weight_expert_num(self):
+        x = [torch.empty((1, 16), dtype=torch.float16).npu()]
+        for expert_num in [0, 1025]:
+            weight = [torch.empty((expert_num, 16, 16), dtype=torch.float16).npu()]
+            group_list = torch.ones((expert_num,), dtype=torch.int64).npu()
+            error_msg = rf"number of experts, must be in the range \[1, 1024\], but got {expert_num}"
+
+            with self.assertRaisesRegex(RuntimeError, error_msg):
+                self.custom_op_exec(x, weight, group_list=group_list, split_item=3,
+                                    group_type=0, group_list_type=0)
+
     @unittest.skip("Skipping test_npu_grouped_matmul_A16W4 for now")
     @SupportedDevices(['Ascend910B'])
     def test_npu_grouped_matmul_A16W4(self):

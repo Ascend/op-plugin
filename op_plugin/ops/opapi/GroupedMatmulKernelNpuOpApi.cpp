@@ -181,6 +181,13 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
 
     auto num_x = x.size();
     bool singleWeight = weight.size() == 1 && weight[0].sizes().size() == 3;
+    if (singleWeight) {
+        const int64_t expert_num = weight[0].size(0);
+        TORCH_CHECK(expert_num >= 1 && expert_num <= 1024,
+                    "Invalid weight: when weight contains a single 3D tensor, weight[0].size(0), "
+                    "representing the number of experts, must be in the range [1, 1024], but got ",
+                    expert_num, "." + OPS_ERROR(ErrCode::PARAM));
+    }
     auto num_weight = singleWeight ? static_cast<size_t>(weight[0].size(0)) : static_cast<size_t>(weight.size());
     auto group_list_real = group_list.value_or(at::Tensor());
     auto num_group_list = group_list_real.size(0);
