@@ -99,7 +99,7 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - 该接口支持训练、推理场景下使用。
 <!-- npu="950" id2 -->
 - 通信引擎约束：
-    - <term>Ascend 950PR&950DT系列产品</term>：支持CCU通信。
+    - <term>Ascend 950DT系列产品</term>：支持CCU通信。
 <!-- end id2 -->
 
 - 该接口支持单算子模式调用和T-T量化场景的图模式调用。

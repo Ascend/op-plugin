@@ -37,7 +37,7 @@ torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_pro
 - **export_type** (`list`)：可选参数，设置导出的性能数据结果文件格式。取值为：
 
   - text：表示解析为.json和.csv格式的timeline和summary文件以及汇总所有性能数据的.db格式文件（ascend_pytorch.db、analysis.db）。
-  - db：表示仅解析为一个汇总所有性能数据的.db格式文件（ascend_pytorch.db、analysis.db），使用MindStudio Insight工具展示。仅支持on_trace_ready接口导出和[离线解析](./torch_npu-profiler-profiler-analyse.md)导出，需配套安装支持导出db格式的Toolkit软件包。
+  - db：表示仅解析为一个汇总所有性能数据的.db格式文件（ascend_pytorch.db、analysis.db），使用MindStudio Insight工具展示。仅支持on_trace_ready接口导出和离线解析导出，需配套安装支持导出db格式的Toolkit软件包。
 
   设置无效值或未配置时，则读取profiler_info.json中的export_type字段，确定导出格式。
 
