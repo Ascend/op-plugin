@@ -446,10 +446,12 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - m：输出矩阵output的倒数第二维大小，取值范围为1-2147483647。
   - n：输出矩阵output的倒数第一维大小的两倍，取值范围为1-2147483647。
 
+    <!-- npu="950" id48 -->
     MX量化场景下要求（仅适用于Ascend 950PR&950DT系列产品）：
 
     - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为2对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为4对齐。
     - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为64对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为128对齐。
+    <!-- end id48 -->
 
   - k：矩阵乘法reduce轴的大小，取值范围为1-2147483647。
 

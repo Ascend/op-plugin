@@ -42,6 +42,7 @@
 
     执行训练时，打印此接口的返回值为True表示当前已开启确定性计算开关，返回False则表示未开启。
 
+<!-- npu="950,A3,910b" id3 -->
 ## API清单
 
 <!-- npu="A3,910b" id1 -->
@@ -69,3 +70,5 @@
 | `torch_npu.scatter_update_` |
 | `torch_npu.npu_fusion_attention_grad` |
 <!-- end id2 -->
+
+<!-- end id3 -->

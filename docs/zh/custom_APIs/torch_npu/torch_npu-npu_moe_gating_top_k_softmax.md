@@ -48,7 +48,7 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
 <!-- npu="950" id4 -->
-- 该接口在Ascend 950系列产品上性能较差，建议使用`torch_npu.npu_moe_gating_top_k_softmax_v2`接口以获得更优性能。
+- 该接口在Ascend 950PR&950DT系列产品上性能较差，建议使用`torch_npu.npu_moe_gating_top_k_softmax_v2`接口以获得更优性能。
 <!-- end id4 -->
 
 ## 调用示例

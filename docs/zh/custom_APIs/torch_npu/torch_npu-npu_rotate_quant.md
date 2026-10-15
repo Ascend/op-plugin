@@ -42,7 +42,12 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
 ## 约束说明
 
 - 该接口支持推理和训练场景下使用。
+<!-- npu="A3,910b" id20 -->
 - 该接口仅在Atlas A2系列产品和Atlas A3系列产品上支持图模式。
+<!-- end id20 -->
+<!-- npu="950" id21 -->
+- 该接口在Ascend 950PR&950DT系列产品上不支持图模式。
+<!-- end id21 -->
 - 对于输入数据的shape，存在以下约束：
     <!-- npu="A3,910b" id5 -->
     - 在Atlas A2系列产品和Atlas A3系列产品上，`rotation`的shape仅支持`[K, K]`一种形式，`K`的取值范围为[16, 1024]。
