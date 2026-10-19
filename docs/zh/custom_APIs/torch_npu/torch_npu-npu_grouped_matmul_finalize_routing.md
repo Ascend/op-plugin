@@ -126,8 +126,8 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id21 -->
 
 - **`shared_input_weight`**（`float`）：**可选参数**，共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
-- **`shared_input_offset`**（`int`）：**可选参数**，共享专家输出的在总输出中的偏移。默认值为0，`shared_input_offset`+`shared_input`的第一维度总和不允许超过`batch`。
-- **`output_bs`**（`int`）：**可选参数**，输出的最高维大小。默认值为0。
+- **`shared_input_offset`**（`int`）：**可选参数**，共享专家输出的在总输出中的偏移。默认值为0。当`shared_input`不为None时，`shared_input_offset`+`shared_input`的第一维度总和不允许超过输出的第一维大小。
+- **`output_bs`**（`int`）：**可选参数**，输出的最高维大小。默认值为0，此时输出的第一维大小取`x`的第一维大小。
 - **`group_list_type`**（`int`）：**可选参数**，GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 - **`x_dtype`**（`int`）：**可选参数**，输入`x`的真实数据类型，默认为None。
 
@@ -201,28 +201,28 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | None | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
-    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | None | `torch.float32` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
-    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.float32` |
-    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int32` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
-    | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
+    | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32`/`torch.bfloat16` | `torch.int32` | `torch.bfloat16` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int32` | `torch.float32` |
+    | `torch.int8` | `torch.int8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int32` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.bfloat16` | `torch.bfloat16`/None | None | `torch.float32`/None | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
+    | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | None | `torch.float8_e8m0fnu` | `torch.bfloat16`/None | `torch.float32` | `torch.int64` | `torch.float32` |
 
+    > - mx量化输出为`torch.bfloat16`时，`w`数据格式要求FRACTAL\_NZ格式，`bias`必须为None，`row_index`必须为`torch.int32`，仅支持单算子模式，暂不支持图模式。
+    >
     > **MxA8W4场景说明**：
     > - `x`数据类型为`torch.float8_e4m3fn`，`w`数据类型为`torch_npu.float4_e2m1fn_x2`。`w`数据格式要求FRACTAL\_NZ格式，可通过torch\_npu.npu\_format\_cast接口实现ND转FRACTAL\_NZ格式。
     > - `x`要求非转置，`w`要求转置，`w`的shape支持\(e, n, k\), 要求e<=1024、k和n满足32对齐。图模式场景下要求e不等于1，同时k\>64。
-    > - `shared_input_offset`+`shared_input`的第一维度总和不允许超过`output_bs`。
-    > - mx量化输出为`torch.bfloat16`时，`w`数据格式要求FRACTAL\_NZ格式，`bias`必须为None，`row_index`必须为`torch.int32`，仅支持单算子模式，暂不支持图模式。
   <!-- end id33 -->
 
 ## 调用示例
