@@ -33,7 +33,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **input**（`Tensor`）：必选参数，待处理的输入张量。
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2-6维，数据类型支持`torch.int8`、`torch.uint8`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2-6维，数据类型支持`torch.int8`、`torch.uint8`、`torch.float8_e4m3fn`、`torch.float8_e8m0fnu`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
 
 - **acl_format**（`int`/`Format`）：必选参数，目标格式。可输入整数或torch_npu.Format类型，torch_npu.Format类型会被自动转换为对应格式的整数值。例如将`input`的数据格式修改为ND格式时，此处既可以输入`2`，也可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式。
@@ -71,11 +71,13 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
   - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(`torch.int32`)）时，FRACTAL_NZ格式的C0值为8。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。
+  - <term>Ascend 950PR&950DT系列产品</term>：
+    - 对于仅对权重量化的MatMul场景，对权重W做私有格式转换时，需传入A矩阵的数据类型来推断W的C0轴大小。数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.float16`、`torch.bfloat16`。若使用默认值`None`，表示A的dtype和W的dtype一样，推断出W的C0轴大小。
+    - 对于MX scale场景，支持`torch.float8_e8m0fnu`。默认值`None`表示使用`input_dtype`指定的真实数据类型。
   <!-- end id9 -->
 
 <!-- end id15 -->
-- **input\_dtype**（`int`）：可选参数，表示`input`的真实数据类型，支持`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`。
+- **input\_dtype**（`int`）：可选参数，表示`input`的真实数据类型，支持`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.float8_e8m0fnu`。
 
   <!-- npu="A3,910b,910,310p" id10 -->
   - <term>Atlas推理系列产品</term>、<term>Atlas训练系列产品</term>、<term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：暂不支持该参数，使用默认值`None`即可。
@@ -106,6 +108,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     | `torch.int32` | $ND$ | 29 | `torch.float16`/`torch.bfloat16` | NA |
     | `torch.float16` | $ND$ | 29 | `torch.float16` | NA |
     | `torch.bfloat16` | $ND$ | 29 | `torch.bfloat16` | NA |
+    | `torch.float8_e8m0fnu`（`torch.uint8`承载） | $ND$/$NCL$/$NCHW$ | 29 | `torch.float8_e8m0fnu`/`None` | `torch.float8_e8m0fnu` |
     | `torch_npu.float4_e2m1fn_x2`（`torch.float32`承载） | $ND$ | 29 | `torch.float8_e4m3fn` | NA |
     | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $ND$ | 29 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` |
     | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $FRACTAL\_NZ$ | 2 | NA | `torch_npu.float4_e2m1fn_x2` |
@@ -129,8 +132,13 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     | `torch.float32` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
     | `torch.float32` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
 
+  特殊场景说明：
+
+  - MX scale格式转换场景，`input`的真实数据类型为`torch.float8_e8m0fnu`，仅支持3维或4维输入，各维大小必须大于0，末轴必须为2。输出存储shape为`(..., ceil(N/16), KScale, 16, 2)`，其中`KScale`、`N`分别为输入的倒数第三维、倒数第二维大小，前置维度保持不变；逻辑shape与输入保持一致。
+
   当前不支持的特殊场景：
 
+  - `input`的真实数据类型为`torch.float8_e8m0fnu`时，MX scale格式转换不支持图模式，仅支持单算子模式。
   - $ND$转$FRACTAL\_NZ$场景，当`srcTensor.dtype`和`additionalDtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若维度表示为\[k, n\]，则k为1场景暂不支持。
   - 调用本接口转为$FRACTAL\_NZ$格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
   - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
