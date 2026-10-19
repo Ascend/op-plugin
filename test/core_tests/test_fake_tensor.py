@@ -6632,6 +6632,53 @@ class FakeTensorFormatCastTest(TestCase):
             self.assertEqual(list(out.shape), [4, 15, 17])
 
 
+class TestNpuMhcPreBackwardMeta(TestCase):
+    def test_npu_mhc_pre_backward_meta(self):
+        n, dim = 4, 16
+        parameter_size = n * n + 2 * n
+
+        with FakeTensorMode():
+            def make_tensor(shape, dtype=torch.float32):
+                return torch.empty(shape, dtype=dtype, device="npu")
+
+            for x_shape in ((2, 3, n, dim), (6, n, dim)):
+                leading_shape = x_shape[:-2]
+                for with_optional in (False, True):
+                    with self.subTest(x_shape=x_shape, with_optional=with_optional):
+                        inputs = (
+                            make_tensor(x_shape, torch.bfloat16),
+                            make_tensor((parameter_size, n * dim)),
+                            make_tensor((3,)),
+                            make_tensor(leading_shape + (dim,), torch.bfloat16),
+                            make_tensor(leading_shape + (n,)),
+                            make_tensor(leading_shape + (n, n)),
+                            make_tensor(leading_shape),
+                            make_tensor(leading_shape + (parameter_size,)),
+                            make_tensor(leading_shape + (n,)),
+                            make_tensor(leading_shape + (n,)),
+                        )
+                        gamma = make_tensor((n, dim)) if with_optional else None
+                        grad_x_post = (
+                            make_tensor(x_shape, torch.bfloat16) if with_optional else None
+                        )
+                        outputs = torch.ops.npu.npu_mhc_pre_backward(
+                            *inputs, gamma=gamma, hc_eps=1e-6,
+                            grad_x_post=grad_x_post, inner_precise=int(with_optional)
+                        )
+
+                        expected_shapes = (
+                            x_shape, (parameter_size, n * dim), (3,),
+                            (parameter_size,), (n, dim),
+                        )
+                        expected_dtypes = (torch.bfloat16,) + (torch.float32,) * 4
+                        self.assertEqual(len(outputs), len(expected_shapes))
+                        for output, shape, dtype in zip(outputs, expected_shapes, expected_dtypes):
+                            self.assertIsInstance(output, FakeTensor)
+                            self.assertEqual(tuple(output.shape), shape)
+                            self.assertEqual(output.dtype, dtype)
+                            self.assertEqual(output.device.type, "npu")
+
+
 class TestNpuMatmulAbftVerify(TestCase):
     def test_npu_matmul_abft_verify_meta(self):
         with FakeTensorMode():

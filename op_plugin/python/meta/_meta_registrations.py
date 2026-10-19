@@ -255,6 +255,54 @@ def npu_mhc_pre_meta(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1
     return output_tensors
 
 
+@impl(m, "npu_mhc_pre_backward")
+def npu_mhc_pre_backward_meta(x, phi, alpha, grad_h_in, grad_h_post, grad_h_res,
+                              inv_rms, h_mix, h_pre, h_post, gamma=None,
+                              hc_eps=1e-6, grad_x_post=None, inner_precise=0):
+    for name, tensor in (
+        ("x", x), ("phi", phi), ("alpha", alpha), ("grad_h_in", grad_h_in),
+        ("grad_h_post", grad_h_post), ("grad_h_res", grad_h_res),
+        ("inv_rms", inv_rms), ("h_mix", h_mix), ("h_pre", h_pre),
+        ("h_post", h_post),
+    ):
+        torch._check(
+            tensor.numel() > 0,
+            lambda name=name: f"Tensor {name} is empty." + ops_error(ErrCode.VALUE),
+        )
+
+    torch._check(
+        x.dim() in (3, 4),
+        lambda: f"Input x must be 3D or 4D, but got {x.dim()}D." + ops_error(ErrCode.VALUE),
+    )
+    torch._check(
+        grad_h_in.dim() in (2, 3),
+        lambda: f"Input grad_h_in must be 2D or 3D, but got {grad_h_in.dim()}D."
+        + ops_error(ErrCode.PARAM),
+    )
+    torch._check(
+        grad_h_post.dim() in (2, 3),
+        lambda: f"Input grad_h_post must be 2D or 3D, but got {grad_h_post.dim()}D."
+        + ops_error(ErrCode.PARAM),
+    )
+    torch._check(
+        inner_precise in (0, 1),
+        lambda: f"Input inner_precise must be 0 or 1, but got {inner_precise}."
+        + ops_error(ErrCode.VALUE),
+    )
+
+    dim = grad_h_in.size(-1)
+    num_residual = grad_h_post.size(-1)
+    parameter_size = num_residual * num_residual + 2 * num_residual
+    grad_x_shape = list(grad_h_in.shape[:-1]) + [num_residual, dim]
+    return (
+        torch.empty(grad_x_shape, dtype=x.dtype, device="meta"),
+        torch.empty([parameter_size, num_residual * dim], dtype=torch.float32, device="meta"),
+        torch.empty([3], dtype=torch.float32, device="meta"),
+        torch.empty([parameter_size], dtype=torch.float32, device="meta"),
+        torch.empty([num_residual, dim], dtype=torch.float32, device="meta"),
+    )
+
+
 @impl(m, "npu_incre_flash_attention")
 def npu_incre_flash_attention_forward(query, key, value, *, padding_mask=None, atten_mask=None, pse_shift=None, actual_seq_lengths=None,
                                       antiquant_scale=None, antiquant_offset=None, block_table=None,
