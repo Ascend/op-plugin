@@ -47,7 +47,8 @@ namespace op_api {
         if (comm_mode.has_value()) {
             TORCH_CHECK(check_aclnn_kernel_available("aclnnGroupedMatMulAlltoAllvV2"),
                         "Current CANN version do not support this api. Please try to update the version of CANN." + OPS_ERROR(ErrCode::PARAM));
-            const char* comm_mode_real = const_cast<char *>(comm_mode.value().data());
+            std::string comm_mode_str = std::string(comm_mode.value());
+            char* comm_mode_real = const_cast<char *>(comm_mode_str.data());
             EXEC_NPU_CMD(aclnnGroupedMatMulAlltoAllvV2,
                          gmm_x,
                          gmm_weight,

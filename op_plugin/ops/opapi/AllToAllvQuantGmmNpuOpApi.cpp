@@ -709,7 +709,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_alltoallv_quant_gmm(
         check_aclnn_kernel_available("aclnnAlltoAllvQuantGroupedMatMulV2"),
         "Current CANN version do not support this api. Please try to update the version of CANN." +
             OPS_ERROR(ErrCode::PARAM));
-    const char* comm_mode_real = const_cast<char*>(comm_mode.value().data());
+    std::string comm_mode_str = std::string(comm_mode.value());
+    char* comm_mode_real = const_cast<char*>(comm_mode_str.data());
     EXEC_NPU_CMD(
         aclnnAlltoAllvQuantGroupedMatMulV2,
         gmm_x_wrapper,
