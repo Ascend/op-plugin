@@ -270,12 +270,93 @@ bool judge_mm_a16f4_mx(QuantContext& ctx) {
   return false;
 }
 
+// A16INT8 per-tensor：scale 单元素（{1}/{1,1}），转置/非转置均 ND 直拷
+bool judge_mm_a16int8_per_tensor(QuantContext& ctx) {
+  aclDataType x_acl_dtype = c10_npu::GetAclDataType(ctx.x_dtype);
+  aclDataType weight_acl_dtype = c10_npu::GetAclDataType(ctx.weight_dtype);
+  aclDataType weight_scale_acl_dtype = c10_npu::GetAclDataType(ctx.weight_scale_dtype);
+
+  bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
+  bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
+
+  if (x_dtype_match && weight_acl_dtype == ACL_INT8 && scale_dtype_match && ctx.weight.dim() == DIMS_2 &&
+      ctx.weight_scale.numel() == 1) {
+    ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
+    return true;
+  }
+  return false;
+}
+
+// A16INT8 per-channel：转置/非转置均 ND 直拷（A16W8 weight ND 场景，不做 NZ 转换）
+bool judge_mm_a16int8_per_channel(QuantContext& ctx) {
+  aclDataType x_acl_dtype = c10_npu::GetAclDataType(ctx.x_dtype);
+  aclDataType weight_acl_dtype = c10_npu::GetAclDataType(ctx.weight_dtype);
+  aclDataType weight_scale_acl_dtype = c10_npu::GetAclDataType(ctx.weight_scale_dtype);
+
+  bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
+  bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
+
+  if (x_dtype_match && weight_acl_dtype == ACL_INT8 && scale_dtype_match && ctx.weight.dim() == DIMS_2) {
+    int64_t scale_dim = ctx.weight_scale.dim();
+    bool is_per_channel = (scale_dim == DIMS_1) || (scale_dim == DIMS_2 && ctx.weight_scale.size(0) == 1);
+    if (is_per_channel && ctx.weight_scale.numel() > 1) {
+      ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
+      return true;
+    }
+  }
+  return false;
+}
+
+// A16INT8 per-group：scale {G, N}（G > 1），转置/非转置均 ND 直拷（wqbmmv2 INT8-NZ 不支持 per-group）
+bool judge_mm_a16int8_per_group(QuantContext& ctx) {
+  aclDataType x_acl_dtype = c10_npu::GetAclDataType(ctx.x_dtype);
+  aclDataType weight_acl_dtype = c10_npu::GetAclDataType(ctx.weight_dtype);
+  aclDataType weight_scale_acl_dtype = c10_npu::GetAclDataType(ctx.weight_scale_dtype);
+  aclDataType x_scale_acl_dtype =
+      ctx.x_scale_dtype.has_value() ? c10_npu::GetAclDataType(ctx.x_scale_dtype.value()) : ACL_DT_UNDEFINED;
+
+  bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
+  bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
+
+  if (x_dtype_match && weight_acl_dtype == ACL_INT8 && scale_dtype_match && x_scale_acl_dtype == ACL_DT_UNDEFINED &&
+      ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2 && ctx.weight_scale.size(0) > 1) {
+    ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
+    return true;
+  }
+  return false;
+}
+
+// A16FP8HIF8 per-channel：weight FLOAT8_E4M3FN/HIFLOAT8，仅 per-channel（C 量化），
+// 转置/非转置均 ND 直拷（wqbmmv2 FP8、HIF8不支持 weightNZ），offset 不支持
+bool judge_mm_a16fp8hif8_per_channel(QuantContext& ctx) {
+  aclDataType x_acl_dtype = c10_npu::GetAclDataType(ctx.x_dtype);
+  aclDataType weight_acl_dtype = c10_npu::GetAclDataType(ctx.weight_dtype);
+  aclDataType weight_scale_acl_dtype = c10_npu::GetAclDataType(ctx.weight_scale_dtype);
+  aclDataType x_scale_acl_dtype =
+      ctx.x_scale_dtype.has_value() ? c10_npu::GetAclDataType(ctx.x_scale_dtype.value()) : ACL_DT_UNDEFINED;
+
+  bool x_dtype_match = (x_acl_dtype == ACL_FLOAT16 || x_acl_dtype == ACL_BF16);
+  bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
+  bool weight_dtype_match = (weight_acl_dtype == ACL_FLOAT8_E4M3FN || weight_acl_dtype == ACL_HIFLOAT8);
+
+  if (x_dtype_match && weight_dtype_match && scale_dtype_match && x_scale_acl_dtype == ACL_DT_UNDEFINED &&
+      ctx.weight.dim() == DIMS_2) {
+    int64_t scale_dim = ctx.weight_scale.dim();
+    bool is_per_channel = (scale_dim == DIMS_1) || (scale_dim == DIMS_2 && ctx.weight_scale.size(0) == 1);
+    if (is_per_channel && ctx.weight_scale.numel() > 1) {
+      ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
+      return true;
+    }
+  }
+  return false;
+}
+
 // 直拷输出别名：out 直接复用输入 tensor（共享 storage 与 view），aclnn 直拷路径同址时无拷贝
 static void prepare_out_weight_scale_direct(QuantContext& ctx) {
   ctx.out_weight_scale = ctx.weight_scale;
 }
 
-static void prepare_out_weight_nd(QuantContext& ctx) {
+static void prepare_out_weight_nd_direct(QuantContext& ctx) {
   // ND 直拷为物理透传，out_weight 直接别名 weight（共享 storage 与 view，转置场景尤为关键）
   ctx.out_weight = ctx.weight;
 }
@@ -362,7 +443,7 @@ static void prepare_out_weight_nz_a16w4(QuantContext& ctx) {
 // A16W4（INT4/FP4）转置分流：转置 weight → ND 直拷（物理透传，与转置布局无关）；非转置 → NZ 转换
 static void prepare_out_weight_a16w4(QuantContext& ctx) {
   if (ctx.is_weight_trans) {
-    prepare_out_weight_nd(ctx);
+    prepare_out_weight_nd_direct(ctx);
   } else {
     prepare_out_weight_nz_a16w4(ctx);
   }
@@ -435,7 +516,7 @@ static const std::unordered_map<c10_npu::SocVersion, std::vector<DataFlowConfig>
         prepare_out_weight_offset_direct,
         prepare_out_bias_direct}},
       {judge_mm_a16s4_per_tensor,
-       {prepare_out_weight_nd,
+       {prepare_out_weight_nd_direct,
         prepare_out_weight_scale_direct,
         prepare_out_weight_offset_direct,
         prepare_out_bias_direct}},
@@ -457,6 +538,28 @@ static const std::unordered_map<c10_npu::SocVersion, std::vector<DataFlowConfig>
       {judge_mm_a16f4_mx,
        {// 转置 → ND 直拷，非转置 → NZ 转换（prepare_out_weight_a16w4 内部分流）
         prepare_out_weight_a16w4,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
+      // A16W8：INT8 pertensor/perchannel/pergroup 转置/非转置均 ND 直拷
+      {judge_mm_a16int8_per_tensor,
+       {prepare_out_weight_nd_direct,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
+      {judge_mm_a16int8_per_channel,
+       {prepare_out_weight_nd_direct,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
+      {judge_mm_a16int8_per_group,
+       {prepare_out_weight_nd_direct,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
+      // A16FP8HIF8：E4M3FN/HIFLOAT8 per-channel（转置/非转置均 ND 直拷，无 offset）
+      {judge_mm_a16fp8hif8_per_channel,
+       {prepare_out_weight_nd_direct,
         prepare_out_weight_scale_direct,
         prepare_out_weight_offset_direct,
         prepare_out_bias_direct}}}},

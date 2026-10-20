@@ -79,6 +79,170 @@ class TestNpuWeightQuantPreprocess(TestCase):
                 weight_dtype=torch_npu.int4,
                 weight_scale_dtype=torch.float16)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_tensor(self):
+        # A16INT8 pertensor：转置/非转置均 ND 直拷
+        k, n = 256, 128
+        weight = torch.randint(low=-128, high=128, size=(k, n), dtype=torch.int8).npu()
+        weight_scale = torch.randn((1,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.dtype, weight.dtype)
+        self.assertEqual(out_weight.cpu(), weight.cpu())
+        self.assertEqual(out_weight_scale.cpu(), weight_scale.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_tensor_trans(self):
+        # A16INT8 pertensor 转置：ND 直拷（转置视图透传）
+        k, n = 256, 128
+        weight = torch.randint(low=-128, high=128, size=(n, k), dtype=torch.int8).npu().transpose(0, 1)
+        weight_scale = torch.randn((1,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.cpu(), weight.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_channel_nd(self):
+        # A16INT8 perchannel 非转置：ND 直拷透传（A16W8 全场景不做 NZ 转换）
+        k, n = 256, 128
+        weight = torch.randint(low=-128, high=128, size=(k, n), dtype=torch.int8).npu()
+        weight_scale = torch.randn((n,), dtype=torch.float16).npu()
+        weight_offset = torch.randn((n,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16,
+            weight_offset=weight_offset)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight_scale.cpu(), weight_scale.cpu())
+        self.assertEqual(out_weight_offset.cpu(), weight_offset.cpu())
+        # ND 直拷：物理元素数与 weight 一致
+        self.assertEqual(out_weight.numel(), weight.numel())
+        self.assertEqual(out_weight.cpu().view(torch.int8).flatten(), weight.cpu().flatten())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_channel_trans(self):
+        # A16INT8 perchannel 转置：ND 直拷
+        k, n = 256, 128
+        weight = torch.randint(low=-128, high=128, size=(n, k), dtype=torch.int8).npu().transpose(0, 1)
+        weight_scale = torch.randn((n,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.cpu(), weight.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_group(self):
+        # A16INT8 pergroup：转置/非转置均 ND 直拷
+        k, n = 256, 128
+        k_group_size = 64
+        g = (k + k_group_size - 1) // k_group_size
+        weight = torch.randint(low=-128, high=128, size=(k, n), dtype=torch.int8).npu()
+        weight_scale = torch.randn((g, n), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16,
+            k_group_size=k_group_size)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.cpu(), weight.cpu())
+        self.assertEqual(out_weight_scale.cpu(), weight_scale.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16int8_per_group_trans(self):
+        # A16INT8 pergroup 转置：ND 直拷（转置视图透传）
+        k, n = 256, 128
+        k_group_size = 64
+        g = (k + k_group_size - 1) // k_group_size
+        weight = torch.randint(low=-128, high=128, size=(n, k), dtype=torch.int8).npu().transpose(0, 1)
+        weight_scale = torch.randn((g, n), dtype=torch.float16)
+        weight_scale = weight_scale.t().contiguous().t().npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.int8,
+            weight_scale_dtype=torch.float16,
+            k_group_size=k_group_size)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.cpu(), weight.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16fp8hif8_e4m3_per_channel(self):
+        # A16FP8HIF8 E4M3FN perchannel 非转置：ND 直拷
+        k, n = 256, 128
+        weight = torch.randint(0, 255, (k, n), dtype=torch.uint8).to(torch.float8_e4m3fn).npu()
+        weight_scale = torch.randn((n,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.float8_e4m3fn,
+            weight_scale_dtype=torch.float16)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.dtype, weight.dtype)
+        # FP8 dtype 无 sub 实现，经 uint8 视图逐元素比较
+        self.assertEqual(out_weight.view(torch.uint8).cpu(), weight.view(torch.uint8).cpu())
+        self.assertEqual(out_weight_scale.cpu(), weight_scale.cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_a16fp8hif8_e4m3_per_channel_trans(self):
+        # A16FP8HIF8 E4M3FN perchannel 转置：ND 直拷
+        k, n = 256, 128
+        weight = torch.randint(0, 255, (n, k), dtype=torch.uint8).to(torch.float8_e4m3fn).npu().transpose(0, 1)
+        weight_scale = torch.randn((n,), dtype=torch.float16).npu()
+
+        out_weight, out_weight_scale, out_weight_offset, out_bias = torch_npu.npu_weight_quant_preprocess(
+            weight,
+            weight_scale,
+            x_dtype=torch.float16,
+            weight_dtype=torch.float8_e4m3fn,
+            weight_scale_dtype=torch.float16)
+
+        self.assertEqual(out_weight.shape, weight.shape)
+        self.assertEqual(out_weight.stride(), weight.stride())
+        self.assertEqual(out_weight.dtype, weight.dtype)
+        # FP8 dtype 无 sub 实现，经 uint8 视图逐元素比较
+        self.assertEqual(out_weight.view(torch.uint8).cpu(), weight.view(torch.uint8).cpu())
+
 
 if __name__ == "__main__":
     run_tests()
