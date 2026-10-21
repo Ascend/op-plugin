@@ -255,6 +255,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     <!-- npu="910b" id4 -->
     - <term>Atlas A2系列产品</term>：额外支持`torch.int32`，每个`torch.int32`元素作为8个`torch_npu.int4`数据的打包载体，算子内部按位透传。
     <!-- end id4 -->
+    <!-- npu="950" id73 -->
+    - <term>Ascend 950DT系列产品</term>：额外支持`torch_npu.hifloat8`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`。
+    <!-- end id73 -->
 
 - **expert\_ids**（`Tensor`）：**必选参数**，表示每个token的topK个专家索引，决定每个token要发给哪些专家。要求为2维张量，shape为\(BS, K\)。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`expert_ids`输入，张量里value取值范围为\[0, moe\_expert\_num\)，且同一行中的K个value不能重复。
 - **group\_ep**（`str`）：**必选参数**，EP通信域名称，专家并行的通信域。字符串长度范围为\[1, 128\)。取值不能和`group_tp`相同。
@@ -288,7 +291,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     <!-- end id9 -->
     <!-- npu="950" id10 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。
-        - 当`quant_mode`取值为0时，可传None或有效数据，传入有效数据时要求2维Tensor，且第一维为bs，第二维要求小于H。
+        - 当`quant_mode`取值为0时，可传None或有效数据，传入有效数据时要求2维Tensor，且第一维为bs，第二维要求小于等于H。
         - 当`quant_mode`取值为1时，必须传入有效数据，其shape为\(1, \)、\(H, \)、\(shared\_expert\_num+moe\_expert\_num, H\)、\(moe\_expert\_num, H\)。
         - 当`quant_mode`取值为2或3时，可传入None或者有效数据，传入有效数据时，其shape为\(shared\_expert\_num+moe\_expert\_num, H\)、\(moe\_expert\_num, H\)。
         - 当`quant_mode`取值为4、5时，传默认值即可。
@@ -523,7 +526,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - moe\_expert\_num + zero\_expert\_num + copy\_expert\_num + const\_expert\_num < MAX\_INT32。
 - 参数里Shape使用的变量如下：
     - A：表示本卡接收的最大token数量，取值范围如下：
-        - 对于共享专家，要满足A=BS\*shared\_expert\_num/shared\_expert\_rank\_num。
+        - 对于共享专家，要满足A=BS\*ep\_world\_size\*shared\_expert\_num/shared\_expert\_rank\_num。
         - 对于MoE专家，当`global_bs`为0时，要满足A\>=BS\*ep\_world\_size\*min\(local\_expert\_num, K\)；当`global_bs`不为0时，要满足A\>=global\_bs\*min\(local\_expert\_num, K\)。
 
     - H：表示hidden size隐藏层大小。
@@ -588,7 +591,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
         | quant_mode | 量化模式 | expand_x参数 | scales参数 | dynamic_scales |
         | --- | --- | --- | --- | --- |
-        | 0 | 非量化 | `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则输入None；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为`torch.float8_e8m0fnu`；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为`torch.float32`；否则输入None。 | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则不输出有效值；<br>如果expand_x类型为`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
+        | 0 | 非量化 | `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则输入None；<br>如果expand_x类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，输入要求2维Tensor且第一维大小为bs，第二维大小小于H，数据类型为`torch.float8_e8m0fnu`；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输入要求2维Tensor且第一维大小为bs，数据类型为`torch.float32`；否则输入None。 | 如果expand_x类型为`torch.float16`/`torch.bfloat16`，则不输出有效值；<br>如果expand_x类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致；<br>如果expand_x类型为`torch_npu.hifloat8`且和输入x一致，则输出2维Tensor且第一维大小为A，第二维大小、数据类型和输入scales保持一致，否则不输出有效值。 |
         | 1 | 静态量化 | `torch.int8` | 非空，数据类型为`torch.float32`。<br>输入scales代表量化系数则shape为(1, )；<br>输入scales代表每个专家共享的平滑权重则shape为(H, )；<br>输入scales代表融了专家共享的平滑权重的量化系数时，其shape在有共享专家卡情况下为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)。 | 不输出有效值。 |
         | 1 | 静态量化 | `torch_npu.hifloat8` | 非空，shape为(1, )，数据类型为`torch.float32`。 | 不输出有效值。 |
         | 2 | pertoken动态量化 | `torch.int8`/`torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, )。数据类型为`torch.float32`。 |
