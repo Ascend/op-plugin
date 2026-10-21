@@ -138,7 +138,7 @@
 
 完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
-1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/programug/Ascendcopdevg/docs/guide/%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/Ascend-C%E6%A6%82%E8%BF%B0%E4%B8%8E%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84.md)》。
+1. 完成自定义算子工程创建、算子开发及编译部署流程，具体可参考《[CANN Ascend C算子开发](https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/zh/guide/getting_started/ascend_c_overview_and_learning_path.md)》。
 2. 下载示例代码。
 
     ```bash
