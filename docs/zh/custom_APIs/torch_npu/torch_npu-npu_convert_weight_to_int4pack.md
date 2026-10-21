@@ -36,7 +36,8 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
   <!-- npu="950" id5 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维度需要8个元素对齐。
 
-    > **说明：**
+    > [!NOTE]
+    >
     > - PyTorch 2.7及之前版本：表示在`torch_npu.float4_e2m1fn_x2`范围内使用的是Python中`ml_dtypes`库提供的`float4_e2m1fn`类型，`ml_dtypes`版本要求不小于0.5.0，具体使用参见[调用示例](#调用示例)。
     > - PyTorch 2.8版本开始：可直接使用`torch.float4_e2m1fn_x2`。
   <!-- end id5 -->

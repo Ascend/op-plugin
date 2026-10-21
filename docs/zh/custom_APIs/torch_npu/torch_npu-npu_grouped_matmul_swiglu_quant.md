@@ -96,23 +96,23 @@
     3. 做矩阵乘时，开启perchannel或pergroup量化。
         - perchannel量化：
 
-          $
+          $$
           C\_high_{i} = (X\_high\_4bits_{i} \cdot W_{i}) \odot w\_scale_{i}
-          $
+          $$
 
-          $
+          $$
           C\_low_{i} = (X\_low\_4bits_{i} \cdot W_{i}) \odot w\_scale_{i}
-          $
+          $$
 
         - pergroup量化:
 
-          $
+          $$
           C\_high_{i} = \\ Σ_{k=0}^{K-1}((X\_high\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
-          $
+          $$
 
-          $
+          $$
           C\_low_{i} = \\ Σ_{k=0}^{K-1}((X\_low\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
-          $
+          $$
 
     4. 将高低位的矩阵乘结果还原为整体的结果：
 
