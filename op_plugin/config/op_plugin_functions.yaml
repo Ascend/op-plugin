@@ -6979,9 +6979,11 @@ custom:
 
   - func: npu_stride_copy(Tensor self, int[] shape, int[] stride, Scalar storage_offset) -> Tensor
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_stride_copy.out(Tensor self, int[] shape, int[] stride, Scalar storage_offset, *, Tensor(a!) out) -> Tensor(a!)
     acl_op: all_version
+    op_api: all_version
 
   - func: npu_sub_sample(Tensor self, int per_images, float positive_fraction) -> Tensor
     acl_op: all_version
