@@ -36,7 +36,7 @@ torch_npu.npu_masked_causal_conv1d(input, weight, *, mask=None) -> Tensor
 
 ## 参数说明
 
-> **说明：**
+> [!NOTE]
 >
 > - `input`、`weight`参数维度含义：B（Batch Size）表示输入样本批量大小、S（Sequence Length）表示输入样本序列长度、H（Head Size）表示hidden层的大小、W（Window Size）表示卷积窗口大小。
 

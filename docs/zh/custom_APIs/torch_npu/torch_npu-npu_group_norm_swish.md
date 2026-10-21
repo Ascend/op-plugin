@@ -33,7 +33,8 @@
   y = \frac{x}{1 + e^{-scale \cdot x}}
   $$
   
-> **说明：**<br>
+> [!NOTE]
+> 
 > 正向默认确定性实现。<br>
 > <!-- npu="A3,910b" id4 -->
 > 反向梯度在<term>Atlas A3训练系列产品</term>和<term>Atlas A2训练系列产品</term>上默认非确定性实现。

@@ -488,7 +488,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | 伪量化 | `torch.float16` | `torch.int8`/`torch_npu.int4` | `torch.float16` | None | `torch.float16` | `torch.float16` | None | None/`torch.float16` | `torch.float16` |
     | 伪量化 | `torch.bfloat16` | `torch.int8`/`torch_npu.int4` | `torch.float32` | None | `torch.bfloat16` | `torch.bfloat16` | None | None/`torch.bfloat16` | `torch.bfloat16` |
 
-    > **说明：**
+    > [!NOTE]
+    >
     > - 伪量化场景，若weight的类型为`torch.int8`，仅支持perchannel模式；若weight的类型为`torch_npu.int4`，支持perchannel和pergroup两种模式。若为pergroup，pergroup数G或G<sub>i</sub>必须要能整除对应的k<sub>i</sub>。若weight为多tensor，定义pergroup长度s<sub>i</sub>  = k<sub>i</sub>  / G<sub>i</sub>，要求所有s<sub>i</sub>\(i=1,2,...g\)都相等。
     > - 伪量化场景，若weight的类型为`torch_npu.int4`，则weight中每一组tensor的最后一维大小都应是偶数。weight<sub>i</sub>的最后一维指weight不转置时weight<sub>i</sub>的N轴或当weight转置时weight<sub>i</sub>的K轴。并且在pergroup场景下，当weight转置时，要求pergroup长度s<sub>i</sub>是偶数。tensor转置：指若tensor shape为\[M,K\]时，则stride为\[1,M\]，数据排布为\[K,M\]的场景，即非连续tensor。
     > - 当前PyTorch不支持`torch_npu.int4`类型数据，需要使用时可以通过[torch\_npu.npu\_quantize](torch_npu-npu_quantize.md)接口使用`torch.int32`数据表示`torch_npu.int4`。
@@ -554,7 +555,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   <!-- npu="A3,910b" id67 -->
   - **group\_list输入类型为Tensor时支持的场景如下**（针对<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>）
 
-    > **说明：**
+    > [!NOTE]
+    >
     > - 量化、伪量化仅支持group\_type为-1和0场景。
     > - 仅pertoken量化场景支持激活函数计算。
 
@@ -578,7 +580,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   <!-- npu="950" id69 -->
   - **group\_list输入类型为Tensor时支持的场景如下**（<term>Ascend 950PR&950DT系列产品</term>）
 
-    > **说明：**
+    > [!NOTE]
+    >
     > - 全量化仅支持group\_type为0和2的单单单场景，仅在输入x和weight为`torch_npu.hifloat8`、`torch.float8_e4m3fn`或`torch.float8_e5m2`的全量化支持训练场景即group\_type为2。
     > - 伪量化场景支持`group_type`为-1的多多多场景，以及`group_type`为0的单单单和单多单场景。其中，单多单表示`x`为单张量、`weight`为多张量、`y`为单张量。
     >   - perchannel伪量化场景，且输入`x`为`torch.float16`/`torch.bfloat16`、`weight`为`torch.int8`/`torch.int32`（`torch_npu.int4`）时。
