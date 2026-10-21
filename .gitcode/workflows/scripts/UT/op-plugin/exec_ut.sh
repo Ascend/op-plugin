@@ -159,10 +159,7 @@ function main()
     if [ "${ARCH}" == "aarch64" ]; then
         rm -rf ${PYTORCH_PATH}/test/trans_contiguous
     fi
-
-    if [ "${PYTORCH_VERSION}" == "master" ]; then
-        export DISABLED_TESTS_FILE=${PYTORCH_PATH}/test/unsupported_test_cases/.pytorch-disabled-tests.json
-    fi
+    export DISABLED_TESTS_FILE=${PYTORCH_PATH}/test/unsupported_test_cases/.pytorch-disabled-tests.json
     rm -rf ${PYTORCH_PATH}/test/dynamo/*
     rm -rf ${PYTORCH_PATH}/test/_inductor/*
 
