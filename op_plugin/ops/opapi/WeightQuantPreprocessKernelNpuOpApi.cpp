@@ -326,6 +326,27 @@ bool judge_mm_a16int8_per_group(QuantContext& ctx) {
   return false;
 }
 
+bool judge_mm_a8f4_tcg(QuantContext& ctx) {
+  aclDataType x_acl_dtype = c10_npu::GetAclDataType(ctx.x_dtype);
+  aclDataType weight_acl_dtype = c10_npu::GetAclDataType(ctx.weight_dtype);
+  aclDataType weight_scale_acl_dtype = c10_npu::GetAclDataType(ctx.weight_scale_dtype);
+  aclDataType x_scale_acl_dtype =
+      ctx.x_scale_dtype.has_value() ? c10_npu::GetAclDataType(ctx.x_scale_dtype.value()) : ACL_DT_UNDEFINED;
+
+  bool scale_dtype_match = (weight_scale_acl_dtype == ACL_FLOAT16 || weight_scale_acl_dtype == ACL_BF16);
+
+  // A8F4 T-CG：FP4 weight + FP16/BF16 per-group scale [G, N]（G>1，gs=32）+ FP8 x，
+  // 与 MX（scale=E8M0）、A16（x=F16/BF16）按 dtype 互斥；kGroupSize 不下发，gs!=32 由下游拦截
+  if (x_acl_dtype == ACL_FLOAT8_E4M3FN && weight_acl_dtype == ACL_FLOAT4_E2M1 && scale_dtype_match &&
+      x_scale_acl_dtype == ACL_DT_UNDEFINED && ctx.weight.dim() == DIMS_2 && ctx.weight_scale.dim() == DIMS_2 &&
+      ctx.weight_scale.size(0) > 1) {
+    check_a16w4_uint8_carrier(ctx);
+    ctx.is_weight_trans = is_transpose_certain_two_dims(ctx.weight, 0);
+    return true;
+  }
+  return false;
+}
+
 // A16FP8HIF8 per-channel：weight FLOAT8_E4M3FN/HIFLOAT8，仅 per-channel（C 量化），
 // 转置/非转置均 ND 直拷（wqbmmv2 FP8、HIF8不支持 weightNZ），offset 不支持
 bool judge_mm_a16fp8hif8_per_channel(QuantContext& ctx) {
@@ -351,7 +372,7 @@ bool judge_mm_a16fp8hif8_per_channel(QuantContext& ctx) {
   return false;
 }
 
-// 直拷输出别名：out 直接复用输入 tensor（共享 storage 与 view），aclnn 直拷路径同址时无拷贝
+// 直拷输出：out 直接别名输入（共享 storage 与 view）
 static void prepare_out_weight_scale_direct(QuantContext& ctx) {
   ctx.out_weight_scale = ctx.weight_scale;
 }
@@ -446,6 +467,17 @@ static void prepare_out_weight_a16w4(QuantContext& ctx) {
     prepare_out_weight_nd_direct(ctx);
   } else {
     prepare_out_weight_nz_a16w4(ctx);
+  }
+}
+
+// F8F4 T-CG 转置分流：转置 → ND 直拷；非转置 → FRACTAL_NZ_C0_32 转换
+// 非转置分支：uint8 [K, N/2] 打包视图挂假标签 NZ_C0_16（字节口径），ConvertType 经 FAKE_TO_REAL
+// 映射为真实 FRACTAL_NZ_C0_32（元素口径，16B = 32 个 FP4，N 块在前）
+static void prepare_out_weight_f8f4(QuantContext& ctx) {
+  if (ctx.is_weight_trans) {
+    prepare_out_weight_nd_direct(ctx);
+  } else {
+    prepare_out_weight_nz<false, NZ_C0_16, ACL_FORMAT_FRACTAL_NZ_C0_16>(ctx);
   }
 }
 
@@ -560,6 +592,12 @@ static const std::unordered_map<c10_npu::SocVersion, std::vector<DataFlowConfig>
       // A16FP8HIF8：E4M3FN/HIFLOAT8 per-channel（转置/非转置均 ND 直拷，无 offset）
       {judge_mm_a16fp8hif8_per_channel,
        {prepare_out_weight_nd_direct,
+        prepare_out_weight_scale_direct,
+        prepare_out_weight_offset_direct,
+        prepare_out_bias_direct}},
+      {judge_mm_a8f4_tcg,
+       {// 转置 → ND 直拷，非转置 → FRACTAL_NZ 转换（prepare_out_weight_f8f4 内部分流）
+        prepare_out_weight_f8f4,
         prepare_out_weight_scale_direct,
         prepare_out_weight_offset_direct,
         prepare_out_bias_direct}}}},

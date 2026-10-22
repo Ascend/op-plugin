@@ -17,6 +17,7 @@
 - MM_MX_A16F4数据流：表示WeightQuantBatchMatmulV2算子的MX量化场景，A16F4表示左矩阵为`torch.float16`/`torch.bfloat16`，右矩阵为`torch_npu.float4_e2m1fn_x2`（使用`torch.uint8`承载）。
 - MM_A16INT8数据流：表示WeightQuantBatchMatmulV2算子的pertensor/perchannel/pergroup量化场景，A16INT8表示左矩阵为`torch.float16`/`torch.bfloat16`，右矩阵为`torch.int8`。
 - MM_A16FP8HIF8数据流：表示WeightQuantBatchMatmulV2算子的perchannel量化场景，A16FP8HIF8表示左矩阵为`torch.float16`/`torch.bfloat16`，右矩阵为`torch.float8_e4m3fn`或`torch_npu.hifloat8`。
+- MM_A8F4_TCG数据流：表示QuantBatchMatmulV4算子的T-CG伪量化场景，A8F4表示左矩阵为`torch.float8_e4m3fn`，右矩阵为`torch_npu.float4_e2m1fn_x2`（使用`torch.uint8`承载）。
 
 ## 函数原型
 
@@ -35,7 +36,7 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
     - perchannel量化场景：shape为$(N)$、$(1, N)$。
     - pergroup量化场景：shape为$(G, N)$，其中$G$表示group数量。
 - **x\_dtype**（`int`）：**必选参数**，Matmul的激活矩阵的数据类型。
-  - A16S4/A16F4/A16INT8/A16FP8HIF8数据流支持`torch.float16`、`torch.bfloat16`；A8W4数据流支持`torch.float8_e4m3fn`。
+  - A16S4/A16F4/A16INT8/A16FP8HIF8数据流支持`torch.float16`、`torch.bfloat16`；A8W4/A8F4数据流支持`torch.float8_e4m3fn`。
 - **weight\_dtype**（`int`）：**必选参数**，用于指定`weight`中实际承载的数据类型。
   - A16S4数据流取值为`torch_npu.int4`；A16INT8数据流取值为`torch.int8`；A16FP8HIF8数据流取值为`torch.float8_e4m3fn`或`torch_npu.hifloat8`（使用`uint8`承载）；其余数据流取值为`torch_npu.float4_e2m1fn_x2`。
 - **weight\_scale\_dtype**（`int`）：**必选参数**，用于指定`weight_scale`中实际承载的数据类型，取值需与`weight_scale`的实际数据类型一致。
@@ -45,9 +46,9 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
 - **bias**（`Tensor`）：**可选参数**，Matmul的偏置矩阵，必须为连续的`Tensor`。
   - 数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$。支持1维或2维输入，shape为$(N)$、$(1, N)$或$(G, N)$。
 - **x\_scale\_dtype**（`int`）：**可选参数**，激活的量化scale参数的数据类型，默认值为`None`。
-  - A8W4数据流仅支持`torch.float8_e8m0fnu`；A16S4/A16F4/A16INT8/A16FP8HIF8数据流请传入`None`。
+  - A8W4数据流仅支持`torch.float8_e8m0fnu`；A16S4/A16F4/A16INT8/A16FP8HIF8/A8F4数据流请传入`None`。
 - **k\_group\_size**（`int`）：**可选参数**，权重在pergroup量化时K维度的group大小，默认值为`0`。
-  - A8W4/A16F4数据流MX量化场景下取值为`32`；A16S4/A16F4/A16INT8数据流pergroup量化场景取值为大于`0`的整数；其余场景使用默认值`0`。
+  - A8W4/A16F4数据流MX量化场景下取值为`32`；A8F4数据流T-CG伪量化场景下取值为`32`；A16S4/A16F4/A16INT8数据流pergroup量化场景取值为大于`0`的整数；其余场景使用默认值`0`。
 
 ## 返回值说明
 
@@ -63,6 +64,7 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
   - A8W4数据流下MX量化场景：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_16$。
   - A16F4数据流下pergroup量化场景（仅支持`weight`非转置）：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_8$。
   - A16F4数据流下MX量化场景：`weight`转置输入时输出为$ND$直拷，与输入保持相同的sizes/strides；非转置输入时由$ND$转为$FRACTAL\_NZ\_C0\_8$。
+  - A8F4数据流下T-CG伪量化场景：`weight`转置输入时输出为$ND$直拷，与输入保持相同的sizes/strides；非转置输入时由$ND$转为$FRACTAL\_NZ\_C0\_32$，storage shape为$\{ceil\_div(N, 32), ceil\_div(K, 16), 16, 32\}$（N块在前）。
 - **out\_weight\_scale**（`Tensor`）：预处理后的`weight_scale`，数据类型与输入`weight_scale`相同。
 - **out\_weight\_offset**（`Tensor`）：预处理后的`weight_offset`，未传入`weight_offset`时返回空`Tensor`；A16S4数据流传入时透传，与输入保持相同的sizes/strides。
 - **out\_bias**（`Tensor`）：预处理后的`bias`，数据类型与输入`bias`相同（若提供了`bias`）。
@@ -136,6 +138,15 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
   - `k_group_size`使用默认值`0`。
   - 当前不支持`weight_offset`，必须传入`None`。
   - `out_weight`为$ND$直拷输出（转置/非转置均直拷透传），与输入`weight`保持相同的sizes/strides。
+- **MM_A8F4_TCG数据流**：
+  - `weight`数据类型必须为`torch_npu.float4_e2m1fn_x2`，使用`torch.uint8`承载（1个`torch.uint8`元素打包2个fp4数据），数据格式为$ND$，支持2维输入，转置与非转置均支持。
+  - 非转置时`weight`的shape为$\{K, N/2\}$（沿N维打包）；转置时shape为$\{K/2, N\}$（沿K维打包），stride为$[1, K/2]$；打包维度的元素个数须为偶数。
+  - `weight_scale`数据类型为`torch.float16`或`torch.bfloat16`，shape为$\{G, N\}$，其中$G$为group数量且$G > 1$；`weight`转置输入时，`weight_scale`需与`weight`布局一致（同为转置视图）。
+  - `k_group_size`必须等于`32`。
+  - `x_dtype`必须为`torch.float8_e4m3fn`。
+  - `x_scale_dtype`必须传入`None`。
+  - 当前不支持`weight_offset`，必须传入`None`。
+  - `weight`非转置输入时`out_weight`为$FRACTAL\_NZ\_C0\_32$输出；转置输入时`out_weight`为$ND$直拷输出，与输入保持相同的sizes/strides，可直接作为`torch_npu.npu_quant_matmul`的`x2`传入（T-CG伪量化场景）。
 
 ## 调用示例
 
@@ -409,5 +420,49 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
       weight_scale_dtype=torch.float16,
       weight_offset=None,
       k_group_size=0
+  )
+  ```
+
+- MM_A8F4_TCG数据流场景
+
+  ```python
+  # MM_A8F4_TCG 数据流示例
+  # 开关：weight 转置状态（True：out_weight 为 ND 直拷；False：out_weight 为 FRACTAL_NZ_C0_32）
+  weight_trans = True
+
+  m, k, n = 64, 256, 128
+  k_group_size = 32  # T-CG 伪量化场景 k_group_size 固定为 32
+  g = k // k_group_size
+
+  x1 = torch.randint(-5, 5, (m, k), dtype=torch.int8).to(torch.float8_e4m3fn).npu()
+
+  # weight: float4_e2m1，每个 uint8 打包2个fp4数据
+  # weight_scale: float16，pergroup shape {G, N}
+  if weight_trans:
+      # 转置输入：沿K维打包，view shape {K/2, N}，stride [1, K/2]
+      # 转置输入时 weight_scale 需与 weight 布局一致（同为转置视图）
+      weight = torch.randint(0, 255, (n, k // 2), dtype=torch.uint8).npu().transpose(0, 1)
+      weight_scale = torch.randn((n, g), dtype=torch.float16).npu().transpose(0, 1)
+  else:
+      # 非转置输入：沿N维打包，shape {K, N/2}
+      weight = torch.randint(0, 255, (k, n // 2), dtype=torch.uint8).npu()
+      weight_scale = torch.randn((g, n), dtype=torch.float16).npu()
+
+  out_weight, out_weight_scale, _, _ = torch_npu.npu_weight_quant_preprocess(
+      weight,
+      weight_scale,
+      x_dtype=torch.float8_e4m3fn,
+      weight_dtype=torch_npu.float4_e2m1fn_x2,
+      weight_scale_dtype=torch.float16,
+      k_group_size=k_group_size
+  )
+
+  # 下游 torch_npu.npu_quant_matmul（T-CG 伪量化）：preprocess 输出可直接作为 x2/x2Scale 传入
+  # y_scale 需由 float32 打包为 int64
+  y_scale = torch_npu.npu_trans_quant_param(torch.randn(1, n, dtype=torch.float32).npu())
+  npu_out = torch_npu.npu_quant_matmul(
+      x1, out_weight, out_weight_scale,
+      x2_dtype=torch_npu.float4_e2m1fn_x2,
+      y_scale=y_scale, group_sizes=[0, 0, k_group_size], output_dtype=torch.float16
   )
   ```

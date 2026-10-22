@@ -161,6 +161,8 @@ at::Tensor npu_quant_matmul(
   }
   bool is_a8W4_int = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
   bool is_a8W4_float = x1.dtype() == at::kFloat8_e4m3fn && x2.dtype() == at::kFloat;
+  bool is_a8W4_float_u8 = x1.dtype() == at::kFloat8_e4m3fn && x2.dtype() == at::kByte && x2_dtype.has_value() &&
+                          x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
   at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
   int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
   bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;
@@ -168,7 +170,15 @@ at::Tensor npu_quant_matmul(
   bool trans_x2 = is_transpose_last_two_dims(x2);
   auto x1_dim_num = x1.dim();
   auto x2_dim_num = x2.dim();
-  auto x2_n_dim = (is_a4w4 && !trans_x2) ? x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32 : x2.size(x2_dim_num - 1);
+
+  int64_t x2_n_dim;
+  if (is_a8W4_float_u8) {
+    x2_n_dim = trans_x2 ? x2.size(x2_dim_num - 1) : x2.size(x2_dim_num - 1) * FP4_IN_INT8;
+  } else if (is_a4w4 && !trans_x2) {
+    x2_n_dim = x2.size(x2_dim_num - 1) * INT4_NUMS_IN_INT32;
+  } else {
+    x2_n_dim = x2.size(x2_dim_num - 1);
+  }
 
 #if VERSION_BETWEEN(V2R1, V2R7)
   bool mxfp4_valid = x1_dtype.has_value() && x2_dtype.has_value() &&

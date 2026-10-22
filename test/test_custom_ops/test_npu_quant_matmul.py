@@ -772,6 +772,119 @@ class TestQuantMatmul(TestCase):
 
         self.assertTrue(self.golden_compare(npu_out.cpu(), cpu_out, K))
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_a8w4_float_tcg_nz_uint8(self):
+        # A8W4-float T-CG NZ: x1=fp8, x2=uint8 载体打包 2 个 fp4(NZ 布局), x2Scale=fp16, yScale=u64
+        fp4_table = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0,
+                              -0.0, -0.5, -1.0, -1.5, -2.0, -3.0, -4.0, -6.0], dtype=np.float32)
+        m, k, n, gs = 16, 64, 64, 32
+        rng = np.random.default_rng(42)
+        x1_np = rng.uniform(-1.0, 1.0, size=(m, k)).astype(np.float32)
+        weight_np = rng.integers(0, 256, size=(k, n // 2), dtype=np.uint8)
+        scale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32),
+                              size=(k // gs, n)).astype(np.float16)
+        yscale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32), size=(1, n))
+
+        # golden: fp4 解码 -> fp16 反量化(对齐 kernel CastWeightF4ToF16) -> 舍入 fp8 -> matmul -> yScale
+        w_dec = np.zeros((k, n), dtype=np.float32)
+        w_dec[:, 0::2] = fp4_table[weight_np & 0x0F]
+        w_dec[:, 1::2] = fp4_table[(weight_np >> 4) & 0x0F]
+        scale_br = np.repeat(scale_np.astype(np.float32), gs, axis=0)
+        w_deq = (w_dec.astype(np.float16) * scale_br.astype(np.float16)).astype(np.float32)
+        x1_fp8 = torch.from_numpy(x1_np).to(torch.float8_e4m3fn)
+        w_deq_fp8 = torch.from_numpy(w_deq).to(torch.float8_e4m3fn).float().numpy()
+        golden = (np.matmul(x1_fp8.float().numpy(), w_deq_fp8) * yscale_np).astype(np.float16)
+
+        # NZ weight 由 preprocess 产出(替代 format_cast), uint8 {K, N/2} 直接作 x2
+        out_weight, out_scale, _, _ = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(weight_np).npu(), torch.from_numpy(scale_np).npu(),
+            x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=gs)
+        yscale_u64 = torch.from_numpy(
+            (yscale_np.view(np.uint32).astype(np.uint64)
+             | (np.uint64(1) << np.uint64(46))).view(np.int64)).npu()
+        custom_output = torch_npu.npu_quant_matmul(
+            x1_fp8.npu(), out_weight, out_scale,
+            x2_dtype=torch_npu.float4_e2m1fn_x2, y_scale=yscale_u64,
+            group_sizes=[0, 0, gs], output_dtype=torch.float16)
+        self.assertRtolEqual(golden, custom_output.cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_a8w4_float_tcg_nd_uint8(self):
+        # A8W4-float T-CG ND: x1=fp8, x2=uint8 载体(K 维打包), x2Scale=fp16, yScale=u64
+        # 调用约定: preprocess 直拷出的 {K/2, N} 转置视图直传(aclnn ND 入口自翻连续并置
+        # transposeX2=true, 恰满足 TCG 强制); {N,K/2} 连续形态 V5 拒收
+        fp4_table = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0,
+                              -0.0, -0.5, -1.0, -1.5, -2.0, -3.0, -4.0, -6.0], dtype=np.float32)
+        m, k, n, gs = 16, 64, 64, 32
+        rng = np.random.default_rng(42)
+        x1_np = rng.uniform(-1.0, 1.0, size=(m, k)).astype(np.float32)
+        w_packed = rng.integers(0, 256, size=(n, k // 2), dtype=np.uint8)  # 物理 (N, K/2) 连续
+        scale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32),
+                              size=(k // gs, n)).astype(np.float16)  # 逻辑 {G,N}
+        yscale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32), size=(1, n))
+
+        # golden: fp4 解码(低 nibble=偶数 k) -> fp16 反量化 -> 舍入 fp8 -> matmul -> yScale
+        w_dec = np.zeros((k, n), dtype=np.float32)
+        w_dec[0::2, :] = fp4_table[w_packed & 0x0F].T
+        w_dec[1::2, :] = fp4_table[(w_packed >> 4) & 0x0F].T
+        scale_br = np.repeat(scale_np.astype(np.float32), gs, axis=0)
+        w_deq = (w_dec.astype(np.float16) * scale_br.astype(np.float16)).astype(np.float32)
+        x1_fp8 = torch.from_numpy(x1_np).to(torch.float8_e4m3fn)
+        w_deq_fp8 = torch.from_numpy(w_deq).to(torch.float8_e4m3fn).float().numpy()
+        golden = (np.matmul(x1_fp8.float().numpy(), w_deq_fp8) * yscale_np).astype(np.float16)
+
+        # ND weight 由 preprocess 转置直拷产出: uint8 视图 {K/2, N} stride [1, K/2]
+        scale_phys = np.ascontiguousarray(scale_np.T)  # 物理 (N, G) 连续
+        out_weight, out_scale, _, _ = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(w_packed).npu().transpose(0, 1),
+            torch.from_numpy(scale_phys).npu().transpose(0, 1),
+            x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=gs)
+        yscale_u64 = torch.from_numpy(
+            (yscale_np.view(np.uint32).astype(np.uint64)
+             | (np.uint64(1) << np.uint64(46))).view(np.int64)).npu()
+        # 直传 {K/2,N} 转置视图(唯一约定形态)
+        custom_output = torch_npu.npu_quant_matmul(
+            x1_fp8.npu(), out_weight, out_scale.transpose(0, 1),
+            x2_dtype=torch_npu.float4_e2m1fn_x2, y_scale=yscale_u64,
+            group_sizes=[0, 0, gs], output_dtype=torch.float16)
+        self.assertRtolEqual(golden, custom_output.cpu().numpy(), 0.001)
+
+        # N=1 退化: scale {G,1} 转置视图直传(stride {1,G}, aclnn 规范化处理);
+        # torch 连续性判定对 size-1 维放水, 用 as_strided 保证 stride 真实
+        m1, k1, n1, gs1 = 1, 64, 1, 32
+        g1 = k1 // gs1
+        rng1 = np.random.default_rng(7)
+        x1_np1 = rng1.uniform(-1.0, 1.0, size=(m1, k1)).astype(np.float32)
+        w_packed1 = rng1.integers(0, 256, size=(n1, k1 // 2), dtype=np.uint8)
+        scale_np1 = rng1.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32),
+                                size=(g1, n1)).astype(np.float16)
+        yscale_np1 = rng1.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32), size=(1, n1))
+        w_dec1 = np.zeros((k1, n1), dtype=np.float32)
+        w_dec1[0::2, :] = fp4_table[w_packed1 & 0x0F].T
+        w_dec1[1::2, :] = fp4_table[(w_packed1 >> 4) & 0x0F].T
+        w_deq1 = (w_dec1.astype(np.float16) * np.repeat(scale_np1.astype(np.float32), gs1, axis=0).astype(np.float16)
+                  ).astype(np.float32)
+        x1_fp8_1 = torch.from_numpy(x1_np1).to(torch.float8_e4m3fn)
+        golden1 = (np.matmul(x1_fp8_1.float().numpy(),
+                             torch.from_numpy(w_deq1).to(torch.float8_e4m3fn).float().numpy())
+                   * yscale_np1).astype(np.float16)
+        scale_buf1 = torch.from_numpy(np.ascontiguousarray(scale_np1.T)).npu()  # {N,G} 物理连续
+        out_weight1, out_scale1, _, _ = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(w_packed1).npu().transpose(0, 1),
+            scale_buf1.as_strided((g1, n1), (1, g1)),  # {G,N} stride {1,G} 转置视图
+            x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=gs1)
+        yscale_u64_1 = torch.from_numpy(
+            (yscale_np1.view(np.uint32).astype(np.uint64)
+             | (np.uint64(1) << np.uint64(46))).view(np.int64)).npu()
+        custom_output1 = torch_npu.npu_quant_matmul(
+            x1_fp8_1.npu(), out_weight1, out_scale1,  # scale 直传(转置视图)
+            x2_dtype=torch_npu.float4_e2m1fn_x2, y_scale=yscale_u64_1,
+            group_sizes=[0, 0, gs1], output_dtype=torch.float16)
+        self.assertRtolEqual(golden1, custom_output1.cpu().numpy(), 0.001)
+
 
 if __name__ == "__main__":
     run_tests()
