@@ -1,5 +1,8 @@
+import unittest
+
 import torch
 import torch_npu
+import torch.nn as nn
 import torch.nn.functional as F
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
@@ -427,6 +430,30 @@ class TestNpuMhcSinkhornBackward(TestCase):
     def test_npu_mhc_sinkhorn_backward_with_bsnn(self, device="npu"):
         tensor_x = torch.randn(8, 128, 4, 4, dtype=torch.float32)
         self.run_and_check(tensor_x, num_iters=20)
+
+    @unittest.skipIf(torch.__version__ < '2.5.1', "This compile ut needs torch version >=2.5.1")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_sinkhorn_backward_compile(self, device="npu"):
+        class SinkhornModel(nn.Module):
+            def forward(self, x):
+                y, _, _ = torch_npu.npu_mhc_sinkhorn(x, out_flag=1)
+                return y
+
+        tensor_x = torch.randn(1024, 4, 4, dtype=torch.float32)
+        grad_seed = torch.randn(1024, 4, 4, dtype=torch.float32).npu()
+        model = SinkhornModel()
+
+        x_eager = tensor_x.npu().requires_grad_(True)
+        y_eager = model(x_eager)
+        y_eager.backward(grad_seed)
+        grad_eager = x_eager.grad.clone()
+
+        x_compile = tensor_x.npu().requires_grad_(True)
+        compiled_model = torch.compile(model, backend="aot_eager", fullgraph=True)
+        y_compile = compiled_model(x_compile)
+        self.assertRtolEqual(y_eager.float().cpu().numpy(), y_compile.float().cpu().numpy(), prec=1e-4)
+        y_compile.backward(grad_seed)
+        self.assertRtolEqual(grad_eager.float().cpu().numpy(), x_compile.grad.float().cpu().numpy(), prec=1e-4)
 
 
 if __name__ == "__main__":

@@ -1455,6 +1455,23 @@ def npu_mhc_sinkhorn(x, *, eps=1e-6, num_iters=20, out_flag=0):
         return (torch.empty(y_size, dtype=x.dtype, device='meta'), None, None)
 
 
+@impl(m, "npu_mhc_sinkhorn_backward")
+def npu_mhc_sinkhorn_backward_meta(grad_y, norm, sum):
+    torch._check(
+        grad_y.dim() == 3 or grad_y.dim() == 4,
+        lambda: f"The grad_y's dim should be 3 or 4, but got {grad_y.dim()}.",
+        )
+    torch._check(
+        grad_y.size(-1) in [4, 6, 8],
+        lambda: f"The grad_y's last dim should be 4 or 6 or 8, but got {grad_y.size(-1)}.",
+        )
+    torch._check(
+        norm is not None and sum is not None,
+        lambda: "npu_mhc_sinkhorn_backward requires forward npu_mhc_sinkhorn called with out_flag=1.",
+        )
+    return torch.empty(tuple(grad_y.shape), dtype=grad_y.dtype, device='meta')
+
+
 @impl(m, "npu_moe_init_routing_v2")
 def npu_moe_init_routing_v2_meta(x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1, expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False, quant_mode=-1, active_expert_range=[], row_idx_type=0, x_dtype=None):
     x_dim = x.dim()
