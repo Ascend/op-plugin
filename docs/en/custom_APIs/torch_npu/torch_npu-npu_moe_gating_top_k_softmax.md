@@ -1,11 +1,19 @@
 # torch_npu.npu_moe_gating_top_k_softmax
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>          |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -42,6 +50,9 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
+<!-- npu="950" id4 -->
+- On Ascend 950PR&950DT products, the performance of this API is poor. You are advised to use the `torch_npu.npu_moe_gating_top_k_softmax_v2` API for better performance.
+<!-- end id4 -->
 
 ## Examples
 

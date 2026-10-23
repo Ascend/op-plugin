@@ -2,14 +2,24 @@
 
 ## Supported Products
 
-| Product                                                     | Supported|
-| --------------------------------------------------------- | :------: |
-| <term>Atlas A3 training products</term>                       |    √     |
-| <term>Atlas A3 inference products</term>                       |    √     |
-| <term>Atlas A2 training products</term>                       |    √     |
-| <term>Atlas A2 inference products</term>|    √     |
-| <term>Atlas inference products</term>                          |    √     |
-| <term>Atlas training products</term>                          |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 inference products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910b" id4 -->
+- <term>Atlas A2 inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id5 -->
+<!-- npu="910" id6 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id6 -->
 
 ## Function
 
@@ -33,7 +43,7 @@ torch_npu.npu.mstx.range_push(message: str, stream=None, domain: str='default') 
 
 - **`stream`** (`torch_npu.npu.Stream`): Optional. Stream used to execute the instrumentation task (default value: `None`).
 
-  - If set to `None`, only instantaneous events on the host are marked.
+  - If set to `None` or not specified, only instantaneous events on the host are marked.
   - If set to a valid stream, the instantaneous events on the host and device are marked.
   
 - **`domain`** (`str`): Optional. Name of the domain where instantaneous events are marked. The default value is 'default', indicating the default domain. If omitted, the default domain is used.

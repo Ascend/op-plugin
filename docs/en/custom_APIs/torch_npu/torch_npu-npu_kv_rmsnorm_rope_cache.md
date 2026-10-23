@@ -1,32 +1,40 @@
-# torch\_npu.npu\_kv\_rmsnorm\_rope\_cache<a name="en-us_topic_0000002343094197"></a>
+# torch\_npu.npu\_kv\_rmsnorm\_rope\_cache<a name="ZH-CN_TOPIC_0000002343094197"></a>
+
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function<a name="en-us_topic_0000002236535552_section1023311522369"></a>
 
 - Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-Head Latent Attention (MLA) structure.
-    - **Multi-Head Latent Attention (MLA)**:
-    An efficient attention mechanism proposed in DeepSeek-V2. It compresses Key/Value states into low-rank latent representations to reduce KV cache footprint and computational overhead while maintaining long-sequence modeling capabilities.
+    - **MLA (Multi-head Latent Attention)**:
+      An efficient attention mechanism proposed in DeepSeek-V2. It compresses Key/Value states into low-rank latent representations to reduce KV cache footprint and computational overhead while maintaining long-sequence modeling capabilities.
 
-    - **Rotary Position Embedding (RoPE)**:
-    A positional encoding method that injects positional information by applying a rotational transformation to vectors. It can model relative positional relationships and is suitable for long-context scenarios, with vector rotation implemented via the `RotateHalf` operation.
+    - **RoPE (Rotary Position Embedding)**:
+      A positional encoding method that injects positional information by applying a rotational transformation to vectors. It can model relative positional relationships and is suitable for long-context scenarios, with vector rotation implemented via the `RotateHalf` operation.
 
-    - **Root Mean Square Normalization (RMSNorm)**:
-    A normalization method that scales the input using the root mean square. It is computationally simple with low overhead and is commonly used in large language model training.
+    - **RMSNorm (Root Mean Square Normalization)**:
+      A normalization method that scales the input using the root mean square. It is computationally simple with low overhead and is commonly used in large language model training.
 
 - Formulas:
+    - **Input tensor `kv` splitting**: The input tensor `kv` is split into two parts, where `B` indicates the batch size and `T` indicates the sequence length. For example, when `kv` is `576`, `512` is split out for RMSNorm and `64` is split out for RoPE.
+
+        $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$,  $rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
+
     - **Input tensor `kv` splitting**: The input tensor `kv` is split into two parts, where `B` indicates the batch size and `T` indicates the sequence length.
 
-        ![](../../figures/en-us_formulaimage_0000002239561238.png)
-
-    - **RMS normalization**: Applied to `rms_in`.
-
-        ![](../../figures/en-us_formulaimage_0000002239721038.png)
+        $\displaystyle y=\gamma\ \odot\ \left(\frac{rms\_in}{\sqrt{E_d[rms\_in^2]+\epsilon}}\right)$
 
         - $γ∈R^{512}$ is a learnable scaling parameter.
         - $Ed[·]$ indicates the mean along the last dimension where the size of the D dimension is `512`.
@@ -34,18 +42,19 @@
         - $⊙$ indicates element-wise multiplication.
 
     - **RoPE**
-        1. Reshaping and transposition: Reshape and transpose `rope_in` to prepare for rotation.
 
-            ![](../../figures/en-us_formulaimage_0000002239561242.png)
+        - Reshaping and transposition: Reshape and transpose `rope_in` to prepare for rotation.
 
-        2. Rotation operation: Apply rotary position embedding.
+          $k=reshape(rope\_in, [B, 1, T, 32, 2]) \rightarrow transpose(-1, -2) \rightarrow reshape([B, 1, T, 64])$
 
-            ![](../../figures/en-us_formulaimage_0000002239721042.png)
+        - Rotation operation: Apply rotary position embedding.
 
-            - `cos` and `sin` are precomputed rotation parameters.
-            - `RotateHalf(k)` moves the elements in the second half of `k` to the first half and negates them, while moving the elements in the first half to the second half and preserving their original values. Specifically, when the size of the `D` dimension is `64`:
+          $k_{embed}=k \odot cos + RotateHalf(k) \odot sin$
 
-            ![](../../figures/en-us_formulaimage_0000002242091560.png)
+          - `cos` and `sin` are precomputed rotation parameters.
+          - `RotateHalf(k)` moves the elements in the second half of `k` to the first half and negates them, and fills the second half with the values of the first half. Specifically, when the size of the `D` dimension is `64`:
+
+            $RotateHalf(k)_i=-k_{i+32},\ if\ i < 32\ else\ k_{i-32}$
 
 ## Prototype<a name="en-us_topic_0000002236535552_section123412524369"></a>
 
@@ -55,85 +64,62 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 ## Parameters<a name="en-us_topic_0000002236535552_section1723416525369"></a>
 
-> [!NOTE]  
-> Variables used in tensor shapes:
->
-> - `batch_size`: batch size.
-> - `seq_len`: sequence length.
-> - `hidden_size`: length of the MLA input vector. Only the value `576` is supported.
-> - `rms_size`: length of the RMSNorm branch vector. Only the value `512` is supported.
-> - `rope_size`: length of the RoPE branch vector. Only the value `64` is supported.
-> - `cache_length`: maximum KV cache length, which is valid only in `Norm` mode.
-> - `block_num`: number of blocks, which is valid only in PagedAttention mode.
-> - `block_size`: block size, which is valid only in PagedAttention mode.
-
 - **`kv`** (`Tensor`): Required. Input feature tensor. The data type can be `torch.bfloat16` or `torch.float16`. The data layout is `BNSD`. This parameter must be 4D with shape `[batch_size, 1, seq_len, hidden_size]`, where `hidden_size` = `rms_size` (RMS) + `rope_size` (RoPE).
-- `gamma` (`Tensor`): Required. Scaling parameter for RMSNorm. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
+- **`gamma`** (`Tensor`): Required. Scaling parameter for RMSNorm. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
 - **`cos`** (`Tensor`): Required. Cosine component of RoPE. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
 - **`sin`** (`Tensor`): Required. Sine component of RoPE. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. This parameter must be 4D with shape `[batch_size, 1, seq_len, rope_size]`.
 - **`index`** (`Tensor`): Required. Cache index tensor used to locate the write positions in `k_cache` and `ckv_cache`. The data type can be `torch.int64`. The data layout can be ND. The shape depends on `cache_mode`.
-- **`k_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized key vectors. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.int8`. The data layout can be ND. The shape depends on `cache_mode`.
-- **`ckv_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized compressed KV vectors. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.int8`. The data layout can be ND. The shape depends on `cache_mode`.
+- **`k_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized key vectors. The data type can be `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data layout can be ND. The shape depends on `cache_mode`.
+
+  <!-- npu="A3,910b" id4 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
+  <!-- end id4 -->
+  <!-- npu="950" id5 -->
+  - <term>Ascend 950PR&950DT products</term>: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
+  <!-- end id5 -->
+
+- **`ckv_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized compressed KV vectors. The data type can be `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data layout can be ND. The shape depends on `cache_mode`.
+
+  <!-- npu="A3,910b" id6 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
+  <!-- end id6 -->
+  <!-- npu="950" id7 -->
+  - <term>Ascend 950PR&950DT products</term>: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
+  <!-- end id7 -->
+
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`k_rope_scale`** (`Tensor`): Optional. Quantization scaling factor for `key` RoPE. The default value is `None`. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
-- **`c_kv_scale`** (`Tensor`): Optional. Quantization scaling factor for compressed KV. The default value is `None`. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
-- **`k_rope_offset`** (`Tensor`): Optional. Quantization offset for the key Rotary Position Embedding (RoPE). The default value is `None`. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
-- **`c_kv_offset`** (`Tensor`): Optional. Quantization offset for compressed KV. The default value is `None`. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
-- **`epsilon`** (`float`): Optional. Small constant used in Root Mean Square Normalization (RMSNorm) to prevent division by zero. The default value is `1e-5`.
-- **`cache_mode`** (`str`): Optional. Cache mode. The supported modes are described in the following table. The default value is `'Norm'`.
+- **`k_rope_scale`** (`Tensor`): Optional. The default value is `None`. Quantization scaling factor for the key Rotary Position Embedding (RoPE). The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`. This parameter must be provided in quantization mode.
+- **`c_kv_scale`** (`Tensor`): Optional. The default value is `None`. Quantization scaling factor for the compressed KV. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`. This parameter must be provided in quantization mode.
+- **`k_rope_offset`** (`Tensor`): Optional. The default value is `None`. Quantization offset for the key Rotary Position Embedding (RoPE). The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`.
 
-    <a name="en-us_topic_0000002236535552_table16997195773911"></a>
-    <table><thead align="left"><tr id="en-us_topic_0000002236535552_row12998195743918"><th class="cellrowborder" valign="top" width="10.34%" id="mcps1.1.4.1.1"><p id="en-us_topic_0000002236535552_p1299819576394"><a name="en-us_topic_0000002236535552_p1299819576394"></a><a name="en-us_topic_0000002236535552_p1299819576394"></a>Value</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="19.84%" id="mcps1.1.4.1.2"><p id="en-us_topic_0000002236535552_p93491748114015"><a name="en-us_topic_0000002236535552_p93491748114015"></a><a name="en-us_topic_0000002236535552_p93491748114015"></a>Mode Name</p>
-    </th>
-    <th class="cellrowborder" valign="top" width="69.82000000000001%" id="mcps1.1.4.1.3"><p id="en-us_topic_0000002236535552_p099810576395"><a name="en-us_topic_0000002236535552_p099810576395"></a><a name="en-us_topic_0000002236535552_p099810576395"></a>Description</p>
-    </th>
-    </tr>
-    </thead>
-    <tbody><tr id="en-us_topic_0000002236535552_row499835715398"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p09984572391"><a name="en-us_topic_0000002236535552_p09984572391"></a><a name="en-us_topic_0000002236535552_p09984572391"></a>Norm</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p23491348164018"><a name="en-us_topic_0000002236535552_p23491348164018"></a><a name="en-us_topic_0000002236535552_p23491348164018"></a>KV cache update mode</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p1499812579399"><a name="en-us_topic_0000002236535552_p1499812579399"></a><a name="en-us_topic_0000002236535552_p1499812579399"></a>The shape of <code>k_cache</code> is <code>[batch_size, 1, cache_length, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[batch_size, 1, cache_length, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size, seq_len]</code>, where the values inside <code>index</code> indicate the offset for each batch.</p>
-    </td>
-    </tr>
-    <tr id="en-us_topic_0000002236535552_row1699810579398"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p1699810576392"><a name="en-us_topic_0000002236535552_p1699810576392"></a><a name="en-us_topic_0000002236535552_p1699810576392"></a>PA/PA_BNSD</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p1934914484406"><a name="en-us_topic_0000002236535552_p1934914484406"></a><a name="en-us_topic_0000002236535552_p1934914484406"></a>PagedAttention mode</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p19457162584119"><a name="en-us_topic_0000002236535552_p19457162584119"></a><a name="en-us_topic_0000002236535552_p19457162584119"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * seq_len]</code>, where the values inside <code>index</code> indicate the offset for each token.</p>
-    </td>
-    </tr>
-    <tr id="en-us_topic_0000002236535552_row179981757193914"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p99981257113913"><a name="en-us_topic_0000002236535552_p99981257113913"></a><a name="en-us_topic_0000002236535552_p99981257113913"></a>PA_NZ</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p6349174814019"><a name="en-us_topic_0000002236535552_p6349174814019"></a><a name="en-us_topic_0000002236535552_p6349174814019"></a>PagedAttention mode with cache data layout of FRACTAL_NZ</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p15265174112368"><a name="en-us_topic_0000002236535552_p15265174112368"></a><a name="en-us_topic_0000002236535552_p15265174112368"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * seq_len]</code>, where the values inside <code>index</code> indicate the offset for each token.</p>
-    <p id="en-us_topic_0000002236535552_p10572135917168"><a name="en-us_topic_0000002236535552_p10572135917168"></a><a name="en-us_topic_0000002236535552_p10572135917168"></a><br>The data layout varies across different quantization modes:</p>
-    <a name="en-us_topic_0000002236535552_ul183421286166"></a><a name="en-us_topic_0000002236535552_ul183421286166"></a><ul id="en-us_topic_0000002236535552_ul183421286166"><li>Non-quantization mode: The data layout of <code>k_cache</code> is <code>[block_num, rope_size//16, block_size, 1, 16]</code>, and the data layout of <code>ckv_cache</code> is <code>[block_num, rms_size//16, block_size, 1, 16]</code>.</li><li>Quantization mode: The data layout of <code>k_cache</code> is <code>[block_num, rope_size//32, block_size, 1, 32]</code>, and the data layout of <code>ckv_cache</code> is <code>[block_num, rms_size//32, block_size, 1, 32]</code>.</li></ul>
-    </td>
-    </tr>
-    <tr id="en-us_topic_0000002236535552_row428921319407"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p18290111311409"><a name="en-us_topic_0000002236535552_p18290111311409"></a><a name="en-us_topic_0000002236535552_p18290111311409"></a>PA_BLK_BNSD</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p12349144844010"><a name="en-us_topic_0000002236535552_p12349144844010"></a><a name="en-us_topic_0000002236535552_p12349144844010"></a>Special PagedAttention mode</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p329011315406"><a name="en-us_topic_0000002236535552_p329011315406"></a><a name="en-us_topic_0000002236535552_p329011315406"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * Ceil(seq_len/block_size)]</code>, where the values inside <code>index</code> indicate the starting offset of each block and no longer correspond to tokens on a one-to-one basis.</p>
-    </td>
-    </tr>
-    <tr id="en-us_topic_0000002236535552_row182905133408"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p13290313134017"><a name="en-us_topic_0000002236535552_p13290313134017"></a><a name="en-us_topic_0000002236535552_p13290313134017"></a>PA_BLK_NZ</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p173491486403"><a name="en-us_topic_0000002236535552_p173491486403"></a><a name="en-us_topic_0000002236535552_p173491486403"></a>Special PagedAttention mode with cache data layout of FRACTAL_NZ</p>
-    </td>
-    <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p637504423711"><a name="en-us_topic_0000002236535552_p637504423711"></a><a name="en-us_topic_0000002236535552_p637504423711"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * Ceil(seq_len/block_size)]</code>, where the values inside <code>index</code> indicate the starting offset of each block and no longer correspond to tokens on a one-to-one basis.</p>
-    <p id="en-us_topic_0000002236535552_p916702812303"><a name="en-us_topic_0000002236535552_p916702812303"></a><a name="en-us_topic_0000002236535552_p916702812303"></a><br>The data layout varies across different quantization modes:</p>
-    <a name="en-us_topic_0000002236535552_ul20871102344210"></a><a name="en-us_topic_0000002236535552_ul20871102344210"></a><ul id="en-us_topic_0000002236535552_ul20871102344210"><li><br>Non-quantization mode: The data layout of <code>k_cache</code> is <code>[block_num, rope_size // 16, block_size, 1, 16]</code>, and the data layout of <code>ckv_cache</code> is <code>[block_num, rms_size // 16, block_size, 1, 16]</code>.</li><li>Quantization mode: The data layout of <code>k_cache</code> is <code>[block_num, rope_size // 32, block_size, 1, 32]</code>, and the data layout of <code>ckv_cache</code> is <code>[block_num, rms_size // 32, block_size, 1, 32]</code>.</li></ul>
-    </td>
-    </tr>
-    </tbody>
-    </table>
+  <!-- npu="A3,910b" id8 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
+  <!-- end id8 -->
+  <!-- npu="950" id9 -->
+  - <term>Ascend 950PR&950DT products</term>: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
+  <!-- end id9 -->
 
-- **`is_output_kv`** (`bool`): Optional. Specifies whether to output the processed `k_embed_out` and `y_out` (unquantized original values). The default value is `False`. This parameter is valid only when `cache_mode` is PA, PA_BNSD, PA_NZ, PA_BLK_BNSD, or PA_BLK_NZ.
+- **`c_kv_offset`** (`Tensor`): Optional. The default value is `None`. Quantization offset for the compressed KV. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
+
+  <!-- npu="A3,910b" id10 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
+  <!-- end id10 -->
+  <!-- npu="950" id11 -->
+  - <term>Ascend 950PR&950DT products</term>: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
+  <!-- end id11 -->
+
+- **`epsilon`** (`float`): Optional. The default value is `1e-5`. Small constant used in RMS normalization to prevent division by zero.
+- **`cache_mode`** (`str`): Optional. The default value is 'Norm'. Cache mode. The supported modes are described in the following table.
+
+    | Value | Mode Name | Description |
+    | --- | --- | --- |
+    | Norm | KV cache update mode | The shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, and the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`. The shape of `index` is `[batch_size, seq_len]`, where the values inside `index` indicate the offset for each batch. |
+    | PA/PA_BNSD | PagedAttention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*seq_len]`, where the values inside `index` indicate the offset for each token. |
+    | PA_NZ | PagedAttention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * seq_len]`, where the values inside `index` indicate the offset for each token.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
+    | PA_BLK_BNSD | Special PagedAttention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*Ceil(seq_len/block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one. |
+    | PA_BLK_NZ | Special PagedAttention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * Ceil(seq_len / block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
+
+- **`is_output_kv`** (`bool`): Optional. Specifies whether to output the processed `k_embed_out` and `y_out` (unquantized original values). The default value is `False`, which means no output. This parameter is valid only when `cache_mode` is `(PA/PA_BNSD/PA_NZ/PA_BLK_BNSD/PA_BLK_NZ)`.
 
 ## Return Values<a name="en-us_topic_0000002236535552_section3234185215368"></a>
 
@@ -145,7 +131,24 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 ## Constraints<a name="en-us_topic_0000002236535552_section1523425283618"></a>
 
 - This API can be used in inference scenarios.
+- This API supports single-operator mode and TorchAir graph mode.
 - This API supports graph mode.
+  - `batch_size`: batch size.
+  - `seq_len`: sequence length.
+  - `hidden_size`: length of the MLA input vector.
+  - `rms_size`: length of the RMSNorm branch vector.
+  - `rope_size`: length of the RoPE branch vector.
+  - `cache_length`: maximum KV cache length, which is valid only in `Norm` mode.
+  - `block_num`: number of blocks, which is valid only in PagedAttention mode.
+  - `block_size`: block size, which is valid only in PagedAttention mode.
+
+  <!-- npu="A3,910b" id12 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: only `576` is supported for `hidden_size`, only `512` for `rms_size`, and only `64` for `rope_size`.
+  <!-- end id12 -->
+  <!-- npu="950" id13 -->
+  - <term>Ascend 950PR&950DT products</term>: `hidden_size`, `rms_size`, and `rope_size` are determined by the actual service scenario and can be set as required. `rope_size` must be an even number, and `rms_size` + `rope_size` = `hidden_size` must be satisfied.
+  <!-- end id13 -->
+
 - Quantization mode: When `k_rope_scale` and `c_kv_scale` are provided, the data type of `k_cache` and `ckv_cache` is `torch.int8`. The size of the last dimension of the cache shape must be `32` (applicable when the cache data layout is FRACTAL_NZ mode). `k_rope_scale` and `c_kv_scale` must both be provided.
 - Non-quantization mode: When `k_rope_scale` and `c_kv_scale` are not provided, the data type of `k_cache` and `ckv_cache` is `torch.bfloat16` or `torch.float16`.
 - Asymmetric quantization parameters: `k_rope_offset` and `c_kv_offset` are currently not supported.
@@ -155,7 +158,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     - `PA_BLK_BNSD/PA_BLK_NZ`: The values inside `index` indicate the global offset of each page. This scenario assumes that cache updates are continuous, and cache configurations with non-continuous updates are unsupported.
 
 - Shape association rules: Different `cache_mode` configurations have different shape rules.
-    - `Norm`: The shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`, and the shape of `index` is `[batch_size, seq_len]`, where `cache_length` must be greater than or equal to `seq_len`.
+    - Norm: the shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`, and the shape of `index` is `[batch_size, seq_len]`, where `cache_length` >= `seq_len`.
     - Non-`Norm` modes (PagedAttention-related modes): The size of `block_num` must be greater than or equal to `Ceil(seq_len/block_size) * batch_size`.
 
 ## Examples<a name="en-us_topic_0000002236535552_section3235105212365"></a>
@@ -211,8 +214,8 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     
     # Example 2: Quantization mode
     ## 1. Create an int8 cache (quantized)
-    k_cache = torch.ones(page_num, page_size, 1, 64, dtype=torch.int8).npu()
-    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype=input_dtype).npu()
+    k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
+    ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
     ## 2. Prepare quantization parameters
     k_rope_scale = torch.randn([64], dtype=torch.float32).npu()  # Scale for the RoPE portion of K
     c_kv_scale = torch.randn([512], dtype=torch.float32).npu()  # Scale for compressed KV
@@ -221,7 +224,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     # Example 3: Norm
     cache_mode = "Norm"
     index_shape = (batch_size, seq_len)
-    index = torch.arange(start=0, end=batch_size * seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
+    index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
     is_output_kv = False
     # The remaining code remains unchanged
 
@@ -231,12 +234,12 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
     # Example 5: PA_BLK_BNSD
     cache_mode = "PA_BLK_BNSD"
-    index_shape = (batch_size * (seq_len + page_size - 1) // page_size)
+    index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged
 
     # Example 6: PA_BLK_NZ
     cache_mode = "PA_BLK_NZ"
-    index_shape = (batch_size * (seq_len + page_size - 1) // page_size)
+    index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged
     ```
 
@@ -316,11 +319,11 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
     # Example 5: PA_BLK_BNSD
     cache_mode = "PA_BLK_BNSD"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged
 
     # Example 6: PA_BLK_NZ
     cache_mode = "PA_BLK_NZ"
-    index_shape = (batch_size * (seq_len + page_size - 1 ) // page_size)
+    index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged
     ```

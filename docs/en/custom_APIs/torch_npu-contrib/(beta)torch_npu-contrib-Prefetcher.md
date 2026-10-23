@@ -2,12 +2,18 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Prototype
 
@@ -48,3 +54,4 @@ Provides a data prefetcher on NPU devices, primarily used to optimize data loadi
 ...     while input is not None:
 ...         # Perform training operations on input and target
 ...         input, target = prefetcher.next()
+```

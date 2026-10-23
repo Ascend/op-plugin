@@ -1,7 +1,5 @@
 # Adaptation Development and Usage (pybind-based)
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:29:39.261Z pushedAt=2026-08-11T12:00:13.550Z -->
-
 This document describes the complete adaptation development workflow for calling custom operators through the TorchNPU framework by using C++ extensions and single-operator APIs. The workflow covers operator definition, operator adaptation, and ATen IR registration and binding, enabling calls to custom operators. Unlike the common `TORCH_LIBRARY` method, this sample uses `pybind` for binding and registration to achieve more flexible input type support.
 
 ## Operator Adaptation Development
@@ -10,10 +8,9 @@ This document describes the complete adaptation development workflow for calling
 
 Before getting started, ensure that you have completed the installation of the following environments:
 
-1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to CANN Software Installation.
+1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/920/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum).
+2. Install the PyTorch framework by referring to [Building from Source](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/installation_guide/references/building_from_source.md).
 
-2. Install the PyTorch framework by referring to [Installation Guide](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/installation_guide/installation_description.md).
-<!-- [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum) -->
 ### Adaptation File Structure
 
 ```text
@@ -74,7 +71,7 @@ Before getting started, ensure that you have completed the installation of the f
 
 After completing the operator adaptation development, you can call the custom operator through C++ extensions.
 
-1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see CANN Ascend C Operator Development.
+1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see [CANN Ascend C Operator Development](https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/getting_started/ascend_c_overview_and_learning_path.md).
 
 2. Download the code sample.
 
@@ -99,4 +96,3 @@ After completing the operator adaptation development, you can call the custom op
     Ran xx tests in xx s
     OK
     ```
-<!-- [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html) -->

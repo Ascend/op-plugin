@@ -2,9 +2,9 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
 
 ## Function<a name="en-us_topic_0000002203575833_section14441124184110"></a>
 
@@ -33,8 +33,10 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 ## Constraints<a name="en-us_topic_0000002203575833_section12345537164214"></a>
 
 - The values of the `group`, `world_size`, `token_info_table_shape`, `token_data_shape`, and `HCCL_BUFFSIZE` parameters used during API execution must be identical across all ranks and across different layers in the network.
-- Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
+<!-- end id2 -->
 - Variables used in input parameter tensor shapes:
     - `Y`: Maximum number of tokens to be distributed by the current rank.
 

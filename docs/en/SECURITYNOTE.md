@@ -8,7 +8,7 @@ You are advised to enable **address space layout randomization** (ASLR) (level 2
 
 ## Recommended Running Users
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Running User Recommendations](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#running-user-recommendations) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Running User Recommendations](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#running-user-recommendations) in the TorchNPU repository.
 
 ## File Permission Control
 
@@ -40,19 +40,19 @@ The execution of OpPlugin depends on TorchNPU. For details, see [Running User Re
 
 ## Debugging Tool Statement
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Debugging Tool Statement](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#debugging-tool-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Debugging Tool Statement](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#debugging-tool-statement) in the TorchNPU repository.
 
 ## Data Security Statement
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Data Security Statement](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#data-security-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Data Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#data-security-statement) in the TorchNPU repository.
 
 ## Build Security Statement
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Build Security Statement](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#build-security-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Build Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#build-security-statement) in the TorchNPU repository.
 
 ## Runtime Security Statement
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Runtime Security Statement](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#runtime-security-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Runtime Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#runtime-security-statement) in the TorchNPU repository.
 
 ## Public IP Address Statement
 
@@ -72,8 +72,8 @@ The execution of OpPlugin depends on TorchNPU, and no public API is provided.
 
 ## Communication Security Hardening
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Communication Security Hardening](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#communication-security-hardening) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Communication Security Hardening](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#communication-security-hardening) in the TorchNPU repository.
 
 ## Communication Matrix
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Communication Matrix](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/SECURITYNOTE.md#communication-matrix) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Communication Matrix](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/SECURITYNOTE.md#communication-matrix) in the TorchNPU repository.

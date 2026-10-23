@@ -2,12 +2,18 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -19,7 +25,7 @@ Obtains the name of the collective communication domain from the initialized dom
 torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rankid, init_comm=True) -> str
 ```
 
-Note: This method belongs to the PyTorch `ProcessGroup` class using the NPU backend. The `ProcessGroup` can be `default_pg` or a non-default group created by `torch.distributed.distributed_c10d.new_group`.
+This method belongs to the PyTorch `ProcessGroup` class using the NPU backend. The `ProcessGroup` can be `default_pg` or a non-default group created by `torch.distributed.distributed_c10d.new_group`.
 
 > [!NOTICE]  
 > When calling this API, ensure that the current device is correctly configured.
@@ -30,7 +36,7 @@ Note: This method belongs to the PyTorch `ProcessGroup` class using the NPU back
 
 - **`init_comm`** (`bool`): Optional. Specifies whether to force initialization if `HCCL` is uninitialized. The default value is `True`. When set to `True`, calling `get_hccl_comm_name` initializes `HCCL` if it has not yet been initialized and returns the group name. When set to `False`, the API does not initialize `HCCL`. Instead, it returns an empty string if `HCCL` is not already initialized.
 
->**Note**:<br>
+> [!NOTE]  
 >`HCCL` initialization allocates memory resources, increasing memory usage. By default, 200 MB is allocated for the `send` buffer and 200 MB for the `receive` buffer, totaling 400 MB. The buffer size is controlled by the `HCCL_BUFFSIZE` environment variable.
 
 ## Return Values

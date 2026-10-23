@@ -1,43 +1,53 @@
 # torch_npu.npu_trans_quant_param
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-|Product            |  Supported |
-|:-------------------------|:----------:|
-|  <term>Atlas A3 training products/Atlas A3 inference products</term>    |     √    |
-|  <term>Atlas A2 training products/Atlas A2 inference products</term>    |     √    |
-|  <term>Atlas inference products</term>  |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-- Converts the data type of the quantization parameter `scale` by packing the bit representation of `torch.float32` data into an `torch.int64` value.
+- Function: converts the data type of the quantization parameter `scale`, storing the `torch.float32` data bitwise into a `torch.int64` value.
 - Formulas:
 
-    1. `out` is a 64-bit value and is initialized to `0`.
+    1. `out` is in 64-bit format and is initially 0.
 
-    2. Convert `scale` from `torch.float32` to FP19 based on `round_mode`:
-        - When `round_mode` is `0` (truncation and padding mode, default), no R_INT rounding is applied to `scale`.
-        - When `round_mode` is `1` (R_INT mode), R_INT rounding is first applied to `scale`:
+    2. Convert `scale` from `torch.float32` to FP19 according to `round_mode`:
+        - If `round_mode` is 0 (truncation padding mode, the default value), no R_INT rounding is performed on `scale`.
+        - If `round_mode` is 1 (R_INT mode), R_INT rounding is first performed on `scale`:
         $$
         scale = Round(scale)
         $$
 
-    3. Truncate `scale` to its highest 19 bits by bit position, store them in the lower 32 bits (bits 0–31) of `out`, and set bit 46 to `1`.
+    3. Truncate the upper 19 bits of `scale` and store them in the lower 32 bits of `out` (bit 0-31), and set bit 46 to 1.
      
         $$
         out = out\ |\ (scale\ \&\ 0XFFFFE000)\ |\ (1\ll46)
         $$
 
-    4. Perform the subsequent computation based on the value of `offset`.
-        - If `offset` is not provided, no further computation is performed.
-        - If `offset` is provided:
-    
-            1. Convert the `offset` value to an integer within the range [-256, 255].
+    4. Perform subsequent computation according to the value of `offset`:
+        - If `offset` does not exist, no subsequent computation is performed.
+        - If `offset` exists:
+            1. Process the `offset` value as an int, ranging from [-256, 255].
+     
                 $$
                 offset = Max(Min(INT(Round(offset)),255),-256)
                 $$
 
-            2. Retain the lower 9 bits of `offset` and store them in bits 37 through 45 of `out`.
+            2. Keep 9 bits of `offset` and store them in bits 37 to 45 of `out`.
                 $$
                 out = (out\ \&\ 0x4000FFFFFFFF)\ |\ ((offset\ \&\ 0X1FF)\ll37)
                 $$
@@ -53,29 +63,37 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 - **`scale`** (`Tensor`): Required. $scale$ in the formulas. The data type can be `torch.float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
 - **`offset`** (`Tensor`): Optional. $offset$ in the formula. The data type can be `torch.float32`. The data layout can be ND. This parameter can be 1D or 2D. For details about the constraints, see [Constraints](#constraints). Non-contiguous tensors and empty tensors are not supported.
 - **`round_mode`** (`int`): Optional. Mode for converting `scale` from `torch.float32` to FP19. The default value is `0`. Valid values:
-  - `0`: Truncation and padding mode. Directly truncates `scale` to FP19 and then packs it.
-  - `1`: R_INT mode. Rounds `scale` to FP19 according to the R_INT rules and then truncates and packs it, which can improve computational accuracy.
+  - 0: Truncation padding mode, which directly truncates `scale` to FP19 and then packs it.
+  - 1: R_INT mode, which first rounds `scale` to FP19 according to the R_INT rule and then truncates and packs it, improving computation accuracy.
 
 ## Return Values
 
 `Tensor`
 
-The final computation result of `trans_quant_param`, $out$ in the formulas. The data type can be `torch.int64` (`torch.uint64` in graph mode). The data layout can be ND.
+Represents the computation result of `trans_quant_param`, $out$ in the formulas. The data type can be `torch.int64` (`torch.uint64` in graph mode). The data layout can be $ND$.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports graph mode.
-- On currently supported products, this API can be used together with `matmul` APIs (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)).
-- If `offset` is not provided, the output shape is identical to that of `scale`.
-  - If this output serves as the input to a `matmul` operator (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)), this parameter can be 1D with shape `(1,)` or `(n,)`, or 2D with shape `(1, n)`, where `n` matches the size of dimension `n` of the right matrix (`weight`, corresponding to the parameter `x2`) in the `matmul` computation.
-  - If the output serves as the input to a `grouped matmul` operator (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)), it can be used only when the grouping mode is M-axis grouping (with `group_type` set to `0`). This parameter can be 1D with shape `(g,)`, or 2D with shape `(g, 1)` or `(g, n)`, where `n` matches the size of dimension `n` of the right matrix (corresponding to the parameter `weight`) in the `grouped matmul` computation, and `g` matches the number of groups (corresponding to the shape size of the parameter `group_list`) in the `grouped matmul` computation.
-- If `offset` is provided, it can serve only as the input to a `matmul` operator (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)):
-  - `scale`, `offset`, and `out` can be 1D with shape `(1,)` or `(n,)`, or 2D with shape `(1, n)`, where `n` matches the size of dimension `n` of the right matrix (`weight`, corresponding to the parameter `x2`) in the `matmul` computation.
-  - If the input `scale` is 1D, `out` is also 1D, and its shape size is the maximum of the 1D shape sizes of `scale` and `offset`.
-  - If the input `scale` is 2D, `out` has exactly the same dimensions and shape as the input `scale`.
+- This API supports single-operator mode and TorchAir graph mode.
+- API combination:
 
-## Examples
+  <!-- npu="A3,910b,310p" id5 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, and <term>Atlas inference products</term>: can be used together with `matmul` APIs (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)).
+  <!-- end id5 -->
+  <!-- npu="950" id6 -->
+  - <term>Ascend 950PR&950DT products</term>: can be used together with both [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md) and [torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md).
+  <!-- end id6 -->
+
+- When `offset` is not passed, the output shape is the same as the `scale` shape.
+  - If the output is used as the input of a `matmul` API (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)), the shape can be 1D $(1,)$, $(n,)$, or 2D $(1, n)$, where $n$ is the same as the $n$ in the shape of the right matrix (parameter x2, `weight`) of the `matmul` computation.
+  - If the output is used as the input of a `grouped matmul` API (such as [torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)), it is used only when the grouping mode is M-axis grouping (`group_type` is 0). The shape can be 1D $(g,)$ or 2D $(g, 1)$, $(g, n)$, where $n$ is the same as the $n$ in the shape of the right matrix (parameter `weight`) of the `grouped matmul` computation, and $g$ is the same as the number of groups (the shape size of parameter `group_list`) of the `grouped matmul` computation.
+- When `offset` is passed, the output is used only as the input of a `matmul` API (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)):
+  - The shapes of `scale`, `offset`, and `out` can be 1D $(1,)$, $(n,)$, or 2D $(1, n)$, where $n$ is the same as the $n$ in the shape of the right matrix (parameter x2, `weight`) of the `matmul` computation.
+  - When the shape of the input `scale` is 1D, the shape of `out` is also 1D, and its size is the maximum of the single-dimension shape sizes of `scale` and `offset`.
+  - When the shape of the input `scale` is 2D, the shapes of `scale` and `offset` must be the same, and the shape of `out` is $(1, n)$.
+
+## Example
 
 - Single-operator call
 
@@ -102,7 +120,7 @@ The final computation result of `trans_quant_param`, $out$ in the formulas. The 
 
 - Graph mode call
 
-    In graph mode, the result tensor computed by `npu_trans_quant_param` is of the `torch.uint64` data type. PyTorch does not support this data type. This API must be used together with other APIs, such as `npu_quant_matmul` in the following code sample.
+    In graph mode, the result tensor computed by `npu_trans_quant_param` has the `torch.uint64` data type. Because torch does not support this data type, it must be used together with other APIs, such as `npu_quant_matmul` in the example code.
 
     ```python
     import torch
@@ -136,7 +154,7 @@ The final computation result of `trans_quant_param`, $out$ in the formulas. The 
     offset = torch.randn(1, dtype=torch.float32)
     round_mode = 1
     bias = torch.randint(-1,1, (15, 1, 128), dtype=torch.int32)
-    model = torch.compile(model, backend=npu_backend, dynamic=True)
+    model = torch.compile(cpu_model, backend=npu_backend, dynamic=True)
     
     npu_out = model(cpu_x1.npu(), cpu_x2.npu(), scale.npu(), offset.npu(), bias.npu(), round_mode)
     print(npu_out.shape)

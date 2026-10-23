@@ -1,22 +1,27 @@
 # torch_npu.npu_chunk_gated_delta_rule
 
 > [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
-|Product            |  Supported |
-|:-------------------------|:----------:|
-|  <term>Atlas A3 training products/Atlas A3 inference products</term>  |     √    |
-|  <term>Atlas A2 training products/Atlas A2 inference products</term>    |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Description: Computes the chunked version of Gated Delta Rule (GDR), which is one of the key operators of the Transformer linear attention mechanism.
+- Function: implements the computation logic of the chunk version of the Gated Delta Rule (GDR). It is one of the key operators of the Transformer linear attention mechanism.
 
-- Formula:
+- Formulas:
 
-  GDR is an operator designed for recurrent neural networks (RNNs) and serves as a component in linear attention mechanisms. At each time step $t$, GDR computes the current attention output $o_t$ and the new hidden state $S_t$ based on the current inputs $q_t$, $k_t$, $v_t$, the previous hidden state $S_{t-1}$, the decay coefficient $\alpha_t$, and the update strength $\beta_t$. The formula is as follows:
+  The Gated Delta Rule (GDR) is an operator applied to recurrent neural networks and is also used in a linear attention mechanism. At each time step $t$, GDR computes the current attention output $o_t$ and the new hidden state $S_t$ based on the current inputs $q_t$, $k_t$, and $v_t$, the previous hidden state $S_{t-1}$, the decay coefficient $\alpha_t$, and the update strength $\beta_t$. The formula is as follows:
   $$
   S_t := S_{t-1}(\alpha_t(I - \beta_t k_t k_t^T)) + \beta_t v_t k_t^T = \alpha_t S_{t-1} + \beta_t (v_t - \alpha_t S_{t-1}k_t)k_t^T
   $$
@@ -24,9 +29,9 @@
   o_t := S_t (q_t \cdot scale)
   $$
 
-  where, $S_{t-1},S_t \in R^{D_v \times D_k}$, $q_t, k_t \in R^{D_k}$, $v_t \in R^{D_v}$, $\alpha_t \in R$, $\beta_t \in R$, $o \in R^{D_v}$.
+  In the formulas, $S_{t-1},S_t \in R^{D_v \times D_k}$, $q_t, k_t \in R^{D_k}$, $v_t \in R^{D_v}$, $\alpha_t \in R$, $\beta_t \in R$, and $o \in R^{D_v}$.
   
-  Chunked Gated Delta Rule (CGDR) is a chunked version of GDR ([reference paper](https://arxiv.org/abs/2412.06464)). It splits the input sequence into chunks to achieve parallel execution. This operator provides higher computation efficiency than Recurrent Gated Delta Rule in long-context scenarios. It is applicable to the prefill phase. Given an input sequence of length $L$, the CGDR operator can compute the output $o_t$ for each step $t \in \{1, ..., L\}$ and the final state matrix $S_L$.
+  Chunked Gated Delta Rule (CGDR) is the chunk version of GDR ([reference paper](https://arxiv.org/abs/2412.06464)). It splits the input sequence into chunks to achieve a degree of parallelism. In long-context scenarios, its computation efficiency is higher than that of the Recurrent Gated Delta Rule, so it is suitable for the prefill phase. Given an input sequence of length L, the CGDR operator can compute the output of each step $o_t, t \in \{1, .., L\}$ and the final state matrix $S_L$.
 
 ## Prototype
 
@@ -37,23 +42,23 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 ## Parameters
 
 > [!NOTE]  
-> $T=\sum_i^B L_i$ indicates the accumulated sequence length, and $B$ indicates the batch size. $L_i$ indicates the length of the ith sequence.<br>
+> $T=\sum_i^B L_i$ indicates the cumulative sequence length, and $B$ indicates the batch size. $L_i$ indicates the length of the i-th sequence.<br>
 > $N_k$ indicates the number of key heads, and $N_v$ indicates the number of value heads.<br>
-> $D_k$ indicates the hidden size of the key, and $D_v$ indicates the hidden size of the value.
+> $D_k$ indicates the hidden size of key, and $D_v$ indicates the hidden size of value.
 
-- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
+- **`query`** (`Tensor`): Required. $q$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$). Empty tensors are not supported.
 
-- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$).
+- **`key`** (`Tensor`): Required. $k$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_k$, $D_k$). Empty tensors are not supported.
 
-- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$, $D_v$).
+- **`value`** (`Tensor`): Required. $v$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$, $D_v$). Empty tensors are not supported.
 
-- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$).
+- **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($T$, $N_v$). Empty tensors are not supported.
 
-- **`initial_state`** (`Tensor`): Optional. Initial state matrix $S_0$ in the formula. The data type can be `torch.bfloat16`. The data layout can be ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
+- **`initial_state`** (`Tensor`): Optional. State matrix $S_0$ in the formula. The data type can be `torch.bfloat16` or `torch.float32`. The data layout can be ND. The shape is ($B$, $N_v$, $D_v$, $D_k$). Empty tensors are not supported.
 
 - **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `torch.int32`. The data layout can be ND. The shape is `(B,)`.
 
-- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
+- **`scale`** (`float`): Optional. Scaling factor of the query, $scale$ in the formula. The data type can be `torch.float32`. The default value `None` indicates 1.0. In practice, it is typically set to $1/\sqrt{D_k}$.
 
 - **`g`** (`Tensor`): Optional. Decay coefficient, $α=e^g$ in the formula. The default value is `None`, indicating all zeros. The data type can be `torch.float32`. The data layout can be ND. The shape is ($T$, $N_v$).
 
@@ -61,14 +66,23 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 - **`out`** (`Tensor`): attention computation result, $o_t$ in the formula. The data type can be `torch.bfloat16`. The data layout is ND. The shape is ($T$, $N_v$, $D_v$).
 
-- **`final_state`** (`Tensor`): final state matrix, $S_L$ in the formula. The data type can be `torch.bfloat16`. The data layout is ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
+- **`final_state`** (`Tensor`): Final state matrix $S_L$ in the formula. The data type can be `torch.bfloat16` or `torch.float32`. The data layout is ND. The shape is ($B$, $N_v$, $D_v$, $D_k$).
 
 ## Constraints
 
-- This API can be used only in inference scenarios.
-- The input shape must meet the following requirements:
-  - $Nv \le 64$, $Nk \le 64$, and $Nv$ must be a multiple of $Nk$.
-  - $Dv = Dk = 128$.
+- This API can be used only in inference scenarios. In the current TND scenario, beta, initial_state, and actual_seq_lengths are mandatory.
+<!-- npu="950" id4 -->
+- The `torch.float32` data type of initial_state and final_state is supported only on Ascend 950PR&950DT products.
+<!-- end id4 -->
+- Dimension constraints:
+  - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, and $Nv \bmod Nk = 0$
+  - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$
+  - $B \gt 0$, $T \gt 0$
+- Due to algorithm characteristics, the user must ensure the following numerical constraints; otherwise, the computation result may overflow:
+  - $-1 \le query[i][j][k] \le 1$, and query must be normalized
+  - $-1 \le key[i][j][k] \le 1$, and key must be normalized
+  - $-1 \le g[i][j] \le 0$
+  - $0 < beta[i][j] < 1$
 
 ## Example
 
@@ -78,7 +92,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
     import torch
     import torch_npu
 
-    # Construct the input.
+    # Construct the inputs
     B, seqlen, nk, nv, dk, dv = (2, 100, 4, 8, 128, 128)
     actual_seq_lengths = (torch.ones(B) * seqlen).npu().to(torch.int32)
     T = int(torch.sum(actual_seq_lengths))
@@ -94,7 +108,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
     key = torch.nn.functional.normalize(key, p=2, dim=-1)
     scale = dk ** -0.5
 
-    # Call the operator.
+    # Call the operator
     o, final_state = torch_npu.npu_chunk_gated_delta_rule(
         query, key, value, beta=beta, initial_state=state, actual_seq_lengths=actual_seq_lengths, scale=scale, g=g)
     print(o.shape, final_state.shape)
@@ -118,11 +132,11 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
     os.environ["ENABLE_ACLNN"] = "false"
 
-    # Configure the graph mode.
+    # Configure the graph mode config
     config = torchair.CompilerConfig()
 
-    # Set the graph execution mode: aclgraph mode is reduce-overhead, and GE mode is max-autotune.
-    config.mode = "max-autotune"
+    # Configure the graph execution mode. The aclgraph mode is reduce-overhead.
+    config.mode = "reduce-overhead"
     npu_backend = torchair.get_npu_backend(compiler_config=config)
 
     class MyModel(torch.nn.Module):
@@ -150,10 +164,10 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
     if __name__ == "__main__":
         """
-        bs: number of statements in a batch.
-        seqlen: number of tokens in a statement, indicating the sequence length.
-        nk, nv: number of attention heads corresponding to QK and V.
-        dk, dv: word and position space embedding dimensions corresponding to QK and V.
+        bs: number of statements in a batch;
+        seqlen: number of tokens in a statement, that is, the length;
+        nk, nv: number of attention heads corresponding to QK and V;
+        dk, dv: dimension of the word and position space embedding corresponding to QK and V.
         """
         bs, seqlen = 2, 100
         nk, nv = 4, 4
@@ -163,13 +177,13 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
         print(f"Input Info:\n{bs=}, {seqlen=}, {nk=}, {nv=}, {dk=}, {dv=}, {actual_seq_lengths=}, {T=}")
 
-        # Initialize input tensors.
+        # Initialize the input tensor
         query = torch.rand((T, nk, dk), dtype=torch.bfloat16, device='npu')
         key = torch.rand((T, nk, dk), dtype=torch.bfloat16, device='npu')
         value = torch.rand((T, nv, dv), dtype=torch.bfloat16, device='npu')
         initial_state = torch.rand((bs, nv, dk, dv), dtype=torch.bfloat16, device='npu')
         beta = torch.rand((T, nv), dtype=torch.bfloat16, device='npu')
-        gamma = torch.rand((T, nv), dtype=torch.float32, device='npu')
+        gamma = torch.rand((T, nv), dtype=torch.float32).npu() * (-1.0)
         cu_seqlens = F.pad(actual_seq_lengths, (1, 0)).cumsum(dim=0).npu().to(torch.int32)
         cu_seqlens = cu_seqlens[1:]
 

@@ -1,6 +1,6 @@
 # Adaptation Development and Usage
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:28:45.249Z pushedAt=2026-08-11T11:57:12.291Z -->
+This sample demonstrates how to implement a custom operator kernel using Ascend C, integrate it into PyTorch through a C++ extension (`cpp_extension`), and finally call it from Python. It covers the complete workflow of project structure, compilation, installation, and testing.
 
 ## Directory Structure
 
@@ -23,45 +23,61 @@
 
 ## Adding a New Custom Operator
 
-This sample uses the `Add` operator to demonstrate how to implement a custom operator kernel using Ascend C in PyTorch. It also shows how to call the implemented operator through a Python API.
+### 1. Kernel implementation
 
-### Kernel Implementation
+Create an `.asc` file in `./csrc/` and implement the operator kernel based on Ascend C. For Ascend C development, see the [Ascend Community documentation](https://www.hiascend.com/ascend-c).
 
-This section describes how to implement the kernel operator. This sample is developed based on Ascend C. For information about how to implement an operator kernel using Ascend C, refer to the Ascend Community documentation: [Ascend C](https://www.hiascend.com/ascend-c).
+Taking `add_custom.asc` as an example, the file contains three parts:
 
-Create a file named `add_custom.asc` under the `./csrc/` directory, which serves as the implementation file for the custom `Add` kernel. A kernel function named `run_ascendc_add` is implemented in this sample.
+| Component | Description |
+|------|------|
+| `KernelAdd` class | Device-side implementation of the operator, including `Init` / `Process` / `CopyIn` / `Compute` / `CopyOut` |
+| `add_custom` kernel function | Device entry point decorated with `__global__ __vector__` |
+| `ascendc_add1/2/3/4/5` | Five correct host-side launch modes, comparing different stream acquisition and queue management strategies |
 
-### Kernel Implementation and Python API Integration
+**Comparison of the five launch modes**:
 
-This section describes how to encapsulate the implemented kernel operator and bind it to a Python API.
-  The code is located under the `./csrc/` directory.
+| Mode | Function | stream acquisition | Queue management | Applicable scenario |
+|------|------|------------|---------|---------|
+| 1 | `ascendc_add1` | `NPUStream` object | `<<<>>>` clears the queue internally | Simple synchronization scenario |
+| 2 | `ascendc_add2` | `stream(true)` | Starts directly after clearing the queue | Equivalent to mode 1 |
+| 3 | `ascendc_add3` | `stream(false)` | OpCommand is queued | **Recommended**; preserves pipeline performance |
+| 4 | `ascendc_add4` | `stream(true)` | Clears the queue and then queues OpCommand | Intuitive semantics |
+| 5 | `ascendc_add5` | `stream()` | Starts after the queue is complete | Equivalent to mode 2 |
 
-#### Wrapping the Python Module
+> **Recommended: mode 3**: `stream(false)` together with `OpCommand::RunOpApiV2` preserves TaskQueue pipeline performance and behaves the same as the built-in TorchNPU operators.
+
+### 2. Python module binding
 
 The `pybind11.asc` file uses the `pybind11` library to wrap C++ code into a Python module, which can then be imported and called on the Python side.
 
-  ```c++
-  PYBIND11_MODULE(custom_ops, m)
-  {
-      m.def("custom_add", &ascendc_ops::run_ascendc_add, "");
-  }
-  ```
+```cpp
+namespace ascendc_ops {
+// Mode 3 (recommended): stream(false) + OpCommand::RunOpApiV2
+at::Tensor ascendc_add3(const at::Tensor &x, const at::Tensor &y);
+at::Tensor run_trig_custom(const at::Tensor &x, const at::Tensor &out_sin, const at::Tensor &out_cos);
+}
 
-Through this binding, the Python side can call the custom API through `op_extension.ops.custom_add`.
+PYBIND11_MODULE(custom_ops_lib, m)
+{
+    m.def("custom_add", &ascendc_ops::ascendc_add3, "");
+    m.def("custom_trig", &ascendc_ops::run_trig_custom, "");
+}
+```
 
-#### Aten IR Implementation
+### 3. Aten IR implementation
 
-Operators are adapted according to the ATen IR definition.
-Operator dispatch and execution in TorchNPU are asynchronous, implemented through a task queue mechanism.
 In this project, the `at_npu::native::OpCommand::RunOpApiV2` method is used to enqueue operator execution into the TorchNPU task queue. The code sample is as follows:
 
-  ```c++
+```cpp
 #include "torch_npu/csrc/core/npu/NPUStream.h"
 #include "torch_npu/csrc/framework/OpCommand.h"
+
 namespace ascendc_ops {
-at::Tensor run_ascendc_add(const at::Tensor &x, const at::Tensor &y)
+at::Tensor ascendc_add3(const at::Tensor &x, const at::Tensor &y)
 {
-    auto acl_stream = c10_npu::getCurrentNPUStream().stream(true);
+    // stream(false) returns the ACL stream but does not clear the queue
+    auto acl_stream = c10_npu::getCurrentNPUStream().stream(false);
     at::Tensor z = at::empty_like(x);
     uint32_t blockDim = 8;
     uint32_t totalLength = 1;
@@ -69,18 +85,19 @@ at::Tensor run_ascendc_add(const at::Tensor &x, const at::Tensor &y)
         totalLength *= size;
     }
     // Launch the custom kernel use <<<>>>
-    auto acl_call = [=]() -> int{
-        add_custom<<<blockDim, nullptr, acl_stream>>>((uint8_t *)(x.mutable_data_ptr()), (uint8_t *)(y.mutable_data_ptr()),
-                                                    (uint8_t *)(z.mutable_data_ptr()), totalLength);
+    auto acl_call = [=]() -> int {
+        add_custom<<<blockDim, nullptr, acl_stream>>>(
+            (uint8_t *)(x.mutable_data_ptr()),
+            (uint8_t *)(y.mutable_data_ptr()),
+            (uint8_t *)(z.mutable_data_ptr()),
+            totalLength);
         return 0;
     };
     at_npu::native::OpCommand::RunOpApiV2("ascendc_add", acl_call);
-
     return z;
 }
-
 }  // namespace ascendc_ops
-  ```
+```
 
 The preceding section describes the workflow required to integrate a custom operator kernel.
 
@@ -98,24 +115,37 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 
 ## Running the Custom Operator
 
-  The execution depends on PyTorch, TorchNPU, and CANN. For details about the installation procedure, see the [TorchNPU Documentation](https://gitcode.com/Ascend/pytorch#installation).
-  The execution workflow is as follows:
-
-  1. Run the `setup.py` script to build and generate the wheel package.
+### 1. Compile the whl package
 
       ```bash
       python setup.py bdist_wheel
       ```
 
-     The build project has already leveraged setuptools to automate the process of compiling the operator kernel and integrating it into PyTorch.
+Key logic of `setup.py`:
 
-  2. Install the wheel package.
+| Step | Implementation | Description |
+|------|------|------|
+| Source collection | `glob.glob("csrc/*.asc")` | Automatically collects all `.asc` files |
+| Architecture detection | `get_npu_arch()` | Parses the chip model through `npu-smi info` and maps it to `dav-2201`/`dav-3510` |
+| Dependency paths | `get_dependency_paths()` | Automatically collects the include and lib paths of torch / torch_npu / Python |
+| ABI alignment | `torch._C._GLIBCXX_USE_CXX11_ABI` | Keeps consistent with the PyTorch ABI |
+| Compiler | `bisheng -x asc` | Uses the bisheng compiler provided by CANN |
+
+The build output is located at `dist/op_extension-0.1-*.whl`.
+
+Optional environment variables:
+
+```bash
+USE_NINJA=1 python setup.py bdist_wheel  # enable ninja acceleration
+```
+
+### 2. Install the whl package
 
       ```bash
       cd dist
       pip install *.whl
       ```
-
+  
   3. Run the sample.
 
       ```bash
@@ -124,51 +154,41 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
       ``` 
 
 ## Frequently Asked Questions (FAQ)
-
+ 
 ### 1. Compilation Error: "bisheng Command Not Found"
 
 **Cause**: The `bisheng` compiler is not installed on the system, or environment variables are not correctly configured.
 **Solution**:
 
 - Ensure that the CANN toolkit is correctly installed.
-
 - Run `source /usr/local/Ascend/ascend-toolkit/set_env.sh` to configure environment variables.
-
 - Verify whether the `bisheng` compiler is available by running `bisheng --version`.
-
+ 
 ### 2. Runtime Error: "ModuleNotFoundError: No module named 'op_extension'"
 
 **Cause**: The custom extension package is not installed correctly.
 **Solution**:
 
 - Ensure the wheel package has been successfully built and installed.
-
 - Check whether the installation directory is included in the module search path of Python.
-
 - Try reinstalling the wheel package through `pip install --force-reinstall *.whl`.
 
 ## Precautions
-
+ 
 ### 1. Data Type Support
 
 - The current implementation only supports the `int32` data type.
-
 - To support other data types (such as `float32` or `float16`), you must modify the kernel implementation.
-
 - When modifying the implementation, pay attention to the byte size and alignment requirements for data types.
-
+ 
 ### 2. Hardware Compatibility
 
 - This sample is developed based on Ascend NPUs and supports only Ascend hardware.
-
 - Different Ascend NPU models may require adjustments to compilation parameters.
-
 - You must specify the correct NPU architecture during compilation, such as `--npu-arch=dav-2201`.
-
+ 
 ### 3. Version Compatibility
 
 - Ensure that the PyTorch, TorchNPU, and CANN versions are compatible.
-
 - Version mismatch may cause compilation or runtime errors.
-
 - Refer to the [TorchNPU Documentation](https://gitcode.com/Ascend/pytorch#installation) for compatible version information.

@@ -1,17 +1,26 @@
 # (beta) torch_npu.npu.set_compile_mode
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √    |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-Sets whether to enable JIT compilation.
+Specifies whether to enable JIT compilation.
 
 ## Prototype
 
@@ -21,14 +30,18 @@ torch_npu.npu.set_compile_mode(jit_compile = bool)
 
 ## Parameters
 
-**`jit_compile`** (`bool`): Valid values are `True` (enables JIT compilation) or `False` (disables JIT compilation).
+**`jit_compile`** (`bool`): If the value is True, JIT compilation is enabled. If the value is False, JIT compilation is disabled.
 
 > [!NOTE]  
 >
->- For Atlas training products/Atlas inference products, the default configuration is `jit_compile=True`, which enables JIT compilation.
->- For Atlas A2 training products/Atlas A3 training products, the default configuration is `jit_compile=False`, which disables JIT compilation.
+><!-- npu="910,310p" id5 -->
+>- For Atlas training products and Atlas inference products, the default value is `jit_compile=True`, that is, JIT compilation is enabled.
+><!-- end id5 -->
+><!-- npu="A3,910b" id6 -->
+>- For Atlas A2 training products and Atlas A3 training products, the default value is `jit_compile=False`, that is, JIT compilation is disabled.
+><!-- end id6 -->
 
-## Example
+## Examples
 
 ```python
 >>> torch_npu.npu.set_compile_mode(jit_compile=False)

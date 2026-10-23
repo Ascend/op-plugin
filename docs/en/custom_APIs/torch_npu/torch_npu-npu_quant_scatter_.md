@@ -1,61 +1,130 @@
 # torch_npu.npu_quant_scatter_
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>| √   |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-Quantizes `updates`, and then updates the values in `input` using the values in `updates` based on the specified `axis` and `indices`. The data in `input` is updated in place.
+First quantize `updates`, then update the values in `self` with the values in `updates` according to the specified `axis` and `indices`. The data in `self` is changed.
 
 ## Prototype
 
 ```python
-torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_points=None, axis=-2, quant_axis=-1, reduce='update') -> Tensor
+torch_npu.npu_quant_scatter_(self, indices, updates, quant_scales, quant_zero_points=None, axis=-2, quant_axis=-1, reduce='update', dst_type=None, round_mode='rint') -> Tensor
 ```
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Source data tensor. Non-contiguous tensors are supported. The data layout can be ND. The shape must have 3 to 8 dimensions.
-    - Atlas inference products, Atlas A2 training products, and Atlas 800I A2 inference products: The data type can be `torch.int8`.
+- **`self`** (`Tensor`): Required input. Source data tensor. The data layout can be $ND$, non-contiguous tensors are supported, and the number of dimensions can only be 3 to 8.
+
+    <!-- npu="310p" id4 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.int8`.
+    <!-- end id4 -->
+    <!-- npu="910b" id5 -->
+    - <term>Atlas A2 products</term>: The data type can be `torch.int8`.
+    <!-- end id5 -->
+    <!-- npu="950" id6 -->
+    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+    <!-- end id6 -->
+
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `torch.float16`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.float16`.
+
+    <!-- npu="310p" id7 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+    <!-- end id7 -->
+    <!-- npu="910b" id8 -->
+    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.float16`.
+    <!-- end id8 -->
+    <!-- npu="950" id9 -->
+    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.float16`.
+    <!-- end id9 -->
 
 - **`quant_scales`** (`Tensor`): Required. Quantization scale tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `torch.float32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.float32`.
+
+    <!-- npu="310p" id10 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.float32`.
+    <!-- end id10 -->
+    <!-- npu="910b" id11 -->
+    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.float32`.
+    <!-- end id11 -->
+    <!-- npu="950" id12 -->
+    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.float32`.
+    <!-- end id12 -->
 
 - **`quant_zero_points`** (`Tensor`): Optional. Quantization offset tensor. The data layout can be ND. Non-contiguous tensors are supported.
-    - Atlas inference products: The data type can be `torch.int32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.bfloat16` or `torch.int32`.
+
+    <!-- npu="310p" id13 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.int32`.
+    <!-- end id13 -->
+    <!-- npu="910b" id14 -->
+    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.int32`.
+    <!-- end id14 -->
+    <!-- npu="950" id15 -->
+    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.int32`.
+    <!-- end id15 -->
 
 - **`axis`** (`int`): Optional. Axis on `updates` used for updating. The default value is `-2`.
 - **`quant_axis`** (`int`): Optional. Axis on `updates` used for quantization. The default value is `-1`.
 - **`reduce`** (`str`): Optional. Data operation mode. The default value is `'update'`.
+- **`dst_type`** (`int`): Optional. Data type of the output `self`. The default value is `None`, indicating `torch.int8`.
+
+    <!-- npu="910b,310p" id16 -->
+    - <term>Atlas inference products</term> and <term>Atlas A2 products</term>: this parameter is not supported currently, and `torch.int8` is used by default.
+    <!-- end id16 -->
+    <!-- npu="950" id17 -->
+    - <term>Ascend 950PR&950DT products</term>: the supported values are `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn`.
+    <!-- end id17 -->
+
+- **`round_mode`** (`str`): Optional. Rounding mode used during quantization. The default value is `"rint"`.
+
+    <!-- npu="910b,310p" id18 -->
+    - <term>Atlas inference products</term> and <term>Atlas A2 products</term>: this parameter is not supported currently, and `"rint"` is used by default.
+    <!-- end id18 -->
+    <!-- npu="950" id19 -->
+    - <term>Ascend 950PR&950DT products</term>: when `dst_type` is `torch.int8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`, `"rint"` is supported; when `dst_type` is `torch_npu.hifloat8`, `"round"` and `"hybrid"` are supported.
+    <!-- end id19 -->
 
 ## Return Values
 
 `Tensor`
 
-Output tensor representing the results after `input` is updated.
+Represents the result of updating `self`.
 
 ## Constraints
 
-- This API supports graph mode.
+- This API supports single-operator mode and TorchAir graph mode.
 
-- `indices` must be a 1D or 2D tensor. If `indices` is a 2D tensor, the size of its second dimension must be `2`. Out-of-bounds indices are not supported. Ensure that all indices are valid, and the framework does not perform bounds checking. The `input` data segments referenced by `indices` must not overlap. Otherwise, execution results may vary across runs because of multi-core concurrent execution.
-- `updates` must have the same number of dimensions as `input`. The size of its first dimension must be equal to the size of the first dimension of `indices` and must not exceed the size of the first dimension of `input`. The size of its `axis` dimension must not exceed the size of the corresponding `axis` dimension of `input`. The sizes of all other dimensions must match those of the corresponding dimensions of `input`. The size of its last dimension must be 32-byte aligned.
-- The number of elements in `quant_scales` must be equal to the size of the `quant_axis` dimension of `updates`.
-- The number of elements in `quant_zero_points` must be equal to the size of the `quant_axis` dimension of `updates`.
-- `axis` must not be the first or last dimension of `updates`.
-- `quant_axis` must be equal to the last dimension of `updates`.
+- `indices` can be 1D or 2D. If it is 2D, the size of its 2nd dimension must be 2. Out-of-range indices are not supported. The user must ensure that the indices are valid; the framework does not perform bounds checking. The data segments of `self` mapped by `indices` must not overlap. If they overlap, the results of multiple executions differ due to multi-core concurrency.
+- The number of dimensions of `updates` must be the same as that of `self`. The size of its 1st dimension is equal to the size of the 1st dimension of `indices` and is not greater than the size of the 1st dimension of `self`. The size of its `axis` dimension is not greater than the size of the `axis` dimension of `self`. The sizes of the other dimensions must be equal to those of the corresponding dimensions of `self`. The size of its last dimension must be 32B-aligned.
+- The number of elements of `quant_scales` must be equal to the size of `updates` on the `quant_axis` axis.
+- The number of elements of `quant_zero_points` must be equal to the size of `updates` on the `quant_axis` axis.
+- `axis` cannot be the 1st or the last dimension of `updates`.
+- `quant_axis` can only be the last dimension of `updates`.
+<!-- npu="950,910b" id20 -->
+- The data type input combinations of `updates`, `quant_scales`, and `quant_zero_points` include (applicable to the following products):
+    - <term>Atlas A2 products</term>
+    - <term>Ascend 950PR&950DT products</term>
 
-## Examples
+    | updates | quant_scales | quant_zero_points |
+    | --- | --- | --- |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` |
+    | `torch.float16` | `torch.float32` | `torch.int32` |
+<!-- end id20 -->
+
+## Example
 
 - Single-operator call
 
@@ -144,7 +213,7 @@ Output tensor representing the results after `input` is updated.
 - Graph mode call
 
     ```python
-    # Configure graph capture
+    # Graph mode approach
     import torch
     import torch_npu
     import math
@@ -155,7 +224,7 @@ Output tensor representing the results after `input` is updated.
     TORCHDYNAMO_VERBOSE=1
     TORCH_LOGS="+dynamo"
     
-    # Configure logging and debug settings for graph capture
+    # Print macro that supports graph mode
     import logging
     from torchair.core.utils import logger
     logger.setLevel(logging.DEBUG)
@@ -164,7 +233,7 @@ Output tensor representing the results after `input` is updated.
     npu_backend = tng.get_npu_backend(compiler_config=config)
     from torch.library import Library, impl
     
-    # Generate data
+    # Data generation
     dtype_list2 =["fp16","int8","int32","fp32","fp16"]
     dtype_list =[np.float16,np.int8,np.int32,np.float32]
     updates_shape =[1,11,1,32]

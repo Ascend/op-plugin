@@ -2,10 +2,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>           |    √     |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>              | √   |
+<!-- npu="910b" id1 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 

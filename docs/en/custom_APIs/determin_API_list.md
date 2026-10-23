@@ -42,9 +42,11 @@ For details about the usage and effects of deterministic computation, see the of
 
     During training, a return value of `True` from this API indicates that deterministic computation is enabled, whereas `False` indicates that it is disabled.
 
+<!-- npu="950,A3,910b" id3 -->
 ## API Lists
 
-When using <term>Atlas A2 training products/Atlas A2 inference products</term> or <term>Atlas A3 training products/Atlas A3 inference products</term>, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
+<!-- npu="A3,910b" id1 -->
+When using <term>Atlas A2 products</term> or <term>Atlas A3 products</term>, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 1** API list<a id="api-list-for-enabling-deterministic-computation-1"></a>
 
@@ -53,7 +55,9 @@ When using <term>Atlas A2 training products/Atlas A2 inference products</term> o
 | `torch_npu.npu_convolution_transpose` |
 | `torch_npu.npu_linear` |
 | `torch_npu.npu_deformable_conv2d` |
+<!-- end id1 -->
 
+<!-- npu="950" id2 -->
 When using <term>Ascend 950DT</term>, the APIs listed in [Table 2](#api-list-for-enabling-deterministic-computation-2) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 2** API list<a id="api-list-for-enabling-deterministic-computation-2"></a>
@@ -65,3 +69,6 @@ When using <term>Ascend 950DT</term>, the APIs listed in [Table 2](#api-list-for
 | `torch_npu.scatter_update` |
 | `torch_npu.scatter_update_` |
 | `torch_npu.npu_fusion_attention_grad` |
+<!-- end id2 -->
+
+<!-- end id3 -->

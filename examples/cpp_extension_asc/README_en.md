@@ -1,7 +1,5 @@
 # Adaptation Development and Usage (Ascend C-based)
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:29:01.095Z pushedAt=2026-08-11T11:58:02.637Z -->
-
 This document describes the complete adaptation development workflow for calling custom Ascend C operators through the TorchNPU framework by using C++ extensions. It shows how to integrate Ascend C operators into the Ascend for PyTorch ecosystem to achieve efficient NPU-accelerated computation.
 
 ## Operator Adaptation Development
@@ -10,10 +8,8 @@ This document describes the complete adaptation development workflow for calling
 
 Before getting started, ensure that you have completed the installation of the following environments:
 
-1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to CANN Software Installation.
-
-2. Install the PyTorch framework by referring to [Software Installation](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/installation_guide/installation_description.md).
-<!-- [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityStructureEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum). -->
+1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/920/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum).
+2. Install the PyTorch framework by referring to [Software Installation](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/installation_guide/references/building_from_source.md).
 
 ### Adaptation File Structure
 
@@ -22,7 +18,7 @@ Before getting started, ensure that you have completed the installation of the f
 ├── csrc                            // Directory of the C++ code at the operator adaptation layer
 │   ├── add_custom.asc              // Adaptation code, ATen IR registration, and binding for the custom Add operator
 │   └── trig_inplace_custom.asc     // Adaptation code, ATen IR registration, and binding for the custom Trig operator
-├── cpp_extension_acs               // Python-side code for the custom operator package
+├── cpp_extension_asc               // Python-side code of the custom operator package
 │   ├── _load.py                    // Loads the .so file
 │   └── __init__.py                 // Python initialization file
 ├── setup.py                        // Compilation file of the wheel package
@@ -40,9 +36,7 @@ Before getting started, ensure that you have completed the installation of the f
 The following steps use the `Add` operator as an example.
 
 1. Write the C++ operator code and adaptation code in `*.asc` files (such as `add_custom.asc`) in the `csrc` directory. Then, register the custom operator schema and bind it to its specific implementation. A namespace named `cpp_extension_acs` is defined in `add_custom.asc`, where the `ascendc_add` function is registered. Within the `ascendc_add` function, the current NPU stream is obtained through `c10_npu::getCurrentNPUStream()`, and the custom kernel function `add_custom` is launched by using the kernel launch syntax `<<<>>>` to execute the operator on the NPU. PyTorch provides the `TORCH_LIBRARY` macro to define a new namespace and register the schema within the namespace. Note that the namespace name must be unique. The code sample is as follows:
-
-    <!--The code sample does not include `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`. Is this required?-->
-
+    <!-- The code does not contain const c10::OptionalDeviceGuard device_guard(device_of(Tensor)). Should it be added? -->
     > [!NOTE]
     >
     > In multi-device scenarios, you must add `const c10::OptionalDeviceGuard device_guard(device_of(Tensor))` to the adaptation code to ensure proper cross-device access. This statement can be omitted in single-device scenarios.
@@ -120,7 +114,7 @@ The following steps use the `Add` operator as an example.
         op.Process();
     }
 
-    namespace cpp_extension_acs {
+    namespace cpp_extension_asc {
     at::Tensor ascendc_add(const at::Tensor &x, const at::Tensor &y)
     {
         auto acl_stream = c10_npu::getCurrentNPUStream().stream(true);
@@ -136,7 +130,7 @@ The following steps use the `Add` operator as an example.
         return z;
     }
 
-    }  // namespace cpp_extension_acs
+    }  // namespace cpp_extension_asc
 
     at::Tensor add_impl_meta(const at::Tensor& x, const at::Tensor& y)
     {
@@ -184,13 +178,12 @@ The following steps use the `Add` operator as an example.
         atb_so_path = str(so_files[0])
         torch.ops.load_library(atb_so_path)
     ```
-
+        
 ## Usage Example
 
 After completing the operator adaptation development, you can call the custom operator through C++ extensions.
 
-1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see CANN Ascend C Operator Development.
-
+1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see [CANN Ascend C Operator Development](https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/getting_started/ascend_c_overview_and_learning_path.md).
 2. Download the code sample.
 
     ```bash
@@ -201,7 +194,6 @@ After completing the operator adaptation development, you can call the custom op
     ```
 
 3. Complete operator adaptation. For details, see [Operator Adaptation Development](#operator-adaptation-development).
-
 4. Run the following command to build, install, and run the test script:
 
     ```bash
@@ -214,7 +206,7 @@ After completing the operator adaptation development, you can call the custom op
     Ran xx tests in xx s
     OK
     ```
-<!-- see [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html) -->
+
 ## Reference
 
 ### `Add` Operator
@@ -222,13 +214,13 @@ After completing the operator adaptation development, you can call the custom op
 - Function
 
   Adds two input tensors and returns the result. The corresponding operator prototype is as follows:
-
+  
   ```python
   ascendc_add(Tensor x, Tensor y) -> Tensor
   ```
 
 - Specifications
-
+  
   <table>
    <tr><td rowspan="1" align="center">Kernel Function Name</td><td colspan="4" align="center">add_custom</td></tr>
   <tr><td rowspan="3" align="center">Operator input</td><td align="center">Name</td><td align="center">Shape</td><td align="center">Data Type</td><td align="center">Data Layout</td></tr>
@@ -242,7 +234,7 @@ After completing the operator adaptation development, you can call the custom op
 - Function
 
   The input parameters of this operator are `x`, `out_sin`, and `out_cos`. After the operator is called, `out_sin` is modified in place to store the result of `sin(x)`, `out_cos` is modified in place to store the result of `cos(x)`, and the result of `tan(x)` is returned. The corresponding operator prototype is as follows:
-
+  
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
   ```

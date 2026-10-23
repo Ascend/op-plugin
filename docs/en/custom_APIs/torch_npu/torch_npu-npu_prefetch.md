@@ -2,10 +2,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>     |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>           |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -22,7 +24,7 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
 - **`input`** (`Tensor`): Weights to be prefetched. No data processing is performed. This parameter is independent of data type and data layout. The input must not contain a null pointer.
 - **`dependency`** (`Tensor`): Node that specifies the start of prefetching. This parameter does not take effect in single-operator mode and can be set to `None`. In graph capture mode, this parameter must not be `None`. No data processing is performed. This parameter is independent of data type and data layout.
 - **`max_size`** (`int`): Maximum size of weights to prefetch. The value must be greater than 0. When the size of the weights exceeds this value, it is set to the maximum size of the weights. The data type can be `int32` or `int64`.
-- **`offset`** (`int`): Memory address offset for weight prefetching. The value must not exceed the weight address range. The data type can be `int32` or `int64`.
+- **`offset`** (`int`): The default value is 0. The value must be greater than or equal to 0. It indicates the memory address offset for weight prefetching and must not exceed the weight address range. The data type can be `int32` or `int64`.
 
 ## Return Values
 

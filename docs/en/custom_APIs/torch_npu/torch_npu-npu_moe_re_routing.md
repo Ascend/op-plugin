@@ -2,10 +2,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -31,7 +33,7 @@
     This operator is located at the **communication-computation transition stage** of the parallel inference process for an MoE model, as shown below:
  
     ```text 
-    Gating/Top-K Routing 
+    Gating/TopK Routing
         ↓ 
     npu_moe_distribute_dispatch_v2  (AlltoAll distributes tokens to different devices) 
         ↓ 

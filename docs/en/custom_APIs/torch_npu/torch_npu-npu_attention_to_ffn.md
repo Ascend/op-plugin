@@ -2,9 +2,9 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
@@ -39,14 +39,17 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
 ## Return Values
 
-- None.
+None.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
 - This API supports static graph mode. Separated operators must be used together.
 - The values of the `group`, `world_size`, and `moe_expert_num` parameters used during API execution must be identical across all ranks and across different layers in the network.
+
+<!-- npu="A3" id2 -->
 - Atlas A3 training products/Atlas A3 inference products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
+<!-- end id2 -->
 - Variables used in parameter tensor shapes:
     - `X`: Micro-batch sequence size (number of token groups). In the current version, only `X = 1` is supported.
 
@@ -59,6 +62,8 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
     - `L`: Number of model layers. In the current version, only `L = 1` is supported.
 
     - `shared_expert_num`: Number of shared experts (a shared expert can be replicated and deployed across multiple FFN ranks). The value range is [0, 4].
+
+    - `M`: Number of FFN cards or related mapping dimensions corresponding to each expert, which must be determined based on the actual deployment configuration.
 
 - HCCL communication buffer size: Before calling this API, verify that the configured HCCL communication domain buffer size is reasonable. The unit is MB, and the default value is `200` MB if not configured.
 

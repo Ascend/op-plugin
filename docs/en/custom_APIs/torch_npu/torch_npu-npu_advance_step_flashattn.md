@@ -2,10 +2,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>                            |    √     |
-|<term>Atlas A2 training products</term>                             | √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -43,7 +45,7 @@ torch_npu.npu_advance_step_flashattn(input_tokens, sampled_token_ids, input_posi
 - **`input_positions`** (`Tensor`): Required. Input/output tensor used to record token indices, $inputPositions$ in the formulas. The data type can be `torch.int64`. The shape of this parameter is `[num_seqs]` (non-speculative scenarios) or `[num_seqs * (1 + spec_num)]` (speculative scenarios). Empty tensors are not supported. The value must be a positive integer greater than 0.
 - **`seq_lens`** (`Tensor`): Required. Input/output tensor used to record sequence lengths under different `block_idx`, $seqLens$ in the formula. The data type can be `torch.int64`. The shape of this parameter is `[num_seqs]` (non-speculative scenarios) or `[num_seqs * (1 + spec_num)]` (speculative scenarios). Empty tensors are not supported. The value must be a positive integer greater than 0.
 - **`slot_mapping`** (`Tensor`): Required. Input/output tensor used to map token positions in a sequence to physical memory positions, $slotMapping$ in the formulas. The data type can be `torch.int64`. The shape of this parameter is `[num_seqs]` (non-speculative scenarios) or `[num_seqs * (1 + spec_num)]` (speculative scenarios). Empty tensors are not supported. The value must be a positive integer greater than 0.
-- **`block_tables`** (`Tensor`): Required. Input/output tensor used to record block allocation for different `block_idx`, $blockTables$ in the formulas. The data type can be `torch.int64`. The shape must have two dimensions. The first dimension equals `num_seqs`, and the second dimension must be greater than the integer division of the maximum value in `seq_lens` by `block_size`.
+- **`block_tables`** (`Tensor`): Required. Input/output tensor used to record block allocation for different `block_idx`, $blockTables$ in the formulas. The data type can be `torch.int64`. The shape must have two dimensions. The first dimension equals `num_seqs`, and the second dimension must be greater than the integer division of the maximum value in `seq_lens` by `block_size`. Empty tensors are not supported, and the value range is positive integers greater than 0.
 - **`num_seqs`** (`int`): Required. Records the number of input sequences. The value must be a positive integer greater than 0.
 - **`num_queries`** (`int`): Required. Records the number of input queries. The value must be a positive integer greater than 0.
 - **`block_size`** (`int`): Required. Size of each block, $blockSize$ in the formulas. The value must be a positive integer greater than 0.

@@ -1,16 +1,22 @@
 # (beta) torch_npu.npu_nms_rotated
 
 > [!NOTICE]  
-> This API is planned for deprecation. For details about the replacement, see [Small Operator Concatenation Solution](https://gitcode.com/Ascend/op-plugin/blob/26.1.0/test/test_base_ops/test_nms_rotated.py).
+> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>          |    √     |
-|<term>Atlas A2 training products</term>| √   |
-|<term>Atlas training products</term>| √   |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 

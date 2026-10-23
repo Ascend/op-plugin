@@ -59,7 +59,7 @@ torch_npu.utils.set_thread_affinity(core_range: list[int] | list[list[int]] | No
 >>> import threading
 >>>
 >>> def run_thread():
-...   print("This is a child thread.")
+...     print("This is a child thread.")
 >>>
 >>> torch_npu.utils.set_thread_affinity([12, 19]) # 设置单个绑核区间：[12, 19]
 >>> torch_npu.utils.set_thread_affinity([[0, 10], [12, 19]]) # 设置多个绑核区间：[0, 10]和[12, 19]

@@ -1,15 +1,16 @@
 # torch_npu.npu_swiglu_quant
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -39,8 +40,6 @@
             $$
 
         2. Perform dynamic or static quantization on the activation result. The following example shows the dynamic quantization (`dynamic_quant`) equation. For detailed mathematical formulas, see aclnnSwiGluQuantV2.
-        <!-- see [aclnnSwiGluQuantV2](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/aolapi/context/ops-nn/aclnnSwiGluQuantV2.md) -->
-
             $$
             out,scale=dynamic\_quant(out)
             $$

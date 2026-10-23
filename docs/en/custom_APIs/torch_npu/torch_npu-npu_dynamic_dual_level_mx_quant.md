@@ -1,13 +1,10 @@
 # torch\_npu.npu\_dynamic\_dual\_level\_mx\_quant
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 

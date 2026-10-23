@@ -1,22 +1,29 @@
 # (beta) torch_npu.npu_iou
 
 > [!NOTICE]  
-> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.<br>
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
+> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>            |    √     |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √    |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-Computes the intersection over union (IoU) or intersection over foreground (IoF) based on the ground-truth boxes and predicted regions.
+Computes the intersection over union (IoU) or intersection over foreground (IoF) based on the ground truth and predicted regions.
 
 ## Prototype
 
@@ -30,9 +37,11 @@ torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor
 - **`gtboxes`** (`Tensor`): Required. Input tensor.
 - **`mode`** (`int`): Optional. Valid values are `0` (IoU mode) or `1` (IoF mode). The default value is `0`.
 
+<!-- npu="950" id6 -->
 ## Constraints
 
-Ascend 950DT: Currently, this API does not support backward computation.
+Ascend 950DT products: Backward computation is not supported for this API currently.
+<!-- end id6 -->
 
 ## Example
 

@@ -1,20 +1,19 @@
 # torch_npu.print_npugraph_tensor
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>          |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
-In `aclgraph` mode, the native Python `print` function introduces synchronous operations that trigger graph breaks during `torch.compile`. These operations cannot be captured by `aclgraph`, preventing the use of standard `print` to inspect tensor data during graph execution.
+In aclgraph mode, the native Python `print` function involves synchronous processing, which triggers graph breaks during `torch.compile` and cannot be captured by aclgraph. As a result, in graph mode, the `print` API cannot be used to observe the tensor data during aclgraph execution.
 
-This API provides a tensor printing capability similar to the native Python `print` interface without affecting `aclgraph` capture and replay. This API allows direct printing of tensor data, data types, and shape information for intermediate nodes within an `aclgraph`, enabling users to observe execution behavior and quickly locate issues.
+This API provides tensor printing capabilities similar to the native Python API without affecting aclgraph capture and replay, allowing the tensor data, data type, and shape of intermediate nodes of aclgraph to be printed directly, so that the user can observe the tensor data during aclgraph execution to quickly locate problems.
 
 ## Prototype
 
@@ -26,20 +25,18 @@ torch_npu.print_npugraph_tensor(input, tensor_name=None) -> None
 
 - **`input`** (`Tensor`): Required. Tensor to be printed.
 - **`tensor_name`** (`str`): Optional. Name of the tensor to be printed, used to distinguish different tensors. The default value is `None`.
-  - When `tensor_name` is `None`: directly outputs the tensor data content.
-  - When `tensor_name` is not `None`: uses the `{tensor_name}:` as the prefix, followed by the tensor data.
+  - When tensor_name is None: the tensor data is output directly.
+  - When tensor_name is not None: the format `{tensor_name}:` is used as the prefix, followed by the tensor data.
 
 ## Return Values
 
 `None`
 
-None
+No return value.
 
 ## Constraints
 
-- This API can be used in `Eager` mode and `aclgraph` mode.
-
-- Tensors with proprietary formats are not supported as inputs.
+This API can be used in eager mode and aclgraph mode.
 
 ## Example
 
@@ -52,7 +49,7 @@ None
     >>> torch_npu.print_npugraph_tensor(a, tensor_name = "a")
     ```
 
-- `torch.npu.graph`-based call
+- Call based on `torch.npu.graph`
 
     ```python
     import torch
@@ -69,7 +66,7 @@ None
     graph1.replay()
     ```
 
-- `torch.compile`-based call
+- Call based on `torch.compile`
 
     ```python
     import torch

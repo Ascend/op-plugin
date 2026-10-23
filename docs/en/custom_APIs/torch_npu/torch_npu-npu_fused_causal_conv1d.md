@@ -1,13 +1,10 @@
 # torch\_npu.npu\_fused\_causal\_conv1d
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
@@ -324,10 +321,10 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
   - `query_start_loc` contains cumulative offsets, with values in the range `[0, cu_seq_len]` and length `batch+1`. `query_start_loc[i]` represents the starting offset of the `i`-th sequence, and `query_start_loc[batch+1]` represents the ending position of the last sequence.
   - `block_size` must be greater than or equal to `2`.
   - When APC is enabled, `block_idx_first_scheduled_token`, `block_idx_last_scheduled_token`, `initial_state_idx`, and `num_computed_tokens` must be provided and satisfy the following requirements, where `i` is the batch index:
-    - `initial_state_idx[i]` must be less than or equal to `block_idx_first_scheduled_token[i] + 1`.
-    - `initial_state_idx[i]` must be less than or equal to `block_idx_last_scheduled_token[i]`.
-    - `block_idx_first_scheduled_token[i]` must be less than or equal to `block_idx_last_scheduled_token[i]`.
-    - `block_idx_last_scheduled_token[i]` must be less than `maxNumBlocks`.
+      - `initial_state_idx[i]` must be less than or equal to `block_idx_first_scheduled_token[i] + 1`.
+      - `initial_state_idx[i]` must be less than or equal to `block_idx_last_scheduled_token[i]`.
+      - `block_idx_first_scheduled_token[i]` must be less than or equal to `block_idx_last_scheduled_token[i]`.
+      - `block_idx_last_scheduled_token[i]` must be less than `maxNumBlocks`.
   - `num_accepted_tokens` can be `None` or non-`None`. When non-`None`, its length must be `batch`, and each element must be greater than `0` and no greater than the number of tokens in the current batch minus `1`.
   - Values of `cache_indices` must be in the range `[0, conv_states.dim[0]-1]`, and all elements must be distinct.
   - In Pangu V2 mode (`conv_mode = "pangu"`), `num_computed_tokens` cannot be `None`.

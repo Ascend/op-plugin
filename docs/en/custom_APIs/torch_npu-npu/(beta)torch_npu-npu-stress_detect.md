@@ -1,11 +1,19 @@
 # (beta) torch_npu.npu.stress_detect
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -26,7 +34,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 ## Return Values
 
-- An integer error code representing execution status. Valid values are:
+- The return value of this API is an `int` representing the error type. The meanings are as follows:
 
     - `0`: Online precision detection passed.
 
@@ -39,8 +47,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
     ```shell
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.
     ```
-    
-<!-- in [CANN Troubleshooting](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/maintenref/troubleshooting/troubleshooting_0505.html)) or a system reboot. -->
+
 ## Constraints
 
 - Online precision detection requires modifying the model training script. You are advised to call this API before training starts, after training ends, or between two steps. Reserve 10 GB of memory for the stress test interface.

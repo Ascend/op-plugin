@@ -1,12 +1,22 @@
 # torch_npu.profiler.profiler.analyse
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                              | Supported|
-| ---------------------------------- | :------: |
-| <term>Atlas A3 training products</term>|    √     |
-| <term>Atlas A2 training products</term>|    √     |
-| <term>Atlas training products</term>   |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -27,7 +37,7 @@ torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_pro
 - **`export_type`** (`list`): Optional. File format of the exported profile data result files. Valid values are:
 
   - `text`: parses data into `.json` and `.csv` format timeline and summary files, and a `.db` format file (`ascend_pytorch.db` or `analysis.db`) that aggregates all profile data.
-  - `db`: parses data only into a `.db` format file (`ascend_pytorch.db` or `analysis.db`) that aggregates all profile data for visualization using the MindStudio Insight tool. This value is supported only for exports through the `on_trace_ready` interface or [offline parsing](./torch_npu-profiler-profiler-analyse.md) exports. You must install a matching Toolkit package that supports exporting the `.db` format.
+  - `db`: parses data only into a `.db` format file (`ascend_pytorch.db` or `analysis.db`) that aggregates all profile data for visualization using the MindStudio Insight tool. This value is supported only for exports through the `on_trace_ready` interface or offline parsing exports. You must install a matching Toolkit package that supports exporting the `.db` format.
 
   If an invalid value is provided or if this parameter is omitted, the `export_type` field in `profiler_info.json` is read to determine the export format.
 

@@ -1,13 +1,10 @@
 # torch_npu.npu_alltoallv_quant_gmm
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                         | Supported |
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>     | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
@@ -59,7 +56,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 ## Parameters
 
 - **`gmm_x`** (`Tensor`): Required. Original left matrix input of routed experts on the local device before communication. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`. This parameter must be a 2D tensor with shape $(BSK, H1)$. The data layout can be `ND`. When the data type is `torch_npu.float4_e2m1fn_x2`, inner dimension `H1` must be even and cannot be `2` to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements.
-- **`gmm_weight`** (`Tensor`): Required. Right matrix input of the `GroupedMatMul` for routed experts on the local device. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`. This parameter must be a 3D tensor with shape $(e, H1, N1)$. The data layout can be `ND`. In the MX quantization scenario, when both `gmm_x` and `gmm_weight` use the `torch_npu.float4_e2m1fn_x2` data type, only inference scenarios are supported. In this case, inner dimension `H1` of `gmm_x` must be even and cannot be `2`. When `gmm_weight` is not transposed, inner dimension `N1` must be even; when it is transposed, inner dimension `H1` must be even and cannot be `2`, to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements.
+- **`gmm_weight`** (`Tensor`): Required. Right matrix input of the `GroupedMatMul` for routed experts on the local device. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`. This parameter must be a 3D tensor with shape $(e, H1, N1)$. The data layout can be `ND`. In the MX quantization scenario, when `gmm_x` is of the `torch_npu.float4_e2m1fn_x2` series and `gmm_weight` is of the `torch_npu.float4_e2m1fn_x2` series, only inference scenarios are supported. In this case, inner dimension `H1` of `gmm_x` must be even and cannot be `2`. When `gmm_weight` is not transposed, inner dimension `N1` must be even; when it is transposed, inner dimension `H1` must be even and cannot be `2`, to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements.
 - **`gmm_x_scale`** (`Tensor`): Required. Quantization scale of routed expert left matrix `gmm_x`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 3D tensor with shape $(BSK, \operatorname{ceil}(H1/64), 2)$. The data layout can be `ND`.
 - **`gmm_weight_scale`** (`Tensor`): Required. Quantization scale of routed expert right matrix `gmm_weight`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 4D tensor with shape $(e, \operatorname{ceil}(H1/64), N1, 2)$. The data layout can be `ND`.
 - **`hcom`** (`str`): Required. String identifying the communication group on the host side, that is, the name of the communication domain, obtained through the `get_hccl_comm_name` API.
@@ -71,7 +68,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **`send_counts_tensor`** (`Tensor`): Optional. Currently, only `None` is supported.
 - **`recv_counts_tensor`** (`Tensor`): Optional. Currently, only `None` is supported.
 - **`mm_x`** (`Tensor`): Optional. Left matrix input of shared expert `MatMul`, provided only when shared experts are enabled. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`, and must be the same as the data type of `gmm_x`. This parameter must be a 2D tensor with shape $(BS, H2)$. The data layout can be `ND`. When the data type is `torch_npu.float4_e2m1fn_x2`, inner dimension `H2` must be even and cannot be `2` to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements. The default value is `None`.
-- **`mm_weight`** (`Tensor`): Optional. Right matrix input of shared expert `MatMul`, provided only when shared experts are enabled. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`, and must be the same as the data type of `gmm_weight`. This parameter must be a 2D tensor with shape $(H2, N2)$. The data layout can be `ND`. In the MX quantization scenario, when both `mm_x` and `mm_weight` use the `torch_npu.float4_e2m1fn_x2` data type, only inference scenarios are supported. In this case, inner dimension `H2` of `mm_x` must be even and cannot be `2`. When `mm_weight` is not transposed, inner dimension `N2` must be even; when it is transposed, inner dimension `H2` must be even and cannot be `2`, to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements. The default value is `None`.
+- **`mm_weight`** (`Tensor`): Optional. Right matrix input of shared expert `MatMul`, provided only when shared experts are enabled. The data type can be `torch_npu.hifloat8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.float4_e2m1fn_x2`, and must be the same as the data type of `gmm_weight`. This parameter must be a 2D tensor with shape $(H2, N2)$. The data layout can be `ND`. In the MX quantization scenario, when `mm_x` is of the `torch_npu.float4_e2m1fn_x2` series and `mm_weight` is of the `torch_npu.float4_e2m1fn_x2` series, only inference scenarios are supported. In this case, inner dimension `H2` of `mm_x` must be even and cannot be `2`. When `mm_weight` is not transposed, inner dimension `N2` must be even; when it is transposed, inner dimension `H2` must be even and cannot be `2`, to ensure that 8 bits can be converted into two `torch_npu.float4_e2m1fn_x2` elements. The default value is `None`.
 - **`mm_x_scale`** (`Tensor`): Optional. Quantization scale of shared expert left matrix `mm_x`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 3D tensor with shape $(BS, \operatorname{ceil}(H2/64), 2)$. The data layout can be `ND`. The default value is `None`.
 - **`mm_weight_scale`** (`Tensor`): Optional. Quantization scale of shared expert right matrix `mm_weight`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 3D tensor with shape $(\operatorname{ceil}(H2/64), N2, 2)$. The data layout can be `ND`. The default value is `None`.
 - **`gmm_x_quant_mode`** (`int`): Optional. Quantization mode of routed expert left matrix. In the current version, the value can be `1` or `6`, representing per-tensor quantization and MX quantization, respectively.
@@ -81,7 +78,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **`permute_out_flag`** (`bool`): Optional. Specifies whether to return the rearranged routed expert matrix after communication, that is, `permute_out`. The default value is `False`. When set to `True`, the return value includes this tensor.
 - **`group_size`** (`List[int]`): Optional. Number of elements in the corresponding dimension of the `gmm_x`, `gmm_weight`, `mm_x`, and `mm_weight` inputs that can be quantized using one value in the corresponding `gmm_x_scale`, `gmm_weight_scale`, `mm_x_scale`, or `mm_weight_scale` input. The shape of `group_size` is `[groupSizeM, groupSizeN, groupSizeK]`. `groupSizeM`, `groupSizeN`, and `groupSizeK` represent the number of elements in the corresponding dimensions that can be quantized using one quantization scale.
 
-  The default value is `[0, 0, 0]`. The value of `group_size` is effective only in the MX quantization scenario. In other scenarios, `[0, 0, 0]` must be passed. For configuration principles, see the constraints.
+    The default value is `[0, 0, 0]`. The value of `group_size` is effective only in the MX quantization scenario. In other scenarios, `[0, 0, 0]` must be passed. For configuration principles, see the constraints.
 
 - **`gmm_x_dtype`** (`int`): Optional. Actual data type of routed expert left matrix `gmm_x`. For data types not natively supported by PyTorch, such as `torch_npu.hifloat8` and `torch_npu.float4_e2m1fn_x2`, this parameter must be specified. The default value is `None`.
 - **`gmm_weight_dtype`** (`int`): Optional. Actual data type of routed expert right matrix `gmm_weight`. For data types not natively supported by PyTorch, such as `torch_npu.hifloat8` and `torch_npu.float4_e2m1fn_x2`, this parameter must be specified. The default value is `None`.
@@ -508,7 +505,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
             model = ALLTOALLV_GMM_GRAPH_Model()
             npu_backend = torchair.get_npu_backend(compiler_config=None)
             # Static graph: dynamic=False dynamic graph: dynamic=True
-            model = torch.compile(model, backend=npu_backend, dynamic=False)
+            model = torch.compile(ALLTOALLV_GMM_GRAPH_Model(), backend=npu_backend, dynamic=False)
             print(model(_gmm_x=input,
                         _gmm_weight=weight,
                         _gmm_x_scale=input_scale,

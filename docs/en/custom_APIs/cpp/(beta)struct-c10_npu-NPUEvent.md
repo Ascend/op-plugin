@@ -1,12 +1,27 @@
 # (beta) struct c10_npu::NPUEvent
 
-## Definition File
+## Supported Products
 
-torch_npu\csrc\core\npu\NPUEvent.h
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-Implements NPU event management functionality as an event class. It can be used to monitor device progress, accurately measure elapsed time, or synchronize NPU streams.
+NPUEvent is an event class that implements NPU device event management functions. It can be used to monitor device progress, accurately measure timing, and synchronize NPU streams.
+
+## Definition File
+
+torch_npu\csrc\core\npu\NPUEvent.h
 
 ## Member Functions
 
@@ -40,7 +55,7 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **bool c10_npu::NPUEvent::isCreated()**
 
-    Queries whether the event is created for `NPUEvent`. The return type is `bool`. Valid values are `True` (the event is created) or `False` (the event is not created). This function is identical to `bool at::cuda::CUDAEvent::isCreated()`.
+    Queries whether the event is created for `NPUEvent`. The return type is `torch.bool`. Valid values are `True` (the event is created) or `False` (the event is not created). This function is identical to `bool at::cuda::CUDAEvent::isCreated()`.
 
 - **c10::DeviceIndex c10_npu::NPUEvent::device_index()**
 
@@ -52,7 +67,7 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **bool c10_npu::NPUEvent::query()**
 
-    Queries whether the event is complete for `NPUEvent`. The return type is `bool`. Valid values are `True` (all submitted work is complete) or `False` (the work is not complete). This function is identical to `bool at::cuda::CUDAEvent::query()`.
+    Queries whether the event is complete for `NPUEvent`. The return type is `torch.bool`. Valid values are `True` (all submitted work is complete) or `False` (the work is not complete). This function is identical to `bool at::cuda::CUDAEvent::query()`.
 
 - **void c10_npu::NPUEvent::record()**
 
@@ -78,17 +93,10 @@ Implements NPU event management functionality as an event class. It can be used 
 
 - **float c10_npu::NPUEvent::elapsed_time(const c10_npu::NPUEvent& other)**
 
-    Queries the elapsed time between `NPUEvent` events. The return type is `float`, which represents the elapsed time in milliseconds from the recorded event to the current event. This function is identical to `float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent& other)`.
+    Queries the elapsed time between `NPUEvent` events. The return type is `torch.float`, which represents the elapsed time in milliseconds from the recorded event to the current event. This function is identical to `float at::cuda::CUDAEvent::elapsed_time(const at::cuda::CUDAEvent& other)`.
 
     **`other`** (`NPUEvent`): Destination event used to compute the elapsed time.
 
 - **void c10_npu::NPUEvent::synchronize()**
 
     Synchronizes the event for `NPUEvent`, which blocks execution until the event completes execution. This function is identical to `void at::cuda::CUDAEvent::synchronize()`.
-
-## Supported Products
-
-- <term>Atlas training products</term>
-- <term>Atlas A2 training products</term>
-- <term>Atlas A3 training products</term>
-- <term>Atlas inference products</term>

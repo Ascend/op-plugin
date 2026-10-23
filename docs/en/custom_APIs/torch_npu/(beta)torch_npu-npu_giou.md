@@ -5,12 +5,18 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>          |    √     |
-|<term>Atlas A2 training products</term>| √   |
-|<term>Atlas training products</term>| √   |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -24,7 +30,7 @@ torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 
 ## Parameters
 
-- `self` (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `torch.float16` or `torch.float32`. `N` indicates the number of labeled bounding boxes, and `4` indicates `[x1, y1, x2, y2]` or `[x, y, w, h]`.
+- **`self`** (`Tensor`): Required. Labeled bounding boxes. This parameter must be a 2D tensor with shape `(N, 4)`. The data type can be `torch.float16` or `torch.float32`. `N` indicates the number of labeled bounding boxes, and `4` indicates `[x1, y1, x2, y2]` or `[x, y, w, h]`.
 - **`gtboxes`** (`Tensor`): Required. Ground-truth bounding boxes. This parameter must be a 2D tensor with shape `(M, 4)`. The data type can be `torch.float16` or `torch.float32`. `M` indicates the number of ground-truth bounding boxes, and `4` indicates `[x1, y1, x2, y2]` or `[x, y, w, h]`.
 - **`trans`** (`bool`): Optional. A value of `True` indicates `"xywh"` and a value of `False` indicates `"xyxy"`. The default value is `False`.
 - **`is_cross`** (`bool`): Optional. Controls whether the output shape is `(M, N)` or `(1, N)`. If set to `True`, the output shape must be `(M, N)`. If set to `False`, the output shape must be `(1, N)`. The default value is `False`.

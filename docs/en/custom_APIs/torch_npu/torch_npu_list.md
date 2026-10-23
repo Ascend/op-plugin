@@ -1,6 +1,6 @@
 # torch_npu APIs
 
-This section describes common custom APIs, including tensor creation and computation-related operations.
+This section describes commonly used custom APIs, including Tensor creation and computation operations.
 
 **Table 1** torch_npu APIs
 
@@ -247,6 +247,16 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p16917252327389"><a name="p16917252327389"></a><a name="p16917252327389"></a>Fuses the RmsNorm and Quantize operators to reduce data transfer operations.</p>
 </td>
 </tr>
+<tr id="row3892520439"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2991782322389"><a name="p2991782322389"></a><a name="p2991782322389"></a><a href="torch_npu-npu_rms_norm_quant_v2.md">torch_npu.npu_rms_norm_quant_v2</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_rotate_quant_desc"><a name="p_rotate_quant_desc"></a><a name="p_rotate_quant_desc"></a><span>Fuses rotation (Rotate) and quantization (Quant) for model performance optimization.</span></p>
+</td>
+</tr>
+<tr id="row3892520439"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2991782322389"><a name="p2991782322389"></a><a name="p2991782322389"></a><a href="torch_npu-npu_rms_norm_dynamic_mx_quant.md">torch_npu.npu_rms_norm_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_save_npugraph_tensor_desc"><a name="p_save_npugraph_tensor_desc"></a><a name="p_save_npugraph_tensor_desc"></a><span>Provides functionality similar to the native PyTorch <code>torch.save</code> API without affecting tensor dump capabilities during aclgraph capture and replay. It allows tensor data, data types, and shape information of intermediate nodes in aclgraph to be saved to a specified binary file, enabling users to inspect tensor data during aclgraph execution and quickly locate issues.</span></p>
+</td>
+</tr>
 <tr id="row17801219526"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p89062124277"><a name="p89062124277"></a><a name="p89062124277"></a><a href="torch_npu-npu_rotary_mul.md">torch_npu.npu_rotary_mul</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p69061812102715"><a name="p69061812102715"></a><a name="p69061812102715"></a>Implements rotary position embedding (RoPE).</p>
@@ -287,9 +297,28 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001694916914_p444492882116"><a name="en-us_topic_0000001694916914_p444492882116"></a><a name="en-us_topic_0000001694916914_p444492882116"></a>Fuses allgather and matrix multiplication (MatMul) operations in tensor parallelism (TP) scenarios. The fused kernel implements pipelined parallelism between computation and communication.</p>
 </td>
 </tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_all_gather_quant_mm.md">torch_npu.npu_all_gather_quant_mm</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In the quantized TP scenario, this API fuses allgather and matmul and outputs the dequantization result.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_all_to_all_matmul.md">torch_npu.npu_all_to_all_matmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses the AlltoAll communication, Permute (to keep addresses contiguous after communication), and Matmul computation. Communication is performed before computation.</p>
+</td>
+</tr>
+<tr id="row950000000021"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p950000000022"><a name="p950000000022"></a><a name="p950000000022"></a><a href="torch_npu-npu_all_to_all_quant_matmul.md">torch_npu.npu_all_to_all_quant_matmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p950000000023"><a name="p950000000023"></a><a name="p950000000023"></a>Fuses the quantized Matmul computation, Permute (to keep addresses contiguous after communication), and AlltoAll communication. Communication is performed before computation. The K-C dynamic quantization mode and the mx quantization mode are supported.</p>
+</td>
+</tr>
+<tr id="npu_anti_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_anti_mx_quant"><a name="p_npu_anti_mx_quant"></a><a name="p_npu_anti_mx_quant"></a><a href="torch_npu-npu_anti_mx_quant.md">torch_npu.npu_anti_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_anti_mx_quant_desc"><a name="p_npu_anti_mx_quant_desc"></a><a name="p_npu_anti_mx_quant_desc"></a><span>The torch.float16, torch.bfloat16, and torch.float32 formats. It is the inverse process of npu_dynamic_mx_quant.<code>torch.float16</code>/<code>torch.bfloat16</code>/<code>torch.float32</code></span></p></td>
+</tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_anti_quant.md">torch_npu.npu_anti_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001850161621_p0996174814315"><a name="en-us_topic_0000001850161621_p0996174814315"></a><a name="en-us_topic_0000001850161621_p0996174814315"></a>Dequantizes <code>torch_npu.int4</code> or <code>torch.int8</code> data into <code>torch.float16</code> or <code>torch.bfloat16</code> data. When the input data type is <code>torch_npu.int4</code>, every eight elements are treated as one <code>torch.int32</code> element.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001850161621_p0996174814315"><a name="en-us_topic_0000001850161621_p0996174814315"></a><a name="en-us_topic_0000001850161621_p0996174814315"></a>Performs a dequantization operation on the tensor x, that is, restores the quantized low-precision data to floating-point numbers. Dequantization is the reverse process of quantization and is used to convert low-precision data (such as <code>torch.int8</code>, <code>torch_npu.int4</code>, <code>torch_npu.hifloat8</code>, <code>torch.float8_e4m3fn</code>, and <code>torch.float8_e5m2</code>) back to high-precision floating-point numbers.</p>
 </td>
 </tr>
 <tr id="row952719519471"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18248651143510"><a name="p18248651143510"></a><a name="p18248651143510"></a><a href="torch_npu-npu_attention_to_ffn.md">torch_npu.npu_attention_to_ffn</a></p>
@@ -299,7 +328,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_attention_update.md">torch_npu.npu_attention_update</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Updates the local intermediate variables <code>lse</code> and <code>local_out</code> output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Updates the two local variable results lse and local_out output by the PA operator of each SP domain to global results.</p>
 </td>
 </tr>
 <tr id="row_block_sparse_attention"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p10326218132921"><a name="p10326218132921"></a><a name="p10326218132921"></a><a href="torch_npu-npu_block_sparse_attention.md">torch_npu.npu_block_sparse_attention</a></p>
@@ -327,6 +356,18 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p271341016220"><a name="p271341016220"></a><a name="p271341016220"></a>Performs pertoken asymmetric dynamic quantization on the input tensor. The last input dimension corresponds to a token, and each token is quantized as a group.</p>
 </td>
 </tr>
+<tr id="npu_dynamic_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_mx_quant"><a name="p_npu_dynamic_mx_quant"></a><a name="p_npu_dynamic_mx_quant"></a><a href="torch_npu-npu_dynamic_mx_quant.md">torch_npu.npu_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_mx_quant_desc"><a name="p_npu_dynamic_mx_quant_desc"></a><a name="p_npu_dynamic_mx_quant_desc"></a><span>Performs dynamic MX quantization of the input tensor with a target data type of float4 or float8. On the given axis, the corresponding quantization scale is computed for every block_size elements, and the data in the group is divided by this scale and then converted to the target data type.</span></p></td>
+</tr>
+<tr id="npu_dynamic_block_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_block_mx_quant"><a name="p_npu_dynamic_block_mx_quant"></a><a name="p_npu_dynamic_block_mx_quant"></a><a href="torch_npu-npu_dynamic_block_mx_quant.md">torch_npu.npu_dynamic_block_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_block_mx_quant_desc"><a name="p_npu_dynamic_block_mx_quant_desc"></a><a name="p_npu_dynamic_block_mx_quant_desc"></a><span>Performs MX quantization on the input variable with data blocks (32*32) as the basic blocks and converts it to the target data type.</span></p></td>
+</tr>
+<tr id="npu_gelu_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_gelu_quant"><a name="p_npu_gelu_quant"></a><a name="p_npu_gelu_quant"></a><a href="torch_npu-npu_gelu_quant.md">torch_npu.npu_gelu_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_gelu_quant_desc"><a name="p_npu_gelu_quant_desc"></a><a name="p_npu_gelu_quant_desc"></a><span>Performs the GELU (Gaussian Error Linear Unit) activation operation on the tensor and then performs static or dynamic quantization on the result.</span></p></td>
+</tr>
 <tr id="row1245931134815"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1055135819577"><a name="p1055135819577"></a><a name="p1055135819577"></a><a href="torch_npu-npu_fast_gelu.md">torch_npu.npu_fast_gelu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p135525810574"><a name="p135525810574"></a><a name="p135525810574"></a>Applies the Fast Gaussian Error Linear Units (FastGelu) activation function for each element in the input tensor. The input must be a tensor with any valid shape.</p>
@@ -352,9 +393,19 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p836911165560"><a name="p836911165560"></a><a name="p836911165560"></a>Adapts to the <code>FlashAttention</code> operator in the incremental and full inference scenarios, supporting both full computation (<code>PromptFlashAttention</code>) and incremental computation (<code>IncreFlashAttention</code>). Added support for Multi-Head Latent Attention (MLA) full quantization.</p>
 </td>
 </tr>
+<tr id="row_npu_fused_matmul"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_fused_matmul.md">torch_npu.npu_fused_matmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses matrix multiplication and general vector computation to reduce data movement and improve performance.</p>
+</td>
+</tr>
 <tr id="row14601311184810"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1799710217294"><a name="p1799710217294"></a><a name="p1799710217294"></a><a href="torch_npu-npu_fusion_attention.md">torch_npu.npu_fusion_attention</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p129971221112919"><a name="p129971221112919"></a><a name="p129971221112919"></a>Implements fused computation of the Transformer attention score.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_fusion_attention_v2.md">torch_npu.npu_fusion_attention_v2</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Implements the fused computation of the Transformer Attention Score, supporting RoPE extension, bias sink, and GQA.</p>
 </td>
 </tr>
 <tr id="row14601311184810"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1799710217294"><a name="p1799710217294"></a><a name="p1799710217294"></a><a href="torch_npu-npu_fusion_attention_v3.md">torch_npu.npu_fusion_attention_v3</a></p>
@@ -382,9 +433,34 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p4382954217"><a name="p4382954217"></a><a name="p4382954217"></a>Performs group-wise quantization on the input tensor.</p>
 </td>
 </tr>
-<tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul.md">torch_npu.npu_grouped_matmul</a></p>
+<tr id="npu_grouped_dynamic_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_mx_quant"><a name="p_npu_grouped_dynamic_mx_quant"></a><a name="p_npu_grouped_dynamic_mx_quant"></a><a href="torch_npu-npu_grouped_dynamic_mx_quant.md">torch_npu.npu_grouped_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_mx_quant_desc"><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><a name="p_npu_grouped_dynamic_mx_quant_desc"></a><span>Performs dynamic MX quantization with the target data type float8/float4 on each group at the granularity of basic blocks (blocksize) according to the start value of the passed group index (group_index), and outputs the quantization scale mxscale (<code>torch.float8_e8m0fnu</code>).</span></p>
+</td>
+</tr>
+<tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul_add.md">torch_npu.npu_grouped_matmul_add</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>Provides an efficient method to perform grouped computation of multiple matrix multiplication (MatMul) operations.</span></p>
+</td>
+</tr>
+<tr id="row_npu_grouped_matmul_add"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_grouped_matmul_add_.md">torch_npu.npu_grouped_matmul_add_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In micro-batch training scenarios, micro-batch gradient accumulation involves a large number of scenarios in which GroupedMatmul operations are fused with InplaceAdd operations. This operator (GroupedMatmulAdd) fuses the preceding operators in non-quantization scenarios to improve network performance.</p>
+</td>
+</tr>
+<tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul.md">torch_npu.npu_grouped_matmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>npu_grouped_matmul is an efficient method for performing grouped computation of multiple matrix multiplication (matmul) operations.</span></p>
+</td>
+</tr>
+<tr id="npu_grouped_matmul_finalize_routing"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_matmul_finalize_routing"><a name="p_npu_grouped_matmul_finalize_routing"></a><a name="p_npu_grouped_matmul_finalize_routing"></a><a href="torch_npu-npu_grouped_matmul_finalize_routing.md">torch_npu.npu_grouped_matmul_finalize_routing</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_matmul_finalize_routing_desc"><a name="p_npu_grouped_matmul_finalize_routing_desc"></a><a name="p_npu_grouped_matmul_finalize_routing_desc"></a><span>Fusion operator of GroupedMatMul and MoeFinalizeRouting.</span></p>
+</td>
+</tr>
+<tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul_swiglu_quant.md">torch_npu.npu_grouped_matmul_swiglu_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>npu_grouped_matmul_swiglu_quant is a computation method that fuses grouped matrix multiplication (GroupedMatmul), dequantization (dequant), the SwiGLu activation function, and quantization (quant), and is used for model performance optimization.</span></p>
 </td>
 </tr>
 <tr id="row1231245645712"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p548217963045654"><a name="p548217963045654"></a><a name="p548217963045654"></a><a href="torch_npu-npu_grouped_matmul_swiglu_quant_v2.md">torch_npu.npu_grouped_matmul_swiglu_quant_v2</a></p>
@@ -402,9 +478,19 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements fake-quantization for Sparse Flash Attention.</p>
 </td>
 </tr>
+<tr id="row_npu_kronecker_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_kronecker_quant.md">torch_npu.npu_kronecker_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs two matrix multiplications on the input tensor in sequence and quantizes the matrix multiplication result to the <code>torch_npu.int4</code> or <code>torch_npu.float4_e2m1fn_x2</code> type.</p>
+</td>
+</tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_lightning_indexer.md">torch_npu.npu_lightning_indexer</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Obtains the Top-$k$ positions for each token (full quantization).</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_matmul_all_to_all.md">torch_npu.npu_matmul_all_to_all</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Fuses the Matmul computation, Permute (to keep addresses contiguous after communication), and AlltoAll communication. Computation is performed before communication.</p>
 </td>
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog.md">torch_npu.npu_mla_prolog</a></p>
@@ -419,7 +505,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog_v3.md">torch_npu.npu_mla_prolog_v3</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios. Compared with v2, v3 adds the `query_norm` and `dequant_scale_q_norm` outputs, the pertoken-pergroup quantization mode, a scale correction factor, support for multiple `cache_mode` formats, and several quantization configuration parameters, and makes `cache_index` optional.</span></p>
 </td>
 </tr>
 <tr id="row125419366217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18998182119294"><a name="p18998182119294"></a><a name="p18998182119294"></a><a href="torch_npu-npu_mm_all_reduce_base.md">torch_npu.npu_mm_all_reduce_base</a></p>
@@ -452,6 +538,16 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1174351212586"><a name="p1174351212586"></a><a name="p1174351212586"></a>Performs Mixture-of-Experts (MoE) routing based on the computation results of <a href="torch_npu-npu_moe_gating_top_k_softmax.md">torch_npu.npu_moe_gating_top_k_softmax</a>.</p>
 </td>
 </tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_permute.md">torch_npu.npu_moe_token_permute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In the MoE computation, expands the input tokens according to the index indices, sorts them by expert index, and returns the sorted tokens and their mapping to the original tokens.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute.md">torch_npu.npu_moe_token_unpermute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In the MoE computation, the inverse operation of torch_npu.npu_moe_token_permute. It maps the expanded and sorted token features back to the original token positions according to sorted_indices and accumulates them, supporting probs weighting.</p>
+</td>
+</tr>
 <tr id="row1531023733"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7819527225"><a name="p7819527225"></a><a name="p7819527225"></a><a href="torch_npu-npu_prefetch.md">torch_npu.npu_prefetch</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11819162142215"><a name="p11819162142215"></a><a name="p11819162142215"></a>Provides a network <code>weight</code> prefetching feature to pre-load specified weight data into the L2 Cache before computation begins, reducing memory access wait time when operators access these weights. For example, performing a prefetch before operators such as MatMul allows the operator to read weights directly from the low-latency L2 Cache during execution, which improves operator data access and computation efficiency. The actual performance gain depends on the parallelism strategy and configurations.</p>
@@ -462,14 +558,24 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p20536122017115"><a name="p20536122017115"></a><a name="p20536122017115"></a>Implements full FlashAttention (FA).</p>
 </td>
 </tr>
+<tr id="row950000000031"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p950000000032"><a name="p950000000032"></a><a name="p950000000032"></a><a href="torch_npu-npu_quant_gmm_alltoallv.md">torch_npu.npu_quant_gmm_alltoallv</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p950000000033"><a name="p950000000033"></a><a name="p950000000033"></a>Fuses the routed-expert GroupedMatmul and AlltoAllv. Computation is performed before communication, and it is also fused in parallel with the shared-expert MatMul computation. The T-T quantization mode and the mx quantization mode are supported.</p>
+</td>
+</tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_quant_lightning_indexer.md">torch_npu.npu_quant_lightning_indexer</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Performs preprocessing computation for SparseFlashAttention (SFA) in inference scenarios. This API selects key sparse tokens and quantizes the input <code>query</code> and <code>key</code> to implement <code>torch.int8</code> storage and <code>torch.int8</code> computation to maximize performance gains.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>QuantLightningIndexer is a preprocessing computation module for SparseFlashAttention (SFA) in inference scenarios. It selects the critical sparse tokens and quantizes the input query and key to implement 8-bit storage and 8-bit computation, maximizing the benefit.</p>
 </td>
 </tr>
 <tr id="row9719124019218"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p14326218132919"><a name="p14326218132919"></a><a name="p14326218132919"></a><a href="torch_npu-npu_quant_matmul.md">torch_npu.npu_quant_matmul</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001814195101_p156512056161014"><a name="en-us_topic_0000001814195101_p156512056161014"></a><a name="en-us_topic_0000001814195101_p156512056161014"></a>Performs quantized matrix multiplication, supporting at least 2D and at most 6D input.</p>
+</td>
+</tr>
+<tr id="row950000000041"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p950000000042"><a name="p950000000042"></a><a name="p950000000042"></a><a href="torch_npu-npu_quant_matmul_all_to_all.md">torch_npu.npu_quant_matmul_all_to_all</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p950000000043"><a name="p950000000043"></a><a name="p950000000043"></a>Fuses the quantized Matmul computation, Permute (to keep addresses contiguous after communication), and AlltoAll communication. Communication is performed before computation. The K-C quantization mode and the mx quantization mode are supported.</p>
 </td>
 </tr>
 <tr id="row9719124019219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p104326218132920"><a name="p104326218132920"></a><a name="p104326218132920"></a><a href="torch_npu-npu_quant_matmul_gelu.md">torch_npu.npu_quant_matmul_gelu</a></p>
@@ -480,6 +586,11 @@ This section describes common custom APIs, including tensor creation and computa
 <tr id="row202508121056216"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p202508121056216"><a name="p202508121056216"></a><a name="p202508121056216"></a><a href="torch_npu-npu_quant_matmul_reduce_sum.md">torch_npu.npu_quant_matmul_reduce_sum</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2025081210578767"><a name="p2025081210578767"></a><a name="p2025081210578767"></a>Performs quantized grouped matrix multiplication, sums up the matrix multiplication results of all groups, and outputs the result.</p>
+</td>
+</tr>
+<tr id="row202508121056216"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p202508121056216"><a name="p202508121056216"></a><a name="p202508121056216"></a><a href="torch_npu-npu_quant_mm_reduce_scatter.md">torch_npu.npu_quant_mm_reduce_scatter</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2025081210578767"><a name="p2025081210578767"></a><a name="p2025081210578767"></a>Fuses MatMul and the ReduceScatter collective communication computation. The matrix multiplication result is reduced and scattered by the number of devices, and low-precision quantization and dequantization are supported.</p>
 </td>
 </tr>
 <tr id="row9368201625615"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p432973317361"><a name="p432973317361"></a><a name="p432973317361"></a><a href="torch_npu-npu_quant_scatter.md">torch_npu.npu_quant_scatter</a></p>
@@ -509,12 +620,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_sparse_flash_attention.md">torch_npu.npu_sparse_flash_attention</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements Sparse Flash Attention.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements the backward computation of <code>npu_lightning_indexer</code> and integrates the computation of loss.</p>
 </td>
 </tr>
 <tr id="row16875125182711"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_sparse_lightning_indexer_grad_kl_loss.md">torch_npu.npu_sparse_lightning_indexer_grad_kl_loss</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1281815913362"><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements the backward computation of <code>npu_lightning_indexer</code> and integrates the computation of loss.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Optimizes device memory usage as a frontend API of <code>npu_dense_lightning_indexer_grad_kl_loss</code> by precomputing the maximum and sum values used in the Softmax computation of the Lightning Indexer component.</p>
 </td>
 </tr>
 <tr id="row16875125182711"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_top_k_top_p.md">torch_npu.npu_top_k_top_p</a></p>
@@ -527,9 +638,14 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863744477_p15682749165813"><a name="en-us_topic_0000001863744477_p15682749165813"></a><a name="en-us_topic_0000001863744477_p15682749165813"></a>Performs top-K and top-P sampling computations based on the input logit tensor <code>logits</code>, sampling parameters (<code>top_k</code> and <code>top_p</code>), and random sampling weight distribution <code>q</code>. It outputs the index of the maximum logit value for each batch (<code>logits_select_idx</code>) and the logit distribution after top-K and top-P sampling (<code>logits_top_kp_select</code>).</p>
 </td>
 </tr>
-<tr id="row16875125182713"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_scatter_pa_kv_cache.md">torch_npu.npu_scatter_pa_kv_cache</a></p>
+<tr id="row16875125182713"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_scatter_pa_cache.md">torch_npu.npu_scatter_pa_cache</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863744477_p15682749165813"><a name="en-us_topic_0000001863744477_p15682749165813"></a><a name="en-us_topic_0000001863744477_p15682749165813"></a>Updates the <code>key</code> and <code>value</code> at the specified positions in the KV cache.</p>
+</td>
+</tr>
+<tr id="row16875125182713"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p77002833617"><a name="p77002833617"></a><a name="p77002833617"></a><a href="torch_npu-npu_scatter_pa_kv_cache.md">torch_npu.npu_scatter_pa_kv_cache</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863744477_p15682749165813"><a name="en-us_topic_0000001863744477_p15682749165813"></a><a name="en-us_topic_0000001863744477_p15682749165813"></a>Updates the <code>key</code> and <code>value</code> at the specified positions in the KVCache.<code>key</code><code>value</code>.</p>
 </td>
 </tr>
 <tr id="row9470191314519"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83781723143618"><a name="p83781723143618"></a><a name="p83781723143618"></a><a href="torch_npu-npu_scatter_nd_update_.md">torch_npu.npu_scatter_nd_update_</a></p>
@@ -547,6 +663,11 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p154556613293"><a name="p154556613293"></a><a name="p154556613293"></a>Performs matrix multiplication with quantization support for the <code>weight</code> input and the output. <code>pertensor</code>, <code>perchannel</code>, and <code>pergroup</code> quantization modes are supported.</p>
 </td>
 </tr>
+<tr id="row250825154001"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p250825154002"><a name="p250825154002"></a><a name="p250825154002"></a><a href="torch_npu-npu_weight_quant_preprocess.md">torch_npu.npu_weight_quant_preprocess</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p250825154003"><a name="p250825154003"></a><a name="p250825154003"></a>This API preprocesses the pseudo-quantization parameters of Matmul operators.</p>
+</td>
+</tr>
 <tr id="row10933133063618"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5743101211585"><a name="p5743101211585"></a><a name="p5743101211585"></a><a href="torch_npu-scatter_update.md">torch_npu.scatter_update</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p874318124582"><a name="p874318124582"></a><a name="p874318124582"></a>Updates the values in the <code>data</code> tensor with the values from the <code>updates</code> tensor according to the specified <code>axis</code> and <code>indices</code>, and saves the results to an output tensor. The data within the original <code>data</code> tensor remains unchanged.</p>
@@ -559,42 +680,42 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-empty_with_swapped_memory.md">torch_npu.empty_with_swapped_memory</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a special tensor with its device type set to NPU, while its actual memory resides on the host side.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Requests a special tensor whose device information is NPU but whose actual memory is on the host side.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-erase_stream.md">torch_npu.erase_stream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Removes the tensor marker (added by <code>record_stream</code> to the memory pool) after the tensor has been used by the stream.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>After a tensor is marked on the memory pool through record_stream, the mark has been used by the stream and can be removed through this API.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_gather_sparse_index.md">torch_npu.npu_gather_sparse_index</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Extracts elements from the specified dimension of the input tensor based on the indices in <code>index</code> and saves them to the output tensor.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Extracts elements from the specified dimension of the input tensor according to the indices in <code>index</code> and saves them to the output tensor.<code>index</code></p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine.md">torch_npu.npu_moe_distribute_combine</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>reduce_scatterv</code> communication, <code>alltoallv</code> communication, and final data aggregation by multiplying the corresponding weights and summing the results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs reduce_scatterv communication first, then alltoallv communication, and finally integrates the received data (multiplies by the weight and adds).</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch.md">torch_npu.npu_moe_distribute_dispatch</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs quantization on token data (optional), followed by <code>alltoallv</code> communication in the Expert Parallelism (EP) domain, and then <code>allgatherv</code> communication in the Tensor Parallelism (TP) domain (optional).</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Quantizes the Token data first (optional), then performs alltoallv communication in the EP (Expert Parallelism) domain, and then performs allgatherv communication in the TP (Tensor Parallelism) domain (optional).</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_v2.md">torch_npu.npu_moe_distribute_combine_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>reduce_scatterv</code> communication, <code>alltoallv</code> communication, and final data aggregation by multiplying the corresponding weights and summing the results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs reduce_scatterv communication first, then alltoallv communication, and finally integrates the received data (multiplies by the weight and adds). The v2 version adds support for special expert scenarios (zero experts, copy experts, and constant experts) and works with assist_info_for_combine of dispatch_v2 to implement more efficient all-device synchronization.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch_v2.md">torch_npu.npu_moe_distribute_dispatch_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs quantization on token data (optional), followed by <code>alltoallv</code> communication in the Expert Parallelism (EP) domain, and then <code>allgatherv</code> communication in the Tensor Parallelism (TP) domain (optional).</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Quantizes the Token data first (optional), then performs alltoallv communication in the EP (Expert Parallelism) domain, and then performs allgatherv communication in the TP (Tensor Parallelism) domain (optional). The v2 version replaces the return value expand_idx with assist_info_for_combine to include more detailed token information, and adds the comm_alg parameter to replace the HCCL_INTRA_PCIE_ENABLE and HCCL_INTRA_ROCE_ENABLE environment variables.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_gating_top_k.md">torch_npu.npu_moe_gating_top_k</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs <code>sigmoid</code> computation on the input <code>x</code> during MoE computation, groups and sorts the computation results, and selects the top-k experts based on the group sorting results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In the MoE computation, performs the Sigmoid computation on the input x, sorts the computation results by group, and finally selects the top k experts according to the group sorting result.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_init_routing_v2.md">torch_npu.npu_moe_init_routing_v2</a></p>
@@ -609,62 +730,72 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_dequant_swiglu_quant.md">torch_npu.npu_dequant_swiglu_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses dequantization, SwiGLU activation, and quantization operations on the tensor <code>x</code>, with support for grouped computation.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs the dequant dequantization + swiglu + quant quantization operations on the tensor x, and also supports grouping.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_swiglu_mx_quant.md">torch_npu.npu_swiglu_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Adds the DynamicMxQuant operation after the Swiglu activation function to implement the SwigluMxQuant computation of the input x. The MoE scenario and the non-MoE scenario (empty group_index) are supported, and multiple swiglu computation modes are supported.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_kv_rmsnorm_rope_cache.md">torch_npu.npu_kv_rmsnorm_rope_cache</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-Head Latent Attention (MLA) structure.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses the RMSNorm normalization computation, RoPE (Rotary Position Embedding) position encoding, and the ScatterUpdate operation for updating the KVCache in the MLA (Multi-head Latent Attention) structure.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_kv_rmsnorm_rope_cache_v2.md">torch_npu.npu_kv_rmsnorm_rope_cache_v2</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses the RMSNorm normalization computation, RoPE (Rotary Position Embedding) position encoding, and the ScatterUpdate operation for updating the KVCache in the MLA (Multi-head Latent Attention) structure.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_interleave_rope.md">torch_npu.npu_interleave_rope</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Applies rotary position embedding (RoPE) to a single input tensor <code>x</code>.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs rotary position encoding on a single input x.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_mrope.md">torch_npu.npu_mrope</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Applies precomputed <code>sin</code> and <code>cos</code> position embedding caches to <code>query</code> and <code>key</code> in inference scenarios to implement rotary position embedding (RoPE), and supports multi-modal MRoPE.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In inference scenarios, applies the precomputed sin and cos position encoding caches to query and key to implement rotary position embedding (RoPE), supporting multimodal MRoPE.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_re_routing.md">torch_npu.npu_moe_re_routing</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Rearranges tokens by expert order in the Mixture-of-Experts (MoE) network after AlltoAll communication across ranks.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In an MoE network, after obtaining the tokens to be computed from other devices through the AlltoAll operation, rearranges the tokens in expert order.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-matmul_checksum.md">torch_npu.matmul_checksum</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Detects AI Core hardware faults based on native <code>torch.matmul</code> and <code>Tensor.matmul</code> APIs. This API internally verifies matrix computation results. It compares the verification error against a real-time computed verification threshold. If the verification error exceeds the threshold, this API raises an AI Core error.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Provides an AI Core error hardware fault API based on the native torch.matmul and Tensor.matmul APIs. It performs a matrix multiplication result verification process internally and compares the verification error with the verification threshold computed in real time to determine whether the verification error exceeds the threshold. If it does, an AI Core error is considered to have occurred.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_alltoallv_gmm.md">torch_npu.npu_alltoallv_gmm</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>AlltoAllv</code>, <code>Permute</code>, and <code>GroupedMatMul</code> for routed experts in an MoE network, implements parallel fused computation with the shared expert <code>MatMul</code>, and uses a communication-before-computation sequence.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In an MoE network, fuses the routed-expert AlltoAllv, Permute, and GroupedMatMul and implements parallel fusion with the shared-expert MatMul. Communication is performed before computation.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_gmm_alltoallv.md">torch_npu.npu_gmm_alltoallv</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>AlltoAllv</code>, <code>Permute</code>, and <code>GroupedMatMul</code> for routed experts in an MoE network, implements parallel fused computation with the shared expert <code>MatMul</code>, and uses a communication-before-computation sequence.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In an MoE network, fuses the routed-expert GroupedMatMul and AlltoAllv and implements parallel fusion with the shared-expert MatMul. Computation is performed before communication.</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_alltoallv_quant_gmm.md">torch_npu.npu_alltoallv_quant_gmm</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses the quantization of AlltoAllv and GroupedMatMul for routed experts, performing communication before computation. It also fuses the computation with the MatMul of shared experts in parallel.</p> 
-</td> 
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_alltoallv_quant_gmm.md">torch_npu.npu_alltoallv_quant_gmm</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Implements the quantized fusion of the routed-expert AlltoAllv and GroupedMatMul. Communication is performed before computation. It is also fused in parallel with the shared-expert MatMul computation.</p>
+</td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_add_rms_norm.md">torch_npu.npu_moe_distribute_combine_add_rms_norm</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>moe_distribute_combine</code>, <code>add</code>, and <code>rms_norm</code> operations. This API must be used together with <code>torch_npu.npu_moe_distribute_dispatch</code>. It returns data along the original data collection path of the <code>npu_moe_distribute_dispatch</code> operator and performs an <code>add_rms_norm</code> operation.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses moe_distribute_combine + add + rms_norm. It must be used together with torch_npu.npu_moe_distribute_dispatch. It is equivalent to returning the data along the original path of the data collected by the npu_moe_distribute_dispatch operator and then performing the add_rms_norm operation on the data.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_transpose_batchmatmul.md">torch_npu.npu_transpose_batchmatmul</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs batch matrix multiplication between the <code>input</code> and <code>weight</code> tensors.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs the matrix multiplication of the tensor input and the tensor weight.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_update_expert.md">torch_npu.npu_moe_update_expert</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Supports load balancing and expert pruning. The mapped expert table and mask can be passed to the MoE layer for data distribution and processing.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>This API supports load balancing and expert pruning. The mapped expert table and mask can be passed to the MoE layer for data distribution and processing.</p>
 </td>
 </tr>
 <tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu_dynamic_block_quant.md">torch_npu.npu_dynamic_block_quant</a></p>
@@ -674,124 +805,205 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-set_device_limit.md">torch_npu.set_device_limit</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of Cube and Vector cores used by the current process for operator execution on the specified device.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of cube and vector cores used when an operator is executed on the specified device in a process.</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-get_device_limit.md">torch_npu.get_device_limit</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-get_device_limit.md">torch.npu.get_device_limit</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Obtains the resource limit for a specified device.</p>
-</td>
-</tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-set_stream_limit.md">torch_npu.set_stream_limit</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of Cube and Vector cores used for operator execution on a specified stream.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Obtains the resource limit on the specified Device.</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-reset_stream_limit.md">torch_npu.reset_stream_limit</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-set_stream_limit.md">torch.npu.set_stream_limit</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Restores the number of Cube and Vector cores used for operator execution on a specified stream to the default configuration.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Sets the number of cube and vector cores used when operators are executed on the specified stream.</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-get_stream_limit.md">torch_npu.get_stream_limit</a></p>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-reset_stream_limit.md">torch.npu.reset_stream_limit</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Obtains the number of Cube and Vector cores used for operator execution on a specified stream.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Restores the number of cube and vector cores used when operators are executed on the specified stream to the default configuration.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-get_stream_limit.md">torch.npu.get_stream_limit</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Obtains the number of cube and vector cores used by operators executed on the specified stream.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_sim_exponential_.md">torch_npu.npu_sim_exponential_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs in-place sampling from an exponential distribution for elements in the input tensor, modifying the input tensor in-place.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>In-place obtains exponential distribution sampling of the elements in the input tensor.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_dense_lightning_indexer_softmax_lse.md">torch_npu.npu_dense_lightning_indexer_softmax_lse</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Optimizes device memory usage as a frontend API of <code>npu_dense_lightning_indexer_grad_kl_loss</code> by precomputing the maximum and sum values used in the Softmax computation of the Lightning Indexer component.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements the backward gradient computation during the warmup phase training of the Lightning Indexer component, while integrating the loss computation.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_dense_lightning_indexer_grad_kl_loss.md">torch_npu.npu_dense_lightning_indexer_grad_kl_loss</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>Implements the backward gradient computation during the warmup phase training of the Lightning Indexer component, while integrating the loss computation.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>In training scenarios, <code>npu_fused_floyd_attention</code> differs from traditional FlashAttention (<code>npu_fusion_attention</code>) by treating the sequence dimension (<code>seq</code>) as an additional batch axis during QK/PV attention computation, thereby converting the attention computation into batch matrix multiplication (<code>batchMatmul</code>).</p>
+</td>
+</tr>
+<tr id="batch_norm_reduce"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_batch_norm_reduce"><a name="p_batch_norm_reduce"></a><a name="p_batch_norm_reduce"></a><a href="torch_npu-batch_norm_reduce.md">torch_npu.batch_norm_reduce</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_batch_norm_reduce_desc"><a name="p_batch_norm_reduce_desc"></a><a name="p_batch_norm_reduce_desc"></a><span>This API reduces the input Tensor along the BatchNorm channel dimension and computes the element sum sum and the sum of squares square_sum over dimensions other than the channel dimension.<code>sum</code><code>square_sum</code>.</span></p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_apply_adam_w.md">torch_npu.npu_apply_adam_w</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Implements the parameter update computation of the AdamW optimizer, which decouples weight decay from the gradient update on the basis of Adam. It is commonly used for parameter optimization in large-model training scenarios.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm.md">torch_npu.npu_add_rms_norm</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses Add computation with RMSNorm normalization, commonly used in foundation models to normalize tensors after residual connections.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses the Add computation and RMSNorm normalization, and is commonly used to normalize the tensor after the residual connection in large models.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm_v2.md">torch_npu.npu_add_rms_norm_v2</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>AddRmsNorm is the fusion of the Add operator and the RmsNorm operator. RmsNorm is a normalization operation commonly used by large models and removes the part that subtracts the mean compared with the LayerNorm operator.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm_cast.md">torch_npu.npu_add_rms_norm_cast</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>RmsNorm is a normalization operation commonly used by large models. AddRmsNormCast fuses the Cast operator after AddRmsNorm to reduce load and store operations.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm_dynamic_quant.md">torch_npu.npu_add_rms_norm_dynamic_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>The RMSNorm operator is a normalization operation commonly used in foundation models. Compared with the LayerNorm operator, it removes the mean subtraction step. The DynamicQuant operator performs symmetric dynamic quantization on the input tensor. The AddRmsNormDynamicQuant operator fuses the Add operator before RMSNorm and 1 or 2 DynamicQuant operators applied to the RMSNorm normalization output, reducing data transfer operations.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>RmsNorm is a normalization operation commonly used by large models and removes the part that subtracts the mean compared with the LayerNorm operator. DynamicQuant is an operator that performs symmetric dynamic quantization on the input tensor. AddRmsNormDynamicQuant fuses the Add operator before RmsNorm and the one or two DynamicQuant operators to which the normalized output of RmsNorm is passed, reducing load and store operations.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_add_rms_norm_dynamic_mx_quant.md">torch_npu.npu_add_rms_norm_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>RmsNorm is a normalization operation commonly used by large models and removes the part that subtracts the mean compared with the LayerNorm operator. DynamicMxQuant is an operator that performs dynamic MX quantization by blocksize grouping on the last axis. AddRmsNormDynamicMxQuant fuses the Add operator before RmsNorm and the DynamicMxQuant operator to which the normalized output of RmsNorm is passed, reducing load and store operations.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_fused_floyd_attention.md">torch_npu.npu_fused_floyd_attention</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>In training scenarios, <code>npu_fused_floyd_attention</code> differs from traditional FlashAttention (<code>npu_fusion_attention</code>) by treating the sequence dimension (<code>seq</code>) as an additional batch axis during QK/PV attention computation, thereby converting the attention computation into batch matrix multiplication (<code>batchMatmul</code>).</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><a name="p1281815913362"></a><a name="p1281815913362"></a>In training scenarios, compared with the traditional FA (npu_fusion_attention), npu_fused_floyd_attention additionally processes the dimension (seq) as the batch axis when computing the QK/PV attention, thereby converting the attention computation into batch matrix multiplication (batchMatmul).</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_masked_causal_conv1d.md">torch_npu.npu_masked_causal_conv1d</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs masked causal 1D grouped convolution between tokens in the hidden layer.</p> 
-</td> 
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_masked_causal_conv1d.md">torch_npu.npu_masked_causal_conv1d</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs a masked causal 1D grouped convolution operation between the tokens of the hidden layer.</p>
+</td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_clipped_swiglu.md">torch_npu.npu_clipped_swiglu</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Implements a variant SwiGLU activation function with a truncated Swish gating linear unit.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Swish-gated linear unit activation function with clipping, which implements the variant SwiGlu computation of x.</p>
 </td>
 </tr>
 <tr id="row_rotate_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_rotate_quant"><a name="p_rotate_quant"></a><a name="p_rotate_quant"></a><a href="torch_npu-npu_rotate_quant.md">torch_npu.npu_rotate_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_rotate_quant_desc"><a name="p_rotate_quant_desc"></a><a name="p_rotate_quant_desc"></a><span>Fuses rotation (Rotate) and quantization (Quant) for model performance optimization.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_rotate_quant_desc"><a name="p_rotate_quant_desc"></a><a name="p_rotate_quant_desc"></a><span>npu_rotate_quant is a computation method that fuses rotation (Rotate) and quantization (Quant), and is used for model performance optimization.</span></p>
 </td>
 </tr>
 <tr id="save_npugraph_tensor"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_save_npugraph_tensor"><a name="p_save_npugraph_tensor"></a><a name="p_save_npugraph_tensor"></a><a href="torch_npu-save_npugraph_tensor.md">torch_npu.save_npugraph_tensor</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_save_npugraph_tensor_desc"><a name="p_save_npugraph_tensor_desc"></a><a name="p_save_npugraph_tensor_desc"></a><span>Provides functionality similar to the native PyTorch <code>torch.save</code> API without affecting tensor dump capabilities during aclgraph capture and replay. It allows tensor data, data types, and shape information of intermediate nodes in aclgraph to be saved to a specified binary file, enabling users to inspect tensor data during aclgraph execution and quickly locate issues.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_save_npugraph_tensor_desc"><a name="p_save_npugraph_tensor_desc"></a><a name="p_save_npugraph_tensor_desc"></a><span>This API provides tensor dump capabilities similar to the native PyTorch torch.save API without affecting aclgraph capture and replay, allowing the tensor data, data type, and shape of intermediate nodes of aclgraph to be saved to a specified binary file so that the user can observe the tensor data during aclgraph execution to quickly locate problems.</span></p>
 </td>
 </tr>
 <tr id="print_npugraph_tensor"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_print_npugraph_tensor"><a name="p_print_npugraph_tensor"></a><a name="p_print_npugraph_tensor"></a><a href="torch_npu-print_npugraph_tensor.md">torch_npu.print_npugraph_tensor</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_print_npugraph_tensor_desc"><a name="p_print_npugraph_tensor_desc"></a><a name="p_print_npugraph_tensor_desc"></a><span>Provides functionality similar to the native Python <code>print</code> function without affecting tensor printing capabilities during aclgraph capture and replay. It allows tensor data, data types, and shape information of intermediate nodes in aclgraph to be printed directly, enabling users to inspect tensor data during aclgraph execution and quickly locate issues.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_print_npugraph_tensor_desc"><a name="p_print_npugraph_tensor_desc"></a><a name="p_print_npugraph_tensor_desc"></a><span>The print_npugraph_tensor API provides tensor printing capabilities similar to the native Python print API without affecting aclgraph capture and replay, allowing the tensor data, data type, and shape of intermediate nodes of aclgraph to be printed directly, so that the user can observe the tensor data during aclgraph execution to quickly locate problems.</span></p>
 </td>
 </tr>
 <tr id="npu_apply_rotary_pos_emb">
 <td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_rotary_pos_emb"><a name="p_npu_apply_rotary_pos_emb"></a><a name="p_npu_apply_rotary_pos_emb"></a><a href="torch_npu-apply_rotary_pos_emb.md">torch_npu.npu_apply_rotary_pos_emb</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_rotary_pos_emb_desc"><a name="p_npu_apply_rotary_pos_emb_desc"></a><a name="p_npu_apply_rotary_pos_emb_desc"></a><span>Fuses the <code>query</code> and <code>key</code> operators into a single path to improve inference performance and performs in-place updates during rotary position embedding computation.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_rotary_pos_emb_desc"><a name="p_npu_apply_rotary_pos_emb_desc"></a><a name="p_npu_apply_rotary_pos_emb_desc"></a><span>To improve the inference network performance, the query and key operators are fused into a single path, and the result is updated in place directly in the rotary position encoding computation.</span></p>
 </td>
 </tr>
-<tr id="npu_add_quant_matmul_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_matmul_"><a name="p_npu_add_quant_matmul_"></a><a name="p_npu_add_quant_matmul_"></a><a href="torch_npu-npu_add_quant_matmul_.md">torch_npu.npu_add_quant_matmul_</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_matmul__desc"><a name="p_npu_add_quant_matmul__desc"></a><a name="p_npu_add_quant_matmul__desc"></a><span>Fuses QuantBatchMatmul and InplaceAdd operations during micro-batch gradient accumulation in training scenarios to improve network performance.</span></p> 
-</td> 
-</tr> 
-<tr id="npu_dynamic_dual_level_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_dual_level_mx_quant"><a name="p_npu_dynamic_dual_level_mx_quant"></a><a name="p_npu_dynamic_dual_level_mx_quant"></a><a href="torch_npu-npu_dynamic_dual_level_mx_quant.md">torch_npu.npu_dynamic_dual_level_mx_quant</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_dual_level_mx_quant_desc"><a name="p_npu_dynamic_dual_level_mx_quant_desc"></a><a name="p_npu_dynamic_dual_level_mx_quant_desc"></a><span>Implements MX quantization with FLOAT4-class data types as the target data type. Only the last axis of the input tensor is quantized, while all other axes are treated as a single combined axis.</span></p> 
-</td> 
-</tr> 
-<tr id="npu_fused_causal_conv1d"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_causal_conv1d"><a name="p_npu_fused_causal_conv1d"></a><a name="p_npu_fused_causal_conv1d"></a><a href="torch_npu-npu_fused_causal_conv1d.md">torch_npu.npu_fused_causal_conv1d</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_causal_conv1d_desc"><a name="p_npu_fused_causal_conv1d_desc"></a><a name="p_npu_fused_causal_conv1d_desc"></a><span>Performs causal 1D convolution on a sequence. Cached data (with a length equal to the convolution kernel width minus 1) is used to pad the beginning of each sequence along the sequence dimension, ensuring that the output depends on the current and historical inputs. After the convolution, the current sequence data is updated in the cache. The original input is added to the causal 1D convolution output to implement a residual connection. This API supports features such as automatic prefix caching (APC), MTP-based speculative decoding, and residual connections.</span></p> 
-</td> 
-</tr> 
-<tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiFP8 and outputs the quantization parameter <code>scale</code> (<code>torch.float32</code>).</span></p></td>
-</tr> 
-<tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_post_desc"><a name="p_npu_mhc_post_desc"></a><a name="p_npu_mhc_post_desc"></a><span>Performs Post Mapping on the output h<sub>l</sub><sup>out</sup> of layer l in the Manifold-Constrained Hyper-Connections (mHC) architecture, and Res Mapping on the input x<sub>l</sub> of layer l. It then applies a residual connection to the two results to obtain the input x<sub>l+1</sub> for layer l+1.</span></p></td> 
+<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>In micro-batch training scenarios, fuses the quantized GroupedMatmul and InplaceAdd operations to improve network performance.</span></p>
+</td>
 </tr>
-<tr id="npu_mhc_pre"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_pre"><a name="p_npu_mhc_pre"></a><a name="p_npu_mhc_pre"></a><a href="torch_npu-npu_mhc_pre.md">torch_npu.npu_mhc_pre</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_pre_desc"><a name="p_npu_mhc_pre_desc"></a><a name="p_npu_mhc_pre_desc"></a><span>Obtains the H<sup>res</sup> and H<sup>post</sup> projection matrices of the hidden layer in the Manifold-Constrained Hyper-Connections (mHC) architecture, as well as the input matrix h<sup>in</sup> of the Attention or MLP layer.</span></p></td> 
-</tr>  
-<tr id="npu_mhc_sinkhorn"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_sinkhorn"><a name="p_npu_mhc_sinkhorn"></a><a name="p_npu_mhc_sinkhorn"></a><a href="torch_npu-npu_mhc_sinkhorn.md">torch_npu.npu_mhc_sinkhorn</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_sinkhorn_desc"><a name="p_npu_mhc_sinkhorn_desc"></a><a name="p_npu_mhc_sinkhorn_desc"></a><span>Performs Sinkhorn iterative normalization on the H<sup>res</sup>' matrix (that is, the input data of the mHC layer) in the mHC architecture to obtain the doubly stochastic matrix H<sub>res</sub>. It supports outputting the intermediate normalization results (<code>norm_out</code>) and summation results (<code>sum_out</code>) during the iterations for backward gradient computation.</span></p></td> 
-</tr> 
-<tr id="npu_transpose_quant_batchmatmul"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_transpose_quant_batchmatmul"><a name="p_npu_transpose_quant_batchmatmul"></a><a name="p_npu_transpose_quant_batchmatmul"></a><a href="torch_npu-npu_transpose_quant_batchmatmul.md">torch_npu.npu_transpose_quant_batchmatmul</a></p> 
-</td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_transpose_quant_batchmatmul_desc"><a name="p_npu_transpose_quant_batchmatmul_desc"></a><a name="p_npu_transpose_quant_batchmatmul_desc"></a><span>Performs quantized matrix multiplication on tensor <code>x1</code> and tensor <code>x2</code>. Only three-dimensional tensors are supported. Tensors can be transposed based on the input index arrays. <code>perm_x1</code> and <code>perm_x2</code> represent the permutation sequences for tensors <code>x1</code> and <code>x2</code>, respectively. The dimension with a sequence value of <code>0</code> represents the batch dimension, while the remaining two dimensions are used for matrix multiplication.</span></p></td> 
+<tr id="npu_add_quant_matmul_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_matmul_"><a name="p_npu_add_quant_matmul_"></a><a name="p_npu_add_quant_matmul_"></a><a href="torch_npu-npu_add_quant_matmul_.md">torch_npu.npu_add_quant_matmul_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_matmul__desc"><a name="p_npu_add_quant_matmul__desc"></a><a name="p_npu_add_quant_matmul__desc"></a><span>In training scenarios, micro-batch gradient accumulation involves a large number of scenarios in which QuantBatchMatmul operations are followed by InplaceAdd operations. This API fuses the operations to improve network performance.</span></p>
+</td>
+</tr>
+<tr id="npu_dynamic_dual_level_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_dual_level_mx_quant"><a name="p_npu_dynamic_dual_level_mx_quant"></a><a name="p_npu_dynamic_dual_level_mx_quant"></a><a href="torch_npu-npu_dynamic_dual_level_mx_quant.md">torch_npu.npu_dynamic_dual_level_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_dual_level_mx_quant_desc"><a name="p_npu_dynamic_dual_level_mx_quant_desc"></a><a name="p_npu_dynamic_dual_level_mx_quant_desc"></a><span>Implements MX quantization with a target data type of the FLOAT4 class. Only the last axis of the input tensor is quantized, and the other axes are merged.</span></p>
+</td>
+</tr>
+<tr id="npu_dynamic_mx_quant_with_dual_axis"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_mx_quant_with_dual_axis"><a name="p_npu_dynamic_mx_quant_with_dual_axis"></a><a name="p_npu_dynamic_mx_quant_with_dual_axis"></a><a href="torch_npu-npu_dynamic_mx_quant_with_dual_axis.md">torch_npu.npu_dynamic_mx_quant_with_dual_axis</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_mx_quant_with_dual_axis_desc"><a name="p_npu_dynamic_mx_quant_with_dual_axis_desc"></a><a name="p_npu_dynamic_mx_quant_with_dual_axis_desc"></a><span>Performs MX quantization with target data types of the float4 and float8 classes on the -1 and -2 axes of the input tensor at the same time, and outputs the quantization results y1 and y2 and the quantization scales mxscale1 and mxscale2 of the two axes.</span></p>
+</td>
+</tr>
+<tr id="npu_fused_causal_conv1d"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_causal_conv1d"><a name="p_npu_fused_causal_conv1d"></a><a name="p_npu_fused_causal_conv1d"></a><a href="torch_npu-npu_fused_causal_conv1d.md">torch_npu.npu_fused_causal_conv1d</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_causal_conv1d_desc"><a name="p_npu_fused_causal_conv1d_desc"></a><a name="p_npu_fused_causal_conv1d_desc"></a><span>Performs a causal 1D convolution on the sequence, using cached data (of a length equal to the convolution kernel width minus 1) to pad the head of each sequence along the sequence dimension, ensuring that the output depends on the current and historical inputs. After the convolution, the data of the current sequence part is updated to the cache. On the basis of the output of the causal 1D convolution, the original input is added to the output to implement the residual connection. Features such as APC (Automatic Prefix Caching), MTP (speculative decoding), and the residual connection are supported.</span></p>
+</td>
+</tr>
+<tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiFP8 and outputs the quantization parameter <code>scale</code> (<code>torch.float32</code>).</span></p></td>
+</tr>
+<tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_post_desc"><a name="p_npu_mhc_post_desc"></a><a name="p_npu_mhc_post_desc"></a><span>Performs Post Mapping on the output of the l-th layer h_l^out and Res Mapping on the input of the l-th layer x_l in the mHC (Manifold-Constrained Hyper-Connections) architecture, and then applies a residual connection to the two to obtain the input of the (l+1)-th layer x_{l+1}. When h_res is passed as None, Res Mapping is skipped and the residual addition is performed directly.<sub>l</sub><sup>out</sup><sub>l</sub><sub>l+1</sub><code>h_res</code><code>None</code></span></p></td>
+</tr>
+<tr id="npu_mhc_sinkhorn"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_sinkhorn"><a name="p_npu_mhc_sinkhorn"></a><a name="p_npu_mhc_sinkhorn"></a><a href="torch_npu-npu_mhc_sinkhorn.md">torch_npu.npu_mhc_sinkhorn</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_mhc_sinkhorn_desc"><a name="p_npu_mhc_sinkhorn_desc"></a><a name="p_npu_mhc_sinkhorn_desc"></a><span>Performs the Sinkhorn iterative normalization transformation on the H_res matrix in the mHC architecture (that is, the input data of the mHC layer in the network), finally obtaining the doubly stochastic matrix H_res. It supports outputting the intermediate normalization result (norm_out) and the sum result (sum_out) of the iteration process for backward gradient computation.<sub>res</sub><sub>res</sub></span></p></td>
+</tr>
+<tr id="npu_transpose_quant_batchmatmul"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_transpose_quant_batchmatmul"><a name="p_npu_transpose_quant_batchmatmul"></a><a name="p_npu_transpose_quant_batchmatmul"></a><a href="torch_npu-npu_transpose_quant_batchmatmul.md">torch_npu.npu_transpose_quant_batchmatmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_transpose_quant_batchmatmul_desc"><a name="p_npu_transpose_quant_batchmatmul_desc"></a><a name="p_npu_transpose_quant_batchmatmul_desc"></a><span>Performs the quantized matrix multiplication of the tensor x1 and the tensor x2. Only 3D tensors are supported. The tensors support transposition, and the transposition sequence changes according to the passed sequence. perm_x1 indicates the transposition sequence of the tensor x1, and perm_x2 indicates the transposition sequence of the tensor x2. The dimension with the sequence value 0 is the batch dimension, and the matrix multiplication is performed on the other two dimensions.</span></p></td>
+</tr>
+<tr id="npu_fused_linear_online_max_sum"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_linear_online_max_sum"><a name="p_npu_fused_linear_online_max_sum"></a><a name="p_npu_fused_linear_online_max_sum"></a><a href="torch_npu-npu_fused_linear_online_max_sum.md">torch_npu.npu_fused_linear_online_max_sum</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_linear_online_max_sum_desc"><a name="p_npu_fused_linear_online_max_sum_desc"></a><a name="p_npu_fused_linear_online_max_sum_desc"></a><span>Fuses matrix multiplication and the cross-entropy preprocessing operator in vocabulary parallel scenarios. It is functionally equivalent to the MatMul and fused_vocab_parallel_cross_entropy implementations of Megatron and supports splitting the vocabulary_size dimension to fuse MatMul and CELoss. This API is the pre-communication part and must be used with npu_fused_cross_entropy_loss_with_max_sum.</span></p></td>
+</tr>
+<tr id="npu_fused_cross_entropy_loss_with_max_sum"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_cross_entropy_loss_with_max_sum"><a name="p_npu_fused_cross_entropy_loss_with_max_sum"></a><a name="p_npu_fused_cross_entropy_loss_with_max_sum"></a><a href="torch_npu-npu_fused_cross_entropy_loss_with_max_sum.md">torch_npu.npu_fused_cross_entropy_loss_with_max_sum</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_cross_entropy_loss_with_max_sum_desc"><a name="p_npu_fused_cross_entropy_loss_with_max_sum_desc"></a><a name="p_npu_fused_cross_entropy_loss_with_max_sum_desc"></a><span>Part of the cross-entropy computation module in vocabulary parallel scenarios, which solves the memory and computation efficiency problems with ultra-large vocabularies. This API is the part that computes the Loss and the Softmax result and must be used with npu_fused_linear_online_max_sum. In multi-device scenarios, global communication (all-reduce) must be performed on logits_max and sum_exp_logits before this API is called.</span></p></td>
+</tr>
+<tr id="npu_fused_linear_cross_entropy_loss_with_max_sum_backward"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"></a><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward"></a><a href="torch_npu-npu_fused_linear_cross_entropy_loss_with_max_sum_backward.md">torch_npu.npu_fused_linear_cross_entropy_loss_with_max_sum_backward</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"></a><a name="p_npu_fused_linear_cross_entropy_loss_with_max_sum_backward_desc"></a><span>Gradient operator for cross-entropy loss computation in vocabulary parallel scenarios. It is used to compute the gradients of the leaf nodes input and weight. The related outputs of npu_fused_linear_online_max_sum and npu_fused_cross_entropy_loss_with_max_sum must be obtained as the inputs of this API. The high-performance mode (passing Softmax) and the memory-saving mode (passing logits_max and sum_exp_logits) are supported.</span></p></td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_dual_level_quant_matmul.md">torch_npu.npu_dual_level_quant_matmul</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p><span>Secondary quantization of QuantMatmul to reduce precision loss.</span></p></td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_permute.md">torch_npu.npu_moe_token_permute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE permute computation, which broadcasts and sorts the tokens according to the index indices.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_permute_with_routing_map.md">torch_npu.npu_moe_token_permute_with_routing_map</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE permute computation, which takes the labels of tokens and experts as routing_map and broadcasts and sorts the tokens and the optional probs according to routing_map.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute.md">torch_npu.npu_moe_token_unpermute</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>MoE unpermute computation, which obtains the input data in permuted_tokens according to the indices stored in sorted_indices, multiplies it by the optional probs, accumulates the sum, and outputs the restored computation result.</p>
+</td>
+</tr>
+<tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute_with_routing_map.md">torch_npu.npu_moe_token_unpermute_with_routing_map</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>For the permuted_tokens processed by the permute computation, accumulates them back to the original unpermuted_tokens according to sorted_indices and routing_map, supporting the drop_and_pad filling mode.</p>
+</td>
+</tr>
+<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>In training scenarios, micro-batch gradient accumulation involves a large number of scenarios in which GroupedMatMul operations are followed by InplaceAdd operations. This API fuses the operations to implement grouped matrix multiplication computation and addition computation. Only the mx quantization, T-C quantization, and T-T quantization scenarios are supported.</span></p>
+</td>
+</tr>
+<tr id="npu_apply_adam_w"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_adam_w"><a name="p_npu_apply_adam_w"></a><a name="p_npu_apply_adam_w"></a><a href="torch_npu-npu_apply_adam_w.md">torch_npu.npu_apply_adam_w</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_adam_w_desc"><a name="p_npu_apply_adam_w_desc"></a><a name="p_npu_apply_adam_w_desc"></a><span>Implements the AdamW optimizer function, decoupling weight decay from the gradient-based parameter update and updating the weight parameters and the first- and second-order moment estimates in place.</span></p></td>
+</tr>
+<tr id="npu_dynamic_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_mx_quant"><a name="p_npu_dynamic_mx_quant"></a><a name="p_npu_dynamic_mx_quant"></a><a href="torch_npu-npu_dynamic_mx_quant.md">torch_npu.npu_dynamic_mx_quant</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_dynamic_mx_quant_desc"><a name="p_npu_dynamic_mx_quant_desc"></a><a name="p_npu_dynamic_mx_quant_desc"></a><span>MX quantization with target data types of the FLOAT4 and FLOAT8 classes. On the given axis, every block_size values form a group, the quantization scale mxscale corresponding to this group is computed, and the elements in the group are then converted to the corresponding dst_type according to round_mode.</span></p>
+</td>
 </tr>
 </tbody>
 </table>

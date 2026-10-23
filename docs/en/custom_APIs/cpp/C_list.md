@@ -225,8 +225,8 @@ The standard C++ APIs provide fundamental capabilities such as NPU device initia
 
 The PyTorch community provides LibTorch Stable ABI capabilities, offering a set of stable binary APIs that allow custom operators and C++ extensions to maintain cross-version compatibility without being bound to a specific PyTorch version. TorchNPU supplements NPU-side capabilities and provides the following APIs:
 
-- [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/c/shim.h): Supplements the NPU device type and NPU-related Stable ABI APIs.
-- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/master/torch_npu/csrc/inductor/aoti_torch/generated/v2r13/c_shim_npu.h): Provides Stable ABI declarations for NPU operators, with API names following the pattern `aoti_torch_npu_*`.
+- [`torch_npu/csrc/inductor/aoti_torch/c/shim.h`](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/torch_npu/csrc/inductor/aoti_torch/c/shim.h): Supplements the NPU device type and NPU-related Stable ABI APIs.
+- [`torch_npu/csrc/inductor/aoti_torch/generated/c_shim_npu.h`](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/torch_npu/csrc/inductor/aoti_torch/generated/v2r13/c_shim_npu.h): Provides Stable ABI declarations for NPU operators, with API names following the pattern `aoti_torch_npu_*`.
 - `libtorch_npu.so`: Exports the symbols for the newly added NPU Stable ABI APIs.
 
 ## ATB C++ API Overview

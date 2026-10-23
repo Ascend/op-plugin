@@ -1,18 +1,14 @@
 # torch\_npu.npu\_mhc\_pre
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
-- Obtains the $H^{res}$ and $H^{post}$ projection matrices of the hidden layer in the Manifold-Constrained Hyper-Connections (mHC) architecture, as well as the input matrix $h^{in}$ of the Attention or MLP layer.
-
+- Function: obtains, through a series of computations, the $H^{res}$ and $H^{post}$ projection matrices of the hidden layer and the input matrix h<sup>in</sup> of the Atten or MLP layer in the mHC (Manifold-Constrained Hyper-Connections) architecture.
 - Formulas:
 
 $$
@@ -26,15 +22,15 @@ H^{post}_l &= 2\sigma (H^{post}_{l})\\
 h_{in} &=\vec{x_{l}}H^{pre}_l
 \end{aligned}
 $$
-where
+Where:
 $$
 \operatorname{RmsNorm}(x_i)=\frac{x_i}{\operatorname{Rms}(\mathbf{x})} g_i, \quad \text { where } \operatorname{Rms}(\mathbf{x})=\sqrt{\frac{1}{n} \sum_{i=1}^n x_i^2+norm\_eps}
 $$
-   
+
 ## Prototype
 
 ```python
-torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1e-6, out_flag=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=1e-6, out_flag=0, inner_precise=0) -> (Tensor, Tensor, Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## Parameters
@@ -43,30 +39,39 @@ torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=
 - **`phi`** (`Tensor`): Required. Parameter matrix of mHC, in the order of `W_pre` `(n, nD)`, `W_post` `(n, nD)`, and `W_res` `(n<sup>2</sup>, nD)`. The data type is `torch.float32`. The shape is `(n<sup>2</sup>+2n, nD)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported.
 - **`alpha`** (`Tensor`): Required. Scaling parameters of mHC, in the order of `alpha_pre`, `alpha_post`, and `alpha_res`. The data type is `torch.float32`. The shape is `(3)`. Empty tensors are not supported.
 - **`bias`** (`Tensor`): Required. Bias parameter of the mHC layer. The data type is `torch.float32`. The shape is `(n<sup>2</sup>+2n)`. Empty tensors are not supported.
-- **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
+- \*: Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`gamma`** (`Tensor`): Optional. Scaling factor for RmsNorm. The data type is `torch.float32`. The shape is `(n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported.
-- **`norm_eps`** (`float`): Optional. Zero-division prevention parameter for RmsNorm. The default value is `1e-6`. The data type is `float32`.
-- **`hc_eps`** (`float`): Optional. Epsilon parameter applied after the sigmoid operation on H<sub>pre</sub>. The default value is `1e-6`. The data type can be `float32`.
-- **`out_flag`** (`int`): Optional. Specifies whether to output `h_mix`, `inv_rms`, and `h_pre`. The default value is `0`, indicating that these outputs are not generated. `1` indicates that all of these outputs are generated.
+- **`norm_eps`** (`float`): Optional. RmsNorm division-by-zero prevention parameter. The default value is 1e-6 and the data type is `float32`.
+- **`hc_eps`** (`float`): Optional. Eps parameter after the sigmoid of H<sub>pre</sub>. The default value is 1e-6 and the data type can be `float32`.
+- **`out_flag`** (`int`): Optional. Specifies whether to output h_mix/inv_rms/h_pre. The default value 0 indicates no output, and 1 indicates that all are output.
+- **`inner_precise`** (`int`): Optional. Computation mode of the MhcPre operator. The default value is 0. 0 indicates that the computation is performed in the Cube using the `torch.float32` mode; 1 indicates that the computation is performed in the Cube using the HF32 mode.
 
 ## Return Values
 
-- **`h_in`** (`Tensor`): Output `h_in` serving as the input to the Attention/MLP layer. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
-- **`h_post`** (`Tensor`): Output mHC `h_post` transformation matrix. The data type is `torch.float32`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`.
-- **`h_res`** (`Tensor`): Output mHC `h_res` transformation matrix (without the Sinkhorn transformation). The data type is `torch.float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`.
-- **`inv_rms`** (`Tensor`): Optional output. `1/r` calculated by RmsNorm. The data type is `torch.float32`. The shape can be `(B, S)` or `(T)`. The data layout can be `ND`.
-- **`h_mix`** (`Tensor`): Optional output. Result of multiplying `x` by the `phi` matrix. The data type is `torch.float32`. The shape can be `(B, S, n<sup>2</sup>+2n)` or `(T, n<sup>2</sup>+2n)`. The data layout can be `ND`.
-- **`h_pre`** (`Tensor`): Optional output. `h_pre` matrix after applying the sigmoid operation. The data type is `torch.float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`.
+- **`h_in`** (`Tensor`): The output h_in serves as the input of the Atten/MLP layer. The data type is `torch.bfloat16` or `torch.float16`, the shape is (B, S, D) or (T, D), and the data layout can be ND.
+- **`h_post`** (`Tensor`): Output h_post transformation matrix of mHC. The data type is `torch.float32`, the shape is (B, S, D) or (T, D), and the data layout can be ND.
+- **`h_res`** (`Tensor`): Output h_res transformation matrix of mHC (without the Sinkhorn transformation). The data type is `torch.float32`, the shape is (B, S, n, n) or (T, n, n), and the data layout can be ND.
+- **`inv_rms`** (`Tensor`): Optional output. 1/r computed by RmsNorm. The data type is `torch.float32`, the shape is (B, S) or (T), and the data layout can be ND.
+- **`h_mix`** (`Tensor`): Optional output. Result of the matrix multiplication of x and phi. The data type is `torch.float32`, the shape is (B, S, n<sup>2</sup>+2n), (T, n<sup>2</sup>+2n), (B, S, 2n), or (T, 2n), and the data layout can be ND.
+- **`h_pre`** (`Tensor`): Optional output. h_pre matrix after the sigmoid computation. The data type is `torch.float32`, the shape is (B, S, n) or (T, n), and the data layout can be ND.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports single-operator and TorchAir graph mode calls.
+- This API supports single-operator mode and TorchAir graph mode calls.
 - Shape constraints:
-  - `n`: Valid values: `4`, `6`, and `8`.
-  - `D`: The value ranges from `1` to `16384` and must be a multiple of `16`.
+  - n: 4, 6, and 8 are supported currently.
+  - D: 1 to 16384 is supported, and D must be 16-aligned.
+- When alpha=[3], the h_res output is supported and the following conditions must be met: input phi=(n<sup>2</sup>+2n, nD) and bias=(n<sup>2</sup>+2n); output h_mix=(B, S, n<sup>2</sup>+2n) or (T, n<sup>2</sup>+2n). When alpha=[2], the h_res output is 0 and the following conditions must be met: input phi=(2n, nD) and bias=(2n); output h_mix=(B, S, 2n) or (T, 2n).
+- The optional outputs inv_rms, h_mix, and h_pre are mutually dependent: they must be output together or not output at all. Returning only some of them is not supported.
+  - inner_precise: 0 and 1 are supported currently.
 
-## Examples
+- Deterministic computation
+  - Deterministic computation is supported by default.
+- Batch consistency
+  - Batch consistency is not supported by default. It can be enabled using the PyTorch switch ([torch_npu.npu.set_deterministic_level](../torch_npu-npu/torch_npu-npu-set_deterministic_level.md)).
+
+## Example
 
 - Single-operator call
 
@@ -105,9 +110,9 @@ torch_npu.npu_mhc_pre(x, phi, alpha, bias, *, gamma=None, norm_eps=1e-6, hc_eps=
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     logger.setLevel(logging.DEBUG)
     os.environ["ENABLE_ACLNN"] = "false"
-    # Configure graph mode
+    # Configure the graph mode config
     config = torchair.CompilerConfig()
-    # Configure the graph execution mode. The aclgraph mode is "reduce-overhead".
+    # Configure the graph execution mode. The aclgraph mode is reduce-overhead.
     config.mode = "reduce-overhead"
     npu_backend = torchair.get_npu_backend(compiler_config=config)
     class MyModel(torch.nn.Module):

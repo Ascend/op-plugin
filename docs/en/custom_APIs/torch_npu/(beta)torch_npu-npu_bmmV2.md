@@ -1,16 +1,22 @@
 # (beta) torch_npu.npu_bmmV2
 
 > [!NOTICE]  
-> This API is planned for deprecation. Internally, the API performs shape transformations on input tensors through `torch.view` and `torch.Tensor.expand` (1D expansion and broadcasting along the batch dimension), followed by an equivalent `torch.bmm` (BatchMatMul) operation and a final `torch.view` to the target shape. Use `torch.bmm` and `Tensor.view()` instead.
+> This API is planned for deprecation. Internally, it reshapes the input tensor using `torch.view`/`torch.Tensor.expand` (1D extension and batch-dimension broadcasting), then calls the equivalent `torch.bmm` operation (BatchMatMul), and finally calls `torch.view` to restore the target shape. Use the `torch.bmm` and `Tensor.view()` APIs instead.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>          |    √     |
-|<term>Atlas A2 training products</term>| √   |
-|<term>Atlas training products</term>| √   |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -43,7 +49,7 @@ torch.Size([10, 3, 5])
 Example 2:
 
 ```python
-// FakeTensor mode
+# FakeTensor mode
 >>> from torch._subclasses.fake_tensor import FakeTensorMode
 >>> with FakeTensorMode():
 ...     mat1 = torch.randn(10, 3, 4).npu()

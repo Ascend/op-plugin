@@ -1,15 +1,19 @@
 # torch_npu.npu_attention_update
 
 > [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
-|Product            |  Supported |
-|:-------------------------|:----------:|
-|  <term>Ascend 950DT</term>                        |    √    |
-|  <term>Atlas A3 training products/Atlas A3 inference products</term>  |     √    |
-|  <term>Atlas A2 training products/Atlas A2 inference products</term>    |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -56,34 +60,59 @@ torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 - The value range of the parallel degree `SP` for sequence parallelism is [1, 16].
 - The value range of `head_dim` is [8, 512] and must be a multiple of 8.
 - The lengths of the tensor lists for `lse` and `local_out` must be identical.
+- Non-contiguous tensors are not supported, but empty tensors are supported.
 
 ## Example
 
-```python
-import torch
-import torch_npu
+- Single-operator call
 
-dtype = torch.float32
-N = 4
-head_dim = 32
+    ```python
+    import torch
+    import torch_npu
 
-lse = [
-    torch.randn(N, dtype=dtype, device='npu'),
-    torch.randn(N, dtype=dtype, device='npu'),
-]
+    dtype = torch.float32
+    N = 4
+    head_dim = 32
 
-local_out = [
-    torch.randn(N, head_dim, dtype=dtype, device='npu'),
-    torch.randn(N, head_dim, dtype=dtype, device='npu'),
-]
+    lse = [
+        torch.randn(N, dtype=dtype, device='npu'),
+        torch.randn(N, dtype=dtype, device='npu'),
+    ]
 
-# update_type=0: Only the merged out tensor is returned
-out, lse_out = torch_npu.npu_attention_update(lse, local_out, 0)
-print("out:", out)
-print("out.shape:", out.shape)
+    local_out = [
+        torch.randn(N, head_dim, dtype=dtype, device='npu'),
+        torch.randn(N, head_dim, dtype=dtype, device='npu'),
+    ]
 
-# update_type=1: Both the merged out and lse_out tensors are returned
-out, lse_out = torch_npu.npu_attention_update(lse, local_out, 1)
-print("out:", out)
-print("lse_out:", lse_out)
-```
+    # update_type=0: Only the merged out is returned
+    out, lse_out = torch_npu.npu_attention_update(lse, local_out, 0)
+    print("out:", out)
+    print("out.shape:", out.shape)
+
+    # update_type=1: Both the merged out and lse_out are returned
+    out, lse_out = torch_npu.npu_attention_update(lse, local_out, 1)
+    print("out:", out)
+    print("lse_out:", lse_out)
+    ```
+
+- Graph mode call
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    from torchair.configs.compiler_config import CompilerConfig
+
+    class Net(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, lse, local_out, update_type):
+            return torch_npu.npu_attention_update(lse, local_out, update_type=update_type)
+
+    model = Net()
+    config = CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    model = torch.compile(model, fullgraph=True, backend=npu_backend, dynamic=False)
+    out, lse_out = model(lse, local_out, 1)
+    ```

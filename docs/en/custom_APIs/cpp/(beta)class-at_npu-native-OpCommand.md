@@ -1,12 +1,27 @@
 # (beta) class at_npu::native::OpCommand
 
-## Definition File
+## Supported Products
 
-torch_npu\csrc\framework\OpCommand.h
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
 Acts as a class encapsulating low-level operator calls and implements underlying operator execution on NPU devices.
+
+## Definition File
+
+torch_npu\csrc\framework\OpCommand.h
 
 ## Member Functions
 
@@ -181,10 +196,3 @@ Acts as a class encapsulating low-level operator calls and implements underlying
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::Sync()**
 
     Synchronizes `OpCommand` and blocks execution until the execution stream completes.
-
-## Supported Products
-
-- <term>Atlas training products</term>
-- <term>Atlas A2 training products</term>
-- <term>Atlas A3 training products</term>
-- <term>Atlas inference products</term>

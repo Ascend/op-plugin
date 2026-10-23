@@ -2,12 +2,18 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -21,16 +27,16 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 
 ## Parameters
 
-- **`hidden_states`** (`Tensor`): Hidden states tensor of the last layer.
-- **`attention_mask`** (`Tensor`): Attention mask.
-- **`query_kernel`** (`Tensor`): Query weight.
-- **`key_kernel`** (`Tensor`): Key weight.
-- **`value_kernel`** (`Tensor`): Value weight.
-- **`query_bias`** (`Tensor`): Query bias.
-- **`key_bias`** (`Tensor`): Key bias.
-- **`value_bias`** (`Tensor`): Value bias.
-- **`scale`** (`float`): Scaling factor used to compute attention scores.
-- **`keep_prob`** (`float`): Probability of retaining data elements during computation, equal to `1 - drop_rate`.
+- **`hidden_states`** (`Tensor`): Required. Hidden states of the last layer. The data format supports FRACTAL_NZ. The shape is 2D, where dimension 0 must be an integer multiple of 32 and dimension 1 can be 768 or 1024.
+- **`attention_mask`** (`Tensor`): Required. Mask tensor used to mask out token positions that do not need to participate in attention computation (such as padding positions). The data format supports FRACTAL_NZ. This parameter is 4D with shape `(B, 1, S, S)`, where B is the batch size and S is the sequence length.
+- **`query_kernel`** (`Tensor`): Required. Query weight matrix. The data format supports FRACTAL_NZ. The shape is 2D, and dimension 0 can be 768 or 1024.
+- **`key_kernel`** (`Tensor`): Required. Key weight matrix. The data format supports FRACTAL_NZ. The shape is 2D, and dimension 0 can be 768 or 1024.
+- **`value_kernel`** (`Tensor`): Required. Value weight matrix. The data format supports FRACTAL_NZ. The shape is 2D, and dimension 0 can be 768 or 1024.
+- **`query_bias`** (`Tensor`): Required. Query bias. The data format supports ND.
+- **`key_bias`** (`Tensor`): Required. Key bias. The data format supports ND.
+- **`value_bias`** (`Tensor`): Required. Value bias. The data format supports ND.
+- **`scale`** (`double`): Optional. Scaling factor used to compute attention scores. The default value is `1`.
+- **`keep_prob`** (`float`): Optional. Probability of retaining data during computation, equal to `1 - drop_rate`. The default value is `0`.
 
 ## Return Values
 

@@ -1,12 +1,22 @@
 # torch_npu.profiler.profile
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                              | Supported|
-| ---------------------------------- | :------: |
-| <term>Atlas A3 training products</term>|    √     |
-| <term>Atlas A2 training products</term>|    √     |
-| <term>Atlas training products</term>   |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -15,7 +25,7 @@ Collects profile data during PyTorch training.
 ## Prototype
 
 ```python
-torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, record_shapes=False, profile_memory=False, with_stack=False, with_modules=False, with_flops=False, experimental_config=None, custom_trace_id_callback=None)
+torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, record_shapes=False, profile_memory=False, with_stack=False, with_modules=False, with_flops=False, experimental_config=None, execution_trace_observer=None, custom_trace_id_callback=None)
 ```
 
 ## Parameters
@@ -74,6 +84,8 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
 
 - **`experimental_config`**: Optional. Configures common collection items of the performance profiling tool through extended configurations. For details about the supported collection items, see [torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md).
 
+- **`execution_trace_observer`** (`ExecutionTraceObserver`): Optional. PyTorch execution trace observer object. The PyTorch execution trace represents AI/ML workloads in the form of a graph and supports replay benchmarking, simulators, and emulators. When this parameter is included, the `start()` and `stop()` methods of the observer are called within the same time window as the PyTorch profiler, as shown in the example below.
+
 - **`custom_trace_id_callback`** (`Callable`): Optional. Generates a `trace_id` to identify each set of profiler data. The `trace_id` is output to the `profiler_metadata.json` file.
 
 ## Return Values
@@ -84,7 +96,7 @@ None
 
 The following code sample demonstrates the key steps and is for reference only. Do not directly copy or run the code.
 
-The profile data collected by `torch_npu.profiler.profile` is automatically parsed and saved to the directory specified by `torch_npu.profiler.tensorboard_trace_handler`. Please refer to [MindStudio Insight System Tuning](https://gitcode.com/Ascend/msinsight/blob/26.1.0/docs/en/user_guide/system_tuning.md) for data visualization and analysis.
+torch_npu.profiler.profile automatically parses the collected profile data into the directory specified by torch_npu.profiler.tensorboard_trace_handler. For visual display and analysis, see *[MindStudio Insight System Tuning](https://gitcode.com/Ascend/msinsight/blob/26.2.0/docs/en/user_guide/system_tuning.md)*.
 
 - Basic example for collecting profile data
 
@@ -163,4 +175,23 @@ The profile data collected by `torch_npu.profiler.profile` is automatically pars
       for i in range(12):
           add(x0, x1)  # Training function
           prof.step()
+  ```
+
+- Setting the execution trace observer (`execution_trace_observer`)
+
+  ```python
+  import torch
+  import torch_npu
+  from torch.profiler import ExecutionTraceObserver
+  ...
+
+  with torch_npu.profiler.profile(
+      ...
+      execution_trace_observer=(
+          ExecutionTraceObserver().register_callback("./execution_trace.json")
+      ),
+  ) as p:
+      for iter in range(N):
+          code_iteration_to_profile(iter)
+          p.step()
   ```

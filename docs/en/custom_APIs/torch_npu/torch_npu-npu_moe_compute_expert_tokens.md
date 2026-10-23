@@ -1,10 +1,16 @@
 # torch_npu.npu_moe_compute_expert_tokens
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -12,7 +18,7 @@
 - Formula:
 
     $$
-    expertTokens_i = BinarySearch(sortedExpertForSourceRow,numExpert)
+    expertTokens_i = BinarySearch(sortedExpertForSourceRow,i), \quad i \in [0,numExpert)
     $$
 
 ## Prototype
@@ -25,13 +31,13 @@ torch_npu.npu_moe_compute_expert_tokens(sorted_expert_for_source_row, num_expert
 
 - **`sorted_expert_for_source_row`** (`Tensor`): Required. Expert index corresponding to each source row after sorting, $\mathrm{sortedExpertForSourceRow}$ in the formula. This parameter must be a 1D tensor. The data type must be `torch.int32`. The data layout must be `ND`. The dimension size must be less than `2147483647`.
 
-- **`num_expert`** (`int`): Required. Total number of experts, $numExpert$ in the formula.
+- **`num_expert`** (`int`): Required. Total number of experts, $numExpert$ in the formula. The value range is (0, 2048].
 
 ## Return Values
 
 `Tensor`
 
-$expertTokens$ in the formula. This tensor must be a 1D tensor. The data type must be identical to that of `sorted_expert_for_source_row`.
+ $expertTokens$ in the formula. This tensor must be a 1D tensor. The data type must be identical to that of `sorted_expert_for_source_row`.
 
 ## Constraints
 

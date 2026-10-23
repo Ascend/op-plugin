@@ -31,13 +31,13 @@ This sample demonstrates how to register custom operators using `pybind`, call k
 - Function
 
   Adds two input tensors and returns the result. The corresponding operator prototype is as follows:
-
+  
   ```python
   ascendc_add(Tensor x, Tensor y) -> Tensor
   ```
 
 - Specifications
-
+  
   <table>
    <tr><td rowspan="1" align="center">Kernel Function Name</td><td colspan="4" align="center">add_custom</td></tr>
   <tr><td rowspan="3" align="center">Operator input</td><td align="center">Name</td><td align="center">Shape</td><td align="center">Data Type</td><td align="center">Data Layout</td></tr>
@@ -51,7 +51,7 @@ This sample demonstrates how to register custom operators using `pybind`, call k
 - Function
 
   The input parameters of this operator are `x`, `out_sin`, and `out_cos`. After the operator is called, `out_sin` is modified in place to store the result of `sin(x)`, `out_cos` is modified in place to store the result of `cos(x)`, and the result of `tan(x)` is returned. The corresponding operator prototype is as follows:
-
+  
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
   ```
@@ -76,9 +76,9 @@ This sample demonstrates how to register custom operators using `pybind`, call k
     ```c++
       add_custom<<<blockDim, nullptr, aclStream>>>(xGm, yGm, zGm, totalLength);
     ```
-
+  
 - The `pybind11.asc` file uses the `pybind11` library to encapsulate C++ code into a Python module, which can be imported and used on the Python side by using an `import` statement. For example:
-
+  
   ```c++
   PYBIND11_MODULE(custom_ops, m)
   {
@@ -88,7 +88,7 @@ This sample demonstrates how to register custom operators using `pybind`, call k
   ```
 
 - On the Python side, the operator logic is bound to a specific `DispatchKey` (the PyTorch device dispatch identifier) using `torch.library`. For NPU devices, the operator implementation must be registered to the dedicated `PrivateUse1` dispatch key. For example:
-
+  
   ```python
   ascendc_ops = library.Library("ascendc_ops", "DEF")
 
@@ -120,29 +120,28 @@ This sample demonstrates how to register custom operators using `pybind`, call k
 Perform the following steps in the root directory of this sample to build and run the operator.
 
 - Set up the environment.
-
-1. For detailed installation steps for PyTorch and TorchNPU, refer to the [TorchNPU Software Installation Guide](https://www.hiascend.com/document/detail/en/Pytorch/720/configandinstg/instg/insg_0001.html) corresponding to your version.
-
-    This sample requires PyTorch 2.6.0 or later, and support for `backend="npugraph_ex"` requires TorchNPU 7.3.0 or later.
-
+  
+1. For detailed installation steps for PyTorch and TorchNPU, refer to the [TorchNPU
+   Software Installation Guide](https://www.hiascend.com/document/detail/en/Pytorch/720/configandinstg/instg/insg_0001.html), which provides detailed installation steps for PyTorch and TorchNPU.
+   
+   This sample requires PyTorch 2.6.0 or later, and support for `backend="npugraph_ex"` requires TorchNPU 7.3.0 or later.
 2. Install the CANN Toolkit package based on the actual environment. This sample requires version 8.5.0 or later. For installation details, see the [CANN Software Installation Guide](https://www.hiascend.com/document/redirect/CannCommunityInstSoftware).
-
 3. Install the CANN OPS package based on the actual environment. Download the appropriate package based on your hardware model and system architecture by using the [Download Link](https://ascend.devcloud.huaweicloud.com/cann/run/software/8.5.0-beta.1), and run the following commands:
-
+   
    ```bash
    # Ensure the installer has execute permission
    chmod +x Ascend-cann-${soc_name}-ops_${cann_version}_linux-${arch}.run
    # Installation command
    ./Ascend-cann-${soc_name}-ops_${cann_version}_linux-${arch}.run  --install --quiet --install-path=${install_path}
    ```
-
+   
    - `${soc_name}`: NPU model name obtained by removing the prefix "ascend" from `${soc_version}`.
    - `${install_path}`: Installation path, which must be the same as the Toolkit installation path. The default path is `/usr/local/Ascend`.
 
 - Configure environment variables.
-
+  
   Configure the environment variables based on the installation path of the CANN development toolkit on your system.
-
+  
     ```bash
     source ${install_path}/ascend-toolkit/set_env.sh
     ```
@@ -150,7 +149,7 @@ Perform the following steps in the root directory of this sample to build and ru
 - Execute the code sample.
 
   Modify the `--npu-arch` option in [setup.py](./setup.py) according to the Ascend AI processor architecture by referring to the [Common compilation options](https://www.hiascend.com/document/detail/en/canncommercial/850/opdevg/BishengCompiler/atlas_bisheng_10_0010.html) table. Then, run the following commands:
-
+  
   ```bash
   python setup.py bdist_wheel
   pip install dist/*.whl --force-reinstall

@@ -1,21 +1,16 @@
 # torch\_npu.npu\_mhc\_sinkhorn
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
-- Performs Sinkhorn iterative normalization on the H<sup>res</sup>' matrix (that is, the input data of the mHC layer) in the mHC architecture to obtain the doubly stochastic matrix H<sub>res</sub>. It supports outputting the intermediate normalization results (<code>norm_out</code>) and summation results (<code>sum_out</code>) during the iterations for backward gradient computation.
-
+- Function: performs the Sinkhorn iterative normalization transformation on the H<sub>res</sub> matrix in the mHC architecture (that is, the input data of the mHC layer in the network), finally obtaining the doubly stochastic matrix H<sub>res</sub>. It supports outputting the intermediate normalization result (norm_out) and the sum result (sum_out) of the iteration process for backward gradient computation.
 - Formulas:
-
-    1. During the first iteration (initialization):
+    1. At the first iteration, that is, the initialization:
 
         $$
         \begin{aligned}
@@ -25,7 +20,7 @@
         \end{aligned}
         $$
 
-    2. During the i-th iteration (i = 1, 2, ..., num_iters - 1):
+    2. The i-th iteration \(i=1,2,..., \(num\_iters-1\)\):
 
         $$
         \begin{aligned}
@@ -51,23 +46,23 @@ torch_npu.npu_mhc_sinkhorn(x, eps=1e-6, num_iters=20, out_flag=0) -> (Tensor, Te
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Tensor to be processed, representing the input data of the mHC layer in the network. The data type can be `torch.float32`. The shape can be `[B, S, n, n]` or `[T, n, n]`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported. The value of `n` in the shape can only be `4`, `6`, or `8`.
-- **`eps`** (`float`): Optional. Parameter used to prevent division by zero during normalization. The data type can be `float32`. The default value is `1e-6`.
-- **`num_iters`** (`int`): Optional. Number of iterations. The default value is `20`. The value range is `[1, 100]`.
-- **`out_flag`** (`int`): Optional. Determines whether to output intermediate results. Supported values are `0` (default) and `1`. Only the final transformation result is output when the value is `0`. `y`, `norm_out`, and `sum_out` are output when the value is `1`.
+- **`eps`** (`float`): Optional. Parameter used to prevent division by zero during normalization. The data type can be `torch.float32`. The default value is `1e-6`.
+- **`num_iters`** (`int`): Optional. Number of iterations. The default value is 20 and the value range is [1,100].
+- **`out_flag`** (`int`): Optional. Specifies whether to output intermediate results. The supported values are 0 (default) and 1. When the value is 0, only the final transformation result is output. When the value is 1, y+normOut+sumOut is output.
 
 ## Return Values
 
 - **`y`** (`Tensor`): Required output. Final result of the MhcSinkhorn transformation. The data type can be `torch.float32`. The shape can be `[B, S, n, n]` or `[T, n, n]`. The data layout can be `ND`. Non-contiguous tensors are supported. The dimensions must be the same as those of input `x`. The value of `n` in the shape can only be `4`, `6`, or `8`.
-- **`norm_out`** (`Tensor`): Optional output. Normalization intermediate results during iterations. The data type can be `torch.float32`. The shape can be `[2numIters, n, n, B, S]` or `[2numIters, n, n, T]`. The data layout can be `ND`. Non-contiguous tensors are supported. This output is valid if and only if `out_flag` is `1`. In training and inference prefill scenarios, the supported ranges of `B*S` are `[512, 65536]` and `[1, 512]`, respectively.
+- **`norm_out`** (`Tensor`): Optional output. Intermediate normalization result of the iteration process. The data type can be `torch.float32`, and the shape is [2numIters, n, n, B, S] or [2numIters, n, n, T]. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1. During training and inference prefill, B\*S supports [512, 65536] and [1, 512]. In inference scenarios, B\*S supports [1, 512].
 
-- **`sum_out`** (`Tensor`): Optional output. Summation intermediate results during iterations. The data type can be `torch.float32`. The shape can be `[2numIters, n, B, S]` or `[2numIters, n, T]`. The data layout can be `ND`. Non-contiguous tensors are supported. This output is valid if and only if `out_flag` is `1`.
+- **`sumOut`** (`Tensor`): Optional output. Intermediate sum result of the iteration process. The data type can be `torch.float32`, and the shape is [2numIters, n, B, S] or [2numIters, n, T]. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports single-operator and TorchAir graph mode calls.
+- This API supports single-operator mode and TorchAir graph mode calls.
 
-## Examples
+## Example
 
 - Single-operator call
 

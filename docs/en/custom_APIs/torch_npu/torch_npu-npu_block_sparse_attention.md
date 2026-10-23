@@ -1,17 +1,25 @@
 # torch_npu.npu_block_sparse_attention
 
+> [!NOTICE]  
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+
 ## Supported Products
 
-| Product                                                  | Supported|
-|:-----------------------------------------------------|:----:|
-| <term>Atlas A3 training products/Atlas A3 inference products</term>                     |  √   |
-| <term>Atlas A2 training products/Atlas 800I A2 inference products/Atlas 200I A2 Box heterogeneous components</term> |  √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Computes `BlockSparseAttention`, a sparse attention mechanism that supports block-level sparsity. It uses `block_sparse_mask` to specify the KV blocks selected by each Q block to achieve efficient attention computation.
+- Function: BlockSparseAttention, that is, sparse attention computation. It supports the block-level sparse mode, in which `block_sparse_mask` specifies the KV blocks selected by each Q block, implementing efficient sparse attention.
 
-- Formula: The sparse block size is $blockShapeX \times blockShapeY$. `block_sparse_mask` defines the sparsity pattern.
+- Formulas: The sparse block size is blockShapeX × blockShapeY, and `block_sparse_mask` specifies the sparse mode:
 
 $$
 attentionOut = Softmax(scale \cdot query \cdot key_{sparse}^T) \cdot value_{sparse}
@@ -26,18 +34,24 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 ## Parameters
 
 - **`query`** (`Tensor`): Required. Query in the attention, $query$ in the formula. The data layout can be ND. The data type can be `torch.float16` or `torch.bfloat16`.
-  - In `TND` layout: The shape is `[totalQTokens, headNum, headDim]`.
-  - In `BNSD` layout: The shape is `[batch, headNum, maxQSeqLength, headDim]`.
+  - TND: the shape is `[totalQTokens, headNum, headDim]`;
+  - BNSD: the shape is `[batch, headNum, maxQSeqLength, headDim]`;
 
 - **`key`** (`Tensor`): Required. Key in the attention, $key$ in the formula. The data layout can be ND. The data type must be identical to that of `query`.
-  - `TND`: The shape is `[totalKTokens, numKeyValueHeads, headDim]`.
-  - `BNSD`: The shape is `[batch, numKeyValueHeads, maxKvSeqLength, headDim]`.
+  - TND: the shape is `[totalKTokens, numKeyValueHeads, headDim]`;
+  - BNSD: the shape is `[batch, numKeyValueHeads, maxKvSeqLength, headDim]`;
 
 - **`value`** (`Tensor`): Required. Value in the attention, $value$ in the formula. The shape and data type must be identical to those of `key`.
 
 - **`block_sparse_mask`** (`Tensor`): Required. Block sparse mask. The shape of this parameter is `[batch, headNum, ceilDiv(maxQSeqLength, blockShapeX), ceilDiv(maxKvSeqLength, blockShapeY)]`. It indicates the blocks that participate in the computation after block partitioning. A value of `1` indicates that the corresponding block participates in the attention computation, and a value of `0` indicates it is excluded from computation. The data type is `torch.int8`.
 
 - **`block_shape`** (`list[int]`): Required. Block shape for sparse computation. It must contain at least two elements, such as `[blockShapeX, blockShapeY]`, and all values must be greater than 0. `blockShapeX` represents the block size along the Q dimension, and `blockShapeY` represents the block size along the KV dimension. **`blockShapeY` must be a multiple of 128.**
+  <!-- npu="A3,910b" id4 -->
+  - On <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: **blockShapeY must be a multiple of 128**.
+  <!-- end id4 -->
+  <!-- npu="950" id8 -->
+  - <term>Ascend 950DT products</term>: **blockShapeY must be a multiple of 16**.
+  <!-- end id8 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
@@ -50,14 +64,19 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 - **`scale_value`** (`float`): Optional. Scaling factor. The default value is `0.0`, and it is typically set to $D^{-0.5}$.
 
 - **`inner_precise`** (`int`): Optional. Softmax precision mode. The default value is `1`. Valid values are `0` (high accuracy mode using `torch.float32` intermediate results) or `1` (high performance mode using `torch.float16` intermediate results). **When `query`, `key`, or `value` uses the `torch.bfloat16` data type, only `0` is supported.**
-
+  <!-- npu="950" id5 -->
+  - <term>Ascend 950DT products</term>: only `4` is supported.
+  <!-- end id5 -->
+  <!-- npu="A3,910b" id9 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only `0` or `1` is supported.
+  <!-- end id9 -->
 - **`actual_seq_lengths`** (`list[int]`): Optional. Actual sequence lengths of `query` per batch, used in variable-length sequence scenarios.
-  - **Required when `q_input_layout` is `"TND"`**: In `TND` layout, the `query` shape is `[totalQTokens, headNum, headDim]`. Without the batch dimension, the operator cannot infer the sequence length of each batch from the shape alone.
-  - **Optional when `q_input_layout` is `"BNSD"`**: In `BNSD` layout, if this parameter is omitted, `maxQSeqLength` from the shape of `query` `[batch, headNum, maxQSeqLength, headDim]` is used as the sequence length; if provided, execution follows the actual lengths specified by this parameter.
+  - **Required when `q_input_layout` is `"TND"`**: in TND, the shape of `query` is `[totalQTokens, headNum, headDim]`. If there is no batch dimension, the operator cannot infer the `query` length of each batch from the shape.
+  - **Optional when `q_input_layout` is `"BNSD"`**: in BNSD, the shape of `query` is `[batch, headNum, maxQSeqLength, headDim]`. If this parameter is not passed, the operator uses S (maxQSeqLength) in the shape as the sequence length. If it is passed, the operator uses the actual length specified by this parameter.
 
 - **`actual_seq_lengths_kv`** (`list[int]`): Optional. Actual sequence lengths of `key` and `value` per batch, used in variable-length sequence scenarios.
-  - **Required when `kv_input_layout` is `"TND"`**: In `TND` layout, the `key`/`value` shape is `[totalKvTokens, numKeyValueHeads, headDim]`. Without the batch dimension, the operator cannot infer the sequence length of each batch from the shape alone.
-  - **Optional when `kv_input_layout` is `"BNSD"`**: In BNSD layout, if this parameter is omitted, `maxKvSeqLength` from the shape of `key`/`value` is used as the sequence length; if provided, execution follows the actual lengths specified by this parameter.
+  - **Required when `kv_input_layout` is `"TND"`**: in TND, the shape of `key`/`value` is `[totalKvTokens, numKeyValueHeads, headDim]`. If there is no batch dimension, the operator cannot infer the kv length of each batch from the shape.
+  - **Optional when `kv_input_layout` is `"BNSD"`**: in BNSD, the shape of `key`/`value` is `[batch, numKeyValueHeads, maxKvSeqLength, headDim]`. If this parameter is not passed, the operator uses S in the shape as the sequence length. If it is passed, the operator uses the actual length specified by this parameter.
 
 - **`softmax_lse_flag`** (`int`): Optional. Specifies whether to output the `softmax_lse` tensor. The default value is `0`. Valid values are `0` (does not output `softmax_lse`) or `1` (outputs `softmax_lse`, which may cause performance degradation).
 
@@ -65,23 +84,23 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **`attention_out`** (`Tensor`): $attentionOut$ in the formula. The data type and layout must be identical to those of `query`, and the last dimension matches the `headDim` of `value`.
 - **`softmax_lse`** (`Tensor`): Log-sum-exp intermediate result of Softmax computation. The data type is `torch.float32`. This tensor is returned only when `softmax_lse_flag` is set to `1`.
-  - In `TND` layout, the shape is `[totalQTokens, headNum, 1]`.
-  - In `BNSD` layout, the shape is `[batch, headNum, maxQSeqLength, 1]`.
+  - For TND, the shape is `[totalQTokens, headNum, 1]`;
+  - For BNSD, the shape is `[batch, headNum, maxQSeqLength, 1]`.
 
 ## Constraints
 
-- The data types of `query`, `key`, and `value` must be identical, and the data type can be `torch.float16` or `torch.bfloat16`.
-- The number of heads for `query` ($N1$) and the number of heads for `key`/`value` ($N2$) must satisfy the conditions $N1 \ge N2$ and $N1 \% N2 = 0$.
-- `actual_seq_lengths` and `actual_seq_lengths_kv` must be either both provided or both omitted. If only one of them is provided, the operator will reject the input.
-- The sequence length does not need to be divisible by `block_shape`. The total number of blocks is calculated using ceiling division.
-- For the forward path, `headDim` can be `64` or `128`. The backward path supports `headDim=128` only.
-- The backward path supports both "BNSD" and "TND" layouts for `q_input_layout` and `kv_input_layout`, and supports both MHA and GQA scenarios. In MHA scenarios, $N1 = N2$. In GQA scenarios, $N1 > N2$ and $N1 \bmod N2 = 0$, where $N1$ denotes the number of heads in `query`, and $N2$ denotes the number of heads in `key`/`value`.
+- The data types of `query`, `key`, and `value` must be the same, and must be `torch.float16` or `torch.bfloat16`.
+- The number of heads $N1$ of `query` and the number of heads $N2$ of `key`/`value` must satisfy $N1 ≥ N2$ and $N1 \% N2 = 0$.
+- `actual_seq_lengths` and `actual_seq_lengths_kv` must currently be configured together or not configured at all. Configuring only one of them is intercepted by the operator.
+- The sequence length does not need to be divisible by `block_shape`. The number of blocks is calculated by rounding up.
+- The forward path currently supports headDim=64 or 128. The backward path currently supports headDim=128.
+- The backward path supports `q_input_layout` and `kv_input_layout` both being `"BNSD"` or both being `"TND"`, and supports MHA and GQA scenarios. In the MHA scenario, $N1 = N2$. In the GQA scenario, $N1 > N2$ and $N1 \% N2 = 0$ must be satisfied, where $N1$ is the number of heads of `query` and $N2$ is the number of heads of `key`/`value`.
 
-## Examples
+## Example
 
-Single-operator call
+Single-operator call:
 
-- `BNSD` layout
+- BNSD layout
 
     ```python
     import torch
@@ -107,7 +126,7 @@ Single-operator call
     print(attention_out.shape)  # (B, N, S, D)
     ```
 
-- `TND` layout
+- TND layout
 
     ```python
     import torch

@@ -1,14 +1,16 @@
 # torch\_npu.npu\_fusion\_attention<a name="en-us_topic_0000002266361349"></a>
 
 > [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function<a name="en-us_topic_0000001742717129_section14441124184110"></a>
 
@@ -29,7 +31,7 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 - **`query`** (`Tensor`): Required. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
 - **`key`** (`Tensor`): Required. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
 - **`value`** (`Tensor`): Required. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`head_num`** (`int`): Required. Number of heads. Pass this value as a Python `int`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
+- **`head_num`** (`int`): Required. Number of heads. The data type can be `torch.int64`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
 - **`input_layout`** (`str`): Required. Data layout of the input `query`, `key`, and `value`. Supported layouts: `BSH`, `SBH`, `BSND`, `BNSD`, and `TND` (`actual_seq_qlen` and `actual_seq_kvlen` must both be provided; when `input_layout` is `TND`, the varlen scenario is enabled). In subsequent sections, unless otherwise specified, `S` indicates the sequence length of `query`, `key`, or `value`, `Sq` indicates the sequence length of `query`, `Skv` indicates the sequence length of `key` and `value`, and `SS` indicates the product of `Sq` and `Skv`.
 - **`pse`** (`Tensor`): Optional. Position embedding configuration. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND.
      - In non-varlen scenarios, four-dimensional input shapes are supported, including `BNSS`, `BN1Skv`, and `1NSS` formats.
@@ -37,11 +39,11 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
      - In `TND` case, each batch segment is still generated internally with shape `[N, Sq_i, Skv_i]`, but uses a unified `flatten` layout for storage and argument passing. For the i-th batch segment, if its actual query length is `Sq_i` and its actual `key` or `value` length is `Skv_i`, then the segment contains `N * Sq_i * Skv_i` PSE elements, and the total PSE length across all segments, `pseTotalLen`, is `sum_i(N * Sq_i * Skv_i)`.
 - **`padding_mask`** (`Tensor`): This parameter is not supported currently.
 - **`atten_mask`** (`Tensor`): Optional. A value of `1` indicates that the position is masked and excluded from computation, while a value of `0` indicates that the position is included in computation. The data type can be `torch.bool` or `torch.uint8`. The data layout can be ND. Supported input shapes include `BNSS`, `B1SS`, `11SS`, and `SS`. In varlen scenarios, only the `SS` format is supported, where `S` corresponds to `maxSq` and `maxSkv`, respectively. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`scale`** (`float`): Optional. Scaling factor used as a scalar value for multiplication operations in the computation flow. The data type must be `float`. The default value is `1.0`.
+- **`scale`** (`float`): Optional. Scaling factor used as a scalar value for multiplication operations in the computation flow. The data type must be `float`. The default value is `1`.
 - **`keep_prob`** (`float`): Optional. Dropout keep probability, representing the ratio of retained elements. The value range is `(0, 1]`. The data type must be `float`. The default value is `1.0`, indicating all elements are retained.
-- **`pre_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `int64`. The default value is `2147483647`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`next_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `int64`. The default value is `2147483647`. For the relationship between `next_tockens`, `pre_tockens`, and `atten_mask`, refer to the configuration of the `sparse_mode` parameter. Any inconsistency between the parameter value and the actual `atten_mask` distribution will cause precision degradation. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`inner_precise`** (`int`): Optional. Used to improve precision. The data type can be `int64`. The default value is `0`.
+- **`pre_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `torch.int64`. The default value is `2147483647`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
+- **`next_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `torch.int64`. The default value is `2147483647`. For the relationship between `next_tockens`, `pre_tockens`, and `atten_mask`, refer to the configuration of the `sparse_mode` parameter. Any inconsistency between the parameter value and the actual `atten_mask` distribution will cause precision degradation. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
+- **`inner_precise`** (`int`): Optional. Used to improve precision. The data type can be `torch.int64`. The default value is `0`.
 
     > [!NOTE]  
     > Values of `0` and `1` are currently reserved. A value of `2` enables invalid row computation, which prevents precision loss caused by fully masked rows during computation, but can degrade performance.
@@ -139,9 +141,9 @@ torch_npu.npu_fusion_attention(query, key, value, head_num, input_layout, pse=No
 - **`sync`** (`bool`): Optional. Controls the synchronization mode for DSA dropout mask vector generation. The default value is `False`, indicating asynchronous generation of the dropout mask. When set to `True`, it indicates synchronous generation of the dropout mask.
 - **`softmax_layout`** (`string`): Optional. Controls the data layout of the softmax outputs (`softmax_max` and `softmax_sum`) in the `TND` scenario. This parameter must only be configured when `input_layout` is `"TND"`, and supports only `"TND"`. By default, the softmax outputs use the `NTD` layout. When `"TND"` is provided, the softmax outputs use the `TND` layout. This parameter is introduced in TorchNPU 7.2.0 and supported in CANN 8.3.RC1 and later versions.
 - **`sink`** (`Tensor`): Optional. Bias for each attention head. The shape must be `[head_num]`, and the data type can only be `torch.float32`. This parameter is introduced in TorchNPU 7.3.0 and supported in CANN 8.5.0 and later versions.
-- **`dropout_mask`** (`Tensor`): Optional. External dropout mask used to control dropout behavior. When this parameter is provided, the external mask is used (instead of the one internally generated) to achieve reproducible dropout effects. The data type can be `torch.uint8`. The data layout can be ND. If this parameter is omitted, the operator automatically generates the dropout mask internally based on `seed` and `offset`. If this parameter is provided, the mask must be generated using the internal API [`_npu_dropout_gen_mask`](https://gitcode.com/Ascend/op-plugin/blob/26.1.0/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp).
-- **`seed`** (`int`): Optional. Seed value of the Philox algorithm in DSA dropout mask generation. The data type can be `int64`. The default value is `0`. When the `dropout_mask` parameter is omitted, a default random seed is used if `seed` is `0`, and the specified seed value is used to generate the dropout mask if `seed` is non-zero. When `dropout_mask` is provided, the explicit `seed` value used to generate that `dropout_mask` must also be provided.
-- **`offset`** (`int`): Optional. Offset value of the Philox algorithm in DSA dropout mask generation. The data type can be `int64`. The default value is `0`. Use it in combination with the `seed` parameter to control the generation position of the dropout mask. When `dropout_mask` is provided, the `offset` value used to generate that `dropout_mask` must also be provided.
+- **`dropout_mask`** (`Tensor`): Optional. External dropout mask used to control dropout behavior. When this parameter is provided, the external mask is used (instead of the one internally generated) to achieve reproducible dropout effects. The data type can be `torch.uint8`. The data layout can be ND. If this parameter is omitted, the operator automatically generates the dropout mask internally based on `seed` and `offset`. If this parameter is provided, the mask must be generated using the internal API [`_npu_dropout_gen_mask`](https://gitcode.com/Ascend/op-plugin/blob/26.2.0/op_plugin/ops/opapi/DropoutGenMaskKernelNpuOpApi.cpp).
+- **`seed`** (`int`): Optional. Seed value of the Philox algorithm in DSA dropout mask generation. The data type can be `torch.int64`. The default value is `0`. When the `dropout_mask` parameter is omitted, a default random seed is used if `seed` is `0`, and the specified seed value is used to generate the dropout mask if `seed` is non-zero. When `dropout_mask` is provided, the explicit `seed` value used to generate that `dropout_mask` must also be provided.
+- **`offset`** (`int`): Optional. Offset value of the Philox algorithm in DSA dropout mask generation. The data type can be `torch.int64`. The default value is `0`. Use it in combination with the `seed` parameter to control the generation position of the dropout mask. When `dropout_mask` is provided, the `offset` value used to generate that `dropout_mask` must also be provided.
 
 ## Outputs<a name="en-us_topic_0000001742717129_section22231435517"></a>
 
@@ -159,12 +161,21 @@ Seven outputs are generated in the following types: `Tensor`, `Tensor`, `Tensor`
 
 - This API is used only in training scenarios.
 - This API does not support graph mode or `aclgraph`.
-- The data types of `query`, `key`, `value`, and `pse` must be identical.
+- This API does not support graph mode or aclgraph.
+- The data types of the inputs `query`, `key`, `value`, and `pse` must be identical.
 - The `input_layout` of `query`, `key`, and `value` must be identical.
 - Shape descriptions for `query`, `key`, and `value`:
     - The shapes of `key` and `value` must be identical.
     - `B`: The batch size must be identical across inputs. In non-varlen scenarios, the value ranges from 1 to 2M. In varlen scenarios, the value ranges from 1 to 2K.
-    - `D`: head dimension. `Dq` must equal `Dk` and `Dk` must be greater than or equal to `Dv`. The value ranges from 1 to 768.
+    - `D`: head dimension. `Dq` must equal `Dk` and `Dk` must be greater than or equal to `Dv`. The value ranges are as follows:
+
+        <!-- npu="910b" id3 -->
+        - <term>Atlas A2 products</term>: The value ranges from 1 to 768.
+        <!-- end id3 -->
+        <!-- npu="950" id4 -->
+        - <term>Ascend 950PR&950DT products</term>: The value ranges from 1 to 512.
+        <!-- end id4 -->
+
     - `S`: sequence length. The value ranges from 1 to 1M.
 
 - In varlen scenarios:

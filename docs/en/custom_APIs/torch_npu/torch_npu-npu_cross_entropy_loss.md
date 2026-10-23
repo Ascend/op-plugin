@@ -1,34 +1,38 @@
 # torch_npu.npu_cross_entropy_loss
 
 > [!NOTICE]  
-This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
+> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Computes the cross-entropy loss between the input `input` and label `target`. This API fuses the `log_softmax` and `nll_loss` operations from the native `CrossEntropyLoss` framework to reduce memory utilization during computation.
+- Function: computes the cross-entropy loss between the input `input` and the labels `target`. This API fuses log_softmax and nll_loss in the native `CrossEntropyLoss`, reducing the memory used during computation.
 - Formulas:
 
-    $x$ represents the input `input`, $y$ represents the label `target`, `weight` represents the weight, $C$ represents the total number of labels, and $N$ represents the batch size.
+    In the formulas, *x* is the input `input`, *y* is the label `target`, *weight* is the weight, *C* is the number of classes, and *N* is the batch size.
 
-    Formula for cross entropy loss calculation:
+    The formula for computing the cross-entropy loss `loss` is as follows:
     $$
     loss=\begin{cases}\sum_{n=1}^N\frac{1}{\sum_{n=1}^Nweight_{y_n}*1\{y_n\ !=\ ignoreIndex \}}l_n,&\text{if reduction = 'mean'} \\\sum_{n=1}^Nl_n,&\text {if reduction = 'sum' }\\\{l_0,l_1,...,l_n\},&\text{if reduction = 'none' }\end{cases}
     $$
     
-    Formula for $l_n$ calculation:
+    The formula for computing $l_n$ is as follows:
     $$
     l_n = -weight_{y_n}*log\frac{exp(x_{n,y_n})}{\sum_{c=1}^Cexp(x_{n,c})}*1\{y_n\ !=\ ignoreIndex \}
     $$
   
-    Formula for the log probability `log_prob` of the n-th sample for the c-th class:
+    The formula for computing the log probability `log_prob` of the *n*-th sample for the *c*-th class is as follows:
     $$
     lse_n = log*\sum_{c=1}^{C}exp(x_{n,c})
     $$
@@ -63,47 +67,49 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 
 ## Constraints
 
-- The value range of `N` in the input shape is (0, 200000].
-- When `input.requires_grad=True`, modifying the default value of `label_smoothing` is not supported in `"sum"` or `"none"` mode. In `"mean"` mode, only the default values of the optional parameters (including `weight`, `ignore_index`, and `label_smoothing`) are supported.
-- The input parameters `lse_square_scale_for_zloss` and `return_zloss` are currently not supported.
-- The output tensors `zloss` and `lse_for_zloss` are currently not supported.
-- Only the `loss` output tensor supports gradient computation.
+- The value range of N in the input shape is (0, 200000].
+- When input.requires_grad=True, the default value of `label_smoothing` cannot be modified in `sum`/`none` mode. In `mean` mode, only the default values of the optional parameters can be passed, including `weight`, `ignore_index`, and `label_smoothing`.
+- The inputs `lse_square_scale_for_zloss` and `return_zloss` are not supported currently.
+- The outputs `zloss` and `lse_for_zloss` are not supported currently.
+- Only `loss` in the outputs supports gradient computation.
+- This API can be used only in training scenarios.
+- This API supports eager mode and graph mode.
 
-## Examples
+## Example
 
-- When reduction is set to `mean`:
+- When reduction is set to `mean`, the example is as follows:
 
     ```python
     import torch
     import torch_npu
 
-    N = 4096 # Batch size
-    C = 8080 # Number of labels
+    N = 4096 # batch size
+    C = 8080 # number of classes
 
     # Construct inputs and labels
     input = torch.randn(N, C, dtype=torch.float32, requires_grad=True).npu()
     target = torch.arange(0, N, dtype=torch.int64).npu()
 
-    # Call the NPU cross entropy loss function. When input.requires_grad=True is set to true, only the default values of the optional parameters can be transferred in mean (default) mode.
+    # Call the NPU cross-entropy loss function. When input.requires_grad=True, only the default values of the optional parameters can be passed in the default mean mode.
     loss, log_prob,_ , _ = torch_npu.npu_cross_entropy_loss(input, target)
 
     loss.backward()
     ```
     
-- When reduction is set to `sum`:
+- When reduction is set to `sum`, the example is as follows:
 
     ```python
     import torch
     import torch_npu
 
-    N = 4096 # Batch size
-    C = 8080 # Number of labels
+    N = 4096 # batch size
+    C = 8080 # number of classes
 
     # Construct inputs and labels
     input = torch.randn(N, C, dtype=torch.float32, requires_grad=True).npu()
     target = torch.arange(0, N, dtype=torch.int64).npu()
 
-    # Call the NPU cross entropy loss function. When input.requires_grad=True is set to true, the default value of label_smoothing cannot be changed in sum mode.
+    # Call the NPU cross-entropy loss function. When input.requires_grad=True, modifying the default value of label_smoothing is not supported in sum mode.
     loss, log_prob,_ , _ = torch_npu.npu_cross_entropy_loss(input, target, reduction="sum", ignore_index=100)
 
     loss.backward()

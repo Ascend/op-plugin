@@ -1,26 +1,27 @@
 # torch_npu.npu_quant_lightning_indexer
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>        | √ |
-|<term>Atlas A3 inference products</term>  | √  |
-|<term>Atlas A2 inference products</term>  | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 inference products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 inference products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Performs preprocessing computation for SparseFlashAttention (SFA) in inference scenarios. This API selects key sparse tokens and quantizes the input `query` and `key` to implement `torch.int8` storage and `torch.int8` computation to maximize performance gains.
+- Function: QuantLightningIndexer is the preprocessing computation module of SparseFlashAttention (SFA) in inference scenarios. It is used to select key sparse tokens and quantize the input query and key to implement 8-bit storage and 8-bit computation for maximum benefit.
 
-- Formula:
+- Formulas:
     $$out = \text{Top-}k\left\{[1]_{1\times g}@\left[(W@[1]_{1\times S_{k}})\odot\text{ReLU}\left(\left(Scale_Q@Scale_K^T\right)\odot\left(Q_{index}^{INT8}@{\left(K_{index}^{INT8}\right)}^T\right)\right)\right]\right\}$$
     The main computation process is as follows:
-    1. Multiply the input parameter `query` ($Q_{index}^{INT8}\in\R^{g\times d}$) corresponding to a token by the given context `key` ($K_{index}^{INT8}\in\R^{S_{k}\times d}$) to obtain the correlation.
-    2. Multiply the correlation results by the dequantization coefficients `query_dequant_scale` ($Scale_Q$) and `key_dequant_scale` ($Scale_K^T$) corresponding to `query` and `key`. Invalid negative correlation signals are filtered by the $\text{ReLU}$ activation function to obtain a correlation score vector between the current token and all preceding tokens.
-    3. Multiply the vector result by the weight coefficient `weights` ($W$). Then, select the Top-K indices along the `g` dimension to obtain the output `out`, which serves as the input to SparseFlashAttention.
+    1. Multiply the input parameter `query` of a token ($Q_{index}^{INT8}\in\R^{g\times d}$) by the given context `key` ($K_{index}^{INT8}\in\R^{S_{k}\times d}$) to obtain the correlation.
+    2. Multiply the correlation result by the dequantization coefficients `query_dequant_scale` ($Scale_Q$) and `key_dequant_scale` ($Scale_K^T$) corresponding to `query` and `key`, and filter out invalid negative correlation signals through the $ReLU$ activation function to obtain the correlation score vector of the current token and all preceding tokens.
+    3. After multiplying the result by the weight coefficient `weights` ($W$), select the top $Top-k$ index values along the g direction to obtain the output $out$, which serves as the input of SparseFlashAttention.
 
 ## Prototype
 
@@ -31,14 +32,14 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 ## Parameters
 >
-> [!NOTE]   
+> [!NOTE]
 >
-> - Dimension definitions for the `query`, `key`, `weights`, `query_dequant_scale`, and `key_dequant_scale`:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br>`D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
-> - `S1` and `S2` indicate the input sequence lengths of `query` and `key`, respectively.<br>`N1` and `N2` indicate the head counts corresponding to `query` and `key`, respectively.<br>`k` indicates the number of finally selected indices. The size of the `D` dimension in both `query` and `key` must be identical and equal to `128`. `T1` and `T2` indicate the cumulative sums of input sequence lengths for `query` and `key`, respectively.
+> - Meanings of the dimensions of the parameters query, key, weights, query_dequant_scale, and key_dequant_scale: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, N (Head Num) indicates the number of heads, D (Head Dim) indicates the minimum unit size of the hidden layer and satisfies D=H/N, and T indicates the cumulative sum of the sequence lengths of input samples of all batches.
+> - S1 and S2 respectively indicate the sequence lengths of the input samples of query and key, N1 and N2 respectively indicate the numbers of heads corresponding to query and key, and k indicates the number of indices selected at the end. The D value of the parameter query is equal to that of the parameter key, which is 128. T1 and T2 respectively indicate the cumulative sums of the sequence lengths of the input samples of query and key.
 >
-- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{INT8}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. `N1` can be [1, 64].
-    
-- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{INT8}\in\R^{S_k\times d}$ in the formula. Non-contiguous tensors are supported along axis 0 when `layout_key` is `PA_BSND`. The data layout can be `ND`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_key` is `PA_BSND`, the shape must be `[block_count, block_size, N2, D]`, where `block_count` represents the total number of blocks in PagedAttention, and `block_size` represents the number of tokens in a block. The value of `block_size` must be a multiple of `16` and can be at most `1024`. When `layout_key` is `BSND`, the shape must be `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape must be `[T2, N2, D]`. The value of `N2` must be `1`.
+- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{`torch.int8`}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. `N1` can be [1, 64].
+
+- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{`torch.int8`}\in\R^{S_k\times d}$ in the formula. Non-contiguous tensors are supported along axis 0 when `layout_key` is `PA_BSND`. The data layout can be `ND`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_key` is `PA_BSND`, the shape must be `[block_count, block_size, N2, D]`, where `block_count` represents the total number of blocks in PagedAttention, and `block_size` represents the number of tokens in a block. The value of `block_size` must be a multiple of `16` and can be at most `1024`. When `layout_key` is `BSND`, the shape must be `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape must be `[T2, N2, D]`. The value of `N2` must be `1`.
 
 - **`weights`** (`Tensor`): Required. Weight coefficient, $W$ in the formula. Non-contiguous tensors are not supported. The data layout can be `ND`. The data type can be `torch.float16` or `torch.bfloat16`. The shape can be `[B, S1, N1]` or `[T, N1]`.
 
@@ -62,13 +63,13 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **`layout_key`** (`str`): Optional. Data layout configuration of the input `key`. Valid values are `"PA_BSND"`, `"BSND"`, or `"TND"`. The default value is `"BSND"`. In non-PagedAttention scenarios, the value of this parameter must be identical to that of `layout_query`.
 
-- **`sparse_count`** (`int`): Optional. Number of tokens retained during the Top-K stage. The value range is [1, 2048]. The data type can be `int32`.
+- **`sparse_count`** (`int`): Optional. Number of tokens retained during the Top-K stage. The value range is [1, 2048]. The data type can be `torch.int32`.
 
-- **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `int32`. Valid values: `0`: enables `defaultMask` mode. `3`: enables `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
+- **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `torch.int32`. Valid values: `0`: enables `defaultMask` mode. `3`: enables `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63 - 1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63 - 1` is supported.
 
 - **`query_dtype`** (`int`): Optional. Actual data type of `query`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`.
 
@@ -78,25 +79,30 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 `Tensor`
 
-$out$ in the formula. The data layout can be ND. The data type can be `torch.int32`. The output shape can be `(B, S1, N2, k)` or `(T, N2, k)`.
+Represents the output Out in the formulas. The data layout can be $ND$. The data type can be `torch.int32`. The output shape [B,S1,N2,k] or [T,N2,k] is supported.
 
 ## Constraints
 
 - This API supports graph mode.
-- The result of $W \odot Scale_Q$ must be within the representable range of `torch.float16`.
-- Sorting NaN values during the Top-K process is undefined behavior.
-- Atlas A3 inference products:
-    - The data types of `query` and `key` can be `torch.int8`.
-    - Only `torch.float16`, `torch.float16`, and `torch.float16` are supported for the data types of `weights`, `query_dequant_scale`, and `key_dequant_scale`, respectively.
-    - Non-contiguous `key` and `key_dequant_scale` tensors are not supported.
-- Ascend 950PR/Ascend 950DT:
-    - The value of `N1` in `query` can only be `8`, `16`, `24`, `32`, or `64`.
-    - The data types of `query` and `key` can be `torch.float8_e4m3fn`, `torch_npu.hifloat8`, or `torch.int8`.
-    - When the data type of `query` and `key` is `torch.float8_e4m3fn`, the supported data types of `weights`, `query_dequant_scale`, and `key_dequant_scale` are `torch.bfloat16`, `torch.float`, and `torch.float`, respectively, or `torch.float16`, `torch.float16`, and `torch.float16`, respectively.
-    - When the data type of `query` and `key` is `torch_npu.hifloat8`, only `torch.bfloat16`, `torch.float`, and `torch.float` are supported for the data types of `weights`, `query_dequant_scale`, and `key_dequant_scale`, respectively.
-    - When the data type of `query` and `key` is `torch.int8`, only `torch.float16`, `torch.float16`, and `torch.float16` are supported for the data types of `weights`, `query_dequant_scale`, and `key_dequant_scale`, respectively.
+- This API requires the result of $W \odot Scale_Q$ to be within the representation range of `torch.float16`.
+- The TopK process of this API has undefined behavior for NaN sorting.
 
-## Examples
+<!-- npu="A3" id4 -->
+- Atlas A3 inference products:
+    - The data type of query and key can be `torch.int8`.
+    - Only the data type combination `torch.float16, torch.float16, torch.float16` is supported for weights, query_dequant_scale, and key_dequant_scale.
+    - When `layout_key` is PA_BSND, key and key_dequant_scale support non-contiguous 0th axis, and other axes must be contiguous.
+<!-- end id4 -->
+<!-- npu="950" id5 -->
+- Ascend 950PR&950DT products:
+    - For query, N1 supports only 8, 16, 24, 32, and 64.
+    - The data type of query and key can be `torch.float8_e4m3fn`, `torch_npu.hifloat8`, or `torch.int8`.
+    - When the data type of query and key is `torch.float8_e4m3fn`, the supported data types of weights, query_dequant_scale, and key_dequant_scale are `torch.bfloat16, torch.float, torch.float` or `torch.float16, torch.float16, torch.float16`;
+    - When the data type of query and key is `torch_npu.hifloat8`, only the data type combination `torch.bfloat16, torch.float, torch.float` is supported for weights, query_dequant_scale, and key_dequant_scale;
+    - When the data type of query and key is `torch.int8`, only the data type combination `torch.float16, torch.float16, torch.float16` is supported for weights, query_dequant_scale, and key_dequant_scale.
+<!-- end id5 -->
+
+## Example
 
 - Single-operator call
 
@@ -158,6 +164,7 @@ $out$ in the formula. The data layout can be ND. The data type can be `torch.int
     import numpy as np
     import torch.nn as nn
     import math
+    import torchair
 
     n1 = 64
     n2 = 1
@@ -194,11 +201,11 @@ $out$ in the formula. The data layout can be ND. The data type can be `torch.int
         def __init__(self):
             super(LIQuantNetwork, self).__init__()
 
-        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None, 
+        def forward(self, query, key, weights, query_dequant_scale, key_dequant_scale, actual_seq_lengths_query=None,
                     actual_seq_lengths_key=None, block_table=None, query_quant_mode=0, key_quant_mode=0,
                     layout_query='BSND', layout_key='BSND', sparse_count=2048, sparse_mode=3):
 
-            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),       
+            out = torch_npu.npu_quant_lightning_indexer(query.npu(), key.npu(), weights.npu(), query_dequant_scale.npu(),
                                                         key_dequant_scale.npu(),
                                                         actual_seq_lengths_query=actual_seq_lengths_query.npu(),
                                                         actual_seq_lengths_key=actual_seq_lengths_key.npu(),

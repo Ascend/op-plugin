@@ -1,24 +1,23 @@
 # torch_npu.save_npugraph_tensor
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>          |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
-In `aclgraph` mode, the native Python `torch.save` function introduces synchronous operations that trigger graph breaks during `torch.compile`. These operations cannot be captured by `aclgraph`, preventing the use of standard `print` to inspect tensor data during graph execution.
+In aclgraph mode, the native PyTorch `torch.save` function involves synchronous processing, which triggers graph breaks during `torch.compile` and cannot be captured by aclgraph. As a result, in graph mode, the tensor data during aclgraph execution cannot be observed.
 
-This API provides a tensor dumping capability similar to PyTorch `torch.save` without affecting `aclgraph` capture and replay. This API allows the tensor data, data types, and shape information of intermediate nodes within an `aclgraph` to be saved to a specified binary file, enabling users to inspect tensor data during `aclgraph` execution and quickly locate issues.
+This API provides tensor dump capabilities similar to the native PyTorch `torch.save` API without affecting aclgraph capture and replay, allowing the tensor data, data type, and shape of intermediate nodes of aclgraph to be saved to a specified binary file so that the user can observe the tensor data during aclgraph execution to quickly locate problems.
 
-This API supports saving either a single tensor or multiple tensors provided in a tensor list.
+Saving a single tensor and saving multiple tensors (a tensor list) are supported.
 
-The saved binary files can be read using the `torch.load()` API to reconstruct the tensors.
+The saved file can be read and the tensor can be rebuilt using the `torch.load()` API.
 
 ## Prototype
 
@@ -31,29 +30,27 @@ torch_npu.save_npugraph_tensor(input, save_path=None, overwrite=False) -> None
 - **`input`** (`Tensor`/`List[Tensor]`): Required. Tensor or tensor list to be saved.
 
 - **`save_path`** (`str`): Optional. Full path for saving the file.
-  - Absolute and relative paths are supported. The path must include a file name. The path configuration rules are the same as those of the native PyTorch `torch.save`. The caller is responsible for ensuring that the parent directory exists.
-  - The supported file extensions are the same as those of the native `torch.save`, including `.pt`, `.pth`, and `.bin`.
-  - If no file path is specified, the file is saved to the current working directory by default, using the naming format `tensor_<timestamp>_device_<device_id>_<counter>.pt`, such as `tensor_20260101_000000_000000_device_0_0.pt`.
-
+  - Absolute and relative paths are supported. The path must include a file name. The path configuration rules are the same as those of the native PyTorch `torch.save`. The caller must ensure that the parent path exists.
+  - The supported file extensions are the same as those of the native `torch.save`, including ".pt", ".pth", and ".bin".
+  - If no file save path is specified, the file is saved in the current path by default, with the default naming format "tensor_\<timestamp>\_device\_<device\_index>\_\<counter>.pt", for example, "tensor_20260101_000000_000000_device_0_0.pt".
+  
 - **`overwrite`** (`bool`): Optional. Specifies whether to overwrite an existing file with the same name. The default value is `False`.
-  - When `overwrite=False`, a counter is automatically appended to the file name if a file with the same name already exists, for example, `tensor_device_0_0.pt` and `tensor_device_0_1.pt`.
-  - When `overwrite=True`, a file with the same name is directly overwritten, and no counter is appended to the file name, for example, `tensor_device_0.pt`.
+  - When `overwrite=False`, a counter is automatically added when a file with the same name is encountered, for example, "tensor_device_0_0.pt" and "tensor_device_0_1.pt".
+  - When `overwrite=True`, the file with the same name is directly overwritten, and no counter is added to the file name, for example, "tensor_device_0.pt".
 
 ## Return Values
 
 `None`
 
-None.
+No return value.
 
 ## Constraints
 
-- This API can be used in `Eager` mode and `aclgraph` mode.
+- This API can be used in eager mode and aclgraph mode.
 
-- Input tensors in proprietary formats are not supported.
+- The actual file path has the device index appended to distinguish between devices in multi-device scenarios. When `overwrite=False`, each file has a file counter to distinguish between multiple files with the same name. For example, when writing to "tensor.pt" multiple times, multiple files are generated, namely "tensor_device_0_0.pt", "tensor_device_0_1.pt", and so on. When `overwrite=True`, the file is directly overwritten as "tensor_device_0.pt".
 
-- The actual file path includes the device ID to distinguish files in multi-device scenarios. When `overwrite=False`, each file has a counter appended to the file name to distinguish multiple files with the same name. For example, when `"tensor.pt"` is written multiple times, multiple files are generated, such as `"tensor_device_0_0.pt"`, `"tensor_device_0_1.pt"`, and so on. When `overwrite=True`, the file is directly overwritten as `"tensor_device_0.pt"`.
-
-## Examples
+## Example
 
 - Single-operator call
 
@@ -66,7 +63,7 @@ None.
     >>> torch_npu.save_npugraph_tensor(y)
     ```
 
-- `torch.npu.graph`-based call
+- Call based on `torch.npu.graph`
 
     ```python
     import torch
@@ -83,7 +80,7 @@ None.
     graph1.replay()
     ```
 
-- `torch.compile`-based call
+- Call based on `torch.compile`
 
     ```python
     import torch
@@ -106,7 +103,7 @@ None.
     model (x)
     ```
 
-- Load and inspect the saved file
+- Parsing the saved file
 
     ```python
     >>> x = torch.load("./x_device_0.pt")

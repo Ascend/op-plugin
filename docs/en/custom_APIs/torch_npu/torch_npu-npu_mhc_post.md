@@ -1,22 +1,24 @@
 # torch\_npu.npu\_mhc\_post
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
-- Performs post mapping on the output h<sub>l</sub><sup>out</sup> of layer l in the Manifold-Constrained Hyper-Connections (mHC) architecture and Res mapping on the input x<sub>l</sub> of layer l, and then applies a residual connection to the two results to obtain the input x<sub>l+1</sub> of layer l+1.
+- Function: performs Post Mapping on the output of the $l$-th layer $h_l^{out}$ and Res Mapping on the input of the $l$-th layer $x_l$ in the mHC (Manifold-Constrained Hyper-Connections) architecture, and then applies a residual connection to the two, obtaining the input of the $(l+1)$-th layer $x_{l+1}$. When `h_res` is `None`, Res Mapping is skipped and the residual addition is performed directly.
+- Formulas:
 
-- Formula:
+    When `h_res` is provided:
 
     $$ x_{l+1} = (H_l^{res}) \times x_l + h_l^{out} \otimes H_l^{post} $$
-    
+
+    When `h_res` is omitted (passed as `None`):
+
+    $$ x_{l+1} = x_l + h_l^{out} \otimes H_l^{post} $$
+
 ## Prototype
 
 ```python
@@ -26,20 +28,20 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Tensor to be processed, representing the input data of the mHC layer in the network. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`h_res`** (`Tensor`): Required. mHC `h_res` transformation matrix, which is the doubly stochastic matrix obtained after the Sinkhorn transformation. The data type can be `torch.float32`. The shape can be `(B, S, n, n)` or `(T, n, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`h_out`** (`Tensor`): Required. Output of the Attention/MLP layer. The data type is the same as that of `x`. The shape can be `(B, S, D)` or `(T, D)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
-- **`h_post`** (`Tensor`): Required. mHC `h_post` transformation matrix. The data type can be `torch.float32`. The shape can be `(B, S, n)` or `(T, n)`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`h_res`** (`Tensor`): Optional. The default value is `None`. The hRes transformation matrix of mHC, which is a doubly stochastic matrix after the Sinkhorn transformation. The data type can be `torch.float32`, the shape is (B, S, n, n) or (T, n, n), the data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported. When `None` is passed, Res Mapping is skipped and the formula degenerates to $x_{l+1} = x_l + h_l^{out} \otimes H_l^{post}$.
+- **`h_out`** (`Tensor`): Required. Output of the Atten/MLP layer. The data type is the same as that of x, the shape is (B, S, D) or (T, D), the data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported.
+- **`h_post`** (`Tensor`): Required. The hPost transformation matrix of mHC. The data type can be `torch.float32`, the shape is (B, S, n) or (T, n), the data layout can be ND. Non-contiguous tensors are supported. Empty tensors are supported.
 
 ## Return Values
 
-**`y`** (`Tensor`): Required output. Output data of the mHC layer in the network, serving as the input to the next layer. The data type is the same as that of `x`. The shape can be `(B, S, n, D)` or `(T, n, D)`. The data layout can be `ND`.
+**`y`** (`Tensor`): Required output. The output data of the mHC layer in the network, which serves as the input of the next layer. The data type is the same as that of `x`, the shape is (B, S, n, D) or (T, n, D), and the data layout can be ND.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports single-operator and TorchAir graph mode calls.
+- This API supports single-operator mode and TorchAir graph mode calls.
 
-## Examples
+## Example
 
 - Single-operator call
 
@@ -66,6 +68,8 @@ torch_npu.npu_mhc_post(x, h_res, h_out, h_post) -> Tensor
     h_out_npu = h_out.npu()
     h_post_npu = h_post.npu()
     y_npu = torch_npu.npu_mhc_post(x_npu, h_res_npu, h_out_npu, h_post_npu)
+    # When h_res is omitted:
+    # y_npu = torch_npu.npu_mhc_post(x_npu, None, h_out_npu, h_post_npu)
     ```
 
 - TorchAir graph mode call (aclgraph)
