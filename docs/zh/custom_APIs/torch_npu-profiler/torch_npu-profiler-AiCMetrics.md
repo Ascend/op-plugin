@@ -27,7 +27,7 @@ torch_npu.profiler.AiCMetrics
 
 ## 成员说明
 
-以下采集项的结果数据含义可参见《msProf》中的“<a href="https://gitcode.com/Ascend/msprof/blob/master/docs/zh/user_guide/profile_data_file_references.md#op_summary%E7%AE%97%E5%AD%90%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF">op_summary（算子详细信息）</a>”章节，但具体采集结果请以实际情况为准。
+以下采集项的结果数据含义可参见《msProf》中的“<a href="https://gitcode.com/Ascend/msprof/blob/26.2.0/docs/zh/user_guide/profile_data_file_references.md#op_summary%E7%AE%97%E5%AD%90%E8%AF%A6%E7%BB%86%E4%BF%A1%E6%81%AF">op_summary（算子详细信息）</a>”章节，但具体采集结果请以实际情况为准。
 
 - **torch_npu.profiler.AiCMetrics.AiCoreNone**：关闭AI Core的性能指标采集。
 - **torch_npu.profiler.AiCMetrics.PipeUtilization**：计算单元和搬运单元耗时占比。

@@ -62,7 +62,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     |torch_npu.Format.NCL|47|3维数据格式。对应的AscendCL数据格式为ACL_FORMAT_NCL。|
 
     > [!NOTE]
-    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://gitcode.com/cann/asc-devkit/blob/master/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">数据排布格式</a>”章节。
+    > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">数据排布格式</a>”章节。
 
 <!-- npu="950,A3,910b" id15 -->
 - **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。

@@ -14,7 +14,7 @@
 
 - 计算公式：
 
-    mx量化场景公式如下，更多关于量化技术的介绍参见《CANN 算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/master/docs/zh/context/quant_mode_introduction.md)。
+    mx量化场景公式如下，更多关于量化技术的介绍参见《CANN 算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/zh/context/quant_mode_introduction.md)。
 
     ![](../../figures/zh-cn_formulaimage_0000002521244910.png)
 

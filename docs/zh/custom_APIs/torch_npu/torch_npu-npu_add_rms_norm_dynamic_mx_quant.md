@@ -93,7 +93,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilion=1e-06, scale_alg=0, round_mode="rint", dst_type=torch_npu.float4_e2m1fn_x2) -> (Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilon=1e-06, scale_alg=0, round_mode="rint", dst_type=torch_npu.float4_e2m1fn_x2) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## 参数说明
