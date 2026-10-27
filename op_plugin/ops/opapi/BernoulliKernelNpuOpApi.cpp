@@ -17,6 +17,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 #include "torch_npu/csrc/aten/mirror/NPUMemoryOverlap.h"
 
@@ -27,9 +28,16 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> gen) {
   at_npu::native::assert_no_internal_overlap(self);
+  if (self.numel() == 0) {
+    return self; // 对齐社区：空 tensor 提前返回，不消耗 generator offset
+  }
   DO_COMPATIBILITY(aclnnInplaceBernoulli, acl_op::bernoulli_(self, p, gen));
   auto gen_ = at::get_generator_or_default<at_npu::NPUGeneratorImpl>(gen, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(PHILOX_DEFAULT_NUM);
+  // A5(Ascend950+) 对齐社区：scalar 版 offset 按 numel 动态计算；其他芯片保持固定 10
+  const uint64_t counter_offset = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950)
+      ? static_cast<uint64_t>(op_plugin::utils::calc_final_counter_offset(self))
+      : PHILOX_DEFAULT_NUM;
+  auto pair = gen_->philox_engine_inputs(counter_offset);
   const uint64_t seed = pair.first;
   const uint64_t offset = pair.second;
 
@@ -40,6 +48,9 @@ at::Tensor& bernoulli_(at::Tensor& self, double p, c10::optional<at::Generator> 
 
 at::Tensor& bernoulli_(at::Tensor& self, const at::Tensor& p, c10::optional<at::Generator> gen) {
   at_npu::native::assert_no_internal_overlap(self);
+  if (self.numel() == 0) {
+    return self; // 对齐社区：空 tensor 提前返回，不消耗 generator offset
+  }
   DO_COMPATIBILITY(aclnnInplaceBernoulliTensor, acl_op::bernoulli_(self, p, gen));
   at::Tensor cp_p = p;
   if (npu_preparation::IsCPUScalar(p)) {
