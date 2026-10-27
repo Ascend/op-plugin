@@ -59,7 +59,7 @@ function torch_npu_install() {
 }
 
 function main() {
-    pip"${py_version}" install https://ascend-cann-open.obs.cn-north-4.myhuaweicloud.com/Triton_Innersource/triton-ascend/20260428190056/triton_ascend-3.2.1-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+    pip"${py_version}" install https://mirrors.huaweicloud.com/ascend/repos/pypi/nightly/triton-ascend/triton_ascend-3.2.2+release20260701-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
     cd ${WORKSPACE}
     rm -rf "${python_path}"/lib/python"${py_version}"/site-packages/torch
     rm -rf "${python_path}"/lib/python"${py_version}"/site-packages/~orch
