@@ -168,10 +168,18 @@ class TestGru(TestCase):
         pade_outputs, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs, batch_first=False)
 
         # cacl npu
-        embeded_npu = embeded.npu()
-        pack = torch.nn.utils.rnn.pack_padded_sequence(embeded_npu, lengths, batch_first=False)
+        # Pack on CPU first so the packed data strictly follows the
+        # sum(batch_sizes) contract of PyTorch (op-plugin's NPU
+        # _pack_padded_sequence does not shrink the data rows), then move the
+        # whole PackedSequence to NPU before feeding it to the GRU.
+        pack_cpu = torch.nn.utils.rnn.pack_padded_sequence(embeded, lengths, batch_first=False)
+        pack = pack_cpu.to("npu")
         pade_outputs_npu, hn_n = rnn_npu(pack)
-        pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu, batch_first=False)
+        # Move the packed output back to CPU to unpad it with the native PyTorch
+        # kernel: op-plugin's NPU pad_packed_sequence assumes the padded
+        # [B*T0, *] layout and cannot unpad the sum(batch_sizes) layout that
+        # aclnnGRU produces.
+        pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu.cpu(), batch_first=False)
 
         self.assertRtolEqual(pade_outputs.detach().numpy(),
                              pade_outputs_npu.cpu().to(torch.float).detach().numpy(), prec=1.e-4)
@@ -218,10 +226,18 @@ class TestGru(TestCase):
         pade_outputs, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs, batch_first=False)
 
         # cacl npu
-        embeded_npu = embeded.npu()
-        pack = torch.nn.utils.rnn.pack_padded_sequence(embeded_npu, lengths, batch_first=False)
+        # Pack on CPU first so the packed data strictly follows the
+        # sum(batch_sizes) contract of PyTorch (op-plugin's NPU
+        # _pack_padded_sequence does not shrink the data rows), then move the
+        # whole PackedSequence to NPU before feeding it to the GRU.
+        pack_cpu = torch.nn.utils.rnn.pack_padded_sequence(embeded, lengths, batch_first=False)
+        pack = pack_cpu.to("npu")
         pade_outputs_npu, hn_n = rnn_npu(pack)
-        pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu, batch_first=False)
+        # Move the packed output back to CPU to unpad it with the native PyTorch
+        # kernel: op-plugin's NPU pad_packed_sequence assumes the padded
+        # [B*T0, *] layout and cannot unpad the sum(batch_sizes) layout that
+        # aclnnGRU produces.
+        pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu.cpu(), batch_first=False)
 
         self.assertRtolEqual(pade_outputs.detach().numpy(),
                              pade_outputs_npu.cpu().detach().numpy(), prec=1.e-4)
@@ -262,9 +278,13 @@ class TestGru(TestCase):
             pade_outputs, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs, batch_first=False)
 
             # cacl npu
-            pack = torch.nn.utils.rnn.pack_padded_sequence(embeded.npu(), lengths, batch_first=False)
+            # Pack on CPU first (see remark above), then move it to NPU.
+            pack_cpu = torch.nn.utils.rnn.pack_padded_sequence(embeded, lengths, batch_first=False)
+            pack = pack_cpu.to("npu")
             pade_outputs_npu, hn_n = rnn_npu(pack)
-            pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu, batch_first=False)
+            # Unpad on CPU (native kernel) since op-plugin's NPU
+            # pad_packed_sequence expects the padded [B*T0, *] layout.
+            pade_outputs_npu, others = torch.nn.utils.rnn.pad_packed_sequence(pade_outputs_npu.cpu(), batch_first=False)
 
             self.assertRtolEqual(pade_outputs.detach().numpy(),
                                  pade_outputs_npu.cpu().detach().numpy(), prec=1.e-4)

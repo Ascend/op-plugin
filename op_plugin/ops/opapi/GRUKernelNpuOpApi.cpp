@@ -134,6 +134,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     if (batch_sizes_opt.has_value() && batch_sizes_opt.value().numel() == 0) {
         batch_sizes_opt = c10::nullopt;
     }
+    // aclnnGRU requires batch_sizes to be on the NPU device; move it if it arrives as CPU.
+    if (batch_sizes_opt.has_value() && batch_sizes_opt.value().device().type() == at::kCPU) {
+        batch_sizes_opt = batch_sizes_opt.value().to(at::Device(at::kPrivateUse1)).contiguous();
+    }
     EXEC_NPU_CMD(
         aclnnGRU,
         input,
