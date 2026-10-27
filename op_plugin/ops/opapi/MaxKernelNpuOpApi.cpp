@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/ReduceOpsUtils.h>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -94,6 +96,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
     bool keepdim,
     at::Tensor& output,
     at::Tensor& indices) {
+  at::native::zero_numel_check_dims(self, dim, "max()");
   DO_COMPATIBILITY(aclnnMaxDim, acl_op::max_out(self, dim, keepdim, output, indices));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
@@ -104,6 +107,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
 }
 
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool keepdim) {
+  at::native::zero_numel_check_dims(self, dim, "max()");
   DO_COMPATIBILITY(aclnnMaxDim, acl_op::max(self, dim, keepdim));
   at::SmallVector<int64_t, op_infer::SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);

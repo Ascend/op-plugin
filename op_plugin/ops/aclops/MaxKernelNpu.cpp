@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/ReduceOpsUtils.h>
+
 #include "op_plugin/utils/NamedTensorCompat.h"
 
 #include "op_plugin/AclOpsInterface.h"
@@ -66,6 +68,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
     bool keepdim,
     at::Tensor& max,
     at::Tensor& max_values) {
+  at::native::zero_numel_check_dims(self, dim, "max()");
   at::SmallVector<int64_t, SIZE> dims = {dim};
   auto output_size = op_infer::reduce_ops_npu_output_size(self, dims, keepdim);
 
@@ -110,6 +113,7 @@ std::tuple<at::Tensor&, at::Tensor&> max_out(
 #endif
 
 std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool keepdim) {
+  at::native::zero_numel_check_dims(self, dim, "max()");
   at::Tensor self_cast = self;
   if (self.dtype() == at::ScalarType::Bool || self.dtype() == at::ScalarType::Int) {
     self_cast = at_npu::native::custom_ops::_npu_dtype_cast(self, at::ScalarType::Float);
