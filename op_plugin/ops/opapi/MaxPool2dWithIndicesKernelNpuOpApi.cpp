@@ -128,7 +128,8 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
 
   at::Tensor output = npu_preparation::apply_tensor_without_format(output_size, self.options());
   static auto maxpool2d_sc = at_npu::native::env::CheckCompatibleImpl();
-  if (!c10_npu::IsAclnnOnly() && !maxpool2d_sc) {
+  static const bool is_aclnn_only = c10_npu::IsAclnnOnly();
+  if (!is_aclnn_only && !maxpool2d_sc) {
     // 5HD format return the indices with mask, dtype int8,size should be muls 16*2
     indices_size = self.ndimension() == DIM_SIZE
         ? c10::SmallVector<int64_t, SIZE>({n_batch, n_input_plane, mask_H, mask_W * 32})
@@ -137,7 +138,9 @@ std::tuple<at::Tensor, at::Tensor> exec_max_pool2d_with_indices(
     EXEC_NPU_CMD(aclnnMaxPool2dWithMask, self, kernel_sizes, strides, paddings, dilations, ceil_mode, output, indices);
   } else {
     indices_size = output_size;
-    indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(at::kInt));
+    // indices is int64 on aclnn-only devices (Ascend950 and later), to align with PyTorch; int32 on other products
+    const at::ScalarType indices_dtype = is_aclnn_only ? at::kLong : at::kInt;
+    indices = npu_preparation::apply_tensor_without_format(indices_size, self.options().dtype(indices_dtype));
     EXEC_NPU_CMD(
         aclnnMaxPool2dWithIndices, self, kernel_sizes, strides, paddings, dilations, ceil_mode, output, indices);
   }

@@ -3,7 +3,7 @@ import numpy as np
 import torch.nn.functional as F
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor
+from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 import unittest
 # enable max_pool2d_withindices
 torch_npu.npu.use_compatible_impl(True)
@@ -11,6 +11,8 @@ DEVICE_NAME = torch_npu.npu.get_device_name(0)
 device_is_910A = False
 if "Ascend910A" in DEVICE_NAME or "Ascend910P" in DEVICE_NAME:
     device_is_910A = True
+# indices is int64 on Ascend950 (regbase), aligned with PyTorch; int32 on other products
+INDICES_IS_INT64 = "Ascend950" in DEVICE_NAME
 
 class TestMaxPool2dWithIndices(TestCase):
     # pylint:disable = huawei-too-many-arguments
@@ -85,8 +87,20 @@ class TestMaxPool2dWithIndices(TestCase):
             cpu_output, cpu_indices = self.cpu_op_exec(cpu_input, item[3], item[4], item[5], item[6], item[7])
             npu_output, npu_indices = self.npu_op_exec(npu_input, item[3], item[4], item[5], item[6], item[7])
             self.assertRtolEqual(cpu_output.numpy(), npu_output.numpy())
-            # Currently the indices returned by the max_pool2d function are of type int32.
+            # indices is int64 on Ascend950 (regbase), aligned with PyTorch; int32 on other products
+            self.assertEqual(npu_indices.dtype, torch.int64 if INDICES_IS_INT64 else torch.int32)
             self.assertEqual(cpu_indices.to(torch.int64).numpy(), npu_indices.to(torch.int64).numpy())
+
+    @SupportedDevices(['Ascend950'])
+    def test_max_pool2d_with_indices_indices_dtype_950(self):
+        input_npu = torch.randn(2, 3, 8, 8).npu()
+        output_npu, indices_npu = F.max_pool2d(
+            input_npu, kernel_size=3, stride=2, padding=1, return_indices=True
+        )
+        # indices is int64 on Ascend950 (regbase), aligned with PyTorch
+        self.assertEqual(output_npu.dtype, torch.float32)
+        self.assertEqual(indices_npu.dtype, torch.int64)
+
 
 if __name__ == "__main__":
     run_tests()
