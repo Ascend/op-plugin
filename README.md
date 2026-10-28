@@ -32,6 +32,8 @@
 
 TorchNPU integrates this repository through the `third_party/op-plugin` submodule and compiles its operator adaptation code into the `torch_npu` package. Building and running OpPlugin depend on TorchNPU. To use these operators, install a compatible TorchNPU package; no separate OpPlugin package is required.
 
+<p style="color: #6b7280;"><sub>About Ascend NPU: Ascend NPU (Neural Processing Unit) is a series of AI accelerators developed by Huawei.</sub></p>
+
 ## Key Features
 
 - **Operator adaptation:** Connects to CANN operator interfaces to implement NPU computation for native PyTorch operators and TorchNPU custom operators.
