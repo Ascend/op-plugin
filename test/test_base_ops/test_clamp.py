@@ -173,5 +173,88 @@ class TestClamp(TestCase):
         self.assertEqual(tuple(npu_output.shape), (0,))
 
 
+class TestClampNarrowInt(TestCase):
+    """Narrow integer clamp must use the vector path (Ascend/pytorch#178)."""
+
+    def _make_input(self, dtype, shape):
+        low, high = (0, 200) if dtype == torch.uint8 else (-100, 100)
+        return torch.randint(low, high, shape, dtype=dtype)
+
+    def _assert_same(self, cpu_out, npu_out):
+        self.assertEqual(cpu_out.dtype, npu_out.dtype)
+        self.assertTrue(torch.equal(cpu_out, npu_out.cpu()))
+
+    def _check_clamp(self, dtype, min_val, max_val):
+        for shape in [(1024,), (8, 16, 32)]:
+            cpu_input = self._make_input(dtype, shape)
+            npu_input = cpu_input.npu()
+            expected = torch.clamp(cpu_input, min_val, max_val)
+
+            self._assert_same(expected, torch.clamp(npu_input, min_val, max_val))
+
+            npu_inplace = npu_input.clone()
+            npu_inplace.clamp_(min_val, max_val)
+            self._assert_same(expected, npu_inplace)
+
+            out = torch.empty_like(npu_input)
+            torch.clamp(npu_input, min_val, max_val, out=out)
+            self._assert_same(expected, out)
+
+    def test_clamp_int8(self):
+        self._check_clamp(torch.int8, -31, 31)
+        self._check_clamp(torch.int8, -128, 127)
+
+    def test_clamp_uint8(self):
+        self._check_clamp(torch.uint8, 16, 200)
+        self._check_clamp(torch.uint8, 0, 255)
+
+    def test_clamp_int16(self):
+        self._check_clamp(torch.int16, -1000, 1000)
+        self._check_clamp(torch.int16, -32768, 32767)
+
+    def test_clamp_min_max_narrow_int(self):
+        for dtype, min_val, max_val in [
+            (torch.int8, -31, 31),
+            (torch.uint8, 16, 200),
+            (torch.int16, -1000, 1000),
+        ]:
+            cpu_input = self._make_input(dtype, (1024,))
+            npu_input = cpu_input.npu()
+
+            self._assert_same(torch.clamp_min(cpu_input, min_val), torch.clamp_min(npu_input, min_val))
+            self._assert_same(torch.clamp_max(cpu_input, max_val), torch.clamp_max(npu_input, max_val))
+
+            npu_inplace = npu_input.clone()
+            npu_inplace.clamp_min_(min_val)
+            self._assert_same(torch.clamp_min(cpu_input, min_val), npu_inplace)
+
+            npu_inplace = npu_input.clone()
+            npu_inplace.clamp_max_(max_val)
+            self._assert_same(torch.clamp_max(cpu_input, max_val), npu_inplace)
+
+    def test_clamp_int8_float_bounds_promote(self):
+        cpu_input = torch.tensor([-5, 0, 5], dtype=torch.int8)
+        npu_input = cpu_input.npu()
+        for min_val, max_val in [(-31.5, 31.5), (-31.0, 31.0)]:
+            self._assert_same(torch.clamp(cpu_input, min_val, max_val),
+                              torch.clamp(npu_input, min_val, max_val))
+
+    def test_clamp_uint8_negative_bound_fallback(self):
+        cpu_input = torch.tensor([0, 1, 5, 31, 32, 200, 255], dtype=torch.uint8)
+        npu_input = cpu_input.npu()
+        self._assert_same(torch.clamp(cpu_input, -31, 31), torch.clamp(npu_input, -31, 31))
+
+    def test_clamp_int8_non_contiguous(self):
+        cpu_input = torch.randint(-100, 100, (64, 64), dtype=torch.int8).t()
+        npu_input = cpu_input.npu()
+
+        self._assert_same(torch.clamp(cpu_input, -31, 31), torch.clamp(npu_input, -31, 31))
+
+        cpu_inplace = cpu_input.clone()
+        cpu_inplace.clamp_(-31, 31)
+        npu_input.clamp_(-31, 31)
+        self._assert_same(cpu_inplace, npu_input)
+
+
 if __name__ == "__main__":
     run_tests()

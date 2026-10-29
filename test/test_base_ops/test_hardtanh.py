@@ -98,5 +98,30 @@ class TestHardtanh(TestCase):
         self.hardtanh_result(shape_format)
 
 
+class TestHardtanhNarrowInt(TestCase):
+    """Hardtanh on int8/uint8/int16 must use the vector path (Ascend/pytorch#178)."""
+
+    def _assert_same(self, cpu_out, npu_out):
+        self.assertEqual(cpu_out.dtype, npu_out.dtype)
+        self.assertTrue(torch.equal(cpu_out, npu_out.cpu()))
+
+    def test_hardtanh_narrow_int(self):
+        cases = [
+            (torch.int8, -100, 100, -31, 31),
+            (torch.uint8, 0, 200, 16, 200),
+            (torch.int16, -1000, 1000, -100, 100),
+        ]
+        for dtype, low, high, min_val, max_val in cases:
+            cpu_input = torch.randint(low, high, (1024,), dtype=dtype)
+            npu_input = cpu_input.npu()
+            expected = torch.nn.functional.hardtanh(cpu_input, min_val, max_val)
+
+            self._assert_same(expected, torch.nn.functional.hardtanh(npu_input, min_val, max_val))
+
+            npu_inplace = npu_input.clone()
+            torch.nn.functional.hardtanh_(npu_inplace, min_val, max_val)
+            self._assert_same(expected, npu_inplace)
+
+
 if __name__ == "__main__":
     run_tests()

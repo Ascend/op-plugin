@@ -16,6 +16,8 @@
 
 #include <climits>
 #include <cfloat>
+#include <cstdint>
+#include <limits>
 #include <ATen/native/TypeProperties.h>
 
 #include "op_plugin/AclOpsInterface.h"
@@ -26,6 +28,73 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+bool is_narrow_int(at::ScalarType dtype) {
+  return dtype == at::kChar || dtype == at::kByte || dtype == at::kShort;
+}
+
+bool scalar_fits_dtype(const at::Scalar& value, at::ScalarType dtype) {
+  if (value.isFloatingPoint() || value.isComplex()) {
+    return false;
+  }
+  int64_t val = value.toLong();
+  switch (dtype) {
+    case at::kChar:
+      return val >= std::numeric_limits<int8_t>::min() && val <= std::numeric_limits<int8_t>::max();
+    case at::kByte:
+      return val >= std::numeric_limits<uint8_t>::min() && val <= std::numeric_limits<uint8_t>::max();
+    case at::kShort:
+      return val >= std::numeric_limits<int16_t>::min() && val <= std::numeric_limits<int16_t>::max();
+    default:
+      return false;
+  }
+}
+
+bool can_use_narrow_int_vector_path(
+    const at::Tensor& self,
+    const c10::optional<at::Scalar>& min,
+    const c10::optional<at::Scalar>& max) {
+  if (!is_narrow_int(self.scalar_type())) {
+    return false;
+  }
+  // Keep the original scalar conversion semantics for out-of-range bounds
+  // (e.g. clamp(uint8, -31, 31) wraps the bound on the AICPU/AI Core path).
+  if (min.has_value() && !scalar_fits_dtype(min.value(), self.scalar_type())) {
+    return false;
+  }
+  if (max.has_value() && !scalar_fits_dtype(max.value(), self.scalar_type())) {
+    return false;
+  }
+  return true;
+}
+
+at::ScalarType clamp_result_dtype(
+    const at::Tensor& self,
+    const c10::optional<at::Scalar>& min,
+    const c10::optional<at::Scalar>& max) {
+  at::native::ResultTypeState state = {};
+  state = at::native::update_result_type_state(self, state);
+  if (min.has_value()) {
+    state = at::native::update_result_type_state(min.value(), state);
+  }
+  if (max.has_value()) {
+    state = at::native::update_result_type_state(max.value(), state);
+  }
+  return at::native::result_type(state);
+}
+
+// ClipByValueV2 only registers an AI Core kernel for int32/int64/fp16/bf16/fp32.
+// For int8/uint8/int16 ACLNN silently falls back to ClipByValueV2AiCpu, a scalar
+// kernel that is 30-300x slower than the vector path. Widening to int32 is
+// lossless and keeps the operator on the AI Core vector kernel.
+at::Tensor clamp_narrow_int(
+    const at::Tensor& self,
+    const c10::optional<at::Scalar>& min,
+    const c10::optional<at::Scalar>& max) {
+  at::Tensor wide = at_npu::native::custom_ops::_npu_dtype_cast(self, at::kInt);
+  at::Tensor clamped = acl_op::clamp(wide, min, max);
+  return at_npu::native::custom_ops::_npu_dtype_cast(clamped, self.scalar_type());
+}
+
 at::Tensor& clamp_out_npu_nocheck(at::Tensor& result, const at::Tensor& self, at::Scalar min, at::Scalar max) {
   at_npu::native::OpCommand cmd;
   cmd.Name("ClipByValueV2")
@@ -105,7 +174,17 @@ at::Tensor& clamp_max_out_npu_nocheck(at::Tensor& result, const at::Tensor& self
 } // namespace
 
 at::Tensor& clamp_min_out(const at::Tensor& self, const at::Scalar& min, at::Tensor& result) {
+  if (result.scalar_type() != self.scalar_type()) {
+    // Scalar bounds may promote an integral self (e.g. clamp(int8, -31.5, 31.5)
+    // produces float32). Compute in the promoted dtype.
+    at::Tensor promoted = at_npu::native::custom_ops::_npu_dtype_cast(self, result.scalar_type());
+    return acl_op::clamp_min_out(promoted, min, result);
+  }
   npu_preparation::CheckOut({self}, result, self);
+  if (can_use_narrow_int_vector_path(self, min, c10::nullopt)) {
+    result.copy_(clamp_narrow_int(self, min, c10::nullopt));
+    return result;
+  }
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     clamp_min_out_npu_nocheck(contiguous_result, self, min);
@@ -117,7 +196,15 @@ at::Tensor& clamp_min_out(const at::Tensor& self, const at::Scalar& min, at::Ten
 }
 
 at::Tensor& clamp_max_out(const at::Tensor& self, const at::Scalar& max, at::Tensor& result) {
+  if (result.scalar_type() != self.scalar_type()) {
+    at::Tensor promoted = at_npu::native::custom_ops::_npu_dtype_cast(self, result.scalar_type());
+    return acl_op::clamp_max_out(promoted, max, result);
+  }
   npu_preparation::CheckOut({self}, result, self);
+  if (can_use_narrow_int_vector_path(self, c10::nullopt, max)) {
+    result.copy_(clamp_narrow_int(self, c10::nullopt, max));
+    return result;
+  }
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(result);
     clamp_max_out_npu_nocheck(contiguous_result, self, max);
@@ -137,6 +224,15 @@ at::Tensor& clamp_out(
   TORCH_CHECK(
       min.has_value() || max.has_value(),
       "torch.clamp: At least one of 'min' or 'max' must not be None" + OPS_ERROR(ErrCode::VALUE));
+  if (result.scalar_type() != self.scalar_type()) {
+    at::Tensor promoted = at_npu::native::custom_ops::_npu_dtype_cast(self, result.scalar_type());
+    return acl_op::clamp_out(promoted, min, max, result);
+  }
+  if (can_use_narrow_int_vector_path(self, min, max)) {
+    npu_preparation::CheckOut({self}, result, self);
+    result.copy_(clamp_narrow_int(self, min, max));
+    return result;
+  }
   if (!min.has_value()) {
     at::Scalar max_value = max.value();
     return acl_op::clamp_max_out(self, max_value, result);
@@ -159,7 +255,8 @@ at::Tensor& clamp_out(
 }
 
 at::Tensor clamp_min(const at::Tensor& self, const at::Scalar& min) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(
+      self.sizes(), self.options().dtype(at::native::result_type(self, min)), self);
   return acl_op::clamp_min_out(self, min, result);
 }
 
@@ -168,7 +265,8 @@ at::Tensor& clamp_min_(at::Tensor& self, const at::Scalar& min) {
 }
 
 at::Tensor clamp_max(const at::Tensor& self, const at::Scalar& max) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
+  at::Tensor result = npu_preparation::apply_tensor(
+      self.sizes(), self.options().dtype(at::native::result_type(self, max)), self);
   return acl_op::clamp_max_out(self, max, result);
 }
 
@@ -177,7 +275,11 @@ at::Tensor& clamp_max_(at::Tensor& self, const at::Scalar& max) {
 }
 
 at::Tensor clamp(const at::Tensor& self, const c10::optional<at::Scalar>& min, const c10::optional<at::Scalar>& max) {
-  at::Tensor result = npu_preparation::apply_tensor(self);
+  TORCH_CHECK(
+      min.has_value() || max.has_value(),
+      "torch.clamp: At least one of 'min' or 'max' must not be None" + OPS_ERROR(ErrCode::VALUE));
+  at::Tensor result = npu_preparation::apply_tensor(
+      self.sizes(), self.options().dtype(clamp_result_dtype(self, min, max)), self);
   return acl_op::clamp_out(self, min, max, result);
 }
 

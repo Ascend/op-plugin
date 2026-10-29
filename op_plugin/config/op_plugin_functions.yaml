@@ -1634,6 +1634,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: is_gte_cann_version_820rc1()?clamp_scalar_out_dtype(self, min, max):c10::typeMetaToScalarType(self.dtype())
@@ -1662,6 +1663,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         name: self
@@ -1683,6 +1685,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, max):c10::typeMetaToScalarType(self.dtype())
@@ -1711,6 +1714,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         name: self
@@ -1720,6 +1724,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       exec: aclnnInplaceClampMax
 
   - func: clamp_max_.Tensor(Tensor(a!) self, Tensor max) -> Tensor(a!)
@@ -1732,6 +1737,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: is_gte_cann_version_820rc1()?at::native::result_type(self, min):c10::typeMetaToScalarType(self.dtype())
@@ -1759,6 +1765,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         name: self
@@ -2654,6 +2661,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       out:
         size: self
         dtype: self
@@ -2663,6 +2671,7 @@ official:
     acl_op: all_version
     op_api: all_version
     gen_opapi:
+      integral_identity_tensor: self
       exec: aclnnInplaceHardtanh
 
   - func: hardtanh_backward(Tensor grad_output, Tensor self, Scalar min_val, Scalar max_val) -> Tensor

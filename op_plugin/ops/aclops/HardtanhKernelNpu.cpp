@@ -22,13 +22,17 @@ using npu_preparation = at_npu::native::OpPreparation;
 using npu_utils = at_npu::native::NpuUtils;
 
 namespace {
+bool is_narrow_int(at::ScalarType dtype) {
+  return dtype == at::kChar || dtype == at::kByte || dtype == at::kShort;
+}
+
 at::Tensor& hardtanh_out_npu_nocheck(
     at::Tensor& result,
     const at::Tensor& self,
     const at::Scalar& min,
     const at::Scalar& max) {
   at_npu::native::OpCommand cmd;
-  cmd.Name("ClipByValue")
+  cmd.Name("ClipByValueV2")
       .Input(self)
       .Input(min, self.scalar_type())
       .Input(max, self.scalar_type())
@@ -43,6 +47,12 @@ at::Tensor& hardtanh_out(
     const at::Scalar& min,
     const at::Scalar& max,
     at::Tensor& result) {
+  if (is_narrow_int(self.scalar_type())) {
+    // hardtanh matches clamp for the narrow integer bounds that stay on the
+    // vector path; out-of-range bounds (e.g. uint8 with a negative limit) fall
+    // back inside clamp_out, preserving the previous behavior.
+    return acl_op::clamp_out(self, min, max, result);
+  }
   npu_preparation::CheckOut(
       {self},
       result,
