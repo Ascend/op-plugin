@@ -106,6 +106,10 @@ std::tuple<at::Tensor, at::Tensor, std::vector<at::Tensor>> _gru_npu_backward(
     if (batch_sizes_opt.has_value() && batch_sizes_opt.value().numel() == 0) {
         batch_sizes_opt = c10::nullopt;
     }
+    // aclnnGRUBackward requires NPU batch_sizes; autograd forwards the CPU PackedSequence tensor
+    if (batch_sizes_opt.has_value() && batch_sizes_opt.value().device().type() == at::kCPU) {
+        batch_sizes_opt = batch_sizes_opt.value().to(at::Device(at::kPrivateUse1)).contiguous();
+    }
 
     // aclnnGRUBackward requires dy/dh to be non-null tensors (CheckNotNull rejects
     // undefined tensors with ACLNN_ERR_PARAM_NULLPTR). When autograd only flows

@@ -6508,6 +6508,7 @@ custom:
     tags: nondeterministic_seeded
 
   - func: _gru_npu_backward(Tensor grad_y, Tensor grad_h, Tensor input, Tensor hx, Tensor[] params, Tensor r, Tensor z, Tensor n, Tensor h_n, Tensor h, bool has_biases, int num_layers, float dropout, bool train, bool bidirectional, *, bool? batch_first=False, Tensor? batch_sizes=None) -> (Tensor, Tensor, Tensor[])
+    device_check: NoCheck
     op_api: all_version
 
   - func: npu_masked_fill_range(Tensor self, Tensor start, Tensor end, Tensor value, int axis=-1) -> Tensor
