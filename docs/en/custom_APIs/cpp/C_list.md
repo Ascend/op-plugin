@@ -233,8 +233,8 @@ The PyTorch community provides LibTorch Stable ABI capabilities, offering a set 
 
 TorchNPU provides a set of ATB C++ APIs to invoke exposed ATB capabilities from C++. This set of APIs is exposed through a unified entry-point header file.
 
-- [`op_plugin/include/atb_ops.h`](../../../../op_plugin/include/atb_ops.h): Unified entry-point header file for ATB C++ APIs.
-- [`op_plugin/config/atb_ops.yaml`](../../../../op_plugin/config/atb_ops.yaml): List of currently exposed APIs.
+- [`op_plugin/include/atb_ops.h`](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/include/atb_ops.h): Unified entry-point header file for ATB C++ APIs.
+- [`op_plugin/config/atb_ops.yaml`](https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/config/atb_ops.yaml): List of currently exposed APIs.
 - `libop_plugin_atb.so`: Exports the corresponding symbols for the ATB C++ APIs mentioned above.
 
 These APIs can be accessed through the `at_npu::native::atb` namespace.

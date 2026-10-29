@@ -1,16 +1,23 @@
-# torch_npu.npu_moe_init_routing_v2<a name="en-us_topic_0000002309015148"></a>
+# torch_npu.npu_moe_init_routing_v2<a name="ZH-CN_TOPIC_0000002309015148"></a>
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
-|<term>Atlas inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function<a name="en-us_topic_0000002271534921_section1650913464367"></a>
 
-- Performs Mixture-of-Experts (MoE) routing based on the computation results of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md). Non-quantization, dynamic quantization, and static quantization configurations are supported.
+- Performs Mixture-of-Experts (MoE) routing based on the computation results of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md). Non-quantization, dynamic quantization, static quantization, MXFP8, HIF8, MXFP4, FP8 PerBlock, and `torch_npu.int4` dynamic quantization modes are supported.
 - Formulas: 
 
     1. Sort the input `expertIdx` to obtain the sorted expert indices `sortedExpertIdx` and the corresponding row indices `sortedRowIdx`.
@@ -28,7 +35,7 @@
             $$
             expandedRowIdxOut[sortedRowIdx[i]]=i
             $$
-            
+        
     3. Compute the histogram of `sortedExpertIdx` for each expert to obtain `expertTokensCountOrCumsumOutOptional`.
 
         $$
@@ -37,9 +44,9 @@
 
     4. When `quantMode` is not `-1`, compute the quantization results.
         - Static quantization:
-        $$
+            $$
             quantResult=round((x∗scaleOptional)+offsetOptional)
-        $$
+            $$
         
         - Dynamic quantization:
             - If `scale` is not specified:
@@ -598,12 +605,23 @@
 ## Prototype<a name="en-us_topic_0000002271534921_section14509346133618"></a>
 
 ```python
-torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1, expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False, quant_mode=-1, active_expert_range=[], row_idx_type=0) -> (Tensor, Tensor, Tensor, Tensor)
+torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1, expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False, quant_mode=-1, active_expert_range=[], row_idx_type=0, x_dtype=None) -> (Tensor, Tensor, Tensor, Tensor)
 ```
 
 ## Parameters<a name="en-us_topic_0000002271534921_section2050919466367"></a>
 
-- **`x`** (`Tensor`): Required. Input token features for MoE. This parameter must be 2D with shape `(NUM_ROWS, H)`. The data type can be `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int8`. The data layout must be ND.
+- **`x`** (`Tensor`): Required. Input token features for MoE. This parameter must be 2D with shape `(NUM_ROWS, H)`. The data layout must be ND.
+
+    <!-- npu="A3,910b" id5 -->
+    - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int8`.
+    <!-- end id5 -->
+    <!-- npu="310p" id6 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.float16` or `torch.float32`.
+    <!-- end id6 -->
+    <!-- npu="950" id7 -->
+    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.bfloat16`, `torch.float32`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2` (types that native PyTorch dtypes cannot express are specified through the `x_dtype` parameter).
+    <!-- end id7 -->
+
 - **`expert_idx`** (`Tensor`): Required. Selected K processing experts corresponding to each row feature in the output of [torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md). This parameter must be 2D with shape `(NUM_ROWS, K)`. The expert ID must be less than or equal to the expert count. The data type is `torch.int32`. The data layout must be ND.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`scale`** (`Tensor`): Optional. Parameter used to compute the quantization results. This parameter can be set to `None`. The data type is `torch.float32`. The data layout must be ND. If this parameter is omitted, it indicates that `scale` is not used during computation, and the values in the output `expanded_scale` are meaningless.
@@ -622,29 +640,62 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 - **`drop_pad_mode`** (`int`): Optional. Specifies whether to enable drop_pad mode. The default value is `0`. 0: enables dropless mode, where `expert_capacity` is not verified. 1: enables drop_pad mode.
 - **`expert_tokens_num_type`** (`int`): Optional. Histogram mode. The default value is `0`. Valid values are `0`, `1`, or `2`. `0` enables cumsum mode; `1` enables count mode, where the output value is the number of tokens processed by each expert; and `2` enables `key_value` mode, where the output value consists of key-value pairs containing the expert IDs and the corresponding numbers of tokens processed by each expert.
 - **`expert_tokens_num_flag`** (`bool`): Optional. Specifies whether to output `expert_token_cumsum_or_count`. Valid values are `False` or `True`. The default value is `False`.
-- **`quant_mode`** (`int`): Optional. Quantization mode. The default value is `-1`. Valid values are `0`, `1`, or `-1`. The value `0` indicates static quantization, `-1` indicates non-quantization, and `1` indicates dynamic quantization.
+- **`quant_mode`** (`int`): Optional. Quantization mode. The default value is `-1`. The values supported by each product are as follows:
+
+    <!-- npu="A3,910b" id8 -->
+    - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: Valid values are -1, 0, and 1. -1 indicates no quantization; 0 indicates static quantization; and 1 indicates `torch.int8` dynamic quantization.
+    <!-- end id8 -->
+    <!-- npu="310p" id9 -->
+    - <term>Atlas inference products</term>: Only the value -1 is supported, indicating no quantization.
+    <!-- end id9 -->
+    <!-- npu="950" id10 -->
+    - <term>Ascend 950PR&950DT products</term>: Valid values are -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, and 17. -1 indicates no quantization; 0 indicates static quantization; 1 indicates `torch.int8` dynamic quantization; 2/3 indicate MXFP8 RoundScale dynamic quantization, with output types `torch.float8_e5m2`/`torch.float8_e4m3fn` respectively; 4/5 indicate FP8 PerGroup quantization, with output types `torch.float8_e5m2`/`torch.float8_e4m3fn` respectively; 6 indicates HIF8 direct conversion; 7 indicates HIF8 per-tensor quantization; 8 indicates HIF8 per-token quantization; 9 indicates MXFP4 dynamic quantization; 11/12 indicate FP8 PerBlock quantization; 13 indicates `torch_npu.int4` dynamic quantization; 14/15 indicate FP8 PerGroup quantization with the Amax lower bound enabled, with output types `torch.float8_e5m2`/`torch.float8_e4m3fn` respectively; 16/17 indicate MXFP8 RoundScale plus Amax clamp quantization, with output types `torch.float8_e5m2`/`torch.float8_e4m3fn` respectively.
+    <!-- end id10 -->
+
 - **`active_expert_range`** (`List[int]`): Optional. Range of active experts. The default value is an empty list. The value range is [expert_start, expert_end), which is left-closed and right-open, indicating that active experts range from expert_start to expert_end. The values must be greater than or equal to 0, and `expert_end` must be less than or equal to `expert_num`. In drop_pad scenarios, `expert_start` is 0 and `expert_end` is equal to `expert_num`. When the default value is provided, the range of active experts is considered to be between 0 and `expert_num`.
 - **`row_idx_type`** (`int`): Optional. Index type used for the output `expanded_row_idx`. The default value is `0`. Valid values are `0` or `1`. The value `0` enables gather indices, and the value `1` enables scatter indices.
 
+<!-- npu="950" id11 -->
+- **`x_dtype`** (`int`): Optional. The default value is `None`. Specifies the non-native data type of `x`, that is, a type that native PyTorch dtypes cannot express and that is stored as a native dtype such as `torch.uint8`. The value is a dtype enumeration value of `torch_npu`. Only <term>Ascend 950PR&950DT products</term> support this parameter. The supported enumeration values are `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, and `torch_npu.int4`.
+    - When `quant_mode` is -1 (non-quantization pass-through), `x_dtype` supports `torch_npu.hifloat8` and `torch_npu.float4_e2m1fn_x2`. `torch.float8_e5m2` and `torch.float8_e4m3fn` are native PyTorch dtypes and can be passed directly as the data type of `x`, without being specified through `x_dtype`.
+    - When `quant_mode` is 13 (`torch_npu.int4` dynamic quantization), `x_dtype` only supports `torch_npu.int4` or None.
+    - When `quant_mode` is 1, `torch_npu.int4` cannot be passed. Use `quant_mode=13` for `torch_npu.int4` dynamic quantization.
+<!-- end id11 -->
+
 ## Return Values<a name="en-us_topic_0000002271534921_section18510124618368"></a>
 
-- **`expanded_x`** (`Tensor`): Features extended based on `expert_idx`. In dropless scenarios, the shape is `(NUM_ROWS * K, H)`. In active scenarios, the shape is `(min(activeNum, NUM_ROWS * K), H)`. In drop-pad scenarios, this parameter must be 3D with shape `(expertNum, expertCapacity, H)`. The data type must be identical to that of `x` in non-quantization scenarios. The data type is `torch.int8` in quantization scenarios. The data layout must be ND. In quantization configurations, the output value is meaningless when the data type of `x` is `torch.int8`.
+- **`expanded_x`** (`Tensor`): Features extended based on `expert_idx`. In dropless scenarios, the shape is `(NUM_ROWS * K, H)`. In active scenarios, the shape is `(min(activeNum, NUM_ROWS * K), H)`. In drop-pad scenarios, this parameter must be 3D with shape `(expertNum, expertCapacity, H)`. In non-quantization scenarios, the data type is the same as that of `x`. When `quant_mode` is 0/1, the data type is `torch.int8`; when it is 2/4/14/16, the data type is `torch.float8_e5m2`; when it is 3/5/15/17, the data type is `torch.float8_e4m3fn`; when it is 6/7/8, the data type is `torch_npu.hifloat8`; when it is 9, the data type is `torch_npu.float4_e2m1fn_x2`; when it is 11/12, the data types are `torch.float8_e5m2`/`torch.float8_e4m3fn` respectively; when it is 13, the data type is `torch_npu.int4`. The data layout must be ND. In quantization scenarios, the output value is meaningless when the data type of `x` is `torch.int8`.
 - **`expanded_row_idx`** (`Tensor`): Mapping between `expanded_x` and `x`. This parameter must be 1D with shape `(NUM_ROWS * K,)`. The data type is `torch.int32`. The data layout must be ND. When `row_idx_type` is `1`, the first `available_idx_num` elements are valid data. Invalid data is uninitialized. When `row_idx_type` is `0`, invalid elements are padded with `-1`.
 - **`expert_token_cumsum_or_count`** (`Tensor`): Statistical results or cumulative values of the numbers of tokens processed by each expert.
     - When `expert_tokens_num_type` is `0`, this parameter indicates the prefix sums of the numbers of tokens processed by sorted experts within the `active_expert_range`.
     - When `expert_tokens_num_type` is `1`, this parameter must be 1D with shape `(expert_end - expert_start,)`, indicating the total numbers of tokens processed by experts within the `active_expert_range`.
     - When `expert_tokens_num_type` is `2`, this parameter must be 2D with shape `(expert_num, 2)`, indicating the experts with non-zero token counts within the `active_expert_range` and the corresponding total numbers of tokens processed by each expert.
 
-    Element pairs where `expert_idx` falls within the `active_expert_range` and elements with a token count of `0` are excluded represent valid element pairs. These valid pairs are stored at the beginning of the tensor while preserving the original order. The data type is `torch.int64`. The data layout must be ND.
-- **`expanded_scale`** (`Tensor`): The data type is `torch.float32`. The data layout must be ND. The output shape is the product of all dimensions of `expert_idx` except the last dimension. Let `available_idx_num` represent the number of elements within the `active_expert_range`.
-    - Atlas A2 training products/Atlas A2 inference products/Atlas A3 training products/Atlas A3 inference products:
+    Element pairs whose `expert_idx` falls within the `active_expert_range` and whose corresponding expert processes a non-zero number of tokens are valid element pairs. These valid pairs are stored at the beginning of the tensor while preserving the original order. The data type is `torch.int64`. The data layout must be ND.
+- **`expanded_scale`** (`Tensor`): The data layout must be ND. Let `available_idx_num` represent the number of elements within the `active_expert_range`. The output description for each product is as follows:
+
+    <!-- npu="A3,910b" id12 -->
+    - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: The data type is `torch.float32`, and the output shape is the product of all dimensions of `expert_idx` except the last dimension.
         - In non-quantization scenarios, the first `available_idx_num` elements are valid data when `scale` is provided.
         - In dynamic quantization scenarios, the output contains intermediate values of `scale` from the quantization computation process, and the first `available_idx_num` elements are valid data.
         - This output is not available in static quantization scenarios.
-    - Atlas inference products: This output is replaced by `expert_tokens_before_capacity`, which must be a tensor with shape `(expert_num,)`, indicating the statistical results of the numbers of tokens processed by each expert before dropping.
+    <!-- end id12 -->
+    <!-- npu="950" id13 -->
+    - <term>Ascend 950PR&950DT products</term>: The default data type is `torch.float32`, and the default output shape is the product of all dimensions of `expert_idx` except the last dimension. The data type and shape for each quantization mode are as follows:
+        - When `quant_mode` is 2/3/16/17, the data type is `torch.float8_e8m0fnu` and the shape is [number of valid output rows, CeilAlign(CeilDiv(H, 32), 2)];
+        - When `quant_mode` is 4/5/14/15, the data type is `torch.float32` and the shape is [number of valid output rows, CeilDiv(H, 128)];
+        - When `quant_mode` is 9, the data type is `torch.float8_e8m0fnu` and the shape is [number of valid output rows, CeilDiv(H, 64), 2];
+        - When `quant_mode` is 11/12, the data type is `torch.float32` and the shape is [number of valid output rows, CeilDiv(H, 256), 2];
+        - In non-quantization scenarios where the data type of `x` is `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2` (specified through `x_dtype`), if `scale` is provided, the output shape is [number of valid output rows, CeilDiv(H, 64), 2] and the data type is `torch.float8_e8m0fnu`;
+        - In non-quantization scenarios (other data types), when `scale` is provided, the first `available_idx_num` elements are valid data. In dynamic quantization scenarios, the output contains intermediate values of `scale` from the quantization computation process, and the first `available_idx_num` elements are valid data. This output is not available in static quantization scenarios.
+    <!-- end id13 -->
+    <!-- npu="310p" id14 -->
+    - <term>Atlas inference products</term>: This output is not `expanded_scale` but `expert_tokens_before_capacity` (Tensor, with shape `(expert_num,)`), indicating the statistical results of the numbers of tokens processed by each expert before dropping.
+    <!-- end id14 -->
 
 ## Constraints<a name="en-us_topic_0000002271534921_section75102046193618"></a>
 
+<!-- npu="A3,910b" id15 -->
 Atlas A2 training products/Atlas A2 inference products/Atlas A3 training products/Atlas A3 inference products:
 
 - This API can be used in inference scenarios.
@@ -662,8 +713,21 @@ Atlas A2 training products/Atlas A2 inference products/Atlas A3 training product
     - row_idx_type=1
     - expert_tokens_num_type=1
 - In scenarios where the operator input shape is small, the multi-core synchronization time between operations accounts for a high proportion and becomes a performance bottleneck. Therefore, the full-load performance template is added for this specialized scenario. In this template, data transfer, sorting, and computation are all completed within a single kernel. The condition `drop_pad_mode=0` must be satisfied.
+<!-- end id15 -->
 
-Special constraints for Atlas inference products:
+<!-- npu="950" id16 -->
+Ascend 950PR&950DT products have the following special constraints on this API:
+
+- **DropPad mode** (`drop_pad_mode=1`):
+    - `row_idx_type` only supports the value 0 (gather indices).
+    - `active_expert_range` must be [0, expert_num].
+    - `expert_tokens_num_type` only supports the value 1 (count mode).
+    - `quant_mode` only supports -1 (non-quantization), and the data type of `x` only supports `torch.float16`, `torch.bfloat16`, `torch.float32`, `torch.int8`, and `torch_npu.hifloat8`.
+- **MXFP4/`torch_npu.int4` dynamic quantization** (when `quant_mode` is 9 or 13): the last dimension H of `x` must be an even number.
+<!-- end id16 -->
+
+<!-- npu="310p" id17 -->
+Atlas inference products have the following special constraints on this API:
 
 - **Input `x` data type**: can only be `torch.float16` or `torch.float32`. The data type `torch.bfloat16` is not supported.
 - **Quantization mode**: Only non-quantization scenarios where `quant_mode = -1` are supported. Static quantization where `quant_mode = 0`, dynamic quantization where `quant_mode = 1`, and quantization modes such as MXFP8 or HIF8 are not supported.
@@ -671,6 +735,7 @@ Special constraints for Atlas inference products:
 - **`expert_capacity` parameter**: At runtime, the input parameter `expert_capacity` is forcibly set to `0` regardless of its value.
 - **`expert_tokens_num_type`**: The input parameter can be set to `0`, `1`, or `2`. In this scenario, the underlying computation is executed strictly in cumsum mode (prefix sum) regardless of the input value.
 - **Output parameter differences**: The fourth return value is `expert_tokens_before_capacity`, which must be a tensor with shape `(expert_num,)`, indicating the statistical results of the numbers of tokens processed by each expert before dropping.
+<!-- end id17 -->
 
 ## Examples<a name="en-us_topic_0000002271534921_section12510194643618"></a>
 
@@ -723,7 +788,7 @@ Special constraints for Atlas inference products:
     
         def forward(self, x, expert_idx, *, scale=None, offset=None, active_num=-1, expert_capacity=-1,
                     expert_num=-1, drop_pad_mode=0, expert_tokens_num_type=0, expert_tokens_num_flag=False,
-                    quant_mode=0, active_expert_range=0, row_idx_type=0):
+                    quant_mode=-1, active_expert_range=[], row_idx_type=0):
             return torch.ops.npu.npu_moe_init_routing_v2(x, expert_idx, scale=scale, offset=offset,
                     active_num=active_num, expert_capacity=expert_capacity, expert_num=expert_num, drop_pad_mode=drop_pad_mode, 
                     expert_tokens_num_type=expert_tokens_num_type, expert_tokens_num_flag=expert_tokens_num_flag,

@@ -2,14 +2,19 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas 800I A2 inference products</term>           |    √     |
-|<term>Atlas inference products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products/Atlas 800I A2 inference server</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-Extends the native [torch.distributed.reduce_scatter_tensor](https://pytorch.org/docs/stable/distributed.html#torch.distributed.reduce_scatter_tensor) API by supporting zero-copy and uneven tensor splitting in <code>torch_npu.distributed.reduce_scatter_tensor_uneven</code>.
+It extends the functionality of the native `torch.distributed.reduce_scatter_tensor` API. For details, see [https://pytorch.org/docs/stable/distributed.html#torch.distributed.reduce_scatter_tensor](https://pytorch.org/docs/stable/distributed.html#torch.distributed.reduce_scatter_tensor). The `torch_npu.distributed.reduce_scatter_tensor_uneven` API additionally supports zero-copy and uneven splitting.
 
 ## Prototype
 

@@ -2,17 +2,21 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| :----------------------------------------------------------- | :------: |
-| <term>Atlas A3 training products/Atlas A3 inference products</term>    |    √     |
-| <term>Atlas A2 training products/Atlas A2 inference products</term>   |    √     |
-| <term>Atlas inference products</term>    |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
 - Encapsulates the `torch_npu.npu_quant_conv2d` API to provide quantization-related functionality for the `Conv2d` operator.
 
-- Formula:
+- Formula
 
   ![](../../figures/en-us_formulaimage_0000001855947305.png)
 
@@ -69,7 +73,10 @@ Computation result of QuantConv2d.
 
 - This API can be used in inference scenarios.
 - This API supports only online inference in PyTorch static graph mode.
-- Atlas inference products: Scenarios where the W axis of the output tensor is `1` are not supported.
+
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Scenarios where the W axis of the output tensor is `1` are not supported.
+<!-- end id4 -->
 
 ## Example
 

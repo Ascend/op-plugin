@@ -2,20 +2,25 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Description:
+- Function:
 
-    Performs dynamic asymmetric quantization on input tensors. The current version supports only `pertoken` mode. `pertensor` is currently not supported. Mixture-of-Experts (MoE) scenarios are supported.
+    Performs dynamic asymmetric quantization on the input tensor. The pertoken, pertensor, perchannel, and MoE (mixture of experts) scenarios are supported.
 
 - Formulas:
     
-    In `pertoken` mode, `rowMax` and `rowMin` indicate the maximum and minimum values by row. Row corresponds to the data of the last dimension of `x`, that is, a token. `DST_MAX` and `DST_MIN` correspond to the maximum and minimum values of the quantized `dtype`, respectively. The formulas are as follows:
+    rowMax and rowMin indicate the modes of obtaining the maximum and minimum values: In the `pertoken` mode, the maximum and minimum values are obtained by row (a row here corresponds to the data of the last dimension of `input`, that is, one token); in the `pertensor` mode, the maximum and minimum values of the entire tensor are obtained; in the `perchannel` mode, the maximum and minimum values are obtained by column. DST_MAX and DST_MIN respectively correspond to the maximum and minimum values of the dtype after quantization. The formulas are as follows:
 
     $$
     \text{scale} = \frac{\text{rowMax}(\mathbf{x}) - \text{rowMin}(\mathbf{x})}{DST\_MAX - DST\_MIN}\\
@@ -23,43 +28,69 @@
     y = \text{round}(\frac{\mathbf{x}}{\text{scale}} + \text{offset})
     $$
 
-    - If `Smooth Quant` is used in a non-MoE scenario, the `smooth_scales` input is introduced. The shape of `smooth_scales` is the same as that of the last dimension of `x`. Before quantization, `x` is multiplied by `smooth_scales` and then quantized according to the preceding formula. In the MoE scenario, both `smooth_scales` and `group_index` are introduced. In this case, `smooth_scales` contains multiple groups of smooth vectors, which are applied to different rows of `x` based on the values in `group_index`. Specifically, if `x` contains m tokens and `smooth_scales` has n rows, `smooth_scales[0]` is applied to `x[0:group_index[0]]`, and `smooth_scales[i]` is applied to `x[group_index[i-1]:group_index[i]]`, where i = 1, 2, ..., n-1.
+    - In the MoE and non-MoE scenarios, if smooth quant is used, the smooth_scales input is introduced in the non-MoE scenario, and its shape is the same as the size of the last dimension of x. Before quantization, x is multiplied by smooth_scales and then quantized according to the preceding formulas. In the MoE scenario, both smooth_scales and group_index are introduced. In this case, smooth_scales contains multiple groups of smooth vectors, which are applied to different rows of x according to the values in group_index. Specifically, if x contains m tokens and smooth_scales has n rows, smooth_scales[0] is applied to x[0:group_index[0]], and smooth_scales[i] is applied to x[group_index[i-1]: group_index[i]], where i=1,2, ...,n-1.
 
 ## Prototype
 
 ```python
-torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=None, dst_type=None) -> (Tensor, Tensor, Tensor)
+torch_npu.npu_dynamic_quant_asymmetric(input, *, smooth_scales=None, group_index=None, dst_type=None, quant_mode="pertoken", dst_type_max=0.0) -> (Tensor, Tensor, Tensor)
 ```
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported. The dimension of input `x` must be greater than 1. During `torch_npu.int4` quantization, the last dimension of `x` must be a multiple of 8.
+- **`input`** (`Tensor`): Required. Source data tensor to be quantized. The data type can be `torch.float16` or `torch.bfloat16`, the data layout can be $ND$, and non-contiguous tensors are supported. The number of dimensions of the input `input` must be greater than 1. When `torch_npu.int4` quantization is performed, the last dimension of the `input` shape must be a multiple of 8.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`smooth_scales`** (`Tensor`): Optional. A tensor that provides scaling factors (`scales`). The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. Non-contiguous tensors are supported.
-    - In non-MoE scenarios, this parameter must be 1D and match the last dimension of `x`.
-    - In MoE scenarios, this parameter must be 2D with shape `[E, H]`, where `E` indicates the number of experts ranging from 1 to 1024 (matching the first dimension of `group_index`), and `H` indicates the last dimension of `x`.
-    - In single-operator mode, the `dtype` of `smooth_scales` must match that of `x`. In graph mode, they can be different.
+    - In the non-MoE scenario, the shape must be 1D and equal to the last dimension of `input`.
+    - In the MoE scenario, the shape is 2D [E, H]. E is the number of experts, and its value range is [1, 1024] and is the same as the first dimension of group_index. H is the last dimension of x.
+    - In single-operator mode, the dtype of `smooth_scales` must be the same as that of `input`; in graph mode, they can be different.
 - **`group_index`** (`Tensor`): Optional. Group index tensor for `smooth_scales` (representing the row index of `x`), valid only in MoE scenarios. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported. The shape must be `[E,]`, where `E` ranges from 1 to 1024 and matches the first dimension of `smooth_scales`. The tensor values must be strictly incrementing within the range [1, S], and the last value must equal `S` (`S` indicates the number of rows in the input `x`, which is the product of the dimensions of `x` except the last dimension).
 - **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `torch.int8` if `None` is provided.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.int8` or `torch.quint4x2`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.int8` or `torch.quint4x2`.
+
+    <!-- npu="A3,910b" id4 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.int8` or `torch.quint4x2`.
+    <!-- end id4 -->
+    <!-- npu="950" id6 -->
+    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int8`, `torch.quint4x2`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+    <!-- end id6 -->
+
+- **`quant_mode`** (`str`): Optional. Specifies the quantization mode. The default value is `"pertoken"`. If `group_index` is not `None`, only `"pertoken"` is supported.
+
+    <!-- npu="A3,910b" id7 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: this parameter is not supported currently, and `"pertoken"` is used by default.
+    <!-- end id7 -->
+    <!-- npu="950" id8 -->
+    - <term>Ascend 950PR&950DT products</term>: the supported values are `"pertoken"` (token granularity), `"perchannel"` (channel granularity), and `"pertensor"` (one scale shared by the entire tensor).
+    <!-- end id8 -->
+
+- **`dst_type_max`** (`float`): Optional. Maximum representable value of the target data type. The default value is 0.0.
+
+    <!-- npu="A3,910b" id9 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: this parameter is not supported currently.
+    <!-- end id9 -->
+    <!-- npu="950" id10 -->
+    - <term>Ascend 950PR&950DT products</term>: it takes effect only when `dst_type` is `torch_npu.hifloat8`, and the supported values are 0.0 to 32768.0. When the value is 0.0, the maximum value representable by the target precision is used; when the value is not 0.0, the passed value is used as the maximum value of the target data type.
+    <!-- end id10 -->
 
 ## Return Values
 
 - **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `torch.quint4x2`, the data type of `y` is `torch.int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `torch.int32` element contains eight `torch_npu.int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
-- **`scale`** (`Tensor`): Scaling factors calculated during the asymmetric dynamic quantization process. The data type can be `torch.float32`. In `pertoken` mode, the shape is the shape of `x` with its last dimension removed.
+    <!-- npu="950" id5 -->
+    - On <term>Ascend 950PR&950DT products</term>, when `dst_type` is `torch_npu.hifloat8`, the data type of `y` is `torch.uint8` (which actually carries the `torch_npu.hifloat8` type).
+    <!-- end id5 -->
+- **`scale`** (`Tensor`): Scaling factors calculated during the asymmetric dynamic quantization process. The data type is `torch.float32`. When `quant_mode` is `"pertoken"`, the shape is the shape of `input` with the last dimension removed. When `quant_mode` is `"perchannel"`, the shape is the shape of `input` with the second-to-last dimension removed and the last dimension kept identical to that of `input`. When `quant_mode` is `"pertensor"`, the shape is `(1,)`.
 - **`offset`** (`Tensor`): Offset factor calculated during the asymmetric dynamic quantization process. The data type can be `torch.float32`, and its shape must match that of `scale`.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports graph mode.
-- When using the optional parameters `smooth_scales`, `group_index`, and `dst_type`, you must pass them as keyword arguments.
+- This API supports single-operator mode and TorchAir graph mode.
+- When the optional parameters `smooth_scales`, `group_index`, and `dst_type` are used, they must be passed by keyword.
 
-## Examples
+## Example
 
 - Single-operator call
-    - Perform `torch.int8` quantization with only one input `x`.
+    - Only one input `input` is provided for `torch.int8` quantization
 
         ```python
         import torch
@@ -69,7 +100,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `torch_npu.int4` quantization with only one input `x`.
+    - Only one input `input` is provided for `torch_npu.int4` quantization
 
         ```python
         import torch
@@ -79,7 +110,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `torch.int8` quantization with the `smooth_scales` input in non-MoE scenarios (without using `group_index`).
+    - The `smooth_scales` input is used in the non-MoE scenario (without `group_index`) for `torch.int8` quantization
 
         ```python
         import torch
@@ -90,7 +121,7 @@ torch_npu.npu_dynamic_quant_asymmetric(x, *, smooth_scales=None, group_index=Non
         print(y, scale, offset)
         ```
 
-    - Perform `torch.int8` quantization with the `smooth_scales` input in MoE scenarios (using `group_index`).
+    - The `smooth_scales` input is used in the MoE scenario (with `group_index`) for `torch.int8` quantization
 
         ```python
         import torch

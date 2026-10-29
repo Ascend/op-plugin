@@ -2,10 +2,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| :----------------------------------------------------------- | :------: |
-| <term>Atlas A3 training products/Atlas A3 inference products</term>    |    √     |
-| <term>Atlas A2 training products/Atlas A2 inference products</term>|    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -100,7 +102,7 @@
     \end{cases}
     $$
 
-  * The processing strategy of this module varies depending on the value of the input `top_p[b]`:
+  * The processing strategy of this module varies depending on the value of the input `top_p[b]`.
 
   | Parameter| ≤ | Valid Range| Invalid Range|
   | :-------:| :------:|:-------:|:-------:|
@@ -289,7 +291,7 @@
 
   * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>.
 
-  * When called through TorchNPU, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/26.0.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
+  * When called through TorchNPU, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
 
 ## Prototype
 

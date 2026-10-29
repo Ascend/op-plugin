@@ -1,59 +1,71 @@
 # torch_npu.npu_gelu
 
 > [!NOTICE]  
-> In the NPU environment, the native PyTorch API `gelu` ignores the `approximate` parameter and defaults to `tanh`. Use this API to set `approximate` to `none` or to select different approximation modes.
+> When the native PyTorch `gelu` API is used in the NPU environment, the `approximate` parameter does not take effect and defaults to `tanh`. Use this API if you need to set the default value of `approximate` to `None` or to distinguish between different `approximate` methods.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas inference products</term>          |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
-|<term>Atlas training products</term>  | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-- Computes the Gaussian Error Linear Unit (GELU) activation function.
+- Function: computes the Gaussian Error Linear Unit (GELU) activation function.
 - Formulas:
 
-    The GELU expression is as follows:
+    The expression of Gaussian Error Linear Unit (GELU) is:
     $$
     \text{GELU}(x) = x \cdot \Phi(x)
     $$
 
-    $\Phi(x)$ indicates the cumulative distribution function (CDF) of the Gaussian distribution. The expression is as follows:
+    $\Phi(x)$ is the CDF (cumulative distribution function) of the Gaussian distribution, and its expression is:
     $$
     \Phi(x) = P(X \leq x) = \frac{1}{2} \left[ 1 + \text{erf}\left(\frac{x}{\sqrt{2}}\right) \right]
     $$
-    When `approximate="none"`, this expression is used. When `approximate="tanh"`, $\text{erf}(\cdot)$ is replaced with a $\tanh(\cdot)$-based approximation.
+    When `approximate="none"`, the preceding formula is used. When `approximate="tanh"`, $\text{erf}(\cdot)$ is replaced by the approximate form of $\tanh(\cdot)$.
 
 ## Prototype
 
 ```python
-torch_npu.npu_gelu(input, approximate='none') -> Tensor
+torch_npu.npu_gelu(self, *, approximate='none') -> Tensor
 ```
 
 ## Parameters
 
-- **`input`** (`Tensor`): Required. Input tensor, $x$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 8D.
-    - Atlas training products: The data type can be `torch.float16` or `torch.float32`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
-    - Atlas inference products: The data type can be `torch.float16` or `torch.float32`.
+- **`self`** (`Tensor`): Required. Input to be computed by `npu_gelu`, $x$ in the formula. The data layout can be $ND$. Non-contiguous tensors are supported. Empty tensors are supported. Up to 8 dimensions are supported.
 
+    <!-- npu="910,310p" id5 -->
+    - <term>Atlas training products</term> and <term>Atlas inference products</term>: The data type can be `torch.float16` or `torch.float32`.
+    <!-- end id5 -->
+    <!-- npu="950,910b" id6 -->
+    - <term>Atlas A2 products</term> and <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+    <!-- end id6 -->
+
+- **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`approximate`** (`str`): Optional. Activation function mode used for calculation, which can be set to `"none"` or `"tanh"`. `"none"` indicates `erf` mode and `"tanh"` indicates `tanh` mode.
 
 ## Return Values
 
 `Tensor`
 
-The data type must be identical to `input`. The data layout can be ND. The shape must be identical to that of `input`. Non-contiguous tensors are supported.
+The data type and shape must be the same as those of `self`. The data layout can be $ND$. Non-contiguous tensors are supported.
 
 ## Constraints
 
-- This API supports graph mode.
-- The `input` parameter must not be `None`.
+- This API supports single-operator mode and TorchAir graph mode.
+- The `self` input must not be `None`.
 
-## Examples
+## Example
 
 - Single-operator call
 
@@ -82,7 +94,7 @@ The data type must be identical to `input`. The data layout can be ND. The shape
 - Graph mode call
 
     ```python
-    # Configure graph capture
+    # Graph mode approach
     import os
     import torch
     import torch_npu

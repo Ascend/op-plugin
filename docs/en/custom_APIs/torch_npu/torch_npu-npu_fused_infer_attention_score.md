@@ -2,714 +2,1161 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>   | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function<a name="en-us_topic_0000001832267082_section14441124184110"></a>
 
 - Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The following two scenarios are supported:
-  - PromptFlashAttention: Used during the prefill/prompt stage. Typically, `query`, `key`, and `value` are tensors containing the entire sequence and can be used in conjunction with `atten_mask` and the optional `pse_shift`. This mode prioritizes throughput; for long-sequence scenarios, pay close attention to timeout risks and splitting strategies.
-  - IncreFlashAttention: Used during the decode stage, where the S dimension of `query` is 1, and `key`/`value` typically come from the KV Cache. This mode prioritizes per-step latency and KV Cache access efficiency. Enabling PagedAttention can improve throughput and memory access efficiency, but introduces additional constraints.
+
 - Formulas:
 
-  Basic formula:
-
   $$
-  attention\_out = softmax \left(scale * (query * key^\top) + atten\_mask \right) * value
+  attention\_out = softmax \left(scale \cdot (query \cdot key^\top) + atten\_mask \right) \cdot value
   $$
-
-  Position embedding:
-
-  $$
-  attention\_out = softmax\left( scale \cdot (query \cdot key^\top) + pse\_shift + atten\_mask \right) \cdot value
-  $$
-
-  Full quantization:
-
-  $$
-  query_{fp} = query \cdot dequant\_scale1
-  $$
-
-  $$
-  key_{fp} = key \cdot dequant\_scale1
-  $$
-
-  $$
-  value_{fp} = value \cdot dequant\_scale1
-  $$
-
-  $$
-  score_{fp} = scale \cdot (query_{fp} \cdot key_{fp}^\top) + mask
-  $$
-
-  $$
-  score_{int8} = quantize(score_{fp}, quant\_scale1)
-  $$
-
-  $$
-  atten\_prob_{int8} = softmax(score_{int8})
-  $$
-
-  $$
-  out_{fp} = atten\_prob_{int8} \cdot value_{fp}
-  $$
-
-  $$
-  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
-  $$
-
-  Post-training quantization:
-
-  $$
-  out_{fp} = softmax(scale \cdot (query \cdot key^\top) + mask) \cdot value
-  $$
-
-  $$
-  attention\_out = quantize(out_{fp}, quant\_scale2, quant\_offset2)
-  $$
-  `quantize` is the quantization function.
-
-  Fake-quantization:
-
-  $$
-  key_{fp} = key \cdot antiquant\_scale + antiquant\_offset
-  $$
-
-  $$
-  value_{fp} = value \cdot antiquant\_scale + antiquant\_offset
-  $$
-
-  $$
-  attention\_out = softmax(scale \cdot (query \cdot key_{fp}^\top) + mask) \cdot value_{fp}
-  $$
-
-  MLA scenarios:
-
-  $$
-  query_{rot} = RoPE(query, query\_rope)
-  $$
-
-  $$
-  key_{rot} = RoPE(key, key\_rope)
-  $$
-
-  $$
-  attention\_out = softmax(scale \cdot (query_{rot} \cdot key_{rot}^\top) + mask) \cdot value
-  $$
-  `RoPE` is the rotary position embedding function.
 
 ## Prototype<a name="en-us_topic_0000001832267082_section45077510411"></a>
 
 ```python
-torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, atten_mask=None, actual_seq_lengths=None, actual_seq_lengths_kv=None, dequant_scale1=None, quant_scale1=None, dequant_scale2=None, quant_scale2=None, quant_offset2=None, antiquant_scale=None, antiquant_offset=None, block_table=None, query_padding_size=None, kv_padding_size=None, key_antiquant_scale=None, key_antiquant_offset=None, value_antiquant_scale=None, value_antiquant_offset=None, key_shared_prefix=None, value_shared_prefix=None, actual_shared_prefix_len=None, query_rope=None, key_rope=None, key_rope_antiquant_scale=None, num_heads=1, scale=1.0, pre_tokens=2147483647, next_tokens=2147483647, input_layout="BSH", num_key_value_heads=0, sparse_mode=0, inner_precise=0, block_size=0, antiquant_mode=0, softmax_lse_flag=False, key_antiquant_mode=0, value_antiquant_mode=0) -> (Tensor, Tensor)
+torch_npu.npu_fused_infer_attention_score(
+    query, key, value, *,
+    pse_shift=None, atten_mask=None,
+    actual_seq_lengths=None, actual_seq_lengths_kv=None,
+    dequant_scale1=None, quant_scale1=None,
+    dequant_scale2=None, quant_scale2=None, quant_offset2=None,
+    antiquant_scale=None, antiquant_offset=None,
+    block_table=None, query_padding_size=None, kv_padding_size=None,
+    key_antiquant_scale=None, key_antiquant_offset=None,
+    value_antiquant_scale=None, value_antiquant_offset=None,
+    key_shared_prefix=None, value_shared_prefix=None,
+    actual_shared_prefix_len=None,
+    query_rope=None, key_rope=None, key_rope_antiquant_scale=None,
+    num_heads=1, scale=1.0,
+    pre_tokens=2147483647, next_tokens=2147483647,
+    input_layout="BSH", num_key_value_heads=0,
+    sparse_mode=0, inner_precise=0,
+    block_size=0, antiquant_mode=0,
+    softmax_lse_flag=False,
+    key_antiquant_mode=0, value_antiquant_mode=0
+) -> (Tensor, Tensor)
 ```
+
+  > [!NOTE]  
+  > The `query, key, value` before `*` are positional parameters (which must be passed in order); those after `*` are keyword arguments (assigned by key-value pairs, optional; if not passed, the default value is used).
 
 ## Parameters<a name="en-us_topic_0000001832267082_section112637109429"></a>
 
+### Parameter quick reference by scenario
+
+| Scenario | Required parameters | Key optional parameters | Corresponding constraint section |
+| ---- | -------- | ------------ | ------------ |
+| Basic Prefill (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout` | [General basic constraints](#base_constraints), [Q_S > 1 constraints](#qs_gt_1) |
+| Basic Decode (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout, actual_seq_lengths_kv` | [General basic constraints](#base_constraints), [Q_S = 1 constraints](#qs_eq_1) |
+| Decode + PageAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PageAttention constraints](#pa_constraints) |
+| GQA | `query, key, value, num_heads, num_key_value_heads` | - | [General basic constraints](#base_constraints) |
+| MLA | `query, key, value, query_rope, key_rope` | `num_heads, scale, input_layout` | [MLA constraints](#mla_constraints) |
+| Prefix (shared prefix) | `query, key, value, key_shared_prefix, value_shared_prefix` | `actual_shared_prefix_len` | [Prefix constraints](#prefix_constraints) |
+| `torch.int8` full quantization | `query, key, value, dequant_scale1, quant_scale1, dequant_scale2, quant_scale2` | `quant_offset2` | [`torch.int8` quantization constraints](#int8_constraints) |
+| `torch.int8` post-quantization | `query, key, value, quant_scale2` | `quant_offset2` | [`torch.int8` quantization constraints](#int8_constraints) |
+| Fake quantization (KV dequantized from `torch.int8` to `torch.float16`) | `query, key, value, antiquant_scale` | `antiquant_offset, antiquant_mode` | [Fake-quantization constraints](#pseudo_quant_constraints) |
+| Fake-quantization separation mode | `query, key, value, key_antiquant_scale, value_antiquant_scale` | `key_antiquant_mode, value_antiquant_mode` | [Q_S > 1 constraints](#qs_gt_1) / [Q_S = 1 constraints](#qs_eq_1) |
+| Left padding | `query, key, value, actual_seq_lengths, query_padding_size` | `kv_padding_size` | [Padding constraints](#padding_constraints) |
+| Ring Attention | `query, key, value, softmax_lse_flag=True` | - | - |
+| TND layout | `query, key, value, actual_seq_lengths, actual_seq_lengths_kv, input_layout="TND"` | - | [TND layout constraints](#tnd_constraints) |
+
+### Quick reference of value ranges for each axis
+
+> [!NOTE]  
+> B = Batch Size, S = Sequence Length, H = Hidden Size, N = Head Num, D = Head Dim (satisfying D = H / N), T = the sum of the sequence lengths of all batches.
+>
+> Q_S/S1 = the S of `query`, KV_S/S2 = the S of `key/value`, Q_N = num_query_heads, KV_N = `num_key_value_heads`.
+
+| Axis | Meaning | Q_S > 1 upper limit | Q_S = 1 upper limit | Alignment requirement |
+| -- | ---- | ------------ | ------------ | -------- |
+| B | Batch Size | <= 65536 | <= 65536 | - |
+| N (Q_N) | Number of `query` heads | <= 256 | <= 256 | - |
+| N (KV_N) | Number of `key/value` heads | <= 256 | <= 256 | - |
+| D | Head Dim | <= 512 | <= 512 | `torch.float16`/`torch.bfloat16`: 16-byte alignment, `torch.int8`: 32-byte alignment, `torch_npu.int4`: 64-byte alignment |
+| S (Q_S) | `query` sequence length | <= 20971520 (20M) | = 1 | - |
+| S (KV_S) | `key/value` sequence length | <= 20971520 (20M) | <= 262144 | - |
+
+### Detailed parameter description
+
+#### Required parameters (positional parameters)
+
+- **`query`** (`Tensor`): Attention Query input. Data format: $ND$. Non-contiguous tensors are not supported.
+
+  <!-- npu="A3,910b" id4 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Data type: `torch.float16` or `torch.bfloat16`.
+  <!-- end id4 -->
+  <!-- npu="950" id5 -->
+  - <term>Ascend 950PR&950DT products</term>: Data type: `torch.float16` or `torch.bfloat16`.
+  <!-- end id5 -->
+
+- **`key`** (`Tensor`): Attention Key input. Data type: `torch.float16`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4` (in a `torch.int32` container, that is, eight `torch_npu.int4` values packed into one `torch.int32`). Data format: $ND$. Non-contiguous tensors are not supported.
+
+- **`value`** (`Tensor`): Attention Value input. Data type: `torch.float16`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4` (in a `torch.int32` container). Data format: $ND$. Non-contiguous tensors are not supported.
+
+#### Position encoding parameters
+
+- **`pse_shift`** (`Tensor`, optional): Position encoding parameter. Data type: `torch.float16` or `torch.bfloat16` (must satisfy the derivation rules with the type of `query`). Data format: $ND$. Non-contiguous tensors are not supported. Default value: `None`.
+
+  <!-- npu="A3,910b" id6 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Data types: When `Q_S` > 1, the shape is (B, Q_N, Q_S, KV_S) or (1, Q_N, Q_S, KV_S); if KV_S is not 32-byte aligned, padding to 32 bytes is recommended. When `Q_S` = 1, the shape is (B, Q_N, 1, KV_S) or (1, Q_N, 1, KV_S); only the D axis divisible by 16 is supported.
+  <!-- end id6 -->
+  <!-- npu="950" id7 -->
+  - <term>Ascend 950PR&950DT products</term>:
+    - When Q_S is not 1, `query` must be of the `torch.float16` type when `pse_shift` is of the `torch.float16` type, and `query` must be of the `torch.bfloat16` type when `pse_shift` is of the `torch.bfloat16` type. The input shape must be (B, N, Q_S, KV_S) or (1, N, Q_S, KV_S), where Q_S is the S in the shape of query, and KV_S is the S in the shapes of key and value. When KV_S of `pse_shift` is not aligned to 32, padding to 32 bytes is recommended to improve performance, and the padding values in the extra part are not restricted.
+    - When Q_S is 1, `query` must be of the `torch.float16` type when `pse_shift` is of the `torch.float16` type, and `query` must be of the `torch.bfloat16` type when `pse_shift` is of the `torch.bfloat16` type. The input shape must be (B, N, 1, KV_S) or (1, N, 1, KV_S), where N is num_heads, and KV_S is the S in the shapes of key and value. When KV_S of `pse_shift` is not aligned to 32, padding to 32 bytes is recommended to improve performance, and the padding values in the extra part are not restricted.
+  <!-- end id7 -->
+
+#### Mask and sequence length parameters
+
+- **`atten_mask`** (`Tensor`, optional): Applies a mask to the Q x K result to indicate whether the correlation between tokens is computed. Data type: `torch.bool`, `torch.int8`, `torch.uint8`. Data layout: $ND$. Non-contiguous tensors are not supported. Default value: None.
+
+  <!-- npu="A3,910b" id8 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: When `sparse_mode` is 0/1: the shapes (1, Q_S, KV_S), (B, 1, Q_S, KV_S), and (1, 1, Q_S, KV_S) are supported. When `input_layout` is BSH/BSND/BNSD/BNSD_BSND and RoPE is not passed, (B, KV_S) is supported when Q_S=1, and (Q_S, KV_S) is supported when Q_S>1. When `sparse_mode` is 2/3/4: the shape must be (2048, 2048), (1, 2048, 2048), or (1, 1, 2048, 2048), and the user must ensure that it is lower triangular.
+  <!-- end id8 -->
+  <!-- npu="950" id9 -->
+  - <term>Ascend 950PR&950DT products</term>:
+    - When Q_S is not 1, the recommended input shapes are (B, Q_S, KV_S), (1, Q_S, KV_S), (B, 1, Q_S, KV_S), and (1, 1, Q_S, KV_S).
+    - When Q_S is 1, the recommended input shapes are (B, 1, KV_S) and (B, 1, 1, KV_S).
+    - Here, Q_S is the S in the shape of `query`, and KV_S is the S in the shapes of `key` and `value`. However, if Q_S and KV_S are not aligned to 16 or 32, they can be rounded up to the aligned S.
+  <!-- end id9 -->
+
+- **`actual_seq_lengths`** (`List[int]`, optional): Valid sequence length of `query` in each batch. Data type: `torch.int64`. Default value: None (indicating the same as the S of `query`).
+
+  <!-- npu="A3,910b" id10 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The valid sequence length of each batch must be less than or equal to the sequence length of the corresponding batch in `query`. If the value has length 1, all batches share it. If the length is greater than or equal to the batch size, the first `batch` values are used. **This parameter must be passed in the TND layout**: each element is the **cumulative sum** of the sequence lengths of the current batch and all preceding batches (each value is greater than or equal to the preceding value and non-negative), and the number of elements equals the batch value (≤ 4096).
+  <!-- end id10 -->
+
+- **`actual_seq_lengths_kv`** (`List[int]`, optional): Valid sequence length of `key/value` in each batch. Data type: `torch.int64`. Default value: None (indicating the same as the S of `key/value`).
+
+  <!-- npu="A3,910b" id11 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The constraints are the same as those of `actual_seq_lengths`. This parameter must be passed in the PageAttention scenario.
+  <!-- end id11 -->
+
+#### `torch.int8` quantization parameters
+
+- **`dequant_scale1`** (`Tensor`, optional): Dequantization factor after BMM1. pertensor is supported. Data type: `torch.uint64`, `torch.float32`. Default value: None.
+
+- **`quant_scale1`** (`Tensor`, optional): Quantization factor before BMM2. pertensor is supported. Data type: `torch.float32`. Default value: None.
+
+- **`dequant_scale2`** (`Tensor`, optional): Dequantization factor after BMM2. pertensor is supported. Data type: `torch.uint64`, `torch.float32`. Default value: None.
+
+- **`quant_scale2`** (`Tensor`, optional): Quantization factor of the output. pertensor and perchannel are supported.
+  - Data type: `torch.float32`, `torch.bfloat16` (both are supported for `torch.bfloat16` input; otherwise only `torch.float32`). Default value: None.
+  - In perchannel mode: for BSH output, the product of all dimensions = H, and the recommended shape is (1, 1, H) or (H,). For BNSD output, the product = Q_N x D, and the recommended shape is (1, Q_N, 1, D) or (Q_N, D). For BSND output, the product = Q_N x D, and the recommended shape is (1, 1, Q_N, D) or (Q_N, D).
+
+- **`quant_offset2`** (`Tensor`, optional): Quantization offset of the output. pertensor and perchannel are supported. If passed, the type and shape must be consistent with those of `quant_scale2`. Data type: `torch.float32`, `torch.bfloat16`. Default value: None (equivalent to 0).
+
+#### Fake-quantization parameters
+
+- **`antiquant_scale`** (`Tensor`, optional): Fake-quantization factor, supporting pertensor, perchannel, or pertoken. Data type: `torch.float16`, `torch.bfloat16` (only `torch.float16` when Q_S >= 2; when Q_S = 1, perchannel uses the same type as `query`, and pertoken uses `torch.float32`). Default value: None. The KV fake-quantization separation mode is recommended (`key_antiquant_scale` and `value_antiquant_scale`).
+
+  <!-- npu="950" id12 -->
+  - <term>Ascend 950PR&950DT products</term>: This parameter is not supported.
+  <!-- end id12 -->
+
+- **`antiquant_offset`** (`Tensor`, optional): Fake-quantization offset, supporting pertensor, perchannel, or pertoken. The constraints are the same as those of `antiquant_scale` (the shape must be consistent). Default value: None. It is not passed (None) in symmetric quantization and must be passed in asymmetric quantization.
+
+  <!-- npu="950" id13 -->
+  - <term>Ascend 950PR&950DT products</term>: This parameter is not supported.
+  <!-- end id13 -->
+
+- **`antiquant_mode`** (`int`, optional): Fake-quantization mode. 0=perchannel (including pertensor), 1=pertoken. Default value: 0.
+
+  <!-- npu="A3,910b" id14 -->
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: This parameter has no effect when Q_S ≥ 2. When Q_S = 1, passing a value other than 0 or 1 causes an execution error.
+  <!-- end id14 -->
+  <!-- npu="950" id15 -->
+  - <term>Ascend 950PR&950DT products</term>: The values 0 and 1 are supported.
+  <!-- end id15 -->
+
+#### PageAttention parameters
+
+- **`block_table`** (`Tensor`, optional): Block mapping table of the KV storage in PageAttention. Data type: `torch.int32`. Data layout: $ND$. It must be 2D: [B, maxBlockNumPerSeq]. The validity of the blockid is guaranteed by the user. Passing this parameter enables PageAttention. Default value: None.
+
+- **`block_size`** (`int`, optional): Maximum number of tokens per block in PageAttention, passed as a Python `int`. Q_S > 1: minimum 128, maximum 512, and must be a multiple of 128. Q_S = 1: non-zero value, maximum 512. `torch.float16`/`torch.bfloat16` requires 16-byte alignment, and `torch.int8` requires 32-byte alignment. The value 128 is recommended. Default value: 0 (PageAttention is disabled).
+
+  <!-- npu="950" id16 -->
+  - <term>Ascend 950PR&950DT products</term>: Q_S = 1: when the input types of key and value are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.
+  <!-- end id16 -->
+
+#### Padding parameters
+
+- **`query_padding_size`** (`Tensor`, optional): Number of right-aligned paddings per batch of `query`. Data type: `torch.int64`. It takes effect only when Q_S > 1. It must be enabled together with `actual_seq_lengths`; otherwise, right padding is used by default. Default value: None.
+
+- **`kv_padding_size`** (`Tensor`, optional): Number of right-aligned paddings per batch of `key` or `value`. Data type: `torch.int64`. If the value is less than 0, it is set to 0. It must be enabled together with `actual_seq_lengths_kv`; otherwise, right padding is used by default. Default value: None.
+
+#### KV fake-quantization separation parameters
+
+- **`key_antiquant_scale`** (`Tensor`, optional): Dequantization factor of `key` in the KV fake-quantization separation mode. Data type: `torch.float16`, `torch.bfloat16`, `torch.float32`. The perchannel, pertensor, pertoken, pertensor+perhead, pertoken+perhead, and pertoken+PA modes are supported. It must be empty or non-empty at the same time as `value_antiquant_scale`. Default value: None.
+
+- **`key_antiquant_offset`** (`Tensor`, optional): Dequantization offset of `key` in the KV fake-quantization separation mode. The constraints are the same as those of `key_antiquant_scale`. This parameter and `value_antiquant_offset` must either both be empty or both be non-empty. Default value: `None`.
+
+- **`value_antiquant_scale`** (`Tensor`, optional): Dequantization factor of `value` in the KV fake-quantization separation mode. The constraints are the same as those of `key_antiquant_scale`. Default value: None.
+
+- **`value_antiquant_offset`** (`Tensor`, optional): Dequantization offset of `value` in the KV fake-quantization separation mode. The constraints are the same as those of `key_antiquant_scale`. Default value: None.
+
+- **`key_antiquant_mode`** (`int`, optional): Fake-quantization mode of `key`. The value range is 0-5. For details, see the following table. Default value: 0.
+
+- **`value_antiquant_mode`** (`int`, optional): Fake-quantization mode of `value`. The value range is 0-5. For details, see the following table. Default value: 0.
+
+  | Value | Mode | Description |
+  | -- | ---- | ---- |
+  | 0 | perchannel | perchannel mode (including pertensor). Default value. |
+  | 1 | pertoken | pertoken mode. |
+  | 2 | pertensor + perhead | pertensor combined with perhead mode. |
+  | 3 | pertoken + perhead | pertoken combined with perhead mode. |
+  | 4 | pertoken + page attention | pertoken combined with the page attention mode for managing scale/offset. |
+  | 5 | pertoken + perhead + page attention | pertoken combined with perhead and using the page attention mode for managing scale/offset. |
+
 > [!NOTE]  
 >
-> - Dimension definitions for the `query`, `key`, and `value` parameters:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br> `D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
-> - `Q_S` and `S1` indicate the `S` dimension in the shape of `query`.<br>`KV_S` and `S2` indicate the `S` dimension in the shape of `key` and `value`.<br>`Q_N` indicates `num_query_heads`.<br>`KV_N` indicates `num_key_value_heads`.
+><!-- npu="A3,910b" id47 -->
+> - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When Q_S >= 2, only 0 and 1 are supported; when Q_S = 1, 0 to 5 are supported.
+><!-- end id47 -->
+><!-- npu="950" id48 -->
+> - <term>Ascend 950PR&950DT products</term>: `key_antiquant_mode` supports the values 0, 1, 2, 3, 4, and 5. `value_antiquant_mode`: when Q_S >= 2, the values 0, 1, 2, 3, 4, and 5 are supported; when Q_S = 1, the values 0, 1, 2, 3, 4, and 5 are supported. Except in scenarios where `key_antiquant_mode` is 0 and `value_antiquant_mode` is 1, `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
+><!-- end id48 -->
 
-- **`query`** (`Tensor`): Required. Query input of the attention structure. Non-contiguous tensors are not supported. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND.
+#### Prefix (shared prefix) parameters
 
-- **`key`** (`Tensor`): Required. Key input of the attention structure. Non-contiguous tensors are not supported. The data type can be `torch.float16`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4` (`torch.int32`). The data layout can be ND.
+- **`key_shared_prefix`** (`Tensor`, optional): Shared prefix part of Key. Data type: `torch.float16`, `torch.bfloat16`, `torch.int8`. Data layout: $ND$. Non-contiguous tensors are not supported. The first dimension (batch) of the shape must be 1. It must be empty or non-empty at the same time as `value_shared_prefix`. Default value: None.
 
-- **`value`** (`Tensor`): Required. Value input of the attention structure. Non-contiguous tensors are not supported. The data type can be `torch.float16`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4` (`torch.int32`). The data layout can be ND.
+- **`value_shared_prefix`** (`Tensor`, optional): Shared prefix part of Value. The constraints are the same as those of `key_shared_prefix`. Default value: None.
 
-- **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`pse_shift`** (`Tensor`): Optional. Position embedding parameter within the attention structure. The data type can be `torch.float16` or `torch.bfloat16`. The data type of this parameter and that of `query` must meet the data type deduction rules. Non-contiguous tensors are not supported. The data layout can be ND. This parameter can be set to `None` if this feature is not used.
-    - When `Q_S` is greater than 1, if `pse_shift` is `torch.float16`, `query` must be `torch.float16` or `torch.int8`. If `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. The input shape must be (B, Q_N, Q_S, KV_S) or (1, Q_N, Q_S, KV_S), where `Q_S` is the sequence length `S` in the `query` shape, and `KV_S` is the sequence length `S` in the `key` and `value` shapes. If `KV_S` of `pse_shift` is not 32-byte aligned, padding to 32 bytes is recommended to improve performance. There are no specific requirements for the padding values of the padded portion.
-    - When `Q_S` is 1, if `pse_shift` is `torch.float16`, `query` must be `torch.float16`. If `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. The input shape must be (B, Q_N, 1, KV_S) or (1, Q_N, 1, KV_S), where `KV_S` is the sequence length `S` in the `key` and `value` shapes. If `KV_S` of `pse_shift` is not 32-byte aligned, padding to 32 bytes is recommended to improve performance. There are no specific requirements for the padding values of the padded portion.
+- **`actual_shared_prefix_len`** (`List[int]`, optional): Valid sequence length of the shared prefix. Data type: `torch.int64`. The shape is [1], and the value must not be greater than the S of prefix. Default value: None (indicating the same as the S of prefix).
 
-- **`atten_mask`** (`Tensor`): Optional. Masks the results of `query` (Q) and `key` (K) to indicate whether to compute the correlation between tokens. The data type can be `torch.bool`, `torch.int8`, or `torch.uint8`. Non-contiguous tensors are not supported. The data layout can be ND. The default value is `None`.
-    - When `sparse_mode` is `0` or `1`:
-        - The input shape can be (1, Q_S, KV_S), (B, 1, Q_S, KV_S), or (1, 1, Q_S, KV_S).
-        - When `input_layout` is `BSH`, `BSND`, `BNSD`, or `BNSD_BSND`, the `D` dimensions of `query`, `key`, and `value` are identical, and `query_rope` and `key_rope` are omitted, a shape of (B, KV_S) can be passed if `Q_S` is 1, and (Q_S, KV_S) can be passed if `Q_S` is greater than 1.
-        - If `Q_S` or `KV_S` is not 16-byte or 32-byte aligned, it can be rounded up to the aligned value. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-    - When `sparse_mode` is `2`, `3`, or `4`, the input shape can be `(2048, 2048)`, `(1, 2048, 2048)`, or `(1, 1, 2048, 2048)`.
+#### MLA (Multi-head Latent Attention) parameters
 
-- **`actual_seq_lengths`** (`List[int]`): Optional. Valid sequence length (`seqlen`) of `query` in different batches. The data type can be `torch.int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `query` shape.
+- **`query_rope`** (`Tensor`, optional): RoPE information of Query in MLA. Data type: `torch.float16`, `torch.bfloat16`. Data layout: $ND$, non-contiguous tensors are not supported. D in the shape is 64, and the other dimensions are consistent with those of `query`. It must be configured at the same time as `key_rope` or not configured at all. Default value: None.
 
-    Restriction: The valid `seqlen` of each batch in this parameter must not exceed that of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. When `input_layout` of `query` is `TND`, this parameter is required, and the number of elements in this parameter is used as the batch size. The value of each element in this parameter indicates the sum of sequence lengths of the current batch and all previous batches. Therefore, the value of each element must be greater than or equal to that of the previous element, and cannot be negative.
+- **`key_rope`** (`Tensor`, optional): RoPE information of Key in MLA. The constraints are the same as those of `query_rope` (D in the shape is 64, and the other dimensions are consistent with those of `key`). Default value: None.
 
-- **`actual_seq_lengths_kv`** (`List[int]`): Optional. Valid sequence length of `key` and `value` across different batches. The data type can be `torch.int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `key` and `value` shapes. Constraints vary across different `Q_S` values. For details, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`dequant_scale1`** (`Tensor`): Optional. The data type can be `torch.uint64` or `torch.float32`. The data layout can be ND. This parameter indicates the dequantization factor after BMM1. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used. For details about the definition of BMM1, see [Reference](#en-us_topic_0000001832267082_section28169228374).
-- **`quant_scale1`** (`Tensor`): Optional. The data type can be `torch.float32`. The data layout can be ND. This parameter indicates the quantization factor before BMM2. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). For details about the definition of BMM2, see [Reference](#en-us_topic_0000001832267082_section28169228374).
-- **`dequant_scale2`** (`Tensor`): Optional. The data type can be `torch.uint64` or `torch.float32`. The data layout can be ND. This parameter indicates the dequantization factor after BMM2. `pertensor` mode is supported. This parameter can be set to `None` if this feature is not used.
-- **`quant_scale2`** (`Tensor`): Optional. The data type can be `torch.float32` or `torch.bfloat16`. The data layout can be ND. This parameter indicates the output quantization factor. `pertensor` and `perchannel` modes are supported. When the input data type is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported. Otherwise, only `torch.float32` is supported. In `perchannel` mode, if the output layout is `BSH`, the product of all dimensions of `quant_scale2` must be identical to `H`. For other layouts, the product must equal `Q_N * D`. (You are advised to pass a shape of `(1, 1, H)` or `(H,)` when the output layout is `BSH`; `(1, Q_N, 1, D)` or `(Q_N, D)` when the output layout is `BNSD`; and `(1, 1, Q_N, D)` or `(Q_N, D)` when the output layout is `BSND`). This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`quant_offset2`** (`Tensor`): Optional. The data type can be `torch.float32` or `torch.bfloat16`. The data layout can be ND. This parameter indicates the output quantization offset. `pertensor` and `perchannel` modes are supported. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`antiquant_scale`** (`Tensor`): Optional. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization factor. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `torch.float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`antiquant_offset`** (`Tensor`): Optional. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization offset. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `torch.float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`block_table`** (`Tensor`): Optional. The data type can be `torch.int32`. The data layout can be ND. This parameter indicates the block mapping table used for KV storage in PagedAttention. This parameter can be set to `None` if this feature is not used.
-- **`query_padding_size`** (`Tensor`): Optional. The data type can be `torch.int64`. The data layout can be ND. This parameter indicates whether the data of each batch in `query` is right-aligned and the number of right-aligned data records. It is valid only when `Q_S` is greater than 1. In other scenarios, it is invalid. The default value is `None`.
-- **`kv_padding_size`** (`Tensor`): Optional. The data type can be `torch.int64`. The data layout can be ND. This parameter indicates whether the data of each batch in `key` and `value` is right-aligned and the number of right-aligned data records. The default value is `None`.
-- **`key_antiquant_scale`** (`Tensor`): Optional. The data layout can be `torch.float16`, `torch.bfloat16`, and `torch.float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by PagedAttention, and `pertoken` + `perhead` with scale managed by PagedAttention.
+- **`key_rope_antiquant_scale`** (`Tensor`, optional): Reserved parameter, not used currently. Use the default value.
 
-- **`key_antiquant_offset`** (`Tensor`): Optional. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. This parameter indicates the dequantization offset of `key` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by PagedAttention, and `pertoken` + `perhead` with offset managed by PagedAttention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`value_antiquant_scale`** (`Tensor`): Optional. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by PagedAttention, and `pertoken` + `perhead` with scale managed by PagedAttention.
+#### Other scalar parameters
 
-- **`value_antiquant_offset`** (`Tensor`): Optional. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. This parameter indicates the dequantization offset of `value` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by PagedAttention, and `pertoken` + `perhead` with offset managed by PagedAttention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`key_shared_prefix`** (`Tensor`): Optional. Key prefix parameter in the attention structure. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. Non-contiguous tensors are not supported. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`value_shared_prefix`** (`Tensor`): Optional. Value prefix parameter in the attention structure. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. Non-contiguous tensors are not supported. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`actual_shared_prefix_len`** (`List[int]`): Optional. Valid sequence length of `key_shared_prefix` and `value_shared_prefix`. The data type can be `torch.int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `key_shared_prefix` and `value_shared_prefix` shapes. Restriction: The valid sequence length in this parameter must be less than or equal to the sequence length in `key_shared_prefix` and `value_shared_prefix`.
-- **`query_rope`** (`Tensor`): Optional. RoPE information of the query in the Multi-Head Latent Attention (MLA) structure. The data type can be `torch.float16` or `torch.bfloat16`. Non-contiguous tensors are not supported. The data layout can be ND.
-- **`key_rope`** (`Tensor`): Optional. RoPE information of the key in the MLA structure. The data type can be `torch.float16` or `torch.bfloat16`. Non-contiguous tensors are not supported. The data layout can be ND.
-- **`key_rope_antiquant_scale`** (`Tensor`): Optional. Reserved parameter, currently not used. Retain the default value.
-- **`num_heads`** (`int`): Optional. Number of heads for `query`. Pass this value as a Python `int`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs.
-- **`scale`** (`float`): Optional. Scaling factor, typically the reciprocal of the square root of `D`, used as a scalar value for Muls in the computation flow. The data type can be `float`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`.
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
-- **`input_layout`** (`string`): Optional. Data layout of the input `query`, `key`, and `value`. The default value is `"BSH"`.
+- **`num_heads`** (`int`, optional): Number of heads of `query`, passed as a Python `int`. Default value: 1.
 
-    > [!NOTE]   
-    > When a layout format contains an underscore (_), the portion to the left of the underscore represents the layout of the input `query`, and the portion to the right represents the layout of the output. The operator performs layout conversion internally.
+  <!-- npu="A3,910b" id17 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: In BNSD scenarios, it must be consistent with the N axis of `query`.
+  <!-- end id17 -->
+  <!-- npu="950" id18 -->
+  - <term>Ascend 950PR&950DT products</term>: In BNSD, BSND, BNSD_BSND, and TND scenarios, it must be consistent with the N axis of `query`.
+  <!-- end id18 -->
 
-    Supported layouts: `BSH`, `BSND`, `BNSD`, `BNSD_BSND` (when the input is `BNSD`, the output format is `BSND`; supported only when `Q_S` is greater than 1), `BSH_NBSD`, `BSND_NBSD`, `BNSD_NBSD` (when the output format is `NBSD`, supported only when `Q_S` is greater than 1 and less than or equal to 16), `TND`, `TND_NTD`, and `NTD_TND`. For details about the overall constraints on `TND`-related scenarios, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). `BNSD_BSND` indicates that the input is `BNSD` and the output format is `BSND`. It is supported only when `Q_S` is greater than 1.
+- **`input_layout`** (`str`, optional): Data layout format of the input `query/key/value`. **When the format contains an underscore**, the left side of the underscore is the input layout and the right side is the output layout, and the operator automatically converts the layout. For details, see the following table. Default value: "BSH".
 
-- **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. Pass this value as a Python `int`. The default value is `0`, indicating that the number of heads for `key`, `value`, and `query` are identical. The value of `num_heads` must be divisible by `num_key_value_heads`, and the ratio of `num_heads` to `num_key_value_heads` cannot exceed 64. In `BSND`, `BNSD`, and `BNSD_BSND` (supported only when `Q_S` is greater than 1) scenarios, this value must also be identical to the shape of the N axis of `key` and `value`. Otherwise, an execution exception occurs.
-- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int64`. This parameter is invalid when `Q_S` is `1` and no RoPE input is provided. For details about the overall constraints when `input_layout` is `TND`, `TND_NTD`, or `NTD_TND`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-    - When `sparse_mode` is set to `0`, `defaultMask` mode is enabled. If `atten_mask` is omitted, no masking is performed, and `pre_tokens` and `next_tokens` are ignored (internally set to `INT_MAX`). If `atten_mask` is provided, a complete `atten_mask` matrix with shape `(S1, S2)` must be provided, indicating that the region between `pre_tokens` and `next_tokens` is computed.
-    - When `sparse_mode` is set to `1`, `allMask` mode is enabled. A complete `atten_mask` matrix (S1 * S2) must be provided.
-    - When `sparse_mode` is set to `2`, the mask in `leftUpCausal` mode is enabled. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
-    - When `sparse_mode` is set to `3`, the mask in `rightDownCausal` mode is enabled, corresponding to the lower-triangular scenario partitioned by the right vertex. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
-    - When `sparse_mode` is set to `4`, the mask in `band` mode is enabled. An optimized `atten_mask` matrix with shape `(2048, 2048)` must be provided.
-    - When `sparse_mode` is set to `5`, `6`, `7`, or `8`, `prefix`, `global`, `dilated`, or `block_local` mode is enabled, respectively. Currently, these modes are not supported. The default value is `0`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+  | `input_layout` | Input shape (`query`) | Input shape (`key/value`) | Output shape | Applicable scenario |
+  | ------------ | ------------------- | ----------------------- | ---------- | -------- |
+  | "BSH" | (B, Q_S, H) | (B, KV_S, H) | (B, Q_S, H) | General, H = N x D |
+  | `"BSND"` | (B, Q_S, Q_N, D) | (B, KV_S, KV_N, D) | (B, Q_S, Q_N, D) | General, N/D separated |
+  | `"BNSD"` | (B, Q_N, Q_S, D) | (B, KV_N, KV_S, D) | (B, Q_N, Q_S, D) | General, N axis first |
+  | `"BNSD_BSND"` | (B, Q_N, Q_S, D) | (B, KV_N, KV_S, D) | (B, Q_S, Q_N, D) | Only when Q_S > 1 |
+  | `"BSH_NBSD"` | (B, Q_S, H) | (B, KV_S, H) | (B, Q_N, Q_S, D) | Layout conversion |
+  | `"BSND_NBSD"` | (B, Q_S, Q_N, D) | (B, KV_S, KV_N, D) | (B, Q_N, Q_S, D) | Layout conversion |
+  | `"BNSD_NBSD"` | (B, Q_N, Q_S, D) | (B, KV_N, KV_S, D) | (B, Q_N, Q_S, D) | Only when Q_S > 1 and Q_S <= 16 |
+  | `"TND"` | (T, Q_N, D) | (T, KV_N, D) | (T, Q_N, D) | Variable-length sequences, T = sum of seqlens |
+  | `"TND_NTD"` | (T, Q_N, D) | (T, KV_N, D) | (Q_N, T, D) | Variable-length sequences + transpose |
+  | `"NTD_TND"` | (Q_N, T, D) | (KV_N, T, D) | (T, Q_N, D) | Variable-length sequences + transpose |
 
-- **`inner_precise`** (`int`): Optional. Mode configuration flag with 4 valid options: `0`, `1`, `2`, and `3`. Each option is represented by a 2-bit value. Bit 0 specifies high-precision or high-performance mode, and bit 1 specifies whether to perform invalid row correction. The data type can be `int64`. When `Q_S` is greater than 1, if `sparse_mode` is `0` or `1` and a user-defined mask is provided, enabling invalid row correction is recommended. When `Q_S` is `1`, you can only set `inner_precise` to `0` or `1`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+<!-- npu="950" id46 -->
+> [!NOTE]  
+>
+> - <term>Ascend 950PR&950DT products</term>: BSH, BSND, BNSD, BNSD_BSND, and TND are supported (left padding, tensorlist, and pse are not supported).
+<!-- end id46 -->
 
-    - `0`: enables high-precision mode and disables invalid row correction.
-    - `1`: enables high-performance mode and disables invalid row correction.
-    - `2`: enables high-precision mode and enables invalid row correction.
-    - `3`: enables high-performance mode and enables invalid row correction.
+- **`scale`** (`float`, optional): Scaling factor, usually **1/sqrt(D)**. The default value is 1.0. **In most scenarios, it must be set manually; otherwise, the computation result will be incorrect.** Default value: 1.0.
 
-    > [!NOTE]   
-    > For `torch.bfloat16` and `torch.int8`, no distinction is made between high-precision and high-performance modes. Invalid row correction applies to `torch.float16`, `torch.bfloat16`, and `torch.int8`. Currently, `0` and `1` are reserved values. If any row in the mask involved in computation consists entirely of `1`s, precision may degrade. In this case, you can set this parameter to `2` or `3` to enable invalid row correction and improve precision. However, this configuration may degrade performance.
+- **`pre_tokens`** (`int`, optional): In sparse computation, the range of association between attention and the preceding tokens. It is invalid when Q_S=1. Default value: 2147483647.
 
-- **`block_size`** (`int`): Optional. Maximum number of tokens in each block stored in the KV cache in PagedAttention mode. The default value is `0`. The data type can be `int64`.
-- **`antiquant_mode`** (`int`): Optional. Fake-quantization mode. A value of `0` indicates `perchannel` (which includes `pertensor`), and a value of `1` indicates `pertoken`. The default value is `0`.
-    
-    This parameter is invalid when `Q_S` is greater than or equal to `2`. If `Q_S` is `1`, passing a value other than `0` or `1` causes an execution exception.
-    
-- **`softmax_lse_flag`** (`bool`): Optional. Specifies whether to output `softmax_lse`, supporting S-axis tiling (splitting along the sequence length dimension). `True` outputs `softmax_lse`, and `False` disables it. The default value is `False`.
-- **`key_antiquant_mode`** (`int`): Optional. Fake-quantization mode for `key`. The default value is `0`. Except for scenarios where `key_antiquant_mode` is `0` and `value_antiquant_mode` is `1`, this value must be identical to `value_antiquant_mode`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`next_tokens`** (`int`, optional): In sparse computation, the range of association between attention and the following tokens. It is invalid when Q_S=1. Default value: 2147483647.
 
-    When `Q_S` is greater than or equal to `2`, only values of `0` and `1` are supported. When `Q_S` is `1`, the supported values are `0`, `1`, `2`, `3`, `4`, and `5`.
+- **`num_key_value_heads`** (`int`, optional): Number of heads in `key/value`, passed as a Python `int`, used for GQA. 0 indicates that it is equal to the number of heads of `query`. `num_heads` must be divisible by `num_key_value_heads` (that is, `num_heads` / `num_key_value_heads` must be an integer), and the ratio must be <= 64. Default value: 0.
 
-    - `0`: enables `perchannel` mode (which includes `pertensor`).
-    - `1`: enables `pertoken` mode.
-    - `2`: enables `pertensor` + `perhead` mode.
-    - `3`: enables `pertoken` + `perhead` mode.
-    - `4`: enables `pertoken` mode with scale or offset managed by PagedAttention.
-    - `5`: enables `pertoken` + `perhead` mode with scale or offset managed by PagedAttention.
+  <!-- npu="A3,910b" id19 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: In BSND/BNSD/BNSD_BSND scenarios, it must be consistent with the N axis of `key/value`.
+  <!-- end id19 -->
+  <!-- npu="950" id20 -->
+  - <term>Ascend 950PR&950DT products</term>: In BSND/BNSD/BNSD_BSND/TND scenarios, it must be consistent with the N axis of `key/value`.
+  <!-- end id20 -->
 
-- **`value_antiquant_mode`** (`int`): Optional. Fake-quantization mode for `value`. Mode numbering is identical to that of `key_antiquant_mode`. The default value is `0`. Except for scenarios where `key_antiquant_mode` is `0` and `value_antiquant_mode` is `1`, this value must be identical to `key_antiquant_mode`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-    
-    When `Q_S` is greater than or equal to `2`, only values of `0` and `1` are supported. When `Q_S` is `1`, the supported values are `0`, `1`, `2`, `3`, `4`, and `5`.
+- **`sparse_mode`** (`int`, optional): Sparse mode. For details, see the following table. Default value: 0.
 
-## Return Values<a name="en-us_topic_0000001832267082_section22231435517"></a>
+  | `sparse_mode` | Mode | Description | `atten_mask` requirement |
+  | ----------- | ---- | ---- | --------------- |
+  | 0 | defaultMask | Default mode. When `atten_mask` is not passed, no mask is applied; when it is passed, the complete mask matrix is used, and the part between `pre_tokens` and `next_tokens` participates in the computation. This parameter is invalid when Q_S=1 and no rope is used. | shape: (Q_S, KV_S) or (1, Q_S, KV_S), etc. |
+  | 1 | allMask | The complete `atten_mask` matrix (S1 x S2) must be passed. `pre_tokens` and `next_tokens` are ignored. | shape: (Q_S, KV_S) or (1, Q_S, KV_S), etc. |
+  | 2 | leftUpCausal | Upper-left causal mask. The optimized `atten_mask` matrix must be passed. | shape: (2048, 2048) or (1, 2048, 2048) or (1, 1, 2048, 2048) |
+  | 3 | rightDownCausal | Lower-right causal mask (lower triangle divided by the right vertex). The optimized mask must be passed. | shape: (2048, 2048) or (1, 2048, 2048) or (1, 1, 2048, 2048) |
+  | 4 | band | Band mode mask. The optimized `atten_mask` matrix must be passed. | shape: (2048, 2048) or (1, 2048, 2048) or (1, 1, 2048, 2048) |
+  | 5 | prefix | **Not supported currently** | - |
+  | 6 | global | **Not supported currently** | - |
+  | 7 | dilated | **Not supported currently** | - |
+  | 8 | block_local | **Not supported currently** | - |
 
-- **`attention_out`** (`Tensor`): Output tensor in the formula. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND. Restriction: The `D` dimension of this return value must be identical to that of `value`, and all other dimensions must match those of the input parameter `query`.
-- **`softmax_lse`** (`Tensor`): log-sum-exp result computed over the Query-Key product by using the Ring Attention algorithm. It is obtained by first computing `query` * `key`, subtracting the row-wise maximum (`softmax_max`), applying `exp`, summing the results (`softmax_sum`), taking the natural logarithm of `softmax_sum`, and finally adding `softmax_max`. The data type is `torch.float32`. When `softmax_lse_flag` is `True`, the output shape is `(B, Q_N, Q_S, 1)` under standard layouts, and `(T, Q_N, 1)` when `input_layout` is `TND` or `NTD_TND`. When `softmax_lse_flag` is `False`, the output is a tensor of shape `[1]` with value `0`. For details about Ring Attention, see [Reference](#en-us_topic_0000001832267082_section28169228374).
+> [!NOTE]  
+> When Q_S = 1 and no rope input is used, the `sparse_mode` parameter is invalid.
 
-## Constraints<a name="en-us_topic_0000001832267082_section12345537164214"></a>
+- **`inner_precise`** (`int`, optional): Precision/performance mode. For details, see the following table. Default value: 0.
 
-- This API can be used in inference scenarios.
-- This API supports graph mode.
-- When this API is used together with PyTorch, ensure that the CANN package versions match the PyTorch package versions.
-- Empty input handling: The operator checks whether `query` is empty internally. If `query` is empty, an empty value is returned. If `query` is a non-empty tensor but `key` and `value` are empty tensors (`S2` is `0`), `attention_out` returns a tensor filled with all `0`s matching its corresponding shape. If `attention_out` evaluates to an empty tensor, an empty value is returned.
-- The corresponding tensors of `key` and `value` must have identical shapes. In non-contiguous scenarios, each tensor in the tensorlist of `key` and `value` must have a batch size of 1. The number of tensors must be equal to `B` in `query`, and the `N` and `D` dimensions must be identical.
-- Overall constraints on the number of `torch.int8` quantization-related parameters and the input or output data formats:
-    - For `torch.int8` output: The input parameters `dequant_scale1`, `quant_scale1`, `dequant_scale2`, and `quant_scale2` must be provided simultaneously. `quant_offset2` is optional and defaults to `0` if not specified.
-        - Atlas A2 training products/Atlas A2 inference products: The input data type is `torch.int8`.
-        - Atlas A3 training products/Atlas A3 inference products: The input data type is `torch.int8`.
+  | `inner_precise` | Precision mode | Invalid-row correction | Applicable scenario |
+  | ------------- | -------- | ---------- | -------- |
+  | 0 | High precision | No | Default, precision first |
+  | 1 | High performance | No | Performance first |
+  | 2 | High precision | Yes | Improves precision when the mask contains a row that is all 1s |
+  | 3 | High performance | Yes | Improves precision when the mask contains a row that is all 1s (performance slightly decreases) |
 
-    - For `torch.float16` output: The input parameters `dequant_scale1`, `quant_scale1`, and `dequant_scale2` must be provided simultaneously. If `quant_offset2` or `quant_scale2` is provided (not `None`), an error is raised and execution returns.
-        - Atlas A2 training products/Atlas A2 inference products: The input data type is `torch.int8`.
-        - Atlas A3 training products/Atlas A3 inference products: The input data type is `torch.int8`.
+> [!NOTE]
+>
+> `torch.bfloat16` and `torch.int8` do not distinguish high precision from high performance (bit0 is invalid). Invalid-row correction takes effect for `torch.float16`, `torch.bfloat16`, and `torch.int8`. When the mask contains a row that is all 1s, precision may be lost; you can try configuring 2 or 3. When Q_S = 1, only 0 and 1 are supported. If the operator can determine that invalid rows exist (for example, `sparse_mode`=3 and Q_S > KV_S), invalid-row computation is enabled automatically.
 
-    - For `torch.int8` output with full `torch.float16` or `torch.bfloat16` input: `quant_scale2` must be provided, and `quant_offset2` is optional (defaulting to `0` if omitted). If `dequant_scale1`, `quant_scale1`, or `dequant_scale2` is provided (not `None`), an error is raised and execution returns.
-    - `quant_scale2` and `quant_offset2` support `pertensor` or `perchannel` modes, and their data types can be `torch.float32` or `torch.bfloat16`.
+- **`softmax_lse_flag`** (`bool`, optional): Whether to additionally output softmax_lse (used for Ring Attention distributed merging). Default value: False.
 
-- Constraints on the `antiquant_scale` and `antiquant_offset` parameters:
-    - `perchannel`, `pertensor`, and `pertoken` modes are supported.
+## Return Values
 
-        - `perchannel` mode: The shapes of both parameters must be: `(2, KV_N, 1, D)` in `BNSD` scenarios, `(2, KV_N, D)` in `BSND` scenarios, and `(2, H)` in `BSH` scenarios, where `N` is `num_key_value_heads`. The data types must be identical to that of `query`. `antiquant_mode` must be set to `0`. This mode is supported only when the data types of `key` and `value` are `torch.int8`.
-        - `pertensor` mode: The shapes of both parameters must be `(2,)`, and their data types must be identical to that of `query`. `antiquant_mode` must be set to `0`. The data types of `key` and `value` must be `torch.int8`.
+- **`attention_out`** (`Tensor`): Attention output.
+  - Data type: `torch.float16`, `torch.bfloat16`, `torch.int8`. Data layout: $ND$. The D dimension is consistent with the D of `value`, and the other dimensions are consistent with the shape of `query`.
 
-        - `pertoken` mode: The shapes of both parameters must be `(2, B, KV_S)`, and their data types must be `torch.float32`. `antiquant_mode` must be set to `1`. The data types of `key` and `value` must be `torch.int8`.
+- **`softmax_lse`** (`Tensor`): Log-sum-exp value of softmax (used to merge the results of each device in Ring Attention distributed scenarios).
+  - When `softmax_lse_flag=True`: when `input_layout` is TND/NTD_TND, the shape is (T, Q_N, 1) and the dtype is `torch.float32`. In other cases, the shape is (B, Q_N, Q_S, 1) and the dtype is `torch.float32`.
+  - When `softmax_lse_flag=False`: the shape is (1,), and the value is a Tensor of 0s.
 
-        The operator determines its execution mode based on the parameter shape. If `dim` is 1, it executes in `pertensor` mode. Otherwise, it executes in `perchannel` mode.
+  Ring Attention multi-device merge formula:
 
-    - Symmetric quantization and asymmetric quantization are supported.
-        - In asymmetric quantization mode, `antiquant_scale` and `antiquant_offset` must both be provided.
-        - In symmetric quantization mode, `antiquant_offset` can be `None`. If `antiquant_offset` is omitted, symmetric quantization is performed. Otherwise, asymmetric quantization is performed.
+  $$
+  O_{global} = \frac{e^{lse_1 - lse_{max}} \cdot O_1 + e^{lse_2 - lse_{max}} \cdot O_2}{e^{lse_1 - lse_{max}} + e^{lse_2 - lse_{max}}}
+  $$
 
-- When `query_rope` and `key_rope` are provided (MLA scenario), the following constraints apply:
-    - The data type and data format of `query_rope` must be identical to those of `query`.
-    - The data type and data format of `key_rope` must be identical to those of `key`.
-    - `query_rope` and `key_rope` must either both be omitted or both be provided. Partial configuration is not supported.
-    - When `query_rope` and `key_rope` are non-empty, the `D` dimension of `query` must be `512` or `128`.
-        - When `D` of `query` is `512`:
-            - `sparse_mode`: Valid values: `0`, `3`, or `4`.
-            - When `query_rope` is configured, the valid values of the `N` dimension of `query` are `1`, `2`, `4`, `8`, `16`, `32`, `64`, and `128`. The `D` dimension of `query_rope` must be `64`, and all other dimensions must match those of `query`.
-            - When `key_rope` is configured: the `N` dimension must be `1` and the `D` dimension must be `512` for `key`. The `D` dimension of `key_rope` must be `64`, and all other dimensions must match those of `key`.
-            - Supported data layouts for `key`, `value`, and `key_rope`: ND or `NZ`. When the data layout is `NZ`, the layout of the input parameters `key` and `value` is `[blockNum, KV_N, D/16, blockSize, 16]` for the `torch.float16` or `torch.bfloat16` data type, and `[blockNum, KV_N, D/32, blockSize, 32]` for the `torch.int8` data type.
-            - Supported `input_layout` values: `BSH`, `BSND`, `BNSD`, `BNSD_NBSD`, `BSND_NBSD`, `BSH_NBSD`, `TND`, and `TND_NTD`.
-            - PagedAttention is supported: `block_size` must be divisible by 16 and cannot exceed 1024.
-            - `softmax_lse`, left padding, tensorlist, PSE, prefix, fake-quantization, full quantization, and post quantization are not supported.
+  Where $lse_{max} = max(lse_1, lse_2)$.
 
-        - When `D` of `query` is `128`:
-            - Supported `input_layout` values: `BSH`, `BSND`, `TND`, `BNSD`, `NTD`, `BSH_BNSD`, `BSND_BNSD`, `BNSD_BSND`, and `NTD_TND`. 
-            - When `query_rope` is configured: The `D` dimension of `query_rope` must be 64, and all other dimensions must match those of `query`. 
-            - When `key_rope` is configured: The `D` dimension of `key_rope` must be `64`, and all other dimensions must match those of `key`. 
-            - Left padding, tensorlist, PSE, prefix, fake-quantization, full quantization, and post quantization are not supported.
-            - Other constraints are the same as those when the layout is `TND` or `NTD_TND`.
+## Constraints
 
-    - Constraints on the input parameters `query`, `key`, and `value` in `TND`, `TND_NTD`, and `NTD_TND` layouts:
-        - `actual_seq_lengths` and `actual_seq_lengths_kv` must both be provided, and the number of elements in these parameters is used as the batch size (the number of elements must be less than or equal to 4096). The value of each element in this parameter indicates the sum of sequence lengths of the current batch and all previous batches. Therefore, the value of each element must be greater than or equal to that of the previous element.
-        - When `D` of `query` is `512`:
-            - `sparse_mode`: Valid values: `0`, `3`, or `4`.
-            - `TND` and `TND_NTD` layouts are supported.
-            - PagedAttention can be enabled. In this case, the length of `actual_seq_lengths_kv` must be identical to the batch size of `key` or `value`, representing the actual sequence length of each batch, and each value must not exceed `KV_S`.
-            - The `N` dimension of `query` must be `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`, while the `N` dimension of `key` and `value` must be `1`.
-            - `query_rope` and `key_rope` must both be provided, and their `D` dimension must be `64`.
-            - Left padding, tensorlist, PSE, prefix, fake-quantization, and full quantization are not supported.
+### <a id="base_constraints"></a>General basic constraints
 
-        - When `D` of `query` is not `512`:
-            - When `query_rope` and `key_rope` are omitted: in `TND` layouts, `Q_D`, `K_D`, and `V_D` must all be `128`, or `Q_D` and `K_D` must be `192` with `V_D` equal to `128` or `192`; in `NTD` layouts, `V_D` must not be `192`; and in `NTD_TND` layouts, `Q_D` and `K_D` must be `128` or `192`, and `V_D` must be `128`. When `query_rope` and `key_rope` are provided, `Q_D`, `K_D`, and `V_D` must all be `128`.
-            - `TND`, `NTD`, and `NTD_TND` layouts are supported.
-            - In PagedAttention scenarios, `block_size` must be a multiple of 16 and less than or equal to 1024.
-            - Left padding, tensorlist, PSE, prefix, fake-quantization, full quantization, and post quantization are not supported.
+- This API supports inference scenarios and graph mode.
+- When used with PyTorch, the CANN and PyTorch versions must match.
+- **Handling of empty inputs**: If `query` is empty, an empty result is returned directly. If `query` is not empty and `key/value` is empty (S2=0), `attention_out` is returned as all 0s according to the corresponding shape. If `attention_out` is empty, an empty result is returned.
+- The shapes of `key` and `value` must be completely consistent. In non-contiguous scenarios, the batch in the `key/value` tensorlist can only be 1, the count must equal the B of `query`, and N and D must be equal.
+- The default value of `scale` is 1.0. It should usually be set to **1/sqrt(D)**; otherwise, the computation result is incorrect.
 
-- Constraints on parameters in GQA fake-quantization scenarios when `key` and `value` are in `NZ` layout:
-    - `perchannel` and `pertoken` modes are supported. The data type of `query` is fixed to `torch.bfloat16`, and the data types of `key` and `value` are fixed to `torch.int8`. The `D` dimension of `query`, `key`, and `value` must be `128`. The sequence length (`S`) of `query` must be 1 to 16.
-    - `input_layout` must be `BSH`, `BSND`, and `BNSD`.
-    - Only `page_attention` scenarios are supported, where `blockSize` must be `128` or `512`.
-    - `key` and `value` support only `NZ` layout inputs, with a shape format of `[blockNum, KV_N, D/32, blockSize, 32]`.
-    - Data type requirements for `key_antiquant_scale` and `value_antiquant_scale`: in `perchannel` mode, only `torch.bfloat16` is supported; in `pertoken` mode, only `torch.float32` is supported.
-    - Shape requirements for `key_antiquant_scale` and `value_antiquant_scale`: in `perchannel` mode, when `input_layout` is `BSH`, the shape must be `[H]`, when `input_layout` is `BNSD`, the shape must be `[KV_N, 1, D]`, and when the output layout is `BSND`, the shape must be `[KV_N, D]`; in `pertoken` mode, the shape must be `[B, KV_S]`, where `S` must be greater than or equal to the second dimension of `block_table` multiplied by `block_size`.
-    - Only KV separation is supported.
-    - Only high-performance mode is supported.
-    - When MTP is `0`, `sparse_mode` can be `0`, and `atten_mask` must not be provided. When MTP is greater than 0 and less than 16, `sparse_mode` can be `3`, and an optimized `atten_mask` matrix must be provided with shape `(2048, 2048)`.
-    - Configuring `key_antiquant_offset` and `value_antiquant_offset` is not supported.
-    - Configuring `query_rope` and `key_rope` is not supported.
-    - Left padding, tensorlist, PSE, prefix, and post-quantization are not supported.
-    - Supported combinations of (`num_query_heads`, `num_key_value_heads`) are `(10, 1)`, `(64, 8)`, `(80, 8)`, and `(128, 16)`.
-- **When `Q_S` is greater than 1**:
-    - Usage constraints for `query`, `key`, and `value` inputs:
-        - The `B` dimension must be less than or equal to 65536. If the `D` dimension is not 32-byte aligned, only values up to 128 are supported.
-        - The `N` dimension must be less than or equal to 256, and the `D` dimension must be less than or equal to 512. When `input_layout` is `BSH` or `BSND`, the product of `N` and `D` should be less than 65535.
-        - The `S` dimension must be less than or equal to 20971520 (20M). In certain long-sequence scenarios, excessive computation may cause the PFA operator to time out (raising an aicore error with an `errorStr` of "timeout or trap error"). In such cases, slicing along the `S` dimension is recommended. (Note: The computation volume depends on `B`, `S`, `N`, and `D`. Larger values result in higher computation cost). Typical timeout-prone long-sequence scenarios (where the product of `B`, `S`, `N`, and `D` is large) include but are not limited to:
-            - `B = 1`, `Q_N = 20`, `Q_S = 2097152`, `D = 256`, `KV_N = 1`, `KV_S = 2097152`
-            - `B = 1`, `Q_N = 2`, `Q_S = 20971520`, `D = 256`, `KV_N = 2`, `KV_S = 20971520`
-            - `B = 20`, `Q_N = 1`, `Q_S = 2097152`, `D = 256`, `KV_N = 1`, `KV_S = 2097152`
-            - `B = 1`, `Q_N = 10`, `Q_S = 2097152`, `D = 512`, `KV_N = 1`, `KV_S = 2097152`
+### <a id="int8_constraints"></a>`torch.int8` quantization constraints
 
-        - When the data types of `query`, `key`, or `value` include `torch.int8`, the `D` dimension must be a multiple of 32. When the data types are all `torch.float16` or `torch.bfloat16`, the `D` dimension must be a multiple of 16.
-        - Constraints on the `D` dimension:
-            - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When the data types of `query`, `key`, or `value` include `torch.int8`, the `D` dimension must be a multiple of 32. When the data types of `query`, `key`, `value`, or `attention_out` include `torch_npu.int4`, the `D` dimension must be a multiple of 64. When the data types are all `torch.float16` or `torch.bfloat16`, the `D` dimension must be a multiple of 16.
+Constraints on the combination of parameters and input/output data types
 
-    - Constraints on `actual_seq_lengths`:
-    
-        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `query`. If the input length of `seqlen` is `1`, all batches use the same `seqlen`. If the input length is greater than or equal to the batch size, the first *N* elements (where *N* equals the batch size) of `seqlen` are used. Other lengths are not supported. For details about the overall constraints when `input_layout` of `query` is `TND` or `NTD_TND`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-        
-    - Constraints on `actual_seq_lengths_kv`:
-    
-        Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value` If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the overall constraints when `input_layout` of `key` or `value` is `TND` or `NTD_TND`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-        
-    - The `sparse_mode` parameter must be set to `0`, `1`, `2`, `3`, or `4`. If it is set to other values, an error is raised.
-        
-        - When `sparse_mode` is `0`, if `atten_mask` is `None`, or if `atten_mask` is provided in a left-padding scenario, the input parameters `pre_tokens` and `next_tokens` are ignored and internally set to `INT_MAX`.
-        - When `sparse_mode` is `2`, `3`, or `4`, the shape of `atten_mask` must be `(S, S)`, `(1, S, S)`, or `(1, 1, S, S)`, where `S` must be `2048`. The provided `atten_mask` must be a lower triangular matrix. If `atten_mask` is omitted or has an invalid shape, an error is raised.       
-        - When `sparse_mode` is `1`, `2`, or `3`, the input parameters `pre_tokens` and `next_tokens` are ignored and assigned based on the relevant rules.
-        
-    - Combined-parameter scenarios for KV Cache dequantization support only dequantizing `torch.int8` to `torch.float16`. If the product of the data ranges of `key` and `value` and `antiquant_scale` falls within the range of (-1, 1), accuracy is guaranteed in high-performance mode. Otherwise, high-precision mode must be enabled to ensure accuracy.
-    - PagedAttention scenarios:
-        - PagedAttention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in contiguous memory based on the indices in `block_table`. The supported data types for `key` and `value` are `torch.float16` and `torch.bfloat16`. In this case, `input_layout` of `key` and `value` is ignored. The `block_table` contains block IDs. Their validity is not verified and must be ensured by the user.
-        - `block_size` is a user-defined parameter that affects PagedAttention performance. When PagedAttention is enabled, `block_size` must range from 128 to 512 and must be a multiple of 128. Generally, PagedAttention improves throughput but reduces performance.
-    
-        - In PagedAttention scenarios, when the input KV cache layout is `(blocknum, blocksize, H)` and the product of `KV_N` and `D` is greater than 65535, execution is blocked and an error is raised due to hardware constraints. This can be resolved by enabling GQA (to reduce `KV_N`) or by changing the KV cache layout to `(blocknum, KV_N, blocksize, D)`. When the `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When it is `BSH` or `BSND`, only `(blocknum, blocksize, H)` is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
-        - PagedAttention does not support fake-quantization, tensorlist, or left padding.
-        - In PagedAttention scenarios, `actual_seq_lengths_kv` must be provided.
-        - In PagedAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
-        - In PagedAttention scenarios, two formats are supported, and the supported data types are `torch.float32` and `torch.bfloat16`. Cases where `query` is `torch.int8` are not supported.
-        - When PagedAttention is enabled, the input sequence length `KV_S` must be greater than or equal to the product of `maxBlockNumPerSeq` and `block_size` in the following scenarios:
-            - When `atten_mask` is provided and its shape is identical to `(B, 1, Q_S, KV_S)`.
-            - When `pse_shift` is provided and its shape is identical to `(B, Q_N, Q_S, KV_S)`.
-    
-    - Left padding for `query`:
-        - In left padding for `query`, the start index for data transfer is calculated as: `Q_S - query_padding_size - actual_seq_lengths`. The end index is calculated as: `Q_S - query_padding_size`. The start index must not be less than 0, and the end index must not exceed `Q_S`. Otherwise, the result may be incorrect.
-        - In left padding for `query`, if `kv_padding_size` is less than 0, it is set to `0`.
-        - Left padding for `query` must be enabled together with the `actual_seq_lengths` parameter. Otherwise, right-padding for `query` is used by default.   
-        - Left padding for `query` does not support PagedAttention and cannot be enabled together with the `block_table` parameter.
-        
-    - Left padding for `key` and `value`:
-        - Left padding for `key` and `value`, the start index for KV cache transfer is calculated as: `KV_S - kv_padding_size - actual_seq_lengths_kv`. The end index is calculated as: `KV_S - kv_padding_size`. The start index must not be less than 0, and the end index must not exceed `KV_S`. Otherwise, the result may be incorrect.
-        - In left padding for `key` and `value`, if `kv_padding_size` is less than 0, it is set to `0`.
-        - Left padding for `key` and `value` must be enabled together with the `actual_seq_lengths_kv` parameter. Otherwise, right padding for `key` and `value` is used by default.   
-        - Left padding for `key` and `value` does not support PagedAttention and cannot be enabled together with the `block_table` parameter.
-        
-    - The input parameters `quant_scale2` and `quant_offset2` support `pertensor` or `perchannel` quantization, and their data types can be `torch.float32` or `torch.bfloat16`. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. When the input data type is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported. Otherwise, only `torch.float32` is supported. In `perchannel` scenarios, when the output layout is `BSH`, the product of all dimensions of `quant_scale2` must equal `H`. For other layouts, the product must equal `N * D`. The recommended shape for `quant_scale2` is `(1, 1, H)` or `(H,)` for the `BSH` output layout, `(1, Q_N, 1, D)` or `(Q_N, D)` for the `BNSD` output layout, and `(1, 1, Q_N, D)` or `(Q_N, D)` for the `BSND` output layout.
-    - When the output data type is `torch.int8` and `quant_scale2` and `quant_offset2` are in `perchannel` mode, left padding, Ring Attention, and cases where the `D` dimension is not 32-byte aligned are not supported.
-    - When the output data type is `torch.int8`, scenarios where `sparse_mode` is `band` and `pre_tokens` or `next_tokens` are negative are not supported.
+| Input dtype | Output dtype | Must be passed | Can be passed | Must not be passed |
+| ---------- | ---------- | -------- | -------- | -------- |
+| `torch.int8` | `torch.int8` | `dequant_scale1, quant_scale1, dequant_scale2, quant_scale2` | `quant_offset2` | — |
+| `torch.int8` | `torch.float16` | `dequant_scale1, quant_scale1, dequant_scale2` | — | `quant_offset2, quant_scale2` |
+| `torch.float16`/`torch.bfloat16` | `torch.int8` | `quant_scale2` | `quant_offset2` | `dequant_scale1, quant_scale1, dequant_scale2` |
+
+- `quant_scale2` and `quant_offset2` support pertensor or perchannel, and the dtype supports `torch.float32`/`torch.bfloat16`. When `quant_offset2` is passed, its type and shape must be consistent with those of `quant_scale2`.
+- `input_layout` supports only BSH, BNSD, BSND, and BNSD_BSND.
+
+<!-- npu="A3,910b" id21 -->
+- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - When the output is `torch.int8` and the parameters `quant_scale2` and `quant_offset2` are in perchannel mode: left padding, Ring Attention, and non-32-byte-aligned D are not supported.
+  - When the output is `torch.int8`, sparse=band with negative `pre_tokens`/`next_tokens` is not supported currently.
+  - When the output is `torch.int8` and `quant_offset2` is not None, if the matrix contains rows that do not participate in computation, an interception is triggered (external post-quantization is recommended).
+<!-- end id21 -->
+
+### <a id="pseudo_quant_constraints"></a>Fake-quantization constraints (antiquant_scale / antiquant_offset)
+
+- Only the kv dtype of `torch.int8` is supported.
+- perchannel: the shape is (2, KV_N, 1, D), (2, KV_N, D), or (2, H), and the dtype is the same as that of `query`. `antiquant_mode`=0.
+- pertensor: the shape is (2,), and the dtype is the same as that of `query`. `antiquant_mode`=0.
+- pertoken: the shape is (2, B, KV_S), and the dtype is fixed to `torch.float32`. `antiquant_mode`=1.
+- Symmetric quantization: `antiquant_offset`=None; asymmetric quantization: both must exist at the same time.
+- The operator automatically determines the mode based on the shape dim (pertensor when dim=1; otherwise perchannel).
+- **The KV fake-quantization separation mode is recommended** (use `key_antiquant_scale` and `value_antiquant_scale` instead of `antiquant_scale` and `antiquant_offset`).
+
+### <a id="pa_constraints"></a>PageAttention constraints
+
+**Enabling condition**: `block_table` exists and is valid. Once enabled, the `input_layout` parameter of `key/value` becomes invalid, and `key/value` are arranged in contiguous memory indexed by `block_table`.
+
+| Constraint | Q_S > 1 | Q_S = 1 |
+| ------ | ------- | ------- |
+| `block_size` | Minimum 128, maximum 512, and must be a multiple of 128 | <li><term>Atlas A2 products</term>, <term>Atlas A3 products</term>: non-zero, maximum 512, and 128 is recommended.</li><li><term>Ascend 950PR&950DT products</term>: when the input types of `key` and `value` are `torch.float16` or `torch.bfloat16`, alignment to 16 is required; when the input types of `key` and `value` are `torch.int8`, alignment to 32 is required, and 128 is recommended; when the input types of `key` and `value` are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.</li> |
+| kv dtype | `torch.float16`, `torch.bfloat16` | <li><term>Atlas A2 products</term>, <term>Atlas A3 products</term>: `torch.float16`, `torch.bfloat16`, `torch.int8`.</li><li><term>Ascend 950PR&950DT products</term>: `torch.float16`, `torch.bfloat16`, `torch.int8`, `torch_npu.int4` (`torch.int32`)</li> |
+| `query` `torch.int8` | Not supported | Not supported |
+| kv cache layout | For BSH/BSND, only BnBsH; for BNSD/TND, both BnBsH and BnNBsD are supported | Same as the left |
+| `actual_seq_lengths_kv` must be passed | Yes | Yes |
+| `block_table` is 2D | [B, >=maxBlockNumPerSeq] | [B, >=maxBlockNumPerSeq] |
+| Lower limit of blocknum | >= the sum of the numbers of blocks of each batch | Same as the left |
+| Supports tensorlist | No | No |
+| Supports left padding | No | No |
+| Supports fake quantization | No | Yes (`torch.int8` kv) |
+| Performance tip | BnNBsD is better than BnBsH | BnNBsD is better than BnBsH |
+| When H exceeds 65535 | Enable GQA or use BnNBsD | Enable GQA or use BnNBsD |
+
+- When PageAttention is enabled, the following scenarios require KV_S >= maxBlockNumPerSeq x `block_size`:
+  - `atten_mask` is passed (for example, shape (B, 1, Q_S, KV_S))
+  - `pse_shift` is passed (for example, shape (B, Q_N, Q_S, KV_S))
+
+  <!-- npu="A3,910b" id22 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+    - When Q_S = 1 and `atten_mask` is enabled (`sparse_mode` is not 2/3/4): the last dimension of `atten_mask` >= the second dimension of `block_table` x `block_size`.
+    - When Q_S = 1 and `pse_shift` is enabled: the last dimension of `pse_shift` >= the second dimension of `block_table` x `block_size`.
+    - Q_S = 1 fake-quantization pertoken mode: the S of the shape of `antiquant_scale`/`antiquant_offset` >= this value.
+  <!-- end id22 -->
+  <!-- npu="950" id23 -->
+  - <term>Ascend 950PR&950DT products</term>:
+    - When per-token combined with per-head mode is enabled: the shapes of the two parameters are both (B, N, S), the data type is fixed to `torch.float32`, and this is supported when the data types of key and value are `torch.int8` or `torch_npu.int4` (`torch.int32`).
+  <!-- end id23 -->
+
+### <a id="mla_constraints"></a>MLA constraints
+
+The MLA scenario is entered when `query_rope` and `key_rope` are input.
+
+- `query_rope` and `key_rope` must be configured at the same time or not configured at all.
+- The dtype/format of `query_rope` is consistent with that of `query`; the dtype/format of `key_rope` is consistent with that of `key`.
+- The D of `query` supports only 512 or 128.
+
+**When D = 512:**
+
+<!-- npu="A3,910b" id24 -->
+- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - sparse supports 0/3/4.
+  - `query_rope`: the N of `query` is required to be 1/2/4/8/16/32/64/128, D in the shape is 64, and the other dimensions are consistent with those of `query`.
+  - `key_rope`: key is required to have N=1 and D=512, D in the shape is 64, and the other dimensions are consistent with those of `key`.
+  - `key/value/key_rope` support $ND$ or $NZ$. In the $NZ$ format: the shape of `torch.float16`/`torch.bfloat16` is [blockNum, KV_N, D/16, blockSize, 16]; the shape of `torch.int8` is [blockNum, KV_N, D/32, blockSize, 32].
+  - `input_layout`: BSH, BSND, BNSD, BNSD_NBSD, BSND_NBSD, BSH_NBSD, TND, TND_NTD.
+  - PageAttention is supported (`block_size`: a multiple of 16 and <= 1024).
+  - Not supported: softmax_lse, left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
+<!-- end id24 -->
+<!-- npu="950" id25 -->
+- <term>Ascend 950PR&950DT products</term>:
+  - sparse: when Q_S equals 1, only sparse=0 without mask passed is supported; when Q_S is greater than 1, sparse=0 without mask passed or sparse=3 with mask passed is supported;
+  - The `input_layout` of `key, value` supports the $ND$ format.
+  - `input_layout`: BNSD, BSND, BSH, TND.
+  - In this scenario, when `input_layout` is BNSD/BSH/BSND, only the `actual_seq_lengths_kv` parameter is supported. When `input_layout` is TND, the `actual_seq_lengths` and `actual_seq_lengths_kv` parameters must be passed.
+<!-- end id25 -->
+
+**When D = 128:**
+
+<!-- npu="A3,910b" id26 -->
+- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - `input_layout`: BSH, BSND, TND, BNSD, NTD, BSH_BNSD, BSND_BNSD, BNSD_BSND, NTD_TND.
+  - D in the shapes of `query_rope`/`key_rope` is 64, and the other dimensions are unchanged.
+  - Left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization are not supported.
+  - The other constraints are the same as those in TND/NTD_TND scenarios.
+<!-- end id26 -->
+<!-- npu="950" id27 -->
+- <term>Ascend 950PR&950DT products</term>:
+  - When `query_rope` is configured, b, n, and s in the shape of `query_rope` must be consistent with those of `query`, and d is 64.
+  - When `key_rope` is configured, b, n, and s in the shape of `key_rope` must be consistent with those of `key`, and d is 64.
+  - `input_layout`: BSH, BSND, BNSD, BNSD_BSND, TND.
+  - Page attention, prefix, fake quantization, full quantization, and post-quantization are not supported.
+  - When kv is a tensorlist, b in the shape of `key_rope` must be consistent with the tensorlist length; n and s must be equal to the n and s of each tensor in the tensorlist; and d is 64.
+<!-- end id27 -->
+
+### <a id="prefix_constraints"></a>Prefix (shared prefix) constraints
+
+- `key_shared_prefix` and `value_shared_prefix` must both be empty or both be non-empty.
+- When non-empty: both have the same dimensions and dtype as `key`/`value`.
+- The first dimension (batch) of the shape of `key_shared_prefix` is 1. In BNSD/BSND, the N and D axes are consistent with those of `key`; in BSH, H is consistent with that of `key`. The same applies to `value_shared_prefix`. The S values of the two must be equal.
+- When `actual_shared_prefix_len` exists: shape=[1], and the value <= the S of prefix.
+- The S of prefix + the S of `key/value` <= the original S limit of `key/value`.
+- Not supported: PageAttention, left padding, tensorlist, and all-qkv `torch.int8`.
+- When sparse=0/1 and `atten_mask` is passed: S2 >= `actual_shared_prefix_len` + the S of `key`.
+
+### <a id="padding_constraints"></a>Padding constraints
+
+**query left padding (only Q_S > 1)**:
+
+- Transfer start = Q_S - `query_padding_size` - `actual_seq_lengths` (must be >= 0).
+- Transfer end = Q_S - `query_padding_size` (must be <= Q_S).
+- When `kv_padding_size` < 0, it is set to 0.
+- It must be enabled together with `actual_seq_lengths`.
+- PageAttention is not supported.
+
+**kv left padding**:
+
+- Transfer start = KV_S - `kv_padding_size` - `actual_seq_lengths_kv` (must be >= 0 when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
+- Transfer end = KV_S - `kv_padding_size` (must be <= KV_S when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
+- It must be enabled together with `actual_seq_lengths_kv`.
+- PageAttention is not supported.
+
+<!-- npu="A3,910b" id28 -->
+- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - The scenario where Q is `torch.bfloat16`/`torch.float16` and KV is `torch_npu.int4` is not supported.
+<!-- end id28 -->
+
+### <a id="tnd_constraints"></a>TND layout constraints
+
+- `actual_seq_lengths` and `actual_seq_lengths_kv` must be passed. The number of elements is the batch value (<= 4096). Each element value is a cumulative sum (the latter value >= the former value).
+
+<!-- npu="A3,910b" id29 -->
+- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  
+  Comprehensive restrictions when `input_layout` is TND, TND_NTD, or NTD_TND:
+
+  - **When query D = 512**:
+
+    - sparse: 0/3/4.
+    - TND and TND_NTD are supported.
+    - PageAttention is supported (the length of `actual_seq_lengths_kv` = the number of kv batches, and the value <= KV_S).
+    - `query` N = 1/2/4/8/16/32/64/128, kv N = 1.
+    - `query_rope` and `key_rope` are non-empty (D=64).
+    - Not supported: left padding, tensorlist, pse, prefix, fake quantization, and full quantization.
+  - **When query D is not 512**:
+    - Without rope: Q_D, K_D, V_D = 128, or Q_D, K_D = 192 and V_D = 128 or 192 (NTD does not support V_D=192; NTD_TND requires Q_D, K_D = 128 or 192 and V_D = 128).
+    - With rope: Q_D, K_D, V_D = 128.
+    - TND, NTD, and NTD_TND are supported.
+    - For PageAttention, only a `block_size` that is a multiple of 16 and <= 1024 is supported.
+    - Not supported: left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
+<!-- end id29 -->
+<!-- npu="950" id30 -->
+- <term>Ascend 950PR&950DT products</term>:
+  - Left padding, tensorlist, pseType=0, and prefix are not supported.
+<!-- end id30 -->
+
+### <a id="qs_gt_1"></a>Q_S > 1 (Prefill) exclusive constraints
+
+- **B axis**: <= 65536.
+
+  <!-- npu="A3,910b" id31 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When the D axis is not 32-byte aligned, <= 128.
+  <!-- end id31 -->
+  <!-- npu="950" id32 -->
+  - <term>Ascend 950PR&950DT products</term>: A B axis of less than or equal to 65536 is supported.
+  <!-- end id32 -->
+
+- **N axis**: <= 256.
+- **D axis**: <= 512. In BSH/BSND, N x D < 65535 is recommended.
+- **S axis**: <= 20971520 (20M).
+- **D alignment**:
+
+  <!-- npu="A3,910b" id33 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: `torch.int8` must be 32-byte aligned, `torch_npu.int4` must be 64-byte aligned, and `torch.float16`/`torch.bfloat16` must be 16-byte aligned.
+  <!-- end id33 -->
+  <!-- npu="950" id34 -->
+  - <term>Ascend 950PR&950DT products</term>: Non-quantization scenarios: the types of `query`, `key`, and `value` are all `torch.float16` or `torch.bfloat16`, and D axes from 1 to 512 are all supported. Fake-quantization scenarios: the type of `query` is `torch.float16` or `torch.bfloat16`, and the types of `key` and `value` are `torch.int8`/`torch_npu.int4` (`torch.int32`). When the types of `key` and `value` are `torch_npu.int4` (`torch.int32`), the D axis supports only 64 alignment (`torch.int32` supports only D aligned to 8).
+  <!-- end id34 -->
+
+<!-- npu="950" id35 -->
+- **actual_seq_lengths**:
+
+  - <term>Ascend 950PR&950DT products</term>: This parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+<!-- end id35 -->
+
+<!-- npu="950" id36 -->
+- **actual_seq_lengths_kv**:
+
+  - <term>Ascend 950PR&950DT products</term>: When passed in, this parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and the valid seqlenKv of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in `key/value`. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When the `input_layout` of `key/value` is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of `key/value`, it represents the actual length of each batch, and the values must not be greater than KV_S.
+<!-- end id36 -->
+- **Long-sequence timeout risk**: When B x N x S x D is too large, a timeout may occur (aicore timeout/trap error). Splitting S is recommended. Typical high-risk scenarios:
+  - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
+  - B=1, Q_N=2, Q_S=20971520, D=256, KV_N=2, KV_S=20971520
+  - B=20, Q_N=1, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
+  - B=1, Q_N=10, Q_S=2097152, D=512, KV_N=1, KV_S=2097152
+- **sparse_mode**: Only 0/1/2/3/4 are supported. Other values cause an error.
+  - 0: `atten_mask`=None, or `pre_tokens` and `next_tokens` are ignored during left padding.
+  - 2/3/4: the mask shape must be (S,S) or (1,S,S) or (1,1,S,S), where S=2048, and the user guarantees the lower triangle.
+  - 1/2/3: `pre_tokens` and `next_tokens` are ignored.
+- **kvCache dequantization composite parameters**: Only `torch.int8` dequantized to `torch.float16` is supported. The data range of `key/value` x the data range of `antiquant_scale` must be within (-1, 1) (high-performance mode); otherwise, high-precision mode is required.
+- **pse_shift**: It can be used when the dtype of `query` is `torch.float16`/`torch.bfloat16`/`torch.int8`. In the case of `torch.float16` `query` + `pse_shift`, the high-precision mode is forced. Q_S >= the S of `query`, and KV_S >= the S of `key`. For prefix, KV_S >= `actual_shared_prefix_len` + the S of `key`.
+- **GQA fake quantization + KV NZ format**:
+
+  <!-- npu="A3,910b" id37 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+    - `query`: `torch.bfloat16`, `key/value`: `torch.int8`, D=128, Q_S=1~16.
+    - `input_layout`: BSH/BSND/BNSD.
+    - Only PageAttention is supported (`block_size`=128 or 512).
+    - `key/value` NZ format: [blockNum, KV_N, D/32, blockSize, 32].
+    - dtype of `key/value_antiquant_scale`: `torch.bfloat16` in perchannel mode and `torch.float32` in pertoken mode.
+    - Only the KV separation mode is supported. offset, rope, left padding, tensorlist, pse, prefix, and post-quantization are not supported.
+    - Supported combinations of `num_heads` and `num_key_value_heads`: (10,1), (64,8), (80,8), and (128,16).
+    - MTP=0: `sparse_mode`=0 without mask. MTP>0 and <16: `sparse_mode`=3 with the optimized mask (2048x2048).
+    - Only the high-performance mode is supported.
+  <!-- end id37 -->
+
+<!-- npu="950" id38 -->
+- **kv fake-quantization parameter separation**:
+
+  - <term>Ascend 950PR&950DT products</term>:
+    - When fake-quantization parameters and KV separation quantization parameters are passed at the same time, the KV separation quantization parameters take precedence.
+    - Except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
+    - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
+    - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, their shapes must be consistent. When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, their shapes must be consistent.
+    - When `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` do not need to be consistent. In all other scenarios, they must be consistent.
+    - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
+    - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
+    - When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
+    - The quantization modes for managing scale/offset are as follows:
+
+      > [!NOTE]  
+      > Note that scale and offset refer to the `key_antiquant_scale`, `value_antiquant_scale`, `key_antiquant_offset`, and `value_antiquant_offset` parameters.
+
+      | Quantization Mode | scale and offset conditions in this scenario | `key` and `value` conditions in this scenario |
+      | --- | --- | --- |
+      | per-channel mode | The shapes of the two parameters support (N, 1, D), (N, D), (H), (1, N, 1, D), (1, N, D), and (1, H), and the data type is the same as that of query. | Supported when the data types of key, value are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-token mode | The shapes of the two parameters are both (B, S), and the data type is fixed to `torch.float32`. | Supported when the data types of `key, value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-tensor mode | The shapes of the two parameters are both (1), and the data type is the same as that of query. | Supported when the data types of key, value are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-tensor combined with per-head mode | The shapes of the two parameters are both (N), and the data type is the same as that of query. | Supported when the data types of key, value are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-token combined with per-head mode | The shapes of the two parameters are both (B, N, S), and the data type is fixed to `torch.float32`. | Supported when the data types of key, value are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-token combined with the page attention mode | The shapes of the two parameters are both (blocknum, blocksize), and the data type is fixed to `torch.float32`. | Supported when the data types of `key, value` are `torch.int8`. |
+      | per-token combined with per head and using the page attention mode | The shapes of the two parameters are both (blocknum, N, blocksize), and the data type is fixed to `torch.float32`. | Supported when the data types of `key, value` are `torch.int8`. |
+      | `key` supports per-channel combined with `value` supports per-token mode | For `key` supporting per-channel, the shapes of the two parameters can be (N, 1, D), (N, D), (H), (1, N, 1, D), (1, N, D), or (1, H), and the data type is the same as that of `query`. For `value` supporting per-token, the shapes of the two parameters are both (B, S) and the data type is fixed to `torch.float32`. | Supported when the data types of `key, value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+<!-- end id38 -->
+
+### <a id="qs_eq_1"></a>Q_S = 1 (Decode) exclusive constraints
+
+- **B axis**: <= 65536.
+- **N axis**: <= 256.
+- **D axis**: <= 512.
+- **S axis** (KV): <= 262144.
+- **All-qkv `torch.int8`**: Not supported.
+- **`torch_npu.int4` (`torch.int32`) fake quantization**:
+  - PyTorch graph calls support only the case where KV `torch_npu.int4` is concatenated into a `torch.int32` input (generated through dynamic_quant is recommended: 1 `torch.int32` contains 8 `torch_npu.int4` values).
+  - KV N, D, or H is 1/8 of the actual value (the same applies to prefix).
+  - `torch_npu.int4` supports only D aligned to 64 bytes (`torch.int32` supports D aligned to 8 bytes).
+- **actual_seq_lengths**:
+
+  <!-- npu="A3,910b" id39 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: This parameter is invalid when the layout is not TND.
+  <!-- end id39 -->
+  <!-- npu="950" id40 -->
+  - <term>Ascend 950PR&950DT products</term>: This parameter does not take effect when no rope parameter is input and the layout is not TND. It takes effect when a rope parameter is input. When passed in, it must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+  <!-- end id40 -->
+
+- **actual_seq_lengths_kv**:
+
+  <!-- npu="A3,910b" id41 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When the layout is not TND, the passed length is 1/>=batch; the passed value <= the corresponding KV_S.
+  <!-- end id41 -->
+  <!-- npu="950" id42 -->
+  - <term>Ascend 950PR&950DT products</term>: This parameter must be a non-negative number, and its meaning and interception conditions differ for different input_layout values. Generally, this parameter is optional, and the valid Sequence Length of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in key/value. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When input_layout is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of key/value, it represents the actual length of each batch, and the values must not be greater than KV_S.
+  <!-- end id42 -->
+
+- **pse_shift**: the dtype is consistent with that of `query`.
+
+  <!-- npu="A3,910b" id43 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: Only D-axis divisibility by 16 is supported.
+  <!-- end id43 -->
+
+- **kv left padding**: When the transfer start/end is < 0, all 0s are returned. It must be enabled together with `actual_seq_lengths_kv`.
+- **`torch_npu.int4` kv**:
+
+  <!-- npu="A3,910b" id44 -->
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: Left padding and page attention are not supported (Q: `torch.bfloat16`/`torch.float16` + KV: `torch_npu.int4`).
+  <!-- end id44 -->
+
+<!-- npu="950" id45 -->
+- **kv fake-quantization parameter separation**:
+
+  - <term>Ascend 950PR&950DT products</term>:
+    - Except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
+    - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
+    - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent. When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
+    - The `torch_npu.int4` (`torch.int32`) fake-quantization scenario does not support post-quantization.
     - Usage constraints for the `pse_shift` feature:
-        
-        - Supported when the data type of `query` is `torch.float16`, `torch.bfloat16`, or `torch.int8`.
-        - When `query`, `key`, and `value` are all `torch.float16` and `pse_shift` is provided, high-precision mode is enforced. The constraints are the same as those of high-precision mode.
-        - `Q_S` must be greater than or equal to the sequence length (`S`) of `query`, and `KV_S` must be greater than or equal to the sequence length (`S`) of `key`. In prefix scenarios, `KV_S` must be greater than or equal to the sum of `actual_shared_prefix_len` and the sequence length (`S`) of `key`.
-        
-    - When the output data type is `torch.int8`, if `quant_offset2` is a non-`None` and non-empty tensor, and `sparse_mode`, `pre_tokens`, and `next_tokens` meet the execution blocking conditions, certain matrix rows will be excluded from computation. This causes computation errors, and execution will be blocked:
-        - When `sparse_mode` is `0`, if `atten_mask` is not `None` and, for each batch, `actual_seq_lengths - actual_seq_lengths_kv - pre_tokens > 0` or `next_tokens < 0`, the execution will be blocked.
-        - When `sparse_mode` is `1` or `2`, the execution will not be blocked.
-        - When `sparse_mode` is `3` and, for each batch, `actual_seq_lengths_kv - actual_seq_lengths < 0`, the execution will be blocked.
-        - When `sparse_mode` is `4` and `pre_tokens < 0` or `batch next_tokens + actual_seq_lengths_kv - actual_seq_lengths < 0`, the execution will be blocked.
-        
-    - Constraints on prefix parameters:
-        - `key_shared_prefix` and `value_shared_prefix` must either both be omitted or both be provided.
-        - When `key_shared_prefix` and `value_shared_prefix` are both provided, the dimensions and data types of `key_shared_prefix`, `value_shared_prefix`, `key`, and `value` must be identical.
-        - When `key_shared_prefix` and `value_shared_prefix` are both provided, the batch size (first dimension) of `key_shared_prefix` must be `1`. For `BNSD` and `BSND` layouts, the `N` and `D` dimensions must be identical to those of `key`. For the `BSH` layout, the `H` dimension must be identical to that of `key`. The same applies to `value_shared_prefix`. The `S` dimensions of `key_shared_prefix` and `value_shared_prefix` must be identical.
-        - When `actual_shared_prefix_len` is provided, its shape must be `[1]`, and its value must not exceed the `S` dimension of `key_shared_prefix` and `value_shared_prefix`.
-        - The sum of the prefix `S` and the `S` of `key` or `value` must satisfy the original `S` constraints for `key` or `value`.
-        - Prefix is not supported in PagedAttention, left padding, or tensorlist scenarios.
-        - In prefix scenarios, the data types of `query`, `key`, and `value` cannot all be `torch.int8`.
-        - In prefix scenarios, when `sparse_mode` is `0` or `1` and `atten_mask` is provided, `S2` must be greater than or equal to the sum of `actual_shared_prefix_len` and the `S` of `key`.
-        - In prefix scenarios, the input data types of `query`, `key`, and `value` cannot all be `torch.int8`.
-        
-    - Constraints on KV fake-quantization parameter separation:
-        - When both fake-quantization parameters and KV-separated quantization parameters are provided, the KV-separated quantization parameters take precedence.    
-        - `key_antiquant_mode` and `value_antiquant_mode` must have identical values.
-        - `key_antiquant_scale` and `value_antiquant_scale` must either both be omitted or both be provided. Likewise, `key_antiquant_offset` and `value_antiquant_offset` must either both be omitted or both be provided.
-        - When `key_antiquant_scale` and `value_antiquant_scale` are both provided, their shapes must be identical. When `key_antiquant_offset` and `value_antiquant_offset` are both provided, their shapes must be identical. 
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
-            - Only `pertoken` and `perchannel` modes are supported. In `pertoken` mode, the shapes of both parameters must be `(B, KV_S)`, and their data types must be `torch.float32`. In `perchannel` mode, the shapes of both parameters must be `(KV_N, D)` or `(H)`, and their data types must be `torch.bfloat16`.
-            - When `key_antiquant_scale` and `value_antiquant_scale` are both provided, the `query` sequence length `S` must be less than or equal to `16`. The data type of `query` must be `torch.bfloat16`, the data types of `key` and `value` must be `torch.int8`, and the output data type must be `torch.bfloat16`. Tensorlist, left padding, PagedAttention, and prefix are not supported.
-    
-        - The following table describes quantization modes for scale and offset management.
-    
-            > [!NOTE]   
-            > The scale and offset parameters are `key_antiquant_scale`, `value_antiquant_scale`, `key_antiquant_offset`, and `value_antiquant_offset`.
 
-            <a name="en-us_topic_0000001832267082_table3276159203213"></a>
-            <table><thead align="left"><tr id="en-us_topic_0000001832267082_row192767598320"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="en-us_topic_0000001832267082_p19276135910323"><a name="en-us_topic_0000001832267082_p19276135910323"></a><a name="en-us_topic_0000001832267082_p19276135910323"></a>Quantization Mode</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="23.09%" id="mcps1.1.5.1.2"><p id="en-us_topic_0000001832267082_p1627615594327"><a name="en-us_topic_0000001832267082_p1627615594327"></a><a name="en-us_topic_0000001832267082_p1627615594327"></a>Scale and Offset Criteria</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="46.660000000000004%" id="mcps1.1.5.1.3"><p id="en-us_topic_0000001832267082_p17276195963213"><a name="en-us_topic_0000001832267082_p17276195963213"></a><a name="en-us_topic_0000001832267082_p17276195963213"></a>Key and Value Criteria</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="13.3%" id="mcps1.1.5.1.4"><p id="en-us_topic_0000001832267082_p227695933219"><a name="en-us_topic_0000001832267082_p227695933219"></a><a name="en-us_topic_0000001832267082_p227695933219"></a>Supported Products</p>
-            </th>
-            </tr>
-            </thead>
-            <tbody><tr id="en-us_topic_0000001832267082_row172761159123213"><td class="cellrowborder" valign="top" width="16.950000000000003%" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p14277165915327"><a name="en-us_topic_0000001832267082_p14277165915327"></a><a name="en-us_topic_0000001832267082_p14277165915327"></a>perchannel</p>
-            </td>
-            <td class="cellrowborder" valign="top" width="23.09%" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p113847501392"><a name="en-us_topic_0000001832267082_p113847501392"></a><a name="en-us_topic_0000001832267082_p113847501392"></a>The shapes of these parameters can be <code>(KV_N, 1, D)</code>, <code>(KV_N, D)</code>, <code>(H,)</code>, <code>(1, KV_N, 1, D)</code>, <code>(1, KV_N, D)</code> and <code>(1, H)</code>. Their data types must match that of <code>query</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" width="46.660000000000004%" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul2277759183216"></a><a name="en-us_topic_0000001832267082_ul2277759183216"></a><ul id="en-us_topic_0000001832267082_ul2277759183216"><li><span id="en-us_topic_0000001832267082_ph112776597327"><a name="en-us_topic_0000001832267082_ph112776597327"></a><a name="en-us_topic_0000001832267082_ph112776597327"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_19"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_19"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_19"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>. </li><li><span id="en-us_topic_0000001832267082_ph327717592325"><a name="en-us_topic_0000001832267082_ph327717592325"></a><a name="en-us_topic_0000001832267082_ph327717592325"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_19"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_19"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_19"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code></li></ul>
-            </td>
-            <td class="cellrowborder" rowspan="2" valign="top" width="13.3%" headers="mcps1.1.5.1.4 "><a name="en-us_topic_0000001832267082_ul7277159143219"></a><a name="en-us_topic_0000001832267082_ul7277159143219"></a><ul id="en-us_topic_0000001832267082_ul7277159143219"><li><span id="en-us_topic_0000001832267082_ph527775920323"><a name="en-us_topic_0000001832267082_ph527775920323"></a><a name="en-us_topic_0000001832267082_ph527775920323"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_20"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_20"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_20"></a>Atlas A2 training products/Atlas A2 inference products</term></span></li><li><span id="en-us_topic_0000001832267082_ph22772059103210"><a name="en-us_topic_0000001832267082_ph22772059103210"></a><a name="en-us_topic_0000001832267082_ph22772059103210"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_20"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_20"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_20"></a>Atlas A3 training products/Atlas A3 inference products</term></span></li></ul>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row027816595321"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p19936325114616"><a name="en-us_topic_0000001832267082_p19936325114616"></a><a name="en-us_topic_0000001832267082_p19936325114616"></a>pertoken</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p39361225144616"><a name="en-us_topic_0000001832267082_p39361225144616"></a><a name="en-us_topic_0000001832267082_p39361225144616"></a>The shapes of these parameters must be <code>(B, KV_S)</code>, and their data types must be <code>torch.float32</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul7475108135214"></a><a name="en-us_topic_0000001832267082_ul7475108135214"></a><ul id="en-us_topic_0000001832267082_ul7475108135214"><li><span id="en-us_topic_0000001832267082_ph1947698135214"><a name="en-us_topic_0000001832267082_ph1947698135214"></a><a name="en-us_topic_0000001832267082_ph1947698135214"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_21"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_21"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_21"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>. </li><li><span id="en-us_topic_0000001832267082_ph12476287523"><a name="en-us_topic_0000001832267082_ph12476287523"></a><a name="en-us_topic_0000001832267082_ph12476287523"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_21"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_21"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_21"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>.</li></ul>
-            </td>
-            </tr>
-            </tbody>
-            </table>
-    
-- **When `Q_S` is equal to 1**:
-    - Usage constraints for `query`, `key`, and `value` inputs:
-        - The `B` dimension must be less than or equal to 65536, the `N` dimension must be less than or equal to 256, the `S` dimension must be less than or equal to 262144, and the `D` dimension must be less than or equal to 512.
-        - Scenarios where the input data types of `query`, `key`, and `value` are all `torch.int8` are not supported.
-        - In `torch_npu.int4` (`torch.int32`) fake-quantization scenarios, PyTorch graph-mode execution only supports inputs where KV `torch_npu.int4` values are packed into `torch.int32` tensors. (Using `dynamic_quant` to generate data in `torch_npu.int4` format is recommended, as each `torch.int32` value encapsulates eight `torch_npu.int4` values).
-        - In `torch_npu.int4` (`torch.int32`) fake-quantization scenarios, when KV `torch_npu.int4` values are packed into `torch.int32` inputs, the `N`, `D`, or `H` dimensions of `key` and `value` must be one-eighth of their actual values (the same rule applies to prefix parameters). Additionally, `torch_npu.int4` fake-quantization requires the `D` dimension to be a multiple of 64, whereas the underlying `torch.int32` tensor requires the `D` dimension to be a multiple of 8.
+      > [!NOTE]  
+      > Note that scale and offset refer to `key_antiquant_scale`, `value_antiquant_scale`, `key_antiquant_offset`, and `value_antiquant_offset`.
+      > When Q_S equals 1, the quantization modes listed in the following table are supported.
 
-    - Constraints on `actual_seq_lengths`:
-    
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: When `input_layout` of `query` is not `TND` and `Q_S` is 1, this parameter is ignored. For details about the overall constraints when `input_layout` or `query` is `TND` or `TND_NTD`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-        
-    - Constraints on `actual_seq_lengths_kv`:
-    
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value` If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the overall constraints when `input_layout` of `key` or `value` is `TND` or `TND_NTD`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-        
-    - PagedAttention scenarios:
-        - PagedAttention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in a contiguous memory space based on the indices in `block_table`. In this case, the `input_layout` parameter of `key` and `value` is ignored.
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
-            - The data types of `key` and `value` can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
-            - Scenarios where `query` is `torch.bfloat16` or `torch.float16` while `key` and `value` are `torch_npu.int4` (`torch.int32`) are not supported.
-    
-        - In these scenarios, `block_size` is a user-defined parameter that affects PagedAttention performance. `block_size` must be a non-zero value and must not exceed 512. When the input data types of `key` and `value` are `torch.float16` or `torch.bfloat16`, the `block_size` must be a multiple of 16; when the input data type is `torch.int8`, it must be a multiple of 32. A value of 128 is recommended. Generally, PagedAttention improves throughput but reduces performance.
-        - The product of all dimensions of the tensors corresponding to `key` and `value` must not exceed the representable range of `torch.int32`.
-        - In PagedAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
-        - In PagedAttention scenarios, when `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When `input_layout` of `query` is `BSH` or `BSND`, only the `(blocknum, blocksize, H)` format is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
-        - In PagedAttention scenarios, the `(blocknum, KV_N, blocksize, D)` layout format of the KV cache typically provides better performance than `(blocknum, blocksize, H)`, and is therefore recommended.
-        - In PagedAttention scenarios, when the KV cache layout format is `(blocknum, blocksize, H)` and the product of `numKvHeads` and `headDim` exceeds 64K, execution is blocked and an error is raised due to hardware instruction constraints. This can be resolved by enabling GQA (to reduce `numKvHeads`) or by adjusting the KV cache layout format to `(blocknum, numKvHeads, blocksize, D)`.
-        - PagedAttention does not support tensorlist or left padding.
-        - In PagedAttention scenarios, the product of all dimensions of the tensors corresponding to `key` and `value` must not exceed the representable range of `torch.int32`.
-        - In PagedAttention scenarios, when `atten_mask` is provided, if `sparse_mode` is not `2`, `3`, or `4`, the last dimension of `atten_mask` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
-        - In PagedAttention scenarios, when `pse_shift` is provided, the last dimension of `pse_shift` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
-        - In PagedAttention scenarios, the input sequence length `S` must be greater than or equal to the product of the second dimension of `block_table` and `block_size` in the following scenarios:
-            - In `pertoken` fake-quantization mode: the shapes of `antiquant_scale` and `antiquant_offset` must both be `(2, B, S)`.
-            - In `pertoken` + `perhead` mode: The shapes of these parameters must be `(B, N, S)`, and their data types must be `torch.float32`. The data types of `key` and `value` can be `torch.int8` and `torch_npu.int4` (`torch.int32`).
-    
-    - Left padding for `key` and `value`:
-        - The start index for KV cache transfer is calculated as: `Smax - kv_padding_size - actual_seq_lengths`. The end index for KV cache transfer is calculated as: `Smax` - `kv_padding_size`. If the start index or end index for KV cache transfer is less than 0, the output tensor is filled with all `0`s.
-        - If `kv_padding_size` is less than 0, it is set to `0`.
-        - Left padding for `key` and `value` must be enabled together with the `actual_seq_lengths` parameter. Otherwise, right padding for `key` and `value` is used by default.
-        - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: In left padding for `key` and `value`, configurations where `query` is `torch.bfloat16` or `torch.float16` while `key` and `value` are `torch_npu.int4` (`torch.int32`) are not supported.
-    
-    - Constraints on KV fake-quantization parameter separation:
-        - Except for scenarios where `key_antiquant_mode` is `0` and `value_antiquant_mode` is `1`, the values of `key_antiquant_mode` and `value_antiquant_mode` must be identical.  
-        - `key_antiquant_scale` and `value_antiquant_scale` must either both be omitted or both be provided. Likewise, `key_antiquant_offset` and `value_antiquant_offset` must either both be omitted or both be provided.
-        - Except for scenarios where `key_antiquant_mode` is `0` and `value_antiquant_mode` is `1`, when `key_antiquant_scale` and `value_antiquant_scale` are both provided, their shapes must be identical; when `key_antiquant_offset` and `value_antiquant_offset` are both provided, their shapes must also be identical.
-        - Post-quantization is not supported in `torch_npu.int4` (`torch.int32`) fake-quantization scenarios.
-        - The following table describes quantization modes for scale and offset management.
-    
-            > [!NOTE]   
-            > The scale and offset parameters are `key_antiquant_scale`, `value_antiquant_scale`, `key_antiquant_offset`, and `value_antiquant_offset`.
-    
-            <a name="en-us_topic_0000001832267082_table4401182238"></a>
-            <table><thead align="left"><tr id="en-us_topic_0000001832267082_row124112817233"><th class="cellrowborder" valign="top" width="16.950000000000003%" id="mcps1.1.5.1.1"><p id="en-us_topic_0000001832267082_p341780235"><a name="en-us_topic_0000001832267082_p341780235"></a><a name="en-us_topic_0000001832267082_p341780235"></a>Quantization Mode</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="23.09%" id="mcps1.1.5.1.2"><p id="en-us_topic_0000001832267082_p144118852314"><a name="en-us_topic_0000001832267082_p144118852314"></a><a name="en-us_topic_0000001832267082_p144118852314"></a>Scale and Offset Criteria</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="46.660000000000004%" id="mcps1.1.5.1.3"><p id="en-us_topic_0000001832267082_p123481541027"><a name="en-us_topic_0000001832267082_p123481541027"></a><a name="en-us_topic_0000001832267082_p123481541027"></a>Key and Value Criteria</p>
-            </th>
-            <th class="cellrowborder" valign="top" width="13.3%" id="mcps1.1.5.1.4"><p id="en-us_topic_0000001832267082_p147001940151615"><a name="en-us_topic_0000001832267082_p147001940151615"></a><a name="en-us_topic_0000001832267082_p147001940151615"></a>Supported Products</p>
-            </th>
-            </tr>
-            </thead>
-            <tbody><tr id="en-us_topic_0000001832267082_row10411185232"><td class="cellrowborder" valign="top" width="16.950000000000003%" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p154120882315"><a name="en-us_topic_0000001832267082_p154120882315"></a><a name="en-us_topic_0000001832267082_p154120882315"></a>perchannel</p>
-            </td>
-            <td class="cellrowborder" valign="top" width="23.09%" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p21391147716"><a name="en-us_topic_0000001832267082_p21391147716"></a><a name="en-us_topic_0000001832267082_p21391147716"></a>The shapes of these parameters can be <code>(1, KV_N, 1, D)</code>, <code>(1, KV_N, D)</code>, and <code>(1, H)</code>. Their data types must match that of <code>query</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" width="46.660000000000004%" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul0858154962714"></a><a name="en-us_topic_0000001832267082_ul0858154962714"></a><ul id="en-us_topic_0000001832267082_ul0858154962714"><li><span id="en-us_topic_0000001832267082_ph1163117183317"><a name="en-us_topic_0000001832267082_ph1163117183317"></a><a name="en-us_topic_0000001832267082_ph1163117183317"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_26"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_26"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_26"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> can be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>. </li><li><span id="en-us_topic_0000001832267082_ph10252223193315"><a name="en-us_topic_0000001832267082_ph10252223193315"></a><a name="en-us_topic_0000001832267082_ph10252223193315"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_26"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_26"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_26"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> can be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>.</li></ul>
-            </td>
-            <td class="cellrowborder" rowspan="9" valign="top" width="13.3%" headers="mcps1.1.5.1.4 "><a name="en-us_topic_0000001832267082_ul15575120101720"></a><a name="en-us_topic_0000001832267082_ul15575120101720"></a><ul id="en-us_topic_0000001832267082_ul15575120101720"><li><span id="en-us_topic_0000001832267082_ph112662491714"><a name="en-us_topic_0000001832267082_ph112662491714"></a><a name="en-us_topic_0000001832267082_ph112662491714"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_27"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_27"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_27"></a>Atlas A2 training products/Atlas A2 inference products</term></span></li><li><span id="en-us_topic_0000001832267082_ph1290711610176"><a name="en-us_topic_0000001832267082_ph1290711610176"></a><a name="en-us_topic_0000001832267082_ph1290711610176"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_27"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_27"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_27"></a>Atlas A3 training products/Atlas A3 inference products</term></span></li></ul>
-            <p id="en-us_topic_0000001832267082_p13700840111618"><a name="en-us_topic_0000001832267082_p13700840111618"></a><a name="en-us_topic_0000001832267082_p13700840111618"></a></p>
-            <p id="en-us_topic_0000001832267082_p19700134031612"><a name="en-us_topic_0000001832267082_p19700134031612"></a><a name="en-us_topic_0000001832267082_p19700134031612"></a></p>
-            <p id="en-us_topic_0000001832267082_p7700740201616"><a name="en-us_topic_0000001832267082_p7700740201616"></a><a name="en-us_topic_0000001832267082_p7700740201616"></a></p>
-            <p id="en-us_topic_0000001832267082_p4700040131614"><a name="en-us_topic_0000001832267082_p4700040131614"></a><a name="en-us_topic_0000001832267082_p4700040131614"></a></p>
-            <p id="en-us_topic_0000001832267082_p107002403160"><a name="en-us_topic_0000001832267082_p107002403160"></a><a name="en-us_topic_0000001832267082_p107002403160"></a></p>
-            <p id="en-us_topic_0000001832267082_p1670174011616"><a name="en-us_topic_0000001832267082_p1670174011616"></a><a name="en-us_topic_0000001832267082_p1670174011616"></a></p>
-            <p id="en-us_topic_0000001832267082_p67011840191613"><a name="en-us_topic_0000001832267082_p67011840191613"></a><a name="en-us_topic_0000001832267082_p67011840191613"></a></p>
-            <p id="en-us_topic_0000001832267082_p1870113406160"><a name="en-us_topic_0000001832267082_p1870113406160"></a><a name="en-us_topic_0000001832267082_p1870113406160"></a></p>
-            <p id="en-us_topic_0000001832267082_p107011540141611"><a name="en-us_topic_0000001832267082_p107011540141611"></a><a name="en-us_topic_0000001832267082_p107011540141611"></a></p>
-            <p id="en-us_topic_0000001832267082_p070174061612"><a name="en-us_topic_0000001832267082_p070174061612"></a><a name="en-us_topic_0000001832267082_p070174061612"></a></p>
-            <p id="en-us_topic_0000001832267082_p970174013162"><a name="en-us_topic_0000001832267082_p970174013162"></a><a name="en-us_topic_0000001832267082_p970174013162"></a></p>
-            <p id="en-us_topic_0000001832267082_p18701134016166"><a name="en-us_topic_0000001832267082_p18701134016166"></a><a name="en-us_topic_0000001832267082_p18701134016166"></a></p>
-            <p id="en-us_topic_0000001832267082_p107011040191616"><a name="en-us_topic_0000001832267082_p107011040191616"></a><a name="en-us_topic_0000001832267082_p107011040191616"></a></p>
-            <p id="en-us_topic_0000001832267082_p107072401161"><a name="en-us_topic_0000001832267082_p107072401161"></a><a name="en-us_topic_0000001832267082_p107072401161"></a></p>
-            <p id="en-us_topic_0000001832267082_p87072401163"><a name="en-us_topic_0000001832267082_p87072401163"></a><a name="en-us_topic_0000001832267082_p87072401163"></a></p>
-            <p id="en-us_topic_0000001832267082_p8707640151615"><a name="en-us_topic_0000001832267082_p8707640151615"></a><a name="en-us_topic_0000001832267082_p8707640151615"></a></p>
-            <p id="en-us_topic_0000001832267082_p1870774011617"><a name="en-us_topic_0000001832267082_p1870774011617"></a><a name="en-us_topic_0000001832267082_p1870774011617"></a></p>
-            <p id="en-us_topic_0000001832267082_p12707174013166"><a name="en-us_topic_0000001832267082_p12707174013166"></a><a name="en-us_topic_0000001832267082_p12707174013166"></a></p>
-            <p id="en-us_topic_0000001832267082_p14707184011619"><a name="en-us_topic_0000001832267082_p14707184011619"></a><a name="en-us_topic_0000001832267082_p14707184011619"></a></p>
-            <p id="en-us_topic_0000001832267082_p15707540141620"><a name="en-us_topic_0000001832267082_p15707540141620"></a><a name="en-us_topic_0000001832267082_p15707540141620"></a></p>
-            <p id="en-us_topic_0000001832267082_p2707164021613"><a name="en-us_topic_0000001832267082_p2707164021613"></a><a name="en-us_topic_0000001832267082_p2707164021613"></a></p>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row84115813237"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p10419882318"><a name="en-us_topic_0000001832267082_p10419882318"></a><a name="en-us_topic_0000001832267082_p10419882318"></a>pertensor</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p04120872317"><a name="en-us_topic_0000001832267082_p04120872317"></a><a name="en-us_topic_0000001832267082_p04120872317"></a>The shapes of these parameters must be <code>(1,)</code>, and their data types must be identical to that of <code>query</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul19978121525716"></a><a name="en-us_topic_0000001832267082_ul19978121525716"></a><ul id="en-us_topic_0000001832267082_ul19978121525716"><li><span id="en-us_topic_0000001832267082_ph19978111585717"><a name="en-us_topic_0000001832267082_ph19978111585717"></a><a name="en-us_topic_0000001832267082_ph19978111585717"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_28"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_28"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_28"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>. </li><li><span id="en-us_topic_0000001832267082_ph13978111545713"><a name="en-us_topic_0000001832267082_ph13978111545713"></a><a name="en-us_topic_0000001832267082_ph13978111545713"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_28"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_28"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_28"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>.</li></ul>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row1341138172312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p134114862314"><a name="en-us_topic_0000001832267082_p134114862314"></a><a name="en-us_topic_0000001832267082_p134114862314"></a>pertoken</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p1037135185914"><a name="en-us_topic_0000001832267082_p1037135185914"></a><a name="en-us_topic_0000001832267082_p1037135185914"></a>The shapes of these parameters must be <code>(1, B, KV_S)</code>, and their data types must be <code>torch.float32</code></p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p174417474211"><a name="en-us_topic_0000001832267082_p174417474211"></a><a name="en-us_topic_0000001832267082_p174417474211"></a>The data types of <code>key</code> and <code>value</code> can be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>.</p>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row12620173672311"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p166201636132311"><a name="en-us_topic_0000001832267082_p166201636132311"></a><a name="en-us_topic_0000001832267082_p166201636132311"></a>pertensor + perhead</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p662110362235"><a name="en-us_topic_0000001832267082_p662110362235"></a><a name="en-us_topic_0000001832267082_p662110362235"></a>The shapes of these parameters must be <code>(KV_N,)</code>, and their data types must be identical to that of <code>query</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul519618222020"></a><a name="en-us_topic_0000001832267082_ul519618222020"></a><ul id="en-us_topic_0000001832267082_ul519618222020"><li><span id="en-us_topic_0000001832267082_ph121961922601"><a name="en-us_topic_0000001832267082_ph121961922601"></a><a name="en-us_topic_0000001832267082_ph121961922601"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_29"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_29"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_29"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>. </li><li><span id="en-us_topic_0000001832267082_ph11961022801"><a name="en-us_topic_0000001832267082_ph11961022801"></a><a name="en-us_topic_0000001832267082_ph11961022801"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_29"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_29"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_29"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>.</li></ul>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row136211336192318"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p22659468119"><a name="en-us_topic_0000001832267082_p22659468119"></a><a name="en-us_topic_0000001832267082_p22659468119"></a>pertoken + perhead</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p116212367239"><a name="en-us_topic_0000001832267082_p116212367239"></a><a name="en-us_topic_0000001832267082_p116212367239"></a>The shapes of these parameters must be <code>(B, KV_N, KV_S)</code>, and their data types must be <code>torch.float32</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p162285131891"><a name="en-us_topic_0000001832267082_p162285131891"></a><a name="en-us_topic_0000001832267082_p162285131891"></a>The data types of <code>key</code> and <code>value</code> must be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>.</p>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row1037716581001"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1757135414112"><a name="en-us_topic_0000001832267082_p1757135414112"></a><a name="en-us_topic_0000001832267082_p1757135414112"></a>pertoken + PagedAttention</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p1025316567221"><a name="en-us_topic_0000001832267082_p1025316567221"></a><a name="en-us_topic_0000001832267082_p1025316567221"></a>The shapes of these parameters must be <code>(blocknum, blocksize)</code>, and their data types must be <code>torch.float32</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p04417476217"><a name="en-us_topic_0000001832267082_p04417476217"></a><a name="en-us_topic_0000001832267082_p04417476217"></a>The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>.</p>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row15621736192312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1986911315215"><a name="en-us_topic_0000001832267082_p1986911315215"></a><a name="en-us_topic_0000001832267082_p1986911315215"></a>pertoken + per head + PagedAttention</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p2621173692313"><a name="en-us_topic_0000001832267082_p2621173692313"></a><a name="en-us_topic_0000001832267082_p2621173692313"></a>The shapes of these parameters must be <code>(blocknum, KV_N, blocksize)</code>, and their data types must be <code>torch.float32</code>.</p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p551893313915"><a name="en-us_topic_0000001832267082_p551893313915"></a><a name="en-us_topic_0000001832267082_p551893313915"></a>The data types of <code>key</code> and <code>value</code> must be <code>torch.int8</code>.</p>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row915113171020"><td class="cellrowborder" rowspan="2" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p01521217025"><a name="en-us_topic_0000001832267082_p01521217025"></a><a name="en-us_topic_0000001832267082_p01521217025"></a><code>perchannel</code> for <code>key</code> + <code>pertoken</code> for <code>value</code> </p>
-            <p id="en-us_topic_0000001832267082_p74743213101"><a name="en-us_topic_0000001832267082_p74743213101"></a><a name="en-us_topic_0000001832267082_p74743213101"></a></p>
-            </td>
-            <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p1867213119113"><a name="en-us_topic_0000001832267082_p1867213119113"></a><a name="en-us_topic_0000001832267082_p1867213119113"></a>In <code>perchannel</code> mode for <code>key</code>, the shapes of these parameters must be <code>(1, KV_N, 1, D)</code>, <code>(1, KV_N, D)</code>, or <code>(1, H)</code>, and their data types must be identical to that of <code>query</code>.</p>
-            </td>
-            <td class="cellrowborder" rowspan="2" valign="top" headers="mcps1.1.5.1.3 "><a name="en-us_topic_0000001832267082_ul1037202951112"></a><a name="en-us_topic_0000001832267082_ul1037202951112"></a><ul id="en-us_topic_0000001832267082_ul1037202951112"><li><span id="en-us_topic_0000001832267082_ph10271547141214"><a name="en-us_topic_0000001832267082_ph10271547141214"></a><a name="en-us_topic_0000001832267082_ph10271547141214"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_30"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_30"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term11962195213215_30"></a>Atlas A2 training products/Atlas A2 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>. When their data types are <code>torch.int8</code>, the data types of <code>query</code> and the output must be <code>torch.float16</code>. </li><li><span id="en-us_topic_0000001832267082_ph427116472125"><a name="en-us_topic_0000001832267082_ph427116472125"></a><a name="en-us_topic_0000001832267082_ph427116472125"></a><term id="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_30"><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_30"></a><a name="en-us_topic_0000001832267082_en-us_topic_0000001312391781_term1253731311225_30"></a>Atlas A3 training products/Atlas A3 inference products</term></span>: The data types of <code>key</code> and <code>value</code> must be <code>torch_npu.int4</code> (<code>torch.int32</code>) or <code>torch.int8</code>. When their data types are <code>torch.int8</code>, the data types of <code>query</code> and the output must be <code>torch.float16</code>.</li></ul>
-            </td>
-            </tr>
-            <tr id="en-us_topic_0000001832267082_row194748261012"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1154111491113"><a name="en-us_topic_0000001832267082_p1154111491113"></a><a name="en-us_topic_0000001832267082_p1154111491113"></a>In <code>pertoken</code> mode for <code>value</code>, the shapes of these parameters must be <code>(1, B, KV_S)</code>, and their data types must be <code>torch.float32</code>.</p>
-            </td>
-            </tr>
-            </tbody>
-            </table>
-    
-    - Usage constraints for the `pse_shift` feature:
-        - The data types of `pse_shift` and `query` must be identical.
-        - Only D-axis alignment is supported. That is, the D dimension must be divisible by 16.
+      | Quantization Mode | scale and offset conditions in this scenario | `key` and `value` conditions in this scenario |
+      | --- | --- | --- |
+      | per-channel mode | The shapes of the two parameters support (1, N, 1, D), (1, N, D), and (1, H), and the data type is the same as that of `query`. | Supported when the data types of `key` and `value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-tensor mode | The shapes of the two parameters are both (1), and the data type is the same as that of `query`. | Supported when the data types of `key` and `value` are `torch.int8`. |
+      | per-token mode | The shapes of the two parameters are both (1, B, S), and the data type is fixed to `torch.float32`. | Supported when the data types of `key` and `value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-tensor combined with per-head mode | The shapes of the two parameters are both (N), and the data type is the same as that of `query`. | Supported when the data types of `key` and `value` are `torch.int8`. |
+      | per-token combined with per-head mode | The shapes of the two parameters are both (B, N, S), and the data type is fixed to `torch.float32`. | Supported when the data types of `key` and `value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
+      | per-token combined with the page attention mode | The shapes of the two parameters are both (blocknum, blocksize), and the data type is fixed to `torch.float32`. | Supported when the data types of `key` and `value` are `torch.int8`. |
+      | per-token combined with per head and using the page attention mode | The shapes of the two parameters are both (blocknum, N, blocksize), and the data type is fixed to `torch.float32`. | Supported when the data types of `key` and `value` are `torch.int8`. |
+      | `key` supports per-channel combined with `value` supports per-token mode | For `key` supporting per-channel, the shapes of the two parameters can be (1, N, 1, D), (1, N, D), or (1, H), and the data type is the same as that of `query`. For `value` supporting per-token, the shapes of the two parameters are both (1, B, S) and the data type is fixed to `torch.float32`. | Supported when the data types of `key` and `value` are `torch_npu.int4` (`torch.int32`) or `torch.int8`. |
 
+<!-- end id45 -->
 ## Examples<a name="en-us_topic_0000001832267082_section14459801435"></a>
 
-- Single-operator call
+### Example 1: MHA + Prefill (basic scenario)
 
-    ```python
-    import torch
-    import torch_npu
-    import math
-    # Generate random data and send it to the NPU.
-    q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
-    k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
-    v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
-    scale = 1/math.sqrt(128.0)
-    actseqlen = [164]
-    actseqlenkv = [1024]
-    
-    # Call the FIA operator.
-    out, _ = torch_npu.npu_fused_infer_attention_score(q, k, v, 
-    actual_seq_lengths = actseqlen, actual_seq_lengths_kv = actseqlenkv,
-    num_heads = 8, input_layout = "BNSD", scale = scale, pre_tokens=65535, next_tokens=65535)
-    
-    print(out)
-    # Expected output of the preceding code sample:
-    tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
-            [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
-            [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
-            ..
-            [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
-            [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
-            [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
-            device='npu:0', dtype=torch.float16)
-    ```
+The simplest full computation call: single batch, 8 heads, D=128, BNSD layout.
 
-- Graph mode call
+```python
+import torch
+import torch_npu
+import math
 
-    ```python
-    # Configure graph capture
-    import torch
-    import torch_npu
-    import math
-    import torchair as tng
-    import os
-    
-    from torchair.configs.compiler_config import CompilerConfig
-    import torch._dynamo
-    os.environ['TORCHDYNAMO_VERBOSE'] = '1'
-    os.environ['TORCH_LOGS'] = '+dynamo'
-    
-    # Configure logging and debug settings for graph capture
-    import logging
-    from torchair.core.utils import logger
-    logger.setLevel(logging.DEBUG)
-    config = CompilerConfig()
-    config.debug.graph_dump.type = "pbtxt"
-    npu_backend = tng.get_npu_backend(compiler_config=config)
-    
-    # Generate data
-    q = torch.randn(1, 8, 164, 128, dtype=torch.float16).npu()
-    k = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
-    v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
-    scale = 1/math.sqrt(128.0)
-    
-    class Model(torch.nn.Module):
-        def __init__(self):
-            super().__init__()
-        def forward(self):
-            return torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale=scale, pre_tokens=65535, next_tokens=65535)
-    def MetaInfershape():
-        with torch.no_grad():
-            model = Model()
-            model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
-            graph_output = model()
-        single_op = torch_npu.npu_fused_infer_attention_score(q, k, v, num_heads = 8, input_layout = "BNSD", scale=scale, pre_tokens=65535, next_tokens=65535)
-        print("single op output with mask:", single_op[0], single_op[0].shape)
-        print("graph output with mask:", graph_output[0], graph_output[0].shape)
-    if __name__ == "__main__":
-        MetaInfershape()
-    
-    # Expected output of the preceding code sample:
-    single op output with mask: tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
-            [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
-            [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
-            ...,
-            [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
-            [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
-            [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
-            device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
-    
-    graph output with mask: tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
-            [ 0.0294,  0.0256, -0.0081,  ...,  0.0267,  0.0067, -0.0117],
-            [ 0.0285,  0.0296,  0.0011,  ...,  0.0150,  0.0056, -0.0062],
-            ...,
-            [ 0.0177,  0.0194, -0.0060,  ...,  0.0226,  0.0029, -0.0039],
-            [ 0.0180,  0.0186, -0.0067,  ...,  0.0204, -0.0045, -0.0164],
-            [ 0.0176,  0.0288, -0.0091,  ...,  0.0304,  0.0033, -0.0173]]]],
-            device='npu:0', dtype=torch.float16) torch.Size([1, 8, 164, 128])
-    ```
+# ===== Data preparation =====
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_N, KV_S = 8, 1024
 
-## Reference<a name="en-us_topic_0000001832267082_section28169228374"></a>
+# Shapes of query/key/value: (B, N, S, D) - BNSD layout
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+k = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
 
-- Batch Matrix Multiply 1 (BMM1)
+# scale must be set to 1/sqrt(D)
+scale = 1.0 / math.sqrt(D)
 
-  Definition: The first matrix multiplication, which is used to compute the `attention_score`.
+# actual_seq_lengths: length 1 means all batches share it
+# actual_seq_lengths_kv: valid length of key/value
+act_seq_len = [Q_S]
+act_seq_len_kv = [KV_S]
 
-  Formula:
-  $$
-  attention\_score = query \cdot key^{\top}
-  $$
+# ===== Call the operator =====
+# MHA: num_heads == num_key_value_heads (or num_key_value_heads is not passed and defaults to 0)
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    actual_seq_lengths=act_seq_len,
+    actual_seq_lengths_kv=act_seq_len_kv,
+    num_heads=Q_N,
+    input_layout="BNSD",
+    scale=scale,
+    pre_tokens=65535,
+    next_tokens=65535
+)
 
-- Batch Matrix Multiply 2 (BMM2)
+print(out.shape)  # torch.Size([1, 8, 164, 128])
+```
 
-  Definition: The second matrix multiplication, which applies the attention weights to `value` to obtain the final output.
+> [!NOTE]  
+>
+> - `scale=1/√128`: Required. Controls the scaling of QK^T before softmax. An incorrect setting causes an abnormal attention distribution.
+>
+> - `pre_tokens=65535, next_tokens=65535`: Indicates that the attention range is not limited (equivalent to bidirectional attention).
+>
+> - `input_layout="BNSD"`: Indicates that the input is (B,N,S,D).
+>
+> - This scenario falls under Q_S > 1 and uses the PromptFlashAttention branch.
 
-  Formulas:
-  $$
-  attention\_out = atten\_prob \cdot value
-  $$
+### Example 2: GQA + Decode + PageAttention
 
-  `atten_prob` is the normalized attention weight:
-  $$
-  atten\_prob = softmax(\cdot)
-  $$
+Incremental inference scenario of grouped-query attention + KV cache + PageAttention.
 
-- Ring Attention
+```python
+import torch
+import torch_npu
+import math
 
-  Definition: A distributed attention algorithm that partitions a long sequence into blocks and distributes them across multiple devices. Attention is computed block by block through ring-based communication, reducing memory footprint on a single device and supporting ultra-long sequences. In single-device scenarios, Ring Attention falls back to standard attention.
+# ===== Data preparation =====
+B = 1
+Q_N = 8           # query heads
+KV_N = 2          # key/value heads (GQA: Q_N / KV_N = 4)
+Q_S = 1           # the query length in the decode phase = 1
+D = 128
+KV_S = 2048       # total KV cache length
+block_size = 128
+# Calculate the required number of blocks
+max_block_num = (KV_S + block_size - 1) // block_size  # = 16
 
-  Computation logic: When `softmax_lse_flag=True`, the operator additionally outputs the log-sum-exp (LSE) values of the softmax, which are used to merge attention results from multiple devices in a distributed environment. Suppose two devices compute attention outputs for partial sequences, denoted by $O_1$ and $O_2$, with corresponding LSE values $lse_1$ and $lse_2$. The global output is calculated as:
-  
-  $$
-  O_{global} = \frac{e^{lse_1 - lse_{max}} O_1 + e^{lse_2 - lse_{max}} O_2}{e^{lse_1 - lse_{max}} + e^{lse_2 - lse_{max}}}
-  $$
+# BSH layout: query is 3D (B, S, H_q), where H_q = Q_N * D
+H_q = Q_N * D    # = 1024
+H_kv = KV_N * D  # = 256
+q = torch.randn(B, Q_S, H_q, dtype=torch.float16).npu()
+# KV cache: BnBsH format (blocknum, block_size, H_kv)
+k = torch.randn(max_block_num, block_size, H_kv, dtype=torch.float16).npu()
+v = torch.randn(max_block_num, block_size, H_kv, dtype=torch.float16).npu()
 
-  `lse_max` is defined as follows:
-  $$
-  lse_{max} = max(lse_1, lse_2)
-  $$
+# block_table: (B, max_block_num), stores block IDs
+block_table = torch.arange(max_block_num, dtype=torch.int32).unsqueeze(0).npu()
+scale = 1.0 / math.sqrt(D)
 
-  Application scenarios: This technique is commonly used for training or inference with ultra-long sequences.
+# In PageAttention scenarios, actual_seq_lengths_kv must be passed
+act_seq_len_kv = [KV_S]
+
+# ===== Call the operator =====
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    actual_seq_lengths_kv=act_seq_len_kv,
+    num_heads=Q_N,
+     num_key_value_heads=KV_N,   # GQA: specify the number of KV heads
+    input_layout="BSH",          # use BSH when the kv cache is in BnBsH format
+    scale=scale,
+    block_table=block_table,
+    block_size=block_size
+)
+
+print(out.shape)  # torch.Size([1, 1, 1024])
+```
+
+> [!NOTE]  
+>
+> - `num_key_value_heads=2`: Enables GQA. num_heads / num_key_value_heads = 4. When this parameter is not passed, it defaults to 0 (that is, MHA). For details, see [Parameter description](#detailed-parameter-description).
+>
+> - `block_table` + `block_size`: Passing them enables PageAttention. For the kv cache layout, see [PageAttention constraints](#pa_constraints).
+>
+> - `input_layout="BSH"`: BSH must be used when the kv cache is in BnBsH format. If the kv cache is in BnNBsD format and query is BNSD, BNSD can be used.
+>
+> - `actual_seq_lengths_kv`: Must be passed in PageAttention scenarios. For the corresponding constraints, see [PageAttention constraints](#pa_constraints).
+>
+> - In this scenario, Q_S=1, and the IncreFlashAttention branch is used. For the constraints, see [Q_S = 1 constraints](#qs_eq_1).
+
+### Example 3: MHA + Causal Mask (with atten_mask)
+
+device='npu:0', dtype=torch.float16)
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_N, KV_S = 8, 164
+
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+k = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+
+# Lower-triangle causal mask: (1, Q_S, KV_S)
+mask = torch.tril(torch.ones(Q_S, KV_S, dtype=torch.bool)).unsqueeze(0).npu()
+
+scale = 1.0 / math.sqrt(D)
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    atten_mask=mask,
+    num_heads=Q_N,
+    input_layout="BNSD",
+    scale=scale,
+    sparse_mode=0,     # defaultMask: use the complete mask matrix
+    pre_tokens=65535,
+    next_tokens=65535
+)
+
+print(out.shape)  # torch.Size([1, 8, 164, 128])
+```
+
+> [!NOTE]  
+>
+> - `atten_mask`: shape (1, Q_S, KV_S), of the `torch.bool` type. For more mask shape options, see [atten_mask parameter description](#detailed-parameter-description).
+>
+> - `sparse_mode=0`: defaultMask mode, in which `pre_tokens`/`next_tokens` control the computation range. Here it is complete bidirectional attention.
+>
+> - Alternatively, `sparse_mode=3` (rightDownCausal) + the 2048x2048 optimized mask can be used.
+
+### Example 4: MLA + Decode (Multi-head Latent Attention)
+
+MLA inference scenario for DeepSeek-type models.
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 16, 1, 512   # in MLA scenarios, D=512
+KV_N, KV_S = 1, 2048
+rope_D = 64                       # the RoPE dimension is fixed at 64
+
+# query: (B, Q_N, Q_S, D)
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+# key/value: (B, KV_N, KV_S, D)
+k = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+
+# RoPE tensors: D=64 in the shape, and the other dimensions are consistent with q/k
+q_rope = torch.randn(B, Q_N, Q_S, rope_D, dtype=torch.float16).npu()
+k_rope = torch.randn(B, KV_N, KV_S, rope_D, dtype=torch.float16).npu()
+
+scale = 1.0 / math.sqrt(D + rope_D)  # the effective dimension in MLA scenarios = D + 64
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    query_rope=q_rope,
+    key_rope=k_rope,
+    num_heads=Q_N,
+    num_key_value_heads=KV_N,
+    input_layout="BNSD",
+    scale=scale,
+    sparse_mode=0
+)
+
+print(out.shape)  # torch.Size([1, 16, 1, 512])
+```
+
+> [!NOTE]  
+>
+> - `query_rope` + `key_rope`: Passing them enters the MLA branch, and they must be passed together. The RoPE dimension is fixed at 64. Their dtype/format must be consistent with that of query/key.
+>
+> - D=512: The D of MLA prefill scenarios is 512 or 128. When D=512, PageAttention can be enabled and the NZ format is supported. For details about the constraints, see [MLA constraints](#mla_constraints).
+>
+> - This scenario does not support: softmax_lse, left padding, pse, prefix, fake quantization, and full quantization.
+
+### Example 5: `torch.int8` post-quantization
+
+Only the output is `torch.int8` quantized (post-training quantization), and the input remains `torch.float16`.
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_N, KV_S = 8, 1024
+
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+k = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+
+# pertensor quantization factor: shape (1, 1, 1) or a scalar shape
+quant_scale2 = torch.tensor([0.01], dtype=torch.float32).npu()
+# If quant_offset2 is not passed, the default is 0
+
+scale = 1.0 / math.sqrt(D)
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    quant_scale2=quant_scale2,
+    num_heads=Q_N,
+    input_layout="BNSD",
+    scale=scale,
+    pre_tokens=65535,
+    next_tokens=65535
+)
+
+print(out.dtype)  # torch.int8
+print(out.shape)  # torch.Size([1, 8, 164, 128])
+```
+
+> [!NOTE]  
+>
+> - `quant_scale2`: Passing it triggers post-quantization (the output is `torch.int8`). If `quant_offset2` is not passed, the offset is 0.
+>
+> - In `torch.int8` output scenarios, `dequant_scale1`/`quant_scale1`/`dequant_scale2` must **not** be passed at the same time. For details about the constraints, see [`torch.int8` quantization constraints](#int8_constraints).
+>
+> - For perchannel quantization, the shape (Q_N, D) is recommended. For details, see [quant_scale2 parameter description](#detailed-parameter-description).
+
+### Example 6: `torch.int8` full quantization
+
+The input is `torch.int8`, which is internally dequantized to `torch.float16` for computation, and the output is then quantized to `torch.int8`.
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_N, KV_S = 8, 1024
+
+# int8 input (ensure that the D axis is 32-byte aligned)
+q = torch.randint(-128, 127, (B, Q_N, Q_S, D), dtype=torch.int8).npu()
+k = torch.randint(-128, 127, (B, KV_N, KV_S, D), dtype=torch.int8).npu()
+v = torch.randint(-128, 127, (B, KV_N, KV_S, D), dtype=torch.int8).npu()
+
+# Dequantization factor after BMM1 (pertensor)
+deq_scale1 = torch.tensor([0.01], dtype=torch.float32).npu()
+# Quantization factor before BMM2
+quant_scale1 = torch.tensor([0.02], dtype=torch.float32).npu()
+# Dequantization factor after BMM2
+deq_scale2 = torch.tensor([0.03], dtype=torch.float32).npu()
+# Output quantization factor
+quant_scale2 = torch.tensor([0.04], dtype=torch.float32).npu()
+
+scale = 1.0 / math.sqrt(D)
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    dequant_scale1=deq_scale1,
+    quant_scale1=quant_scale1,
+    dequant_scale2=deq_scale2,
+    quant_scale2=quant_scale2,
+    num_heads=Q_N,
+    input_layout="BNSD",
+    scale=scale,
+    pre_tokens=65535,
+    next_tokens=65535
+)
+
+print(out.dtype)  # torch.int8
+```
+
+> [!NOTE]
+>
+> - The four quantization parameters must **exist at the same time**. `quant_offset2` is optional; if not passed, the offset is 0.
+>
+> - The D axis must be 32-byte aligned. input_layout supports only BSH/BNSD/BSND/BNSD_BSND.
+>
+> - For details about the constraints, see [`torch.int8` quantization constraints](#int8_constraints).
+
+### Example 7: fake-quantization (KV split mode) + Decode
+
+key/value are `torch.int8` and are converted to `torch.float16` by perchannel dequantization factors for computation. The recommended KV split mode is used.
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 8, 1, 128
+KV_N, KV_S = 2, 2048
+
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.bfloat16).npu()
+k = torch.randint(-128, 127, (B, KV_N, KV_S, D), dtype=torch.int8).npu()
+v = torch.randint(-128, 127, (B, KV_N, KV_S, D), dtype=torch.int8).npu()
+
+# KV split perchannel quantization factors: shape (1, KV_N, 1, D), (1, KV_N, D), or (1, H)
+key_antiquant_scale = torch.ones(1, KV_N, 1, D, dtype=torch.bfloat16).npu() * 0.01
+value_antiquant_scale = torch.ones(1, KV_N, 1, D, dtype=torch.bfloat16).npu() * 0.01
+# Symmetric quantization: do not pass offset
+
+scale = 1.0 / math.sqrt(D)
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    key_antiquant_scale=key_antiquant_scale,
+    value_antiquant_scale=value_antiquant_scale,
+    key_antiquant_mode=0,     # perchannel
+    value_antiquant_mode=0,
+    num_heads=Q_N,
+    num_key_value_heads=KV_N,
+    input_layout="BNSD",
+    scale=scale
+)
+
+print(out.dtype)   # torch.bfloat16
+print(out.shape)   # torch.Size([1, 8, 1, 128])
+```
+
+> [!NOTE]  
+>
+> - The KV split mode is used (preferred over the `antiquant_scale` and `antiquant_offset` mode).
+>
+> - `key_antiquant_mode=0`: perchannel mode. Here, Q_S=1 + query `torch.bfloat16` + kv `torch.int8` + key/value_antiquant_scale `torch.bfloat16`, which satisfies the kv fake-quantization parameter separation condition in [Q_S = 1 constraints](#qs_eq_1).
+>
+> - When `key_antiquant_scale` and `value_antiquant_scale` are passed together with `antiquant_scale`, the KV split parameters take precedence.
+
+### Example 8: Prefix + Prefill (shared prefix)
+
+System prompt/shared prefix scenario: the prefix part serves as the common KV and is concatenated with the KV of each request for computation.
+
+```python
+import torch
+import torch_npu
+import math
+
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_N, KV_S = 8, 1024
+prefix_S = 32
+
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+k = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, KV_N, KV_S, D, dtype=torch.float16).npu()
+
+# Shared prefix: batch=1, S=prefix_S, N/D consistent with k/v
+key_prefix = torch.randn(1, KV_N, prefix_S, D, dtype=torch.float16).npu()
+value_prefix = torch.randn(1, KV_N, prefix_S, D, dtype=torch.float16).npu()
+
+scale = 1.0 / math.sqrt(D)
+
+out, _ = torch_npu.npu_fused_infer_attention_score(
+    q, k, v,
+    key_shared_prefix=key_prefix,
+    value_shared_prefix=value_prefix,
+    num_heads=Q_N,
+    input_layout="BNSD",
+    scale=scale,
+    pre_tokens=65535,
+    next_tokens=65535
+)
+
+print(out.shape)  # torch.Size([1, 8, 164, 128])
+```
+
+> [!NOTE]  
+>
+> - `key_shared_prefix` + `value_shared_prefix`: They must be passed together. The first dimension (batch) of the shape is 1. For the constraints, see [Prefix constraints](#prefix_constraints).
+>
+> - If S2 (KV_S + prefix_S) exceeds the original KV_S limit, an error is reported. If `atten_mask` is passed, S2 must be greater than prefix_S + KV_S.
+>
+> - PageAttention, left padding, tensorlist, and all-qkv `torch.int8` are not supported.
+
+### Example 9: ACL Graph mode (torch_npu.npu.NPUGraph)
+
+Capture the compute graph with NPUGraph to enable graph-mode execution and parameter updates.
+
+```python
+import torch
+import torch_npu
+import math
+
+# ===== 1. Data preparation =====
+B, Q_N, Q_S, D = 1, 8, 164, 128
+KV_S = 1024
+scale = 1.0 / math.sqrt(D)
+
+q = torch.randn(B, Q_N, Q_S, D, dtype=torch.float16).npu()
+k = torch.randn(B, Q_N, KV_S, D, dtype=torch.float16).npu()
+v = torch.randn(B, Q_N, KV_S, D, dtype=torch.float16).npu()
+
+# ===== 2. Define the model =====
+class Model(torch.nn.Module):
+    def __init__(self, num_heads, scale, pre_tokens=65535, next_tokens=65535):
+        super().__init__()
+        self.num_heads = num_heads
+        self.scale = scale
+        self.pre_tokens = pre_tokens
+        self.next_tokens = next_tokens
+
+    def forward(self, q, k, v):
+        return torch_npu.npu_fused_infer_attention_score(
+            q, k, v,
+            num_heads=self.num_heads,
+            input_layout="BNSD",
+            scale=self.scale,
+            pre_tokens=self.pre_tokens,
+            next_tokens=self.next_tokens
+        )[0]  # take only the first return value
+
+# ===== 3. Graph capture =====
+model = Model(Q_N, scale).npu()
+graph = torch_npu.npu.NPUGraph()
+
+with torch_npu.npu.graph(graph):
+    graph_out = model(q, k, v)
+
+print(f"Graph capture complete, output shape: {graph_out.shape}")
+
+# ===== 4. Graph replay (input data update) =====
+# Generate new input data (content changes, shape unchanged)
+q_new = torch.randn_like(q)
+k_new = torch.randn_like(k)
+v_new = torch.randn_like(v)
+
+# Important: use copy_ to update the data at the memory address captured at capture time
+q.copy_(q_new)
+k.copy_(k_new)
+v.copy_(v_new)
+
+# Replay the graph
+graph.replay()
+print(f"Graph replay complete (input data updated), output shape: {graph_out.shape}")
+
+# ===== 5. Parameter update (model configuration change) =====
+# Note: Changes to pre_tokens/next_tokens require recapturing the graph
+new_pre_tokens = 32768
+model_updated = Model(Q_N, scale, new_pre_tokens, 32768).npu()
+
+graph_updated = torch_npu.npu.NPUGraph()
+with torch_npu.npu.graph(graph_updated):
+    updated_out = model_updated(q, k, v)
+
+graph_updated.replay()
+print(f"Graph replay complete (pre_tokens={new_pre_tokens}), output shape: {updated_out.shape}")
+
+# ===== 6. Result verification =====
+with torch.no_grad():
+    single_out = model(q, k, v)
+
+match = torch.allclose(graph_out, single_out, atol=1e-2)
+print(f"\nGraph vs Eager match: {'✓' if match else '✗'}")
+print(f"  graph output shape: {graph_out.shape}")
+print(f"  single op output shape: {single_out.shape}")
+```
+
+## References
+
+- **BMM1 (Batch Matrix Multiply 1)**: The first matrix multiplication, which computes the attention score: $attention_score = query \cdot key^{\top}$.
+- **BMM2 (Batch Matrix Multiply 2)**: The second matrix multiplication, which applies the attention weights to value: $attention_out = atten_prob \cdot value$, where $atten_prob = softmax(\cdot)$.
+- **Ring Attention**: A distributed attention algorithm that splits long sequences into blocks across multiple devices and computes attention block by block through ring communication to reduce the memory usage of a single device. On a single device, it degrades to standard attention. Multi-device merging relies on the LSE value output when `softmax_lse_flag=True`. For details, see [Return values](#return-values).

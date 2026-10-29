@@ -2,70 +2,103 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-Updates the values in `input` at the indices specified by `indices` using the values from `updates`, and saves the result to the output tensor. The data in `input` is modified.
+Updates the values in `input` with the values in `updates` according to the specified `indices`, and saves the result to the output tensor. The data in `input` is changed.
 
 ## Prototype
 
 ```python
-torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor
+torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor(a!)
 ```
 
 ## Parameters
 
 - **`input`** (`Tensor`): Required. Source data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `updates`. It must have 1 to 8 dimensions.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
-    - Atlas inference products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
-    - Atlas training products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
-      
+
+  <!-- npu="310p" id6 -->
+  - <term>Atlas inference products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  <!-- end id6 -->
+  <!-- npu="910" id7 -->
+  - <term>Atlas training products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  <!-- end id7 -->
+  <!-- npu="910b" id8 -->
+  - <term>Atlas A2 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  <!-- end id8 -->
+  <!-- npu="A3" id9 -->
+  - <term>Atlas A3 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  <!-- end id9 -->
+  <!-- npu="950" id10 -->
+  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
+  <!-- end id10 -->
+
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `torch.int32` or `torch.int64`. The data layout can be ND. Non-contiguous tensors are supported. The index values in `indices` must not be out of bounds.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `input`.
-    - Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
-    - Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
-    - Atlas inference products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
-    - Atlas training products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
-   
-## Return Value
+
+  <!-- npu="310p" id11 -->
+  - <term>Atlas inference products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  <!-- end id11 -->
+  <!-- npu="910" id12 -->
+  - <term>Atlas training products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  <!-- end id12 -->
+  <!-- npu="910b" id13 -->
+  - <term>Atlas A2 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  <!-- end id13 -->
+  <!-- npu="A3" id14 -->
+  - <term>Atlas A3 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  <!-- end id14 -->
+  <!-- npu="950" id15 -->
+  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
+  <!-- end id15 -->
+
+## Return Values
 
 `Tensor`
 
-Output tensor representing the results after `input` is updated.
+The result of updating `input`.
 
 ## Constraints
 
-- This API supports graph mode.
-- `indices` must have at least 2 dimensions. The size of its last dimension must not exceed the rank of `input`.
-- Assume that the size of the last dimension of `indices` is `a`. The shape of `updates` must be identical to that of `indices` excluding the last dimension combined with the shape of `input` excluding the first `a` dimensions. For example, if the shape of `input` is `(4, 5, 6)` and that of `indices` is `(3, 2)`, the shape of `updates` must be `(3, 6)`.
+- This API supports single-operator mode and TorchAir graph mode.
+- `indices` must be at least 2D, and the size of its last dimension must not exceed the number of dimensions of `input`.
+- If the size of the last dimension of `indices` is a, the shape of `updates` equals the shape of `indices` excluding the last dimension plus the shape of `input` excluding the first a dimensions. For example, if the shape of `input` is $(4, 5, 6)$ and the shape of `indices` is $(3, 2)$, the shape of `updates` must be $(3, 6)$.
 
-## Examples
+## Example
 
 - Single-operator call
 
     ```python
-    >>> import torch
-    >>> import torch_npu
-    >>> import numpy as np
-    >>>
-    >>> data_var = np.random.uniform(0, 1, [24, 128]).astype(np.float16)
-    >>> var = torch.from_numpy(data_var).to(torch.float16).npu()
-    >>>    
-    >>> data_indices = np.random.uniform(0, 12, [12, 1]).astype(np.int32)
-    >>> indices = torch.from_numpy(data_indices).to(torch.int32).npu()
-    >>>
-    >>> data_updates = np.random.uniform(1, 2, [12, 128]).astype(np.float16)
-    >>> updates = torch.from_numpy(data_updates).to(torch.float16).npu()
-    >>>
-    >>> out=torch_npu.npu_scatter_nd_update_(var, indices, updates)
-    >>> print(out)
+    import torch
+    import torch_npu
+    import numpy as np
+    
+    data_var = np.random.uniform(0, 1, [24, 128]).astype(np.float16)
+    var = torch.from_numpy(data_var).to(torch.float16).npu()
+       
+    data_indices = np.random.uniform(0, 12, [12, 1]).astype(np.int32)
+    indices = torch.from_numpy(data_indices).to(torch.int32).npu()
+    
+    data_updates = np.random.uniform(1, 2, [12, 128]).astype(np.float16)
+    updates = torch.from_numpy(data_updates).to(torch.float16).npu()
+    
+    out = torch_npu.npu_scatter_nd_update_(var, indices, updates)
+    print(out)
     [W compiler_depend.ts:133] Warning: Warning: Device do not support double dtype now, dtype cast replace with float. (function operator())
     tensor([[1.8271, 1.4551, 1.3154,  ..., 1.9854, 1.4365, 1.0732],
             [1.9492, 1.6455, 1.6504,  ..., 1.5957, 1.6201, 1.4385],
@@ -74,7 +107,7 @@ Output tensor representing the results after `input` is updated.
             [0.1113, 0.6255, 0.7686,  ..., 0.0247, 0.2490, 0.6909],
             [0.4312, 0.7954, 0.7339,  ..., 0.1154, 0.6440, 0.3342],
             [0.9570, 0.2869, 0.6489,  ..., 0.7451, 0.0234, 0.8843]],
-        device='npu:0', dtype=torch.float16)
+            device='npu:0', dtype=torch.float16)
     ```
 
 - Graph mode call
@@ -97,7 +130,7 @@ Output tensor representing the results after `input` is updated.
             super(Network, self).__init__()
     
         def forward(self, var, indices, update):
-            # Calling the target API
+            # Call the target API
             res = torch_npu.npu_scatter_nd_update_(var, indices, update)
             return res
             
@@ -119,8 +152,8 @@ Output tensor representing the results after `input` is updated.
     tensor_indices = torch.from_numpy(data_indices).to(torch.int32)
     tensor_update = torch.from_numpy(data_update).to(torch.float16)
     
-    # Pass parameters
-    out=npu_mode(tensor_x.npu(), tensor_indices.npu(), tensor_update.npu())
+    # Pass the parameters
+    out= npu_mode (tensor_x.npu(), tensor_indices.npu(), tensor_update.npu())
     print(out.shape, out.dtype)
 
     # Expected output of the preceding code sample:

@@ -2,16 +2,25 @@
 
 ## Supported Products
 
-|Product            |  Supported |
-|:-------------------------|:----------:|
-|  <term>Atlas A3 training products/Atlas A3 inference products</term>    |     √    |
-|  <term>Atlas A2 training products/Atlas A2 inference products</term>    |     √    |
-|  <term>Atlas inference products</term>  |     √    |
-|  <term>Atlas training products</term>  |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-- The RMSNorm operator is a normalization operation commonly used in foundation models. Compared with the LayerNorm operator, it removes the mean subtraction step.
+- API function: RMSNorm is a normalization operation commonly used in foundation models. Compared with LayerNorm, it removes the mean subtraction.
 - Formulas:
 
   $$
@@ -30,50 +39,91 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 ## Parameters
 
-- **`self`** (`Tensor`): Required. Input for normalization computation, $x$ in the formulas. The shape must have 2 to 8 dimensions. The data layout can be ND. Non-contiguous tensors and empty tensors are supported.
-- **`gamma`** (`Tensor`): Required. Scaling factor (weight) for normalization computation, $g$ in the computation formulas. The shape must have 2 to 8 dimensions. The data layout can be ND. The shape must satisfy `gamma_shape = self_shape[n:]`, where `n < self_shape.dims()`, which is typically the last dimension of `self`. Non-contiguous tensors and empty tensors are supported.
-- **`epsilon`** (`double`): Optional. Used to prevent division-by-zero errors, $eps$ in the formula. The data type is `double`. The default value is `1e-6`.
+- **`self`** (`Tensor`): Required. Input for the normalization computation. It corresponds to $x$ in the formulas. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The shape can have 2 to 8 dimensions. The data layout can be ND. Non-contiguous Tensors and empty Tensors are supported.
+- **`gamma`** (`Tensor`): Required. Scaling factor (weight) for the normalization computation. It corresponds to $g$ in the formulas. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The shape can have 2 to 8 dimensions. The data layout can be ND. The shape must satisfy gamma_shape = self_shape[n:], n < self_shape.dims(), and is usually the last dimension of `self`. Non-contiguous Tensors and empty Tensors are supported.
+- **`epsilon`** (`float`): Optional. Used to prevent division by zero. It corresponds to `eps` in the formulas. The data type is `double`. The default value is 1e-6.
 
 ## Return Values
 
-- **`RmsNorm(x)`** (`Tensor`): Final output after normalization, $RmsNorm(x)$ in the formula. The data type and shape must be identical to those of the input `self`. Non-contiguous tensors and empty tensors are supported.
-- **`rstd`** (`Tensor`): Reciprocal of the normalized standard deviation, the intermediate result of `rms_norm` used for backward computation, reciprocal of $Rms(x)$ in the formula. The data type is `torch.float32`. The shape must be identical to the leading dimensions of the input parameter `self`. The leading dimensions refer to the dimensions of $x$ minus the dimensions of `gamma`, representing the dimensions that do not require normalization. Non-contiguous tensors and empty tensors are supported.
+- **`yOut`** (`Tensor`): Final output after normalization, corresponding to the final output $RmsNorm(x)$ in the formulas. The data type and shape are the same as those of the input `self`. Non-contiguous Tensors and empty Tensors are supported.
+- **`rstdOut`** (`Tensor`): Reciprocal of the standard deviation after normalization. It is an intermediate result of rms_norm, corresponding to the reciprocal of $Rms(x)$ in the formulas, and is used for backward computation. The data type is `torch.float32`. The shape is the same as the first several dimensions of the shape of the input parameter `self`, where the first several dimensions refer to the dimensions of `self` minus the dimensions of `gamma`, indicating the dimensions that do not require normalization. Non-contiguous Tensors and empty Tensors are supported.
 
 ## Constraints
 
-- Atlas inference products: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 bytes.
-- The supported data types and their mappings for each product are as follows:
-  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
+- This API supports single-operator mode.
 
-    | self| gamma|
-    | -------- | -------- |
-    | `torch.float16` | `torch.float32` |
-    | `torch.bfloat16` | `torch.float32` |
-    | `torch.float16` | `torch.float16` |
-    | `torch.bfloat16` | `torch.bfloat16` |
-    | `torch.float32` | `torch.float32`  |
+<!-- npu="950" id6 -->
+- <term>Ascend 950PR&950DT products</term>: This API also supports TorchAir graph mode.
+<!-- end id6 -->
+<!-- npu="310p" id7 -->
+- <term>Atlas inference products</term>: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 Bytes.
+<!-- end id7 -->
+- Boundary value scenarios:
 
-  - Atlas inference products and Atlas training products:
+  <!-- npu="310p" id8 -->
+  - <term>Atlas inference products</term>: The input cannot contain Inf or NaN.
+  <!-- end id8 -->
+  <!-- npu="950,A3,910b" id9 -->
+  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>: When the input is Inf, the output is Inf. When the input is NaN, the output is NaN.
+  <!-- end id9 -->
 
-    | self| gamma|
-    | -------- | -------- |
-    | `torch.float16` | `torch.float16` |
-    | `torch.float32` | `torch.float32` |
+- Data types supported by each product and their mappings:
 
-## Example
+  <!-- npu="950,A3,910b" id10 -->
+  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>
 
-```python
->>> import torch, torch_npu
->>> x = torch.randn(24, 1, 128).npu()
->>> w = torch.randn(128).npu()
->>> out1 = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)[0]
->>> print(out1)
-tensor([[[-0.1875,  0.2383,  0.2334,  ...,  0.8555, -0.0908, -0.3574]],
-        [[ 0.0747,  0.4668,  0.1074,  ...,  1.7500,  0.1953, -0.1992]],
-        [[-0.0571, -0.4883,  0.5273,  ..., -2.1250, -0.0312,  2.3281]],
-        ...,
-        [[ 0.0503,  1.9453,  2.6094,  ..., -0.1357,  0.0869, -2.8906]],
-        [[ 0.0195,  0.6680, -0.9336,  ..., -0.6641, -0.1904,  0.4336]],
-        [[ 0.0972, -1.2344, -1.0078,  ..., -0.5195,  0.3145, -3.7656]]],
-       device='npu:0')
-```
+    | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
+    | -------- | -------- | -------- | -------- |
+    | `torch.float16` | `torch.float32` | `torch.float16` | `torch.float32` |
+    | `torch.bfloat16` | `torch.float32` | `torch.bfloat16` | `torch.float32` |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` |
+    | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` |
+    | `torch.float32` | `torch.float32`  | `torch.float32` | `torch.float32` |
+  <!-- end id10 -->
+  <!-- npu="910,310p" id11 -->
+  - <term>Atlas inference products</term> and <term>Atlas training products</term>
+
+    | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
+    | -------- | -------- | -------- | -------- |
+    | `torch.float16` | `torch.float16` | `torch.float16` | `torch.float32` |
+    | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` |
+  <!-- end id11 -->
+
+## Examples
+
+- Single-operator call
+
+    ```python
+    import torch
+    import torch_npu
+
+    x = torch.randn((24, 1, 128), dtype=torch.bfloat16).npu()
+    w = torch.randn((128), dtype=torch.bfloat16).npu()
+    y, rstd = torch_npu.npu_rms_norm(x, w, epsilon=1e-5)
+    ```
+
+<!-- npu="950" id12 -->
+- Graph mode call: This example is supported only on <term>Ascend 950PR&950DT products</term>.
+
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    import numpy as np
+
+
+    class NetModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, x, gamma, eps):
+            return torch_npu.npu_rms_norm(x, gamma, epsilon=eps)
+    # generate inputs
+    x = torch.randn((32,128), dtype=torch.float32).npu()
+    gamma = torch.randn((128), dtype=torch.float32).npu()
+    model = NetModel()
+    config = torchair.CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    model = torch.compile(model, backend=npu_backend, dynamic=True)
+    y, rstd = model(x, gamma, 1e-5)
+    ```
+<!-- end id12 -->

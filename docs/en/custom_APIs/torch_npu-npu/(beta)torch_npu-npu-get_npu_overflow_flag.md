@@ -2,9 +2,9 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 

@@ -1,7 +1,5 @@
 # Adaptation Development and Usage
 
-<!-- md-trans-meta sourceCommit=355d80c21c12bd76c9aec18128aa398a61c8709f translatedAt=2026-08-11T01:30:29.736Z pushedAt=2026-08-11T12:01:07.410Z -->
-
 ## Overview
 
 This sample demonstrates how to register a custom operator for both eager mode and `torch.compile` mode using native PyTorch `cpp_extension` features. For details about eager mode and `torch.compile` mode, see [Link](https://docs.pytorch.org/docs/2.13/generated/torch.compile.html).
@@ -80,18 +78,18 @@ Before running this sample, complete preparations by referring to [Building the 
 
 ### 2. Running the Sample Using PyTorch
 
-- Go to the sample directory.
+  - Go to the sample directory.
 
-Download the sample source code through the command line (using the `master` branch as an example):
+    Download the sample source code through the command line (using the `master` branch as an example).
 
     ```bash
     cd ${git_clone_path}/samples/operator/ascendc/0_introduction/1_add_frameworklaunch/CppExtensionInvocation
     ```
 
-- Execute the sample.
+  - Execute the sample.
 
-The execution workflow automatically generates test data, runs the PyTorch test cases, and validates the outputs. For details, see the `build_and_run.sh` script.
-
+    The execution workflow automatically generates test data, runs the PyTorch test cases, and validates the outputs. For details, see the `build_and_run.sh` script.
+    
     ```bash
     bash build_and_run.sh
     ```

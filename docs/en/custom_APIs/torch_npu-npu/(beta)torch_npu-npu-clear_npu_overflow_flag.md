@@ -2,10 +2,15 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="310p" id2 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 

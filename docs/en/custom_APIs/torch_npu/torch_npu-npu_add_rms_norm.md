@@ -1,16 +1,19 @@
 # torch_npu.npu_add_rms_norm
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-|Product            |  Supported |
-|:-------------------------|:----------:|
-|  <term>Ascend 950DT</term>                        |    √    |
-|  <term>Atlas A3 training products/Atlas A3 inference products</term>  |     √    |
-|  <term>Atlas A2 training products/Atlas A2 inference products</term>    |     √    |
-|  <term>Atlas inference products</term>   |     √    |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -42,7 +45,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 - **`yOut`** (`Tensor`): Final output, $RMSNorm(x)$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type and shape must be identical to those of the input `x1`.
 
-- **`rstdOut`** (`Tensor`): Reciprocal of the normalized root mean square, reciprocal of $RMS(x)$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `torch.float32`. The shape must be identical to the leading dimensions of `x1`. The leading dimensions refer to the dimensions that do not require normalization. Examples of the relationship among the shapes of `x1`, `gamma`, and `rstdOut` are as follows:
+- **`rstdOut`** (`Tensor`): Reciprocal of the normalized root mean square, reciprocal of $RMS(x)$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `torch.float32`. The shape must be identical to the leading dimensions of `x1`. The leading dimensions refer to the dimensions that do not require normalization. Examples of the relationship among the shapes of `rstdOut`, `x1`, and `gamma` are as follows:
   - If `x1` has shape `(2, 3, 4, 8)` and `gamma` has shape `(8,)`, `rstdOut` has shape `(2, 3, 4, 1)`.
   - If `x1` has shape `(2, 3, 4, 8)` and `gamma` has shape `(4, 8)`, `rstdOut` has shape `(2, 3, 1, 1)`.
 
@@ -50,30 +53,52 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 ## Constraints
 
+- This API supports single-operator mode and TorchAir graph mode.
+- In single-operator mode, the data types of the input parameters `x2` and `gamma` must be the same as that of `x1`.
 - Boundary value scenarios:
   - When the input is `Inf`, the output is `Inf`.
   - When the input is `NaN`, the output is `NaN`.
-- Atlas inference products:
+
+<!-- npu="310p" id5 -->
+- <term>Atlas inference products</term>:
   - The input parameters `x1`, `x2`, and `gamma` do not support the `torch.bfloat16` data type.
   - The parameter `rstdOut` is invalid in current product usage scenarios.
+<!-- end id5 -->
 
 ## Example
 
-```python
-import torch
-import torch_npu
+- Single-operator call
+    
+    ```python
+    import torch
+    import torch_npu
 
-x1 = torch.rand(4, 8, dtype=torch.float16, device='npu') * 100
-x2 = torch.rand(4, 8, dtype=torch.float16, device='npu') * 100
-gamma = torch.rand(8, dtype=torch.float16, device='npu') * 100
-epsilon = 1e-6
+    x1 = torch.randn((32,128), dtype=torch.float32).npu()
+    x2 = torch.randn((32,128), dtype=torch.float32).npu()
+    gamma = torch.randn((128), dtype=torch.float32).npu()
+    y, rstd, x = torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-6)
+    ```
 
-y, rstd, x = torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=epsilon)
+- Graph mode call
 
-print("y:", y)
-print("y.shape:", y.shape)
-print("y.dtype:", y.dtype)
-print("rstd:", rstd)
-print("rstd.dtype:", rstd.dtype)
-print("x:", x)
-```
+    ```python
+    import torch
+    import torch_npu
+    import torchair
+    import numpy as np
+
+    class NetModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, x1, x2, gamma, eps):
+            return torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=eps)
+    # generate inputs
+    x1 = torch.randn((32,128), dtype=torch.float32).npu()
+    x2 = torch.randn((32,128), dtype=torch.float32).npu()
+    gamma = torch.randn((128), dtype=torch.float32).npu()
+    model = NetModel()
+    config = torchair.CompilerConfig()
+    npu_backend = torchair.get_npu_backend(compiler_config=config)
+    model = torch.compile(model, backend=npu_backend, dynamic=True)
+    y, rstd, x = model(x1, x2, gamma, 1e-6)
+    ```

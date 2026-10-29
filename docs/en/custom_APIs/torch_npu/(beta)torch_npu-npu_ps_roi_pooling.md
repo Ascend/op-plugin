@@ -5,12 +5,18 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √    |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -28,7 +34,7 @@ torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale, group_size, output_dim) -> 
 - **`rois`** (`Tensor`): ROIs. The shape of this parameter is `(batch, 5, rois_num)`. Each RoI consists of five elements: `batch_id`, `x1`, `y1`, `x2`, and `y2`, where `batch_id` indicates the index of the input feature map, and `x1`, `y1`, `x2`, and `y2` must be greater than or equal to `0.0`.
 - **`spatial_scale`** (`float`): Scaling coefficient used to map input coordinates to RoI coordinates. The data type can be `float32`.
 - **`group_size`** (`int`): Number of groups used to encode the position-sensitive score maps. The value must be within the range `(0, 128)`. The data type can be `int32`.
-- `output_dim` (`int`): Number of output channels. The value must be greater than 0. The data type can be `int32`.
+- **`output_dim`** (`int`): Number of output channels. The value must be greater than 0. The data type can be `int32`.
 
 ## Example
 

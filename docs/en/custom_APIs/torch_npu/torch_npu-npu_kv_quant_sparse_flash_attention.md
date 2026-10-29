@@ -1,43 +1,48 @@
-# torch_npu-npu_kv_quant_sparse_flash_attention
+# torch_npu.npu_kv_quant_sparse_flash_attention
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 inference products</term>  | √  |
-|<term>Atlas A3 inference products</term>  | √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- `kv_quant_sparse_flash_attention` extends `sparse_flash_attention` to support Per-Token-Head-Tile-128 quantized inputs. As the context length of foundation models increases, sparse attention becomes increasingly important. This technique significantly reduces computation by focusing only on key regions. However, it introduces a large number of discrete memory accesses, increasing data transfer overhead and potentially impacting overall performance.
+- Function: on the basis of `sparse_flash_attention`, `kv_quant_sparse_flash_attention` supports `Per-Token-Head-Tile-128 quantization` input. As the context length of large models increases, Sparse Attention becomes increasingly important. This technology greatly reduces the computation amount by "computing only the key parts", but it introduces a large number of discrete memory accesses, which increases the data transfer time and thus affects the overall performance.
 
-- Formula:
+- Formulas:
     $$
     Attention=\text{softmax}(\frac{Q @ \text{Dequant}({\tilde{K}^{INT8}},{Scale_K})^T}{\sqrt{d_k}})@\text{Dequant}(\tilde{V}^{INT8},{Scale_V}),
     $$
-    $\tilde{K}$ and $\tilde{V}$ represent the key and value tensors with higher importance obtained through a selection algorithm such as `LightningIndexer`. They typically feature sparse or block-sparse characteristics. $d_k$ represents the per-head dimension of $Q$ and $\tilde{K}$. $\text{Dequant}(\cdot,\cdot)$ represents the dequantization function.
-The `kv_quant_sparse_flash_attention` operator is specifically designed for sparse attention scenarios, with detailed optimizations such as instruction reduction and aggregated data transfer to mitigate the overhead caused by irregular memory access.
+    In the formula, $\tilde{K},\tilde{V}$ are the Key and Value of high importance obtained based on a certain selection algorithm (such as `LightningIndexer`) and generally have sparse or block-sparse characteristics, $d_k$ is the dimension of each head of $Q,\tilde{K}$, and $\text{Dequant}(\cdot,\cdot)$ is the dequantization function.
+The `kv_quant_sparse_flash_attention` released this time is a brand-new operator for Sparse Attention, with detailed optimization of instruction reduction and transfer aggregation for discrete memory access.
 
 ## Prototype
 
 ```python
-torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64) -> Tensor
+torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, scale_value, key_quant_mode, value_quant_mode, *, key_dequant_scale=None, value_dequant_scale=None, block_table=None, actual_seq_lengths_query=None, actual_seq_lengths_kv=None, sparse_block_size=1, layout_query="BSND", layout_kv="BSND", sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1, attention_mode=0, quant_scale_repo_mode=1, tile_size=128, rope_head_dim=64, key_dtype=None, value_dtype=None) -> Tensor
 ```
 
 ## Parameters
 
-> [!NOTE]  
+> [!NOTE]
 >
-> - Dimension definitions for the `query`, `key`, and `value` parameters:<br>`B` (`Batch Size`) indicates the input sample batch size.<br>`S` (`Sequence Length`) indicates the input sample sequence length.<br>`H` (`Head Size`) indicates the hidden layer size.<br>`N` (`Head Num`) indicates the number of heads.<br>`D` (`Head Dim`) indicates the minimum unit size of the hidden layer, satisfying `D = H/N`.<br>`T` indicates the cumulative sum of the sequence lengths of all batch input samples.
-> - `Q_S` or `S1` indicates the `S` dimension in the shape of `query`.<br>`KV_S` or `S2` indicates the `S` dimension in the shape of `key`.<br>`Q_N` indicates `num_query_heads`.<br>`KV_N` indicates `num_key_value_heads`.<br>`Q_T` indicates the `T` dimension in the shape of `query`.<br>`KV_T` indicates the `T` dimension in the shape of `key`.
+> - Meanings of the dimensions of the parameters query, key, and value: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, N (Head Num) indicates the number of heads, D (Head Dim) indicates the minimum unit size of the hidden layer and satisfies D=H/N, and T indicates the cumulative sum of the sequence lengths of input samples of all batches.
+> - Q\_S and S1 indicate S in the query shape, KV\_S and S2 indicate S in the key shape, Q\_N indicates num\_query\_heads, KV\_N indicates num\_key\_value\_heads, Q\_T indicates T in the query shape, KV\_T indicates T in the key shape, and Q_D and KV_D respectively indicate the Head Dim of query and key/value.
 
-- **`query`** (`Tensor`): Required. Query input of the attention mechanism. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The `query` parameter is generated by concatenating `q_nope` and `q_rope` (with identical `dtype`) along the $D$ dimension. When `layout_query` is `BSND`, the shape of this parameter is `[B, S1, Q_N, D]`. When `layout_query` is `TND`, the shape of this parameter is `[Q_T, Q_N, D]`. Valid values for `Q_N` are: `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`.
+- **`query`** (`Tensor`): Required. Query input of the attention mechanism. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The `query` parameter is generated by concatenating `q_nope` and `q_rope` (with identical `dtype`) along the $D$ dimension. When `layout_query` is `BSND`, the shape of this parameter is `[B, S1, Q_N, D]`. When `layout_query` is `TND`, the shape of this parameter is `[Q_T, Q_N, D]`. Valid values for `Q_N` are `1`, `2`, `4`, `8`, `16`, `32`, `48`, `64`, or `128`. `Q_D` supports only `576`, that is, nope + rope = 512 + 64.
 
-- **`key`** (`Tensor`): Required. Key input of the attention mechanism. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`. The `key` parameter is generated by concatenating `torch.int8` `k_nope`, `k_rope` (with identical `dtype` to that of `query`), and `torch.float32` quantization parameters along the D dimension. When `layout_kv` is set to `PA_BSND`, the shape of this parameter is `[block_num, block_size, KV_N, D]`, where `block_num` indicates the total number of blocks in PagedAttention, and `block_size` indicates the token count per block. The value of `block_size` must be a multiple of 16, and the maximum `block_size` is `1024`. When `layout_kv` is set to `BSND`, the shape of this parameter is `[B, S2, KV_N, D]`. When `layout_kv` is set to `TND`, the shape of this parameter is `[KV_T, KV_N, D]`. The value of `KV_N` must be `1`.
+- **`key`** (`Tensor`): Required. Key input of the attention mechanism. Non-contiguity along axis 0 is supported when `layout_kv` is `PA_BSND`. The data layout can be ND. The data type can be `torch.int8`, `torch_npu.hifloat8`, or `torch.float8_e4m3fn`. The `key` parameter is generated by concatenating `torch.int8` `k_nope`, `k_rope` (with identical `dtype` to that of `query`), and `torch.float32` quantization parameters along the D dimension. When `layout_kv` is set to `PA_BSND`, the shape of this parameter is `[block_num, block_size, KV_N, D]`, where `block_num` indicates the total number of blocks in PagedAttention, and `block_size` indicates the token count per block. The value of `block_size` must be a multiple of 16, and the maximum `block_size` is `1024`. When `layout_kv` is set to `BSND`, the shape of this parameter is `[B, S2, KV_N, D]`. When `layout_kv` is set to `TND`, the shape of this parameter is `[KV_T, KV_N, D]`. The value of `KV_N` must be `1`, and `KV_D` supports only `656`, that is, nope + rope*2 + dequant_scale*4 = 512 + 64*2 + 4*4.
 
-- **`value`** (`Tensor`): Required. Value input of the attention mechanism. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`. The value of `N` must be `1`.
+- **`value`** (`Tensor`): Required. Value input of the attention mechanism. Non-contiguity along axis 0 is supported when `layout_kv` is `PA_BSND`. The data layout can be ND. The data type can be `torch.int8`, `torch_npu.hifloat8`, or `torch.float8_e4m3fn`. For `value`, `N` supports only `1`, and the data type must be the same as that of `key`.
 
-- **`sparse_indices`** (`Tensor`): Required. Indices for discrete kvCache selection. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int32`. When `layout_query` is `BSND`, the shape of this parameter must be `[B, Q_S, KV_N, sparse_size]`. When `layout_query` is `TND`, the shape of this parameter must be `[Q_T, KV_N, sparse_size]`, where `sparse_size` indicates the block count selected per discrete operation. The valid values in each row must be positioned in the first half, the invalid values must be positioned in the second half, and the value of `sparse_size` must be greater than 0.
+- **`sparse_indices`** (`Tensor`): Required. Indices for discrete kvCache selection. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int32`. When `layout_query` is `BSND`, the shape of this parameter must be `[B, Q_S, KV_N, sparse_size]`. When `layout_query` is `TND`, the shape of this parameter must be `[Q_T, KV_N, sparse_size]`, where `sparse_size` indicates the block count selected per discrete operation. The valid values in each row must be positioned in the first half and the invalid values in the second half, the value of `sparse_size` must be greater than 0. When the data type of `key` and `value` is `torch_npu.hifloat8`, `sparse_size` supports only `2048`.
 
 - **`scale_value`** (`double`): Required. Reciprocal of the square root of $d_k$ in the formula, representing the scaling factor applied as a scalar value after the matrix multiplication of query and key. The data type must be `double`.
 
@@ -57,15 +62,15 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **`actual_seq_lengths_kv`** (`Tensor`): Optional. Valid token count of `key` and `value` in different batches. The data type can be `torch.int32`. The default value is `None`, indicating that its length is identical to the size of the S dimension in the shape of `key`. The valid token count for each batch must not exceed the size of the S dimension in `key` and `value` and must be greater than or equal to `0`. This parameter must be a 1D tensor of length `B`.<br>When `layout_kv` is set to `TND` or `PA_BSND`, this parameter must be provided. When `layout_kv` is set to `TND`, each element indicates the prefix sum of token counts across batches, and the value of each element must be greater than or equal to that of the preceding element.
 
-- **`sparse_block_size`** (`int`): Optional. Block size used in the sparse phase during the importance score computation. The data type can be `int64`. The value must be a power of 2 in the range of [1, 16].
+- **`sparse_block_size`** (`int`): Optional. Block size used in the sparse phase during the importance score computation. The data type can be `int64`. The value `1` indicates token-wise sparsification. Values greater than `1` and less than or equal to `128` indicate block-wise sparsification, where tokens in a block share the same sparsification decision.
 
 - **`layout_query`** (`str`): Optional. Data layout configuration of the input `query`. Valid values are `BSND` or `TND`. The default value: `"BSND"`.
 
 - **`layout_kv`** (`str`): Optional. Layout format for the data arrangement of the input `key`. Valid values are `BSND`, `TND`, or `PA_BSND`, where `PA_BSND` is used when PagedAttention is enabled. The default value: `"BSND"`.
 
 - **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int64`.
-    - `0`: enables full computation.
-    - `3`: enables the `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the bottom-right vertex to the top-left vertex.
+    - When sparse\_mode is 0, all computations are performed.
+    - When sparse\_mode is 3, it indicates the mask of the rightDownCausal mode, corresponding to the lower-triangular scenario divided along the line from the bottom-right vertex to the top-left.
 
 - **`pre_tokens`** (`int`): Optional. Used for sparse computation, indicating the number of preceding tokens with which the attention is associated. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
@@ -79,22 +84,35 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **`rope_head_dim`** (`int`): Optional. Structural configuration parameter representing the size of `rope_head_dim` under the MLA architecture, which is valid only when `attention_mode` is set to `2`. The data type can be `int64`. Only the default value `64` is supported.
 
+- **`key_dtype`** (`int`): Optional. Data type of key. Passing `torch_npu.hifloat8` or passing nothing is supported. When `torch_npu.hifloat8` is passed, the data type of key is `torch_npu.hifloat8`. When nothing is passed, the data type of key is `torch.int8` or `torch.float8_e4m3fn`, which is inferred according to key.
+
+- **`value_dtype`** (`int`): Optional. Data type of value. Passing `torch_npu.hifloat8` or passing nothing is supported. When `torch_npu.hifloat8` is passed, the data type of key is `torch_npu.hifloat8`. When nothing is passed, the data type of key is `torch.int8` or `torch.float8_e4m3fn`, which is inferred according to key. The data type must be the same as key\_dtype.
+
 ## Return Values
 
-`Tensor`
-
-Output attention tensor in the formula. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape of this parameter is identical to that of the input `query`.
+- **`out`** (`Tensor`): Output Attention in the formulas. The data layout can be $ND$. The data type can be `torch.bfloat16` or `torch.float16`. The output shape is the same as the shape of the input `query`.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
-- The size of the D dimension in `query` must be `576` ($nope + rope = 512 + 64$).
-- The size of the D dimension in `key` and `value` must be `656` ($nope + rope * 2 + dequant_scale * 4 = 512 + 64 * 2 + 4 * 4$).
-- The parameter `sparse_block_size` must evenly divide `block_size`.
-- In non-PagedAttention scenarios, `layout_query` and `layout_kv` must be identical.
+- In non-PageAttention scenarios, layout\_query and layout\_kv must be the same.
 
-## Examples
+<!-- npu="950" id4 -->
+- Ascend 950PR&950DT products:
+  - The data type of the parameters key and value can only be `torch.int8`, `torch_npu.hifloat8`, or `torch.float8_e4m3fn`.
+  - Only 1 is supported for the parameter sparse\_block\_size.
+  - Only when `layout_kv` is PA_BSND does key support a non-contiguous 0th axis.
+<!-- end id4 -->
+<!-- npu="A3,910b" id5 -->
+- Atlas A3 products and Atlas A2 products:
+  - For query, Q\_N does not support 48.
+  - The data type of the parameters key and value can only be `torch.int8`; `torch_npu.hifloat8` and `torch.float8_e4m3fn` are not supported.
+  - The parameter sparse\_block\_size supports [1,16] and must be a power of 2. In the PageAttention scenario, sparse\_block\_size must divide block\_size.
+  - Non-contiguous key is not supported.
+<!-- end id5 -->
+
+## Example
 
 - Single-operator call
 
@@ -104,7 +122,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
     import numpy as np
     import random
     import math
-    # Generate random data and send it to the NPU.
+    # Generate random data and send it to the npu
     query_type = torch.bfloat16
     scale_value = 0.041666666666666664
     sparse_block_size = 1
@@ -137,8 +155,8 @@ Output attention tensor in the formula. The data layout can be ND. The data type
     query = torch.cat((query, query_rope), axis=3).npu()
     block_table = torch.tensor([range(b * s2 // block_size)], dtype=torch.int32).reshape(b, -1).npu()
 
-    # Call the qsfa operator.
-    out = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+    # Call the qsfa operator
+    out = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
         scale_value=scale_value, sparse_block_size=sparse_block_size,
         actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
         layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
@@ -146,7 +164,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
         value_quant_mode=2, rope_head_dim=64)
 
     print(out)
-    # Expected output of the preceding code sample:
+    # The output out of the preceding code is similar to the following
     tensor([[[[ 0.0000,  -72.0000,  0.0000,  ...,  0.0000, 0.0000, 189.0000],
             [ -390.0000,  780.0000, -390.0000,  ...,  168.0000,  84.0000, -504.0000],
             [ 386.0000,  290.0000,  -386.0000,  ...,  -10.6250,  0.0000, 10.6250],
@@ -172,7 +190,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
     TORCHDYNAMO_VERBOSE=1
     TORCH_LOGS="+dynamo"
 
-    # Configure logging and debug settings for graph capture
+    # Print macro that supports graph mode
     import logging
     from torchair.core.utils import logger
     logger.setLevel(logging.DEBUG)
@@ -181,7 +199,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
     npu_backend = tng.get_npu_backend(compiler_config=config)
     from torch.library import Library, impl
 
-    # Generate data
+    # Data generation
     query_type = torch.bfloat16
     scale_value = 0.041666666666666664
     sparse_block_size = 1
@@ -217,7 +235,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
         def __init__(self):
             super().__init__()
         def forward(self):
-            return torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+            return torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
                 scale_value=scale_value, sparse_block_size=sparse_block_size,
                 actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
                 layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,
@@ -228,7 +246,7 @@ Output attention tensor in the formula. The data layout can be ND. The data type
             model = Model()
             model = torch.compile(model, backend=npu_backend, dynamic=False, fullgraph=True)
             graph_output = model()
-        single_op = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices, 
+        single_op = torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
                 scale_value=scale_value, sparse_block_size=sparse_block_size,
                 actual_seq_lengths_query=act_seq_q, actual_seq_lengths_kv=act_seq_kv,
                 layout_query='BSND', layout_kv='PA_BSND', sparse_mode=3, block_table=block_table,

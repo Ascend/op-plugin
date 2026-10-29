@@ -12,7 +12,7 @@ This sample demonstrates how to register custom operators using PyTorch `torch.l
 ## Directory Structure
 
 ```text
-├── README.md                   // Sample description
+├── README_en.md                   // Sample description
 ├── setup.py                    // Build configuration file
 ├── csrc
 │   ├── add_custom.asc          // Add operator implementation and custom operator registration
@@ -31,14 +31,14 @@ This sample demonstrates how to register custom operators using PyTorch `torch.l
 
 - Function
 
-Adds two input tensors and returns the result. The corresponding operator prototype is as follows:
-
+  Adds two input tensors and returns the result. The corresponding operator prototype is as follows:
+  
   ```python
   ascendc_add(Tensor x, Tensor y) -> Tensor
   ```
 
 - Specifications
-
+  
   <table>
    <tr><td rowspan="1" align="center">Kernel Function Name</td><td colspan="4" align="center">add_custom</td></tr>
   <tr><td rowspan="3" align="center">Operator input</td><td align="center">Name</td><td align="center">Shape</td><td align="center">Data Type</td><td align="center">Data Layout</td></tr>
@@ -52,7 +52,7 @@ Adds two input tensors and returns the result. The corresponding operator protot
 - Function
 
   The input parameters of this operator are `x`, `out_sin`, and `out_cos`. After the operator is called, `out_sin` is modified in place to store the result of `sin(x)`, `out_cos` is modified in place to store the result of `cos(x)`, and the result of `tan(x)` is returned. The corresponding operator prototype is as follows:
-
+  
   ```python
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
   ```
@@ -77,18 +77,18 @@ Adds two input tensors and returns the result. The corresponding operator protot
     ```c++
       add_custom<<<blockDim, nullptr, aclStream>>>(xGm, yGm, zGm, totalLength);
     ```
-
+  
   - PyTorch provides the `TORCH_LIBRARY_FRAGMENT` macro as the core API for registering custom operators. It is used to create and initialize a custom operator library. After registration, the custom operator can be called on the Python side using `torch.ops.namespace.op_name`. For example:
-
+  
     ```c++
     TORCH_LIBRARY_FRAGMENT(ascendc_ops, m)
     {
         m.def("ascendc_add(Tensor x, Tensor y) -> Tensor");
     }
     ```
-
+  
   - `TORCH_LIBRARY_IMPL` is used to bind the operator logic to a specific `DispatchKey` (the PyTorch device scheduling identifier). For NPU devices, the operator implementation must be registered to the dedicated `PrivateUse1` dispatch key. For example:
-
+  
     ```c++
     TORCH_LIBRARY_IMPL(ascendc_ops, PrivateUse1, m)
     {
@@ -97,7 +97,7 @@ Adds two input tensors and returns the result. The corresponding operator protot
     ```
 
   - Register the meta function.
-
+  
     Registering a meta function enables the `FakeTensor` pipeline, which is required for features such as `fx` and `compile`. The code sample is as follows:
 
     ```c++
@@ -120,28 +120,28 @@ Adds two input tensors and returns the result. The corresponding operator protot
 Perform the following steps in the root directory of this sample to build and run the operator.
 
 - Set up the environment
-
-1. For detailed installation steps for PyTorch and TorchNPU, refer to the [TorchNPU Software Installation Guide](https://www.hiascend.com/document/detail/en/Pytorch/720/configandinstg/instg/insg_0001.html) corresponding to your version.
-
+  
+1. For detailed installation steps for PyTorch and TorchNPU, refer to the [TorchNPU
+   Software Installation Guide](https://www.hiascend.com/document/detail/en/Pytorch/720/configandinstg/instg/insg_0001.html), which provides detailed installation steps for PyTorch and TorchNPU.
+   
    This sample requires PyTorch 2.6.0 or later, and support for `backend="npugraph_ex"` requires TorchNPU 7.3.0 or later.
-
 2. Install the CANN Toolkit package based on the actual environment. This sample requires version 8.5.0 or later. For installation details, see the [CANN Software Installation Guide](https://www.hiascend.com/document/redirect/CannCommunityInstSoftware).
 3. Install the CANN OPS package based on the actual environment. Download the appropriate package based on your hardware model and system architecture by using the [Download Link](https://ascend.devcloud.huaweicloud.com/cann/run/software/8.5.0-beta.1), and run the following commands:
-
+   
    ```bash
    # Ensure the installer has execute permission
    chmod +x Ascend-cann-${soc_name}-ops_${cann_version}_linux-${arch}.run
    # Installation command
    ./Ascend-cann-${soc_name}-ops_${cann_version}_linux-${arch}.run  --install --quiet --install-path=${install_path}
    ```
-
-   - `${soc_name}`: NPU model name obtained by removing the prefix "ascend" from `${soc_version}`.
+   
+   - `${soc_name}`: NPU model name obtained by removing the `ascend` prefix from `${soc_version}`.
    - `${install_path}`: Installation path, which must be the same as the Toolkit installation path. The default path is `/usr/local/Ascend`.
 
 - Configure environment variables.
-
+  
   Configure the environment variables based on the installation path of the CANN development toolkit on your system.
-
+  
     ```bash
     source ${install_path}/ascend-toolkit/set_env.sh
     ```

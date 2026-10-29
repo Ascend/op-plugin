@@ -2,10 +2,15 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -26,7 +31,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 ## Return Values
 
-- An integer error code representing execution status. Valid values are:
+- The return value of this API is an `int` representing the error type. The meanings are as follows:
 
     - `0`: Online precision detection passed.
 
@@ -34,13 +39,12 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
     - `2`: Online precision detection failed due to a hardware fault.
 
-- The following error indicates a voltage recovery failure, which requires manual voltage restoration (by referring to section "Comprehensive Check" in CANN Troubleshooting) or a system reboot.
+- The following error indicates a voltage recovery failure, which requires manual voltage restoration (by referring to the [Comprehensive Detection](https://gitcode.com/cann/oam-tools/blob/9.2.0/docs/en/asys/comprehensive_detection.md) section in *CANN Troubleshooting*) or a system reboot.
 
     ```shell
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.
     ```
-    
-<!-- in [CANN Troubleshooting](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/maintenref/troubleshooting/troubleshooting_0505.html)) or a system reboot. -->
+
 ## Constraints
 
 - Online precision detection requires modifying the model training script. You are advised to call this API before training starts, after training ends, or between two steps. Reserve 10 GB of memory for the stress test interface.

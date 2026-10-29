@@ -2,14 +2,19 @@
 
 ## Supported Products
 
-| Product                          | Supported|
-|------------------------------| :------: |
-| <term>Atlas A3 training products</term>| √  |
-| <term>Atlas A2 training products</term>| √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Optimizes device memory usage as a frontend API of `npu_dense_lightning_indexer_grad_kl_loss` by precomputing the maximum and sum values used in the Softmax computation of the Lightning Indexer component.
+- Function: prerequisite API of `npu_dense_lightning_indexer_grad_kl_loss`. It reduces the memory usage of the API by computing the Softmax maximum and sum of the Lightning Indexer component in advance.
 
 - Formulas:
 
@@ -25,12 +30,12 @@ $$
 sumIndex=\text{ReduceSum}\left(\text{exp}\left(res-maxIndex\right)\right)
 $$
 
-The output tensors $maxIndex$ and $sumIndex$ are passed to the downstream `npu_dense_lightning_indexer_grad_kl_loss` API as inputs for Softmax computation.
+$maxIndex$ and $sumIndex$ are passed to the npu_dense_lightning_indexer_grad_kl_loss API as outputs and used as inputs for computing the Softmax.
 
 ## Prototype
 
 ```python
-npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2^63-1, next_tokens=2^63-1) -> (Tensor, Tensor)
+npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actual_seq_qlen=None, actual_seq_klen=None, layout='BSND', sparse_mode=3, pre_tokens=2**63-1, next_tokens=2**63-1) -> (Tensor, Tensor)
 ```
 
 ## Parameters
@@ -60,19 +65,19 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 ## Constraints
 
-- The data types of `query_index` and `key_index` must be identical.
-- When the data type of `weights` is not `torch.float32`, the data types of `query_index`, `key_index`, and `weights` must be identical.
-- Shape variable constraints:
+- The data types of the parameters query_index and key_index must be the same.
+- When the parameter weights is not `torch.float32`, the data types of the parameters query_index, key_index, and weights must be the same.
+- Shape value constraints
 
-| Item   | Value      | Description        |
+| Item | Specification | Description |
 |-----------|------------|-----------------|
-| B         | 1 to 256     | -               |
-| S1, S2   | 1 to 128K    | `S1` and `S2` can have different lengths. When `layout` is `BSND`, the condition $S1 \le S2$ must be satisfied. When `layout` is `TND`, `actual_seq_qlen[i]` must be less than or equal to `actual_seq_klen[i]` at each corresponding index, and $S1 \le S2$ must also be satisfied.|
-| N1index   | 8, 16, 32, 64| -               |
+| B         | 1~256      | -               |
+| S1, S2 | 1 to 128K | S1 and S2 can have different lengths. When `layout` is BSND, S1 <= S2. When `layout` is TND, the `actual_seq_qlen` value must be less than or equal to the `actual_seq_klen` value at the same index position, and S1 <= S2 at the same index position. |
+| N1index | 8, 16, 32, 64 | - |
 | N2index   | 1          | -               |
 | D         | 128        | -               |
 
-## Examples
+## Example
 
 - Single-operator call
 

@@ -2,25 +2,32 @@
 
 ## Supported Products
 
-| Product                              | Supported|
-| ---------------------------------- | :------: |
-| <term>Atlas A3 training products</term>|    √     |
-| <term>Atlas A2 training products</term>|    √     |
-| <term>Atlas training products</term>   |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-Defines AI Core performance metric collection items (enumeration type), used as the `aic_metrics` parameter of the `_ExperimentalConfig` class.
+AI Core performance metric collection items. They are used as the aic\_metrics parameter of the _ExperimentalConfig class.
 
-## Prototype
+## Class Signature
 
 ```python
 torch_npu.profiler.AiCMetrics
 ```
 
-## Parameters
+## Member Description
 
-For details about result data of the following collection items, see <a href="https://gitcode.com/Ascend/msprof/blob/26.1.0/docs/en/user_guide/profile_data_file_references.md#op_summary-operator-details">op_summary (Operator Details)</a> in the *msProf* documentation. The actual collection results prevail.
+For details about result data of the following collection items, see <a href="https://gitcode.com/Ascend/msprof/blob/26.2.0/docs/en/user_guide/profile_data_file_references.md#op_summary-operator-details">op_summary (Operator Details)</a> in the *msProf* documentation. The actual collection results prevail.
 
 - **`torch_npu.profiler.AiCMetrics.AiCoreNone`**: Optional. Disables the collection of AI Core performance metrics.
 - **`torch_npu.profiler.AiCMetrics.PipeUtilization`**: Optional. Execution duration percentage of computation units and data transfer units.
@@ -31,12 +38,6 @@ For details about result data of the following collection items, see <a href="ht
 - **`torch_npu.profiler.AiCMetrics.MemoryUB`**: Optional. Percentage of internal UB memory read/write instructions.
 - **`torch_npu.profiler.AiCMetrics.L2Cache`**: Optional. Read/write cache hit counts and reallocation counts after cache misses.
 - **`torch_npu.profiler.AiCMetrics.MemoryAccess`**: Optional. Memory access bandwidth data of operators on the core.
-
-The default value is `torch_npu.profiler.AiCMetrics.AiCoreNone`.
-
-## Return Values
-
-None
 
 ## Example
 

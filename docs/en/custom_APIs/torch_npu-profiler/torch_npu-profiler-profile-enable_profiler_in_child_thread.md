@@ -2,14 +2,27 @@
 
 ## Supported Products
 
-| Product                                                     | Supported|
-| --------------------------------------------------------- | :------: |
-| <term>Atlas A3 training products</term>                       |    √     |
-| <term>Atlas A3 inference products</term>                       |    √     |
-| <term>Atlas A2 training products</term>                       |    √     |
-| <term>Atlas A2 inference products</term>|    √     |
-| <term>Atlas inference products</term>                          |    √     |
-| <term>Atlas training products</term>                          |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 inference products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910b" id4 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910b" id5 -->
+- <term>Atlas A2 inference products</term>: Supported
+<!-- end id5 -->
+<!-- npu="310p" id6 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id6 -->
+<!-- npu="910" id7 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id7 -->
 
 ## Function
 
@@ -42,7 +55,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
   The default value is `False`.
 
   > [!NOTE]  
-  > Collecting profile data in environments where glibc is earlier than 2.34 can trigger a known glibc bug ([ID: 19329](https://sourceware.org)). Upgrading the environment glibc version resolves this issue.
+  > Collecting profile data in environments where glibc is earlier than 2.34 can trigger a known glibc bug ([ID: 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)). Upgrading the environment glibc version resolves this issue.
 
 - **`with_stack`** (`bool`): Optional. Specifies whether to record call stack information. This includes call information of the framework layer or CPU operator layer. Valid values are:
 

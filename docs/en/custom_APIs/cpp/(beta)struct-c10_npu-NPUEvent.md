@@ -1,12 +1,27 @@
 # (beta) struct c10_npu::NPUEvent
 
-## Definition File
+## Supported Products
 
-torch_npu\csrc\core\npu\NPUEvent.h
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
-Implements NPU event management functionality as an event class. It can be used to monitor device progress, accurately measure elapsed time, or synchronize NPU streams.
+NPUEvent is an event class that implements NPU device event management functions. It can be used to monitor device progress, accurately measure timing, and synchronize NPU streams.
+
+## Definition File
+
+torch_npu\csrc\core\npu\NPUEvent.h
 
 ## Member Functions
 
@@ -85,10 +100,3 @@ Implements NPU event management functionality as an event class. It can be used 
 - **void c10_npu::NPUEvent::synchronize()**
 
     Synchronizes the event for `NPUEvent`, which blocks execution until the event completes execution. This function is identical to `void at::cuda::CUDAEvent::synchronize()`.
-
-## Supported Products
-
-- <term>Atlas training products</term>
-- <term>Atlas A2 training products</term>
-- <term>Atlas A3 training products</term>
-- <term>Atlas inference products</term>

@@ -2,60 +2,85 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Fuses dequantization, SwiGLU activation, and quantization operations on the tensor `x`, with support for grouped computation.
+- Function: performs the dequant dequantization + swiglu activation + quant quantization operations on the tensor `x`, and also supports grouping.
 - Formulas:
-    - `Grouping` (currently only `count` mode is supported):
+    - Group grouping (only the count mode is supported currently):
 
-        The input `x` is partitioned into groups for computation. `group_index` indicates the number of tokens in each group. Each group utilizes different quantization scales (such as `weight_scale`, `activation_scale`, and `quant_scale`).
+        Grouping computation is performed on the input `x`. `group_index` indicates the number of Tokens in each group, and each group uses different quantization scales (such as `weight_scale`, `activation_scale`, and `quant_scale`).
 
-        For example, if `x.shape = [128, 2H]` and `group_index = [2, 1, 3]`, there are three groups, and the corresponding scale dimension is `[3, 2H]`. Each group performs dequantization, SwiGLU activation, and quantization using its respective scale.
+        Example: Assume that x.shape=[128, 2H] and group\_index=[2, 1, 3], indicating that there are 3 groups and the corresponding scale dimension is [3, 2H]. The data of each group is dequantized separately using different scales:
 
-        - group0=x\[0:2, :\], scale0=scale\[0, :\]
-        - group1=x\[2:3, :\], scale1=scale\[1, :\]
-        - group2=x\[3:6, :\], scale2=scale\[2, :\]
+        - group0=x[0:2, :], scale0=scale[0, :]
+        - group1=x[2:3, :], scale1=scale[1, :]
+        - group2=x[3:6, :], scale2=scale[2, :]
 
-    - Dequantization: Perform weight dequantization and activation dequantization:
+    - Dequant: the dequantization of the weight quantization and the dequantization of the activation quantization are performed separately.
         $$
         x=x*weight\_scale\\
         x=x*activation\_scale
         $$
 
-    - SwiGLU activation: Apply SwiGLU to the dequantized `x` (the left and right activation paths are controlled by the attribute `activate_left`).
+    - Swiglu activation: swiglu is performed on the dequantized `x` (the left and right activations are controlled by the attr activate\_left).
 
-        - When `swiglu_mode = 0` (standard SwiGLU), using left activation as an example:
+        - When swiglu_mode=0 (standard Swiglu), taking the left activation as an example:
             $$
             swiglu(x)=swish(x[:,0:H])*x[:,H:2H]
             $$
-            where
+            Where:
             $$
             swish(z)=z*sigmoid(z)
             $$
 
-        - When `swiglu_mode = 1` (variant SwiGLU), the input `x` is split in an interleaved manner (odd-even):
+        - When swiglu_mode=1 (variant Swiglu), the input `x` is split in an odd-even interleaved manner:
             $$
             x\_{glu}=clamp(x\_{even},\ max=clamp\_limit)\\
             x\_{linear}=clamp(x\_{odd},-clamp\_limit,clamp\_limit)\\
             swiglu(x)=swish(x\_{glu},\alpha)*(x\_{linear}+bias)
             $$
-            where
+            Where:
             $$
             swish(z,\alpha)=z*sigmoid(\alpha*z)
             $$
+        - When swiglu_mode=2 (the splitting method of standard Swiglu + the computation method of variant Swiglu), taking the left activation as an example:
+            $$
+            x\_{glu}=clamp(x[:,0:H],\ max=clamp\_limit)\\
+            x\_{linear}=clamp(x[:,H:2H],-clamp\_limit,clamp\_limit)\\
+            swiglu(x)=swish(x\_{glu},\alpha)*(x\_{linear}+bias)
+            $$
+            Where:
+            $$
+            swish(z,\alpha)=z*sigmoid(\alpha*z)
+            $$
+        - When swiglu_mode=3 (the splitting method of standard Swiglu + the computation method of variant Swiglu, with clamp after swish), taking the left activation as an example:
+            $$
+            x\_{glu}=clamp(swish(x[:,0:H]),\ max=clamp\_limit)\\
+            x\_{linear}=clamp(x[:,H:2H],-clamp\_limit,clamp\_limit)\\
+            swiglu(x)=x\_{glu}*x\_{linear}
+            $$
+            Where:
+            $$
+            swish(z)=z*sigmoid(z)
+            $$
 
-    - Quantization:
+    - Quant quantization:
         1. (Optional) Perform smooth quantization first.
             $$
             out=out*quant\_scale
             $$
 
-        2. Dynamic/Static quantization: Quantize the activated output results. Taking dynamic quantization as an example:
+        2. Dynamic/static quantization operation: quantize the activated result, taking dynamic quantization as an example.
             $$
             out,scale=dynamicquant(out)
             $$
@@ -63,17 +88,17 @@
 ## Prototype
 
 ```python
-torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=None, bias=None, quant_scale=None, quant_offset=None, group_index=None, activate_left=False, quant_mode=0, swiglu_mode=0, clamp_limit=7.0, float glu_alpha=1.702, float glu_bias=1.0) -> (Tensor, Tensor)
+torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=None, bias=None, quant_scale=None, quant_offset=None, group_index=None, activate_left=False, quant_mode=0, dst_type=None, round_mode=None, activate_dim=None, swiglu_mode=0, clamp_limit=7.0, glu_alpha=1.702, glu_bias=1.0) -> (Tensor, Tensor)
 ```
 
 ## Parameters
 
-> [!NOTE]  
-> Variables used in tensor shapes:
+> [!NOTE]
+> Description of the variables used in the shapes of the Tensor:
 >
->- `TokensNum`: Number of transmitted tokens. The value is greater than or equal to 0.
->- `H`: Length of the embedding vector. The value is greater than 0.
->- `groupNum`: Length of the `group_index` input. The value is greater than 0.
+>- TokensNum: number of transmitted Tokens. The value is >= 0.
+>- H: length of the embedding vector. The value is > 0.
+>- groupNum: length of the `group_index` input. The value is > 0.
 
 - **`x`** (`Tensor`): Required. Target input tensor. This parameter must be 2D with shape `[TokensNum, 2H]`, and the last dimension must be an even number. The data type can be `torch.int32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
@@ -81,42 +106,43 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - **`activation_scale`** (`Tensor`): Optional. Dequantization coefficient corresponding to `pertoken` activation quantization. This parameter must be 2D with shape `[TokensNum, 1]`, where the last dimension is `1` and the remaining dimensions match those of `x`. The data type can be `torch.float32`. The data layout can be ND. When `x` is `torch.int32`, provide this parameter for dequantization.
 - **`bias`** (`Tensor`): Optional. Bias tensor for `x`. The data type can be `torch.int32`. The data layout can be ND. When `group_index` is provided, `bias` must be `None`.
 - **`quant_scale`** (`Tensor`): Optional. Smooth quantization coefficient. This parameter must be 2D with shape `[groupNum, H]`. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND.
-
-> **Note:** For static quantization, `quant_scale` supports only the `torch.float32` data type.
-
+  > **Note:** In static quantization, quant\_scale supports only the `torch.float32` type.
 - **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
 - **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `torch.int64`. The data layout can be ND.
-- **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode=0`. The default value is `False`.
-    - `True`: `out=swish(split[x, -1, 2][0]) * split[x, -1, 2][1]`
-    - `False`: `out=swish(split[x, -1, 2][1]) * split[x, -1, 2][0]`
+- **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode` is `0`, `2`, or `3`. The default value is `False`.
+    - When it is True, out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
+    - When it is False, out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
 - **`quant_mode`** (`int`): Optional. The quantization type. The default value is `0`. Valid values are `0` (static quantization) or `1` (dynamic quantization). When `group_index` is provided, this parameter supports dynamic quantization only, which requires setting `quant_mode` to `1`.
-- **`swiglu_mode`** (`int`): Optional. SwiGLU computation mode. Valid values are `0` (enables standard SwiGLU) or `1` (enables variant SwiGLU with clamp, alpha, and bias support).
+- **`dst_type`** (`int`): Optional. Data type of the output `out`. `1` indicates `torch.int8`, `290` indicates `torch_npu.hifloat8`, `291` indicates `torch.float8_e5m2`, `292` indicates `torch.float8_e4m3fn`, `296` indicates `torch_npu.float4_e2m1fn_x2`, and `297` indicates `torch_npu.float4_e1m2fn_x2`. The default value is `None`, indicating that the output is `torch.int8`. When the output is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, the last dimension of `out` is half of the corresponding quantization result (two elements are packed into one byte for storage).
+- **`round_mode`** (`int`): Optional. Rounding mode of the output `out`. The value range is $[0,4]$: `0` indicates `"rint"`, `1` indicates `"round"`, `2` indicates `"floor"`, `3` indicates `"ceil"`, and `4` indicates `"trunc"`. When the output data type is `torch.int8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`, only `0` is supported; when it is `torch_npu.hifloat8`, only `1` is supported. The default value is `0`.
+- **`activate_dim`** (`int`): Optional. Splitting axis selected for the swish computation. The value range is $[-x.dim(),\ x.dim()-1]$, and a negative value means counting from the end. When `activate_dim` is not the last axis, `group_index` must be `None`, and `quant_mode` supports only static quantization (`0`). The default value is `-1`, indicating the last axis.
+- **`swiglu_mode`** (`int`): Optional. SwiGLU computation mode. The default value is 0. `0` indicates standard SwiGLU, `1` indicates variant SwiGLU (clamp, alpha, and bias are supported), `2` indicates the standard SwiGLU split method combined with the variant SwiGLU computation method, and `3` indicates the standard SwiGLU split method combined with the variant SwiGLU computation method (clamp is applied after swish; alpha and bias are not supported).
 - **`clamp_limit`** (`float`): Optional. Input threshold limit for variant SwiGLU computation. The default value is `7.0`.
 - **`glu_alpha`** (`float`): Optional. Activation function coefficient for GLU. The default value is `1.702`.
 - **`glu_bias`** (`float`): Optional. Bias in SwiGLU computation. The default value is `1.0`.
 
 ## Return Values
 
-- **`out`** (`Tensor`): Quantized output tensor. This parameter must be 2D with shape `[TokensNum, H]`. The data type can be `torch.int8`. The data layout can be ND.
+- **`out`** (`Tensor`): Quantized output tensor. This parameter must be 2D with shape `[TokensNum, H]`. The data type is determined by `dst_type` and defaults to `torch.int8`. The data layout can be ND. When `dst_type` is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, the last axis is half of H.
 - **`scale`** (`Tensor`): Quantization scale. This parameter must be 1D with shape `[TokensNum]`. The data type can be `torch.float32`. The data layout can be ND.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports graph mode.
-- In scenarios where `group_index` is provided (non-`None`), the following constraints apply:
-    - Only `count` mode is supported for `group_index`. The calling network must ensure that the sum of all elements in `group_index` does not exceed the `TokensNum` dimension of `x`. Otherwise, out-of-bounds memory access will occur.
-    - `H-axis size constraint`: $H \le 10496$ and must be aligned to 64. Configurations failing to meet these specifications will trigger an input validation error.
-    - The portions of the output tensors `out` and `scale` that exceed the total sum of `group_index` are not cleared. These memory regions contain garbage data and may exhibit `inf` or `nan` anomalies. The network logic must account for this impact during deployment.
-- If `x` is of type `torch.int32`, provide `weight_scale` for dequantization.
-- If `x` is of type `torch.float16` or `torch.bfloat16`, `weight_scale` is optional (usually `None`, can be provided); `activation_scale` and `bias` must be set to `None`.
-- The last dimension size of `x` must be an even number.
-- When the activation dimension is not the last dimension of `x`, `group_index` must be `None`.
-- If `group_index` is not `None`, only dynamic quantization (`quant_mode=1`) is supported, and `bias` and `quant_offset` must be `None`.
-- The `clamp_limit`, `glu_alpha`, and `glu_bias` parameters take effect only when `swiglu_mode = 1`.
+- This API supports single-operator mode and graph mode.
+- Constraints in the `group_index` scenario (not None):
+    - `group_index` supports only the count mode. The network must ensure that the sum of the `group_index` input does not exceed the TokensNum dimension of `x`; otherwise, out-of-bounds access occurs.
+    - The H axis has a dimension size limit: H <= 10496 and 64-aligned. Checks are performed when the specification is not met.
+    - The parts of the output `out` and `scale` that exceed the sum of `group_index` are not cleared. The memory in these parts is garbage data and may contain abnormal values such as inf/nan. The network must take this into account when using them.
+- When x is `torch.int32`, providing weight_scale for dequantization is recommended.
+- When x is `torch.float16` or `torch.bfloat16`, weight_scale is optional (usually None, but passing it is allowed), and activation_scale and bias must be None.
+- The length of the last dimension of x must be an even number.
+- When the activation dimension is not the last dimension of x, group_index must be None.
+- When `group_index` is not None and dynamic quantization is used (that is, `quant_mode` is 1), bias and quant_offset do not take effect.
+- clamp_limit, glu_alpha, and glu_bias take effect only when swiglu_mode=1/2, and only clamp_limit takes effect when swiglu_mode=3.
 
-## Examples
+## Example
 
 - Single-operator call
 

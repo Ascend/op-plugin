@@ -2,16 +2,21 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Sets the device resource limits for a specified stream.
-- This API must be called after the `torch.npu.set_device` API is called and before operator execution. If the device resource limits are set multiple times for the same stream, the last setting takes effect.
-- After this API is set, the stream can be passed across threads for use.
+- Sets the device resource limit for a specified stream.
+- Call this API after `torch.npu.set_device` and before operator execution. If the limit is set multiple times for the same stream, the last setting takes effect.
+- After this API is called, the stream can be passed across threads.
 
 ## Prototype
 
@@ -29,15 +34,14 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 
 `None`
 
-No value is returned.
+Represents no return value.
 
 ## Constraints
 
-- This API supports core control only for operators developed using Ascend C. Core control is currently not supported for non-Ascend C operators. Using this API in micro-batch multi-stream parallel scenarios may cause deadlocks or other adverse effects, and its use is not recommended. For non-Ascend C operators, you can refer to CANN Ascend C Operator Development to add operator implementations before using this API to implement operator core control.
-- This API is primarily intended for micro-batch multi-stream parallelism. When it is used together with operators that do not support core control, the effectiveness of multi-stream parallelism may be affected.
-- This API must be used together with `torch_npu.npu.config.allow_internal_format = False` (proprietary formats are not allowed).
-- This API does not support concurrent multi-threaded configuration of core limits on the same stream. Therefore, the effective core limits during operator execution cannot be guaranteed.
-<!-- [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html)  -->
+- This API supports core control only for operators developed for Ascend C. Core control is not supported for operators not developed for Ascend C, and using this API in micro-batch multi-stream parallel scenarios may cause a deadlock or other impacts, so it is not recommended. For non-Ascend C operators, you can refer to *[Ascend C Operator Development](https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/index.md)* to add an operator implementation, and then use this API to control the cores of the operator.
+- This API is mainly used in micro-batch multi-stream parallelism. If an operator does not support core control, the multi-stream parallel effect may be affected.
+- This API must be used together with torch_npu.npu.config.allow_internal_format = False (private formats not allowed).
+- This API does not support setting the number of controlled cores on the same stream concurrently in multiple threads, and the effective core control value during operator execution cannot be guaranteed.
 
 ## Example
 
@@ -49,10 +53,10 @@ No value is returned.
 >>> torch.npu.set_stream_limit(torch.npu.Stream(), 13, 23)
  ```
 
-## Effective Core Control
+**Core control example**
 
-1. The Ascend PyTorch Profiler is used to collect performance data. This includes information about PyTorch layer operators, CANN layer operators, underlying NPU operators, and operator memory footprints.
-   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. You can add an Ascend PyTorch Profiler interface (`torch_npu.profiler.profile` is recommended) to your PyTorch script to collect specified metrics. During model execution, performance data is collected synchronously. For details about its usage and the resulting files, see Ascend PyTorch Profiler.
+1. Use the Ascend PyTorch Profiler API to collect performance data, including PyTorch layer operator information, CANN layer operator information, underlying NPU operator information, and operator memory usage information.
+   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. By adding the Ascend PyTorch Profiler API (the torch_npu.profiler.profile API is recommended) to a PyTorch script, the specified metric data is collected, and performance data is collected synchronously during model execution. For details about the usage and the result files, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Tuning Tool</a>.
 
      ```python
      >>> import torch
@@ -63,12 +67,12 @@ No value is returned.
      >>> x1 = torch.randn(1024, 1960).npu()
      >>> experimental_config = torch_npu.profiler._ExperimentalConfig(profiler_level=torch_npu.profiler.ProfilerLevel.Level2)
      >>> with torch_npu.profiler.profile(
-     >>>    with_stack=False,                # Specifies whether to collect the operator function call stack. Default value: False.
-     >>>    record_shapes=False,             # Specifies whether to collect operator input shapes and input types. Default value: False.
-     >>>    profile_memory=False,            # Specifies whether to collect memory-related data. Default value: False.
-     >>>    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1),           # warmup defaults to 0; required in early TorchNPU versions.
+     >>>    with_stack=False,                # Switch for collecting the function call stack of operators. Disabled by default.
+     >>>    record_shapes=False,             # Switch for collecting the input shape and input type of operators. Disabled by default.
+     >>>    profile_memory=False,            # Switch for collecting memory-related data. Disabled by default.
+     >>>    schedule=torch_npu.profiler.schedule(wait=0, warmup=0, active=1),           # The default value of warmup is 0. In earlier TorchNPU packages, this parameter is mandatory.
      >>>    experimental_config=experimental_config,                                   
-     >>>    on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result_dir") # Exports TensorBoard visualization data.
+     >>>    on_trace_ready=torch_npu.profiler.tensorboard_trace_handler("./result_dir") # Export TensorBoard visualization data
      >>>    ) as prof:
      >>>    torch.npu.set_stream_limit(stream1, 12, 22)
      >>>    torch.npu.set_stream_limit(stream2, 13, 23)
@@ -77,7 +81,7 @@ No value is returned.
      >>>       output = torch_npu.npu_swiglu(x1, dim=-1)
      ```
 
-   When the following message is displayed, data collection is successful. The message "Start parsing profiling data" indicates the output path of the profiling results.
+   When the following print information is displayed, the collection is normal. The "Start parsing profiling data" information indicates the path of the collection result.
 
      ```shell
      2025-07-01 08:50:41 [INFO] [367681] profiler.py: Start parsing profiling data: /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt
@@ -86,25 +90,24 @@ No value is returned.
      ......
      ```
 
-   The key outputs are as follows:
+   The key artifacts are as follows:
 
      ```shell
      |-- /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt   
-       |-- ASCEND_PROFILER_OUTPUT           // Directory for collected and parsed performance data
-         |-- api_statistic.csv             // Records CANN layer API execution duration statistics; generated when profiler_level is set to Level 1 or Level 2
-         |-- kernel_details.csv            // Generated when activities is set to NPU type
-         |-- op_statistic.csv              // Call count and execution duration for AI Core and AI CPU operators
+       |-- ASCEND_PROFILER_OUTPUT           // Directory of the collected and parsed performance data
+         |-- api_statistic.csv             // Generated when profiler_level is set to Level1 or Level2. Statistics about the CANN layer API execution duration.
+         |-- kernel_details.csv            // Generated when activities is set to the NPU type
+         |-- op_statistic.csv              // Statistics about the number of AI Core and AI CPU operator calls and the duration
          |-- operator_details.csv          // Generated when activities is set to the CPU type and record_shapes is set to True
-         |-- step_trace_time.csv           // Computation and communication duration statistics per iteration
-         |-- trace_view.json               // Timeline information for the entire AI task
+         |-- step_trace_time.csv           // Statistics about the computation and communication time in an iteration
+         |-- trace_view.json               // Records the time information of the entire AI task
          |-- ......
-       |-- FRAMEWORK                        // Raw performance data on the framework side (can be ignored)
-       |-- logs                             // Logs generated during parsing
+       |-- FRAMEWORK                        // Raw performance data on the framework side. This directory can be ignored.
+       |-- logs                             // Parsing process logs
        ......
    ```
 
-2. View the collected result files (in formats such as JSON and CSV).
+2. View the collected result files (in json, csv, and other formats).
 
-   For single-operator core control, you can check the `kernel_details.csv` file and check the **BlockDim** column (the number of cores used for operator computation). If the `BlockDim` value is less than or equal to the core limit configured by the user, the core control is successful.
-   In this example, the `BlockDim` values of the SwiGlu operator are `22` and `23`, which comply with the core control logic.
-   <!-- see <a href="https://www.hiascend.com/document/detail/en/mindstudio/latest/TITools/ascend_pytorch_profiler/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a> -->
+   For single-operator core control, view the **kernel_details.csv** file and check the **BlockDim** column (the number of cores used by the operator for computation). If BlockDim is less than or equal to the number of controlled cores set by the user, core control is considered successful.
+   In the example, the BlockDim of the SwiGlu operator is 22 and 23, which complies with the core control logic.

@@ -1,7 +1,5 @@
 # aclnn_extension Sample Description
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:29:16.273Z pushedAt=2026-08-11T11:56:41.285Z -->
-
 This sample demonstrates **custom operator integration through structured code generation**. It shows how to use YAML descriptions and a code generation tool to integrate custom ACLNN operators into the Ascend for PyTorch ecosystem and generate adaptation code that can be compiled into TorchNPU.
 
 ## Application Scenarios
@@ -9,9 +7,7 @@ This sample demonstrates **custom operator integration through structured code g
 This sample applies to the following scenarios:
 
 - **Integrating custom ACLNN operators**: CANN provides ACLNN APIs (such as `aclnnFastGelu`), and you want to expose them as PyTorch custom operators in `torch_npu`.
-
 - **Structured operator adaptation**:
-
   The ACLNN operator semantics are consistent with the target ATen IR. The adaptation layer **contains no complex logic except for output tensor allocation, where the shape and data type are determined through data type deduction from inputs**. 
   When these conditions are met, YAML can be used for structured description, and the tool can automatically generate C++ adaptation code, eliminating the need to manually implement the adaptation layer.
 
@@ -20,7 +16,6 @@ If the operator semantics differ from ATen, require complex shape/type inference
 ## Environment and Dependencies
 
 - **Runtime/Build dependencies**: PyTorch, TorchNPU, and CANN. 
-
   For installation and version requirements, see [TorchNPU Installation Guide](https://gitcode.com/Ascend/pytorch#installation).
 
 ## Directory and File Structure
@@ -39,7 +34,7 @@ aclnn_extension/
 ├── test_native_functions.yaml        # NPU backend declarations (used during stub generation)
 ├── test/
 │   └── test_npu_fast_gelu_custom.py  # Custom operator test script
-└── README.md
+└── README_en.md
 ```
 
 ### After Running
@@ -79,6 +74,8 @@ cd test && python test_npu_fast_gelu_custom.py
 
 A successful test run indicates that the sample has executed correctly, and the `torch_npu.npu_fast_gelu_custom` operator can be used directly.
 
+---
+
 **To adapt your own operator**, replace the YAML content with your own operator definition (see the [Procedure](#procedure) section). Then, run `gen.sh` (with your YAML file) followed by `setup.py` in the same way.
 
 ## Procedure
@@ -109,9 +106,7 @@ custom:
 ```
 
 - `func`: The operator signature exposed on the PyTorch side (ATen IR format).
-
 - `gen_opapi.out`: Input (such as `self` or `grad`) used to deduce the shape and data type of the output tensor.
-
 - `exec`: The ACLNN API to be called.
 
 ### 2. Executing Code Generation
@@ -151,9 +146,7 @@ Note that the test script must not be executed within the `aclnn_extension` dire
 When adapting your own operator, **the core step is to replace the YAML content with your own operator definition**:
 
 - **Operator YAML** (such as `npu_custom.yaml` or a custom `my_op.yaml`): Define your own `func`, `gen_opapi.out`, and `exec` (ACLNN API name) in the `custom` section following the formatting style used in this project.
-
 - **`gen.sh` parameters**: If you use a new file name (such as `my_op.yaml`), execute `bash gen.sh my_op.yaml`.
-
 - **Test script**: Modify or add tests under the `test/` directory and call your exposed operator for numerical validation.
 
 The workflow remains unchanged: run `gen.sh` first (with your YAML file), then run `setup.py` to build the `aclnn_extension*.whl`. After installation through `pip`, the operator can be used directly.
@@ -165,23 +158,14 @@ This section describes the structure of the `gen.sh` script in the current direc
 ### Script Parameters and Environment
 
 - **Input parameters**: `gen.sh` accepts two parameters (the second is optional).
-
   - `$1`: The operator YAML file (required), such as `npu_custom.yaml`.
-
 - **Working directory**: The script changes the directory to its own location (`aclnn_extension/`), and all subsequent paths are relative to this directory.
-
 - **Version and directory name**: The script parses `PYTORCH_VERSION` (such as `2.7.0`) from `torch.__version__`, and derives `PYTORCH_VERSION_DIR` (such as `v2r7`) for paths such as `op_plugin/config/v2r7/`.
-
 - **Environment variables**: The script sets and exports the following variables:
-
   - `PYTORCH_VERSION`: PyTorch version number.
-
   - `PYTORCH_CUSTOM_DERIVATIVES_PATH`: Path to the generated derivatives file used by `autograd` and related components.
-
   - `ACLNN_EXTENSION_PATH`: Root directory of the current sample.
-
   - `ACLNN_EXTENSION_SWITCH="TRUE"`: Flag indicating ACLNN extension mode (used by certain `torchnpugen` modules for branching).
-
 - **Created directories**: If they do not exist, the script creates `build`, `op_plugin`, and `torch_npu`.
 
 ### Code Generation Commands (By Execution Order)
@@ -198,15 +182,12 @@ The script calls the following `torchnpugen` modules in sequence, each correspon
 | 6 | `torchnpugen.autograd.gen_autograd` | Generates `autograd`-related code under `csrc/aten` and `autograd` based on `test_native_functions.yaml`.| `--out_dir`, `--autograd_dir`, `--npu_native_function_dir` (`test_native_functions.yaml`)|
 
 - **Steps 1 through 4** use the operator YAML and the generated `op_plugin_functions.yaml` to produce output under `op_plugin/`, which represents the core of ACLNN adaptation.
-
 - **Steps 5 and 6** use `test_native_functions.yaml` to generate TorchNPU registration and `autograd` integration code.
 
 ### Customization Options
 
 - **Input YAML**: Modify script input parameters or internal variables (`$YAML_FILE` or `$DERIVATIVES_YAML_FILE`), or introduce new variables and pass them to options such as `--source_yaml` and `--struct_yaml`.
-
 - **Output paths**: Modify `OUTPUT_DIR`, `OPAPI_OUTPUT_DIR`, `--output_dir`, `--out_dir`, or `--autograd_dir` to redirect generated artifacts (must remain consistent with `setup.py` build paths).
-
 - **PyTorch version**: Automatically inferred from the environment. To hardcode a specific version, modify `PYTORCH_VERSION` and `PYTORCH_VERSION_DIR` directly.
 
 These modifications allow flexible extension or trimming of the `gen.sh` pipeline while preserving the overall workflow.
@@ -214,7 +195,5 @@ These modifications allow flexible extension or trimming of the `gen.sh` pipelin
 ## Summary
 
 - **Application scope**: Structured ACLNN operator integration where semantics align with ATen and the adaptation layer only allocates the output tensor.
-
 - **Workflow**: Run `gen.sh npu_custom.yaml` to generate adaptation code, then run `setup.py` to build `aclnn_extension*.whl`, and install the package using `pip install` to use the operator.
-
 - **Customization**: Replace the content in the YAML file with your own operator definition, pass your YAML filename to `gen.sh`, and follow the same sequence of running `gen.sh` before running `setup.py`.

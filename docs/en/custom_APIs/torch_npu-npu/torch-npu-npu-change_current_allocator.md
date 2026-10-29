@@ -2,12 +2,21 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √    |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
@@ -33,7 +42,7 @@ This function fails if the memory allocator has already been initialized.
 
 ## Example
 
-For details about the complete call example, see [LINK](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/test/allocator/test_pluggable_allocator_extensions.py).
+For details about the complete call example, see [LINK](https://gitcode.com/Ascend/pytorch/blob/master/test/allocator/test_pluggable_allocator_extensions.py).
 
 **Python Code Sample**
 
@@ -43,7 +52,7 @@ For details about the complete call example, see [LINK](https://gitcode.com/Asce
 # Load the allocator
 >>> new_alloc = torch_npu.npu.memory.NPUPluggableAllocator('pluggable_allocator_extensions.so', 'my_malloc', 'my_free')
 # Swap the current allocator
->>> torch.npu.change_current_allocator(new_alloc)
+>>> torch_npu.npu.change_current_allocator(new_alloc)
 #This will allocate memory in the device using the new allocator
 >>> npu_tensor = torch.zeros(10, device='npu')
 ```

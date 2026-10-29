@@ -1,30 +1,26 @@
 # torch\_npu.npu\_add\_quant\_matmul\_
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product | Supported |
-| --- | --- |
-| <term>Ascend 950PR/Ascend 950DT</term> | √ |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
-- Description:
+- Function:
 
-    In micro-batch training scenarios requiring gradient accumulation across micro-batches, numerous cases exist where a `QuantBatchMatmul` operation is followed by an `InplaceAdd` operation. This operator (`QuantBatchMatmulInplaceAdd`) fuses these operations to improve network performance.
+    In micro-batch training scenarios, micro-batch gradient accumulation involves a large number of scenarios in which QuantBatchMatmul operations are followed by InplaceAdd operations. This operator (QuantBatchMatmulInplaceAdd) fuses the preceding operations to improve network performance.
 
 - Formulas:
 
-    The formula for the MX quantization scenario is as follows. For more information about quantization techniques, see "Basic Concepts > Introduction to Quantization Mode" in CANN Operator Library.
-    <!-- in [CANN Operator Library](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/aolapi/context/common/quant_mode_introduction.md) -->
+    The formula for the mx quantization scenario is as follows. For more information about quantization technologies, see [Quantization Introduction](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/en/context/quant_mode_introduction.md) in the *CANN Operator Library*.
 
     ![](../../figures/en-us_formulaimage_0000002521244910.png)
 
-    `gsk` represents the block size for MX quantization along the K axis, which is 32. `x1_slice<sub>i</sub>` represents a vector of length `gsk` in row `m` of `x1<sub>i</sub>`, and `x2_slice<sub>i</sub>` represents a vector of length `gsk` in column `n` of `x2<sub>i</sub>`. Slicing along the K axis starts at `j * gsk`. The value range of `j` is [0, `k_loops`), and `k_loops = ceil(K<sub>i</sub> / gsk)`. The length of the final slice can be less than `gsk`.
+    In the formula, gsk indicates the block size of the mx quantization on the K axis, that is, 32. x1\_slice<sub>i</sub> indicates the vector of the m-th row of x1<sub>i</sub> with a length of gsk, and x2\_slice<sub>i</sub> indicates the vector of the n-th column of x2<sub>i</sub> with a length of gsk. The K axis is always sliced from j\*gsk, and the value range of j is [0, k\_loops), where k\_loops=ceil(K<sub>i</sub>/gsk). A final slice shorter than gsk is supported.
 
-    The computation formula for the T-T quantization scenario is as follows:
+    The formula for the T-T quantization scenario is as follows.
 
     ![](../../figures/en-us_formulaimage_0000002594063675.png)
 
@@ -39,44 +35,44 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 - **`self`** (`Tensor`): Required. Matrix to which accumulation is applied. The data type can be `torch.float32`. This parameter must be a 2D tensor with shape `[M, N]`. The data layout can be `ND`.
 - **`x1`** (`Tensor`): Required. Left matrix in matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. This parameter must be a 2D tensor with shape `[K, M]`. The data layout can be `ND`.
 - **`x2`** (`Tensor`): Required. Right matrix in matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. This parameter must be a 2D tensor with shape `[K, N]`. The data layout can be `ND`.
-- **`x2_scale`** (`Tensor`): Required. Scaling factor for the right matrix in matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. This parameter must be a 3D tensor. When the data type is `torch.float8_e8m0fnu`, the optional parameter `x2_scale_dtype` must be configured to the corresponding type. In this case, the dtype of `x2_scale` itself is ignored, but its underlying type must remain an 8-bit data type to ensure the correct shape. The data layout can be `ND`.
-- **`*`**: Position delimiter. Variables before this delimiter are position-dependent and must be passed in order. Variables after this delimiter are optional keyword arguments and must be assigned using key-value pairs. If not specified, their default values are used.
-- **`x1_scale`** (`Tensor`): Optional. Scaling factor for the left matrix in matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. This parameter must be a 3D tensor. When the data type is `torch.float8_e8m0fnu`, the optional parameter `x1_scale_dtype` must be configured to the corresponding type. In this case, the dtype of `x1_scale` itself is ignored, but its underlying type must remain an 8-bit data type to ensure the correct shape. The data layout can be `ND`.
-- **`group_sizes`** (`List[int]`): Optional. Default value is `None`.
-  - When set to a non-`None` value, only a 3-element list in the form `[group_m, group_n, group_k]` is supported, representing the quantization grouping along the `m`, `n`, and `k` dimensions, respectively. For example, `group_m` indicates that every `group_m` elements along the `m` dimension correspond to one quantization parameter.
-  - When one or more values in `[group_m, group_n, group_k]` are `0`, the API automatically adjusts those values based on the input shapes of `x1`, `x2`, `x1_scale`, and `x2_scale`. For example, if `group_m = 0`, the grouping value along the `m` dimension is inferred using the formula `group_m = m / scale_m`, where `m` must be divisible by `scale_m`. Here, `m` is the `m` dimension in the shape of `x1`, and `scale_m` is the `m` dimension in the shape of `x1_scale`.
-  - For MX quantization, the only supported value is `[1, 1, 32]`. For T-T quantization, the only supported value is `[0, 0, 0]`.
+- **`x2_scale`** (`Tensor`): Required. Scaling factor of the right matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`, and the shape must be 3D. When `torch.float8_e8m0fnu` is used, the optional parameter `x2_scale_dtype` must be set to the corresponding type. In this case, the dtype of `x2_scale` itself no longer takes effect, but the dtype of `x2_scale` itself must still be an 8-bit data type so that the shape is correct. The data layout can be ND.
+- **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
+- **`x1_scale`** (`Tensor`): Optional. Scaling factor of the left matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`, and the shape must be 3D. When `torch.float8_e8m0fnu` is used, the optional parameter `x1_scale_dtype` must be set to the corresponding type. In this case, the dtype of `x1_scale` itself no longer takes effect, but the dtype of `x1_scale` itself must still be an 8-bit data type so that the shape is correct. The data layout can be ND.
+- **`group_sizes`** (`List[int]`): Optional. The default value is `None`.
+  - When the value is not `None`, only a 3D list is supported, in the form of [group\_m, group\_n, group\_k], which respectively indicate the quantization grouping on the m, n, and k dimensions. Taking group\_m as an example, group\_m values on the m dimension correspond to one quantization parameter.
+  - When one or more of [group\_m, group\_n, group\_k] are 0, the API resets the value according to the input shapes of `x1`, `x2`, `x1_scale`, and `x2_scale`. Computation principle: If group\_m=0, the quantization grouping value in the m direction is inferred by the API. The inference formula is group\_m=m/scale\_m (m must be divisible by scale\_m), where m is the same as m in the x1 shape and scale\_m is the same as m in the x1\_scale shape.
+  - Currently, the only value supported for [group\_m, group\_n, group\_k] in the mx quantization scenario is [1,1,32]. The T-T quantization scenario supports only [0,0,0].
 
-- **`x1_scale_dtype`** (`int`): Optional. Explicitly specifies the logical data type of `x1_scale`. The default value is `None`, indicating that the actual data type is the same as the dtype of `x1_scale`. Currently, the data type can only be `torch.float8_e8m0fnu`.
+- **`x1_scale_dtype`** (`int`): Optional. Used to explicitly specify the logical data type of `x1_scale`. None: default value, indicating that the actual input data type is the same as the dtype of the input `x1_scale`. Currently, only `torch.float8_e8m0fnu` is supported.
 
-- **`x2_scale_dtype`** (`int`): Optional. Explicitly specifies the logical data type of `x2_scale`. The default value is `None`, indicating that the actual data type is the same as the dtype of `x2_scale`. Currently, the data type can only be `torch.float8_e8m0fnu`.
+- **`x2_scale_dtype`** (`int`): Optional. Used to explicitly specify the logical data type of `x2_scale`. None: default value, indicating that the actual input data type is the same as the dtype of the input `x2_scale`. Currently, only `torch.float8_e8m0fnu` is supported.
 
 ## Return Values
 
-**`self`** (`Tensor`): Final result matrix obtained by adding the output matrix of the `QuantBatchMatmul` computation to the accumulation matrix. The data type, shape, and data layout are identical to those of the input `self`.
+**`self`** (`Tensor`): Final result matrix obtained by adding the result of the QuantBatchMatmul computation to the matrix to be accumulated. The supported data type, shape, and data layout must be the same as those of the input self.
 
 ## Constraints
 
 - This API can be used in training scenarios.
 - This API supports single-operator mode and TorchAir graph mode.
-- Data type constraints:
+- Data type constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
-    | MX quantization | <code>`torch.float8_e4m3fn`</code>/<code>`torch.float8_e5m2`</code> | <code>`torch.float8_e4m3fn`</code>/<code>`torch.float8_e5m2`</code> | <code>`torch.float8_e8m0fnu`</code> | <code>`torch.float8_e8m0fnu`</code> | <code>`torch.float32`</code> |
-    | T-T quantization | <code>`torch_npu.hifloat8`</code> | <code>`torch_npu.hifloat8`</code> | <code>`torch.float32`</code> | <code>`torch.float32`</code> | <code>`torch.float32`</code> |
+    | mx quantization | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
+    | T-T quantization | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | `torch.float32` |
 
-- Shape constraints:
+- Shape constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
-    | MX quantization | <code>[K, M]</code> | <code>[K, N]</code> | <code>[ceil(K / 64), N, 2]</code> | <code>[ceil(K / 64), M, 2]</code> | <code>[M, N]</code> |
-    | T-T quantization | <code>[K, M]</code> | <code>[K, N]</code> | <code>[1]</code> | <code>[1]</code> | <code>[M, N]</code> |
+    | mx quantization | (K,M) | (K,N) | (ceil(K/64),N,2) | (ceil(K/64),M, 2) | (M,N) |
+    | T-T quantization | (K,M) | (K,N) | (1) | (1) | (M,N) |
 
-## Examples
+## Example
 
 - Single-operator call
-  - Single-operator call for MX quantization
+  - Single-operator call for mx quantization
 
     ```python
     import math
@@ -111,7 +107,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
     ```
 
 - Graph mode call
-  - Graph mode call for MX quantization
+  - Graph mode call for mx quantization
 
     ```python
     import math

@@ -2,17 +2,23 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| :----------------------------------------------------------- | :------: |
-| <term>Atlas A3 training products</term>    |    √     |
-| <term>Atlas A2 training products/Atlas A2 inference products</term>   |    √     |
-| <term>Atlas inference products</term>    |    √     |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="310p" id3 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-Encapsulates the `torch_npu.npu_weight_quant_batchmatmul` API to perform quantization on weight inputs and outputs in matrix multiplication computations. This class supports `pertensor`, `perchannel`, and `pergroup` scenarios.
+LinearWeightQuant is a wrapper class for the torch_npu.npu_weight_quant_batchmatmul API. It performs quantization on the weight input and the output in matrix multiplication and supports multiple quantization scenarios: pertensor, perchannel, and pergroup.
 
-Currently, Atlas inference products support only `perchannel` quantization.
+<!-- npu="310p" id15 -->
+Currently, only perchannel quantization is supported for <term>Atlas inference products</term>.
+<!-- end id15 -->
 
 ## Prototype
 
@@ -33,60 +39,84 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **`quant_scale`** (`bool`): Optional. Specifies whether to include the `quant_scale` parameter in the computation. The default value is `False`. If set to `False`, the fake-quantization output is not quantized.
 - **`quant_offset`** (`bool`): Optional. Specifies whether to include the `quant_offset` parameter in the computation. The default value is `False`. If set to `False`, no offset is required during quantization of the fake-quantization output.
 - **`antiquant_group_size`** (`int`): Optional. Controls the group size in `pergroup` scenarios. The default value is 0. The value must be divisible by 32 in the range of `[32, K-1]`. Atlas inference products: This parameter is not supported currently.
+    <!-- npu="310p" id4 -->
+    - <term>Atlas inference products</term>: This parameter is not supported currently.
+    <!-- end id4 -->
 - **`inner_precise`** (`int`): Computation mode. The default value is `0`. Valid values are `0` (high-precision mode) or `1` (high-performance mode, which may affect precision). In `pergroup` scenarios where `weight` is of `torch.int32` type and in `FRACTAL_NZ` layout, and `M` is not greater than 16, this parameter can be set to `1` to improve performance. High-performance mode is not recommended in other scenarios.
 
-**Computation Input**
+**Computation Inputs**
 
-**`x`** (`Tensor`): Input tensor (`x`) for matrix multiplication. The data layout can be ND. This parameter must be 2D with shape `(M, K)`.
+**x** (`Tensor`): Tensor type, that is, x in the matrix multiplication. The data layout can be $ND$. The input dimension can be 2D (M, K).
 
-- Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products: The data type can be `torch.float16` or `torch.bfloat16`.
-- Atlas inference products: Only `torch.float16` is supported.
+<!-- npu="A3,910b" id5 -->
+- <term>Atlas A2 products</term> and <term>Atlas A3 training products</term>: The data type can be `torch.float16` or `torch.bfloat16`.
+<!-- end id5 -->
+<!-- npu="310p" id6 -->
+- <term>Atlas inference products</term>: Only the `torch.float16` data type is supported.
+<!-- end id6 -->
 
 ## Variable Description
 
 - **`weight`** (`Tensor`): Weight tensor used for matrix multiplication. The data layout can be ND or FRACTAL_NZ. Non-contiguous tensors are supported. This parameter must be 2D with shape `(N, K)`.
-    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products: The data type can be `torch.int8` or `torch.int32` (`torch.int32` carries packed `torch_npu.int4` inputs. For details, see the call example of [torch_npu.npu_convert_weight_to_int4pack](../torch_npu/torch_npu-npu_convert_weight_to_int4pack.md)).
-    - Atlas inference products: The data type can be `torch.int8`. The FRACTAL_NZ layout is valid only in graph mode. Use `torchair.experimental.inference.use_internal_format_weight` to convert the data layout from ND to FRACTAL_NZ. For details, see [Examples](#section00001).
+
+    <!-- npu="A3,910b" id7 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 training products</term>: The data type can be `torch.int8` or `torch.int32` (`torch.int32` carries packed `torch_npu.int4` inputs. For details, see the call example of [torch_npu.npu_convert_weight_to_int4pack](../torch_npu/torch_npu-npu_convert_weight_to_int4pack.md)).
+    <!-- end id7 -->
+    <!-- npu="310p" id8 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.int8`. The FRACTAL_NZ layout is valid only in graph mode. Use `torchair.experimental.inference.use_internal_format_weight` to convert the data layout from ND to FRACTAL_NZ. For details, see [Examples](#section00001).
+    <!-- end id8 -->
 
 - **`antiquant_scale`** (`Tensor`): Scale used for weight dequantization. The data layout can be ND. Non-contiguous tensors are supported. This parameter must be 2D with shape `(N, 1)` or 1D with shape `(N,)` or `(1,)`.
-    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int64`. In `pergroup` scenarios, the shape must be `(N, ceil_div(K, antiquant_group_size))`.
-         - If the data type is `torch.float16` or `torch.bfloat16`, it must match that of `x`.
-         - If the data type is `torch.int64`, `x` must be of type `torch.float16` and must not be transposed, and `weight` must be of type `torch.int8` in ND layout and must be transposed. For details, see [Examples](#section00001). In this case, only `perchannel` scenarios are supported. The value range of `M` is `[1, 96]`, and both `K` and `N` must be aligned to 64.
 
-    - Atlas inference products: The data type can be `torch.float16`, and it must match that of `x`.
+    <!-- npu="A3,910b" id9 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 training products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int64`. In `pergroup` scenarios, the shape must be `(N, ceil_div(K, antiquant_group_size))`.
+         - If the data type is `torch.float16` or `torch.bfloat16`, the data type must be the same as that of `x`.
+         - If the data type is `torch.int64`, the data type of `x` must be `torch.float16` and the input must not be transposed. In addition, the data type of `weight` must be `torch.int8`, the data layout must be $ND$, and the input must be transposed. For details, see [Example](#section00001). In this case, only the perchannel scenario is supported, the value range of M is [1, 96], and K and N must be 64-aligned.
+    <!-- end id9 -->
+    <!-- npu="310p" id10 -->
+    - <term>Atlas inference products</term>: The data type can be `torch.float16`, and it must match that of `x`.
+    <!-- end id10 -->
 
 - **`antiquant_offset`** (`Tensor`): Offset used for weight dequantization. The data layout can be ND. Non-contiguous tensors are supported. This parameter must be 2D with shape `(N, 1)` or 1D with shape `(N,)` or `(1,)`.
-    - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int32`. In `pergroup` scenarios, the shape must be `(N, ceil_div(K, antiquant_group_size))`.
-        - If the data type is `torch.float16` or `torch.bfloat16`, it must match that of `antiquant_scale`.
-        - If the data type is `torch.int32`, the data type of `antiquant_scale` must be `torch.int64`.
 
-    - Atlas inference products: Only `torch.float16` is supported, and it must match that of `antiquant_scale`.
+    <!-- npu="A3,910b" id11 -->
+    - <term>Atlas A2 products</term> and <term>Atlas A3 training products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int32`. In `pergroup` scenarios, the shape must be `(N, ceil_div(K, antiquant_group_size))`.
+        - If the data type is `torch.float16` or `torch.bfloat16`, the data type must be the same as that of `antiquant_scale`.
+        - If the data type is `torch.int32`, the data type of `antiquant_scale` must be `torch.int64`.
+    <!-- end id11 -->
+    <!-- npu="310p" id12 -->
+    - <term>Atlas inference products</term>: Only the `torch.float16` data type is supported, and it must match that of `antiquant_scale`.
+    <!-- end id12 -->
 
 - **`quant_scale`** (`Tensor`): Scale used for output quantization. This parameter is supported only when `weight` layout is ND. The data layout can be ND. The data type can be `torch.float32` or `torch.int64`. This parameter must be 2D with shape `(1, N)` or 1D with shape `(N,)` or `(1,)`. When the data type of `antiquant_scale` is `torch.int64`, this parameter must be omitted. Atlas inference products: This parameter is not supported currently.
-
+    <!-- npu="310p" id13 -->
+    - <term>Atlas inference products</term>: This parameter is not supported currently.
+    <!-- end id13 -->
 - **`quant_offset`** (`Tensor`): Offset used for output quantization. This parameter is supported only when `weight` layout is ND. The data layout can be ND. The data type can be `torch.float32`. This parameter must be 2D with shape `(1, N)` or 1D with shape `(N,)` or `(1,)`. When the data type of `antiquant_scale` is `torch.int64`, this parameter must be omitted. Atlas inference products: This parameter is not supported currently.
-
+    <!-- npu="310p" id14 -->
+    - <term>Atlas inference products</term>: This parameter is not supported currently.
+    <!-- end id14 -->
 - **`bias`** (`Tensor`): Bias tensor for matrix multiplication. The data layout can be ND. The data type can be `torch.float16` or `torch.float32`. Non-contiguous tensors are supported. This parameter must be 2D with shape `(1, N)` or 1D with shape `(N,)` or `(1,)`.
 
 ## Return Values
 
 `Tensor`
 
-Computation result. When `quant_scale` is provided, the data type of the output must be `torch.int8`. If `quant_scale` is not provided, the data type of the output is identical to that of the input `x`.
+Represents the computation result. When `quant_scale` is present in the inputs, the output data type is `torch.int8`. When `quant_scale` is not present in the inputs, the output data type is the same as that of the input `x`.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports graph mode. When the data layout of the input `weight` is FRACTAL_NZ, single-operator calls are currently not supported. Only graph mode calls are supported.
-- The last two dimensions of `x` and `weight` must be `(M, K)` and `(N, K)`. The value range of `K` and `N` is `[1, 65535]`. When `x` is not transposed, the value range of `M` is [1, 2^31-1]. When `x` is transposed, the value range of M is [1, 65535].
+- This API supports graph mode. When the input `weight` is in FRACTAL_NZ format, single-operator calls are not supported currently and only graph mode calls are supported.
+- The last two dimensions of `x` and `weight` must be in (M, K) and (N, K) format. The value range of K and N is [1, 65535]. When `x` is not transposed, the value range of M is [1, 2^31-1]. When `x` is transposed, the value range of M is [1, 65535].
 - Empty tensor inputs are not supported.
-- The input shapes of `antiquant_scale` and `antiquant_offset` must be identical.
-- The input shapes of `quant_scale` and `quant_offset` must be identical, and `quant_offset` cannot exist independently of `quant_scale`.
-- When the input type of `x` is `torch.bfloat16`, the input type of `bias` must be `torch.float32`. When the input type of `x` is `torch.float16`, the input type of `bias` must be `torch.float16`.
-- To pass a `quant_scale` with a data type of `torch.int64`, you must call the `torch_npu.npu_trans_quant_param` API in advance to convert the `quant_scale` and `quant_offset` from a data type of `torch.float32` into a `quant_scale` input with a data type of `torch.int64`. For details, see [Examples](#section00001).
-- When the input `weight` has a data layout of FRACTAL_NZ and the data type is `torch.int32`, `weight` must be transposed in `perchannel` scenarios. In `pergroup` scenarios, `x` must be transposed, `weight` must not be transposed, `antiquant_group_size` must be `64` or `128`, `K` must be aligned to `antiquant_group_size`, and `N` must be 64-aligned.
+- The input shapes of `antiquant_scale` and `antiquant_offset` must be the same.
+- The input shapes of `quant_scale` and `quant_offset` must be the same, and `quant_offset` cannot exist independently of `quant_scale`.
+- When the input type of `x` is `torch.bfloat16`, the input type of `bias` is `torch.float32`. When the input type of `x` is `torch.float16`, the input type of `bias` is `torch.float16`.
+- To pass a `quant_scale` of the `torch.int64` data type, call the torch_npu.npu_trans_quant_param API in advance to convert the `quant_scale` and `quant_offset` of the `torch.float32` data type into a `quant_scale` input of the `torch.int64` data type. For details, see [Example](#section00001).
+- When the input `weight` is in FRACTAL_NZ format and of the `torch.int32` type, the perchannel scenario requires `weight` to be a transposed input; the pergroup scenario requires `x` to be a transposed input, `weight` to be a non-transposed input, `antiquant_group_size` to be 64 or 128, K to be `antiquant_group_size`-aligned, and N to be 64-aligned.
 
-## Examples<a name="section00001"></a>
+## Example<a name="section00001"></a>
 
 - Single-operator call
 
@@ -152,7 +182,7 @@ Computation result. When `quant_scale` is provided, the data type of the output 
     model.antiquant_offset.data = antiquantoffset.transpose(-1, -2)
     model.quant_scale.data = quantscale
     model.quant_offset.data = quantoffset
-    tng.experimental.inference.use_internal_format_weight(model) #: Converts weight from ND to FRACTAL_NZ
+    tng.experimental.inference.use_internal_format_weight(model) # Convert the ND weight input to FRACTAL_NZ format
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     out = model(x)
     ```

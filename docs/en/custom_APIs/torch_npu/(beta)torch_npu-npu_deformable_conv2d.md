@@ -2,65 +2,74 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-- Computes the output of deformable convolution using the expected input.
+- Function: computes the output of the deformable convolution with the expected inputs.
 
 - Formulas:
-  
-  Assume that the shape of the input (`self`) is `[N, inC, inH, inW]` and that of the output (`out`) is `[N, outC, outH, outW]`. Output height ($outH$) and width ($outW$) are calculated based on the existing parameters:
-  
+
+  Assume that the shape of the input (self) is [N, inC, inH, inW] and the shape of the output (out) is [N, outC, outH, outW]. outH and outW are computed based on the existing parameters:
+
   $$
-  outH = (inH + padding[0] + padding[1] - ((K_H - 1) * dilation[2] + 1)) // stride[2] + 1
+  outH = (inH + padding[0] + padding[1] - ((K\_H - 1) * dilation[2] + 1)) // stride[2] + 1
   $$
-  
+
   $$
-  outW = (inW + padding[2] + padding[3] - ((K_W - 1) * dilation[3] + 1)) // stride[3] + 1
+  outW = (inW + padding[2] + padding[3] - ((K\_W - 1) * dilation[3] + 1)) // stride[3] + 1
   $$
-  
-  Sampling point index computation for standard convolution:
-  
+
+  Sampling point subscripts of the standard convolution:
+
   $$
-  x = -padding[2] + ow*stride[3] + kw*dilation[3], kw ∈ (0, K\_W – 1)
+  x = -padding[2] + ow*stride[3] + kw*dilation[3], where the value of kw is (0, K\_W-1)
   $$
-  
+
   $$
-  y = -padding[0] + oh*stride[2] + kh*dilation[2], kh ∈ (0, K\_H – 1)
+  y = -padding[0] + oh*stride[2] + kh*dilation[2], where the value of kh is (0, K\_H-1)
   $$
-  
-  Offset index calculation after deformable convolution based on the provided offset:
-  
+
+  Perform the deformable convolution based on the passed offset and compute the offset subscripts:
+
   $$
   (x,y) = (x + offsetX, y + offsetY)
   $$
 
-  Bilinear interpolation calculation for the value at the deformed location:
-  
+  Use bilinear interpolation to compute the value of the offset point:
+
   $$
   (x_{0}, y_{0}) = (int(x), int(y)) \\
   (x_{1}, y_{1}) = (x_{0} + 1, y_{0} + 1)
   $$
-  
+
   $$
   weight_{00} = (x_{1} - x) * (y_{1} - y) \\
-  weight_{01} = (x_{1} - x) * (y - y_{0}) \\ 
-  weight_{10} = (x - x_{0}) * (y_{1} - y) \\ 
-  weight_{11} = (x - x_{0}) * (y - y_{0}) \\ 
+  weight_{01} = (x_{1} - x) * (y - y_{0}) \\
+  weight_{10} = (x - x_{0}) * (y_{1} - y) \\
+  weight_{11} = (x - x_{0}) * (y - y_{0}) \\
   $$
-  
+
   $$
-  deformOut(x, y) = weight_{00} * self(x0, y0) + weight_{01} * self(x0,y1) + weight_{10} * self(x1, y0) + weight_{11} * self(x1,y1)
+  deformOut(x, y) = weight_{00} * self(x_{0}, y_{0}) + weight_{01} * self(x_{0}, y_{1}) + weight_{10} * self(x_{1}, y_{0}) + weight_{11} * self(x_{1}, y_{1})
   $$
-  
-  Final output computation through convolution:
-  
+
+  Perform the convolution computation to obtain the final output:
+
   $$
   \text{out}(N_i, C_{\text{out}_j}) = \text{bias}(C_{\text{out}_j}) + \sum_{k = 0}^{C_{\text{in}} - 1} \text{weight}(C_{\text{out}_j}, k) \star \text{deformOut}(N_i, k)
   $$
@@ -92,7 +101,14 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 
 ## Constraints
 
-All tensor inputs are automatically converted to `torch.float32` regardless of their original data types. The output data type is `torch.float32`.
+- This API supports only single-operator mode calls.
+
+<!-- npu="A3,910b,910,310p" id6 -->
+- Atlas A3 training products, Atlas A2 training products, Atlas inference products, and Atlas training products: All Tensor type input parameters are automatically converted to `torch.float32` regardless of the input data type. The data type of the output parameter is `torch.float32`.
+<!-- end id6 -->
+<!-- npu="950" id7 -->
+- Ascend 950PR&950DT products: The input and output data types are the same, and `torch.float16`, `torch.float32`, and `torch.bfloat16` are supported. The `modulated` parameter can only be set to True.
+<!-- end id7 -->
 
 ## Example
 

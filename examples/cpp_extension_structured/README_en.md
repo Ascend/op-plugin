@@ -1,7 +1,5 @@
 # Adaptation Development and Usage (Structured)
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:29:43.701Z pushedAt=2026-08-11T12:00:45.552Z -->
-
 This document describes the complete process of custom NPU operator adaptation development using the TorchNPU single-operator API through C++ extensions. This process covers operator definition, operator adaptation, and ATen IR registration and binding. This sample focuses on the structured kernel adaptation method, which is applicable to scenarios where the ACLNN API semantics are consistent with the ATen IR and the adaptation layer logic is only responsible for output tensor allocation.
 
 ## Operator Adaptation Development
@@ -10,10 +8,9 @@ This document describes the complete process of custom NPU operator adaptation d
 
 Before getting started, ensure that you have completed the installation of the following environments:
 
-1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to CANN Software Installation.
+1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/920/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum).
+2. Install PyTorch and TorchNPU by referring to [Building from Source](https://gitcode.com/Ascend/pytorch/blob/master/docs/en/installation_guide/building_from_source.md).
 
-2. Install the PyTorch framework by referring to [Installation Guide](https://gitcode.com/Ascend/pytorch/tree/v2.7.1-26.1.0/docs/en/installation_guide/installation_description.md).
-<!-- [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum) -->
 ### Adaptation File Structure
 
 ```text
@@ -29,14 +26,14 @@ cpp_extension_structured/
 ├── test_native_functions.yaml        # NPU backend declarations (used during stub generation)
 ├── test/
 │   └── test_npu_fast_gelu_custom.py  # Custom operator test script
-└── README.md
+└── README_en.md
 ```
 
 ### Procedure
 
 > [!NOTE]
 >
-> Structured adaptation does not support forward and backward binding. You can bind the operator using Python by referring to [cpp_extension_full/module](../cpp_extension_full/module/README.md).
+> Structured adaptation does not support forward and backward binding. You can bind the operator using Python by referring to [cpp_extension_full/module](../cpp_extension_full/module/README_en.md).
 
 1. In the operator adaptation layer C++ directory (`csrc`), structured adaptation configuration is defined in the `npu_custom.yaml` file.
 
@@ -86,7 +83,7 @@ cpp_extension_structured/
 
 After completing the operator adaptation development, you can call the custom operator through C++ extensions.
 
-1. Complete the creation, development, compilation, and deployment workflow for the custom operator project. For details, see CANN Ascend C Operator Development.
+1. Complete the custom operator project creation, development, compilation, and deployment workflow. For details, see [CANN Ascend C Operator Development](https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/getting_started/ascend_c_overview_and_learning_path.md).
 
 2. Download the code sample.
 
@@ -111,4 +108,3 @@ After completing the operator adaptation development, you can call the custom op
     Ran xx tests in xx s
     OK
     ```
-<!-- [CANN Ascend C Operator Development](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/programug/Ascendcopdevg/atlas_ascendc_map_10_0002.html) -->

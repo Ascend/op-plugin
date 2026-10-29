@@ -1,14 +1,16 @@
 # (beta) torch_npu.npu_fused_attention_score
 
 > [!NOTICE]  
-> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. Use `torch_npu.npu_fusion_attention` instead.
+> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="310p" id1 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910" id2 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 

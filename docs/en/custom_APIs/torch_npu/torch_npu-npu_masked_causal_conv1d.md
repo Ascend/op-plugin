@@ -1,13 +1,10 @@
 # torch_npu.npu_masked_causal_conv1d
 
-> [!NOTICE]  
-> This API is a new feature introduced in this version. For details about the specific dependency requirements, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950PR/Ascend 950DT</term>           |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
 
 ## Function
 
@@ -39,7 +36,7 @@ torch_npu.npu_masked_causal_conv1d(input, weight, *, mask=None) -> Tensor
 
 ## Parameters
 
-> **Note**:
+> [!NOTE]
 >
 > - The dimensions of the `input` and `weight` parameters are as follows: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, and W (Window Size) indicates the size of the convolution window.
 

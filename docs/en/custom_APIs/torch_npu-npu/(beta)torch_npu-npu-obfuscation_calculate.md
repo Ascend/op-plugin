@@ -3,15 +3,17 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>          |    √     |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="910b" id1 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="310p" id2 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
 Sends the input tensor `x` and configuration parameters (such as `param`) to the Privacy and Model Confidential Computing (PMCC) obfuscation engine. The Client Application (CA) module in the normal OS calls the Trusted Application (TA) module in the TEE OS to perform tensor obfuscation, and returns the final obfuscation result.
-For the [PMCC](https://www-file.huawei.com/admin/asset/v1/pro/view/6812dab6dd4e4640b11619e401db1c47.pdf) service, either of the following results is expected:
+For the PMCC service, either of the following results is expected:
 
 * If the PMCC feature is deployed, this API returns a response result.
 * If the PMCC feature is not deployed, test cases return error code `507018`.
@@ -38,8 +40,12 @@ torch_npu.npu.obfuscation_calculate(fd, x, param, obf_coefficient) -> Tensor
 
 - **`fd`** (`Tensor`): Required. Socket file descriptor. The data type is `torch.int32`. Use the return value of the [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md) API.
 - **`x`** (`Tensor`): Required. Input tensor to be obfuscated. The tensor supports arbitrary dimensions with shape `(*, ..., hidden_size)`, where the last dimension size must match the `hidden_size` parameter of [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md). The data layout can be ND.
-    Atlas inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
-    Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+    <!-- npu="310p" id3 -->
+    * <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
+    <!-- end id3 -->
+    <!-- npu="910b" id4 -->
+    * <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+    <!-- end id4 -->
 - **`param`** (`Tensor`): Required. Size of the last dimension of tensor `x`. The data type is `torch.int32`.
 - **`obf_coefficient`** (`float`): Optional. Obfuscation coefficient in the range (0.0, 1.0]. The default value is `1.0`.
 

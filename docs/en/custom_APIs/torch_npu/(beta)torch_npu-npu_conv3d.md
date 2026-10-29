@@ -1,16 +1,22 @@
 # (beta) torch_npu.npu_conv3d
 
 > [!NOTICE]  
-> This API is planned for deprecation. Use `torch.nn.functional.conv3d` instead.
+> This API is planned for deprecation. Use the `torch.nn.functional.conv3d` API instead.
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>          |    √     |
-|<term>Atlas A2 training products</term>| √   |
-|<term>Atlas training products</term>| √   |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="A3" id1 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 

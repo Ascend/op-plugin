@@ -2,57 +2,81 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-- Computes the forward result of the Fast Gaussian Error Linear Units (`FastGelu`) activation function for each element in the input tensor.
-
+- Function: Fast Gaussian Error Linear Units (FastGelu) activation function, which computes the forward result of `FastGelu` for each element of the input.
 - Formulas:
 
-  - Formula for Atlas training products and Atlas inference products:
+  <!-- npu="910,310p" id6 -->
+  - The formula for <term>Atlas inference products</term> and <term>Atlas training products</term> is as follows:
+
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702 \mid x\mid}} e^{0.851 x(x- \mid x\mid)}
   $$
+  <!-- end id6 -->
+  <!-- npu="950,A3,910b" id7 -->
+  - The formula for <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, and <term>Ascend 950PR&950DT products</term> is as follows:
 
-  - Formula for Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702x}}
   $$
-
+  <!-- end id7 -->
+  
 ## Prototype
 
 ```python
-torch_npu.npu_fast_gelu(input) -> Tensor
+torch_npu.npu_fast_gelu(self) -> Tensor
 ```
 
 ## Parameters
 
-**`input`** (`Tensor`): $x$ in the formula. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 8D. Empty tensors are supported.
+- **`self`** (`Tensor`): Required. $x$ in the formulas. The data layout can be $ND$. Non-contiguous tensors are supported. Up to 8 dimensions are supported. Empty tensors are supported.
 
-- Atlas training products: The data type can be `torch.float16` or `torch.float32`.
-- Atlas A2 training products/Atlas A2 inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
-- Atlas A3 training products/Atlas A3 inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
-- Atlas inference products: The data type must be `torch.float16` or `torch.float32`.
+  <!-- npu="910" id8 -->
+  - <term>Atlas training products</term>: The data type can be `torch.float16` or `torch.float32`.
+  <!-- end id8 -->
+  <!-- npu="910b" id9 -->
+  - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  <!-- end id9 -->
+  <!-- npu="A3" id10 -->
+  - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  <!-- end id10 -->
+  <!-- npu="310p" id11 -->
+  - <term>Atlas inference products</term>: The data type must be `torch.float16` or `torch.float32`.
+  <!-- end id11 -->
+  <!-- npu="950" id12 -->
+  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  <!-- end id12 -->
 
 ## Return Values
 
 `Tensor`
 
-Indicates the computation result of `fast_gelu`.
+Represents the computation result of `fast_gelu`.
 
 ## Constraints
 
 - This API can be used in inference and training scenarios.
-- This API supports graph mode.
-- The `input` parameter must not be `None`.
+- This API supports single-operator mode and TorchAir graph mode.
+- The `self` input must not be `None`.
 
-## Examples
+## Example
 
 - Single-operator call
 

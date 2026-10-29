@@ -2,9 +2,9 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="910b" id1 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id1 -->
 
 ## Function<a name="en-us_topic_0000001742717129_section14441124184110"></a>
 
@@ -34,7 +34,7 @@ torch_npu.npu_fusion_attention_v3(query, key, value, head_num, input_layout, pse
      - ALiBi position embedding compression can be enabled in non-varlen scenarios where `Sq` is greater than 1024, or in varlen scenarios where `Sq` and `Skv` of each batch are of equal length and a lower-triangular mask scenario is applied where `sparse_mode` is `0`, `2`, or `3`. In this case, only the last 1024 rows of the original `pse` tensor are required for memory optimization, following the assignment: `alibi_compress = ori_pse[:, :, -1024:, :]`. When parameters differ across batches, the input shape must be `BNHSkv` where `H` equals 1024; when parameters are identical across batches, the input shape must be `1NHSkv` where `H` equals 1024.
 - **`padding_mask`** (`Tensor`): This parameter is not supported currently.
 - **`atten_mask`** (`Tensor`): Optional. A value of `1` (or `True`) indicates that the position is masked and excluded from computation, while a value of `0` (or `False`) indicates that the position is retained and included in computation. The data type can be `torch.bool` or `torch.uint8`. The data layout can be ND. Supported input shapes include `BNSS`, `B1SS`, `11SS`, and `SS`. In varlen scenarios, only the `SS` format is supported, where `S` corresponds to `maxSq` and `maxSkv`, respectively. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
-- **`scale`** (`float`): Optional. Scaling factor used as a scalar value for multiplication operations in the computation flow. The data type must be `float`. The default value is `1.0`.
+- **`scale`** (`float`): Optional. Scaling factor used as a scalar value for multiplication operations in the computation flow. The data type must be `float`. The default value is `1`.
 - **`keep_prob`** (`float`): Optional. Dropout keep probability, representing the ratio of retained elements. The value range is `(0, 1]`. The data type must be `float`. The default value is `1.0`, indicating all elements are retained.
 - **`pre_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `int64`. The default value is `2147483647`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
 - **`next_tockens`** (`int`): Optional. Parameter used for sparse computation. The data type can be `int64`. The default value is `2147483647`. For the relationship between `next_tockens`, `pre_tockens`, and `atten_mask`, see the `sparse_mode` parameter. Any inconsistency between the parameter value and the actual `atten_mask` distribution will cause precision degradation. For details about the overall constraints, see [Constraints](#en-us_topic_0000001742717129_section12345537164214).
@@ -361,7 +361,7 @@ The QK<sup>T</sup> matrix is masked at positions where `atten_mask` is `True`, a
     The following figure shows the masked QK<sup>T</sup> matrix. In this configuration, `query` is split in the second batch while `key` and `value` are not split. This layout causes a mask matrix with shape `(4, 6)` to be partitioned into two masks with shape `(2, 6)` computed on rank 1 and rank 2, respectively.
 
     - On rank 1, the final mask block is a band-type mask. Configure `pre_tockens=6` (ensuring it is greater than or equal to the final `Skv` value), `next_tockens=-2`, `actual_seq_qlen={3,5}`, and `actual_seq_kvlen={3,9}`.
-    - On rank 2, the mask structure type remains unchanged after slicing. Configure `sparse_mode=3`, `actual_seq_qlen=`{2,7,11}, and `actual_seq_kvlen={6,11,15}`.
+    - On rank 2, the mask structure type remains unchanged after slicing. Configure `sparse_mode=3`, `actual_seq_qlen={`2,7,11}, and `actual_seq_kvlen={6,11,15}`.
 
     ![](../../figures/1-14.png)
 
@@ -377,7 +377,7 @@ The QK<sup>T</sup> matrix is masked at positions where `atten_mask` is `True`, a
     The following figure shows the masked QK<sup>T</sup> matrix. In this configuration, `query` is split in the second batch while `key` and `value` are not split. This layout causes a mask matrix with shape `(5, 4)` to be partitioned into a mask with shape `(2, 4)` and a mask with shape `(3, 4)` computed on rank 1 and rank 2, respectively.
 
     - On rank 1, the mask structure type remains unchanged after splitting. Configure `sparse_mode=2`, `actual_seq_qlen={3,5}`, and `actual_seq_kvlen={3,7}`.
-    - On rank 2, the first mask block is a band-type mask. Configure `pre_tockens=4` (ensuring it is greater than or equal to the initial `Skv` value), `next_tockens=1`, `actual_seq_qlen={3,8,12}`, and `actual_seq_kvlen=`{4,9,13}.
+    - On rank 2, the first mask block is a band-type mask. Configure `pre_tockens=4` (ensuring it is greater than or equal to the initial `Skv` value), `next_tockens=1`, `actual_seq_qlen={3,8,12}`, and `actual_seq_kvlen={`4,9,13}.
 
     ![](../../figures/1-15.png)
 

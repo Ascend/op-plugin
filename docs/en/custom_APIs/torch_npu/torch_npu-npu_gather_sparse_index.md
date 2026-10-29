@@ -1,21 +1,22 @@
 # torch_npu.npu_gather_sparse_index
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Extracts elements from the specified dimension of the input tensor based on the indices in `index` and saves them to the output tensor.
+- Function: extracts elements from the specified dimension of the input tensor according to the indices in `index` and saves them to the output tensor.
 
-- Formula: Assume that $x$ is the input `input` and $idx$ is the input `index`.
+- Formulas: Assume that $x$ is the input `input` and $idx$ is the input `index`.
   $$
   y_{i,j} = x_{idx[i],j}
   $$
@@ -36,7 +37,7 @@
   1 & 0
   \end{bmatrix}
   $$
-  In this case, the shape of the input $x$ is `[3, 3]`. The shape of index $idx$ is `[2]` (1D tensor). This configuration extracts row `1` and row `0` from $x$. The output shape is `[2, 3]`. The output is as follows:
+  In this case, the shape of the input $x$ is $[3, 3]$ and the shape of the index $idx$ is $[2]$ (a 1D vector). The preceding indices mean that the 1st row and the 0th row of $x$ are extracted respectively. Therefore, the output shape is $[2, 3]$ and the output result is as follows:
   $$
   \begin{bmatrix}
   4 & 5 & 6\\
@@ -54,24 +55,25 @@ torch_npu.npu_gather_sparse_index(input, index) -> Tensor
 
 **`input`** (`Tensor`): Required. Input tensor. The data layout can be ND. The data type can be `torch.float32`, `torch.float16`, `torch.bfloat16`, `torch.int64`, `torch.int32`, `torch.int16`, `torch.int8`, `torch.uint8`, `torch.bool`, `torch.float64`, `torch.complex64`, or `torch.complex128`.
 
-**`index`** (`Tensor`): Required. Tensor representing the indices of target elements. This parameter can be up to 7D. The data type can be `torch.int64` or `torch.int32`. Value range: [0, input.shape[0] - 1]. Negative indices are not supported.
+**`index`** (`Tensor`): Required. Tensor representing the subscript indices of the target elements. The number of dimensions must not exceed 7. The data type can be `torch.int64` or `torch.int32`. The value range is $[0, input.shape[0] - 1]$. Negative indices are not supported.
 
 ## Return Values
 
 `Tensor`
-Result obtained through the API computation, containing the elements extracted based on the indices in `index`. The data type is identical to `input`. The output dimension is $index.dim + input.dim - 1$. For example, when `input.shape` is `(16, 32)` and `index.shape` is `(2, 3)`, the output tensor `out.shape` is `(2, 3, 32)`.
+
+The result obtained by the API, including the elements extracted according to the indices in `index`. The data type is the same as that of `input`. The number of dimensions of the output tensor is $index.dim + input.dim - 1$. For example, if `input.shape = [16, 32]` and `index.shape = [2, 3]`, then the output tensor `out.shape = [2, 3, 32]`.
 
 ## Constraints
 
-- The sum of the dimensions of `input` and `index` minus `1` must be less than or equal to `8`. That is, $index.dim + input.dim - 1 \le 8$.
+- The sum of the number of dimensions of `input` and the number of dimensions of `index` minus 1 must not exceed 8, that is, $index.dim + input.dim - 1 <= 8$.
 - To obtain performance benefits, `input` and `index` must meet the following constraints:
-     1. The product of the dimensions in the shape of `input` must be greater than $150 * 1024/itemsize$. The `itemsize` variable indicates the element size of the `input` data type, which can be queried using `torch.dtype.itemsize`.
-     2. The product of the dimensions in the shape of `index` must be greater than 960.
-     3. The data must be aggregated. That is, the zero-valued and non-zero-valued elements in `input` should each be concentrated in contiguous regions rather than frequently interleaved. Flatten `input != 0` into a one-dimensional Boolean sequence $\mathrm{mask}$ in row-major order, and calculate the ratio of state transitions between adjacent elements:
-    $$
-    \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}
-    $$
-    where $N$ is the total number of elements in `input`, and $\mathrm{mask}_i$ denotes the $i$-th element in the Boolean sequence $\mathrm{mask}$. A smaller $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more contiguously distributed and that the data is more highly aggregated. A larger $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more dispersed, and the expected performance benefits may not be achieved.
+     1. The product of the dimensions of the `input` shape must be greater than $150 * 1024 / itemsize$, where itemsize is the element size of the `input` dtype, which can be queried using `torch.dtype.itemsize`.
+     2. The product of the dimensions of the `index` shape must be greater than 960.
+     3. The data must be aggregated, that is, the zero and non-zero elements in `input` are concentrated in contiguous regions instead of being frequently interleaved. Expand `input != 0` into a 1D boolean sequence $mask$ in row-major order and calculate the ratio of state switches between adjacent elements:
+     $$
+     \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}
+     $$
+     In the formula, $N$ is the total number of elements of `input`, and $\mathrm{mask}_i$ indicates the $i$-th element in the boolean sequence $\mathrm{mask}$. A smaller $\mathrm{switch\_ratio}$ indicates that the zero and non-zero values are distributed more contiguously and the data aggregation degree is higher; a larger $\mathrm{switch\_ratio}$ indicates that the zero and non-zero values are more scattered, and the expected performance benefit may not be obtained.
 
 ## Example
 

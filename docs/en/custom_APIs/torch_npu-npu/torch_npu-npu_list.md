@@ -1,6 +1,6 @@
 # torch_npu.npu APIs
 
-This section describes the APIs of various submodules, such as random numbers and memory management. The `npu` module supports two calling methods: `torch.npu` and `torch_npu.npu`. They are functionally equivalent.
+This section describes various submodule APIs, such as random number and memory management APIs. The npu module supports the torch.npu and torch_npu.npu calling methods, which are functionally the same.
 
 **Table 1** torch_npu.npu APIs
 
@@ -216,6 +216,16 @@ This section describes the APIs of various submodules, such as random numbers an
 <td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323817"><a name="p785143323817"></a><a name="p785143323817"></a>Queries the configuration of <code>torch_npu.npu.use_compatible_impl</code>.</p>
 </td>
 </tr>
+<tr id="row285193313387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193824"><a name="p2851433193822"></a><a name="p2851433193822"></a><a href="(beta)torch_npu-npu-set_task_queue_enable.md">(beta) torch_npu.npu.set_task_queue_enable</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323818"><a name="p785143323818"></a><a name="p785143323818"></a>This API is used to dynamically set the TaskQueue optimization level at runtime without restarting the process.</p>
+</td>
+</tr>
+<tr id="row285193313388"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193825"><a name="p2851433193823"></a><a name="p2851433193823"></a><a href="(beta)torch_npu-npu-get_task_queue_enable.md">(beta) torch_npu.npu.get_task_queue_enable</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p785143323819"><a name="p785143323819"></a><a name="p785143323819"></a>This API is used to query the TaskQueue optimization level currently in effect.</p>
+</td>
+</tr>
 
 </tbody>
 </table>
@@ -268,7 +278,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001788617484_row1616454104711"><td class="cellrowborder" valign="top" width="38.76%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p16616105411477"><a name="en-us_topic_0000001788617484_p16616105411477"></a><a name="en-us_topic_0000001788617484_p16616105411477"></a>(<span id="en-us_topic_0000001788617484_ph168289415199"><a name="en-us_topic_0000001788617484_ph168289415199"></a><a name="en-us_topic_0000001788617484_ph168289415199"></a>beta</span>) torch_npu.npu.get_rng_state</p>
 </td>
-<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001788617484_p45278137545"><a name="en-us_topic_0000001788617484_p45278137545"></a><a name="en-us_topic_0000001788617484_p45278137545"></a>Random number generator-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001788617484_p45278137545"><a name="en-us_topic_0000001788617484_p45278137545"></a><a name="en-us_topic_0000001788617484_p45278137545"></a>Random number generator-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/master/docs/en/api/native_api/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001788617484_row1661655484720"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p116160540479"><a name="en-us_topic_0000001788617484_p116160540479"></a><a name="en-us_topic_0000001788617484_p116160540479"></a>(<span id="en-us_topic_0000001788617484_ph81516268336"><a name="en-us_topic_0000001788617484_ph81516268336"></a><a name="en-us_topic_0000001788617484_ph81516268336"></a>beta</span>) torch_npu.npu.set_rng_state</p>
@@ -309,7 +319,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001835217389_row939163412547"><td class="cellrowborder" valign="top" width="54.559999999999995%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p13919348541"><a name="en-us_topic_0000001835217389_p13919348541"></a><a name="en-us_topic_0000001835217389_p13919348541"></a>(<span id="en-us_topic_0000001835217389_ph168289415199"><a name="en-us_topic_0000001835217389_ph168289415199"></a><a name="en-us_topic_0000001835217389_ph168289415199"></a>beta</span>) torch_npu.npu.is_initialized</p>
 </td>
-<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p20972816174218"><a name="en-us_topic_0000001835217389_p20972816174218"></a><a name="en-us_topic_0000001835217389_p20972816174218"></a>Device-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p20972816174218"><a name="en-us_topic_0000001835217389_p20972816174218"></a><a name="en-us_topic_0000001835217389_p20972816174218"></a>Device-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/master/docs/en/api/native_api/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001835217389_row13391173465410"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p173915341547"><a name="en-us_topic_0000001835217389_p173915341547"></a><a name="en-us_topic_0000001835217389_p173915341547"></a>(<span id="en-us_topic_0000001835217389_ph1943317523417"><a name="en-us_topic_0000001835217389_ph1943317523417"></a><a name="en-us_topic_0000001835217389_ph1943317523417"></a>beta</span>) torch_npu.npu.init</p>
@@ -361,7 +371,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001863035964_row12860101605513"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p486019163553"><a name="en-us_topic_0000001863035964_p486019163553"></a><a name="en-us_topic_0000001863035964_p486019163553"></a>(<span id="en-us_topic_0000001863035964_ph168289415199"><a name="en-us_topic_0000001863035964_ph168289415199"></a><a name="en-us_topic_0000001863035964_ph168289415199"></a>beta</span>) torch_npu.npu.caching_allocator_alloc</p>
 </td>
-<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p6146131084320"><a name="en-us_topic_0000001863035964_p6146131084320"></a><a name="en-us_topic_0000001863035964_p6146131084320"></a>Memory management-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p6146131084320"><a name="en-us_topic_0000001863035964_p6146131084320"></a><a name="en-us_topic_0000001863035964_p6146131084320"></a>Memory management-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/master/docs/en/api/native_api/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001863035964_row0860131635519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p19860111610554"><a name="en-us_topic_0000001863035964_p19860111610554"></a><a name="en-us_topic_0000001863035964_p19860111610554"></a>(<span id="en-us_topic_0000001863035964_ph1545853943420"><a name="en-us_topic_0000001863035964_ph1545853943420"></a><a name="en-us_topic_0000001863035964_ph1545853943420"></a>beta</span>) torch_npu.npu.caching_allocator_delete</p>
@@ -415,22 +425,22 @@ This section describes the APIs of various submodules, such as random numbers an
 <tr id="en-us_topic_0000001863035964_row10860101635512"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165555"><a name="en-us_topic_0000001863035964_p1486012165555"></a><a name="en-us_topic_0000001863035964_p1486012165555"></a>(<span id="en-us_topic_0000001863035964_ph34464179352"><a name="en-us_topic_0000001863035964_ph34464179352"></a><a name="en-us_topic_0000001863035964_ph34464179352"></a>beta</span>) torch_npu.npu.memory_summary</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001863035964_row10860101635518"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165556"><a name="en-us_topic_0000001863035964_p1486012165556"></a><a name="en-us_topic_0000001863035964_p1486012165556"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
+<tr id="zh-cn_topic_0000001863035964_row10860101635518"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165556"><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>Provides a lightweight version of <code>empty_cache</code> that releases only virtual memory. This API is called the same way as <code>torch_npu.npu.empty_cache</code>.</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p7819165411224"><a name="en-us_topic_0000001863035964_p7819165411224"></a><a name="en-us_topic_0000001863035964_p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
+<tr id="zh-cn_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p7819165411224"><a name="zh-cn_topic_0000001863035964_p7819165411224"></a><a name="zh-cn_topic_0000001863035964_p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p172891387259"><a name="en-us_topic_0000001863035964_p172891387259"></a><a name="en-us_topic_0000001863035964_p172891387259"></a>This API involves high-risk operations. For details, see <a href="torch-npu-npu-NPUPluggableAllocator.md">torch.npu.npu.NPUPluggableAllocator</a>.</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001863035964_row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p681913541224"><a name="en-us_topic_0000001863035964_p681913541224"></a><a name="en-us_topic_0000001863035964_p681913541224"></a>torch_npu.npu.change_current_allocator</p>
+<tr id="zh-cn_topic_0000001863035964_row12478193618244"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p681913541224"><a name="zh-cn_topic_0000001863035964_p681913541224"></a><a name="zh-cn_topic_0000001863035964_p681913541224"></a>torch_npu.npu.change_current_allocator</p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p75031810165517"><a name="en-us_topic_0000001863035964_p75031810165517"></a><a name="en-us_topic_0000001863035964_p75031810165517"></a>This API involves high-risk operations. For details, see <a href="torch-npu-npu-change_current_allocator.md">torch.npu.npu.change_current_allocator</a>.</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001863035964_row10860101635520"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p1486012165527"><a name="en-us_topic_0000001863035964_p1486012165527"></a><a name="en-us_topic_0000001863035964_p1486012165527"></a><a href="torch_npu-npu-host_empty_cache.md">torch_npu.npu.host_empty_cache</a></p>
+<tr id="zh-cn_topic_0000001863035964_row10860101635520"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165527"><a name="zh-cn_topic_0000001863035964_p1486012165527"></a><a name="zh-cn_topic_0000001863035964_p1486012165527"></a><a href="torch_npu-npu-host_empty_cache.md">torch_npu.npu.host_empty_cache</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>Releases all unused host physical memory currently held by the cache.</p>
 </td>
@@ -487,7 +497,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </tr>
 <tr id="row2068217208539"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p568362035310"><a name="p568362035310"></a><a name="p568362035310"></a><a href="torch_npu-npu-mstx-range_start.md">torch_npu.npu.mstx.range_start</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>Marks the start of an instrumentation range at the thread level.</p>
+<td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>Marks the start of an instrumentation range at the process level.</p>
 </td>
 </tr>
 <tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-range_end.md">torch_npu.npu.mstx.range_end</a></p>
@@ -517,33 +527,33 @@ This section describes the APIs of various submodules, such as random numbers an
 </th>
 </tr>
 </thead>
-<tbody><tr id="en-us_topic_0000001835257369_row16495752115611"><td class="cellrowborder" valign="top" width="55.25%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p7524101655810"><a name="en-us_topic_0000001835257369_p7524101655810"></a><a name="en-us_topic_0000001835257369_p7524101655810"></a>torch_npu.npu.BoolStorage</p>
+<tbody><tr id="zh-cn_topic_0000001835257369_row16495752115611"><td class="cellrowborder" valign="top" width="55.25%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p7524101655810"><a name="zh-cn_topic_0000001835257369_p7524101655810"></a><a name="zh-cn_topic_0000001835257369_p7524101655810"></a>torch_npu.npu.BoolStorage</p>
 </td>
 <td class="cellrowborder" rowspan="9" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835257369_p8060118"><a name="en-us_topic_0000001835257369_p8060118"></a><a name="en-us_topic_0000001835257369_p8060118"></a>The functionality and calling method are identical to those of <code>torch.Storage</code>. For details, see <a href="https://pytorch.org/docs/stable/storage.html#" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/storage.html#</a>.</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row134951052155613"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p16191172114583"><a name="en-us_topic_0000001835257369_p16191172114583"></a><a name="en-us_topic_0000001835257369_p16191172114583"></a>torch_npu.npu.ByteStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row134951052155613"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p16191172114583"><a name="zh-cn_topic_0000001835257369_p16191172114583"></a><a name="zh-cn_topic_0000001835257369_p16191172114583"></a>torch_npu.npu.ByteStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row10495145210565"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p9495175211563"><a name="en-us_topic_0000001835257369_p9495175211563"></a><a name="en-us_topic_0000001835257369_p9495175211563"></a>torch_npu.npu.ShortStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row10495145210565"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p9495175211563"><a name="zh-cn_topic_0000001835257369_p9495175211563"></a><a name="zh-cn_topic_0000001835257369_p9495175211563"></a>torch_npu.npu.ShortStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row17495195275616"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p8495252135612"><a name="en-us_topic_0000001835257369_p8495252135612"></a><a name="en-us_topic_0000001835257369_p8495252135612"></a>torch_npu.npu.LongStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row17495195275616"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p8495252135612"><a name="zh-cn_topic_0000001835257369_p8495252135612"></a><a name="zh-cn_topic_0000001835257369_p8495252135612"></a>torch_npu.npu.LongStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row18006055911"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p07506945914"><a name="en-us_topic_0000001835257369_p07506945914"></a><a name="en-us_topic_0000001835257369_p07506945914"></a>torch_npu.npu.IntStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row18006055911"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p07506945914"><a name="zh-cn_topic_0000001835257369_p07506945914"></a><a name="zh-cn_topic_0000001835257369_p07506945914"></a>torch_npu.npu.IntStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row14341175718581"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p03411057145811"><a name="en-us_topic_0000001835257369_p03411057145811"></a><a name="en-us_topic_0000001835257369_p03411057145811"></a>torch_npu.npu.HalfStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row14341175718581"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p03411057145811"><a name="zh-cn_topic_0000001835257369_p03411057145811"></a><a name="zh-cn_topic_0000001835257369_p03411057145811"></a>torch_npu.npu.HalfStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row14341115716584"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p734119575584"><a name="en-us_topic_0000001835257369_p734119575584"></a><a name="en-us_topic_0000001835257369_p734119575584"></a>torch_npu.npu.CharStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row14341115716584"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p734119575584"><a name="zh-cn_topic_0000001835257369_p734119575584"></a><a name="zh-cn_topic_0000001835257369_p734119575584"></a>torch_npu.npu.CharStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row149709474586"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p69703478581"><a name="en-us_topic_0000001835257369_p69703478581"></a><a name="en-us_topic_0000001835257369_p69703478581"></a>torch_npu.npu.DoubleStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row149709474586"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p69703478581"><a name="zh-cn_topic_0000001835257369_p69703478581"></a><a name="zh-cn_topic_0000001835257369_p69703478581"></a>torch_npu.npu.DoubleStorage</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257369_row5813195115817"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835257369_p9813125165810"><a name="en-us_topic_0000001835257369_p9813125165810"></a><a name="en-us_topic_0000001835257369_p9813125165810"></a>torch_npu.npu.FloatStorage</p>
+<tr id="zh-cn_topic_0000001835257369_row5813195115817"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001835257369_p9813125165810"><a name="zh-cn_topic_0000001835257369_p9813125165810"></a><a name="zh-cn_topic_0000001835257369_p9813125165810"></a>torch_npu.npu.FloatStorage</p>
 </td>
 </tr>
 </tbody>
@@ -562,67 +572,67 @@ This section describes the APIs of various submodules, such as random numbers an
 </th>
 </tr>
 </thead>
-<tbody><tr id="en-us_topic_0000001835257345_row16728461210"><td class="cellrowborder" valign="top" width="26.75%" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p137218461814"><a name="en-us_topic_0000001835257345_p137218461814"></a><a name="en-us_topic_0000001835257345_p137218461814"></a>torch.cuda.DoubleTensor</p>
+<tbody><tr id="zh-cn_topic_0000001835257345_row16728461210"><td class="cellrowborder" valign="top" width="26.75%" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p137218461814"><a name="zh-cn_topic_0000001835257345_p137218461814"></a><a name="zh-cn_topic_0000001835257345_p137218461814"></a>torch.cuda.DoubleTensor</p>
 </td>
-<td class="cellrowborder" valign="top" width="30.349999999999998%" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1996044910114"><a name="en-us_topic_0000001835257345_p1996044910114"></a><a name="en-us_topic_0000001835257345_p1996044910114"></a>torch_npu.npu.DoubleTensor</p>
+<td class="cellrowborder" valign="top" width="30.349999999999998%" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p1996044910114"><a name="zh-cn_topic_0000001835257345_p1996044910114"></a><a name="zh-cn_topic_0000001835257345_p1996044910114"></a>torch_npu.npu.DoubleTensor</p>
 </td>
 <td class="cellrowborder" valign="top" width="6.22%" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p27215465118"><a name="en-us_topic_0000001835257345_p27215465118"></a><a name="en-us_topic_0000001835257345_p27215465118"></a>Yes</p>
 </td>
-<td class="cellrowborder" rowspan="9" valign="top" width="36.68%" headers="mcps1.2.5.1.4 "><p id="en-us_topic_0000001835257345_p225252418262"><a name="en-us_topic_0000001835257345_p225252418262"></a><a name="en-us_topic_0000001835257345_p225252418262"></a><a href="https://pytorch.org/docs/stable/tensors.html#data-types" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/tensors.html#data-types</a></p>
+<td class="cellrowborder" rowspan="9" valign="top" width="36.68%" headers="mcps1.2.5.1.4 "><p id="zh-cn_topic_0000001835257345_p225252418262"><a name="zh-cn_topic_0000001835257345_p225252418262"></a><a name="zh-cn_topic_0000001835257345_p225252418262"></a><a href="https://pytorch.org/docs/stable/tensors.html#data-types" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/tensors.html#data-types</a></p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row47210461517"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p4725461314"><a name="en-us_topic_0000001835257345_p4725461314"></a><a name="en-us_topic_0000001835257345_p4725461314"></a>torch.cuda.ShortTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row47210461517"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p4725461314"><a name="zh-cn_topic_0000001835257345_p4725461314"></a><a name="zh-cn_topic_0000001835257345_p4725461314"></a>torch.cuda.ShortTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p49600493114"><a name="en-us_topic_0000001835257345_p49600493114"></a><a name="en-us_topic_0000001835257345_p49600493114"></a>torch_npu.npu.ShortTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p49600493114"><a name="zh-cn_topic_0000001835257345_p49600493114"></a><a name="zh-cn_topic_0000001835257345_p49600493114"></a>torch_npu.npu.ShortTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p772146719"><a name="en-us_topic_0000001835257345_p772146719"></a><a name="en-us_topic_0000001835257345_p772146719"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row19728461116"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p19728461012"><a name="en-us_topic_0000001835257345_p19728461012"></a><a name="en-us_topic_0000001835257345_p19728461012"></a>torch.cuda.CharTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row19728461116"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p19728461012"><a name="zh-cn_topic_0000001835257345_p19728461012"></a><a name="zh-cn_topic_0000001835257345_p19728461012"></a>torch.cuda.CharTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p109609491714"><a name="en-us_topic_0000001835257345_p109609491714"></a><a name="en-us_topic_0000001835257345_p109609491714"></a>torch_npu.npu.CharTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p109609491714"><a name="zh-cn_topic_0000001835257345_p109609491714"></a><a name="zh-cn_topic_0000001835257345_p109609491714"></a>torch_npu.npu.CharTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p8724460120"><a name="en-us_topic_0000001835257345_p8724460120"></a><a name="en-us_topic_0000001835257345_p8724460120"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row47317466110"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p1873154618118"><a name="en-us_topic_0000001835257345_p1873154618118"></a><a name="en-us_topic_0000001835257345_p1873154618118"></a>torch.cuda.ByteTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row47317466110"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p1873154618118"><a name="zh-cn_topic_0000001835257345_p1873154618118"></a><a name="zh-cn_topic_0000001835257345_p1873154618118"></a>torch.cuda.ByteTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1896013491711"><a name="en-us_topic_0000001835257345_p1896013491711"></a><a name="en-us_topic_0000001835257345_p1896013491711"></a>torch_npu.npu.ByteTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p1896013491711"><a name="zh-cn_topic_0000001835257345_p1896013491711"></a><a name="zh-cn_topic_0000001835257345_p1896013491711"></a>torch_npu.npu.ByteTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p11739461719"><a name="en-us_topic_0000001835257345_p11739461719"></a><a name="en-us_topic_0000001835257345_p11739461719"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row1509152312215"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p5471124912115"><a name="en-us_topic_0000001835257345_p5471124912115"></a><a name="en-us_topic_0000001835257345_p5471124912115"></a>torch.cuda.FloatTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row1509152312215"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p5471124912115"><a name="zh-cn_topic_0000001835257345_p5471124912115"></a><a name="zh-cn_topic_0000001835257345_p5471124912115"></a>torch.cuda.FloatTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p195091923112118"><a name="en-us_topic_0000001835257345_p195091923112118"></a><a name="en-us_topic_0000001835257345_p195091923112118"></a>torch_npu.npu.FloatTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p195091923112118"><a name="zh-cn_topic_0000001835257345_p195091923112118"></a><a name="zh-cn_topic_0000001835257345_p195091923112118"></a>torch_npu.npu.FloatTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p155091223162115"><a name="en-us_topic_0000001835257345_p155091223162115"></a><a name="en-us_topic_0000001835257345_p155091223162115"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row16510192372120"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p8471144914219"><a name="en-us_topic_0000001835257345_p8471144914219"></a><a name="en-us_topic_0000001835257345_p8471144914219"></a>torch.cuda.HalfTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row16510192372120"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p8471144914219"><a name="zh-cn_topic_0000001835257345_p8471144914219"></a><a name="zh-cn_topic_0000001835257345_p8471144914219"></a>torch.cuda.HalfTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p155102231215"><a name="en-us_topic_0000001835257345_p155102231215"></a><a name="en-us_topic_0000001835257345_p155102231215"></a>torch_npu.npu.HalfTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p155102231215"><a name="zh-cn_topic_0000001835257345_p155102231215"></a><a name="zh-cn_topic_0000001835257345_p155102231215"></a>torch_npu.npu.HalfTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p951012235213"><a name="en-us_topic_0000001835257345_p951012235213"></a><a name="en-us_topic_0000001835257345_p951012235213"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row17861230162113"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p9584195616219"><a name="en-us_topic_0000001835257345_p9584195616219"></a><a name="en-us_topic_0000001835257345_p9584195616219"></a>torch.cuda.IntTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row17861230162113"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p9584195616219"><a name="zh-cn_topic_0000001835257345_p9584195616219"></a><a name="zh-cn_topic_0000001835257345_p9584195616219"></a>torch.cuda.IntTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p158615305219"><a name="en-us_topic_0000001835257345_p158615305219"></a><a name="en-us_topic_0000001835257345_p158615305219"></a>torch_npu.npu.IntTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p158615305219"><a name="zh-cn_topic_0000001835257345_p158615305219"></a><a name="zh-cn_topic_0000001835257345_p158615305219"></a>torch_npu.npu.IntTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p5861530152110"><a name="en-us_topic_0000001835257345_p5861530152110"></a><a name="en-us_topic_0000001835257345_p5861530152110"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row8752162662111"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p95841156132111"><a name="en-us_topic_0000001835257345_p95841156132111"></a><a name="en-us_topic_0000001835257345_p95841156132111"></a>torch.cuda.BoolTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row8752162662111"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p95841156132111"><a name="zh-cn_topic_0000001835257345_p95841156132111"></a><a name="zh-cn_topic_0000001835257345_p95841156132111"></a>torch.cuda.BoolTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p1575212662118"><a name="en-us_topic_0000001835257345_p1575212662118"></a><a name="en-us_topic_0000001835257345_p1575212662118"></a>torch_npu.npu.BoolTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p1575212662118"><a name="zh-cn_topic_0000001835257345_p1575212662118"></a><a name="zh-cn_topic_0000001835257345_p1575212662118"></a>torch_npu.npu.BoolTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p13752162642116"><a name="en-us_topic_0000001835257345_p13752162642116"></a><a name="en-us_topic_0000001835257345_p13752162642116"></a>Yes</p>
 </td>
 </tr>
-<tr id="en-us_topic_0000001835257345_row97533261212"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="en-us_topic_0000001835257345_p6753182613210"><a name="en-us_topic_0000001835257345_p6753182613210"></a><a name="en-us_topic_0000001835257345_p6753182613210"></a>torch.cuda.LongTensor</p>
+<tr id="zh-cn_topic_0000001835257345_row97533261212"><td class="cellrowborder" valign="top" headers="mcps1.2.5.1.1 "><p id="zh-cn_topic_0000001835257345_p6753182613210"><a name="zh-cn_topic_0000001835257345_p6753182613210"></a><a name="zh-cn_topic_0000001835257345_p6753182613210"></a>torch.cuda.LongTensor</p>
 </td>
-<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="en-us_topic_0000001835257345_p775314269219"><a name="en-us_topic_0000001835257345_p775314269219"></a><a name="en-us_topic_0000001835257345_p775314269219"></a>torch_npu.npu.LongTensor</p>
+<td class="cellrowborder" valign="top" headers="mcps1.2.5.1.2 "><p id="zh-cn_topic_0000001835257345_p775314269219"><a name="zh-cn_topic_0000001835257345_p775314269219"></a><a name="zh-cn_topic_0000001835257345_p775314269219"></a>torch_npu.npu.LongTensor</p>
 </td>
 <td class="cellrowborder" valign="top" headers="mcps1.2.5.1.3 "><p id="en-us_topic_0000001835257345_p975372632115"><a name="en-us_topic_0000001835257345_p975372632115"></a><a name="en-us_topic_0000001835257345_p975372632115"></a>Yes</p>
 </td>

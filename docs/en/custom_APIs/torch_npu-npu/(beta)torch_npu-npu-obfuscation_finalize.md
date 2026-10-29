@@ -2,15 +2,17 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>          |    √     |
-|<term>Atlas inference products</term>| √   |
+<!-- npu="910b" id1 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id1 -->
+<!-- npu="310p" id2 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
 Releases resources of the Privacy and Model Confidential Computing (PMCC) obfuscation engine by disconnecting the socket connection from the Client Application (CA) module in the normal OS.
-For the [PMCC](https://www-file.huawei.com/admin/asset/v1/pro/view/6812dab6dd4e4640b11619e401db1c47.pdf) service, either of the following results is expected:
+For the PMCC service, either of the following results is expected:
 
 * If the PMCC feature is deployed, this API returns a response result.
 * If the PMCC feature is not deployed, this API returns error code `507018`.

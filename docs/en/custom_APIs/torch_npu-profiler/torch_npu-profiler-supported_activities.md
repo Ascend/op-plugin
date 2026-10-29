@@ -2,11 +2,18 @@
 
 ## Supported Products
 
-| Product                              | Supported|
-| ---------------------------------- | :------: |
-| <term>Atlas A3 training products</term>|    √     |
-| <term>Atlas A2 training products</term>|    √     |
-| <term>Atlas training products</term>   |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -20,7 +27,7 @@ torch_npu.profiler.supported_activities()
 
 ## Return Values
 
-If {<ProfilerActivity.CPU: 1>, <ProfilerActivity.NPU: 2>} is returned, the operation is successful. If nothing is returned, the operation fails.
+Returns a `set` containing the currently supported activity types. On success, `{<ProfilerActivity.CPU: 1>, <ProfilerActivity.NPU: 2>}` is returned, indicating that CPU and NPU events are currently supported. On failure, an empty set `set()` is returned.
 
 ## Example
 

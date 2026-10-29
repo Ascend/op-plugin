@@ -1,17 +1,22 @@
 # (beta) torch_npu.npu.set_dump
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Ascend 950DT</term>            |    √     |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √    |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
@@ -25,8 +30,7 @@ torch_npu.npu.set_dump(path_to_json)
 
 ## Parameters
 
- **`path_to_json`**: Path to the configuration file, including the file name. Configure this parameter as needed. For details, see Function: set_dump in <i>CANN Runtime APIs</i>.
- <!-- see <a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/runtimeapi/aclpythondevg_01_0155.html">Function: set_dump</a> in <i>CANN Runtime APIs</i>. -->
+ **`path_to_json`**: Path to the configuration file, including the file name. Configure this parameter as required. For details about the configuration, see the "<a href="https://gitcode.com/cann/runtime/blob/9.2.0/python/docs/en/api_ref/runtime/dump/function-set_dump.md">Function: set_dump</a>" section in the *CANN Runtime API Reference*.
 
 ## Example
 

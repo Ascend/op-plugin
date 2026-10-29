@@ -2,17 +2,26 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products</term>           |    √     |
-|<term>Atlas A2 training products</term> | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
-Queries the ACLNN operator version information. For details about the ACLNN operators, see "Introduction" in the <i>CANN Operator Library</i>.
-<!-- see "<a href="https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/aolapi/operatorlist_00001.html">Introduction</a>" in the <i>CANN Operator Library</i>. -->
+Queries the ACLNN operator version information. For details about ACLNN operators, see the "<a href="https://gitcode.com/cann/docs/blob/9.2.0/docs/en/ops-lib/introduction.md">Introduction</a>" section in the *CANN Operator Library*.
+
 ## Prototype
 
 ```python
@@ -21,9 +30,9 @@ torch_npu.npu.aclnn.version(): -> None
 
 ## Constraints
 
-Currently, ACLNN operators do not support version queries. The default value is `None`. Correct version information will be provided once ACLNN support is available.
+Currently, ACLNN does not support version queries and returns None by default. After ACLNN supports version queries, the correct version information can be returned.
 
-## Example
+## Examples
 
 ```python
 >>> import torch

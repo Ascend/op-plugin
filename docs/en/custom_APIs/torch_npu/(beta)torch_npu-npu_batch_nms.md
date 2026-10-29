@@ -5,10 +5,12 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas training products</term>                                      |    √     |
-|<term>Atlas inference products</term>                                      |    √     |
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="310p" id2 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
@@ -36,7 +38,7 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 - **`nmsed_boxes`** (`Tensor`): NMS boxes output for each batch. This parameter must be a 3D tensor with shape `(batch, max_total_size, 4)`. The data type is `torch.float16`.
 - **`nmsed_scores`** (`Tensor`): NMS scores output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`, and the `batch` must be consistent with the `batch` of the parameter `nmsed_boxes`.
 - **`nmsed_classes`** (`Tensor`): NMS classes output for each batch. This parameter must be a 2D tensor with shape `(batch, max_total_size)`. The data type is `torch.float16`.
-- `nmsed_num` (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
+- **`nmsed_num`** (`Tensor`): Valid number of `nmsed_boxes`. This parameter must be a 1D tensor with shape `(batch)`. The data type is `torch.int32`.
 
 ## Example
 

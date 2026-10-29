@@ -2,22 +2,27 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>           |    √     |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Implements a variant SwiGLU activation function with a truncated Swish gating linear unit. Compared with `torch_npu.npu_swiglu`, this API introduces additional input parameters: `group_index`, `alpha`, `limit`, `bias`, and `interleaved`, which are used to support the variant SwiGLU utilized by GPT-OSS models and the grouping scenarios utilized by MoE models.
+- Function: Swish-gated linear unit activation function with clipping, which implements the variant SwiGLU computation of `x`. Compared with torch_npu.npu_swiglu, this API adds some input parameters: `group_index`, `alpha`, `limit`, `bias`, and `interleaved`, to support the variant SwiGLU used by the GPT-OSS model and the grouping scenario used by MoE models.
 
 - Formulas:
 
-    For a given input tensor `x` with dimensions `[a, b, c, d, e, f, g, ...]`, the following operations are performed:
+    For a given input tensor `x` with the dimensions [a,b,c,d,e,f,g...], the following computation is performed:
 
-    1. The input `x` is collapsed along axes based on the input parameter `dim`. After axis fusion, the dimension becomes `[pre, cut, after]`. The `cut` axis represents the axis that needs to be split into two tensors, following either front-back splitting or odd-even splitting. The dimensions of `pre` and `after` can equal 1. For example, when `dim` is `3`, the dimension of `x` after axis fusion is `[a * b * c, d, e * f * g * ...]`. Additionally, because elements along the `after` axis are stored contiguously in memory and the operation is element-wise, the `cut` axis and `after` axis are fused, resulting in `x` having the shape `[pre, cut * after]`.
+    1. Merge the axes of `x` based on the input parameter `dim`. The merged dimensions are [pre, cut, after]. The cut axis is the axis that must be split into two tensors after the axis merging, and the splitting method is either front-back splitting or odd-even splitting. pre and after can be 1. For example, when `dim` is 3, the dimensions of the merged `x` are [a \* b \* c, d, e \* f \* g \*...]. In addition, because the elements of the after axis are stored contiguously and the computation is element-wise, the cut axis and the after axis are merged, obtaining the dimensions of `x` as [pre, cut* after].
 
-    2. Based on the input parameter `group_index`, the `pre` axis of `x` is filtered according to the formula:
+    2. Filter the pre axis of `x` according to the input parameter `group_index`. The formula is as follows:
         $$
         sum = \text{Sum}(group\_index)
         $$
@@ -25,11 +30,11 @@
         $$
         x = x[ : sum, : ]
         $$
-        `sum` denotes the sum of all elements in `group_index`. If `group_index` is omitted, this step is skipped.
+        In the formula, sum indicates the sum of all elements of `group_index`. When `group_index` is not passed, this step is skipped.
 
-    3. Based on the input parameter `interleaved`, `x` is split as follows:
+    3. Split `x` according to the input parameter `interleaved`. The formula is as follows:
 
-        When `interleaved` is `True`, it indicates odd-even splitting.
+        When `interleaved` is True, odd-even splitting is used:
         $$
         A = x[ : , : : 2]
         $$
@@ -38,7 +43,7 @@
         B = x[ : , 1 : : 2]
         $$
 
-        When `interleaved` is `False`, it indicates front-back splitting.
+        When `interleaved` is False, front-back splitting is used:
         $$
         h = x.shape[1] // 2
         $$
@@ -51,7 +56,7 @@
         B = x[ : , h : ]
         $$
 
-    4. The variant SwiGLU computation is executed based on the input parameters `alpha`, `limit`, and `bias`.
+    4. Perform the variant SwiGLU computation according to the input parameters `alpha`, `limit`, and `bias`. The formula is as follows:
         $$
         A = A.clamp(min=None, max=limit)
         $$
@@ -68,7 +73,7 @@
         y = y\_glu * (B + bias)
         $$
     
-    5. The output tensor `y` is reshaped to have the identical number of dimensions as `x` before axis fusion. The size of the `dim` axis is half that of `x`, and all other dimensions remain identical to `x`.
+    5. The number of dimensions of the reshaped output tensor y is the same as the number of dimensions of x before axis merging. The size on the `dim` axis is half that of `x`, and the other dimensions are the same as those of `x`.
     
 ## Prototype
 
@@ -91,14 +96,14 @@ torch_npu.npu_clipped_swiglu(x, *, group_index=None, dim=-1, alpha=1.702, limit=
 
 `Tensor`
 
-Output of the activation function, $y$ in the formula. The data type must be identical to that of `x`. Regarding its shape, the dimension size along the `dim` axis is exactly half (`1/2`) that of `x`, while all other dimensions remain identical to those of `x`. The data layout can be ND.
+Represents `y` in the formulas, which is the output of the activation function. The data type is the same as that of the input `x`. In terms of dimensions, the `dim` dimension is 1/2 of that of the input `x`, and the other dimensions are the same as those of the input `x`. The data layout is $ND$.
 
 ## Constraints
 
 - This API can be used in inference scenarios.
-- This API supports both single-operator mode and graph mode.
+- This API supports single-operator mode and graph mode.
 
-## Examples
+## Example
 
 - Single-operator call
 

@@ -1,17 +1,22 @@
 # torch_npu.npu_gelu_mul
 
-> [!NOTICE]  
-> This API is updated in this version. For details about the specific changes, see [API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/release_notes/release_notes.md#api-changes).
-
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-| <term>Ascend 950DT</term>                        |    √    |
-|<term>Atlas A2 training products/Atlas A2 inference products</term>           |    √     |
-|<term>Atlas A3 training products/Atlas A3 inference products</term>              | √   |
-|<term>Atlas inference products</term>                                      |    √     |
-|<term>Atlas training products</term>                                      |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
+<!-- npu="910" id5 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id5 -->
 
 ## Function
 
@@ -30,7 +35,7 @@
     2. Apply the GELU activation function:
 
        Apply the GELU activation function to $x_1$, where the mode is controlled by `approximate`: $x_1 = \text{GELU}(x_1)$.
-        - When `approximate="tanh"` (approximation mode with computation high efficiency):
+        - When `approximate="tanh"` (approximation mode, which is computationally efficient):
         $$\text{GELU}(x) = 0.5 \cdot x \cdot \left[ 1 + \tanh\left( \sqrt{\frac{2}{\pi}} \cdot \left( x + 0.044715 \cdot x^3 \right) \right) \right]$$
         
         - When `approximate="none"` (high-precision mode):

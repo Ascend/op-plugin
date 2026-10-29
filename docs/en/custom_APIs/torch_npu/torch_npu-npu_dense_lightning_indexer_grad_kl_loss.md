@@ -2,55 +2,60 @@
 
 ## Supported Products
 
-| Product                          | Supported|
-|------------------------------| :------: |
-| <term>Atlas A3 training products</term>| √  |
-| <term>Atlas A2 training products</term>| √  |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
-- Implements the backward gradient computation during the warmup phase training of the Lightning Indexer component, while integrating the loss computation.
-     - Compared with the `npu_sparse_lightning_indexer_grad_kl_loss` API, this API applies to dense scenarios, and its inputs `key` and `key_index` do not require sparsification.
-     - This API is used together with `npu_dense_lightning_indexer_softmax_lse`. `softmax_max_index` and `softmax_sum_index` computed by `npu_dense_lightning_indexer_softmax_lse` serve as inputs to this API. Using these two APIs in combination optimizes device memory utilization.
+- Function: implements the backward gradient computation for the warmup phase training of the Lightning Indexer component and fuses the loss computation.
+     - Compared with the `npu_sparse_lightning_indexer_grad_kl_loss` API, this API applies to dense scenarios, and its inputs `key` and `key_index` do not need to be sparsified.
+     - Used together with `npu_dense_lightning_indexer_softmax_lse`, the `softmax_max_index` and `softmax_sum_index` computed by `npu_dense_lightning_indexer_softmax_lse` serve as the inputs of this API. Using the two APIs together optimizes memory usage.
 
 - Formulas:
 
-    1. Formula for top-k value computation:
+    1. The formula for computing the Top-k value:
         $$
         I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
         $$
     
-        - $W_{t,:}$ is the weights corresponding to the $t$-th token in the $W$ matrix.
-        - $\tilde{q}_{t,:}$ is the result after collapsing the $G$ query heads corresponding to the $t$-th token in the $\tilde{Q}$ matrix.
-        - $\tilde{K}_{:t,:}$ is the rows up to index $t$ in the $\tilde{K}$ matrix.
+        - $W_{t,:}$ is the `weights` corresponding to the t-th token in the $W$ matrix;
+        - $\tilde{q}_{t,:}$ is the result of merging the G query heads corresponding to the t-th token of the $\tilde{Q}$ matrix;
+        - $\tilde{K}_{:t,:}$ is t rows of the $\tilde{K}$ matrix.
   
-    2. Formula for forward Softmax computation:
+    2. The formula corresponding to the forward Softmax:
 
         $$
         p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
         $$
         
-        - $p_{t,:}$ is the Softmax result corresponding to the $t$-th token.
-        - $q_{t,:}$ is the result of merging the $G$ query heads along the axis corresponding to the $t$-th token in the $Q$ matrix.
-        - $K_{:t,:}$ is the rows up to index $t$ in the $K$ matrix.
+        - $p_{t,:}$ is the Softmax result corresponding to the t-th token;
+        - $q_{t,:}$ is the result of merging the G query heads corresponding to the t-th token of the $Q$ matrix;
+        - $K_{:t,:}$ is t rows of the $K$ matrix.
 
-    3. Lightning Indexer is trained separately, and the corresponding loss function is as follows:
+    3. The Lightning Indexer is trained separately, and the corresponding loss function is:
         $$
         Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
         $$
 
-        $p_{t,:}$ is the target distribution, which is obtained by summing the main attention scores across all heads and then performing L1 normalization along the context dimension. $D_{KL}$ is the KL divergence, expressed as:
+        In the formula, $p_{t,:}$ is the target distribution, which is obtained by summing the main attention scores over all heads and then applying L1 regularization to the sum along the context direction. $D_{KL}$ is the KL divergence, and its expression is:
 
         $$
         D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
         $$
 
-    4. The gradient of the loss is derived as:
+    4. The gradient expression of the loss can be obtained by derivation:
         $$
         dI\mathop{{}}\nolimits_{{t,:}}=Softmax \left( I\mathop{{}}\nolimits_{{t,:}} \left) -p\mathop{{}}\nolimits_{{t,:}}\right. \right.
         $$
 
-        Using the chain rule, the gradients for the `weights`, `query`, and `key` matrices are computed as follows:
+        The gradients of the `weights`, `query`, and `key` matrices can be computed using the chain rule:
         $$
         dW\mathop{{}}\nolimits_{{t,:}}=dI\mathop{{}}\nolimits_{{t,:}}\text{@} \left( ReLU \left( S\mathop{{}}\nolimits_{{t,:}} \left) \left) \mathop{{}}\nolimits^{\top}\right. \right. \right. \right.
         $$
@@ -63,7 +68,7 @@
         d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}=\left(dS\mathop{{}}\nolimits_{{t,:}} \left) \mathop{{}}\nolimits^{\top}@\tilde{q}\mathop{{}}\nolimits_{{:t, :}}\right. \right.
         $$
 
-        $S$ is the result of matrix multiplication between the $\tilde{Q}$ and $\tilde{K}$ matrices, and $S_{t,:}$ is the $t$-th row in the $S$ matrix. $dW_{t,:}$ is the $t$-th row in the $dW$ matrix, $d\mathop{{\tilde{q}}}\nolimits_{{t,:}}$ is the $t$-th row in the $d\tilde{Q}$ matrix, and $d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}$ is the accumulated value of the rows up to index $t$ in the $d\tilde{K}$ matrix.
+        In the formula, $S$ is the result of the matrix multiplication of $\tilde{Q}$ and $\tilde{K}$, and $S_{t,:}$ is the t-th row of the $S$ matrix. $dW_{t,:}$ is the t-th row of the $dW$ matrix, $d\mathop{{\tilde{q}}}\nolimits_{{t,:}}$ is the t-th row of the $d\tilde{Q}$ matrix, and $d\tilde{K}\mathop{{}}\nolimits_{{:t,:}}$ is the accumulated value of t rows of the $d\tilde{K}$ matrix.
 
 ## Prototype
 
@@ -118,22 +123,22 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 ## Constraints
 
-- The data types of `query`, `key`, `query_index`, and `key_index` must be identical.
-- When the data type of `weights` is not `torch.float32`, the data types of `query`, `key`, `query_index`, `key_index`, and `weights` must be identical.
-- Shape variable constraints:
+- The data types of the parameters query, key, query_index, and key_index must be the same.
+- When the parameter weights is not `torch.float32`, the data types of the parameters query, key, query_index, key_index, and weights must be the same.
+- Shape value constraints
 
-| Item   | Value      | Description        |
+| Item | Specification | Description |
 |-----------|------------|-----------------|
-| B         | 1 to 256     | -               |
-| S1, S2   | 1 to 128K    | `S1` and `S2` can have different lengths.|
-| N1        | 32, 64, 128| -               |
-| N1index   | 8, 16, 32, 64| -               |
-| N2        | 32, 64, 128| N2=N1           |
+| B         | 1~256      | -               |
+| S1, S2 | 1 to 128K | S1 and S2 can have different lengths |
+| N1 | 32, 64, 128 | - |
+| N1index | 8, 16, 32, 64 | - |
+| N2 | 32, 64, 128 | N2=N1 |
 | N2index   | 1          | -               |
 | D         | 128        | -               |
 | Dr        | 64         | -               |
 
-## Examples
+## Example
 
 - Single-operator call
 

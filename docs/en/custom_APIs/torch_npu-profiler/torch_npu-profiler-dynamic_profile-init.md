@@ -2,11 +2,18 @@
 
 ## Supported Products
 
-| Product                              | Supported|
-| ---------------------------------- | :------: |
-| <term>Atlas A3 training products</term>|    √     |
-| <term>Atlas A2 training products</term>|    √     |
-| <term>Atlas training products</term>   |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
@@ -22,7 +29,7 @@ torch_npu.profiler.dynamic_profile.init(path: str)
 
 **`path`** (`str`): Required. Specifies the path where `dynamic_profile` automatically creates the template file `profiler_config.json`. You can modify configuration items based on this template file. The path can contain only letters, digits, underscores, and hyphens. Symbolic links are not supported.
 
-For details about the `profiler_config.json` file, see "<a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>".
+For details about the `profiler_config.json` file, see "<a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>".
 
 ## Return Values
 

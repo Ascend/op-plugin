@@ -41,5 +41,10 @@ This section describes the adapted distributed APIs that provide parallel comput
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p2517104919514"><a name="p2517104919514"></a><a name="p2517104919514"></a>Extends the native <code>torch.distributed.all_gather_into_tensor</code> API by supporting zero-copy and uneven tensor splitting in <code>torch_npu.distributed.all_gather_into_tensor_uneven</code>.</p>
 </td>
 </tr>
+<tr id="row187261049165117"><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p187271249165115"><a name="p187271249165115"></a><a name="p187271249165115"></a><a href="torch_npu-distributed-all_to_all_vc.md">(beta) torch_npu.distributed.all_to_all_vc</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p id="p287281049195115"><a name="p287281049195115"></a><a name="p287281049195115"></a>Variable-length all-to-all communication implemented based on the HCCL HcclAlltoAllVC API. It is driven by a global count matrix and supports uneven send and receive.</p>
+</td>
+</tr>
 </tbody>
 </table>

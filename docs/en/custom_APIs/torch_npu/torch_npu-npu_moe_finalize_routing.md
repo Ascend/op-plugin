@@ -2,13 +2,16 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-|<term>Atlas A2 training products/Atlas A2 inference products</term> | √   |
+<!-- npu="950" id1 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 products</term>: Supported
+<!-- end id2 -->
 
 ## Function
 
-- Combines the output results of the MoE feedforward neural network (FFN) at the end of MoE computation.
+- Function: merges the output results of the MoE FFN (feedforward neural network) at the end of the MoE computation.
 
 - Formulas:
 
@@ -17,7 +20,7 @@
     out(i,j) = skip1_{i,j} + skip2Optional_{i,j} + \sum_{k=0}^{K}(scales_{i,k} * (expandPermutedRows_{expandedSrcToDstRow_{i+k*num\_rows},j} + bias_{expertid,j}))
     $$
 
-- Equivalent computation logic:
+- Equivalent computation logic
 
     ```python
     import numpy as np
@@ -94,19 +97,19 @@
 ## Prototype
 
 ```python
-torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode=0) -> Tensor
+torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode=0, k=1) -> Tensor
 ```
 
 ## Parameters
 >
 > [!NOTE]  
-> Definitions of variables in the shape:
+> Description of the symbols in the shapes:
 >
 > - $NUM\_ROWS$: number of rows.
-> - $K$: number of experts selected from the total of $E$ experts.
-> - $H$: hidden layer size, indicating the number of columns.
-> - $E$: number of experts. The condition $E \ge K$ must be met.
-> - $C$: capacity threshold, indicating the number of tokens an expert can process.
+> - $K$: $K$ experts are selected from all experts $E$.
+> - $H$: length of each token sequence, that is, the number of columns.
+> - $E$: number of experts. $E$ must be greater than or equal to $K$.
+> - $C$: threshold of the capability of an expert to process tokens.
 
 - **`expanded_permuted_rows`** (`Tensor`): Required. Result after expert processing, $expandPermutedRows$ in the formula. This parameter must be a 2D tensor. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout must be ND. When `drop_pad_mode` is `0` or `2`, the shape is `(NUM_ROWS * K, H)`. When `drop_pad_mode` is `1` or `3`, the shape is `(E, C, H)`.
 - **`skip1`** (`Tensor`): Required. This parameter can be set to `None`. The first input parameter for summation, $skip1$ in the formula. This parameter must be a 2D tensor. The data type must be identical to that of `expanded_permuted_rows`. The shape must be identical to the shape of the output `out`.
@@ -116,77 +119,70 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 - **`expanded_src_to_dst_row`** (`Tensor`): Required. Index of each expert processing result, $expandedSrcToDstRow$ in the formula. This parameter must be a 1D tensor. The data type is `torch.int32`. The shape can be `(NUM_ROWS * K,)`. When `drop_pad_mode` is `0` or `2`, the value range of the tensor is `[0, NUM_ROWS * K - 1]`. When `drop_pad_mode` is `1` or `3`, the value range of the tensor is `[-1, E * C - 1]`.
 - **`expert_for_source_row`** (`Tensor`): Required. This parameter can be set to `None`. Expert ID for each row, $expertForSourceRow$ in the formula. This parameter must be a 2D tensor. The data type is `torch.int32`. The shape can be `(NUM_ROWS, K)`. The value range of the tensor is `[0, E - 1]`.
 - **`drop_pad_mode`** (`int`): Optional. Specifies whether to enable drop-pad mode and the layout of `expanded_src_to_dst_row`. Valid values are `0`, `1`, `2`, or `3`. The default value is `0`.
-     - `0`: enables dropless mode and `expanded_src_to_dst_row` is arranged in column-major order.
-     - `1`: enables drop-pad mode and `expanded_src_to_dst_row` is arranged in column-major order.
-     - `2`: enables dropless mode and `expanded_src_to_dst_row` is arranged in row-major order.
-     - `3`: enables drop-pad mode and `expanded_src_to_dst_row` is arranged in row-major order.
+     - 0 indicates the drop-less mode, and `expanded_src_to_dst_row` is arranged by column.
+     - 1 indicates the drop mode, and `expanded_src_to_dst_row` is arranged by column.
+     - 2 indicates the drop-less mode, and `expanded_src_to_dst_row` is arranged by row.
+     - 3 indicates the drop mode, and `expanded_src_to_dst_row` is arranged by row.
+- **`k`** (`int`): Optional. Number of top-K experts. The default value is `1`. When `scales` is None, the `k` value must be explicitly passed.
 
 ## Return Values
 
 `Tensor`
 
-Output parameter `out`, representing the final merged output of the MoE FFN. This parameter must be 2D with shape `(NUM_ROWS, H)`. The data type must be identical to that of `expanded_permuted_rows`.
+Output parameter `out`, representing the final merged output result of the MoE FFN. Two dimensions are supported, the shape $(NUM\_ROWS, H)$ is supported, and the dtype is the same as that of expanded_permuted_rows.
 
 ## Constraints
 
-- This API can be used in inference scenarios.
-- This API supports graph mode.
+- This API can be used only in inference scenarios.
+- This API supports single-operator mode and graph mode calls.
 
-## Examples
+## Example
 
 - Single-operator call
-    - Example in dropless mode
+    - Drop-less mode call example
 
         ```python
-        >>> import torch
-        >>> import torch_npu
-        >>> expert_num = 16
-        >>> token_len = 10
-        >>> top_k = 4
-        >>> num_rows = 50
-        >>> device = torch.device('npu')
-        >>> dtype = torch.float32
-        >>> expanded_permuted_rows = torch.randn((num_rows * top_k, token_len), device=device, dtype=dtype)
-        >>> skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-        >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-        >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
-        >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        >>> expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
-        >>> expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device,dtype=torch.int32)
-        >>> drop_pad_mode = 0
-        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> print(output.shape)
-        torch.Size([50, 10])
-        >>> print(output.dtype)
-        torch.float32
+        import torch
+        import torch_npu
+        expert_num = 16
+        token_len = 10
+        top_k = 4
+        num_rows = 50
+        device = torch.device('npu')
+        dtype = torch.float32
+        expanded_permuted_rows = torch.randn((num_rows * top_k, token_len), device=device, dtype=dtype)
+        skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
+        scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
+        expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        expanded_src_to_dst_row = torch.randint(low=0, high=num_rows * top_k, size=(num_rows * top_k,), device=device, dtype=torch.int32)
+        drop_pad_mode = 0
+        output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
         ```
-      
-    - Example in drop-pad mode
 
-      ```python
-        >>> import torch
-        >>> import torch_npu
-        >>> expert_num = 16
-        >>> token_len = 10
-        >>> top_k = 4
-        >>> num_rows = 50
-        >>> expert_capacity = 8
-        >>> device = torch.device('npu')
-        >>> dtype = torch.float32
-        >>> expanded_permuted_rows = torch.randn((expert_num, expert_capacity, token_len), device=device, dtype=dtype)
-        >>> skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-        >>> skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
-        >>> bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
-        >>> scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
-        >>> expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
-        >>> expanded_src_to_dst_row = torch.randint(low=-1, high=expert_num * expert_capacity - 1, size=(num_rows * top_k,), device=device,dtype=torch.int32)
-        >>> drop_pad_mode = 1
-        >>> output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales,expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
-        >>> print(output.shape)
-      torch.Size([50, 10])
-        >>> print(output.dtype)
-      torch.float32
-      ```
+    - Drop-pad mode call example
+
+        ```python
+        import torch
+        import torch_npu
+        expert_num = 16
+        token_len = 10
+        top_k = 4
+        num_rows = 50
+        expert_capacity = 8
+        device = torch.device('npu')
+        dtype = torch.float32
+        expanded_permuted_rows = torch.randn((expert_num, expert_capacity, token_len), device=device, dtype=dtype)
+        skip1 = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        skip2_optional = torch.randn((num_rows, token_len), device=device, dtype=dtype)
+        bias = torch.randn((expert_num, token_len), device=device, dtype=dtype)
+        scales = torch.randn((num_rows, top_k), device=device, dtype=dtype)
+        expert_for_source_row = torch.randint(low=0, high=expert_num, size=(num_rows, top_k), device=device, dtype=torch.int32)
+        expanded_src_to_dst_row = torch.randint(low=-1, high=expert_num * expert_capacity - 1, size=(num_rows * top_k,), device=device, dtype=torch.int32)
+        drop_pad_mode = 1
+        output = torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2_optional, bias, scales, expanded_src_to_dst_row, expert_for_source_row, drop_pad_mode)
+        ```
 
 - Graph mode call
 

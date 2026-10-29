@@ -2,10 +2,15 @@
 
 ## Supported Products
 
-| Product                                                        | Supported|
-| ------------------------------------------------------------ | :------: |
-| <term>Atlas A2 training products</term>  | √   |
-| <term>Atlas training products</term>                                       |    √     |
+<!-- npu="950" id1 -->
+- <term>Ascend 950DT products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="910" id3 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id3 -->
 
 ## Function
 
@@ -27,21 +32,22 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 
 `Tensor`
 
-Bool scalar on the NPU. A value of `True` indicates that an AI Core hardware fault has been detected.
+A `torch.bool` scalar on the NPU. A value of `True` indicates that an AI Core hardware fault has been detected.
 
 ## Constraints
 
-This API supports only scenarios where the data type is `torch.bfloat16` and the device is NPU.
+- This API supports only scenarios where the device is NPU.
+- When the CANN version is 9.2.0 or later and the input parameters `a`, `b`, and `c` are 2D Tensors, the `torch.bfloat16` and `torch.float32` data types are supported. In other scenarios, only `torch.bfloat16` is supported.
 
 ## Example
 
    ```python
-    >>> import torch
-    >>> import torch_npu
-    >>> matrix1 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
-    >>> matrix2 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
-    >>> product = torch.matmul(matrix1, matrix2)
-    >>> checksum = torch_npu.matmul_checksum(matrix1, matrix2, product)
-    >>> print(checksum)
-    tensor(False, device='npu:0')
+   >>> import torch
+   >>> import torch_npu
+   >>> matrix1 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
+   >>> matrix2 = torch.randn(2000, 2000, device='npu', dtype=torch.bfloat16)
+   >>> product = torch.matmul(matrix1, matrix2)
+   >>> checksum = torch_npu.matmul_checksum(matrix1, matrix2, product)
+   >>> print(checksum)
+   tensor(False, device='npu:0')
    ```

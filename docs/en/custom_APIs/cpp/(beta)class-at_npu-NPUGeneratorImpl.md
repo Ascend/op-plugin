@@ -1,12 +1,27 @@
 # (beta) class at_npu::NPUGeneratorImpl
 
-## Definition File
+## Supported Products
 
-torch_npu\csrc\aten\NPUGeneratorImpl.h
+<!-- npu="910" id1 -->
+- <term>Atlas training products</term>: Supported
+<!-- end id1 -->
+<!-- npu="910b" id2 -->
+- <term>Atlas A2 training products</term>: Supported
+<!-- end id2 -->
+<!-- npu="A3" id3 -->
+- <term>Atlas A3 training products</term>: Supported
+<!-- end id3 -->
+<!-- npu="310p" id4 -->
+- <term>Atlas inference products</term>: Supported
+<!-- end id4 -->
 
 ## Function
 
 Acts as a random number generator class that implements NPU device random number functionality and supports various random-dependent methods.
+
+## Definition File
+
+torch_npu\csrc\aten\NPUGeneratorImpl.h
 
 ## Member Functions
 
@@ -108,10 +123,3 @@ In PyTorch 2.5.1 and later, the following member functions are added:
 - **void unregister_graph(c10_npu::NPUGraph\* graph)**
 
     Removes an `aclgraph` object from `NPUGeneratorImpl`, which is called when the graph object is destroyed. This function is identical to `void at::CUDAGeneratorImpl::unregister_graph(CUDAGraph* graph)`.
-
-## Supported Products
-
-- <term>Atlas training products</term>
-- <term>Atlas A2 training products</term>
-- <term>Atlas A3 training products</term>
-- <term>Atlas inference products</term>
