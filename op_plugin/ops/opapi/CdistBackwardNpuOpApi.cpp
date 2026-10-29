@@ -26,7 +26,13 @@ at::Tensor _cdist_backward(
     double p,
     const at::Tensor& cdist)
 {
-    DO_COMPATIBILITY(aclnnCdistBackward, acl_op::_cdist_backward(grad, x1, x2, p, cdist));
+    // The double-backward graph can feed transposed (non-contiguous) grads into
+    // this op, and the acl_op fallback below requires a contiguous grad, so
+    // normalize the layout before any dispatch decision. contiguous() is a
+    // no-op for already-contiguous tensors.
+    auto grad_contiguous = grad.contiguous();
+
+    DO_COMPATIBILITY(aclnnCdistBackward, acl_op::_cdist_backward(grad_contiguous, x1, x2, p, cdist));
 
     float p_cast;
 
@@ -43,7 +49,7 @@ at::Tensor _cdist_backward(
     bool p_in_range = (p_cast >= 0.0 && p_cast <= 2.0) || (p_cast == -1);
     if (p_in_range && (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) &&
         !op_plugin::utils::is_gte_cann_version_920()) {
-        return acl_op::_cdist_backward(grad, x1, x2, p, cdist);
+        return acl_op::_cdist_backward(grad_contiguous, x1, x2, p, cdist);
     }
 
     int64_t c1 = x1.size(-1);
@@ -83,7 +89,6 @@ at::Tensor _cdist_backward(
     }
     x2_broadcast = x2_broadcast.contiguous();
 
-    auto grad_contiguous = grad.contiguous();
     auto cdist_contiguous = cdist.contiguous();
     auto output_size = x1_broadcast.sizes();
     auto output_dtype = x1_broadcast.scalar_type();

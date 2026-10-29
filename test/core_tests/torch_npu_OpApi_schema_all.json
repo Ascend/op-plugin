@@ -1855,6 +1855,9 @@
   "func: _pad_packed_sequence(Tensor data, Tensor batch_sizes, bool batch_first, Scalar padding_value, int total_length) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
+  "func: _pdist_backward(Tensor grad_output, Tensor self, float p, Tensor pdist) -> Tensor": {
+    "version": ["v2.14", "newest"]
+  },
   "func: _pdist_forward(Tensor self, float p=2) -> Tensor": {
     "version": ["all_version"]
   },

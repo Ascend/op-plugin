@@ -24,6 +24,14 @@ using npu_preparation = at_npu::native::OpPreparation;
 at::Tensor _pdist_forward(const at::Tensor& self, double p) {
   DO_COMPATIBILITY(aclnnPdist, acl_op::_pdist_forward(self, p));
   TORCH_CHECK(p >= 0, "pdist only supports non-negative p values", OPS_ERROR(ErrCode::VALUE));
+  // Degenerate shapes never reach the kernel: with no pair to accumulate
+  // (size(0) <= 1) the output is empty, and with an empty feature dimension
+  // (size(1) == 0) every pair distance is 0. aclnnPdist crashes on such
+  // inputs, so build the result directly, mirroring the acl_op fallback.
+  if (self.size(0) <= 1 || self.size(1) == 0) {
+    auto output_size = op_infer::pdist_npu_output_size(self);
+    return at::zeros(output_size, self.options());
+  }
   // double is not supported in NPU,  type of P needs to be converted from double to float.
   float p_float;
   if (std::isinf(p)) {
