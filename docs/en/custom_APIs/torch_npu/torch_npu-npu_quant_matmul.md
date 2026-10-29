@@ -215,7 +215,7 @@
       out[m,n] = \sum_{j=0}^{kLoops-1} \left(\left(\sum_{k=0}^{gsK-1} \text{x1Slice} * \text{x2Slice}\right) * \left(\text{x1Scale}[m/gsM,j] * \text{x2Scale}[j,n/gsN]\right)\right) + bias[n]
       $$
 
-      In the formula, gsM, gsN, and gsK represent groupSizeM, groupSizeN, and groupSizeK, respectively. x1Slice represents the vector of the mth row of x1 with a length of groupSizeK, and x2Slice represents the vector of the nth column of x2 with a length of groupSizeK. The K axis is sliced starting from j * groupSizeK, where j is in the range $[0, kLoops)$, $kLoops = \lceil K / groupSizeK \rceil$, and K is the length of the K axis. A final slice whose length is less than groupSizeK is supported. For the G-B, B-B, and MX quantization modes, `[groupSizeM, groupSizeN, groupSizeK]` supports only the values `[`
+      In the formula, gsM, gsN, and gsK represent groupSizeM, groupSizeN, and groupSizeK, respectively. x1Slice represents the vector of the mth row of x1 with a length of groupSizeK, and x2Slice represents the vector of the nth column of x2 with a length of groupSizeK. The K axis is sliced starting from j * groupSizeK, where j is in the range $[0, kLoops)$, $kLoops = \lceil K / groupSizeK \rceil$, and K is the length of the K axis. A final slice whose length is less than groupSizeK is supported. For the G-B, B-B, and MX quantization modes, `[groupSizeM, groupSizeN, groupSizeK]` supports only `[1, 128, 128]`, `[128, 128, 128]`, and `[1, 1, 32]`, respectively.
 
     </details>
 
@@ -981,7 +981,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id65 -->
   <!-- npu="950,310p" id76 -->
-  - Graph mode call (high-performance data layout)
+  - Transpose x2 to \(batch, **n, k**\) and then convert its format. The following example code is provided and supports only the following products:
 
     <!-- npu="310p" id66 -->
     - <term>Atlas inference products</term>

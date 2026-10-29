@@ -19,7 +19,7 @@
 
 - API功能：对输入张量`input`依次执行GroupNorm和SiLU激活，返回三个张量：out（SiLU激活后的输出）、meanOut（归一化均值）、rstdOut（归一化标准差的倒数）。
 - 计算公式：
-    - GroupNorm：$x$为输入`input`，公式中$\gamma$和$\beta$分别对应可选参数`weight`和`bias`，当`weight`、`bias`均为空时不进行仿射变换（等价于$\gamma = 1$、$\beta = 0$），$E[x] = \bar{x}$代表$x$的均值，$ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ 代表$x$的方差，则
+    - GroupNorm：$x$为输入`input`，公式中$\gamma$和$\beta$分别对应可选参数`weight`和`bias`，当`weight`、`bias`均为空时不进行仿射变换（等价于$\gamma = 1$、$\beta = 0$），$E[x] = \bar{x}$代表$x$的均值，$Var[x] = \frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2$ 代表$x$的方差，则
     $$
     \begin{cases}
     \text{groupnormOut} = \frac{x - E[x]}{\sqrt{Var[x] + eps}} * \gamma + \beta \\

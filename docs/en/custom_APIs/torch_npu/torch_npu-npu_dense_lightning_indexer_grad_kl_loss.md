@@ -99,7 +99,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - **`softmax_sum_index`** (`Tensor`): Required. Sum of the index attention Softmax results. The data layout can be ND. The data type can be `torch.float32`. The shape can be `(B, N2index, S1)` or `(N2index, T1)`.
 
-- **`scale_value`** (`float`): Required. Scaling coefficient. The data type can be `torch.float32`.
+- **`scale_value`** (`float`): Required. Scaling coefficient. The data type can be `float32`.
 
 - **`query_rope`** (`Tensor`): Optional. RoPE information of the query in the MLA structure. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. The shape can be `(B, S1, N1, Dr)` or `(T1, N1, Dr)`.
 
@@ -111,11 +111,11 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - **`layout`** (`str`): Optional. Data layout format of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
-- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `torch.int32`. The default value is `3`. Currently, only mode `3` is supported.
+- **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int32`. The default value is `3`. Currently, only mode `3` is supported.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2^{63}-1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
 
 ## Return Values
 
@@ -128,7 +128,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - The data types of the parameters query, key, query_index, and key_index must be the same.
 - When the parameter weights is not `torch.float32`, the data types of the parameters query, key, query_index, key_index, and weights must be the same.
-- Shape value constraints:
+- Shape value constraints
 
 | Item | Specification | Description |
 |-----------|------------|-----------------|

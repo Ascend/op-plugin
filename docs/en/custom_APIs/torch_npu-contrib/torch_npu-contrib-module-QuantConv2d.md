@@ -16,7 +16,7 @@
 
 - Encapsulates the `torch_npu.npu_quant_conv2d` API to provide quantization-related functionality for the `Conv2d` operator.
 
-- Formula:
+- Formula
 
   ![](../../figures/en-us_formulaimage_0000001855947305.png)
 

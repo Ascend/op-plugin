@@ -46,7 +46,7 @@ torch_npu.npu_mhc_sinkhorn(x, eps=1e-6, num_iters=20, out_flag=0) -> (Tensor, Te
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Tensor to be processed, representing the input data of the mHC layer in the network. The data type can be `torch.float32`. The shape can be `[B, S, n, n]` or `[T, n, n]`. The data layout can be `ND`. Non-contiguous tensors are supported. Empty tensors are not supported. The value of `n` in the shape can only be `4`, `6`, or `8`.
-- **`eps`** (`float`): Optional. Parameter used to prevent division by zero during normalization. The data type can be `torch.float32`. The default value is `1e-6`.
+- **`eps`** (`float`): Optional. Parameter used to prevent division by zero during normalization. The data type can be `float32`. The default value is `1e-6`.
 - **`num_iters`** (`int`): Optional. Number of iterations. The default value is 20 and the value range is [1,100].
 - **`out_flag`** (`int`): Optional. Specifies whether to output intermediate results. The supported values are 0 (default) and 1. When the value is 0, only the final transformation result is output. When the value is 1, y+normOut+sumOut is output.
 

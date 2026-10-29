@@ -36,7 +36,7 @@ torch_npu.npu_masked_causal_conv1d(input, weight, *, mask=None) -> Tensor
 
 ## Parameters
 
-> **Note**:
+> [!NOTE]
 >
 > - The dimensions of the `input` and `weight` parameters are as follows: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, and W (Window Size) indicates the size of the convolution window.
 

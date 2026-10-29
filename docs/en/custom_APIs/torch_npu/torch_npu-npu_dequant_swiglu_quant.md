@@ -112,7 +112,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
   > **Note:** In static quantization, quant\_scale supports only the `torch.float32` type.
 - **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
 - **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `torch.int64`. The data layout can be ND.
-- **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode=0`. The default value is `False`.
+- **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode` is `0`, `2`, or `3`. The default value is `False`.
     - When it is True, out=swish\(split[x, -1, 2][0]\)\*split[x, -1, 2][1]
     - When it is False, out=swish\(split[x, -1, 2][1]\)\*split[x, -1, 2][0]
 

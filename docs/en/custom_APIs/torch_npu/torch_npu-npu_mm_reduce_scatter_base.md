@@ -215,7 +215,7 @@ The shape of the output tensor is `(m // world_size, n)`.
     - Supported: No (only the basic scenario is supported)
   <!-- end id32 -->
 <!-- npu="A3,910b" id33 -->
-- **scale parameter combination constraints** (quantization scenarios, supported only by <term>Atlas A2 products</term> and <term>Atlas A3 products</term>):
+- **scale parameter combination constraints** (quantization scenarios, supported only by <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
 
     |  Scenario   |  `x1_scale`  | `x2_scale`  |     Output Data Type |
     | ------- | ---------- | --------- |   ----------- |

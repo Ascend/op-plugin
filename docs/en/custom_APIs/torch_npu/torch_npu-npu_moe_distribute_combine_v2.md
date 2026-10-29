@@ -244,7 +244,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - <term>Atlas A2 products</term>: This parameter is not supported currently. Use the default value 1.
     <!-- end id40 -->
     <!-- npu="950,A3" id41 -->
-    - <term>Atlas A3 products</term> and <term>Ascend 950DT products</term>: When the batch sizes differ across ranks, passing `max_bs * ep_world_size` is supported, where `max_bs` indicates the maximum batch size of a single rank. When the batch sizes are identical across ranks, passing `0` or `BS * ep_world_size` is supported.
+    - <term>Atlas A3 products</term> and <term>Ascend 950DT products</term>: Valid values are \[0, 4\], where `0` indicates no shared expert and the default value is `1`.
     <!-- end id41 -->
 
 - **`shared_expert_rank_num`** (`int`): Optional. Number of shared-expert ranks.

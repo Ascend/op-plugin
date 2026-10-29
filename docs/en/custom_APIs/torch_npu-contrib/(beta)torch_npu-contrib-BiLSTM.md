@@ -1,7 +1,7 @@
 # (beta) torch_npu.contrib.BiLSTM
 
 > [!NOTICE]  
-> This API is planned for deprecation. The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.
+> This API is planned for deprecation. For a replacement, see the [small operator concatenation solution](https://gitee.com/ascend/ModelZoo-PyTorch/blob/732cb7fc5ab59249ae62a905c0d43400a8250da7/PyTorch/contrib/audio/deepspeech/deepspeech_pytorch/bidirectional_lstm.py#L18). The underlying operator kernel is no longer maintained, and performance and accuracy are not guaranteed. This API is not recommended.
 
 ## Supported Products
 

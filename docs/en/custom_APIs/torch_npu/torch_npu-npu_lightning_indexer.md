@@ -59,16 +59,16 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **`layout_key`** (`str`): Optional. Data layout configuration of the input `key`. Valid values are `PA_BSND`, `BSND`, or `TND`. The default value is `"BSND"`. In non-PagedAttention scenarios, the value of this parameter must be identical to that of `layout_query`.
 
-- **`sparse_count`** (`int`): Optional. Block count retained in the Top-K phase. Valid values are in the range `[1, 2048]`, or can be `3072`, `4096`, `5120`, `6144`, `7168`, or `8192`. The data type can be `torch.int32`.
+- **`sparse_count`** (`int`): Optional. Block count retained in the Top-K phase. Valid values are in the range `[1, 2048]`, or can be `3072`, `4096`, `5120`, `6144`, `7168`, or `8192`. The data type can be `int32`.
 
 - **`sparse_mode`** (`int`): Optional. Sparsification mode. The values 0 and 3 are supported. The data type can be `int32`.
     
     - When sparse\_mode is 0, it indicates the defaultMask mode.
     - When sparse\_mode is 3, it indicates the mask of the rightDownCausal mode, corresponding to the lower-triangular scenario divided by the right vertex.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63-1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63-1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63-1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63-1` is supported.
 
 - **`return_value`** (`bool`): Optional. Specifies whether to output `sparse_values`. Valid values are `True` (enables the output but does not support graph capture mode) or `False` (disables the output). The default value is `False`. This parameter is supported only during training and when `layout_key` is not set to `PA_BSND`.
 

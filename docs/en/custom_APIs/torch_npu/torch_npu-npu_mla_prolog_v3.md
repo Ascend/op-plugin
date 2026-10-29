@@ -170,7 +170,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **`query_norm_flag`** (`bool`): Optional. Specifies whether to output `query_norm`. Only the `bool` data type is supported. When set to `False`, `query_norm` is not output. When set to `True`, `query_norm` is output and is accompanied by the output of `dequant_scale_q_norm` in quantization scenarios. The default value is `False`.
 
-- **`weight_quant_mode`** (`int`): Optional. Quantization mode for `weight_dq`, `weight_uq_qr`, `weight_uk`, and `weight_dkv_kr`. This parameter is of type `torch.int32` and has a default value of `0`. A value of `0` indicates no quantization; `1` indicates `weight_uq_qr` quantization; `2` indicates `torch.int8` quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `3` indicates MXFP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `4` indicates FP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; and `5` indicates HiF8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`.
+- **`weight_quant_mode`** (`int`): Optional. Quantization mode for `weight_dq`, `weight_uq_qr`, `weight_uk`, and `weight_dkv_kr`. This parameter is of type `int32` and has a default value of `0`. A value of `0` indicates no quantization; `1` indicates `weight_uq_qr` quantization; `2` indicates `torch.int8` quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `3` indicates MXFP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; `4` indicates FP8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`; and `5` indicates HiF8 quantization of `weight_dq`, `weight_uq_qr`, and `weight_dkv_kr`.
 
 - **`kv_cache_quant_mode`** (`int`): Optional. Quantization mode of `kv_cache`. Valid values are `0` (non-quantization), `1` (`pertensor` quantization), `2` (`perchannel` quantization) or `3` (`pertoken-pergroup` quantization). The default value is `0`.
 
@@ -285,7 +285,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td><code>kv_cache</code> quantized in <code>perchannel</code> mode</td>
       <td>
-          <code>weight_quant_mode=2</code>, <code>kv_cache_quant_mode=2</code>, <code>query_quant_mode=0</code><br>
+          <code>weight_quant_mode=1</code>, <code>kv_cache_quant_mode=2</code>, <code>query_quant_mode=0</code><br>
           Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> and <code>kr_cache</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_w_uq_qr</code>, <code>quant_scale_ckv</code>, and <code>quant_scale_ckr</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
           Outputs: <code>kv_cache</code> and <code>kr_cache</code> are <code>perchannel</code> quantized data, and all other outputs are non-quantized data.
@@ -294,7 +294,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td><code>kv_cache</code> quantized in <code>pertoken-pergroup</code> mode</td>
       <td>
-          weight_quant_mode=3, kv_cache_quant_mode=3, query_quant_mode=0<br>
+          weight_quant_mode=1, kv_cache_quant_mode=3, query_quant_mode=0<br>
           Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> must be provided as <code>pertoken-pergroup</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_w_uq_qr</code> and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
           Outputs: <code>kv_cache_out</code> is <code>pertoken-pergroup</code> quantized data, and all other outputs are non-quantized data.
@@ -313,7 +313,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td><code>kv_cache</code> quantized in <code>pertensor</code> mode</td>
       <td>
-          <code>weight_quant_mode=2</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
+          <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
           Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, <code>kv_cache</code> must be provided as <code>pertensor</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scale_cq</code> field is optional.<br>
           Outputs: <code>query_out</code> is <code>pertoken_head</code> quantized data, the <code>kv_cache</code> output parameter is <code>pertensor</code> quantized data, and all other outputs are non-quantized data.

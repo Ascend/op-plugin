@@ -80,7 +80,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
   <!-- end id10 -->
 
 - **`perm_y`** (`List[int]`): Optional. The permutation sequence for transposing the output matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Only `[1, 0, 2]` is supported.
-- **`batch_split_factor`** (`int`): Optional. Split size of the $N$ dimension in the output matrix of the matrix multiplication. The data type can be `torch.int32`. The value range is [1, N], and $N$ must be divisible by this value. The default value is `1`. Note: When `scale` is provided, `batch_split_factor` must be 1.
+- **`batch_split_factor`** (`int`): Optional. Split size of the $N$ dimension in the output matrix of the matrix multiplication. The data type can be `int32`. The value range is [1, N], and $N$ must be divisible by this value. The default value is `1`. Note: When `scale` is provided, `batch_split_factor` must be 1.
 
 ## Return Values
 

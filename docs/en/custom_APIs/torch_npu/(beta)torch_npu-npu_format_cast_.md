@@ -48,7 +48,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     - <term>Ascend 950PR&950DT products</term>: Currently, only 29 (ACL\_FORMAT\_FRACTRAL\_NZ) is supported.
     <!-- end id7 -->
 
-  - If a torch_npu.Format value is input, the data format of `input` is changed to that format. For example, to convert the data format of `input` to the ND format, input `torch_npu.Format.ND` here. torch_npu.Format indicates the data format of torch_npu. torch_npu supports the following data formats:
+  - If a torch_npu.Format value is input, the data format of `input` is changed to that format. For example, to convert the data format of `input` to the ND format, input `torch_npu.Format.ND` here. torch_npu.Format indicates the data format of torch_npu. torch_npu supports the following data formats.
 
     |torch_npu.Format Value|Integer Value|Description|
     | ------| ------|:------: |

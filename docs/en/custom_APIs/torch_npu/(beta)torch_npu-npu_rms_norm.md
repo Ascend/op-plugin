@@ -73,7 +73,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 - Data types supported by each product and their mappings:
 
   <!-- npu="950,A3,910b" id10 -->
-  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>:
+  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>
 
     | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
     | -------- | -------- | -------- | -------- |
@@ -84,7 +84,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     | `torch.float32` | `torch.float32`  | `torch.float32` | `torch.float32` |
   <!-- end id10 -->
   <!-- npu="910,310p" id11 -->
-  - <term>Atlas inference products</term> and <term>Atlas training products</term>:
+  - <term>Atlas inference products</term> and <term>Atlas training products</term>
 
     | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
     | -------- | -------- | -------- | -------- |

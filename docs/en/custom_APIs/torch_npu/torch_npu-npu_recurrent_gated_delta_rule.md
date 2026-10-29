@@ -52,7 +52,7 @@ torch_npu.npu_recurrent_gated_delta_rule(query, key, value, state, *, beta=None,
 
 - **`beta`** (`Tensor`): Optional. $β$ in the formula. The data type can be `torch.bfloat16`, the data format can be `ND`, and the shape is ($T$, $N_v$). Empty tensors are not supported.
 
-- **`scale`** (`float`): Optional. Scaling factor of `query`, $1/\sqrt{D_k}$ in the formula. The data type can be `torch.float32`.
+- **`scale`** (`float`): Optional. Scaling factor of `query`, $1/\sqrt{D_k}$ in the formula. The data type can be `float32`.
 
 - **`actual_seq_lengths`** (`Tensor`): Optional. Input sequence length of each batch. The data type can be `torch.int32`. The data layout can be ND. The shape of this parameter is `(B,)`. Each value $L_i$ must remain within `[1, 8]`, where $L_i$ represents the value of the i-th element in `actual_seq_lengths`. Empty tensors are not supported.
 

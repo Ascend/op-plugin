@@ -198,7 +198,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 
 ## Examples
 
-### Scenario 1: 8-NPU scenario. m on each NPU is 16, and the total m after AllGather is 128
+### Scenario 1: 8-NPU scenario where `m` on each NPU is `16`, and the total `m` after `AllGather` is `128`
 
 ```python
 import torch

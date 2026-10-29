@@ -197,11 +197,11 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
 - **`learnable_sink`** (`Tensor`): Optional. Learnable sink token used to absorb attention scores. The data type can be `torch.bfloat16`. The data layout can be ND, and the shape must be `(Q_N,)`. The default value is `None`. For details about the overall constraints, see [learnable_sink Constraints](#en-us_topic_0000001832267082_section_learnable_sink_constraint).
 
-- **`num_query_heads`** (`int`): Optional. Number of heads for `query`. The data type can be `torch.int64`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs. For details about the overall constraints, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
-- **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. The data type can be `torch.int64`. The default value is `0`, indicating that the number of heads for `key`, `value`, and `query` are identical. The value of `num_query_heads` must be divisible by `num_key_value_heads`, and the ratio of `num_query_heads` to `num_key_value_heads` cannot exceed 64. In `BSND`, `BNSD`, and `BNSD_BSND` (supported only when `Q_S` is greater than 1) scenarios, this value must also be identical to the shape of the N axis of `key` and `value`. Otherwise, an execution exception occurs. For details about the overall constraints, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
-- **`softmax_scale`** (`float`): Optional. Scaling factor, the reciprocal of the square root of `d` in the formula, used as a scalar value for Muls in the computation flow. The data type can be `torch.float32`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`, which means no scaling is applied. **Passing `1/√D` (where D is the Head Dim) is recommended**. For example, when `D` is `128`, pass `1/math.sqrt(128.0)` to obtain correct attention calculation results.
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`num_query_heads`** (`int`): Optional. Number of heads for `query`. Pass this value as a Python `int`. In `BNSD` scenarios, this value must be identical to the shape of the N axis of `query`. Otherwise, an execution exception occurs. For details about the overall constraints, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
+- **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. Pass this value as a Python `int`. The default value is `0`, indicating that the number of heads for `key`, `value`, and `query` are identical. The value of `num_query_heads` must be divisible by `num_key_value_heads`, and the ratio of `num_query_heads` to `num_key_value_heads` cannot exceed 64. In `BSND`, `BNSD`, and `BNSD_BSND` (supported only when `Q_S` is greater than 1) scenarios, this value must also be identical to the shape of the N axis of `key` and `value`. Otherwise, an execution exception occurs. For details about the overall constraints, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint).
+- **`softmax_scale`** (`float`): Optional. Scaling factor, the reciprocal of the square root of `d` in the formula, used as a scalar value for Muls in the computation flow. The data type can be `float32`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`, which means no scaling is applied. **Passing `1/√D` (where D is the Head Dim) is recommended**. For example, when `D` is `128`, pass `1/math.sqrt(128.0)` to obtain correct attention calculation results.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. This parameter is invalid when `Q_S` is `1`.
 - **`input_layout`** (`str`): Optional. Data layout of the input `query`, `key`, and `value`. The default value is "BSH".
 
     > [!NOTE]
@@ -228,7 +228,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     | TND_NTD | (T, Q_N, D) | (T, KV_N, D) | (T, KV_N, D) | (Q_N, T, D) | Input: TND; output: NTD |
     | NTD_TND | (Q_N, T, D) | (KV_N, T, D) | (KV_N, T, D) | (T, Q_N, D) | Input: NTD; output: TND |
 
-- **`sparse_mode`** (`int`): Optional. Sparse mode. The default value is `0`. The data type can be `torch.int64`. This parameter is invalid when `Q_S` is `1` and no RoPE input is provided. For details about the overall constraints when `input_layout` is `TND`, `TND_NTD`, or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint). For details about the overall constraints in GQA fake-quantization scenarios, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint). Currently, only the values 0, 1, 2, 3, 4, and 9 are supported. The values 5, 6, 7, and 8 (representing `prefix`, `global`, `dilated`, and `block_local`, respectively) are not yet implemented and should not be used.
+- **`sparse_mode`** (`int`): Optional. Sparse mode. The default value is `0`. The data type can be `int64`. This parameter is invalid when `Q_S` is `1` and no RoPE input is provided. For details about the overall constraints when `input_layout` is `TND`, `TND_NTD`, or `NTD_TND`, see [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint). For details about the overall constraints in GQA fake-quantization scenarios, see [GQA Fake Quantization + KV NZ Layout Constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint). Currently, only the values 0, 1, 2, 3, 4, and 9 are supported. The values 5, 6, 7, and 8 (representing `prefix`, `global`, `dilated`, and `block_local`, respectively) are not yet implemented and should not be used.
 
     <!-- npu="A3,910b" id25 -->
     - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
@@ -248,7 +248,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     | 4 | band | Mask for the band mode | Optimized `atten_mask` matrix `(2048 * 2048)` |
     | 9 | treeMask | Tree attention mask for speculative decoding scenarios. Supported only in MLA scenarios (where `query_rope` and `key_rope` are not `None`). Left padding, `pse_shift`, and `sharedPrefix` are not supported. The output `dtype` does not support `torch.int8`. Each batch must satisfy $Q\_S \le KV\_S$. | Required (custom tree mask) |
 
-- **`block_size`** (`int`): Optional. Maximum number of tokens in each block of KV storage in PagedAttention. The data type can be `torch.int64`. The default value is 0.
+- **`block_size`** (`int`): Optional. Maximum number of tokens in each block of KV storage in PagedAttention. The data type can be `int64`. The default value is 0.
 - **`query_quant_mode`** (`int`): Optional. Fake-quantization mode for `query`. Only 3 can be passed, indicating mode 3: `pertoken` + `perhead` mode.
 
   <!-- npu="A3,910b" id27 -->
@@ -288,7 +288,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
     - <term>Ascend 950PR&950DT products</term>: The values 0, 1, 2, 3, 4, 5, 6, 7, and 8 are supported.
     <!-- end id32 -->
 
-- **`inner_precise`** (`int`): Optional. The data type can be `torch.int64`. Four modes are supported: `0`, `1`, `2`, and `3`. Each option is represented by a 2-bit value. Bit 0 specifies high-precision or high-performance mode, and bit 1 specifies whether to perform invalid row correction. When `Q_S` is greater than 1, if `sparse_mode` is `0` or `1` and a user-defined mask is provided, enabling invalid row correction is recommended. When `Q_S` is `1`, you can only set `inner_precise` to `0` or `1`. For details about the overall constraints, see [Constraints for Q_S>1](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [Constraints for Q_S=1](#en-us_topic_0000001832267082_section_qs_eq1_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
+- **`inner_precise`** (`int`): Optional. The data type can be `int64`. Four modes are supported: `0`, `1`, `2`, and `3`. Each option is represented by a 2-bit value. Bit 0 specifies high-precision or high-performance mode, and bit 1 specifies whether to perform invalid row correction. When `Q_S` is greater than 1, if `sparse_mode` is `0` or `1` and a user-defined mask is provided, enabling invalid row correction is recommended. When `Q_S` is `1`, you can only set `inner_precise` to `0` or `1`. For details about the overall constraints, see [Constraints for Q_S>1](#en-us_topic_0000001832267082_section_qs_gt1_constraint), [Constraints for Q_S=1](#en-us_topic_0000001832267082_section_qs_eq1_constraint), and [MLA Constraints](#en-us_topic_0000001832267082_section_mla_constraint).
 
     - `0`: enables high-precision mode and disables invalid row correction.
     - `1`: enables high-performance mode and disables invalid row correction.
@@ -853,7 +853,7 @@ tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
 - `key, value`: Required. The type is `torch.int8`, and the NZ format is [blockNum, KV_N, D/32, blockSize, 32].
 - `inner_precise=1`: Required. Under the KV NZ format constraint, only the high-performance mode is supported.
 
-**Related constraints**: [GQA fake-quantization + KV NZ format constraints](#gqa-fake-quantization--kv-nz-format-constraints), [incremental inference constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint)
+**Related constraints**: [GQA fake-quantization + KV NZ format constraints](#en-us_topic_0000001832267082_section_gqa_nz_constraint), [incremental inference constraints](#en-us_topic_0000001832267082_section_qs_eq1_constraint)
 
 ```python
 import torch
@@ -1015,12 +1015,12 @@ print(out)
 
 **Scenario description**: The input is `torch.bfloat16` and the output is `torch.int8`. Except for the parameter names, this example is largely the same as the example of the same name for `torch_npu.npu_fused_infer_attention_score`.
 
-v = torch.randn(1, 8, 1024, 128, dtype=torch.float16).npu()
+**Key parameters**:
 
 - `quant_scale_out`: Required. For `torch.bfloat16` input, both `torch.float32` and `torch.bfloat16` are supported.
 - `quant_offset_out`: Optional. The type and shape are the same as those of scale. If not passed, the default is 0.
 
-softmax_scale = 1/math.sqrt(128.0)
+**Related constraints**: [General constraints](#general-constraints)
 
 ```python
 import torch

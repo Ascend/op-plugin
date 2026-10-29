@@ -191,7 +191,7 @@ There are 7 outputs in total, with types **Tensor, Tensor, Tensor, Tensor, int, 
   <!-- npu="A3,910b" id17 -->
   - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Not supported. qD == kD == vD must be satisfied.
   <!-- end id17 -->
-- Data shape constraints (B indicates batchsize, N indicates the number of heads, S indicates sequence length, and T indicates B\*S):
+- Data shape constraints (B indicates batchsize, N indicates the number of heads, S indicates sequence length, and T indicates B\*S)
   
   | Scenario | B | N | S | T |
   | --- | --- | --- | --- | --- |

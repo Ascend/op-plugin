@@ -37,9 +37,9 @@ query_dtype=None, key_dtype=None) -> Tensor
 > - Meanings of the dimensions of the parameters query, key, weights, query_dequant_scale, and key_dequant_scale: B (Batch Size) indicates the batch size of input samples, S (Sequence Length) indicates the sequence length of input samples, H (Head Size) indicates the size of the hidden layer, N (Head Num) indicates the number of heads, D (Head Dim) indicates the minimum unit size of the hidden layer and satisfies D=H/N, and T indicates the cumulative sum of the sequence lengths of input samples of all batches.
 > - S1 and S2 respectively indicate the sequence lengths of the input samples of query and key, N1 and N2 respectively indicate the numbers of heads corresponding to query and key, and k indicates the number of indices selected at the end. The D value of the parameter query is equal to that of the parameter key, which is 128. T1 and T2 respectively indicate the cumulative sums of the sequence lengths of the input samples of query and key.
 >
-- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{`torch.int8`}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. `N1` can be [1, 64].
+- **`query`** (`Tensor`): Required. Input index query, $Q_{index}^{INT8}\in\R^{g\times d}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_query` is `"BSND"`, the shape of this parameter is `(B, S1, N1, D)`. When `layout_query` is `"TND"`, the shape is `(T1, N1, D)`. `N1` can be [1, 64].
 
-- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{`torch.int8`}\in\R^{S_k\times d}$ in the formula. Non-contiguous tensors are supported along axis 0 when `layout_key` is `PA_BSND`. The data layout can be `ND`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_key` is `PA_BSND`, the shape must be `[block_count, block_size, N2, D]`, where `block_count` represents the total number of blocks in PagedAttention, and `block_size` represents the number of tokens in a block. The value of `block_size` must be a multiple of `16` and can be at most `1024`. When `layout_key` is `BSND`, the shape must be `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape must be `[T2, N2, D]`. The value of `N2` must be `1`.
+- **`key`** (`Tensor`): Required. Input index key, $K_{index}^{INT8}\in\R^{S_k\times d}$ in the formula. Non-contiguous tensors are supported along axis 0 when `layout_key` is `PA_BSND`. The data layout can be `ND`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `layout_key` is `PA_BSND`, the shape must be `[block_count, block_size, N2, D]`, where `block_count` represents the total number of blocks in PagedAttention, and `block_size` represents the number of tokens in a block. The value of `block_size` must be a multiple of `16` and can be at most `1024`. When `layout_key` is `BSND`, the shape must be `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape must be `[T2, N2, D]`. The value of `N2` must be `1`.
 
 - **`weights`** (`Tensor`): Required. Weight coefficient, $W$ in the formula. Non-contiguous tensors are not supported. The data layout can be `ND`. The data type can be `torch.float16` or `torch.bfloat16`. The shape can be `[B, S1, N1]` or `[T, N1]`.
 
@@ -63,13 +63,13 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **`layout_key`** (`str`): Optional. Data layout configuration of the input `key`. Valid values are `"PA_BSND"`, `"BSND"`, or `"TND"`. The default value is `"BSND"`. In non-PagedAttention scenarios, the value of this parameter must be identical to that of `layout_query`.
 
-- **`sparse_count`** (`int`): Optional. Number of tokens retained during the Top-K stage. The value range is [1, 2048]. The data type can be `torch.int32`.
+- **`sparse_count`** (`int`): Optional. Number of tokens retained during the Top-K stage. The value range is [1, 2048]. The data type can be `int32`.
 
-- **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `torch.int32`. Valid values: `0`: enables `defaultMask` mode. `3`: enables `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
+- **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `int32`. Valid values: `0`: enables `defaultMask` mode. `3`: enables `rightDownCausal` mode mask, corresponding to lower triangular scenarios where the dividing line extends from the right vertex.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63 - 1` is supported.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `torch.int64`. Only the default value `2^63 - 1` is supported.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. Only the default value `2^63 - 1` is supported.
 
 - **`query_dtype`** (`int`): Optional. Actual data type of `query`. The data type can be `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`.
 

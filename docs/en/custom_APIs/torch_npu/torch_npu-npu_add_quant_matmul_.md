@@ -55,14 +55,14 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 
 - This API can be used in training scenarios.
 - This API supports single-operator mode and TorchAir graph mode.
-- Data type constraints:
+- Data type constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
     | mx quantization | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
     | T-T quantization | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | `torch.float32` |
 
-- Shape constraints:
+- Shape constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |

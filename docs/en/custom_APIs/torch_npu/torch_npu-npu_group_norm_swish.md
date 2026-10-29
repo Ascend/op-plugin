@@ -33,7 +33,8 @@
   y = \frac{x}{1 + e^{-scale \cdot x}}
   $$
   
-> When computing backward gradients, if deterministic outputs are required to eliminate randomness, enable deterministic computation. For details, see [Deterministic Computation Switch](../determin_API_list.md).
+> [!NOTE]
+>
 > The forward computation is deterministic by default.<br>
 > <!-- npu="A3,910b" id4 -->
 > The backward gradient is non-deterministic by default on <term>Atlas A3 training products</term> and <term>Atlas A2 training products</term>.

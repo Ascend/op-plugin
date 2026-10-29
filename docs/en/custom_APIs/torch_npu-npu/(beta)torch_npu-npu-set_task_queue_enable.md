@@ -31,7 +31,7 @@ This API dynamically sets the TaskQueue optimization level at runtime without re
 The mode values are the same as those of the `TASK_QUEUE_ENABLE` environment variable:
 
 - 0: TaskQueue optimization is disabled.
-- 1: Level 1 optimization, which uses TaskQueue for operator delivery.
+- 1: Level 1 optimization, which uses TaskQueue for operator dispatch.
 - 2: Level 2 optimization, which uses a fixed memory pool for a two-level pipeline.
 
 The priority of the modes is as follows: `ASCEND_LAUNCH_BLOCKING=1` > the value set by this API > the `TASK_QUEUE_ENABLE` environment variable (default value: 1).

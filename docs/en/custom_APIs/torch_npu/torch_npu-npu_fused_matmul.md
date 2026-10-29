@@ -1,7 +1,7 @@
 # torch_npu.npu_fused_matmul
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[Interface Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#interface-change-description)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -19,7 +19,7 @@
   y = \operatorname{op}((x1 @ x2 + bias),\ x3)
   $$
 
-  The operation type is defined by the `fused_op_type` input and supports the following:
+  The operation type is defined by the `fused_op_type` input and supports the following operations.
 
   | fused_op_type | Formula |
   | :--- | :--- |

@@ -127,7 +127,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 - Data types supported by each product model:
   
   <!-- npu="A3,910b" id24 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>:
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
@@ -137,7 +137,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
     | `torch.bfloat16`  | `torch.bfloat16`      | `torch.bfloat16`      | `torch.bfloat16`      | `torch.int8`           | `double`      |`torch.int32`      |
   <!-- end id24 -->
   <!-- npu="310p,310b" id25 -->
-  - <term>Atlas inference products</term>, <term>Atlas 200I/500 A2 inference products</term>:
+  - <term>Atlas inference products</term>, <term>Atlas 200I/500 A2 inference products</term>
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
@@ -145,7 +145,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
     | `torch.float16`   | `torch.float16`       | `torch.float16`       | `torch.float16`       | `torch.int8`           | `double`      |`torch.int32`      |
   <!-- end id25 -->
   <!-- npu="950" id26 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - <term>Ascend 950PR&950DT products</term>
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

@@ -40,7 +40,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **`quant_offset`** (`bool`): Optional. Specifies whether to include the `quant_offset` parameter in the computation. The default value is `False`. If set to `False`, no offset is required during quantization of the fake-quantization output.
 - **`antiquant_group_size`** (`int`): Optional. Controls the group size in `pergroup` scenarios. The default value is 0. The value must be divisible by 32 in the range of `[32, K-1]`. Atlas inference products: This parameter is not supported currently.
     <!-- npu="310p" id4 -->
-    - <term>Atlas inference products</term>: Only `torch.float16` is supported.
+    - <term>Atlas inference products</term>: This parameter is not supported currently.
     <!-- end id4 -->
 - **`inner_precise`** (`int`): Computation mode. The default value is `0`. Valid values are `0` (high-precision mode) or `1` (high-performance mode, which may affect precision). In `pergroup` scenarios where `weight` is of `torch.int32` type and in `FRACTAL_NZ` layout, and `M` is not greater than 16, this parameter can be set to `1` to improve performance. High-performance mode is not recommended in other scenarios.
 
@@ -90,7 +90,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 
 - **`quant_scale`** (`Tensor`): Scale used for output quantization. This parameter is supported only when `weight` layout is ND. The data layout can be ND. The data type can be `torch.float32` or `torch.int64`. This parameter must be 2D with shape `(1, N)` or 1D with shape `(N,)` or `(1,)`. When the data type of `antiquant_scale` is `torch.int64`, this parameter must be omitted. Atlas inference products: This parameter is not supported currently.
     <!-- npu="310p" id13 -->
-    - <term>Atlas inference products</term>: Only `torch.float16` is supported, and it must match that of `antiquant_scale`.
+    - <term>Atlas inference products</term>: This parameter is not supported currently.
     <!-- end id13 -->
 - **`quant_offset`** (`Tensor`): Offset used for output quantization. This parameter is supported only when `weight` layout is ND. The data layout can be ND. The data type can be `torch.float32`. This parameter must be 2D with shape `(1, N)` or 1D with shape `(N,)` or `(1,)`. When the data type of `antiquant_scale` is `torch.int64`, this parameter must be omitted. Atlas inference products: This parameter is not supported currently.
     <!-- npu="310p" id14 -->

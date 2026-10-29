@@ -297,7 +297,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     model = torch.compile(model, backend=npu_backend, dynamic=False)
     _, _, k_rope, c_kv = model(kv, gamma, cos, sin, index, k_cache, ckv_cache, k_rope_scale, c_kv_scale, None, None, 1e-5, cache_mode, is_output_kv)
 
-    # Example 2: Quantization mode
+    # Example 1: Quantization mode
     ## 1. Create an int8 cache (quantized)
     k_cache = torch.ones(page_num, page_size, 1, 64, dtype = torch.int8).npu()
     ckv_cache = torch.ones(page_num, page_size, 1, 512, dtype = input_dtype).npu()
@@ -306,23 +306,23 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     c_kv_scale = torch.randn([512], dtype=torch.float32).npu() # Scale for compressed KV
     # The remaining code remains unchanged
 
-    # Example 3: Norm
+    # Example 2: Norm
     cache_mode = "Norm"
     index_shape = (batch_size, seq_len)
     index = torch.arange(start=0, end=batch_size*seq_len, step=1, dtype=torch.int64).reshape(index_shape).npu()
     is_output_kv = False
     # The remaining code remains unchanged
 
-    # Example 4: PA_NZ
+    # Example 3: PA_NZ
     cache_mode = "PA_NZ"
     # The remaining code remains unchanged
 
-    # Example 5: PA_BLK_BNSD
+    # Example 4: PA_BLK_BNSD
     cache_mode = "PA_BLK_BNSD"
     index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged
 
-    # Example 6: PA_BLK_NZ
+    # Example 5: PA_BLK_NZ
     cache_mode = "PA_BLK_NZ"
     index_shape = [batch_size * (seq_len + page_size - 1 ) // page_size]
     # The remaining code remains unchanged

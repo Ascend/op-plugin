@@ -44,7 +44,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
   <!-- npu="950" id7 -->
   - <term>Ascend 950PR&950DT products</term>: currently, only 29 (ACL\_FORMAT\_FRACTRAL\_NZ) and 2 (ACL\_FORMAT\_ND) are supported.
   <!-- end id7 -->
-  - torch_npu supports the following data layouts:
+  - torch_npu supports the following data layouts.
 
     |torch_npu.Format Type|Integer Value|Description|
     | ------| ------|:------: |

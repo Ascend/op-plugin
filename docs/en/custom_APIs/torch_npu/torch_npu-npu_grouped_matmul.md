@@ -400,7 +400,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 
 ## Return Values<a name="en-us_topic_0000002262888689_section1558311519405"></a>
 
-`List[Tensor]`:
+**`y`** (`List[Tensor]`): Output tensor. The data format can be ND.
 
 - When `split_item` is set to `0` or `1`, the number of returned tensors is identical to that of `weight`.
 - When `split_item` is set to `2` or `3`, a single tensor is returned.
@@ -445,7 +445,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - Usage scenario constraints for `tuning_config`:
 
     - The S8S4 K-C and S8S4 K-CG fake-quantization scenarios are applicable only to <term>Ascend 950PR&950DT products</term>.
-    - Quantization scenarios: The input is `torch.int8`, the output is `torch.int32`/`torch.bfloat16`/`torch.float16`/`torch.int8`, and the scenario is single-tensor single-expert. The data types are as follows:
+    - Quantization scenarios: The input is `torch.int8`, the output is `torch.int32`/`torch.bfloat16`/`torch.float16`/`torch.int8`, and the scenario is single-tensor single-expert. The data types are as follows.
 
     | x | weight | output_dtype | y |
     | --- | --- | --- | --- |
@@ -488,7 +488,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | fake-quantization | `torch.float16` | `torch.int8`/`torch_npu.int4` | `torch.float16` | None | `torch.float16` | `torch.float16` | None | None/`torch.float16` | `torch.float16` |
     | fake-quantization | `torch.bfloat16` | `torch.int8`/`torch_npu.int4` | `torch.float32` | None | `torch.bfloat16` | `torch.bfloat16` | None | None/`torch.bfloat16` | `torch.bfloat16` |
 
-    > **Note:**
+    > [!NOTE]
+    >
     > - In fake-quantization scenarios, if the type of weight is `torch.int8`, only the perchannel mode is supported; if the type of weight is `torch_npu.int4`, both the perchannel and pergroup modes are supported. If the mode is pergroup, the pergroup count G or G<sub>i</sub> must divide the corresponding k<sub>i</sub>. If weight is multiple tensors, the pergroup length is defined as s<sub>i</sub> = k<sub>i</sub> / G<sub>i</sub>, and all s<sub>i</sub> (i=1,2,...g) must be equal.
     > - In fake-quantization scenarios, if the type of weight is `torch_npu.int4`, the last dimension of each group of tensors in weight must be an even number. The last dimension of weight<sub>i</sub> refers to the N axis of weight<sub>i</sub> when weight is not transposed, or the K axis of weight<sub>i</sub> when weight is transposed. In addition, in pergroup scenarios, when weight is transposed, the pergroup length s<sub>i</sub> must be an even number. Tensor transposition: if the tensor shape is [M,K], the stride is [1,M] and the data layout is [K,M], that is, a non-contiguous tensor.
     > - PyTorch currently does not support the `torch_npu.int4` type. When it is needed, the [torch_npu.npu_quantize](torch_npu-npu_quantize.md) API can be used to represent `torch_npu.int4` with `torch.int32` data.
@@ -555,6 +556,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - **Scenarios supported when the `group_list` input type is Tensor** (for <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
 
     > [!NOTE]   
+    >
     > - Quantization and fake-quantization are supported only when `group_type` is set to `-1` or `0`.
     > - Activation function computation is supported only in `pertoken` quantization scenarios.
 
@@ -578,7 +580,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   <!-- npu="950" id69 -->
   - **Scenarios supported when the `group_list` input type is Tensor** (<term>Ascend 950PR&950DT products</term>)
 
-    > **Note:**
+    > [!NOTE]
+    >
     > - Full quantization supports only single-single-single scenarios with group_type of 0 and 2. Training scenarios, that is, group_type of 2, are supported only in full quantization where the input x and weight are `torch_npu.hifloat8`, `torch.float8_e4m3fn`, or `torch.float8_e5m2`.
     > - Fake-quantization scenarios support multi-multi-multi scenarios with `group_type` of -1, and single-single-single and single-multi-single scenarios with `group_type` of 0. Single-multi-single indicates that `x` is a single tensor, `weight` is multiple tensors, and `y` is a single tensor.
     >   - perchannel fake-quantization scenarios where the input `x` is `torch.float16`/`torch.bfloat16` and `weight` is `torch.int8`/`torch.int32` (`torch_npu.int4`).
@@ -594,7 +597,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | 2 | single-single-single | x, weight, and y are all single tensors. | 1. Only split_item of 2 or 3 is supported.<br>  2. group_list must be passed. When group_list_type is 0, the last value must not be greater than the first dimension of the tensor in x; when group_list_type is 1, the sum of the values must not be greater than the first dimension of the tensor in x.<br>  3. The maximum length of the first dimension of group_list is 1024, that is, a maximum of 1024 groups is supported.<br>  4. In full quantization scenarios, scale of `torch.int64` is not supported.<br>  5. Only transposed x and non-transposed weight are supported.<br>  6. A single tensor in y must be 3D, and a single tensor in x and weight must be 2D.<br>  7. In graph mode scenarios, the K axis must not be 0.<br>  8. Only ND input and ND output are supported. |
     | 2 | single-multi-multi | x is a single tensor, weight is multiple tensors, and y is multiple tensors. | 1. Only split_item of 0 or 1 is supported.<br>  2. The tensors in x, weight, and y must be 2D.<br>  3. If grouplist is passed, when group_list_type is 0, the differences in group_list must correspond one-to-one to the first dimension of the tensor in x; when group_list_type is 1, the values in group_list must correspond one-to-one to the first dimension of the tensor in x, and the maximum length is 1024.<br>  4. Only transposed x and non-transposed weight are supported.<br>  5. The shape of the non-grouping axis must not be 0.<br>  6. Only ND input and ND output are supported.<br>  7. bias is not supported.<br>  8. Only non-quantization is supported. |
 
-    - **Single-single-single full quantization scenarios**: The shape restrictions on scale and per_token_scale in each scenario are as follows (where g is the shape size of `group_list`, M is the same as the shape m of x, K is the same as the shape k of x, and N is the same as the shape n of weight):
+    - **Single-single-single full quantization scenarios**: The shape restrictions on scale and per_token_scale in each scenario are as follows (where g is the shape size of `group_list`, M is the same as the shape m of x, K is the same as the shape k of x, and N is the same as the shape n of weight).
 
         | group_type | Quantization Mode | Shape Restriction |
         | --- | --- | --- |
@@ -617,7 +620,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
         > - In dynamic quantization scenarios, when group_type is 2, K<128, M is 1, and the shape of per_token_scale is `(g, 1)`, if N is less than or equal to 128, pergroup quantization is selected for x; if N is greater than 128, the quantization mode of x is selected according to the quantization mode of weight (if weight is perchannel or pertensor quantized, pertensor quantization is selected for x; if weight is perblock quantized, pergroup quantization is selected for x).
         > - In full quantization `torch_npu.int4` scenarios where x is pertoken quantized and weight is pergroup quantized, the pergroup count G must divide K, and K/G must be an even number. After weightNZ transposition, K/G must be aligned to 64, K must be aligned to 64, and N must be aligned to 16.
 
-    - **Fake-quantization scenarios**: The shape restrictions on antiquant_scale, scale, and per_token_scale in each scenario are as follows (where g is the shape size of `group_list`, M and K are the same as the m and k of x, and N is the same as the n of weight):
+    - **Fake-quantization scenarios**: The shape restrictions on antiquant_scale, scale, and per_token_scale in each scenario are as follows (where g is the shape size of `group_list`, M and K are the same as the m and k of x, and N is the same as the n of weight).
 
         | group_type | Quantization Mode | Shape Restriction |
         | --- | --- | --- |

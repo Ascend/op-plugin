@@ -94,7 +94,7 @@ torch_npu.npu_add_quant_gmm_(self, x1, x2, x2_scale, group_list, *, x1_scale=Non
 - This API supports training scenarios.
 - This API supports single-operator mode and TorchAir graph mode.
 - The first dimension of `group_list` supports a maximum of 1024 groups.
-- Data type constraints:
+- Data type constraints
 
   | Scenario | x1 | x2 | x2_scale | x1_scale | self |
   | --- | --- | --- | --- | --- | --- |

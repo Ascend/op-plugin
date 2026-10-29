@@ -8,7 +8,7 @@ This sample demonstrates how to implement a custom operator kernel using Ascend 
 ├── examples
 |   ├── cpp_extension
 |   │   ├── csrc
-|   │   │   ├── add_custom.asc          # Add operator implementation
+|   │   │   ├── add_custom.asc          # Add operator implementation (comparison of five correct launch methods)
 |   │   │   ├── trig_inplace_custom.asc # In-place trigonometric operator implementation
 |   │   │   └── pybind11.asc            # pybind binding for custom operators
 |   |   ├── op_extension/
@@ -27,7 +27,7 @@ This sample demonstrates how to implement a custom operator kernel using Ascend 
 
 Create an `.asc` file in `./csrc/` and implement the operator kernel based on Ascend C. For Ascend C development, see the [Ascend Community documentation](https://www.hiascend.com/ascend-c).
 
-Taking `add_custom.asc` as an example, the file contains three parts:
+Taking `add_custom.asc` as an example, the file contains three parts.
 
 | Component | Description |
 |------|------|
@@ -35,7 +35,7 @@ Taking `add_custom.asc` as an example, the file contains three parts:
 | `add_custom` kernel function | Device entry point decorated with `__global__ __vector__` |
 | `ascendc_add1/2/3/4/5` | Five correct host-side launch modes, comparing different stream acquisition and queue management strategies |
 
-**Comparison of the five launch modes**:
+**Comparison of the five launch modes**
 
 | Mode | Function | stream acquisition | Queue management | Applicable scenario |
 |------|------|------------|---------|---------|
@@ -49,7 +49,7 @@ Taking `add_custom.asc` as an example, the file contains three parts:
 
 ### 2. Python module binding
 
-The `pybind11.asc` file uses the `pybind11` library to wrap C++ code into a Python module, which can then be imported and called on the Python side.
+The `pybind11.asc` file uses `pybind11` to expose C++ functions as a Python interface. The Python side exposes only recommended mode 3.
 
 ```cpp
 namespace ascendc_ops {
@@ -99,7 +99,7 @@ at::Tensor ascendc_add3(const at::Tensor &x, const at::Tensor &y)
 }  // namespace ascendc_ops
 ```
 
-The preceding section describes the workflow required to integrate a custom operator kernel.
+The preceding section describes the mandatory workflow for integrating a custom operator kernel. For the complete set of five correct launch methods, see `./csrc/add_custom.asc`. The Python side exposes only recommended mode 3 through `./csrc/pybind11.asc`.
 
 Finally, by creating the `ops` path and defining the Python interface, you can call the custom operator through `module_name.ops.custom_add`. The test code sample is as follows:
 
@@ -121,7 +121,7 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
       python setup.py bdist_wheel
       ```
 
-Key logic of `setup.py`:
+Key logic of `setup.py`
 
 | Step | Implementation | Description |
 |------|------|------|

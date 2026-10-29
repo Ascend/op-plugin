@@ -38,7 +38,7 @@
   $$
 
   In the formula, $block\_reduce\_max$ indicates the maximum value in each `block`. `FP8_MAX`, `HiF8_MAX`, and `INT8_MAX` respectively indicate the maximum positive values representable by the FP8, HiF8, and INT8 target quantization types, which are determined by `dst_type`. When `dst_type_max` is not 0, the value of `dst_type_max` is used as the maximum value of the target type.
-  FP8, HiF8, and INT8 are all 8-bit low-precision quantization target types, respectively indicating the FP8 floating-point, HiF8 floating-point, and INT8 integer formats. The currently supported maximum values are as follows:
+  FP8, HiF8, and INT8 are all 8-bit low-precision quantization target types, respectively indicating the FP8 floating-point, HiF8 floating-point, and INT8 integer formats. The currently supported maximum values are as follows.
 
   | Target Type | Maximum Positive Value |
   | --- | --- |

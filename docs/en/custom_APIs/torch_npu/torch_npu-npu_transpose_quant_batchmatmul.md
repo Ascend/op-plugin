@@ -40,7 +40,7 @@ torch_npu.npu_transpose_quant_batchmatmul(x1, x2, dtype, *, bias=None, x1_scale=
 - **`perm_x1`** (`List[int]`): Optional. Transpose sequence for the first matrix in the matrix multiplication. The size is `3`, and the data type is `torch.int64`. The data layout can be `ND`. Only `[1, 0, 2]` is supported.
 - **`perm_x2`** (`List[int]`): Optional. Transpose sequence for the second matrix in the matrix multiplication. The size is `3`, and the data type is `torch.int64`. The data layout can be `ND`. `[0, 1, 2]` and `[0, 2, 1]` are supported.
 - **`perm_y`** (`List[int]`): Optional. Transpose sequence for the output matrix of the matrix multiplication. The size is `3`, and the data type is `torch.int64`. The data layout can be `ND`. Only `[1, 0, 2]` is supported.
-- **`batch_split_factor`** (`int`): Optional. Specifies the split size of the `b` dimension of the output matrix of the matrix multiplication. The data type is `torch.int32`. The default value is `1`. Currently, only `1` is supported.
+- **`batch_split_factor`** (`int`): Optional. Specifies the split size of the `b` dimension of the output matrix of the matrix multiplication. The data type is `int32`. The default value is `1`. Currently, only `1` is supported.
 - **`x1_dtype`** (`int`): Optional. Data type of `x1`. Supported values are `torch.float8_e5m2`, `torch.float8_e4m3fn`, and `torch_npu.hifloat8`.
 - **`x2_dtype`** (`int`): Optional. Data type of `x2`. Supported values are `torch.float8_e5m2`, `torch.float8_e4m3fn`, and `torch_npu.hifloat8`.
 

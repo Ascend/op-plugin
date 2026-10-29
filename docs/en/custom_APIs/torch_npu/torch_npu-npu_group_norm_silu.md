@@ -19,7 +19,7 @@
 
 - **API function**: Performs GroupNorm and SiLU activation on the input Tensor `input` in sequence and returns three Tensors: out (output after SiLU activation), meanOut (normalization mean), and rstdOut (reciprocal of the normalization standard deviation).
 - **Formulas**:
-    - GroupNorm: $x$ is the input `input`. In the formula, $γ$ and $β$ correspond to the optional parameters `weight` and `bias` respectively. When both `weight` and `bias` are empty, no affine transformation is performed (equivalent to $γ = 1$ and $β = 0$). $E[x] = \bar{x}$ represents the mean of $x$, and $ Var[x]=\frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2 $ represents the variance of $x$. Then,
+    - GroupNorm: $x$ is the input `input`. In the formula, $γ$ and $β$ correspond to the optional parameters `weight` and `bias` respectively. When both `weight` and `bias` are empty, no affine transformation is performed (equivalent to $γ = 1$ and $β = 0$). $E[x] = \bar{x}$ represents the mean of $x$, and $Var[x] = \frac{1}{n}\sum_{i=1}^{n} (x_i - E[x])^2$ represents the variance of $x$. Then,
     $$
     \begin{cases}
     \text{groupnormOut} = \frac{x - E[x]}{\sqrt{Var[x] + eps}} * \gamma + \beta \\

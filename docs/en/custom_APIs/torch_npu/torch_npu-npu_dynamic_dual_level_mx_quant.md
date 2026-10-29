@@ -42,7 +42,7 @@
 
         Quantized $y_i$ values are arranged according to the positions of the corresponding $x_i$ elements to form the output $y$. Output `level0_scale` is formed by grouping $level0\_scale_i$ values along the last axis, and output `level1_scale` is formed by grouping $level1\_scale_i$ values along the last axis.
 
-        $max_i$ represents the maximum value in the $i$-th group, and `emax` represents the exponent of the maximum finite normal positive number of the corresponding data type. The mappings are defined as follows:
+        $max_i$ represents the maximum value in the $i$-th group, and `emax` represents the exponent of the maximum finite normal positive number of the corresponding data type. The mappings are defined as follows.
 
         | dst_type | emax |
         | --- | --- |

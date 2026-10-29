@@ -172,7 +172,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
 - The following table lists the data type combinations supported by the input and output tensors.
 
   <!-- npu="A3,910b" id27 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -182,7 +182,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     | `torch.int8` | `torch_npu.int4` | `torch.int64` | `torch.int64` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.bfloat16` | `torch.float32` | `torch.int64` | `torch.float32` |
   <!-- end id27 -->
   <!-- npu="950" id28 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - <term>Ascend 950PR&950DT products</term>
 
     | x | w | group_list | scale | bias | offset | pertoken_scale | shared_input | logit | row_index | y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

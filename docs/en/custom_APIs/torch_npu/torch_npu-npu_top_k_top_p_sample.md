@@ -102,7 +102,7 @@
     \end{cases}
     $$
 
-  * The processing strategy of this module varies depending on the value of the input `top_p[b]`:
+  * The processing strategy of this module varies depending on the value of the input `top_p[b]`.
 
   | Parameter| ≤ | Valid Range| Invalid Range|
   | :-------:| :------:|:-------:|:-------:|

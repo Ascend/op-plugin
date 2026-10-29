@@ -39,7 +39,8 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
   <!-- npu="950" id5 -->
   - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int32` or `torch.float32`. When the input data type is `torch.int32`, the element values in `weight` must be within the representation range of `torch_npu.int4`, that is, $[-8, 7]$. When the input data type is `torch.float32`, the element values in `weight` must be within the representation range of `torch_npu.float4_e2m1fn_x2`, that is, $[-6.0, 6.0]$. Two or three dimensions are supported, the shape can be $(k, n)$, $(n, k)$, $(g, k, n)$, or $(g, n, k)$, and the last dimension must be 8-element aligned.
 
-    > **Note:**
+    > [!NOTE]
+    >
     > - PyTorch 2.7 and earlier: within the `torch_npu.float4_e2m1fn_x2` range, the `float4_e2m1fn` type provided by the `ml_dtypes` library in Python is used. The `ml_dtypes` version must be 0.5.0 or later. For details, see [Example](#example).
     > - Starting from PyTorch 2.8, `torch.float4_e2m1fn_x2` can be used directly.
   <!-- end id5 -->

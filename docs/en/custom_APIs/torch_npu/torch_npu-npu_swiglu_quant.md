@@ -39,7 +39,7 @@
             out=out*smooth\_scales
             $$
 
-        2. Perform dynamic or static quantization on the activation result. The following example shows the dynamic quantization (`dynamic_quant`) equation. For detailed mathematical formulas, see aclnnSwiGluQuantV2.
+        2. Perform dynamic or static quantization on the activation result. The following example shows the dynamic quantization (`dynamic_quant`) equation. For detailed mathematical formulas, see [aclnnSwiGluQuantV2](https://gitcode.com/cann/ops-nn/blob/9.2.0/quant/swi_glu_quant/docs/aclnnSwiGluQuantV2.md).
             $$
             out,scale=dynamic\_quant(out)
             $$

@@ -68,7 +68,7 @@ torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, *, offset, beta, epsilon=1e-06,
 - This API supports only single-operator mode.
 - When `dst_dtype` is `torch.quint4x2`, the last dimension of `x`, `gamma`, and `beta` must be even, and the last dimension of `x` must be divisible by 8.
 - When the data type of `y` is `torch.int32`, the last dimension of `y` must be 1/8 of the last dimension of `x`.
-- Supported data types:
+- Supported data types
 
     | x | gamma | scale | offset | beta | epsilon | y | rstd |
     | :------: | :------: | :------: | :------: | :------: | :------: | :------: | :------: |

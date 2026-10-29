@@ -31,7 +31,7 @@
 
 Controls the strong consistency feature on the CANN side by reconfiguring CANN parameters. For detailed parameter descriptions, see [aclSysParamOpt](https://gitcode.com/cann/runtime/blob/9.2.0/python/docs/en/api_ref/runtime/datatypes/aclSysParamOpt.md).
 
-The following table describes the mapping between configuration levels and their actual behaviors:
+The following table describes the mapping between configuration levels and their actual behaviors.
 
 | `torch_npu.npu.set_deterministic_level` Configuration | `aclrtSetSysParamOpt` Configuration | Actual Behavior | Correspondence with Native API `torch.use_deterministic_algorithms` |
 | :----------------------------------------------------- | :----------------------------------- | :-------------- | :------------------------------------------------------------------- |
@@ -50,7 +50,7 @@ torch_npu.npu.set_deterministic_level(level)
 
 ## Parameters
 
-**`level`** (`int`): Deterministic level. Valid values are `0`, `1`, or `2`. The default value is `0`.
+**`level`** (`int`): Deterministic level. Valid values are `0`, `1`, `2`, or `3`. The default value is `0`.
 
 ## Return Values
 

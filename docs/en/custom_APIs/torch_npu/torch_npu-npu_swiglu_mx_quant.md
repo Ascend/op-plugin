@@ -82,7 +82,7 @@
     P_i = cast\_to\_dst\_type(V_i / mxscale,\ round\_mode)
     $$
 
-    Here, $emax$ is the exponent bit of the maximum normal number of the target data type:
+    Here, $emax$ is the exponent bit of the maximum normal number of the target data type.
 
     |   Data type   | emax |
     |:------------:|:----:|

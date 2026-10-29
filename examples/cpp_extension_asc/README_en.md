@@ -9,7 +9,7 @@ This document describes the complete adaptation development workflow for calling
 Before getting started, ensure that you have completed the installation of the following environments:
 
 1. Install the NPU driver, firmware, and CANN software (Toolkit, ops, and NNAL) by referring to [CANN Software Installation](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/920/softwareinst/instg/instg_0000.html?OS=openEuler&InstallType=netyum).
-2. Install the PyTorch framework by referring to [Software Installation](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/installation_guide/references/building_from_source.md).
+2. Install the PyTorch framework by referring to [Building from Source](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/installation_guide/references/building_from_source.md).
 
 ### Adaptation File Structure
 

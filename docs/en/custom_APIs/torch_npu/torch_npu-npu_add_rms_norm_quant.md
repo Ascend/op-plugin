@@ -151,7 +151,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - Data type support for each product:
 
   <!-- npu="950" id21 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - <term>Ascend 950PR&950DT products</term>
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -164,7 +164,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.bfloat16` |
   <!-- end id21 -->
   <!-- npu="A3,910b" id22 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>:
+  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -172,7 +172,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `torch.int8` | `torch.bfloat16` |
   <!-- end id22 -->
   <!-- npu="310p" id23 -->
-  - <term>Atlas inference products</term>:
+  - <term>Atlas inference products</term>
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

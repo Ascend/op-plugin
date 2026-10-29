@@ -208,7 +208,7 @@
          Q_i = quantize\_to\_element\_format(S_i/Q\_scale), \space i\space from\space 1\space to\space blocksize
          $$
 
-         where $emax$ denotes the exponent of the maximum normal value for the corresponding data type:
+         where $emax$ denotes the exponent of the maximum normal value for the corresponding data type.
 
          |   DataType    | emax |
          | :-----------: | :--: |
@@ -322,7 +322,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - **`*`**: Variables before `*` are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
-- **`group_list`** (`Tensor`): Required. Number of tokens in each group involved in the computation, $groupList$ in the formulas. This parameter must be 1D with shape `[e]`, and its length must be identical to the first axis dimension of `weight`. The data type can be `torch.int64`. The data layout can be ND. Non-contiguous tensors are supported.
+- **`group_list`** (`Tensor`): **Required.** Number of tokens in each group involved in the computation. The `shape` can be 1D `[e]`. The data type can be `torch.int64`, and the data layout can be ND. Non-contiguous tensors are supported. When `group_list_type` is `0`, the last value must not be greater than the first dimension of `x`. When `group_list_type` is `1`, the sum of all values must not be greater than the first dimension of `x`. The values in `group_list` constrain the valid part of the output data. Parts not specified in `group_list` are not updated.
 
 - **`smooth_scale`** (`Tensor`): Optional. Smooth scaling factor, $smoothScale$ in the formulas. The data type can be `torch.float32`. The data layout can be ND. This parameter must be provided only in A4W4 scenarios, and its first axis length must be identical to the first axis dimension of `weight`. The shape of this parameter is `(E, N/2)` or `(E,)`. When shape `(E,)` is used, broadcast multiplication is applied. In other scenarios, the default value is `None`.
 
@@ -330,7 +330,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 - **`bias`** (`Tensor`): Optional. Offset value for matrix multiplication computation, $bias$ in the formulas. This parameter must be a 2D tensor. The data type can be `torch.int32`. Currently, only the default value `None` is supported.
 
-- **`dequant_mode`** (`int`): Optional. Dequantization mode. This parameter is of type `torch.int32` and has a default value of `0`. A value of `0` indicates `pertoken` quantization for the activation matrix and `perchannel` quantization for the weight matrix. A value of `1` indicates `pertoken` quantization for the activation matrix and `pergroup` quantization for the weight matrix. A value of `2` indicates MX quantization.
+- **`dequant_mode`** (`int`): Optional. Dequantization mode. This parameter is of type `int32` and has a default value of `0`. A value of `0` indicates `pertoken` quantization for the activation matrix and `perchannel` quantization for the weight matrix. A value of `1` indicates `pertoken` quantization for the activation matrix and `pergroup` quantization for the weight matrix. A value of `2` indicates MX quantization.
 
   <!-- npu="A3,910b" id14 -->
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: In A8W4 scenarios, `dequant_mode` can be `0` or `1`. In A8W8 and A4W4 scenarios, `dequant_mode` can only be `0`.
@@ -339,7 +339,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR&950DT products</term>: Currently, only `0` and `2` are supported.
   <!-- end id15 -->
 
-- **`dequant_dtype`** (`int`): Optional. Dequantization data type. This parameter is of type `torch.int32`.
+- **`dequant_dtype`** (`int`): Optional. Dequantization data type. This parameter is of type `int32`.
 
   <!-- npu="A3,910b" id16 -->
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Currently, only the default value `6` (indicating `torch.float32`) is supported.
@@ -348,7 +348,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR&950DT products</term>: The default value is `torch.float32`. Currently, `torch.float32`, `torch.bfloat16`, and `torch.float16` are supported.
   <!-- end id17 -->
 
-- **`quant_mode`** (`int`): Optional. Quantization mode after SwiGLU. This parameter is of type `torch.int32`. Valid values are `0` (default, `pertoken` quantization), `1` (`pergroup` quantization), or `2` (MX quantization).
+- **`quant_mode`** (`int`): Optional. Quantization mode after SwiGLU. This parameter is of type `int32`. Valid values are `0` (default, `pertoken` quantization), `1` (`pergroup` quantization), or `2` (MX quantization).
 
   <!-- npu="A3,910b" id18 -->
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Currently, only the default value `0` (`pertoken` quantization) is supported.
@@ -357,7 +357,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR&950DT products</term>: Currently, only `0` and `2` are supported.
   <!-- end id19 -->
 
-- **`quant_dtype`** (`int`): Optional. Low-bit data type after quantization. This parameter is of type `torch.int32`.
+- **`quant_dtype`** (`int`): Optional. Low-bit data type after quantization. This parameter is of type `int32`.
 
   <!-- npu="A3,910b" id20 -->
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Currently, only the default value `0` (indicating `torch.int8`) is supported.
@@ -366,7 +366,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Ascend 950PR&950DT products</term>: The default value is `torch.int8`. Currently, `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int8`, and `torch_npu.hifloat8` are supported.
   <!-- end id21 -->
 
-- **`group_list_type`** (`int`): Optional. Input type of `group_list`. This parameter is of type `torch.int32` and has a default value of `0`.
+- **`group_list_type`** (`int`): Optional. Input type of `group_list`. This parameter is of type `int32` and has a default value of `0`.
   - A value of `0` indicates cumsum mode, where each element in `group_list` represents the cumulative length of the current group.
   - A value of `1` indicates count mode, where each element in `group_list` represents the number of elements in the corresponding group.
 

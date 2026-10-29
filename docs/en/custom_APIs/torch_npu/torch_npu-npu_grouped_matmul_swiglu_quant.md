@@ -99,23 +99,23 @@
     3. Enable perchannel or pergroup quantization during matrix multiplication.
         - perchannel quantization:
 
-          $
+          $$
           C\_high_{i} = (X\_high\_4bits_{i} \cdot W_{i}) \odot w\_scale_{i}
-          $
+          $$
 
-          $
+          $$
           C\_low_{i} = (X\_low\_4bits_{i} \cdot W_{i}) \odot w\_scale_{i}
-          $
+          $$
 
         - pergroup quantization:
 
-          $
+          $$
           C\_high_{i} = \\ Σ_{k=0}^{K-1}((X\_high\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
-          $
+          $$
 
-          $
+          $$
           C\_low_{i} = \\ Σ_{k=0}^{K-1}((X\_low\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
-          $
+          $$
 
     4. Restore the high and low matrix multiplication results to the overall result:
 

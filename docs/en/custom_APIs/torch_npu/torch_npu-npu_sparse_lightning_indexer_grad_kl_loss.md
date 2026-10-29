@@ -131,7 +131,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 - The data types of the parameters query, key, query_index, and key_index must be the same.
 - When the parameter weights is not `torch.float32`, the data types of the parameters query, key, query_index, key_index, and weights must be the same.
 - This API does not support graph mode calls currently.
-- Specification constraints:
+- Specification constraints
 
   | Item | Specification | Description |
   |---------|---------------------------------------|-----------------------|
