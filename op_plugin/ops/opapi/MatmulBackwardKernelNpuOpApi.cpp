@@ -177,6 +177,11 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(
   if (!grad.defined()) {
     return std::make_tuple(at::Tensor(), at::Tensor());
   }
+  if (grad.numel() == 0 || self.numel() == 0 || other.numel() == 0) {
+    return std::make_tuple(
+        grad_input_mask[0] ? at::zeros_like(self) : at::Tensor(),
+        grad_input_mask[1] ? at::zeros_like(other) : at::Tensor());
+  }
   // backward mat1 and mat2 separately
   at::Tensor self_grad;
   at::Tensor other_grad;

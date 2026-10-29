@@ -107,6 +107,11 @@ std::tuple<at::Tensor, at::Tensor> matmul_backward(
   if (!mask[0] && !mask[1]) {
     return std::make_tuple(grad_self, grad_other);
   }
+  if (grad.numel() == 0 || self.numel() == 0 || other.numel() == 0) {
+    return std::make_tuple(
+        mask[0] ? at::zeros_like(self) : at::Tensor(),
+        mask[1] ? at::zeros_like(other) : at::Tensor());
+  }
 
   if (torch_npu::utils::is_npu(self) && torch_npu::utils::is_npu(other) && self.scalar_type() == at::kHalf &&
       other.scalar_type() == at::kHalf && at_npu::native::env::CheckBmmV2Enable()) {
