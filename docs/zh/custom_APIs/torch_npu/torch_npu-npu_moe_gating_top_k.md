@@ -14,35 +14,151 @@
 
 ## 功能说明
 
-- API功能：MoE计算中，对输入x做Sigmoid/Softmax计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。
+- API功能：MoE计算中，对输入x做Sigmoid、Softmax或者SqrtSoftplus计算，对计算结果分组进行排序，最后根据分组排序的结果选取前k个专家。支持两种模式：
+  - **TopK模式**：对normValue进行TopK排序选择专家。
+  - **Hash模式**：根据`input_ids`从`tid2eid`映射表中获取预计算的专家索引，跳过排序步骤直接输出。
 - 计算公式：
 
-    对输入做sigmoid（`bias`可选）：
-    - 当`norm_type`为1时：
+  **TopK模式：**
 
-      ![](../../figures/zh-cn_formulaimage_0000002258672873.png)
+    **Step 1: 归一化**
 
-    - 当`norm_type`为0时：
+    根据`norm_type`对输入`x`做归一化：
 
-      ![](../../figures/zh-cn_formulaimage_0000002313785750.png)
+    $$
+    normOut =
+    \begin{cases}
+        \text{SoftMax}(x),      & norm\_type = 0 \\
+        \text{Sigmoid}(x),      & norm\_type = 1\ or\ 3 \\
+        \sqrt{\text{Softplus}(x)},     & norm\_type = 2
+    \end{cases}
+    $$
 
-    对计算结果按照`group_count`进行分组：
-    
-    - 如果`group_select_mode`为1，每组按照topk2的sum值对group进行排序，取前`k_group`个组：
+    **Step 2: 加偏置**
 
-      ![](../../figures/zh-cn_formulaimage_0000002219010398.png)
+    若`bias`不为空，加偏置得到用于选择的值：
 
-    - 如果`group_select_mode`为0，每组按照组内的最大值对group进行排序，取前`k_group`个组：
+    $$
+    normValue = normOut + bias
+    $$
 
-      ![](../../figures/zh-cn_formulaimage_0000002347834049.png)
+    否则 $normValue = normOut$。
 
-    根据上一步的groupId获取`normOut`中对应的元素，将数据再做TopK，得到`expertIdxOut`的结果：
+    **Step 3: 分组筛选**（仅`group_count > 1`时执行）
 
-    ![](../../figures/zh-cn_formulaimage_0000002219172722.png)
+    将normValue按`group_count`分组，根据`group_select_mode`计算每组得分：
 
-    对y按照输入的`routed_scaling_factor`和`eps`参数进行计算，得到yOut的结果：
+    $$
+    groupedValue = Reshape(normValue,\ [batch,\ group\_count,\ -1])
+    $$
 
-    ![](../../figures/zh-cn_formulaimage_0000002219173660.png)
+    $$
+    groupScore = \begin{cases}
+        ReduceMax(groupedValue,\ dim=-1), & group\_select\_mode = 0 \\
+        ReduceSum(TopK(groupedValue,\ k=2,\ dim=-1),\ dim=-1), & group\_select\_mode = 1
+    \end{cases}
+    $$
+
+    选取得分最高的`k_group`个组，将未选中组的对应位置置为 $-\infty$：
+
+    $$
+    groupIdx = TopK(groupScore,\ k=k\_group).indices
+    $$
+
+    $$
+    normValue = Mask(groupedValue,\ groupIdx,\ fillValue=-\infty)
+    $$
+
+    **Step 4: Top-K专家选择**
+
+    对normValue取Top-K得到专家索引，这里只需要expertIdxOut：
+
+    $$
+    y, expertIdxOut = TopK(normValue[groupIdx, :],\ k=k)
+    $$
+
+    **Step 5: Renorm与缩放**
+
+    根据expertIdxOut从normOut中取出对应的k个专家得分：
+
+    $$
+    gathered = normOut[\text{expertIdxOut}]
+    $$
+
+    `norm_type`为`1`或`2`时始终做归一化；`norm_type`为`0`或`3`时由`renorm`控制是否归一化：
+
+    $$
+    if\ (norm\_type = 1\ or\ norm\_type = 2)\ or\ ((norm\_type = 0\ or\ norm\_type = 3)\ and\ renorm = 1):
+    $$
+
+    $$
+    \quad yOut = \frac{gathered}{ReduceSum(gathered,\ dim=-1) + eps}
+    $$
+
+    否则 $yOut = gathered$。
+
+    最终输出：
+
+    $$
+    yOut = yOut \times routed\_scaling\_factor
+    $$
+
+    **Step 6: 可选输出**
+
+    若`out_flag`为`True`，第三个输出为normOut；否则为空。
+
+  **Hash模式：**
+
+    当同时提供`input_ids`和`tid2eid`时，启用Hash模式。
+
+    **Step 1: 归一化**
+
+    根据`norm_type`对输入`x`做归一化（与TopK模式相同）：
+
+    $$
+    normOut =
+    \begin{cases}
+        \text{SoftMax}(x),      & norm\_type = 0 \\
+        \text{Sigmoid}(x),      & norm\_type = 1\ or\ 3 \\
+        \sqrt{\text{Softplus}(x)},     & norm\_type = 2
+    \end{cases}
+    $$
+
+    **Step 2: Hash索引查找**
+
+    根据`input_ids`从`tid2eid`映射表获取专家索引：
+
+    $$
+    expertIdxOut = tid2eid[input\_ids, :]
+    $$
+
+    其中`tid2eid`的shape为`[numKeys, k]`，`input_ids`的shape为`[batch]`（与`x`的第一维相等），`input_ids`中每个值对应`tid2eid`的一行k个专家索引。
+
+    **Step 3: Gather与缩放**
+
+    根据expertIdxOut从normOut中取出对应的k个专家得分：
+
+    $$
+    gathered = normOut[\text{expertIdxOut}]
+    $$
+
+    `norm_type`为`1`或`2`时始终做归一化；`norm_type`为`0`或`3`时由`renorm`控制是否归一化：
+
+    $$
+    if\ (norm\_type = 1\ or\ norm\_type = 2)\ or\ ((norm\_type = 0\ or\ norm\_type = 3)\ and\ renorm = 1):
+    $$
+
+    $$
+    \quad yOut = \frac{gathered}{ReduceSum(gathered,\ dim=-1) + eps}
+    $$
+
+    否则 $yOut = gathered$。
+
+    最终输出：
+
+    $$
+    yOut = yOut \times routed\_scaling\_factor
+    $$
 
 - 等价计算逻辑：
 
@@ -50,43 +166,52 @@
     import torch
     import numpy
 
-    def moe_gating_top_k_numpy(x: torch.tensor, k: int, *, bias: torch.tensor = None, k_group: int = 1, group_count: int = 1,
+    def moe_gating_top_k_numpy(x: torch.tensor, k: int, *, bias: torch.tensor = None, input_ids: torch.tensor = None,
+                                tid2eid: torch.tensor = None, k_group: int = 1, group_count: int = 1,
                                 group_select_mode: int = 0, renorm: int = 0, norm_type: int = 0, out_flag: bool = False,
                                 routed_scaling_factor: float = 1.0, eps: float = 1e-20) -> tuple:
         dtype = x.dtype
         if dtype != torch.float32:
             x = x.to(dtype=torch.float32)
-            bias = bias.to(dtype=torch.float32)
+            if bias is not None:
+                bias = bias.to(dtype=torch.float32)
 
         x = x.numpy()
-        bias = bias.numpy()
+        bias = bias.numpy() if bias is not None else None
         if norm_type == 0:
-            x = numpy.exp(x - numpy.expand_dims(numpy.log(numpy.sum(numpy.exp(x),
-                            axis=-1, keepdims=True)), axis=-1))  # softmax
-        else:
+            x = x - numpy.max(x, axis=-1, keepdims=True)
+            x = numpy.exp(x) / numpy.sum(numpy.exp(x), axis=-1, keepdims=True)  # softmax
+        elif norm_type in (1, 3):
             x = 1 / (1 + numpy.exp(-x))  # sigmoid
+        else:
+            x = numpy.sqrt(numpy.maximum(x, 0) + numpy.log1p(numpy.exp(-numpy.abs(x))))  # sqrt softplus
         original_x = x
         if bias is not None:
             x = x + bias
-            
-        if group_count > 1:
-            x = x.reshape(x.shape[0], group_count, -1)
-            if group_select_mode == 0:
-                group_x = numpy.amax(x, axis=-1)
-            else:
-                group_x = numpy.partition(x, -2, axis=-1)[..., -2:].sum(axis=-1)
-        indices = numpy.argsort(-group_x, axis=-1, kind='stable')[:, :k_group]  # Indices of top-k_group
 
-        mask = numpy.ones((x.shape[0], group_count), dtype=bool)  # Create a mask with all 1
-        mask[numpy.arange(x.shape[0])[:, None], indices] = False  # Set to false at the indices
-        x = numpy.where(mask[..., None], float('-inf'), x)  # Fill with -inf when mask value is true
-        x = x.reshape(x.shape[0], -1)
+        hash_flag = input_ids is not None and tid2eid is not None
+        if hash_flag:
+            # Hash模式：根据input_ids从tid2eid映射表中获取专家索引
+            indices = tid2eid.numpy()[input_ids.numpy()].astype(numpy.int64)
+        else:
+            if group_count > 1:
+                x = x.reshape(x.shape[0], group_count, -1)
+                if group_select_mode == 0:
+                    group_x = numpy.amax(x, axis=-1)
+                else:
+                    group_x = numpy.partition(x, -2, axis=-1)[..., -2:].sum(axis=-1)
+                indices = numpy.argsort(-group_x, axis=-1, kind='stable')[:, :k_group]  # Indices of top-k_group
 
-        indices = numpy.argsort(-x, axis=-1, kind='stable')
-        indices = indices[:, :k]
+                mask = numpy.ones((x.shape[0], group_count), dtype=bool)  # Create a mask with all 1
+                mask[numpy.arange(x.shape[0])[:, None], indices] = False  # Set to false at the indices
+                x = numpy.where(mask[..., None], float('-inf'), x)  # Fill with -inf when mask value is true
+                x = x.reshape(x.shape[0], -1)
+
+            indices = numpy.argsort(-x, axis=-1, kind='stable')
+            indices = indices[:, :k]
         y = numpy.take_along_axis(original_x, indices, axis=1)
 
-        if norm_type == 1:
+        if norm_type in (1, 2) or (norm_type in (0, 3) and renorm != 0):
             y /= (numpy.sum(y, axis=-1, keepdims=True) + eps)
         y *= routed_scaling_factor
         if out_flag:
@@ -120,6 +245,19 @@
     print(f"yOut shape: {y.shape}")              
     print(f"expertIdxOut shape: {expert_idx.shape}")  
     print(f"Selected experts: {expert_idx[0]}")
+
+    # Hash模式
+    k = 2
+    norm_type = 1
+    input_ids = numpy.random.randint(0, 16, (8,)).astype(numpy.int64)
+    tid2eid = numpy.random.randint(0, 256, (16, 2)).astype(numpy.int64)
+
+    y, expert_idx, out = moe_gating_top_k_numpy(x_tensor, k, input_ids = torch.tensor(input_ids),
+                                tid2eid = torch.tensor(tid2eid), norm_type = norm_type,
+                                routed_scaling_factor = routed_scaling_factor, eps = eps)
+
+    print(f"yOut shape (hash mode): {y.shape}")
+    print(f"Selected experts (hash mode): {expert_idx[0]}")
     ```
 
 ## 函数原型
@@ -148,14 +286,14 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 
 - **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 
-- **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`。支持`0`和`1`，`0`表示不做renorm，`1`表示做renorm。仅`norm_type`为`0`时该参数生效，`norm_type`为`1`或`2`时无效。
+- **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`。支持`0`和`1`，`0`表示不做renorm，`1`表示做renorm。仅`norm_type`为`0`或`3`时该参数生效；`norm_type`为`1`或`2`时该参数无效，并始终做renorm。
 - **norm_type**（`int`）：可选参数，表示norm函数类型，默认值为`0`。
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值`0`、`1`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：支持取值`0`、`1`、`2`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数并做renorm，`2`表示使用SqrtSoftplus函数并做renorm。取值为`2`时要求`group_count`为`1`。
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持取值`0`、`1`、`2`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数，`2`表示使用SqrtSoftplus函数。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持取值`0`、`1`、`2`、`3`，`0`表示使用Softmax函数，`1`表示使用Sigmoid函数并做renorm，`2`表示使用SqrtSoftplus函数并做renorm，`3`表示使用Sigmoid函数且由`renorm`参数控制是否归一化。取值为`2`时对`group_count`无限制。
     <!-- end id5 -->
 
 - **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。
@@ -200,6 +338,31 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
     
     # 调用MoeGatingTopK算子
     y_npu, expert_idx_npu, out_npu = torch_npu.npu_moe_gating_top_k(x_tensor, k, bias=bias_tensor, k_group=k_group, group_count=group_count, group_select_mode=group_select_mode, renorm=renorm, norm_type=norm_type, out_flag=out_flag, routed_scaling_factor=routed_scaling_factor, eps=eps)
+    ```
+
+- Hash模式单算子调用
+
+    ```python
+    import torch
+    import torch_npu
+    import numpy
+
+    k = 2
+    norm_type = 1
+    routed_scaling_factor = 1.0
+    eps = 1e-20
+
+    # 生成随机数据, 并发送到npu
+    x = numpy.random.uniform(0, 2, (16, 256)).astype(numpy.float16)
+    x_tensor = torch.tensor(x).npu()
+    # input_ids的shape为[batch], 取值范围为[0, numKeys-1]; tid2eid的shape为[numKeys, k]
+    input_ids = numpy.random.randint(0, 64, (16,)).astype(numpy.int64)
+    tid2eid = numpy.random.randint(0, 256, (64, 2)).astype(numpy.int64)
+    input_ids_tensor = torch.tensor(input_ids).npu()
+    tid2eid_tensor = torch.tensor(tid2eid).npu()
+
+    # 调用MoeGatingTopK算子（同时传入input_ids和tid2eid时为Hash模式）
+    y_npu, expert_idx_npu, out_npu = torch_npu.npu_moe_gating_top_k(x_tensor, k, input_ids=input_ids_tensor, tid2eid=tid2eid_tensor, norm_type=norm_type, routed_scaling_factor=routed_scaling_factor, eps=eps)
     ```
 
 - 图模式调用

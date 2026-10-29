@@ -10834,12 +10834,12 @@ npu_moe_gating_top_k(x, k, bias=None, input_ids=None, tid2eid=None, k_group=1, g
 
 -   **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 
--   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求`group_count > 0，x_shape[-1]`能够被`group_count`整除且整除后的结果大于`2`，并且整除的结果按照`32`个数对齐后乘`group_count`的结果不大于`2048`。
+-   **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求`group_count > 0，x_shape[-1]`能够被`group_count`整除且整除后的结果大于`group_select_mode`，并且整除的结果按照`32`个数对齐后乘`group_count`的结果不大于`2048`。
 
 -   **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 
--   **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`，表示先进行norm再进行topk计算。当前仅支持`0`。
--   **norm_type**（`int`）：可选参数，表示norm函数类型，`1`表示使用Sigmoid函数，`0`表示Softmax函数。默认值为`0`。
+-   **renorm**（`int`）：可选参数，表示renorm标记，默认值为`0`。支持`0`和`1`，`0`表示不做renorm，`1`表示做renorm。仅`norm_type`为`0`或`3`时该参数生效；`norm_type`为`1`或`2`时该参数无效，并始终做renorm。
+-   **norm_type**（`int`）：可选参数，表示norm函数类型，默认值为`0`。支持取值`0`、`1`、`2`、`3`：`0`表示使用Softmax函数；`1`表示使用Sigmoid函数并做renorm；`2`表示使用SqrtSoftplus函数并做renorm；`3`表示使用Sigmoid函数且由`renorm`参数控制是否归一化。取值为`2`时，Atlas A2/A3系列产品要求`group_count`为`1`（Ascend 950PR&950DT系列产品无此限制）；取值为`3`时仅Ascend 950PR&950DT系列产品支持。
 
 -   **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。
 -   **routed_scaling_factor**（`float`）：可选参数，表示计算`yOut`使用的`routed_scaling_factor`系数，默认值为`1.0`。
