@@ -58,7 +58,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
     - <term>Atlas A3系列产品</term>：取值支持8、16、32、64、128。
     <!-- end id3 -->
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT系列产品</term>：取值支持2、4、8、16、32、64。
+    - <term>Ascend 950DT系列产品</term>：取值支持2、4、8、16、32、64、128、256。
     <!-- end id4 -->
 
 - **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数，数据类型支持int，取值大小为e\*`ep_world_size`，最大为256。输入类型需为list。
@@ -71,13 +71,13 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **trans\_gmm\_weight**（`bool`）：**可选参数**，GroupedMatMul的右矩阵是否需要转置，`true`表示需要转置，`false`表示不转置（默认值）。
 - **trans\_mm\_weight**（`bool`）：**可选参数**，共享专家MatMul的右矩阵是否需要转置，`true`表示需要转置，`false`表示不转置（默认值）。
 - **permute\_out\_flag**（`bool`）：**可选参数**，Permute结果是否需要输出，`true`表明需要输出，`false`表明不需要输出（默认值）。
-- **comm\_mode**（`str`）：**可选参数**，表示通信引擎模式，默认值为`None`。
+- **comm\_mode**（`str`）：**可选参数**，表示通信模式，默认值为`None`。
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3系列产品</term>：取值支持`None`、`ai_cpu`。传入任意值都将使用AI CPU通信。
+    - <term>Atlas A3系列产品</term>：默认值为None。支持`"ai_cpu"`和None。传入任意值都将使用AI CPU通信。
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT系列产品</term>：取值支持`None`、`ai_cpu`、`ccu`。当为`None`时，使用AI CPU通信。
+    - <term>Ascend 950DT系列产品</term>：默认值为None。支持`"ai_cpu"`、`"ccu"`和None。当为None时，默认走AI CPU通信。
     <!-- end id6 -->
 
 ## 返回值说明
@@ -110,6 +110,8 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
   - K：表示选取topK个专家，K的范围\[2, 8\]。
   - A：本卡收到的token数，是recv\_counts参数累加之和。
   - EP通信域内所有卡上的A累加和等于所有卡上的BSK累加和。
+
+- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256M，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 ## 调用示例
 

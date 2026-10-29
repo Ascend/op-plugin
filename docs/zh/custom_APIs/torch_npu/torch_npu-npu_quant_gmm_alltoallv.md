@@ -99,7 +99,7 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
     - <term>Ascend 950DT系列产品</term>：支持CCU通信。
 <!-- end id2 -->
 
-- 该接口支持单算子模式调用和T-T量化场景的图模式调用。
+- 该接口支持单算子模式调用、T-T量化场景的图模式调用和MX量化场景的图模式调用。
 - 参数说明里shape使用的变量：
     - BSK：本卡接收的token数，是recvCounts参数累加之和，取值范围\(0, 52428800\)。
     - H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
@@ -130,6 +130,8 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
     - 设置原理：如果groupSizeM=0，表示m方向量化分组值由接口推导，推导公式为groupSizeM = m / scaleM（需保证m能被scaleM整除），其中m与gmm\_x、mm\_x中的m方向值一致，scaleM与gmm\_x\_scale、mm\_x\_scale中的m方向值一致；如果groupSizeK=0，表示k方向量化分组值由接口推导，推导公式为groupSizeK = k / scaleK（需保证k能被scaleK整除），其中k与gmm\_x、mm\_x中的k方向值一致，scaleK与gmm\_x\_scale、mm\_x\_scale中的k方向值一致；如果groupSizeN=0，表示n方向量化分组值由接口推导，推导公式为groupSizeN = n / scaleN（需保证n能被scaleN整除），其中n与gmm\_weight、mm\_weight中的n方向值一致，scaleN与gmm\_weight\_scale、mm\_weight\_scale中的n方向值一致。
     - 如果满足重新设置条件，当gmm\_x\_scale、mm\_x\_scale、mm\_weight\_scale输入都是3维，gmm\_weight\_scale输入的是4维时，且数据类型都为`torch.float8_e8m0fnu`时，\[groupSizeM, groupSizeN, groupSizeK\]取值组合会推导为\[1, 1, 32\]。
     - 当存在某张卡的输出张量（y、mm\_y）均为空Tensor时，必须显式调用torch.distributed.barrier\(\)，确保这张卡进程同步等待其他卡完成通信与计算。若未添加同步，AlltoAllv通信将因进程不同步而阻塞。
+
+- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256M，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 - 各量化模式下输入输出数据类型详细约束如下表：
 
