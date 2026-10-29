@@ -39,6 +39,10 @@ at::Tensor unfold_backward(
   auto output_size = op_infer::array_to_small_vector(input_sizes);
   auto output_dtype = grad_in.scalar_type();
   at::Tensor out = npu_preparation::apply_tensor_without_format(output_size, grad_in.options().dtype(output_dtype));
+  // Return the empty result directly when the output tensor is empty.
+  if (out.numel() == 0) {
+    return out;
+  }
   EXEC_NPU_CMD(aclnnUnfoldGrad, grad_in, input_sizes, dim, size, step, out);
   return out;
 }

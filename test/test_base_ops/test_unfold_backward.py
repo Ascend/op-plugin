@@ -30,6 +30,18 @@ class TestUnfoldBackward(TestCase):
             out_npu = self.npu_op_exec(npu_input, item[1], item[2], item[3], item[4])
             self.assertRtolEqual(out_cpu, out_npu)
 
+    def test_unfold_backward_empty_output(self):
+        # input_sizes with a zero dim yields an empty output. Native CPU cannot
+        # serve as a reference here (it crashes with setStorage on zero dims),
+        # so this test verifies the NPU short-circuit: it must return the empty
+        # result with the right shape/dtype instead of hitting the CANN
+        # empty-tensor (EZ1001) error.
+        npu_input = torch.randn((0, 20)).npu()
+        out_npu = torch.ops.aten.unfold_backward(npu_input, [0, 20], 0, 20, 2)
+        self.assertEqual(out_npu.shape, (0, 20))
+        self.assertEqual(out_npu.numel(), 0)
+        self.assertEqual(out_npu.device.type, "npu")
+
 
 if __name__ == "__main__":
     run_tests()

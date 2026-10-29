@@ -17,6 +17,28 @@ class TestConstantPadNd(TestCase):
         res_npu = torch.constant_pad_nd(x_npu, pad, value)
         self.assertEqual(res, res_npu)
 
+    def test_constant_pad_nd_empty_input(self):
+        # Empty input must be handled without hitting the CANN empty-tensor error.
+        x = torch.randint(0, 100, (0, 10), dtype=torch.float32)
+        x_npu = x.npu()
+        pad = (1, 1, 1, 1)
+        value = 5
+        res = torch.constant_pad_nd(x, pad, value)
+        res_npu = torch.constant_pad_nd(x_npu, pad, value)
+        self.assertEqual(res, res_npu)
+
+    def test_constant_pad_nd_empty_input_positive_pad(self):
+        # Empty input padded to a non-empty output must fill the padded value.
+        x = torch.empty(0, dtype=torch.float32)
+        x_npu = x.npu()
+        pad = (2, 2)
+        value = 3.0
+        res = torch.constant_pad_nd(x, pad, value)
+        res_npu = torch.constant_pad_nd(x_npu, pad, value)
+        self.assertEqual(res, res_npu)
+        expected = torch.full((4,), value)
+        self.assertEqual(res_npu.cpu(), expected)
+
 
 class TestConstantPadNdFp4(TestCase):
     """Tests for constant_pad_nd with FP4 (float4_e2m1fn_x2) dtype support.

@@ -30,6 +30,19 @@ class TestIm2col(TestCase):
             npu_output = self.npu_op_exec(npu_input1, (1, 1), (1, 1), (0, 0), (1, 1))
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_im2col_empty_batch(self):
+        # Zero-batch input produces an empty output and must not hit the
+        # CANN empty-tensor error.
+        shape_format = [
+            [np.float16, -1, (0, 3, 3, 3)],
+            [np.float16, -1, (0, 16, 4, 6)],
+        ]
+        for item in shape_format:
+            cpu_input1, npu_input1 = create_common_tensor(item, 1, 100)
+            cpu_output = self.cpu_op_exec(cpu_input1.float(), (1, 1), (1, 1), (0, 0), (1, 1)).half()
+            npu_output = self.npu_op_exec(npu_input1, (1, 1), (1, 1), (0, 0), (1, 1))
+            self.assertRtolEqual(cpu_output, npu_output)
+
 
 if __name__ == "__main__":
     run_tests()
