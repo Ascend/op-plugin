@@ -1,11 +1,10 @@
 import torch
 import numpy as np
 from torch import linalg as LA
-import unittest
 
 import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
-from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
+from torch_npu.testing.common_utils import create_common_tensor
 
 
 class TestLinalgSvd(TestCase):
@@ -34,31 +33,91 @@ class TestLinalgSvd(TestCase):
             [i, j, k] for i in dtype_list for j in format_list for k in shape_list
         ]
         full_matrices_list = [True, False]
+        # assertRtolEqual requires an exact numpy dtype match and rejects complex
+        # dtypes, so use torch.testing.assert_close for complex inputs.
+        is_complex = any(np.dtype(d).kind == "c" for d in dtype_list)
         for item in dtype_shape_format:
             for full_matrices in full_matrices_list:
                 cpu_input_1, npu_input_1 = create_common_tensor(item, -100, 100)
                 cpu_U, cpu_S, cpu_Vh = self.cpu_out_exec(cpu_input_1, full_matrices)
                 npu_U, npu_S, npu_Vh = self.npu_out_exec(npu_input_1, full_matrices)
-                self.assertRtolEqual(cpu_U.abs().numpy(), npu_U.abs().numpy())
-                self.assertRtolEqual(cpu_S.abs().numpy(), npu_S.abs().numpy())
-                self.assertRtolEqual(cpu_Vh.abs().numpy(), npu_Vh.abs().numpy())
+                if is_complex:
+                    torch.testing.assert_close(cpu_U.abs(), npu_U.abs(), rtol=1e-4, atol=1e-5)
+                    torch.testing.assert_close(cpu_S.abs(), npu_S.abs(), rtol=1e-4, atol=1e-5)
+                    torch.testing.assert_close(cpu_Vh.abs(), npu_Vh.abs(), rtol=1e-4, atol=1e-5)
+                else:
+                    self.assertRtolEqual(cpu_U.abs().numpy(), npu_U.abs().numpy())
+                    self.assertRtolEqual(cpu_S.abs().numpy(), npu_S.abs().numpy())
+                    self.assertRtolEqual(cpu_Vh.abs().numpy(), npu_Vh.abs().numpy())
 
                 cpu_S_diag_filled = self.construct_S_diag_filled(full_matrices, cpu_U, cpu_S, cpu_Vh)
                 cpu_A_reconstructed = cpu_U @ cpu_S_diag_filled @ cpu_Vh
                 npu_S_diag_filled = self.construct_S_diag_filled(full_matrices, npu_U, npu_S, npu_Vh)
                 npu_A_reconstructed = npu_U @ npu_S_diag_filled @ npu_Vh
 
-                self.assertRtolEqual(cpu_A_reconstructed.numpy(), npu_A_reconstructed.numpy())
+                if cpu_A_reconstructed.is_complex():
+                    torch.testing.assert_close(cpu_A_reconstructed, npu_A_reconstructed, rtol=1e-3, atol=1e-3)
+                else:
+                    self.assertRtolEqual(cpu_A_reconstructed.numpy(), npu_A_reconstructed.numpy())
 
     def test_linalg_svd(self):
         dtype_list = [np.float32]
         self.exec_linalg_svd(dtype_list)
 
-    @unittest.skip("Skipping due to outdated CANN version; please update CANN to the latest version and remove this skip")
-    @SupportedDevices(['Ascend910B'])
     def test_linalg_svd_fp64(self):
         dtype_list = [np.float64]
         self.exec_linalg_svd(dtype_list)
+
+    def test_linalg_svd_complex(self):
+        dtype_list = [np.complex64, np.complex128]
+        self.exec_linalg_svd(dtype_list)
+
+    def test_linalg_svd_complex_s_dtype(self):
+        """torch.linalg.svd must return real S even for complex input, and the
+        decomposition must actually reconstruct a truly complex input.
+        aclnnSvd shares the input dtype for sigma, so the adapter must convert
+        the complex temporary S to the corresponding real dtype."""
+        cases = [(torch.complex64, torch.float32), (torch.complex128, torch.float64)]
+        for in_dtype, expected_s_dtype in cases:
+            for full_matrices in [True, False]:
+                ctx = f"in_dtype={in_dtype} full_matrices={full_matrices}"
+                # Build a genuinely complex input: pick a non-zero imaginary part
+                # (create_common_tensor / astype would leave the imaginary part zero).
+                real = torch.randn(3, 4, 2)
+                imag = torch.randn(3, 4, 2)
+                cpu_input = (real + 1j * imag).to(in_dtype)
+                npu_input = cpu_input.npu()
+
+                cpu_U, cpu_S, cpu_Vh = LA.svd(cpu_input, full_matrices=full_matrices)
+                npu_U, npu_S, npu_Vh = LA.svd(npu_input, full_matrices=full_matrices)
+                npu_U, npu_S, npu_Vh = npu_U.cpu(), npu_S.cpu(), npu_Vh.cpu()
+
+                # dtype contract: S is real, U/Vh retain the complex dtype
+                self.assertEqual(npu_S.dtype, expected_s_dtype)
+                self.assertEqual(npu_U.dtype, in_dtype)
+                self.assertEqual(npu_Vh.dtype, in_dtype)
+                self.assertEqual(cpu_S.dtype, expected_s_dtype)
+
+                # numeric check against the CPU reference (compare real, non-zero
+                # singular values; avoids assertRtolEqual which rejects complex)
+                torch.testing.assert_close(cpu_S, npu_S, rtol=1e-4, atol=1e-5)
+
+                # reconstruction: U @ S_diag @ Vh must recover the complex input.
+                # Convert the (real) diag_embed into the complex dtype so matmul is legal.
+                k = min(2, 4)
+                cpu_reconstructed = (cpu_U[..., :k] @ cpu_S.diag_embed().to(cpu_U.dtype)[..., :k, :k]) @ cpu_Vh[..., :k, :]
+                npu_reconstructed = (npu_U[..., :k] @ npu_S.diag_embed().to(npu_U.dtype)[..., :k, :k]) @ npu_Vh[..., :k, :]
+                torch.testing.assert_close(cpu_reconstructed, cpu_input, rtol=1e-2, atol=1e-3)
+                torch.testing.assert_close(npu_reconstructed, npu_input.cpu(), rtol=1e-2, atol=1e-3, msg=f"NPU reconstruction failed ({ctx})")
+                torch.testing.assert_close(cpu_reconstructed, npu_reconstructed, rtol=1e-2, atol=1e-3, msg=f"NPU vs CPU reconstruction mismatch ({ctx})")
+
+                # empty input: S must still come back as the real dtype
+                real_e = torch.randn(3, 0, 2)
+                imag_e = torch.randn(3, 0, 2)
+                cpu_empty = (real_e + 1j * imag_e).to(in_dtype)
+                npu_empty = cpu_empty.npu()
+                npu_eS = LA.svd(npu_empty, full_matrices=full_matrices)[1]
+                self.assertEqual(npu_eS.dtype, expected_s_dtype)
 
     def test_linalg_svd_empty_and_zero_dim(self):
         """Test SVD with empty tensors and zero dimensions (aligned with PyTorch community test)"""

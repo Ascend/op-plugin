@@ -24,7 +24,10 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     bool compute_uv,
     c10::optional<c10::string_view> driver) {
   int64_t MIN_DIM = 2;
-  TORCH_CHECK(A.dtype() == at::kFloat, "svd_npu only supported Float, but get", A.dtype(), OPS_ERROR(ErrCode::TYPE));
+  TORCH_CHECK(
+      A.dtype() == at::kFloat || A.dtype() == at::kDouble || A.dtype() == at::kComplexFloat ||
+          A.dtype() == at::kComplexDouble,
+      "svd_npu only supported Float, Double, Complex64 and Complex128, but get", A.dtype(), OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(A.dim() >= MIN_DIM, "The dim of input tensor must larger than two.", OPS_ERROR(ErrCode::VALUE));
 
   int64_t m = A.size(-2);
@@ -55,7 +58,26 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     Vh = at::empty({0}, A.options());
   }
 
-  // Handle empty tensor case (same logic as linalg_svd_out_common in aclops)
+  // Convert the sigma returned by aclnnSvd to the real dtype expected by
+  // torch.linalg.svd. aclnnSvd keeps sigma in the input dtype (complex for
+  // complex A). Most conversions go through .to(); the only case it silently
+  // downcasts double to float32 (device does not support double) is
+  // complex128 -> float64, so bypass it with empty+copy just for that case.
+  auto scalar_dtype = A.scalar_type();
+  auto real_dtype = c10::toRealValueType(scalar_dtype);
+  auto to_real = [&](const at::Tensor& sigma) -> at::Tensor {
+    if (real_dtype == scalar_dtype) {
+      return sigma;
+    }
+    if (real_dtype == at::kDouble) {
+      auto sigma_real = at::empty(sigma.sizes(), sigma.options().dtype(real_dtype));
+      sigma_real.copy_(sigma);
+      return sigma_real;
+    }
+    return sigma.to(real_dtype);
+  };
+
+  // Handle empty tensor case (same logic as linalg_svd_out_common in aclops).
   if (A.numel() == 0) {
     if (compute_uv && full_matrices) {
       if (U.numel() != 0) {
@@ -67,9 +89,11 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
         Vh.diagonal(0, -2, -1).fill_(1.);
       }
     }
-    return std::make_tuple(U, S, Vh);
+    return std::make_tuple(U, to_real(S), Vh);
   }
 
-  return op_api::_linalg_svd_out(A, full_matrices, compute_uv, driver, U, S, Vh);
+  std::tie(U, S, Vh) = op_api::_linalg_svd_out(A, full_matrices, compute_uv, driver, U, S, Vh);
+  Vh = Vh.conj();
+  return std::make_tuple(U, to_real(S), Vh);
 }
 } // namespace op_api
