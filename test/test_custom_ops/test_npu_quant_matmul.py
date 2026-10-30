@@ -886,5 +886,146 @@ class TestQuantMatmul(TestCase):
         self.assertRtolEqual(golden1, custom_output1.cpu().numpy(), 0.001)
 
 
+class TestQuantMatmulScaleNz(TestCase):
+    @staticmethod
+    def make_case(fp4=False, transpose_a=False, transpose_b=False, byte_scale=False,
+                  weight_nz=True, scale_nz=True, equal_axes=False, bad_scale=False):
+        m, k, n = (6, 194, 4) if equal_axes else (6, 130, 46)
+        kg = (k + 63) // 64
+        b_shape = (2, k, n) if transpose_b else (k, n)
+
+        def values(shape, step):
+            index = torch.arange(math.prod(shape)).reshape(shape)
+            batch_phase = index // math.prod(shape[-2:])
+            return ((index * step + batch_phase) % 5 - 2).float()
+
+        def scales(shape, row_weight, column_weight, lane_weight):
+            row = torch.arange(shape[-3]).view(-1, 1, 1)
+            column = torch.arange(shape[-2]).view(1, -1, 1)
+            lane = torch.arange(2).view(1, 1, 2)
+            exponent = row * row_weight + column * column_weight + lane * lane_weight
+            if len(shape) == 4:
+                exponent = exponent + torch.arange(shape[0]).view(-1, 1, 1, 1)
+            return (126 + exponent % 3).to(torch.uint8)
+
+        def to_input(value):
+            if not fp4:
+                return value.to(torch.float8_e4m3fn).npu()
+            # Exact E2M1 encodings for {-2, -1, 0, 1, 2}, low nibble first.
+            codes = torch.tensor([12, 10, 0, 2, 4], dtype=torch.uint8)[(value + 2).long()]
+            return (codes[..., 0::2] | (codes[..., 1::2] << 4)).contiguous().npu()
+
+        def to_scale(value):
+            return (value if byte_scale else value.view(torch.float8_e8m0fnu)).npu()
+
+        a, b = values((m, k), 3), values(b_shape, 7)
+        sa = scales((m, kg, 2), 1, 2, 1)
+        sb = scales(b_shape[:-2] + (kg, n, 2), 2, 1, 2)
+        sa_float = torch.pow(2.0, sa.float() - 127).flatten(-2).repeat_interleave(32, -1)[..., :k]
+        sb_float = (torch.pow(2.0, sb.float() - 127).transpose(-1, -2).flatten(-3, -2)
+                    .repeat_interleave(32, -2)[..., :k, :])
+        golden = (a * sa_float) @ (b * sb_float)
+
+        x1 = to_input(a.t().contiguous() if transpose_a else a)
+        x2 = to_input(b.transpose(-1, -2).contiguous() if transpose_b else b)
+        if weight_nz:
+            # FP4 is packed in uint8; the existing weight producer accepts this carrier.
+            x2 = torch_npu.npu_format_cast(x2, 29)
+        if transpose_a:
+            x1 = x1.t()
+            sa = sa.transpose(-3, -2).contiguous()
+        if transpose_b:
+            x2 = x2.transpose(-1, -2)
+        sa = to_scale(sa)
+        if transpose_a:
+            sa = sa.transpose(-3, -2)
+        if bad_scale or (not scale_nz and transpose_b):
+            sb = sb.transpose(-3, -2).contiguous()
+        sb = to_scale(sb)
+        if scale_nz:
+            cast_kwargs = {"customize_dtype": torch_npu.float8_e8m0fnu,
+                           "input_dtype": torch_npu.float8_e8m0fnu} if byte_scale else {}
+            sb = torch_npu.npu_format_cast(sb, 29, **cast_kwargs)
+        elif transpose_b:
+            sb = sb.transpose(-3, -2)
+
+        kwargs = {"output_dtype": torch.float32, "group_sizes": [1, 1, 32]}
+        if fp4:
+            kwargs.update(x1_dtype=torch_npu.float4_e2m1fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2)
+        if byte_scale:
+            kwargs.update(scale_dtype=torch_npu.float8_e8m0fnu,
+                          pertoken_scale_dtype=torch_npu.float8_e8m0fnu)
+        return x1, x2, sb, sa, kwargs, golden
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_scalenz(self):
+        # FP4 WeightNZ does not support transpose_a; FP8 covers all four combinations.
+        for fp4 in (False, True):
+            for transpose_a in ((False,) if fp4 else (False, True)):
+                for transpose_b in (False, True):
+                    for byte_scale in (False, True):
+                        with self.subTest(fp4=fp4, ta=transpose_a, tb=transpose_b, byte_scale=byte_scale):
+                            x1, x2, scale, pertoken, kwargs, golden = self.make_case(
+                                fp4, transpose_a, transpose_b, byte_scale)
+                            self.assertEqual(torch_npu.get_npu_format(scale), 29)
+                            actual = torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=pertoken, **kwargs)
+                            torch.testing.assert_close(actual.cpu(), golden, rtol=0, atol=1e-3)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_scalenz_equal_axes(self):
+        # N == Kg: distinct scale values make an accidental axis swap visible in the result.
+        for byte_scale in (False, True):
+            with self.subTest(byte_scale=byte_scale):
+                x1, x2, scale, pertoken, kwargs, golden = self.make_case(
+                    transpose_b=True, byte_scale=byte_scale, equal_axes=True)
+                actual = torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=pertoken, **kwargs)
+                torch.testing.assert_close(actual.cpu(), golden, rtol=0, atol=1e-3)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_scalenz_reject_nd_weight(self):
+        for fp4 in (False, True):
+            for byte_scale in (False, True):
+                with self.subTest(fp4=fp4, byte_scale=byte_scale):
+                    x1, x2, scale, pertoken, kwargs, _ = self.make_case(
+                        fp4=fp4, byte_scale=byte_scale, weight_nz=False)
+                    with self.assertRaisesRegex(RuntimeError, "ScaleNZ requires x2 in WeightNZ format"):
+                        torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=pertoken, **kwargs)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_scalenz_keeps_a_transpose_check(self):
+        for byte_scale in (False, True):
+            with self.subTest(byte_scale=byte_scale):
+                x1, x2, scale, pertoken, kwargs, _ = self.make_case(
+                    transpose_a=True, byte_scale=byte_scale)
+                # Build a dense scale on CPU, without requiring an E8M0 transpose kernel.
+                bad_pertoken = torch.full(pertoken.shape, 127, dtype=torch.uint8).view(pertoken.dtype).npu()
+                with self.assertRaisesRegex(RuntimeError, "Input x1 tensor and pertoken_scale tensor's transpose"):
+                    torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=bad_pertoken, **kwargs)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_scalenz_reject_wrong_shape(self):
+        for byte_scale in (False, True):
+            with self.subTest(byte_scale=byte_scale):
+                x1, x2, scale, pertoken, kwargs, _ = self.make_case(byte_scale=byte_scale, bad_scale=True)
+                with self.assertRaisesRegex(RuntimeError, "aclnnQuantMatmulWeightNz"):
+                    torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=pertoken, **kwargs)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_weightnz_nd_scale_regression(self):
+        for fp4 in (False, True):
+            for transpose_b in (False, True):
+                for byte_scale in (False, True):
+                    with self.subTest(fp4=fp4, tb=transpose_b, byte_scale=byte_scale):
+                        x1, x2, scale, pertoken, kwargs, golden = self.make_case(
+                            fp4=fp4, transpose_b=transpose_b, byte_scale=byte_scale, scale_nz=False)
+                        actual = torch_npu.npu_quant_matmul(x1, x2, scale, pertoken_scale=pertoken, **kwargs)
+                        torch.testing.assert_close(actual.cpu(), golden, rtol=0, atol=1e-3)
+                        if transpose_b:
+                            bad_scale = torch.full(scale.shape, 127, dtype=torch.uint8).view(scale.dtype).npu()
+                            with self.assertRaisesRegex(RuntimeError, "Input x2 tensor and scale tensor's transpose"):
+                                torch_npu.npu_quant_matmul(
+                                    x1, x2, bad_scale, pertoken_scale=pertoken, **kwargs)
+
+
 if __name__ == "__main__":
     run_tests()

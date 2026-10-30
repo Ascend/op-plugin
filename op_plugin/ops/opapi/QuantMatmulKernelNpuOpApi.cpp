@@ -275,6 +275,8 @@ at::Tensor npu_quant_matmul(
       ? c10_npu::GetAclDataType(pertoken_scale_dtype.value())
       : (pertoken_scale.has_value() ? c10_npu::GetAclDataType(static_cast<int64_t>(pertoken_scale_real.scalar_type()))
                                     : aclDataType::ACL_INT8);
+  TORCH_CHECK(!is_nz_format(scale) || is_nz_format(x2),
+              "ScaleNZ requires x2 in WeightNZ format; ND x2 is not supported.", OPS_ERROR(ErrCode::PARAM));
   bool need_check_trans = pertoken_scale.has_value() &&
       (((pertoken_scale_real.dim() == x1.dim() && scale.dim() == x2.dim()) ||
         pertoken_scale_dtype_real == aclDataType::ACL_FLOAT8_E8M0) &&
@@ -299,7 +301,9 @@ at::Tensor npu_quant_matmul(
         "Input x1 tensor and pertoken_scale tensor's transpose are not same, please check input.",
         OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(
-        is_x_scale_same_transpose(x2, scale, dim_x2, dim_x2_scale),
+        // ScaleNZ always describes [Kg, N, 2], independent of the weight view.
+        (pertoken_scale_dtype_real == aclDataType::ACL_FLOAT8_E8M0 && is_nz_format(x2) && is_nz_format(scale)) ||
+            is_x_scale_same_transpose(x2, scale, dim_x2, dim_x2_scale),
         "Input x2 tensor and scale tensor's transpose are not same, please check input.",
         OPS_ERROR(ErrCode::PARAM));
   }
