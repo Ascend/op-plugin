@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：根据传入的分组索引的起始值（group\_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiFP8），并输出量化参数scale（`torch.float32`）。
+- API功能：根据传入的分组索引的起始值（group\_list）对各个group以基本块的粒度进行量化，量化为（FP8/HiF8），并输出量化参数scale（`torch.float32`）。
 - 计算公式：
 
 $$

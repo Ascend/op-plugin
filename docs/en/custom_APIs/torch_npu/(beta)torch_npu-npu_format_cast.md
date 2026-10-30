@@ -42,7 +42,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **`acl_format`** (`int`/`Format`): Required. Target format. An integer or a `torch_npu.Format` type can be provided. The `torch_npu.Format` type will be automatically converted to the corresponding integer value. For example, when modifying the data layout format of `input` to the ND layout format, provide either `2` or `torch_npu.Format.ND`. `torch_npu.Format` indicates the data layout format of TorchNPU. The following table describes the data formats supported by TorchNPU.
 
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: currently, only 29 (ACL\_FORMAT\_FRACTRAL\_NZ) and 2 (ACL\_FORMAT\_ND) are supported.
+  - <term>Ascend 950PR&950DT products</term>: currently, only 29 (ACL\_FORMAT\_FRACTAL\_NZ) and 2 (ACL\_FORMAT\_ND) are supported.
   <!-- end id7 -->
   - torch_npu supports the following data layouts.
 
@@ -100,7 +100,7 @@ The `customize_dtype` parameter is supported only on Atlas A2 training products/
 <!-- npu="950" id12 -->
 - <term>Ascend 950PR&950DT products</term>:
 
-  Currently, the following combinations of input parameters are supported. When the third combination is passed, the converted format is 50 (ACL\_FORMAT\_FRACTRAL\_NZ\_C0\_16).
+  Currently, the following combinations of input parameters are supported. When the third combination is passed, the converted format is 50 (ACL\_FORMAT\_FRACTAL\_NZ\_C0\_16).
 
     | `input` Data Type | `input` Format | `acl_format` Value | `customize_dtype` Value | `input_dtype` Value |
     | --- | --- | --- | --- | --- |

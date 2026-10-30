@@ -53,7 +53,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
     - The number of valid tokens of each batch in this parameter must not exceed the size of dimension S in `key` and must not be less than 0. A 1D tensor with the length B is supported. When `layout_key` is TND or PA_BSND, this input parameter must be passed. When `layout_key` is TND, the value of each element in this parameter indicates the total number of tokens of the current batch and all previous batches, that is, the prefix sum. Therefore, the value of the latter element must be greater than or equal to that of the former element.
 
 - **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PagedAttention. The data layout can be ND. The data type can be `torch.int32`.
-    - In the PageAttention scenario, block\_table must be 2D, the length of the first dimension must be equal to B, and the length of the second dimension must not be less than maxBlockNumPerSeq (maxBlockNumPerSeq is the number of blocks corresponding to the maximum actual\_seq\_lengths\_key in each batch)
+    - In the PagedAttention scenario, block\_table must be 2D, the length of the first dimension must be equal to B, and the length of the second dimension must not be less than maxBlockNumPerSeq (maxBlockNumPerSeq is the number of blocks corresponding to the maximum actual\_seq\_lengths\_key in each batch)
 
 - **`layout_query`** (`str`): Optional. Data layout configuration of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 

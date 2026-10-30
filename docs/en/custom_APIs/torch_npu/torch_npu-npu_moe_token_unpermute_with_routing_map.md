@@ -99,7 +99,7 @@
 
 > [!NOTE]
 >
-> - This API uses a non-deterministic implementation by default. Deterministic computation can be enabled through alcrtCtxSetSysParamOpt.
+> - This API uses a non-deterministic implementation by default. Deterministic computation can be enabled through aclrtCtxSetSysParamOpt.
 
 ## Prototype
 
@@ -131,7 +131,7 @@ torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indic
 
 - This API supports inference and training scenarios.
 - This API supports graph mode only.
-- This API uses a non-deterministic implementation by default. Deterministic computation can be enabled through alcrtCtxSetSysParamOpt.
+- This API uses a non-deterministic implementation by default. Deterministic computation can be enabled through aclrtCtxSetSysParamOpt.
 - topK_num must be less than or equal to 512. When drop_and_pad is `False`, a maximum of topK_num expert slots are reserved for each token, the number of 1 or true values in each row of routing_map must be less than or equal to topK_num, and `-1` can be used in sorted_indices to indicate an invalid slot.
 - The following scenarios will be intercepted in later versions. If a warning is displayed, rectification is recommended:
   - drop_and_pad is `True` and topK_num is greater than experts_num.

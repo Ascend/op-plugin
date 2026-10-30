@@ -42,7 +42,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **acl_format**（`int`/`Format`）：必选参数，目标格式。可输入整数或torch_npu.Format类型，torch_npu.Format类型会被自动转换为对应格式的整数值。例如将`input`的数据格式修改为ND格式时，此处既可以输入`2`，也可以输入`torch_npu.Format.ND`。torch_npu.Format表示torch_npu的数据格式。
 
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：当前仅支持取29（ACL\_FORMAT\_FRACTRAL\_NZ）和2（ACL\_FORMAT\_ND）。
+  - <term>Ascend 950PR&950DT系列产品</term>：当前仅支持取29（ACL\_FORMAT\_FRACTAL\_NZ）和2（ACL\_FORMAT\_ND）。
   <!-- end id7 -->
   - torch_npu支持如下数据格式：
 
@@ -100,7 +100,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 <!-- npu="950" id12 -->
 - <term>Ascend 950PR&950DT系列产品</term>：
 
-  目前输入参数支持如下组合，当传入为第三种组合时，转换出来的format为50（ACL\_FORMAT\_FRACTRAL\_NZ\_C0\_16）。
+  目前输入参数支持如下组合，当传入为第三种组合时，转换出来的format为50（ACL\_FORMAT\_FRACTAL\_NZ\_C0\_16）。
 
     | `input`数据类型 | `input` format | `acl_format`取值 | `customize_dtype`取值 | `input_dtype`取值 |
     | --- | --- | --- | --- | --- |

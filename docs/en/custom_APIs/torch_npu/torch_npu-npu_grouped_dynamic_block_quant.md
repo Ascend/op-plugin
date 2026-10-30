@@ -8,7 +8,7 @@
 
 ## Function
 
-- Function: quantizes each group at the granularity of basic blocks according to the start value of the passed group index (`group_list`), quantizing to (FP8/HiFP8) and outputting the quantization parameter scale (`torch.float32`).
+- Function: quantizes each group at the granularity of basic blocks according to the start value of the passed group index (`group_list`), quantizing to (FP8/HiF8) and outputting the quantization parameter scale (`torch.float32`).
 - Formulas:
 
 $$

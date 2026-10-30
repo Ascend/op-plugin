@@ -136,7 +136,7 @@ Final computation result. When `fused_op_type` is `"16cast32"`, the data type of
         return backend
     if __name__ == '__main__':
         argv = sys.argv[1:]
-        opts, ars = getopt.getopt(argv, "hi:o:", ["npu_mode="])
+        opts, args = getopt.getopt(argv, "hi:o:", ["npu_mode="])
         npu_mode = ""
         print("begin to run torch_stc_model")
         model = FusedMatmulModel()

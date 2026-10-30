@@ -187,7 +187,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 
 <!-- npu="950" id21 -->
 - <term>Ascend 950DT系列产品</term>约束：
-  - 通信约束：当前版本仅支持输入comm\_mode为"ai\_cpu"或"ccu"，支持CCU通信和AICPU通信，CCU仅支持单机UB域内互联，AICPU可支持跨机UB域内互联。
+  - 通信约束：当前版本仅支持输入comm\_mode为"ai\_cpu"或"ccu"，支持CCU通信和AI CPU通信，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
   - 当x1、x2的数据类型为`torch.float16`/`torch.bfloat16`时，x1/x2支持空tensor场景，m和n可以为空，k不可为空；当x1、x2的数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`时，不支持空tensor。
   - 当x1、x2的数据类型为`torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`时，x1和x2的数据类型需要保持一致；当x1、x2的数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`时，x1和x2的数据类型可以为其中任意一种。
   - 输入x2支持转置和不转置场景，但输入约束里要求其shape为(k, n)，这是为了满足mm算子入参要求，即左矩阵x1的shape应该是(输出行维度，规约轴)，右矩阵x2的shape应该是(规约轴，输出列维度)，其中输出行维度为m，规约轴为k，输出列维度为n。支持转置场景，是指x2可以通过(n, k)的shape构造连续Tensor，在调用本接口前执行x2.t()操作，以此得到视图上为(k, n)的x2，满足mm算子入参要求，此时x2非连续，x2也仅支持该场景下的非连续Tensor。不转置场景时，x2的shape为(k, n)，此时x2连续，可以直接作为入参输入。

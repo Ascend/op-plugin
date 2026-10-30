@@ -95,7 +95,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
     - <term>Atlas A3 products</term>: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
     <!-- end id12 -->
     <!-- npu="950" id13 -->
-    - <term>Ascend 950PR&950DT products</term>: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AI CPU supports inter-node UB domain interconnection.
+    - <term>Ascend 950PR&950DT products</term>: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
     <!-- end id13 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.

@@ -499,7 +499,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
     **Table 3** Ascend 950PR&950DT products
 
-    | Supported Scenario | Quantization Mode | x | weight | weight_scale | xScale | output | outputscale |
+    | Supported Scenario | Quantization Mode | x | weight | weight_scale | x_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- |
     | Single-single-single | MX quantization (ND format) | (m, k) | <li>The non-transposed shape is in the form of {(e, k, n)}.</li><li>The transposed shape is in the form of {(e, n, k)}.</li> | <li>The non-transposed shape is in the form of {(e, ceil(k / 64), n, 2)}.</li><li>The transposed shape is in the form of {(e, n, ceil(k / 64), 2)}.</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
     | Single-single-single | MXFP8 quantization (FRACTAL_NZ format) | (m, k) | <li>The non-transposed shape is in the form of {(e, n/32, k/16, 16, 32)}.</li><li>The transposed shape is in the form of {(e, k/32, n/16,16, 32)}.</li> | <li>The non-transposed shape is in the form of {(e, ceil(k / 64), n, 2)}.</li><li>The transposed shape is in the form of {(e, n, ceil(k / 64), 2)}.</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |

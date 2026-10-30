@@ -499,7 +499,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
     **表 3** Ascend 950PR&950DT系列产品
 
-    | 支持场景 | 量化模式 | x | weight | weight_scale | xScale | output | outputscale |
+    | 支持场景 | 量化模式 | x | weight | weight_scale | x_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- |
     | 单单单 | MX量化（ND格式） | (m, k) | <li>非转置shape形如{(e, k, n)}</li><li>转置shape形如{(e, n, k)}</li> | <li>非转置shape形如{(e, ceil(k / 64), n, 2)}</li><li>转置shape形如{(e, n, ceil(k / 64), 2)}</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
     | 单单单 | MXFP8量化（FRACTAL_NZ格式） | (m, k) | <li>非转置shape形如{(e, n/32, k/16, 16, 32)}</li><li>转置shape形如{(e, k/32, n/16,16, 32)}</li> | <li>非转置shape形如{(e, ceil(k / 64), n, 2)}</li><li>转置shape形如{(e, n, ceil(k / 64), 2)}</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |

@@ -40,7 +40,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **query**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`torch.bfloat16`和`torch.float16`。`layout_query`为BSND时shape为[B,S1,N1,D]，当`layout_query`为TND时shape为[T1,N1,D]，N1仅支持小于等于64。
     
-- **key**（`Tensor`）：必选参数，在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.bfloat16`和`torch.float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PageAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
+- **key**（`Tensor`）：必选参数，在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.bfloat16`和`torch.float16`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2, D]，其中block\_count为PagedAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_key`为BSND时shape为[B, S2, N2, D]，`layout_key`为TND时shape为[T2, N2, D]，N2仅支持1。
     
 - **weights**（`Tensor`）：必选参数，不支持非连续，数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`和`torch.float32`，支持输入shape[B,S1,N1]、[T,N1]。
     
@@ -52,12 +52,12 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - **actual\_seq\_lengths\_key**（`Tensor`）：可选参数，表示不同Batch中`key`的有效token数，数据类型支持`torch.int32`。如果不指定actual\_seq\_lengths\_key可传入None，表示和key的shape的S长度相同。
     - 该参数中每个Batch的有效token数不超过`key`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_key`为TND或PA_BSND时，该入参必须传入，`layout_key`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
-- **block\_table**（`Tensor`）：可选参数，表示PageAttention中KV存储使用的block映射表，数据格式支持$ND$，数据类型支持`torch.int32`。
-    - PageAttention场景下，block\_table必须为二维，第一维长度需要等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为每个batch中最大actual\_seq\_lengths\_key对应的block数量）
+- **block\_table**（`Tensor`）：可选参数，表示PagedAttention中KV存储使用的block映射表，数据格式支持$ND$，数据类型支持`torch.int32`。
+    - PagedAttention场景下，block\_table必须为二维，第一维长度需要等于B，第二维长度不能小于maxBlockNumPerSeq（maxBlockNumPerSeq为每个batch中最大actual\_seq\_lengths\_key对应的block数量）
 
 - **layout\_query**（`str`）：可选参数，用于标识输入`query`的数据排布格式，当前支持BSND、TND，默认值"BSND"。
 
-- **layout\_key**（`str`）：可选参数，用于标识输入`key`的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"，在非PageAttention场景下，该参数值应与**layout\_query**值保持一致。
+- **layout\_key**（`str`）：可选参数，用于标识输入`key`的数据排布格式，当前支持PA_BSND、BSND、TND，默认值"BSND"，在非PagedAttention场景下，该参数值应与**layout\_query**值保持一致。
 
 - **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的block数量，支持[1, 2048]以及3072、4096、5120、6144、7168、8192，数据类型支持`int32`。
 

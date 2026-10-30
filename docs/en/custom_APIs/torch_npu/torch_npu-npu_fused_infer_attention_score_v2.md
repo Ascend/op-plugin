@@ -514,7 +514,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
         - <term>Ascend 950PR&950DT products</term>: A B axis of less than or equal to 65536 is supported.
         <!-- end id53 -->
         - The `N` dimension must be less than or equal to 256, and the `D` dimension must be less than or equal to 512. When `input_layout` is `BSH` or `BSND`, the product of `N` and `D` should be less than 65535.
-        - The `S` dimension must be less than or equal to 20971520 (20M). In certain long-sequence scenarios, excessive computation may cause the PFA operator to time out (raising an aicore error with an `errorStr` of "timeout or trap error"). In such cases, slicing along the `S` dimension is recommended. (Note: The computation volume depends on `B`, `S`, `N`, and `D`. Larger values result in higher computation cost). Typical timeout-prone long-sequence scenarios (where the product of `B`, `S`, `N`, and `D` is large) include but are not limited to:
+        - The `S` dimension must be less than or equal to 20971520 (20M). In certain long-sequence scenarios, excessive computation may cause the PFA operator to time out (raising an AI Core error with an `errorStr` of "timeout or trap error"). In such cases, slicing along the `S` dimension is recommended. (Note: The computation volume depends on `B`, `S`, `N`, and `D`. Larger values result in higher computation cost). Typical timeout-prone long-sequence scenarios (where the product of `B`, `S`, `N`, and `D` is large) include but are not limited to:
             - B=1, Q\_N=20, Q\_S=2097152, D=256, KV\_N=1, KV\_S=2097152.
             - B=1, Q\_N=2, Q\_S=20971520, D=256, KV\_N=2, KV\_S=20971520.
             - B=20, Q\_N=1, Q\_S=2097152, D=256, KV\_N=1, KV\_S=2097152.
@@ -662,7 +662,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             - The data types of `query`, `key`, and `value` support `torch.float8_e4m3fn`.
             - `query_quant_mode`, `key_quant_mode`, and `value_quant_mode` are 6, 6, and 8, respectively.
             - The data types of `dequant_scale_query`, `dequant_scale_key`, and `dequant_scale_value` are fixed to `torch.float8_e8m0fnu`.
-            - `input_layout` supports only TND, and both PageAttention and non-PageAttention scenarios are supported. The shape of `query` is (Q_T, Q_N, D). `key` and `value` are passed in according to the shape of the PageAttention scenario. The kv cache layout supports (blocknum, KV_N, blocksize, D) or (blocknum, KV_N, D/D0, blocksize, D0), where blocksize is fixed at 512.
+            - `input_layout` supports only TND, and both PagedAttention and non-PagedAttention scenarios are supported. The shape of `query` is (Q_T, Q_N, D). `key` and `value` are passed in according to the shape of the PagedAttention scenario. The kv cache layout supports (blocknum, KV_N, blocksize, D) or (blocknum, KV_N, D/D0, blocksize, D0), where blocksize is fixed at 512.
             - When Q_S \* G > 80, the shape of `dequant_scale_query` is recommended to be (Q_T, Q_N, D/64, 2); when Q_S * G <= 80, the shape of the input parameter `dequant_scale_query` is recommended to be (KV_N, Q_T, G, D/64, 2). In non-PagedAttention scenarios, the shape of `dequant_scale_key` is (KV_T, KV_N, D/64, 2), and the shape of `dequant_scale_value` is (KV_T/64, KV_N, D, 2). In PagedAttention scenarios where the kv cache layout is BnNBsD, the shape of `dequant_scale_key` is (Bn, KV_N, Bs, D/64, 2), and the shape of `dequant_scale_value` is (Bn, KV_N, Bs/64, D, 2). When the kv cache layout is $NZ$, the shape of `dequant_scale_key` is (Bn, KV_N, Bs/16, D/64, 16, 2), and the shape of `dequant_scale_value` is (Bn, KV_N, D/16, Bs/64, 16, 2).
             - `sparse_mode` 0 and 3 are supported, and when `sparse_mode` is 0, the mask matrix must not be passed.
             - `inner_precise` 0 and 1 are supported.
@@ -677,7 +677,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
             - The data types of `query`, `key`, and `value` support `torch.float8_e4m3fn`.
             - `query_quant_mode`, `key_quant_mode`, and `value_quant_mode` are 3, 3, and 2, respectively.
             - The data types of `dequant_scale_query`, `dequant_scale_key`, and `dequant_scale_value` are fixed to `torch.float32`.
-            - `input_layout` supports NTD_TND, and only PageAttention scenarios are supported. The shape of `query` is (Q_N, Q_T, D), and the shapes of the input parameters `key` and `value` are (blocknum, KV_N, blocksize, D), where blocksize is fixed at 128 and D is fixed at 128.
+            - `input_layout` supports NTD_TND, and only PagedAttention scenarios are supported. The shape of `query` is (Q_N, Q_T, D), and the shapes of the input parameters `key` and `value` are (blocknum, KV_N, blocksize, D), where blocksize is fixed at 128 and D is fixed at 128.
             - The shape of `dequant_scale_query` is (Q_N, Q_T), the shape of `dequant_scale_key` is (blocknum, KV_N, blocksize), and the shape of `dequant_scale_value` is (KV_N).
             - `sparse_mode` 0 and 3 are supported, and when `sparse_mode` is 0, the mask matrix must not be passed.
             - `inner_precise` 0 and 1 are supported.
@@ -840,14 +840,14 @@ tensor([[[[ 0.0219,  0.0201,  0.0049,  ...,  0.0118, -0.0011, -0.0140],
         device='npu:0', dtype=torch.float16)
 ```
 
-### Example 2: GQA + KV NZ + PageAttention
+### Example 2: GQA + KV NZ + PagedAttention
 
-**Scenario description**: In the decode phase, Q_S=1 (token-by-token incremental inference). In GQA, KV_N=1 < Q_N=10. The KV cache is managed by PageAttention, `key`/`value` are `torch.int8` and are dequantized to `torch.float16` by fake quantization for computation. When the NZ format is selected, only the high-performance mode is supported.
+**Scenario description**: In the decode phase, Q_S=1 (token-by-token incremental inference). In GQA, KV_N=1 < Q_N=10. The KV cache is managed by PagedAttention, `key`/`value` are `torch.int8` and are dequantized to `torch.float16` by fake quantization for computation. When the NZ format is selected, only the high-performance mode is supported.
 
 **Key parameters**:
 
 - `num_query_heads=10, num_key_value_heads=1`: Required. GQA supported combinations: (10,1)/(64,8)/(80,8)/(128,16).
-- `block_size=128`: Required. Enables PageAttention. Only 128 or 512 is supported.
+- `block_size=128`: Required. Enables PagedAttention. Only 128 or 512 is supported.
 - `dequant_scale_value, dequant_scale_key`: Required when per-channel fake quantization is used. The dtype is fixed to `torch.bfloat16`.
 - `key_quant_mode=0,value_quant_mode=0`: Required when per-channel fake quantization is used. Fixed to 0.
 - `key, value`: Required. The type is `torch.int8`, and the NZ format is [blockNum, KV_N, D/32, blockSize, 32].

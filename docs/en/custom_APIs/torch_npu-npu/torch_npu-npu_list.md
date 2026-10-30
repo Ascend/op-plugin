@@ -510,7 +510,7 @@ This section describes various submodule APIs, such as random number and memory 
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>Performs API-level instrumentation that allows users to select APIs or functions for collecting execution duration.</p>
 </td>
 </tr>
-<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx_range</a></p>
+<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx.mstx_range</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1059918319532"><a name="p1059918319532"></a><a name="p1059918319532"></a>Provides the <code>mstx_range</code> decorator to collect the execution duration of the range of the decorated function.</p>
 </td>

@@ -99,7 +99,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - This API can be used in inference scenarios.
 - This API supports graph mode.
-- In non-PageAttention scenarios, layout\_query and layout\_kv must be the same.
+- In non-PagedAttention scenarios, layout\_query and layout\_kv must be the same.
 
 <!-- npu="950" id4 -->
 - Ascend 950PR&950DT products:
@@ -111,7 +111,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 - Atlas A3 products and Atlas A2 products:
   - For query, Q\_N does not support 48.
   - The data type of the parameters key and value can only be `torch.int8`; `torch_npu.hifloat8` and `torch.float8_e4m3fn` are not supported.
-  - The parameter sparse\_block\_size supports [1,16] and must be a power of 2. In the PageAttention scenario, sparse\_block\_size must divide block\_size.
+  - The parameter sparse\_block\_size supports [1,16] and must be a power of 2. In the PagedAttention scenario, sparse\_block\_size must divide block\_size.
   - Non-contiguous key is not supported.
 <!-- end id5 -->
 

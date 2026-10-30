@@ -62,7 +62,7 @@ torch_npu.npu_fused_infer_attention_score(
 | ---- | -------- | ------------ | ------------ |
 | 基础Prefill（MHA） | `query, key, value` | `atten_mask, num_heads, scale, input_layout` | [通用基础约束](#base_constraints), [Q_S > 1约束](#qs_gt_1) |
 | 基础Decode（MHA） | `query, key, value` | `atten_mask, num_heads, scale, input_layout, actual_seq_lengths_kv` | [通用基础约束](#base_constraints), [Q_S = 1约束](#qs_eq_1) |
-| Decode + PageAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PageAttention约束](#pa_constraints) |
+| Decode + PagedAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PagedAttention约束](#pa_constraints) |
 | GQA | `query, key, value, num_heads, num_key_value_heads` | — | [通用基础约束](#base_constraints) |
 | MLA | `query, key, value, query_rope, key_rope` | `num_heads, scale, input_layout` | [MLA约束](#mla_constraints) |
 | Prefix（共享前缀） | `query, key, value, key_shared_prefix, value_shared_prefix` | `actual_shared_prefix_len` | [Prefix约束](#prefix_constraints) |
@@ -143,7 +143,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **actual_seq_lengths_kv** (`List[int]`,可选)：各Batch中`key/value`的有效序列长度。数据类型：`torch.int64`。默认值：None（表示与`key/value`的S相同）。
 
   <!-- npu="A3,910b" id11 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：约束同`actual_seq_lengths`。PageAttention场景下必须传入。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：约束同`actual_seq_lengths`。PagedAttention场景下必须传入。
   <!-- end id11 -->
 
 #### `torch.int8`量化参数
@@ -183,11 +183,11 @@ torch_npu.npu_fused_infer_attention_score(
   - <term>Ascend 950PR&950DT系列产品</term>：支持取值0、1。
   <!-- end id15 -->
 
-#### PageAttention参数
+#### PagedAttention参数
 
-- **block_table** (`Tensor`,可选)：PageAttention中KV存储的block映射表。数据类型：`torch.int32`，数据格式：$ND$，必须为二维：[B, maxBlockNumPerSeq]，blockid合法性由用户保证，传入此参数即开启PageAttention。默认值：None。
+- **block_table** (`Tensor`,可选)：PagedAttention中KV存储的block映射表。数据类型：`torch.int32`，数据格式：$ND$，必须为二维：[B, maxBlockNumPerSeq]，blockid合法性由用户保证，传入此参数即开启PagedAttention。默认值：None。
 
-- **block_size** (`int`,可选)：PageAttention中每个block最多token个数，以 Python `int` 传入。Q_S > 1：最小128，最大512，须为128倍数。 Q_S = 1： 非0值，最大512。`torch.float16`/`torch.bfloat16`需16字节对齐，`torch.int8`需32字节对齐，推荐128。默认值：0（不开启PageAttention）。
+- **block_size** (`int`,可选)：PagedAttention中每个block最多token个数，以 Python `int` 传入。Q_S > 1：最小128，最大512，须为128倍数。 Q_S = 1： 非0值，最大512。`torch.float16`/`torch.bfloat16`需16字节对齐，`torch.int8`需32字节对齐，推荐128。默认值：0（不开启PagedAttention）。
 
   <!-- npu="950" id16 -->
   - <term>Ascend 950PR&950DT系列产品</term>：Q_S = 1： key、value输入类型是`torch_npu.int4（torch.int32）`时需要64对齐。
@@ -383,7 +383,7 @@ torch_npu.npu_fused_infer_attention_score(
 - 算子根据shape dim自动判断模式（dim=1 时为 pertensor，否则为 perchannel）。
 - **建议使用KV伪量化分离模式**（用`key_antiquant_scale`和`value_antiquant_scale`代替`antiquant_scale`和`antiquant_offset`）。
 
-### <a id="pa_constraints"></a>PageAttention约束
+### <a id="pa_constraints"></a>PagedAttention约束
 
 **开启条件**：`block_table`存在且有效。开启后`key/value`的`input_layout`参数无效，`key/value`按`block_table`索引在连续内存中排布。
 
@@ -402,7 +402,7 @@ torch_npu.npu_fused_infer_attention_score(
 | 性能提示 | BnNBsD优于BnBsH | BnNBsD优于BnBsH |
 | H超65535时 | 开GQA或用BnNBsD | 开GQA或用BnNBsD |
 
-- PageAttention开启时，以下场景需KV_S ≥ maxBlockNumPerSeq × `block_size`：
+- PagedAttention开启时，以下场景需KV_S ≥ maxBlockNumPerSeq × `block_size`：
   - 传入`atten_mask`（如shape (B, 1, Q_S, KV_S)）
   - 传入`pse_shift`（如shape (B, Q_N, Q_S, KV_S)）
 
@@ -434,7 +434,7 @@ torch_npu.npu_fused_infer_attention_score(
   - `key_rope`：要求key的N=1、D=512，shape中D=64，其余维度与`key`一致。
   - `key/value/key_rope`支持$ND$或$NZ$。$NZ$格式：`torch.float16`/`torch.bfloat16` 的shape为 [blockNum, KV_N, D/16, blockSize, 16]；`torch.int8` 的shape为 [blockNum, KV_N, D/32, blockSize, 32]。
   - `input_layout`：BSH、BSND、BNSD、BNSD_NBSD、BSND_NBSD、BSH_NBSD、TND、TND_NTD。
-  - 支持PageAttention（`block_size`：16的倍数、≤1024）。
+  - 支持PagedAttention（`block_size`：16的倍数、≤1024）。
   - 不支持：softmax_lse、左padding、tensorlist、pse、prefix、伪量化、全量化、后量化。
 <!-- end id24 -->
 <!-- npu="950" id25 -->
@@ -470,7 +470,7 @@ torch_npu.npu_fused_infer_attention_score(
 - `key_shared_prefix`的shape第一维batch=1；BNSD/BSND下N、D轴与`key`一致；BSH下H与`key`一致。`value_shared_prefix`同理。两者的S应相等。
 - `actual_shared_prefix_len`存在时：shape=[1]，值 ≤ prefix的S。
 - prefix的S + `key/value`的S ≤ 原`key/value`的S限制。
-- 不支持：PageAttention、左padding、tensorlist、qkv全`torch.int8`。
+- 不支持：PagedAttention、左padding、tensorlist、qkv全`torch.int8`。
 - sparse=0/1且传入`atten_mask`时：S2 ≥ `actual_shared_prefix_len` + `key`的S。
 
 ### <a id="padding_constraints"></a>Padding约束
@@ -481,14 +481,14 @@ torch_npu.npu_fused_infer_attention_score(
 - 搬运终点= Q_S − `query_padding_size`（须 ≤ Q_S）。
 - `kv_padding_size` < 0时被置为0。
 - 需与`actual_seq_lengths`一起开启。
-- 不支持PageAttention。
+- 不支持PagedAttention。
 
 **kv左padding**：
 
 - 搬运起点= KV_S − `kv_padding_size` − `actual_seq_lengths_kv`（Q_S > 1时须 ≥ 0；Q_S = 1时若< 0则返回全0）。
 - 搬运终点= KV_S − `kv_padding_size`（Q_S > 1时须 ≤ KV_S；Q_S = 1时若< 0则返回全0）。
 - 需与`actual_seq_lengths_kv`一起开启。
-- 不支持PageAttention。
+- 不支持PagedAttention。
 
 <!-- npu="A3,910b" id28 -->
 - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
@@ -508,7 +508,7 @@ torch_npu.npu_fused_infer_attention_score(
 
     - sparse：0/3/4。
     - 支持TND、TND_NTD。
-    - 支持PageAttention（`actual_seq_lengths_kv`长度 = kv batch数，值 ≤ KV_S）。
+    - 支持PagedAttention（`actual_seq_lengths_kv`长度 = kv batch数，值 ≤ KV_S）。
     - `query` N = 1/2/4/8/16/32/64/128，kv N = 1。
     - `query_rope`和`key_rope`非空（D=64）。
     - 不支持：左padding、tensorlist、pse、prefix、伪量化、全量化。
@@ -516,7 +516,7 @@ torch_npu.npu_fused_infer_attention_score(
     - 无rope：Q_D、K_D、V_D = 128，或Q_D、K_D = 192且V_D = 128或192（NTD不支持V_D=192；NTD_TND要求Q_D、K_D = 128或192，V_D = 128）。
     - 有rope：Q_D、K_D、V_D = 128。
     - 支持TND、NTD、NTD_TND。
-    - PageAttention仅`block_size`须为16的倍数且 ≤ 1024。
+    - PagedAttention仅`block_size`须为16的倍数且 ≤ 1024。
     - 不支持：左padding、tensorlist、pse、prefix、伪量化、全量化、后量化。
 <!-- end id29 -->
 <!-- npu="950" id30 -->
@@ -558,7 +558,7 @@ torch_npu.npu_fused_infer_attention_score(
 
   - <term>Ascend 950PR&950DT系列产品</term>：该参数传入时应为非负数，在`input_layout`不同时，其含义与拦截条件不同：一般情况下，该入参为可选入参，该入参中每个Batch的有效seqlenKv应该不大于`key/value`中对应Batch的seqlenKv。当本参数的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当`key/value`的`input_layout`为TND时，该入参必须传入，且该入参元素的数量等于Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKv和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 <!-- end id36 -->
-- **长序列超时风险**：B×N×S×D过大时可能超时（aicore timeout/trap error），建议S切分。典型高风险场景：
+- **长序列超时风险**：B×N×S×D过大时可能超时（AI Core timeout/trap error），建议S切分。典型高风险场景：
   - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
   - B=1, Q_N=2, Q_S=20971520, D=256, KV_N=2, KV_S=20971520
   - B=20, Q_N=1, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
@@ -575,7 +575,7 @@ torch_npu.npu_fused_infer_attention_score(
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
     - `query`: `torch.bfloat16`, `key/value`: `torch.int8`, D=128, Q_S=1~16。
     - `input_layout`: BSH/BSND/BNSD。
-    - 仅PageAttention（`block_size`=128或512）。
+    - 仅PagedAttention（`block_size`=128或512）。
     - `key/value` NZ格式：[blockNum, KV_N, D/32, blockSize, 32]。
     - `key/value_antiquant_scale` dtype：perchannel 时为 `torch.bfloat16`，pertoken 时为 `torch.float32`。
     - 仅KV分离模式，不支持offset、rope、左padding、tensorlist、pse、prefix、后量化。
@@ -735,9 +735,9 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - 此场景命中Q_S > 1，走PromptFlashAttention分支。
 
-### 示例2：GQA + Decode + PageAttention
+### 示例2：GQA + Decode + PagedAttention
 
-分组查询注意力+ KV Cache + PageAttention的增量推理场景。
+分组查询注意力+ KV Cache + PagedAttention的增量推理场景。
 
 ```python
 import torch
@@ -767,7 +767,7 @@ v = torch.randn(max_block_num, block_size, H_kv, dtype=torch.float16).npu()
 block_table = torch.arange(max_block_num, dtype=torch.int32).unsqueeze(0).npu()
 scale = 1.0 / math.sqrt(D)
 
-# PageAttention场景必须传入actual_seq_lengths_kv
+# PagedAttention场景必须传入actual_seq_lengths_kv
 act_seq_len_kv = [KV_S]
 
 # =====调用算子=====
@@ -789,11 +789,11 @@ print(out.shape)  # torch.Size([1, 1, 1024])
 >
 > - `num_key_value_heads=2`：启用GQA，num_heads / num_key_value_heads = 4。该参数不传时默认为0（即MHA），见[参数说明](#详细参数说明)。
 >
-> - `block_table` + `block_size`：传入即开启PageAttention，kv cache排布见[PageAttention约束](#pa_constraints)。
+> - `block_table` + `block_size`：传入即开启PagedAttention，kv cache排布见[PagedAttention约束](#pa_constraints)。
 >
 > - `input_layout="BSH"`：kv cache为BnBsH格式时必须用BSH。若kv cache为BnNBsD格式且query为BNSD，则可用BNSD。
 >
-> - `actual_seq_lengths_kv`：PageAttention场景必须传入，对应约束见[PageAttention约束](#pa_constraints)。
+> - `actual_seq_lengths_kv`：PagedAttention场景必须传入，对应约束见[PagedAttention约束](#pa_constraints)。
 >
 > - 此场景Q_S=1，走IncreFlashAttention分支，约束见[Q_S = 1约束](#qs_eq_1)。
 
@@ -883,7 +883,7 @@ print(out.shape)  # torch.Size([1, 16, 1, 512])
 >
 > - `query_rope` + `key_rope`：传入即进入MLA分支，必须同时传入。RoPE维度固定64。二者dtype/format须与query/key一致。
 >
-> - D=512：MLA prefill场景的D为512或128。D=512时可开启PageAttention、支持NZ格式等。约束详见[MLA约束](#mla_constraints)。
+> - D=512：MLA prefill场景的D为512或128。D=512时可开启PagedAttention、支持NZ格式等。约束详见[MLA约束](#mla_constraints)。
 >
 > - 此场景不支持：softmax_lse、左padding、pse、prefix、伪量化、全量化。
 
@@ -1073,7 +1073,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - 如果S2（KV_S + prefix_S）超出原KV_S限制则报错。若传入`atten_mask`，S2需大于prefix_S + KV_S。
 >
-> - 不支持PageAttention、左padding、tensorlist、qkv全`torch.int8`。
+> - 不支持PagedAttention、左padding、tensorlist、qkv全`torch.int8`。
 
 ### 示例9：ACL Graph模式（torch_npu.npu.NPUGraph）
 

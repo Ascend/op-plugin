@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-提供基于原生torch.matmul和Tensor.matmul接口的aicore错误硬件故障检测接口。内部执行矩阵计算结果校验过程，并对校验误差和实时计算的校验门限进行对比，判断校验误差是否超过门限，若超过则认为发生了aicore错误。
+提供基于原生torch.matmul和Tensor.matmul接口的AI Core错误硬件故障检测接口。内部执行矩阵计算结果校验过程，并对校验误差和实时计算的校验门限进行对比，判断校验误差是否超过门限，若超过则认为发生了AI Core错误。
 
 ## 函数原型
 
@@ -35,7 +35,7 @@ torch_npu.matmul_checksum(a, b, c) -> Tensor
 
 `Tensor`
 
-返回NPU上的`torch.bool`标量。结果为True时，表示存在aicore错误的硬件故障。
+返回NPU上的`torch.bool`标量。结果为True时，表示存在AI Core错误的硬件故障。
 
 ## 约束说明
 

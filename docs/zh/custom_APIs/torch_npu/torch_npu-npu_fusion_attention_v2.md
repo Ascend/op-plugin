@@ -191,7 +191,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
   <!-- npu="A3,910b" id17 -->
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：不支持，须满足qD == kD == vD。
   <!-- end id17 -->
-- 关于数据shape的约束（B表示batchsize，N表示head个数，S表示sequence length，T表示B\*S）：
+- 关于数据shape的约束（B表示batch size，N表示head个数，S表示sequence length，T表示B\*S）：
   
   | 场景 | B | N | S | T |
   | --- | --- | --- | --- | --- |
@@ -227,7 +227,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
   - 不支持传入`pse`和dropout mask。
 - 传入`sink`时，sink的shape必须为\[head\_num\]。
 - `input_layout`为TND时，`sparse_mode`取值范围为\[0, 5)或(5, 8\]；`input_layout`为其他取值时，`sparse_mode`取值范围为\[0, 6\]。
-- 部分场景下，如果计算量过大可能会导致算子执行超时（aicore error类型报错，errorStr为：timeout or trap error），此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
+- 部分场景下，如果计算量过大可能会导致算子执行超时（AI Core error类型报错，errorStr为：timeout or trap error），此时建议做轴切分处理，注：这里的计算量会受B、S、N、D等参数的影响，值越大计算量越大。
 
 ## 调用示例
 

@@ -191,7 +191,7 @@ There are 7 outputs in total, with types **Tensor, Tensor, Tensor, Tensor, int, 
   <!-- npu="A3,910b" id17 -->
   - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Not supported. qD == kD == vD must be satisfied.
   <!-- end id17 -->
-- Data shape constraints (B indicates batchsize, N indicates the number of heads, S indicates sequence length, and T indicates B\*S)
+- Data shape constraints (B indicates batch size, N indicates the number of heads, S indicates sequence length, and T indicates B\*S)
   
   | Scenario | B | N | S | T |
   | --- | --- | --- | --- | --- |
@@ -227,7 +227,7 @@ There are 7 outputs in total, with types **Tensor, Tensor, Tensor, Tensor, int, 
   - `pse` and dropout mask are not supported.
 - When `sink` is passed, the shape of sink must be [head\_num].
 - When `input_layout` is TND, the value range of `sparse_mode` is [0, 5) or (5, 8]. When `input_layout` has other values, the value range of `sparse_mode` is [0, 6].
-- In some scenarios, if the computation amount is too large, the operator execution may time out (aicore error type error, with errorStr: timeout or trap error). In this case, axis splitting is recommended. Note: The computation amount here is affected by B, S, N, D, and other parameters. The larger the values, the larger the computation amount.
+- In some scenarios, if the computation amount is too large, the operator execution may time out (AI Core error type error, with errorStr: timeout or trap error). In this case, axis splitting is recommended. Note: The computation amount here is affected by B, S, N, D, and other parameters. The larger the values, the larger the computation amount.
 
 ## Examples
 

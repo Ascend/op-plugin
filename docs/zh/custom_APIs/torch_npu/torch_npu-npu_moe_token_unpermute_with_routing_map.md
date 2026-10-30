@@ -99,7 +99,7 @@
 
 > [!NOTE]
 >
-> - 本接口默认非确定性实现，支持通过alcrtCtxSetSysParamOpt开启确定性。
+> - 本接口默认非确定性实现，支持通过aclrtCtxSetSysParamOpt开启确定性。
 
 ## 函数原型
 
@@ -131,7 +131,7 @@ torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indic
 
 - 该接口支持推理、训练场景下使用。
 - 该接口仅支持图模式。
-- 该接口默认非确定性实现，支持通过alcrtCtxSetSysParamOpt开启确定性。
+- 该接口默认非确定性实现，支持通过aclrtCtxSetSysParamOpt开启确定性。
 - topK_num要求小于等于512。drop_and_pad为`False`时，每个token最多预留topK_num个专家槽位，routing_map中每行为1或true的个数小于等于topK_num；sorted_indices中允许使用`-1`表示无效槽位。
 - 以下场景后续版本会拦截，如果提示warning，建议整改：
   - drop_and_pad为`True`，且topK_num大于experts_num。

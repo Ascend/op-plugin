@@ -142,7 +142,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 <!-- npu="A3,910b" id5 -->
 - Atlas A3 inference products/Atlas A2 inference products:
   - Q\_N supports 1/2/4/8/16/32/64/128.
-  - The parameter sparse\_block\_size supports [1,128] and must be a power of 2. In the PageAttention scenario, sparse\_block\_size must divide block\_size.
+  - The parameter sparse\_block\_size supports [1,128] and must be a power of 2. In the PagedAttention scenario, sparse\_block\_size must divide block\_size.
   - sinks is not supported.
   - Non-contiguous key, value, and key_rope are not supported.
 <!-- end id5 -->

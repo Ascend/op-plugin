@@ -46,7 +46,7 @@
 
   | Parameter| ≤ | Valid Range| Invalid Range|
   | :-------:| :------:|:-------:|:-------:|
-  |`top_k[b]`|Skip top-K sampling.|If `1≤topK≤min(voc_size,ks_max)`, perform top-K sampling.|If `top_k>min(voc_size,ks_max)`, skip top-K sampling.|
+  |`top_k[b]`|Skip top-K sampling.|If `1≤top_k≤min(voc_size,ks_max)`, perform top-K sampling.|If `top_k>min(voc_size,ks_max)`, skip top-K sampling.|
 
   * Divide the current batch into multiple segments and compute `top_k_value[b]` in a rolling manner:
 
@@ -289,7 +289,7 @@
     \end{cases}
     $$
 
-  * This sampling process is based on `aclnn.Multinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/9.2.0/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>.
+  * This sampling process is based on `aclnnMultinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/9.2.0/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>.
 
   * When called through TorchNPU, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/26.2.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
 

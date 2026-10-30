@@ -315,8 +315,8 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
           <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
           Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, <code>kv_cache</code> must be provided as <code>pertensor</code> quantized data, and all other inputs must be non-quantized data.<br>
-          The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scale_cq</code> field is optional.<br>
-          Outputs: <code>query_out</code> is <code>pertoken_head</code> quantized data, the <code>kv_cache</code> output parameter is <code>pertensor</code> quantized data, and all other outputs are non-quantized data.
+          The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
+          Outputs: <code>query_out</code> is <code>per-token-head</code> quantized data, the <code>kv_cache</code> output parameter is <code>pertensor</code> quantized data, and all other outputs are non-quantized data.
       </td>
     </tr>
     <tr>
@@ -325,7 +325,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
           <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=3</code>, <code>query_quant_mode=0</code><br>
           Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, and <code>dequant_scale_w_dkv_kr</code> are required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          Outputs: <code>query_out</code> returns per-token-per-head quantized data, <code>kv_cache</code> returns pertoken-pergroup quantized data, and all other outputs return non-quantized data
+          Outputs: <code>query_out</code> returns per-token-head quantized data, <code>kv_cache</code> returns pertoken-pergroup quantized data, and all other outputs return non-quantized data
       </td>
     </tr>
     <tr>
@@ -342,7 +342,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <td>
         <code>weight_quant_mode=3</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
         Inputs: <code>token_x</code> receives per-token quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> receive per-channel quantized data, <code>kv_cache</code> receives per-tensor quantized data, and all other inputs receive non-quantized data. The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields must be provided.<br>
-        Outputs: <code>query_out</code> returns per-token-per-head quantized data, <code>kv_cache</code> returns per-tensor quantized data, and all other outputs return non-quantized data
+        Outputs: <code>query_out</code> returns per-token-head quantized data, <code>kv_cache</code> returns per-tensor quantized data, and all other outputs return non-quantized data
       </td>
     </tr>
     <tr>

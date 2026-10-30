@@ -64,7 +64,7 @@
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>This API is planned for deprecation. Use <code>Tensor.view()</code> or <code>torch.permute</code> instead.</p>
 </td>
 </tr>
-<tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p11977252111717"><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu-npu/torch_npu-npu-ExternalEvent().reset().md">torch_npu-npu-ExternalEvent().reset()</a></p>
+<tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p11977252111717"><a name="p11977252111717"></a><a name="p11977252111717"></a><a href="./torch_npu-npu/torch_npu-npu-ExternalEvent().reset().md">torch_npu.npu.ExternalEvent().reset()</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>This API is planned for deprecation. <code>torch_npu.npu.ExternalEvent().wait()</code> automatically resets the event. You are advised not to call this API to manually reset the event.</p>
 </td>

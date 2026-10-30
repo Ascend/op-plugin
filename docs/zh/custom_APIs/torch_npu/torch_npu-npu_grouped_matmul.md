@@ -416,12 +416,12 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - 伪量化场景下，`x_dtype`只支持传入None，`weight_dtype`支持传入None或`torch_npu.hifloat8`。
   - 伪量化场景下，`x_dtype`为`torch.float16`/`torch.bfloat16`、`weight_dtype`为`torch_npu.int4`的PerGroup量化场景下，不支持图模式运行。
   - 非量化场景下，`x_dtype`只支持传入None，`weight_dtype`只支持传入None。
-  - 全量化场景下，若输出数据类型`y`为`torch.int8`，则不支持图模式运行。全量化MX量化且`weight`输入格式为FRACTAL\_NZ格式，若weight多tensor输入，则不支持图模式运行。若`x`和`weight`输入类型都为`torch_npu.int4`，则暂不支持图模式。
+  - 全量化场景下，若输出数据类型`y`为`torch.int8`，则不支持图模式运行。全量化MX量化且`weight`输入格式为FRACTAL_NZ格式，若weight多tensor输入，则不支持图模式运行。若`x`和`weight`输入类型都为`torch_npu.int4`，则暂不支持图模式。
 <!-- end id57 -->
 <!-- npu="950" id58 -->
 - WeightNZ场景说明（仅适用于<term>Ascend 950PR&950DT系列产品</term>）：
-  - 仅伪量化与全量化（输入`x`/`weight`数据类型为`torch.int8`、`x`/`weight`数据类型为`torch.float8_e4m3fn`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`且scale\_dtype与per\_token\_scale\_dtype为`torch.float8_e8m0fnu`）weight支持FRATCAL\_NZ数据格式。
-  - 全量化场景下，`weight`输入为FRATCAL\_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。x和weight均为`torch_npu.int4`时，不支持图模式运行，K必须保持8对齐。
+  - 仅伪量化与全量化（输入`x`/`weight`数据类型为`torch.int8`、`x`/`weight`数据类型为`torch.float8_e4m3fn`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`且scale\_dtype与per\_token\_scale\_dtype为`torch.float8_e8m0fnu`）weight支持FRACTAL_NZ数据格式。
+  - 全量化场景下，`weight`输入为FRACTAL_NZ数据格式时，K轴和N轴均不能为1。MXFP4场景，K必须大于2，weight不转置时N必须大于2。MXFP4场景支持静态图模式，不支持动态图模式。MXFP4静态图模式场景E必须大于1且K必须大于64。x和weight均为`torch_npu.int4`时，不支持图模式运行，K必须保持8对齐。
 <!-- end id58 -->
 <!-- npu="950" id59 -->
 - scale NZ亲和格式使用约束（仅适用于<term>Ascend 950PR&950DT系列产品</term>）：
@@ -595,7 +595,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | 0 | 单多单 | `x`为单张量、`weight`为多张量、`y`为单张量。 | 1. 仅支持`split_item`为2或3。<br>  2. 必须传`group_list`，且当`group_list_type`为0时，最后一个值与`x`中tensor的第一维相等，当`group_list_type`为1时，数值的总和需与`x`中tensor的第一维一一对应且长度最大为128，非量化场景长度最大为1024。<br>  3. `x`、`y`中tensor需为2维，shape分别为（M, K）和（M, N）。<br>  4. `weight`中tensor需为2维，shape分别为（N, K）或（K, N）。<br>  5. `weight`中每个tensor的N轴必须相等。<br>  6. 支持`weight`转置，但`weight`中每个tensor是否转置需保持统一。<br>  7. `x`不支持转置。<br>  8. 非量化和伪量化场景支持传入`bias`，`bias`可选且shape仅支持1维的tensorList[(n),(n),...,(n)]，list长度与`weight`列表长度相同。<br>  9. 全量化MX量化且输入`w`为`FRACTAL_NZ`格式时，支持单多单场景，此时不支持传入`bias`。 |
     | 0 | 多多单 | x和weight为多张量，y为单张量。每组矩阵乘法的结果连续存放在同一个张量中。 | 1. 仅支持split_item为2或3。<br>  2. x、weight、y中tensor需为2维。<br>  3. weight中每个tensor的N轴必须相等。<br>  4. 若传入group_list，当group_list_type为0时，group_list的差值需与x中tensor的第一维一一对应，当group_list_type为1时，group_list的数值需与x中tensor的第一维一一对应且长度最大为128，非量化场景长度最大为1024。<br>  5. 支持weight转置，但weight中每个tensor是否转置需保持统一。<br>  6. x不支持转置。<br>  7. 非量化场景bias可选且shape仅支持1维的tensorList[(n),(n),...,(n)]，list长度与weight长度相同。 |
     | 2 | 单单单 | x、weight与y均为单张量。 | 1. 仅支持split_item为2或3。<br>  2. 必须传group_list，且当group_list_type为0时，最后一个值不大于x中tensor的第一维，当group_list_type为1时，数值的总和不大于x中tensor的第一维。<br>  3. group_list第1维最大支持1024，即最多支持1024个group。<br>  4. 在全量化场景下，不支持scale为`torch.int64`。<br>  5. 仅支持x转置，weight不转置。<br>  6. y中单tensor需为3维，x、weight中单tensor需为2维。<br>  7. 图模式场景下，K轴不能为0。<br>  8. 仅支持ND进ND出。 |
-    | 2 | 单多多 | x为单张量，weight为多张量，y为多张量。 | 1. 仅支持split_item为0或1。<br>  2. x、weight、y中tensor需为2维。<br>  3. 若传入grouplist，当group_list_type为0时，group_list的差值需与x中tensor的第一维一一对应，当group_list_type为1时，group_list的数值需与x中tensor的第一维一一对应且长度最大为1024。<br>  4. 仅支持x转置，weight不转置。<br>  5. 非分组的轴的shape不能为0。<br>  6. 仅支持ND进ND出。<br>  7. 不支持bias。<br>  8. 仅支持非量化。 |
+    | 2 | 单多多 | x为单张量，weight为多张量，y为多张量。 | 1. 仅支持split_item为0或1。<br>  2. x、weight、y中tensor需为2维。<br>  3. 若传入group_list，当group_list_type为0时，group_list的差值需与x中tensor的第一维一一对应，当group_list_type为1时，group_list的数值需与x中tensor的第一维一一对应且长度最大为1024。<br>  4. 仅支持x转置，weight不转置。<br>  5. 非分组的轴的shape不能为0。<br>  6. 仅支持ND进ND出。<br>  7. 不支持bias。<br>  8. 仅支持非量化。 |
 
     - **单单单的全量化场景**：各场景对scale和per\_token\_scale的shape规格限制如下（其中g为group\_list shape大小，M与x的shape m一致，K与x的shape k一致，N与weight的shape n一致）：
 

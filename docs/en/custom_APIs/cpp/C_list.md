@@ -163,7 +163,7 @@ The standard C++ APIs provide fundamental capabilities such as NPU device initia
 </td>
 <td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1032517615010"><a name="p1032517615010"></a><a name="p1032517615010"></a>Generates a random mask based on the probability <code>p</code> during training, which is used to set elements to zero.</p>
 </td>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu.native-empty_with_swapped_memory</a></p>
+</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu::native::empty_with_swapped_memory</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Allocates a tensor with its device type set to NPU, while its actual memory resides on the host side.</p>
 </td>
