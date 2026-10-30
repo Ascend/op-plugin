@@ -163,7 +163,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p1032517615010"><a name="p1032517615010"></a><a name="p1032517615010"></a>训练过程中，按照概率p随机生成mask，用于元素置零。</p>
 </td>
-</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu.native-empty_with_swapped_memory</a></p>
+</tr><tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="at_npu-native-empty_with_swapped_memory.md">at_npu::native::empty_with_swapped_memory</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>申请一个device信息为NPU且实际内存在host侧的特殊tensor。</p>
 </td>

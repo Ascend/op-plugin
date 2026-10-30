@@ -133,7 +133,7 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
         return backend
     if __name__ == '__main__':
         argv = sys.argv[1:]
-        opts, ars = getopt.getopt(argv, "hi:o:", ["npu_mode="])
+        opts, args = getopt.getopt(argv, "hi:o:", ["npu_mode="])
         npu_mode = ""
         print("begin to run torch_stc_model")
         model = FusedMatmulModel()

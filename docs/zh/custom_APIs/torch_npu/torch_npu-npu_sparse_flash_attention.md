@@ -142,7 +142,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 <!-- npu="A3,910b" id5 -->
 - Atlas A3推理系列产品/Atlas A2推理系列产品：
   - Q\_N支持1/2/4/8/16/32/64/128。
-  - 参数sparse\_block\_size支持[1,128]，且要求是2的幂次方，在PageAttention场景下要求sparse\_block\_size整除block\_size。
+  - 参数sparse\_block\_size支持[1,128]，且要求是2的幂次方，在PagedAttention场景下要求sparse\_block\_size整除block\_size。
   - 不支持sinks。
   - key、value和key_rope不支持非连续。
 <!-- end id5 -->

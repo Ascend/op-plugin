@@ -31,7 +31,7 @@ torch_npu.profiler.ProfilerLevel
 
 - **`torch_npu.profiler.ProfilerLevel.Level0`**: Optional. Collects upper-layer application data, lower-layer NPU data, or information about operators executed on the NPU. If this parameter is provided, the tool collects only partial data and omits some operator information. For details, see <a href="https://gitcode.com/Ascend/msprof/blob/26.2.0/docs/en/user_guide/profile_data_file_references.md#op_summary-operator-details">op_summary (Operator Details)</a> in the *msProf* documentation.
 - **`torch_npu.profiler.ProfilerLevel.Level1`**: Optional. Compared with `torch_npu.profiler.ProfilerLevel.Level0`, this level additionally collects CANN layer AscendCL data, AI Core performance metrics executed on the NPU, and HCCL `communication.json` and `communication_matrix.json` files. This level also enables `aic_metrics=torch_npu.profiler.AiCMetrics.PipeUtilization`.
-- **torch_npu.profiler.ProfilerLevel.Level2**: Optional. Compared with `torch_npu.profiler.ProfilerLevel.Level1`, this level additionally collects CANN layer runtime data and AI CPU data (`data_preprocess.csv` file).
+- **torch_npu.profiler.ProfilerLevel.Level2**: Optional. Compared with `torch_npu.profiler.ProfilerLevel.Level1`, this level additionally collects CANN layer runtime data and AICPU data (`data_preprocess.csv` file).
 
 ## Example
 

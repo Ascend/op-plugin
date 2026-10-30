@@ -53,7 +53,7 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`gmm_x`** (`Tensor`): **Required**. Left matrix of the GroupedMatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. Two dimensions are supported, the shape is (A, H1), and the data layout can be $ND$.
 - **`gmm_weight`** (`Tensor`): **Required**. Right matrix of the GroupedMatMul computation. The data type must be the same as that of `gmm_x`. Three dimensions are supported, the shape is (e, H1, N1), and the data layout can be $ND$.
 - **`hcom`** (`str`): Required. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
-- **`ep_world_size`** (`int`): **Required**. Size of the EP communication domain. CCU supports only intra-node UB domain interconnection, while the AI CPU supports inter-node UB domain interconnection.
+- **`ep_world_size`** (`int`): **Required**. Size of the EP communication domain. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
 
     <!-- npu="A3" id3 -->
     - <term>Atlas A3 products</term>: the supported values are 8, 16, 32, 64, and 128.
@@ -74,10 +74,10 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`.
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AI CPU communication is used.
+    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AI CPU communication is used.
+    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
     <!-- end id6 -->
 
 ## Return Values

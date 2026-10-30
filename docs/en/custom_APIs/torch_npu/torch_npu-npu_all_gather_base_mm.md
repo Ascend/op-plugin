@@ -70,7 +70,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
     - <term>Atlas A3 products</term>: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR&950DT products</term>: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AI CPU supports inter-node UB domain interconnection.
+    - <term>Ascend 950PR&950DT products</term>: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
     <!-- end id8 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
@@ -113,10 +113,10 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **`comm_mode`** (`str`): Optional. Communication mode. The default value is `None`.
 
     <!-- npu="A3,910b" id16 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `ai_cpu` and `aiv` are supported, and `None` indicates AI CPU communication. The `ai_cpu` mode supports only the basic scenario, and the `aiv` mode supports the basic and quantization scenarios.
+    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `ai_cpu` and `aiv` are supported, and `None` indicates AICPU communication. The `ai_cpu` mode supports only the basic scenario, and the `aiv` mode supports the basic and quantization scenarios.
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR&950DT products</term>: `ai_cpu`, `ccu`, and `None` are supported. When the value is `None`, AI CPU communication is used.
+    - <term>Ascend 950PR&950DT products</term>: `ai_cpu`, `ccu`, and `None` are supported. When the value is `None`, AICPU communication is used.
     <!-- end id17 -->
 
 ## Return Values

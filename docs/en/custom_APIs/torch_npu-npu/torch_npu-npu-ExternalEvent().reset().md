@@ -48,7 +48,7 @@ None
 ## Constraints
 
 - This API is asynchronous. A successful call indicates only that the task has been delivered, not that it has completed.
-- API core sequence: `torch_npu.npu.ExternalEvent().wait()` -> `torch_npu.npu.ExternalEvent().reset()` -> `torch_npu.npu.ExternalEvent().record()` or `torch_npu.npu.ExternalEvent().record()` -> `torch_npu.npu.ExternalEvent().wait()` -> `torch_npu.npu.ExternalEvent().reset()`.
+- API call sequence: `torch_npu.npu.ExternalEvent().wait()` -> `torch_npu.npu.ExternalEvent().reset()` -> `torch_npu.npu.ExternalEvent().record()` or `torch_npu.npu.ExternalEvent().record()` -> `torch_npu.npu.ExternalEvent().wait()` -> `torch_npu.npu.ExternalEvent().reset()`.
 
 ## Example
 

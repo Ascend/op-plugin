@@ -97,7 +97,7 @@ Represents no return value.
        |-- ASCEND_PROFILER_OUTPUT           // Directory of the collected and parsed performance data
          |-- api_statistic.csv             // Generated when profiler_level is set to Level1 or Level2. Statistics about the CANN layer API execution duration.
          |-- kernel_details.csv            // Generated when activities is set to the NPU type
-         |-- op_statistic.csv              // Statistics about the number of AI Core and AI CPU operator calls and the duration
+         |-- op_statistic.csv              // Statistics about the number of AI Core and AICPU operator calls and the duration
          |-- operator_details.csv          // Generated when activities is set to the CPU type and record_shapes is set to True
          |-- step_trace_time.csv           // Statistics about the computation and communication time in an iteration
          |-- trace_view.json               // Records the time information of the entire AI task

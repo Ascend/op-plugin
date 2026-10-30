@@ -59,7 +59,7 @@ torch_npu.npu_fused_infer_attention_score(
 | ---- | -------- | ------------ | ------------ |
 | Basic Prefill (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout` | [General basic constraints](#base_constraints), [Q_S > 1 constraints](#qs_gt_1) |
 | Basic Decode (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout, actual_seq_lengths_kv` | [General basic constraints](#base_constraints), [Q_S = 1 constraints](#qs_eq_1) |
-| Decode + PageAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PageAttention constraints](#pa_constraints) |
+| Decode + PagedAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PagedAttention constraints](#pa_constraints) |
 | GQA | `query, key, value, num_heads, num_key_value_heads` | - | [General basic constraints](#base_constraints) |
 | MLA | `query, key, value, query_rope, key_rope` | `num_heads, scale, input_layout` | [MLA constraints](#mla_constraints) |
 | Prefix (shared prefix) | `query, key, value, key_shared_prefix, value_shared_prefix` | `actual_shared_prefix_len` | [Prefix constraints](#prefix_constraints) |
@@ -140,7 +140,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **`actual_seq_lengths_kv`** (`List[int]`, optional): Valid sequence length of `key/value` in each batch. Data type: `torch.int64`. Default value: None (indicating the same as the S of `key/value`).
 
   <!-- npu="A3,910b" id11 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The constraints are the same as those of `actual_seq_lengths`. This parameter must be passed in the PageAttention scenario.
+  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The constraints are the same as those of `actual_seq_lengths`. This parameter must be passed in the PagedAttention scenario.
   <!-- end id11 -->
 
 #### `torch.int8` quantization parameters
@@ -180,11 +180,11 @@ torch_npu.npu_fused_infer_attention_score(
   - <term>Ascend 950PR&950DT products</term>: The values 0 and 1 are supported.
   <!-- end id15 -->
 
-#### PageAttention parameters
+#### PagedAttention parameters
 
-- **`block_table`** (`Tensor`, optional): Block mapping table of the KV storage in PageAttention. Data type: `torch.int32`. Data layout: $ND$. It must be 2D: [B, maxBlockNumPerSeq]. The validity of the blockid is guaranteed by the user. Passing this parameter enables PageAttention. Default value: None.
+- **`block_table`** (`Tensor`, optional): Block mapping table of the KV storage in PagedAttention. Data type: `torch.int32`. Data layout: $ND$. It must be 2D: [B, maxBlockNumPerSeq]. The validity of the blockid is guaranteed by the user. Passing this parameter enables PagedAttention. Default value: None.
 
-- **`block_size`** (`int`, optional): Maximum number of tokens per block in PageAttention, passed as a Python `int`. Q_S > 1: minimum 128, maximum 512, and must be a multiple of 128. Q_S = 1: non-zero value, maximum 512. `torch.float16`/`torch.bfloat16` requires 16-byte alignment, and `torch.int8` requires 32-byte alignment. The value 128 is recommended. Default value: 0 (PageAttention is disabled).
+- **`block_size`** (`int`, optional): Maximum number of tokens per block in PagedAttention, passed as a Python `int`. Q_S > 1: minimum 128, maximum 512, and must be a multiple of 128. Q_S = 1: non-zero value, maximum 512. `torch.float16`/`torch.bfloat16` requires 16-byte alignment, and `torch.int8` requires 32-byte alignment. The value 128 is recommended. Default value: 0 (PagedAttention is disabled).
 
   <!-- npu="950" id16 -->
   - <term>Ascend 950PR&950DT products</term>: Q_S = 1: when the input types of key and value are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.
@@ -380,7 +380,7 @@ Constraints on the combination of parameters and input/output data types
 - The operator automatically determines the mode based on the shape dim (pertensor when dim=1; otherwise perchannel).
 - **The KV fake-quantization separation mode is recommended** (use `key_antiquant_scale` and `value_antiquant_scale` instead of `antiquant_scale` and `antiquant_offset`).
 
-### <a id="pa_constraints"></a>PageAttention constraints
+### <a id="pa_constraints"></a>PagedAttention constraints
 
 **Enabling condition**: `block_table` exists and is valid. Once enabled, the `input_layout` parameter of `key/value` becomes invalid, and `key/value` are arranged in contiguous memory indexed by `block_table`.
 
@@ -399,7 +399,7 @@ Constraints on the combination of parameters and input/output data types
 | Performance tip | BnNBsD is better than BnBsH | BnNBsD is better than BnBsH |
 | When H exceeds 65535 | Enable GQA or use BnNBsD | Enable GQA or use BnNBsD |
 
-- When PageAttention is enabled, the following scenarios require KV_S >= maxBlockNumPerSeq x `block_size`:
+- When PagedAttention is enabled, the following scenarios require KV_S >= maxBlockNumPerSeq x `block_size`:
   - `atten_mask` is passed (for example, shape (B, 1, Q_S, KV_S))
   - `pse_shift` is passed (for example, shape (B, Q_N, Q_S, KV_S))
 
@@ -431,7 +431,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
   - `key_rope`: key is required to have N=1 and D=512, D in the shape is 64, and the other dimensions are consistent with those of `key`.
   - `key/value/key_rope` support $ND$ or $NZ$. In the $NZ$ format: the shape of `torch.float16`/`torch.bfloat16` is [blockNum, KV_N, D/16, blockSize, 16]; the shape of `torch.int8` is [blockNum, KV_N, D/32, blockSize, 32].
   - `input_layout`: BSH, BSND, BNSD, BNSD_NBSD, BSND_NBSD, BSH_NBSD, TND, TND_NTD.
-  - PageAttention is supported (`block_size`: a multiple of 16 and <= 1024).
+  - PagedAttention is supported (`block_size`: a multiple of 16 and <= 1024).
   - Not supported: softmax_lse, left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
 <!-- end id24 -->
 <!-- npu="950" id25 -->
@@ -467,7 +467,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - The first dimension (batch) of the shape of `key_shared_prefix` is 1. In BNSD/BSND, the N and D axes are consistent with those of `key`; in BSH, H is consistent with that of `key`. The same applies to `value_shared_prefix`. The S values of the two must be equal.
 - When `actual_shared_prefix_len` exists: shape=[1], and the value <= the S of prefix.
 - The S of prefix + the S of `key/value` <= the original S limit of `key/value`.
-- Not supported: PageAttention, left padding, tensorlist, and all-qkv `torch.int8`.
+- Not supported: PagedAttention, left padding, tensorlist, and all-qkv `torch.int8`.
 - When sparse=0/1 and `atten_mask` is passed: S2 >= `actual_shared_prefix_len` + the S of `key`.
 
 ### <a id="padding_constraints"></a>Padding constraints
@@ -478,14 +478,14 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - Transfer end = Q_S - `query_padding_size` (must be <= Q_S).
 - When `kv_padding_size` < 0, it is set to 0.
 - It must be enabled together with `actual_seq_lengths`.
-- PageAttention is not supported.
+- PagedAttention is not supported.
 
 **kv left padding**:
 
 - Transfer start = KV_S - `kv_padding_size` - `actual_seq_lengths_kv` (must be >= 0 when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
 - Transfer end = KV_S - `kv_padding_size` (must be <= KV_S when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
 - It must be enabled together with `actual_seq_lengths_kv`.
-- PageAttention is not supported.
+- PagedAttention is not supported.
 
 <!-- npu="A3,910b" id28 -->
 - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
@@ -505,7 +505,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 
     - sparse: 0/3/4.
     - TND and TND_NTD are supported.
-    - PageAttention is supported (the length of `actual_seq_lengths_kv` = the number of kv batches, and the value <= KV_S).
+    - PagedAttention is supported (the length of `actual_seq_lengths_kv` = the number of kv batches, and the value <= KV_S).
     - `query` N = 1/2/4/8/16/32/64/128, kv N = 1.
     - `query_rope` and `key_rope` are non-empty (D=64).
     - Not supported: left padding, tensorlist, pse, prefix, fake quantization, and full quantization.
@@ -513,7 +513,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
     - Without rope: Q_D, K_D, V_D = 128, or Q_D, K_D = 192 and V_D = 128 or 192 (NTD does not support V_D=192; NTD_TND requires Q_D, K_D = 128 or 192 and V_D = 128).
     - With rope: Q_D, K_D, V_D = 128.
     - TND, NTD, and NTD_TND are supported.
-    - For PageAttention, only a `block_size` that is a multiple of 16 and <= 1024 is supported.
+    - For PagedAttention, only a `block_size` that is a multiple of 16 and <= 1024 is supported.
     - Not supported: left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
 <!-- end id29 -->
 <!-- npu="950" id30 -->
@@ -555,7 +555,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 
   - <term>Ascend 950PR&950DT products</term>: When passed in, this parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and the valid seqlenKv of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in `key/value`. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When the `input_layout` of `key/value` is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of `key/value`, it represents the actual length of each batch, and the values must not be greater than KV_S.
 <!-- end id36 -->
-- **Long-sequence timeout risk**: When B x N x S x D is too large, a timeout may occur (aicore timeout/trap error). Splitting S is recommended. Typical high-risk scenarios:
+- **Long-sequence timeout risk**: When B x N x S x D is too large, a timeout may occur (AI Core timeout/trap error). Splitting S is recommended. Typical high-risk scenarios:
   - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
   - B=1, Q_N=2, Q_S=20971520, D=256, KV_N=2, KV_S=20971520
   - B=20, Q_N=1, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
@@ -572,7 +572,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
   - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
     - `query`: `torch.bfloat16`, `key/value`: `torch.int8`, D=128, Q_S=1~16.
     - `input_layout`: BSH/BSND/BNSD.
-    - Only PageAttention is supported (`block_size`=128 or 512).
+    - Only PagedAttention is supported (`block_size`=128 or 512).
     - `key/value` NZ format: [blockNum, KV_N, D/32, blockSize, 32].
     - dtype of `key/value_antiquant_scale`: `torch.bfloat16` in perchannel mode and `torch.float32` in pertoken mode.
     - Only the KV separation mode is supported. offset, rope, left padding, tensorlist, pse, prefix, and post-quantization are not supported.
@@ -732,9 +732,9 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - This scenario falls under Q_S > 1 and uses the PromptFlashAttention branch.
 
-### Example 2: GQA + Decode + PageAttention
+### Example 2: GQA + Decode + PagedAttention
 
-Incremental inference scenario of grouped-query attention + KV cache + PageAttention.
+Incremental inference scenario of grouped-query attention + KV cache + PagedAttention.
 
 ```python
 import torch
@@ -764,7 +764,7 @@ v = torch.randn(max_block_num, block_size, H_kv, dtype=torch.float16).npu()
 block_table = torch.arange(max_block_num, dtype=torch.int32).unsqueeze(0).npu()
 scale = 1.0 / math.sqrt(D)
 
-# In PageAttention scenarios, actual_seq_lengths_kv must be passed
+# In PagedAttention scenarios, actual_seq_lengths_kv must be passed
 act_seq_len_kv = [KV_S]
 
 # ===== Call the operator =====
@@ -786,17 +786,17 @@ print(out.shape)  # torch.Size([1, 1, 1024])
 >
 > - `num_key_value_heads=2`: Enables GQA. num_heads / num_key_value_heads = 4. When this parameter is not passed, it defaults to 0 (that is, MHA). For details, see [Parameter description](#detailed-parameter-description).
 >
-> - `block_table` + `block_size`: Passing them enables PageAttention. For the kv cache layout, see [PageAttention constraints](#pa_constraints).
+> - `block_table` + `block_size`: Passing them enables PagedAttention. For the kv cache layout, see [PagedAttention constraints](#pa_constraints).
 >
 > - `input_layout="BSH"`: BSH must be used when the kv cache is in BnBsH format. If the kv cache is in BnNBsD format and query is BNSD, BNSD can be used.
 >
-> - `actual_seq_lengths_kv`: Must be passed in PageAttention scenarios. For the corresponding constraints, see [PageAttention constraints](#pa_constraints).
+> - `actual_seq_lengths_kv`: Must be passed in PagedAttention scenarios. For the corresponding constraints, see [PagedAttention constraints](#pa_constraints).
 >
 > - In this scenario, Q_S=1, and the IncreFlashAttention branch is used. For the constraints, see [Q_S = 1 constraints](#qs_eq_1).
 
 ### Example 3: MHA + Causal Mask (with atten_mask)
 
-device='npu:0', dtype=torch.float16)
+Standard decoder scenario using a causal attention mask.
 
 ```python
 import torch
@@ -880,7 +880,7 @@ print(out.shape)  # torch.Size([1, 16, 1, 512])
 >
 > - `query_rope` + `key_rope`: Passing them enters the MLA branch, and they must be passed together. The RoPE dimension is fixed at 64. Their dtype/format must be consistent with that of query/key.
 >
-> - D=512: The D of MLA prefill scenarios is 512 or 128. When D=512, PageAttention can be enabled and the NZ format is supported. For details about the constraints, see [MLA constraints](#mla_constraints).
+> - D=512: The D of MLA prefill scenarios is 512 or 128. When D=512, PagedAttention can be enabled and the NZ format is supported. For details about the constraints, see [MLA constraints](#mla_constraints).
 >
 > - This scenario does not support: softmax_lse, left padding, pse, prefix, fake quantization, and full quantization.
 
@@ -1070,7 +1070,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - If S2 (KV_S + prefix_S) exceeds the original KV_S limit, an error is reported. If `atten_mask` is passed, S2 must be greater than prefix_S + KV_S.
 >
-> - PageAttention, left padding, tensorlist, and all-qkv `torch.int8` are not supported.
+> - PagedAttention, left padding, tensorlist, and all-qkv `torch.int8` are not supported.
 
 ### Example 9: ACL Graph mode (torch_npu.npu.NPUGraph)
 

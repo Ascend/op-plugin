@@ -50,7 +50,7 @@
       | `torch.float8_e4m3fn` | 8 |
       | `torch.float8_e5m2` | 15 |
 
-  - Scenario 2, when scale_alg is 1, only float8 is involved (CuBALS Scale calculation algorithm):
+  - Scenario 2, when scale_alg is 1, only float8 is involved (cuBLAS Scale calculation algorithm):
     - -1 axis quantization: The input x is grouped along the -1 axis into groups of 32 values. Each group has a length of 32. A block scaling factor $S_{fp32}^b$ is calculated separately for each group, and all elements in the group are mapped to the target low-precision type float8 using the same $S_{fp32}^b$. If the last group has fewer than 32 elements, the missing values are treated as 0 and the group is processed as a complete group. Find the maximum absolute value in the group:
 
       $$
@@ -70,7 +70,7 @@
       $$
 
       Calculate the block scaling factor $S_{ue8m0}^b=2^{E_{int}^b}$ and the block conversion factor $R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$. For each element in the group, $d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$. The final quantization result output on the -1 axis is $\left(S^b, [d^i]_{i=1}^{32}\right)$, where $S^b$ is the block scaling factor (that is, $S_{ue8m0}^b$).
-    - -2 axis quantization: At the same time, the input x is grouped on the -2 axis by 32 values. The same CuBALS Scale calculation algorithm as that for the -1 axis is used. The block scaling factor is calculated independently for each group and quantization is performed. The quantization result output on the -2 axis is $\left(S^b, [d^j]_{j=1}^{32}\right)$.
+    - -2 axis quantization: At the same time, the input x is grouped on the -2 axis by 32 values. The same cuBLAS Scale calculation algorithm as that for the -1 axis is used. The block scaling factor is calculated independently for each group and quantization is performed. The quantization result output on the -2 axis is $\left(S^b, [d^j]_{j=1}^{32}\right)$.
     - The -1 axis quantization results form the output y1, and the corresponding block scaling factors form the output mxscale1. The -2 axis quantization results form the output y2, and the corresponding block scaling factors form the output mxscale2.
 
   - Scenario 3, when scale_alg is 2, only the `torch_npu.float4_e2m1fn_x2` type is involved:
@@ -120,7 +120,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
   - 297: `torch_npu.float4_e1m2fn_x2`.
 - **`scale_alg`** (`int`): Optional. Calculation method of mxscale1 and mxscale2. The value can be 0, 1, or 2. The default value is 0.
   - 0: Scenario 1 (OCP MX specification implementation). Both float8 and float4 are supported.
-  - 1: Scenario 2 (CuBALS Scale calculation algorithm). Only float8 is supported.
+  - 1: Scenario 2 (cuBLAS Scale calculation algorithm). Only float8 is supported.
   - 2: Scenario 3 (fp4 dynamic quantization). Only `torch_npu.float4_e2m1fn_x2` is supported.
 - **`dst_type_max`** (`float`): Optional. Value of maxType, $Amax(DType)$ in the formulas. The default value is 0.0. This value can be set only when dst_type is `torch_npu.float4_e2m1fn_x2` and scale_alg is 2. The supported values are 0.0 and 6.0 to 12.0. When the value is 0.0, Amax(DType) is the maximum value of the quantized result data type. When the value is 6.0 to 12.0, Amax(DType) is the passed value.
 

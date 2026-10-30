@@ -254,7 +254,7 @@ Graph mode call
       a4 = torch.rand(2, 2, 3, 7).to(torch.float32)     # value
       a5 = torch.rand(2, 2, 1, 7).to(torch.float32)    # value_cache
       a6 = torch.tensor([[1, 0, 0],[0, 1, 0]]).to(torch.int32)                # compress_lens
-      a7 = torch.tensor([0, 0, 1, 0, 1, 1]).to(torch.int32)                   # compress_seq_offset
+      a7 = torch.tensor([0, 0, 1, 0, 1, 1]).to(torch.int32)                   # compress_seq_offsets
       a8 = torch.tensor([2,1]).to(torch.int32)                            # seq_lens
 
       input_data = [a1, a2, a3, a4, a5, a6, a7, a8]

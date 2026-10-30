@@ -74,10 +74,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`.
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AI CPU communication is used.
+    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AI CPU communication is used.
+    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
     <!-- end id6 -->
 
 ## Return Values

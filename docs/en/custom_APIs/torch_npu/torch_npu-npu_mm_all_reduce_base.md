@@ -148,10 +148,10 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **`comm_mode`** (`str`): Optional. Communication engine mode. The default value is `None`.
 
     <!-- npu="910b" id22 -->
-    - <term>Atlas A2 products</term>: The values `None` and `ai_cpu` are supported, and both use AI CPU communication.
+    - <term>Atlas A2 products</term>: The values `None` and `ai_cpu` are supported, and both use AICPU communication.
     <!-- end id22 -->
     <!-- npu="950" id23 -->
-    - <term>Ascend 950PR&950DT products</term>: The values `None`, `ai_cpu`, and `ccu` are supported. `ai_cpu` and `ccu` directly specify AI CPU and CCU communication; `None` uses AI CPU communication by default.
+    - <term>Ascend 950PR&950DT products</term>: The values `None`, `ai_cpu`, and `ccu` are supported. `ai_cpu` and `ccu` directly specify AICPU and CCU communication; `None` uses AICPU communication by default.
     <!-- end id23 -->
 
 ## Return Values
@@ -169,7 +169,7 @@ In non-quantization and fake-quantization scenarios, the data type is identical 
   - <term>Atlas A2 products</term>: Host CPU+TS communication is supported.
   <!-- end id24 -->
   <!-- npu="950" id25 -->
-  - <term>Ascend 950PR&950DT products</term>: CCU and AI CPU communication are supported. CCU supports only intra-node UB domain interconnection, while AI CPU supports inter-node UB domain interconnection.
+  - <term>Ascend 950PR&950DT products</term>: CCU and AICPU communication are supported. CCU supports only intra-node UB domain interconnection, while AICPU supports inter-node UB domain interconnection.
   <!-- end id25 -->
 
 - This API supports graph mode.

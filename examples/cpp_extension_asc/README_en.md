@@ -35,7 +35,7 @@ Before getting started, ensure that you have completed the installation of the f
 
 The following steps use the `Add` operator as an example.
 
-1. Write the C++ operator code and adaptation code in `*.asc` files (such as `add_custom.asc`) in the `csrc` directory. Then, register the custom operator schema and bind it to its specific implementation. A namespace named `cpp_extension_acs` is defined in `add_custom.asc`, where the `ascendc_add` function is registered. Within the `ascendc_add` function, the current NPU stream is obtained through `c10_npu::getCurrentNPUStream()`, and the custom kernel function `add_custom` is launched by using the kernel launch syntax `<<<>>>` to execute the operator on the NPU. PyTorch provides the `TORCH_LIBRARY` macro to define a new namespace and register the schema within the namespace. Note that the namespace name must be unique. The code sample is as follows:
+1. Write the C++ operator code and adaptation code in `*.asc` files (such as `add_custom.asc`) in the `csrc` directory. Then, register the custom operator schema and bind it to its specific implementation. A namespace named `cpp_extension_asc` is defined in `add_custom.asc`, where the `ascendc_add` function is registered. Within the `ascendc_add` function, the current NPU stream is obtained through `c10_npu::getCurrentNPUStream()`, and the custom kernel function `add_custom` is launched by using the kernel launch syntax `<<<>>>` to execute the operator on the NPU. PyTorch provides the `TORCH_LIBRARY` macro to define a new namespace and register the schema within the namespace. Note that the namespace name must be unique. The code sample is as follows:
     <!-- The code does not contain const c10::OptionalDeviceGuard device_guard(device_of(Tensor)). Should it be added? -->
     > [!NOTE]
     >
@@ -138,26 +138,26 @@ The following steps use the `Add` operator as an example.
     }
 
     // Define a new operator
-    TORCH_LIBRARY_FRAGMENT(cpp_extension_acs, m)
+    TORCH_LIBRARY_FRAGMENT(cpp_extension_asc, m)
     {
         m.def("ascendc_add(Tensor x, Tensor y) -> Tensor");
     }
 
     // Register implementation for the "PrivateUse1" backend
-    TORCH_LIBRARY_IMPL(cpp_extension_acs, PrivateUse1, m)
+    TORCH_LIBRARY_IMPL(cpp_extension_asc, PrivateUse1, m)
     {
-        m.impl("ascendc_add", TORCH_FN(cpp_extension_acs::ascendc_add));
+        m.impl("ascendc_add", TORCH_FN(cpp_extension_asc::ascendc_add));
     }
 
     // Define a simple model using the custom operation
-    TORCH_LIBRARY_IMPL(cpp_extension_acs, Meta, m)
+    TORCH_LIBRARY_IMPL(cpp_extension_asc, Meta, m)
     {
         m.impl("ascendc_add", &add_impl_meta);
     }
 
     ```
 
-2. Add the operator call logic and load the `.so` file in the `__init__.py` and `_load.py` files under the `cpp_extension_acs` directory. The code sample is as follows:
+2. Add the operator call logic and load the `.so` file in the `__init__.py` and `_load.py` files under the `cpp_extension_asc` directory. The code sample is as follows:
 
     ```Python
     # __init__.py

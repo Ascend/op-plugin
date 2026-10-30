@@ -46,7 +46,7 @@
 
   | 参数类型 | ≤ | 有效域 | 无效域 |
   | :-------:| :------:|:-------:|:-------:|
-  |`top_k[b]`|跳过topK采样|1≤topK≤min(voc_size,ks_max),执行topK采样|top_k>min(voc_size,ks_max),跳过topK采样|
+  |`top_k[b]`|跳过topK采样|1≤top_k≤min(voc_size,ks_max),执行topK采样|top_k>min(voc_size,ks_max),跳过topK采样|
 
   * 对当前batch分割为若干子段，滚动计算top_k_value[b]：
 
@@ -289,7 +289,7 @@
     \end{cases}
     $$
 
-  * 该采样过程以aclnn.Multinomial为基准，可参见<https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>。
+  * 该采样过程以aclnnMultinomial为基准，可参见<https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>。
 
   * TorchNPU调用时，采样种子和偏移默认使用内建值，可参见<https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
 

@@ -50,7 +50,7 @@
       | `torch.float8_e4m3fn` | 8 |
       | `torch.float8_e5m2` | 15 |
 
-  - 场景2，当scale\_alg为1时，只涉及float8（CuBALS Scale计算算法）：
+  - 场景2，当scale\_alg为1时，只涉及float8（cuBLAS Scale计算算法）：
     - -1轴量化：将输入x在-1轴上按照32个数进行分组，每组长度为32，对每组单独计算一个块缩放因子$S_{fp32}^b$，再把组内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型float8。如果最后一组不足32个元素，把缺失值视为0，按照完整组处理。找到该组中数值的最大绝对值：
 
       $$
@@ -70,7 +70,7 @@
       $$
 
       计算块缩放因子$S_{ue8m0}^b=2^{E_{int}^b}$，块转换因子$R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$，对每个组内元素$d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$，最终-1轴输出的量化结果是$\left(S^b, [d^i]_{i=1}^{32}\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$）。
-    - -2轴量化：同时，将输入x在-2轴上按照32个数进行分组，采用与-1轴相同的CuBALS Scale计算算法，对每组独立计算块缩放因子并量化，-2轴输出的量化结果是$\left(S^b, [d^j]_{j=1}^{32}\right)$。
+    - -2轴量化：同时，将输入x在-2轴上按照32个数进行分组，采用与-1轴相同的cuBLAS Scale计算算法，对每组独立计算块缩放因子并量化，-2轴输出的量化结果是$\left(S^b, [d^j]_{j=1}^{32}\right)$。
     - -1轴量化结果组成输出y1，对应的块缩放因子组成输出mxscale1。-2轴量化结果组成输出y2，对应的块缩放因子组成输出mxscale2。
 
   - 场景3，当scale\_alg为2时，只涉及`torch_npu.float4_e2m1fn_x2`类型：
@@ -120,7 +120,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
   - 297：`torch_npu.float4_e1m2fn_x2`。
 - **scale\_alg**（`int`）：可选参数，表示mxscale1和mxscale2的计算方法。支持取值为0、1、2，默认值为0。
   - 0：场景1（OCP MX规格实现），float8、float4均支持。
-  - 1：场景2（CuBALS Scale计算算法），仅float8支持。
+  - 1：场景2（cuBLAS Scale计算算法），仅float8支持。
   - 2：场景3（fp4动态量化），仅`torch_npu.float4_e2m1fn_x2`支持。
 - **dst\_type\_max**（`float`）：可选参数，表示maxType的取值，对应公式中的$Amax(DType)$。默认值为0.0。仅支持在dst\_type为`torch_npu.float4_e2m1fn_x2`且scale\_alg为2时设置该值，支持取值0.0和6.0-12.0。取值为0.0代表Amax(DType)为量化结果数据类型的最大值，取值为6.0-12.0代表Amax(DType)为传入值。
 

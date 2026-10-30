@@ -510,7 +510,7 @@
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p2038911486504"><a name="p2038911486504"></a><a name="p2038911486504"></a>API级别的打点，可自定义选择API或函数进行耗时采集。</p>
 </td>
 </tr>
-<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx_range</a></p>
+<tr id="row1373517244535"><td class="cellrowborder" valign="top" width="37.97%" headers="mcps1.2.3.1.1 "><p id="p673592411537"><a name="p673592411537"></a><a name="p673592411537"></a><a href="torch_npu-npu-mstx-mstx_range.md">torch_npu.npu.mstx.mstx_range</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="62.029999999999994%" headers="mcps1.2.3.1.2 "><p id="p1059918319532"><a name="p1059918319532"></a><a name="p1059918319532"></a>mstx_range装饰器，用来采集被装饰函数的range执行耗时。</p>
 </td>

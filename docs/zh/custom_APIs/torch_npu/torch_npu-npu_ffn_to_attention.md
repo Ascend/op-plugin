@@ -22,7 +22,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 - **session\_ids** (`Tensor`)：必选参数，每个token的Attention Worker节点索引，决定每个token要发给哪些Attention Worker节点。要求为1维张量，shape为\(Y, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, attnRankNum-1]。
 - **micro\_batch\_ids** (`Tensor`)：必选参数，表示每个token的microBatch索引，要求为1维张量，shape为\(Y, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, MicroBatchNum-1]。
 - **token\_ids** (`Tensor`)：必选参数，表示每个token在microBatch中的token索引，要求为1维张量，shape为\(Y, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, BS-1]。
-- **expert\_offsets** (`Tensor`)：必选参数，表示每个token在tokenInfoTableShape中PerTokenExpertNum的索引，要求为1维张量，shape为\(Y, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, ExpertNumPerToken-1]。
+- **expert\_offsets** (`Tensor`)：必选参数，表示每个token在`token_info_table_shape`中ExpertNumPerToken的索引，要求为1维张量，shape为\(Y, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, ExpertNumPerToken-1]。
 - **actual\_token\_num** (`Tensor`)：必选参数，表示本卡发送的token总数，要求为1维张量，shape为\(1, \)，数据类型支持`torch.int64`，数据格式为$ND$，支持非连续的Tensor。张量里value取值为[0, Y]。
 - **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
 - **world\_size**(`int`)：必选参数，通信域size。取值支持\[2, 768\]。
