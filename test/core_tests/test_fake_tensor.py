@@ -3056,6 +3056,51 @@ class TestQuantMatmul(TestCase):
                                              x2_dtype=torch_npu.hifloat8)
             self.assertTrue(expect_ret.shape == res.shape)
 
+    def test_npu_quant_matmul_a8w4_tcg_meta(self):
+        m, k, n, gs = 16, 64, 64, 32
+        with FakeTensorMode():
+            x1 = torch.empty((m, k), dtype=torch.float8_e4m3fn).npu()
+            scale = torch.empty((k // gs, n), dtype=torch.float16).npu()
+            y_scale = torch.empty((1, n), dtype=torch.int64).npu()
+            expect_ret = torch.empty((m, n), dtype=torch.float16).npu()
+
+            # NZ 视图 (K, N/2): uint8 载体与原生 fp4 载体
+            x2_nz_u8 = torch.empty((k, n // 2), dtype=torch.uint8).npu()
+            res = torch_npu.npu_quant_matmul(x1, x2_nz_u8, scale, x2_dtype=torch_npu.float4_e2m1fn_x2,
+                                             y_scale=y_scale, output_dtype=torch.float16,
+                                             group_sizes=[0, 0, gs])
+            self.assertTrue(expect_ret.shape == res.shape)
+            self.assertTrue(expect_ret.dtype == res.dtype)
+
+            # ND 转置视图 (K/2, N)
+            x2_nd_u8 = torch.empty((n, k // 2), dtype=torch.uint8).npu().transpose(0, 1)
+            res = torch_npu.npu_quant_matmul(x1, x2_nd_u8, scale, x2_dtype=torch_npu.float4_e2m1fn_x2,
+                                             y_scale=y_scale, output_dtype=torch.float16,
+                                             group_sizes=[0, 0, gs])
+            self.assertTrue(expect_ret.shape == res.shape)
+            self.assertTrue(expect_ret.dtype == res.dtype)
+
+            if hasattr(torch, 'float4_e2m1fn_x2'):
+                # 原生 fp4 载体: NZ 视图与 ND 转置视图, 不传 x2_dtype
+                x2_nz_f4 = torch.empty((k, n // 2), dtype=torch.float4_e2m1fn_x2).npu()
+                res = torch_npu.npu_quant_matmul(x1, x2_nz_f4, scale, y_scale=y_scale,
+                                                 output_dtype=torch.float16, group_sizes=[0, 0, gs])
+                self.assertTrue(expect_ret.shape == res.shape)
+                self.assertTrue(expect_ret.dtype == res.dtype)
+
+                x2_nd_f4 = torch.empty((n, k // 2), dtype=torch.float4_e2m1fn_x2).npu().transpose(0, 1)
+                res = torch_npu.npu_quant_matmul(x1, x2_nd_f4, scale, y_scale=y_scale,
+                                                 output_dtype=torch.float16, group_sizes=[0, 0, gs])
+                self.assertTrue(expect_ret.shape == res.shape)
+                self.assertTrue(expect_ret.dtype == res.dtype)
+
+                # x2_dtype 显式传 torch 原生 dtype 对象(pybind 转为 ScalarType 枚举值 45)
+                res = torch_npu.npu_quant_matmul(x1, x2_nz_f4, scale, x2_dtype=torch.float4_e2m1fn_x2,
+                                                 y_scale=y_scale, output_dtype=torch.float16,
+                                                 group_sizes=[0, 0, gs])
+                self.assertTrue(expect_ret.shape == res.shape)
+                self.assertTrue(expect_ret.dtype == res.dtype)
+
 
 class TestQuantMatmulReduceSum(TestCase):
     def test_quant_matmul_reduce_sum(self):

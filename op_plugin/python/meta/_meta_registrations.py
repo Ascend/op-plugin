@@ -4169,6 +4169,11 @@ def quant_matmul_shape_check(*args):
         or (is_a8w4 and not transpose_x2)
     )
     x2_n_dim = x2_n_raw * x2_unpack_factor if should_unpack_weight else x2_n_raw
+    # fp4 载体 x2 按转置状态分流(对应 C++ 侧 trans_x2; fake 下拿不到 stride/format, 按 K 维关系判):
+    # 非转置 (K, N/2) 沿 N 打包 → x1_k == x2_k; 转置视图 (K/2, N) 沿 K 打包 → x1_k == 2*x2_k
+    is_fp4_non_trans = is_a8w4_float and x2.dtype != torch.float32 and x1_k_dim == x2_k_dim
+    if is_fp4_non_trans:
+        x2_n_dim = x2_n_raw * x2_unpack_factor
     if is_mxfp4_valid:
         x1_m_dim = x1.size(x1_dim_num - 2) if not transpose_x1 else x1.size(x1_dim_num - 2) * x1_unpack_factor
         x1_k_dim = x1.size(x1_dim_num - 1) * x1_unpack_factor if not transpose_x1 else x1.size(x1_dim_num - 1)
@@ -4197,14 +4202,18 @@ def quant_matmul_shape_check(*args):
                     lambda: "a8w4 NZ t-cg quant only support x1 not transpose and x2 not transpose and k dim of x1 and x2 need be same." + ops_error(ErrCode.VALUE),
                 )
         else:
+            # 非转置 (K, N/2): x1_k == x2_k; 转置视图 (K/2, N): x1_k = 2 * x2_k
+            expected_x2_k_dim = x2_k_dim if is_fp4_non_trans else x2_k_dim * x2_unpack_factor
             torch._check(
-                x1_k_dim == x2_k_dim * x2_unpack_factor,
-                lambda: "a8w4_float ND only support x1 not transpose and x2 transpose and k dim of x1 should be 2 multiple of k dim of x2, please check k dim of x1 and x2" + ops_error(ErrCode.VALUE),
+                x1_k_dim == expected_x2_k_dim,
+                lambda: "a8w4_float only support x1 not transpose; k dim of x1 should be 2 multiple of "
+                        "k dim of x2 when x2 is transposed, or equal to k dim of x2 when x2 is not "
+                        "transposed, please check k dim of x1 and x2" + ops_error(ErrCode.VALUE),
             )
     elif is_a8w4 and transpose_x2:
         torch._check(
                 x1_k_dim == x2_k_dim * x2_unpack_factor,
-                lambda: "a8w4_float ND only support x1 not transpose and x2 transpose and k dim of x1 should be 2 multiple of k dim of x2, please check k dim of x1 and x2" + ops_error(ErrCode.VALUE),
+                lambda: "a8w4 ND only support x1 not transpose and x2 transpose and k dim of x1 should be 2 multiple of k dim of x2, please check k dim of x1 and x2" + ops_error(ErrCode.VALUE),
             )
     else:
         torch._check(
@@ -4548,12 +4557,17 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
                           group_sizes=None, y_scale=None):
     BIT4_PER_BIT32 = 8
     BIT4_PER_BIT8 = 2
+    # 显式传 torch 原生 float4_e2m1fn_x2(dtype 对象)时, pybind 转为 ScalarType 枚举值 45,
+    # 与 torch_npu.float4_e2m1fn_x2(ACL 自定义枚举 296) 数值不同, 两种传入都需识别
+    TORCH_NATIVE_FP4_SCALAR = 45
 
     def get_x2_unpack_factor(x2, x2_dtype):
         # x2 是打包后的权重张量，x2_dtype 是逻辑上的 int4/float4 格式
         if x2.dtype in (torch.int32, torch.float32):
             return BIT4_PER_BIT32
-        if x2_dtype in (torch_npu.int4, torch_npu.float4_e2m1fn_x2):
+        if x2_dtype in (torch_npu.int4, torch_npu.float4_e2m1fn_x2, TORCH_NATIVE_FP4_SCALAR):
+            return BIT4_PER_BIT8
+        if hasattr(torch, 'float4_e2m1fn_x2') and x2.dtype == torch.float4_e2m1fn_x2:
             return BIT4_PER_BIT8
         # 其他情况默认不做 unpack
         return 1
@@ -4579,7 +4593,10 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
     is_a4w4 = x1.dtype == torch.int32 and x2.dtype == torch.int32
     is_mxfp4_valid = x1_dtype == torch_npu.float4_e2m1fn_x2 and x2_dtype == torch_npu.float4_e2m1fn_x2
     is_a8w4_int = x1.dtype == torch.int8 and x2.dtype == torch.int32
-    is_a8w4_float = x1.dtype == torch.float8_e4m3fn and (x2_dtype == torch_npu.float4_e2m1fn_x2 or x2.dtype == torch.float32)
+    is_a8w4_float = x1.dtype == torch.float8_e4m3fn and (
+        x2_dtype == torch_npu.float4_e2m1fn_x2 or x2_dtype == TORCH_NATIVE_FP4_SCALAR or
+        x2.dtype == torch.float32 or
+        (hasattr(torch, 'float4_e2m1fn_x2') and x2.dtype == torch.float4_e2m1fn_x2))
     is_a8w4 = x1.dtype == torch.int8 and x2_dtype == torch_npu.int4
     dim_list = []
     transpose_x1 = False
@@ -4618,11 +4635,17 @@ def npu_quant_matmul_meta(x1, x2, scale, *, offset=None, pertoken_scale=None, bi
         else:
             dimm = x1.size(x1.dim() - 2)
             transpose_x2 = x1.size(x1.dim() - 1) == x2.size(x2.dim() - 2)
+            # fp4 载体按转置状态分流: 非转置 (K, N/2) K 不打包故 x1_k == x2.size(-2), N 需解包;
+            # 转置视图 (K/2, N) 的 N 不打包, 走默认分支
+            is_fp4_non_trans = (is_a8w4_float and x2.dtype != torch.float32 and
+                                x1.size(x1.dim() - 1) == x2.size(x2.dim() - 2))
 
             dimn = x2.size(x2.dim() - 1)
             if (is_a4w4 and not transpose_x2):
                 dimn = x2.size(x2.dim() - 1) * x2_unpack_factor
             elif (is_a8w4_float and x2.dtype == torch.float32 and pertoken_scale is None):
+                dimn = x2.size(x2.dim() - 1) * x2_unpack_factor
+            elif is_fp4_non_trans:
                 dimn = x2.size(x2.dim() - 1) * x2_unpack_factor
 
             dim_list.append(dimm)

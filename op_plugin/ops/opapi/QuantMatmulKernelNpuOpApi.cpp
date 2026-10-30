@@ -161,8 +161,23 @@ at::Tensor npu_quant_matmul(
   }
   bool is_a8W4_int = x1.dtype() == at::kChar && x2.dtype() == at::kInt;
   bool is_a8W4_float = x1.dtype() == at::kFloat8_e4m3fn && x2.dtype() == at::kFloat;
-  bool is_a8W4_float_u8 = x1.dtype() == at::kFloat8_e4m3fn && x2.dtype() == at::kByte && x2_dtype.has_value() &&
-                          x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+#if VERSION_BETWEEN(V2R8, VERSION_NEWEST)
+  // torch 2.8+ 原生 float4_e2m1fn_x2 与 uint8 载体物理等价（1 字节 2 个 FP4）；显式传 torch dtype
+  // 对象时 pybind 转为 ScalarType 枚举值，与 c10_npu::DType::FLOAT4_E2M1 数值不同，先归一化
+  if (x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(at::ScalarType::Float4_e2m1fn_x2)) {
+    x2_dtype = static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+  }
+  // uint8 打包载体无法自描述 4-bit 类型，必须显式传 x2_dtype=FLOAT4_E2M1；原生载体自描述，可不传
+  bool fp4_dtype_hint = x2_dtype.has_value()
+                            ? x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1)
+                            : x2.scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
+  bool fp4_carrier = x2.dtype() == at::kByte || x2.scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
+#else
+  bool fp4_dtype_hint =
+      x2_dtype.has_value() && x2_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1);
+  bool fp4_carrier = x2.dtype() == at::kByte;
+#endif
+  bool is_a8W4_float_u8 = x1.dtype() == at::kFloat8_e4m3fn && fp4_carrier && fp4_dtype_hint;
   at::IntArrayRef group_size_list = group_sizes.value_or(at::IntArrayRef{});
   int64_t group_size = check_and_get_groups(group_size_list, x1, x2, scale, pertoken_scale);
   bool is_a4w4 = x1.dtype() == at::kInt && x2.dtype() == at::kInt;

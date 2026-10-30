@@ -15,6 +15,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
+#include "op_plugin/utils/Version.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/core/NPUBridge.h"
 #include "torch_npu/csrc/framework/StorageDescHelper.h"
@@ -77,14 +78,26 @@ static bool is_transpose_certain_two_dims(const at::Tensor& tensor, int64_t firs
   return tensor.stride(first_dim + 1) == tensor.stride(first_dim) * tensor.size(first_dim);
 }
 
-// A16W4（INT4 / FP4 E2M1，含 MX）torch 侧统一用 uint8 载体物理打包（每字节 2 个 4-bit 元素），
+// A16W4（INT4 / FP4 E2M1，含 MX）weight 载体校验：uint8 物理打包（每字节 2 个 4-bit 元素），
 // 与 aclnnWeightQuantBatchMatmulV2 的 uint8 packed 输入约定一致；其他载体直接拒绝
 static void check_a16w4_uint8_carrier(const QuantContext& ctx) {
+#if VERSION_BETWEEN(V2R8, VERSION_NEWEST)
+  // torch 2.8+ 原生 float4_e2m1fn_x2 与 uint8 载体物理等价（1 字节 2 个 FP4），逻辑类型为 FP4_E2M1 时放行
+  bool is_native_fp4 = ctx.weight.scalar_type() == at::ScalarType::Float4_e2m1fn_x2 &&
+      c10_npu::GetAclDataType(ctx.weight_dtype) == ACL_FLOAT4_E2M1;
+  TORCH_CHECK(
+      ctx.weight.scalar_type() == at::kByte || is_native_fp4,
+      "A16W4 4-bit weight must be packed into a uint8 tensor (2 elements per byte) or passed as native "
+      "float4_e2m1fn_x2, but got ",
+      ctx.weight.scalar_type(),
+      OPS_ERROR(ErrCode::PARAM));
+#else
   TORCH_CHECK(
       ctx.weight.scalar_type() == at::kByte,
       "A16W4 4-bit weight must be packed into a uint8 tensor (2 elements per byte), but got ",
       ctx.weight.scalar_type(),
       OPS_ERROR(ErrCode::PARAM));
+#endif
 }
 
 bool judge_mm_mx_a8w4(QuantContext& ctx) {

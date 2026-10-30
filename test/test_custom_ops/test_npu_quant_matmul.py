@@ -885,6 +885,69 @@ class TestQuantMatmul(TestCase):
             group_sizes=[0, 0, gs1], output_dtype=torch.float16)
         self.assertRtolEqual(golden1, custom_output1.cpu().numpy(), 0.001)
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_quant_matmul_a8w4_float_tcg_native_fp4(self):
+        # torch 2.8+ 原生 float4_e2m1fn_x2 与 uint8 载体物理等价（1 字节打包 2 个 FP4）:
+        # NZ/ND 两路结果与 golden 一致, 且支持省略 x2_dtype 自动识别
+        if not hasattr(torch, 'float4_e2m1fn_x2'):
+            self.skipTest("torch < 2.8 has no native float4_e2m1fn_x2")
+        fp4_table = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0,
+                              -0.0, -0.5, -1.0, -1.5, -2.0, -3.0, -4.0, -6.0], dtype=np.float32)
+        m, k, n, gs = 16, 256, 128, 32
+        g = k // gs
+        rng = np.random.default_rng(42)
+        x1_np = rng.uniform(-1.0, 1.0, size=(m, k)).astype(np.float32)
+        scale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32),
+                              size=(g, n)).astype(np.float16)
+        yscale_np = rng.choice(np.array([0.5, 1.0, 1.5, 2.0], dtype=np.float32), size=(1, n))
+        x1_fp8 = torch.from_numpy(x1_np).to(torch.float8_e4m3fn)
+        scale_br = np.repeat(scale_np.astype(np.float32), gs, axis=0)
+        yscale_u64 = torch.from_numpy(
+            (yscale_np.view(np.uint32).astype(np.uint64)
+             | (np.uint64(1) << np.uint64(46))).view(np.int64)).npu()
+
+        def golden_of(w_dec):
+            w_deq = (w_dec.astype(np.float16) * scale_br.astype(np.float16)).astype(np.float32)
+            w_deq_fp8 = torch.from_numpy(w_deq).to(torch.float8_e4m3fn).float().numpy()
+            return (np.matmul(x1_fp8.float().numpy(), w_deq_fp8) * yscale_np).astype(np.float16)
+
+        # NZ: 原生 fp4 {K, N/2} 沿 N 打包, preprocess 产出 NZ weight
+        weight_np = rng.integers(0, 256, size=(k, n // 2), dtype=np.uint8)
+        w_dec = np.zeros((k, n), dtype=np.float32)
+        w_dec[:, 0::2] = fp4_table[weight_np & 0x0F]
+        w_dec[:, 1::2] = fp4_table[(weight_np >> 4) & 0x0F]
+        golden = golden_of(w_dec)
+        out_weight, out_scale, _, _ = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(weight_np).view(torch.float4_e2m1fn_x2).npu(),
+            torch.from_numpy(scale_np).npu(),
+            x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=gs)
+        for x2_dtype in (torch_npu.float4_e2m1fn_x2, torch.float4_e2m1fn_x2, None):
+            custom_output = torch_npu.npu_quant_matmul(
+                x1_fp8.npu(), out_weight, out_scale,
+                x2_dtype=x2_dtype, y_scale=yscale_u64,
+                group_sizes=[0, 0, gs], output_dtype=torch.float16)
+            self.assertRtolEqual(golden, custom_output.cpu().numpy(), 0.001)
+
+        # ND 转置: 原生 fp4 物理 {N, K/2} 沿 K 打包, 视图 {K/2, N} 直传
+        w_packed = rng.integers(0, 256, size=(n, k // 2), dtype=np.uint8)
+        w_dec_nd = np.zeros((k, n), dtype=np.float32)
+        w_dec_nd[0::2, :] = fp4_table[w_packed & 0x0F].T
+        w_dec_nd[1::2, :] = fp4_table[(w_packed >> 4) & 0x0F].T
+        golden_nd = golden_of(w_dec_nd)
+        scale_phys = np.ascontiguousarray(scale_np.T)
+        out_weight_nd, out_scale_nd, _, _ = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(w_packed).view(torch.float4_e2m1fn_x2).npu().transpose(0, 1),
+            torch.from_numpy(scale_phys).npu().transpose(0, 1),
+            x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=gs)
+        for x2_dtype in (torch_npu.float4_e2m1fn_x2, torch.float4_e2m1fn_x2, None):
+            custom_output_nd = torch_npu.npu_quant_matmul(
+                x1_fp8.npu(), out_weight_nd, out_scale_nd.transpose(0, 1),
+                x2_dtype=x2_dtype, y_scale=yscale_u64,
+                group_sizes=[0, 0, gs], output_dtype=torch.float16)
+            self.assertRtolEqual(golden_nd, custom_output_nd.cpu().numpy(), 0.001)
+
 
 class TestQuantMatmulScaleNz(TestCase):
     @staticmethod

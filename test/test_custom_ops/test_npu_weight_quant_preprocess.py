@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch_npu
 
@@ -129,6 +130,45 @@ class TestNpuWeightQuantPreprocess(TestCase):
                 x_dtype=torch.float16,
                 weight_dtype=torch_npu.int4,
                 weight_scale_dtype=torch.float16)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_weight_quant_preprocess_f8f4_tcg_native_fp4(self):
+        # torch 2.8+ 原生 float4_e2m1fn_x2 与 uint8 载体物理等价（1 字节打包 2 个 FP4）：
+        # 转置 ND 直拷输出与 uint8 载体 bit 一致，非转置 NZ 输出 format 一致
+        if not hasattr(torch, 'float4_e2m1fn_x2'):
+            self.skipTest("torch < 2.8 has no native float4_e2m1fn_x2")
+        k, n = 256, 128
+        g = k // 32
+        rng = np.random.default_rng(42)
+        scale_phys = np.ascontiguousarray(
+            rng.uniform(0.5, 2.0, size=(g, n)).astype(np.float16).T)  # 物理 {N, G}
+
+        # 转置 ND 直拷：物理 {N, K/2}，视图 {K/2, N}
+        w_np = rng.integers(0, 256, size=(n, k // 2), dtype=np.uint8)
+        weight_u8 = torch.from_numpy(w_np).npu().transpose(0, 1)
+        weight_f4 = torch.from_numpy(w_np.copy()).view(torch.float4_e2m1fn_x2).npu().transpose(0, 1)
+        scale_t = torch.from_numpy(scale_phys).npu().transpose(0, 1)
+        kwargs = dict(x_dtype=torch.float8_e4m3fn, weight_dtype=torch_npu.float4_e2m1fn_x2,
+                      weight_scale_dtype=torch.float16, x_scale_dtype=None, k_group_size=32)
+        out_u8 = torch_npu.npu_weight_quant_preprocess(weight_u8, scale_t, **kwargs)
+        out_f4 = torch_npu.npu_weight_quant_preprocess(weight_f4, scale_t, **kwargs)
+        self.assertEqual(out_f4[0].dtype, torch.float4_e2m1fn_x2)
+        self.assertEqual(out_f4[0].shape, out_u8[0].shape)
+        self.assertEqual(out_f4[0].stride(), out_u8[0].stride())
+        self.assertEqual(out_f4[0].view(torch.uint8).cpu(), out_u8[0].cpu())
+        self.assertEqual(out_f4[1].cpu(), out_u8[1].cpu())
+
+        # 非转置 NZ：物理 {K, N/2} 沿 N 打包
+        w_nz = rng.integers(0, 256, size=(k, n // 2), dtype=np.uint8)
+        scale_nz = torch.from_numpy(np.ascontiguousarray(scale_phys.T)).npu()
+        out_u8_nz = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(w_nz).npu(), scale_nz, **kwargs)
+        out_f4_nz = torch_npu.npu_weight_quant_preprocess(
+            torch.from_numpy(w_nz.copy()).view(torch.float4_e2m1fn_x2).npu(), scale_nz, **kwargs)
+        self.assertEqual(out_f4_nz[0].dtype, torch.float4_e2m1fn_x2)
+        self.assertEqual(out_f4_nz[0].shape, out_u8_nz[0].shape)
+        self.assertEqual(torch_npu.get_npu_format(out_f4_nz[0]), torch_npu.get_npu_format(out_u8_nz[0]))
+        self.assertEqual(out_f4_nz[1].cpu(), out_u8_nz[1].cpu())
 
     @SupportedDevices(['Ascend950'])
     def test_npu_weight_quant_preprocess_a16int8_per_tensor(self):
