@@ -287,6 +287,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     <!-- end id18 -->
     <!-- npu="950" id19 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.float16`、`torch.bfloat16`、`torch.float8_e8m0fnu`（需配置可选参数scale\_dtype为对应类型，此时scale本身dtype不再生效，但仍需保证scale dtype为8bit位数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(t, \)，t=1或n，其中n与x2的n一致；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
+        - mx全量化场景下，当`x2`为FRACTAL\_NZ格式（WeightNZ），且`x1`、`x2`的数据类型均为`torch.float8_e4m3fn`或均为`torch_npu.float4_e2m1fn_x2`时，实际数据类型为FLOAT8\_E8M0的`scale`还支持FRACTAL\_NZ格式（ScaleNZ），可通过`torch_npu.npu_format_cast`接口转换。ScaleNZ的shape、转置及调用模式要求参见[约束说明](#约束说明)。
     <!-- end id19 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -433,7 +434,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 
 ## 约束说明
 
-- 该接口支持单算子模式和TorchAir图模式。
+- 该接口支持单算子模式和TorchAir图模式，具体限制参见各场景说明。
 - **公共约束**：
   - 当`x2`的数据格式需要为FRACTAL\_NZ时，一般通过`torch_npu.npu_format_cast`将ND格式转为FRACTAL\_NZ格式。
   - 当输出`out`的数据类型为`torch.int8`或`torch.float16`且无`pertoken_scale`时，图模式不支持`scale`直接传入`torch.float32`。
@@ -445,8 +446,14 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - `x2`数据格式（全量化）：当为T-C量化、T-T量化、K-C量化或K-T量化场景（且`x2`的数据类型为`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`），或为mx量化场景（且`x2`的数据类型为`torch.float8_e4m3fn`或`torch_npu.float4_e2m1fn_x2`），或为G-B、B-B量化场景（且`x2`的数据类型为`torch.float8_e4m3fn`或`torch_npu.hifloat8`）时，支持将`x2`转为FRACTAL\_NZ格式。如需将`x2`转为FRACTAL\_NZ，`x2`和`scale`的shape的所有维度不支持为1（某些特殊场景下存在1可以正常运行，但不保证使能了FRACTAL\_NZ特性）。
     - `x2`数据格式（伪量化）：`x2`支持ND格式的场景包括mx伪量化的eager模式，以及T-CG伪量化的eager模式、静态图和动态图模式。ND格式下，`x2`的数据类型为`torch_npu.float4_e2m1fn_x2`（由1个`torch.uint8`或`torch.int8`承载两个`torch_npu.float4_e2m1fn_x2`）。`x2`支持FRACTAL\_NZ格式的场景包括mx伪量化和T-CG伪量化的eager模式、静态图和动态图模式。FRACTAL\_NZ格式下，`x2`支持`torch.float32`或`torch_npu.float4_e2m1fn_x2`：所有FRACTAL\_NZ场景均支持`torch.float32`，表示1个`torch.float32`承载8个`torch_npu.float4_e2m1fn_x2`；`torch_npu.float4_e2m1fn_x2`仅支持mx伪量化场景。
   - **scale、pertoken_scale相关约束**：
-    - 在mx、G-B、B-B量化中，`scale`的转置应和`x2`保持一致，`pertoken_scale`的转置应和`x1`保持一致。在mx量化中，转置节点应写在图中，`scale`的batch维度应和`x2`的batch维度保持一致，`pertoken_scale`的batch维度应和`x1`的batch维度保持一致。
+    - 在mx、G-B、B-B量化中，当`scale`为ND格式时，其转置应和`x2`保持一致；`pertoken_scale`的转置应和`x1`保持一致。在mx量化中，`scale`的batch维度应和`x2`的batch维度保持一致，`pertoken_scale`的batch维度应和`x1`的batch维度保持一致；使用图模式时，转置节点应写在图中。
     - 当输入`x1`、`x2`的数据类型为`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`且无`pertoken_scale`时，图模式不支持`scale`直接传入`torch.float32`。
+  - **ScaleNZ相关约束**：
+    - 仅支持mx全量化的单算子调用（eager模式），不支持TorchAir图模式。`x2`必须为FRACTAL\_NZ格式，`x1`、`x2`的数据类型必须均为`torch.float8_e4m3fn`或均为`torch_npu.float4_e2m1fn_x2`。`scale`、`pertoken_scale`的实际数据类型均为FLOAT8\_E8M0，`pertoken_scale`保持ND格式，其他参数遵循mx全量化约束。
+    - `scale`转换前后的逻辑shape均为\(batch, ceil(k/64), n, 2\)，不随`x2`的转置状态改变；转换后的底层存储shape为\(batch, ceil(n/16), ceil(k/64), 16, 2\)。其中k、n为矩阵乘的逻辑维度，batch与`x2`的batch维度一致。`npu_format_cast`的E8M0转换支持3维或4维输入，即无batch轴或有一个batch轴。
+    - 调用`npu_format_cast`前，须将scale数据按上述逻辑轴顺序排列并保持连续。例如，原shape为\(batch, n, ceil(k/64), 2\)时，先在ND格式下执行`transpose(-3, -2).contiguous()`调整数据，再转换格式，不能仅通过`reshape`改变shape。转换后的ScaleNZ须保持连续的逻辑stride且`storage_offset()`为0，不应随`x2`再次转置。接口校验shape等参数，调用者须保证scale数据与weight的K分组和N通道正确对应。
+    - 使用`torch.uint8`或`torch.int8`承载E8M0编码时，格式转换须指定`customize_dtype=torch_npu.float8_e8m0fnu`和`input_dtype=torch_npu.float8_e8m0fnu`，矩阵乘须通过`scale_dtype`、`pertoken_scale_dtype`声明对应scale的实际类型。这些参数不会将普通整数数值转换为E8M0编码。原生`torch.float8_e8m0fnu` Tensor可使用自身dtype。
+    - MXFP4的shape按逻辑k、n计算，不能使用打包后8bit Tensor的轴长度代替。例如，非转置`x2`以8bit Tensor承载时shape为\(batch, k, n/2\)，对应ScaleNZ的逻辑shape仍为\(batch, ceil(k/64), n, 2\)。`x1`仅支持非转置，其他限制与原有WeightNZ场景一致。
   - **batch一致性相关约束**：
     - B-B量化场景不支持batch一致性。即使开启batch一致性开关，也不能保证输出满足batch一致性要求。
     - T-T量化和T-C量化场景若需满足batch一致性，在对不同m值的输入进行对比时，当`pertoken_scale`输入不为空时，`pertoken_scale`的输入值不得随`x1`的输入值动态变化，必须保持不变。
@@ -568,10 +575,10 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     > **mx量化场景说明**：
     > - mx全量化场景下，`x1`与`x2`的输入类型均为`torch_npu.float4_e2m1fn_x2`时，内轴必须为偶数，k必须大于2。
     > - mx全量化场景下，`x1`与`x2`的输入类型均为`torch_npu.float4_e2m1fn_x2`时，若`x2`的数据格式为FRACTAL\_NZ，仅支持`x1`不转置，且k或n不能为1。
-    > - mx全量化场景下，`x1`与`x2`的输入类型均为`torch_npu.float4_e2m1fn_x2`时，当`x2`的数据格式为ND时支持静态图和动态图模式；当`x2`的数据格式为FRACTAL\_NZ时仅支持静态图模式，不支持动态图模式。
-    > - 在mx全量化动态图模式下，若`x2`为`torch.float8_e4m3fn`/`torch.float8_e5m2`（ND格式）、`torch.float8_e4m3fn`（FRACTAL\_NZ格式）或`torch_npu.float4_e2m1fn_x2`（ND格式），必须同时满足：k值大于64，且`x1`与`x2`的batch轴维度均不为1。
+    > - mx全量化场景下，`scale`为ND格式且`x1`与`x2`的输入类型均为`torch_npu.float4_e2m1fn_x2`时，当`x2`的数据格式为ND时支持静态图和动态图模式；当`x2`的数据格式为FRACTAL\_NZ时仅支持静态图模式，不支持动态图模式。
+    > - 在mx全量化动态图模式下，`scale`须为ND格式。若`x2`为`torch.float8_e4m3fn`/`torch.float8_e5m2`（ND格式）、`torch.float8_e4m3fn`（FRACTAL\_NZ格式）或`torch_npu.float4_e2m1fn_x2`（ND格式），必须同时满足：k值大于64，且`x1`与`x2`的batch轴维度均不为1。
     > - mx全量化场景下，若`x2`为FRACTAL\_NZ格式，则`x1`和`x2`的数据类型必须均为`torch_npu.float4_e2m1fn_x2`或均为`torch.float8_e4m3fn`。
-    > - mx全量化场景下，`scale`、`pertoken_scale`仅最后三轴支持非连续的Tensor。
+    > - mx全量化场景下，ND格式的`scale`及`pertoken_scale`仅最后三轴支持非连续的Tensor；ScaleNZ须满足上述连续性要求。
     > - mx伪量化场景下，当`x1`的数据类型为`torch.float8_e4m3fn`，`x2`的数据类型为`torch_npu.float4_e2m1fn_x2`时，仅支持`x1`不转置、`x2`转置。如果`x2`的数据格式为ND，要求k是8的倍数，k、n大小不能超过2<sup>31</sup>-1，该场景不支持图模式。如果`x2`的数据格式为FRACTAL\_NZ，要求k、n是8的倍数且大小不能超过2<sup>31</sup>-1，该场景支持图模式，但要求k大于64。
     > - mx伪量化场景下，当`x1`的数据类型为`torch.float8_e4m3fn`，`x2_dtype`为`torch.float32`时，仅支持`x1`不转置、`x2`转置，且`x2`必须为FRACTAL\_NZ格式。`x1`、`x2`的k值必须是8的倍数且大小不能超过2<sup>31</sup>-1，`x2`的n值必须是8的倍数且大小不能超过2<sup>31</sup>-1。该场景支持图模式，但要求k大于64。
     > - mx伪量化场景下，`bias`为可选参数，数据类型支持`torch.bfloat16`或`torch.float16`，且与输出数据类型保持一致。数据格式支持ND，shape支持2维，表示为\(1, n\)。
@@ -803,6 +810,46 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     print('npu_out is ', npu_out.cpu())
     ```
   <!-- end id61 -->
+  <!-- npu="950" id78 -->
+  - mx全量化：`torch.float8_e4m3fn`+`torch.float8_e4m3fn` WeightNZ与ScaleNZ场景，示例代码如下，仅支持<term>Ascend 950PR&950DT系列产品</term>。
+
+    ```python
+    import torch
+    import torch_npu
+
+    M, K, N = 32, 128, 64
+    Kg = (K + 63) // 64
+    x1 = torch.ones((M, K), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+    x2_nd = torch.ones((K, N), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+
+    # uint8保存E8M0原始编码；127表示缩放值1。
+    pertoken_scale = torch.full((M, Kg, 2), 127, dtype=torch.uint8).npu()
+    scale_nk = torch.full((N, Kg, 2), 127, dtype=torch.uint8)
+    # 在格式转换前将scale从(N, Kg, 2)排列为(Kg, N, 2)。
+    scale_kn = scale_nk.transpose(-3, -2).contiguous().npu()
+    scale_nz = torch_npu.npu_format_cast(
+        scale_kn, 29,
+        customize_dtype=torch_npu.float8_e8m0fnu,
+        input_dtype=torch_npu.float8_e8m0fnu,
+    )
+
+    # x2的两种转置状态均使用同一份固定KN布局的ScaleNZ。
+    for transpose_x2 in (False, True):
+        weight = x2_nd.t().contiguous() if transpose_x2 else x2_nd
+        weight_nz = torch_npu.npu_format_cast(weight, 29)
+        x2 = weight_nz.t() if transpose_x2 else weight_nz
+        out = torch_npu.npu_quant_matmul(
+            x1, x2, scale_nz,
+            pertoken_scale=pertoken_scale,
+            pertoken_scale_dtype=torch_npu.float8_e8m0fnu,
+            scale_dtype=torch_npu.float8_e8m0fnu,
+            output_dtype=torch.float32,
+            group_sizes=[1, 1, 32],
+        )
+        expected = torch.full((M, N), float(K), dtype=torch.float32)
+        torch.testing.assert_close(out.cpu(), expected, rtol=0, atol=0)
+    ```
+  <!-- end id78 -->
   <!-- npu="950" id62 -->
   - mx全量化：`torch_npu.float4_e2m1fn_x2`+`torch_npu.float4_e2m1fn_x2` weightND类型，示例代码如下，仅支持<term>Ascend 950PR&950DT系列产品</term>
 
