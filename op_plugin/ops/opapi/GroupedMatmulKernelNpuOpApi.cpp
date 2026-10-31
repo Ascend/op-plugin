@@ -224,7 +224,16 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
         mxfp4_valid = mxfp4_valid && weight[0].scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
     }
 #endif
-    size_t n_new = (mxfp4_valid && !weight_trans) ? (n0 * FP4_IN_INT8) : n0;
+    // Packed output width depends on the weight dtype, including A16W4.
+    bool weight_is_fp4 = weight_dtype.has_value() &&
+                        (weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1) ||
+                         weight_dtype.value() == static_cast<int64_t>(c10_npu::DType::FLOAT4_E1M2));
+#if VERSION_BETWEEN(V2R8, VERSION_NEWEST)
+    if (!weight_dtype.has_value()) {
+        weight_is_fp4 = weight[0].scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
+    }
+#endif
+    size_t n_new = (weight_is_fp4 && !weight_trans) ? (n0 * FP4_IN_INT8) : n0;
     if (mxfp4_valid) {
         TORCH_CHECK(x[0].size(1) != 1, "In mxfp4, dim K should not be 2.", OPS_ERROR(ErrCode::VALUE));
     }
