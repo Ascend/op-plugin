@@ -894,6 +894,30 @@ class TestGroupedMatmul(TestCase):
         self.assertEqual(out_nz[0][:golden_dim0, :], out_golden.npu())
 
     @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_a16w4_packed_output_width(self):
+        # Uniform nibbles isolate output allocation from FP4 packing permutations.
+        experts, m, k, n = 2, 8, 128, 256
+        packed = torch.full((experts, k, n // 2), 0x22, dtype=torch.uint8).npu()
+        packed[1].fill_(0x44)
+        weight = torch_npu.npu_format_cast(
+            packed, 29, customize_dtype=torch.float8_e4m3fn,
+            input_dtype=torch_npu.float4_e2m1fn_x2)
+        scales = torch.full((experts, k // 32, n), 127, dtype=torch.uint8).npu()
+        counts = torch.tensor([3, 5], dtype=torch.int64).npu()
+        for dtype in (torch.float16, torch.bfloat16):
+            with self.subTest(dtype=dtype):
+                x = torch.ones((m, k), dtype=dtype).npu()
+                result = torch_npu.npu_grouped_matmul(
+                    x=[x], weight=[weight], antiquant_scale=[scales],
+                    group_list=counts, group_type=0, group_list_type=1,
+                    split_item=2, weight_dtype=torch_npu.float4_e2m1fn_x2,
+                    output_dtype=dtype)[0]
+                self.assertEqual(tuple(result.shape), (m, n))
+                expected = torch.full((m, n), float(k), dtype=dtype)
+                expected[3:] *= 2
+                self.assertRtolEqual(expected.float(), result.cpu().float())
+
+    @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_a8w4_per_group_weight_nz(self):
         """A8W4 WeightNz per-group dispatches quantGroupSize=256."""
         expert_num = 2
