@@ -12809,13 +12809,13 @@ torch_npu.npu_grouped_matmul_swiglu_quant(Tensor x, Tensor weight, Tensor group_
 aclnnGroupedMatmulV4、aclnnDynamicDequant、aclnnSwigluQuant融合, deepseek模型使用，对比小算子做性能优化。
 
 参数说明
-x（Tensor）：输入，左矩阵，公式中的X，Device侧的aclTensor。shape支持2维，数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。
-weight（Tensor）：输入，权重矩阵，公式中的W，Device侧的aclTensor。shape支持5维，数据类型支持INT8，数据格式支持FRACTAL_NZ，支持非连续的Tensor，需注意该接口会将weight的数据格式强制视为FRACTAL_NZ格式。
-group_list （Tensor）：输入，指示每个分组参与计算的Token个数，公式中的grouplist，Device侧的aclTensor。shape支持1维，长度需与weight的首轴维度相等，数据类型支持INT64，数据格式支持ND，支持非连续的Tensor。
+x（Tensor）：输入，左矩阵，公式中的X，Device侧的aclTensor。shape支持2维，数据类型支持INT8，数据格式支持ND，支持非连续的Tensor。Ascend 950PR&950DT系列产品仅支持INT8 A8W8、激活pertoken与权重perchannel量化，不支持A8W4或pergroup量化；x仅支持非转置。
+weight（Tensor）：输入，权重矩阵，公式中的W，Device侧的aclTensor。shape支持5维，数据类型支持INT8，数据格式支持FRACTAL_NZ，支持非连续的Tensor，需注意该接口会将weight的数据格式强制视为FRACTAL_NZ格式。Ascend 950PR&950DT系列产品上weight的view shape仅支持3维，非转置时为[E, K, N]；权重必须已采用FRACTAL_NZ存储，物理存储shape为[E, ceil(N/32), ceil(K/16), 16, 32]。逻辑shape、stride及转置布局须满足底层WeightNzV2接口约束，不自动转换普通ND权重。N必须大于0且为64的整数倍。
+group_list （Tensor）：输入，指示每个分组参与计算的Token个数，公式中的grouplist，Device侧的aclTensor。shape支持1维，长度需与weight的首轴维度相等，数据类型支持INT64，数据格式支持ND，支持非连续的Tensor。Ascend 950PR&950DT系列产品上专家数E不超过1024。
 weight_scale （Tensor）：输入，右矩阵的量化因子，公式中的w_scale，Device侧的aclTensor。shape支持2维，首轴长度需与weight的首轴维度相等，尾轴长度需要与weight还原为ND格式的尾轴相同，数据类型支持FLOAT、FLOAT16、BFLOAT16，数据格式支持ND，支持非连续的Tensor。
 x_scale （Tensor）：输入，左矩阵的量化因子，公式中的x_scale，Device侧的aclTensor。shape支持1维，长度需与x的首轴维度相等，数据类型支持FLOAT，数据格式支持ND，支持非连续的Tensor。
-bias（可选，暂不支持，Tensor）：输入，矩阵乘计算的偏移值，公式中的bias，shape支持2维，数据类型支持INT32，预留输入，暂不支持。
-offset（可选，暂不支持，Tensor）：输入，per-channel非对称反量化的偏移，公式中的offset，shape支持2维，数据类型支持Float，预留输入，暂不支持。
+bias（可选，暂不支持，Tensor）：输入，矩阵乘计算的偏移值，公式中的bias，shape支持2维，数据类型支持INT32，预留输入，暂不支持。Ascend 950PR&950DT系列产品上必须为None。
+offset（可选，暂不支持，Tensor）：输入，perchannel非对称反量化的偏移，公式中的offset，shape支持2维，数据类型支持Float，预留输入，暂不支持。Ascend 950PR&950DT系列产品上必须为None。
 
 输出说明
 group_list指导了输入和输出中的有效值范围，该数值由前置算子得到，动态变化。应根据group_list，对结果中脏数据做截断处理，即有效数据截至到group_list[-1]，即：output[:groupList[-1],:],output_scale[:groupList[-1]]
@@ -12824,8 +12824,9 @@ output_scale（Tensor）：输出的量化因子，公式中的Q_scale，Device�
 output_offset（预留输出，暂不支持，Tensor）：输出的非对称量化的偏移，公式中的Q_offset，Device侧的aclTensor，shape支持1维，数据类型支持FLOAT。
 
 支持的型号
-A2训练、推理系列产品
-A3训练、推理系列产品
+Atlas A2系列产品
+Atlas A3系列产品
+Ascend 950PR&950DT系列产品
 
 调用示例
 import torch
