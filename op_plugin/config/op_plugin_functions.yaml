@@ -2330,6 +2330,9 @@ official:
     op_api: all_version
     dvm: all_version
 
+  - func: _grouped_mm(Tensor self, Tensor mat2, Tensor? offs=None, Tensor? bias=None, ScalarType? out_dtype=None) -> Tensor
+    op_api: [v2.9, newest]
+
   - func: fmod.Scalar(Tensor self, Scalar other) -> Tensor
     acl_op: all_version
     op_api: all_version

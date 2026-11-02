@@ -2972,6 +2972,68 @@ class TestGroupedMatmul(TestCase):
             self.assertEqual(result[0].shape[1], n)
 
 
+@unittest.skipIf(not hasattr(torch, "_grouped_mm"), "_grouped_mm not available in this PyTorch version")
+class TestGroupedMm(TestCase):
+    def test_grouped_mm_meta_2d_x_3d(self):
+        """FakeTensor: 2D x 3D -> (M, N)"""
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            M, K, N, G = 768, 256, 128, 3
+            mat_a = torch.randn(M, K, dtype=torch.bfloat16).npu()
+            mat_b = torch.randn(G, K, N, dtype=torch.bfloat16).npu()
+            offs = torch.tensor([256, 512, 768], dtype=torch.int32).npu()
+            out = torch._grouped_mm(mat_a, mat_b, offs=offs)
+            self.assertTrue(out.shape == torch.Size([M, N]))
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+    def test_grouped_mm_meta_3d_x_2d(self):
+        """FakeTensor: 3D x 2D -> (M, N)"""
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            G, M, K, N = 3, 256, 128, 768
+            mat_a = torch.randn(G, M, K, dtype=torch.bfloat16).npu()
+            mat_b = torch.randn(K, N, dtype=torch.bfloat16).npu()
+            offs = torch.tensor([256, 512, 768], dtype=torch.int32).npu()
+            out = torch._grouped_mm(mat_a, mat_b, offs=offs)
+            self.assertTrue(out.shape == torch.Size([M, N]))
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+    def test_grouped_mm_meta_2d_x_2d(self):
+        """FakeTensor: 2D x 2D -> (G, M, N)"""
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            M, K, N, G = 256, 768, 128, 3
+            mat_a = torch.randn(M, K, dtype=torch.bfloat16).npu()
+            mat_b = torch.randn(K, N, dtype=torch.bfloat16).npu()
+            offs = torch.tensor([256, 512, 768], dtype=torch.int32).npu()
+            out = torch._grouped_mm(mat_a, mat_b, offs=offs)
+            self.assertTrue(out.shape == torch.Size([G, M, N]))
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+    def test_grouped_mm_meta_3d_x_3d(self):
+        """FakeTensor: 3D x 3D -> (G, M, N)"""
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            G, M, K, N = 4, 128, 256, 64
+            mat_a = torch.randn(G, M, K, dtype=torch.bfloat16).npu()
+            mat_b = torch.randn(G, K, N, dtype=torch.bfloat16).npu()
+            out = torch._grouped_mm(mat_a, mat_b)
+            self.assertTrue(out.shape == torch.Size([G, M, N]))
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+    def test_grouped_mm_meta_bf16(self):
+        """FakeTensor: bf16 dtype"""
+        with FakeTensorMode():
+            torch.manual_seed(0)
+            M, K, N, G = 512, 256, 128, 2
+            mat_a = torch.randn(M, K, dtype=torch.bfloat16).npu()
+            mat_b = torch.randn(G, K, N, dtype=torch.bfloat16).npu()
+            offs = torch.tensor([256, 512], dtype=torch.int32).npu()
+            out = torch._grouped_mm(mat_a, mat_b, offs=offs)
+            self.assertTrue(out.shape == torch.Size([M, N]))
+            self.assertTrue(out.dtype == torch.bfloat16)
+
+
 class TestQuantMatmul(TestCase):
     def test_npu_quant_matmul_meta(self):
         with FakeTensorMode():
