@@ -24,14 +24,10 @@ env:
   TARGET_BRANCH: ${{ atomgit.event.pull_request.base.ref }}
   org_name: "Ascend"
   img_master_arm: "pytorch_master_a2_aarch64_builder:20260922"
-  img_2_7_1_arm: "pytorch_2.7.1_a2_aarch64_builder:20260804"
-  img_2_9_0_arm: "pytorch_2.9.0_a2_aarch64_builder:20260901"
   img_2_10_0_arm: "pytorch_2.10.0_a2_aarch64_builder:20260804"
   img_2_11_0_arm: "pytorch_2.11.0_a2_aarch64_builder:20260804"
   img_2_12_0_arm: "pytorch_2.12.0_a2_aarch64_builder:20260804"
   img_master_x86: "pytorch_master_a1_x86_64_builder:20260922"
-  img_2_7_1_x86: "pytorch_2.7.1_a1_x86_64_builder:20260804"
-  img_2_9_0_x86: "pytorch_2.9.0_a1_x86_64_builder:20260901"
   img_2_10_0_x86: "pytorch_2.10.0_a1_x86_64_builder:20260704"
   img_2_11_0_x86: "pytorch_2.11.0_a1_x86_64_builder:20260704"
   img_2_12_0_x86: "pytorch_2.12.0_a1_x86_64_builder:20260704"
@@ -53,7 +49,7 @@ stages:
         name: Detect_file_changes
         runs-on: [ self-hosted, default, x86, cpu=2 ]
         container:
-          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+          image: swr.cn-north-4.myhuaweicloud.com/atlas-ci/common:latest
         outputs:
           need_build_ut: ${{ steps.set-skip.outputs.need_build_ut }}
         steps:
@@ -116,7 +112,7 @@ stages:
         select: selected_by_default
         runs-on: [ self-hosted, default, x86, cpu=2 ]
         container:
-          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+          image: swr.cn-north-4.myhuaweicloud.com/atlas-ci/common:latest
         steps:
           - name: associate-pr-comment
             uses: associate-pr-comment
@@ -168,7 +164,7 @@ stages:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
         runs-on: [ self-hosted, default, x86, cpu=2 ]
         container:
-          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+          image: swr.cn-north-4.myhuaweicloud.com/atlas-ci/common:latest
         steps:
           - name: checkout
             uses: checkout
@@ -181,7 +177,7 @@ stages:
         if : ${{ jobs.Detect_file_changes.outputs.need_build_ut == 'yes' }}
         runs-on: [ self-hosted, default, x86, cpu=2 ]
         container:
-          image: swr.cn-north-4.myhuaweicloud.com/pytorch_images_x86/pytorchx86:v_03
+          image: swr.cn-north-4.myhuaweicloud.com/atlas-ci/common:latest
         steps:
           - name: checkout
             uses: checkout
@@ -211,12 +207,6 @@ stages:
               - branch: "master"
                 arch: "x86"
                 img: "pytorch_master_a1_x86_64_builder:20260922"
-              - branch: "v2.7.1"
-                arch: "x86"
-                img: "pytorch_2.7.1_a1_x86_64_builder:20260804"
-              - branch: "v2.9.0"
-                arch: "x86"
-                img: "pytorch_2.9.0_a1_x86_64_builder:20260901"
               - branch: "v2.10.0"
                 arch: "x86"
                 img: "pytorch_2.10.0_a1_x86_64_builder:20260704"
@@ -229,12 +219,6 @@ stages:
               - branch: "master"
                 arch: "arm"
                 img: "pytorch_master_a2_aarch64_builder:20260922"
-              - branch: "v2.7.1"
-                arch: "arm"
-                img: "pytorch_2.7.1_a2_aarch64_builder:20260804"
-              - branch: "v2.9.0"
-                arch: "arm"
-                img: "pytorch_2.9.0_a2_aarch64_builder:20260901"
               - branch: "v2.10.0"
                 arch: "arm"
                 img: "pytorch_2.10.0_a2_aarch64_builder:20260804"
@@ -269,10 +253,6 @@ stages:
                 img: "pytorch_master_a2_aarch64_builder:20260922"
                 TEST_RANK: "2"
                 TEST_WORLD_SIZE: "2"
-              - branch: "v2.7.1"
-                img: "pytorch_2.7.1_a2_aarch64_builder:20260804"
-              - branch: "v2.9.0"
-                img: "pytorch_2.9.0_a2_aarch64_builder:20260901"
               - branch: "v2.10.0"
                 img: "pytorch_2.10.0_a2_aarch64_builder:20260804"
               - branch: "v2.11.0"
