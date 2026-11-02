@@ -51,7 +51,7 @@
                 | `torch.float8_e4m3fn` | 8 |
                 | `torch.float8_e5m2` | 15 |
 
-        - **场景2：当scale_alg为1时，支持Ffp8的动态MX量化。**
+        - **场景2：当scale_alg为1时，支持fp8的动态MX量化。**
             - 将长向量按块分，每块长度为k，对每块单独计算一个块缩放因子$S_{fp32}^b$，再把块内所有元素用同一个$S_{fp32}^b$映射到目标低精度类型fp8。如果最后一块不足k个元素，把缺失值视为0，按照完整块处理。
             - 找到该块中数值的最大绝对值：
 
@@ -113,17 +113,17 @@ torch_npu.npu_rms_norm_dynamic_mx_quant(x, gamma, *, beta=None, epsilon=1e-06, s
 
 - 该接口支持训练、推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
-- 输出`y`的类型为`torch_npu.float4_e2m1fn_x2`和`torch_npu.float4_e1m2fn_x2`，即dst_type为296和297时，`x1`的最后一维必须是偶数。
+- 输出`y`的类型为`torch_npu.float4_e2m1fn_x2`和`torch_npu.float4_e1m2fn_x2`，即dst_type为296和297时，`x`的最后一维必须是偶数。
 - 量化轴和norm轴都是输入x的最后1维。
-- 输出`mxscale_out`和输入`x1`的shape约束关系：
-  - rank(mxscale_out)  = rank(x1) + 1
-  - mxscale_out.shape[-2] = (ceil(x1.shape[-1] / 32) + 2 - 1) / 2
+- 输出`mxscale_out`和输入`x`的shape约束关系：
+  - rank(mxscale_out)  = rank(x) + 1
+  - mxscale_out.shape[-2] = (ceil(x.shape[-1] / 32) + 2 - 1) / 2
   - mxscale_out.shape[-1]  = 2
-  - 其他维度与输入x1一致
-  - 例如，输入x1.shape = (100, 8, 64)，mxscale_out.shape = (100, 8, 1, 2)
+  - 其他维度与输入x一致
+  - 例如，输入x.shape = (100, 8, 64)，mxscale_out.shape = (100, 8, 1, 2)
 
 - **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是Pytorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
-- **图模式通路**不支持反向传播，rstd固定为值为0的标量Tensor(shape[])，不含有效数据。
+- **图模式通路**不支持反向传播，rstd固定为0的标量Tensor(shape[])，不含有效数据。
 
 - **边界值场景说明**
 

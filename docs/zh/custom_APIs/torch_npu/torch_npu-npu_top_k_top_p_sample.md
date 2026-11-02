@@ -32,7 +32,7 @@
   |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|Sglang框架标准完整功能|
 
 - 计算公式：
-  输入`logits`为大小是[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
+  输入`logits`为大小为[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
   `logits`中的每一行$logits[batch][:]$根据相应的top_k[batch]、top_p[batch]、q[batch, :]、min_ps[batch]，执行不同的计算场景。<br>
   下述公式中使用b和v来分别表示batch和voc_size方向上的索引。
 
@@ -108,7 +108,7 @@
   | :-------:| :------:|:-------:|:-------:|
   |`top_p[b]`|保留1个最大词频token|0<top_p<1,执行topP采样|top_p≥1,跳过topP采样|
 
-  * 如果执行常规topP采样，且如果前序topK环节已有排序输出结果，则根据topK采样输出计算累积词频，并根据top_p截断采样：
+  * 如果执行常规topP采样，且前序topK环节已有排序输出结果，则根据topK采样输出计算累积词频，并根据top_p截断采样：
 
     $$
     topPMask[b] =
@@ -219,7 +219,7 @@
 
   后继处理
 
-  * 此阶段输入为前序对前序topK-topP-minP采样的联合结果logitsSortMasked。
+  * 此阶段输入为前序topK-topP-minP采样的联合结果logitsSortMasked。
 
   * 此处输入需要确保logitsSortMasked∈(0,1)，根据输入logits的实际情况，配置入参约束属性Attr.optional.Bool.input_is_logits，即：
 
@@ -322,7 +322,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 - **input_is_logits**（`bool`）：可选参数，该参数控制输入logits在topP及后续步骤之前，是否进行归一化处理，并决定可选输出logits_top_kp_select中的无效logits默认值类型。logits表示“未经归一化的原始值”，而相对地已经过归一化的则定义为“probs”。该参数的取值影响如下：
     - 若该参数取值为True，输入的logits中的数值不能确保在[0,1]区间内。由于logits未进行归一化，在进行top_p采样等后续步骤之前，先对输入进行softmax处理。logits_top_kp_select中的无效logits默认值defLogit=-inf。
     - 若该参数取值为False，输入logits中的所有元素都确保在[0,1]区间内。输入logits已经归一化，为避免梯度平滑化，top_p采样等后续步骤直接使用前级处理的结果。logits_top_kp_select中的无效logits默认值defLogit=0。
-- **post_sample**（`str`）：可选参数，该参数控制topk-topp采样之后的后继处理策略。第一优先级：判断q是否为None，如果q=None，则无视参数提供的post_sample内容，强制后继处理模式一概设为None。参数合法值允许：
+- **post_sample**（`str`）：可选参数，该参数控制topk-topp采样之后的后继处理策略。第一优先级：判断q是否为None，如果q=None，则无视参数提供的post_sample内容，强制后继处理模式一概设为None。参数合法值如下：
     - qSample(默认值)：倾向于使用qSample采样。
     - multiNomial：使用multiNomial采样（多项式随机抽样），此时入参中的q矩阵将被解析为随机种子，执行multiNomial-gather。
     - None：显式强调不使用任何后继处理，此时传入任何q!=None都被无视。

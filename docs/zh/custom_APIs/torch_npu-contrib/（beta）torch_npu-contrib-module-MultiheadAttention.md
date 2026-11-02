@@ -29,8 +29,8 @@ torch_npu.contrib.module.MultiheadAttention(embed_dim, num_heads, kdim=None, vdi
 
 - **embed_dim** (`int`)：模型总维度。
 - **num_heads** (`int`)：并行attention head。
-- **kdim**(`int`)：key的特性总数。默认值为None。
-- **vdim**(`int`)：value的特性总数。默认值为None。
+- **kdim**(`int`)：key的特征总数。默认值为None。
+- **vdim**(`int`)：value的特征总数。默认值为None。
 - **dropout** (`float`)：Dropout概率。
 - **bias** (`bool`)：如果指定此参数，则向输入/输出投影层添加偏置。默认值为True。
 - **add_bias_kv** (`bool`)：如果指定此参数，则在dim=0处向键值序列添加偏置。默认值为False。

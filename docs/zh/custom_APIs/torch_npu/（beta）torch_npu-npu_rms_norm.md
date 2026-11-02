@@ -64,7 +64,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
   - <term>Atlas推理系列产品</term>：输入不支持包含Inf和NaN。
   <!-- end id8 -->
   <!-- npu="950,A3,910b" id9 -->
-  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>、<term>Ascend 950PR&950DT系列产品</term>：当输入时Inf时，输出为Inf。当输入是NaN时，输出为NaN。
+  - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>、<term>Ascend 950PR&950DT系列产品</term>：当输入为Inf时，输出为Inf。当输入是NaN时，输出为NaN。
   <!-- end id9 -->
 
 - 各产品支持数据类型及对应关系说明：

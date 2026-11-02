@@ -35,7 +35,7 @@ torch_npu.npu_add_rms_norm_v2(x1, x2, gamma, epsilon=1e-6) -> Tensor
 
 ## 返回值说明
 
-**rstd**（`Tensor`）：对应公式中的$Rms(x)$，Norm计算的中间结果，用于反向计算使用。数据类型仅支持`torch.float32`，维度数与`x1`保持一致，不需要norm的维度与`x1`对应维度保持一致，需要norm的维度为1。`rstd`shape与`x1`shape，`gamma`shape关系举例：
+**rstd**（`Tensor`）：对应公式中的$Rms(x)$，Norm计算的中间结果，用于反向计算。数据类型仅支持`torch.float32`，维度数与`x1`保持一致，不需要norm的维度与`x1`对应维度保持一致，需要norm的维度为1。`rstd`shape与`x1`shape，`gamma`shape关系举例：
 
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstd`shape:(2,3,4,1)；
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(4,8)，`rstd`shape:(2,3,1,1)。

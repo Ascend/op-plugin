@@ -58,7 +58,7 @@ torch_npu.npu_all_to_all_matmul(x1, x2, hcom, world_size, bias=None, all2all_axe
 - 该接口支持单算子模式。
 
 <!-- npu="950" id5 -->
-- 该接口在<term>Ascend 950PR&950DT系列产品</term>产品上支持图模式调用。
+- 该接口在<term>Ascend 950PR&950DT系列产品</term>上支持图模式调用。
 <!-- end id5 -->
 - 除`x1`以外的输入参数均不支持空Tensor。
 - 通信域名称`hcom`不支持传入空字符串，长度取值范围为\[1, 127\]。

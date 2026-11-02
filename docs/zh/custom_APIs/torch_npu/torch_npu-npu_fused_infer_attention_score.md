@@ -590,7 +590,6 @@ torch_npu.npu_fused_infer_attention_score(
     - `key_antiquant_scale`和`value_antiquant_scale`要么都为空，要么都不为空；`key_antiquant_offset`和`value_antiquant_offset`要么都为空，要么都不为空。
     - `key_antiquant_scale`和`value_antiquant_scale`都不为空时，其shape需要保持一致；`key_antiquant_offset`和`value_antiquant_offset`都不为空时，其shape需要保持一致。
     - 当`key_antiquant_mode=0`且`value_antiquant_mode=1`时，`key_antiquant_mode`和`value_antiquant_mode`取值无需一致，其他场景均需保持一致。
-    - `key_antiquant_scale`和`value_antiquant_scale`要么都为空，要么都不为空；`key_antiquant_offset`和`value_antiquant_offset`要么都为空，要么都不为空。
     - `key_antiquant_scale`和`value_antiquant_scale`都不为空时，除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，其shape需要保持一致。
     - `key_antiquant_offset`和`value_antiquant_offset`都不为空时，除`key_antiquant_mode=0`且`value_antiquant_mode=1`的场景外，其shape需要保持一致。
     - 管理scale/offset的量化模式如下：

@@ -41,7 +41,7 @@ torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, *, offset, beta, epsilon=1e-06,
 
 - **gamma** (`Tensor`)：必选参数，表示标准化过程中的缩放张量，对应公式中的$gamma$，数据格式支持$ND$，shape支持1-2维，若shape为1维，则需与`x`最后一维维度一致；若shape为2维，则第一维必须为1，第二维需与`x`最后一维维度一致。数据类型需与`x`保持一致，支持非连续Tensor，不支持空Tensor。
 
-- **scale** (`Tensor`)：必选参数，表示量化过程中得到`y`的scales张量，对应公式中的$scale$。数据格式支持$ND$，shape为1，维度为1。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
+- **scale** (`Tensor`)：必选参数，表示量化过程中得到`y`的scale张量，对应公式中的$scale$。数据格式支持$ND$，shape为1，维度为1。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
 
 - **offset** (`Tensor`)：可选参数，表示量化过程中的偏移张量，对应公式中的$offset$，数据格式支持$ND$，shape需与`scale`保持一致，数据类型支持`torch.int8`、`torch.int32`、`torch.float16`、`torch.bfloat16`、`torch.float32`，支持非连续Tensor，不支持空Tensor。
 

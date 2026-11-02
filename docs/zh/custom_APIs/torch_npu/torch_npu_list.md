@@ -54,7 +54,7 @@
 </tr>
 <tr id="row657717509111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2577105001114"><a name="p2577105001114"></a><a name="p2577105001114"></a><a href="（beta）torch_npu-npu_bounding_box_encode.md">（beta）torch_npu.npu_bounding_box_encode</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2577105019119"><a name="p2577105019119"></a><a name="p2577105019119"></a>计算标注框和ground truth真值框之间的坐标变化。自定义Faster R-CNN算子。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2577105019119"><a name="p2577105019119"></a><a name="p2577105019119"></a>计算标注框和真值框之间的坐标变化。自定义Faster R-CNN算子。</p>
 </td>
 </tr>
 <tr id="row589165316115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1489155321111"><a name="p1489155321111"></a><a name="p1489155321111"></a><a href="（beta）torch_npu-npu_ciou.md">（beta）torch_npu.npu_ciou</a></p>
@@ -104,7 +104,7 @@
 </tr>
 <tr id="row3206113212114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p42065329112"><a name="p42065329112"></a><a name="p42065329112"></a><a href="（beta）torch_npu-npu_giou.md">（beta）torch_npu.npu_giou</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p0835111286"><a name="zh-cn_topic_0000001655404257_p0835111286"></a><a name="zh-cn_topic_0000001655404257_p0835111286"></a>首先计算两个框的最小封闭面积和IoU，然后计算封闭区域中不属于两个框的封闭面积的比例，最后从IoU中减去这个比例，得到GIoU。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="zh-cn_topic_0000001655404257_p0835111286"><a name="zh-cn_topic_0000001655404257_p0835111286"></a><a name="zh-cn_topic_0000001655404257_p0835111286"></a>首先计算两个框的最小封闭面积和IoU，然后计算封闭区域中不属于两个框的面积占封闭面积的比例，最后从IoU中减去这个比例，得到GIoU。</p>
 </td>
 </tr>
 <tr id="row5377163616111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p937723691115"><a name="p937723691115"></a><a name="p937723691115"></a><a href="（beta）torch_npu-npu_grid_assign_positive.md">（beta）torch_npu.npu_grid_assign_positive</a></p>
@@ -445,7 +445,7 @@
 </tr>
 <tr id="row_npu_grouped_matmul_add"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_grouped_matmul_add_.md">torch_npu.npu_grouped_matmul_add_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>在micro-batch训练场景，需要做micro-batch的梯度累计，会存在大量GroupedMatmul操作接InplaceAdd操作的融合场景。本算子（GroupedMatmulAdd）在非量化场景中将上述算子融合起来，以提高网络性能。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>在micro-batch训练场景，需要做micro-batch的梯度累加，会存在大量GroupedMatmul操作接InplaceAdd操作的融合场景。本算子（GroupedMatmulAdd）在非量化场景中将上述算子融合起来，以提高网络性能。</p>
 </td>
 </tr>
 <tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul.md">torch_npu.npu_grouped_matmul</a></p>
@@ -460,12 +460,12 @@
 </tr>
 <tr id="row1045718422215"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p64370382369"><a name="p64370382369"></a><a name="p64370382369"></a><a href="torch_npu-npu_grouped_matmul_swiglu_quant.md">torch_npu.npu_grouped_matmul_swiglu_quant</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>npu_grouped_matmul_swiglu_quant是一种融合分组矩阵乘法（GroupedMatmul）、反量化（dequant）、SwiGLu混合激活函数、量化（quant）的计算方法，用于模型性能优化。</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1437638113619"><a name="p1437638113619"></a><a name="p1437638113619"></a><span>npu_grouped_matmul_swiglu_quant是一种融合分组矩阵乘法（GroupedMatmul）、反量化（dequant）、SwiGLu激活函数、量化（quant）的计算方法，用于模型性能优化。</span></p>
 </td>
 </tr>
 <tr id="row1231245645712"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p548217963045654"><a name="p548217963045654"></a><a name="p548217963045654"></a><a href="torch_npu-npu_grouped_matmul_swiglu_quant_v2.md">torch_npu.npu_grouped_matmul_swiglu_quant_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5420573896217596"><a name="p5420573896217596"></a><a name="p5420573896217596"></a><span>npu_grouped_matmul_swiglu_quant_v2是一种融合分组矩阵乘法（GroupedMatmul）、反量化（dequant）、SwiGLu混合激活函数、量化（quant）的计算方法，用于模型性能优化。</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5420573896217596"><a name="p5420573896217596"></a><a name="p5420573896217596"></a><span>npu_grouped_matmul_swiglu_quant_v2是一种融合分组矩阵乘法（GroupedMatmul）、反量化（dequant）、SwiGLu激活函数、量化（quant）的计算方法，用于模型性能优化。</span></p>
 </td>
 </tr>
 <tr id="row1545717422219"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p58181296368"><a name="p58181296368"></a><a name="p58181296368"></a><a href="torch_npu-npu_incre_flash_attention.md">torch_npu.npu_incre_flash_attention</a></p>
@@ -916,12 +916,12 @@
 </tr>
 <tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>在micro-batch训练场景下，将量化GroupedMatmul与InplaceAdd操作融合，以提高网络性能。</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>在micro-batch训练场景，需要做micro-batch的梯度累积，会存在大量GroupedMatmul操作接InplaceAdd操作的融合场景。</span></p>
 </td>
 </tr>
 <tr id="npu_add_quant_matmul_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_matmul_"><a name="p_npu_add_quant_matmul_"></a><a name="p_npu_add_quant_matmul_"></a><a href="torch_npu-npu_add_quant_matmul_.md">torch_npu.npu_add_quant_matmul_</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_matmul__desc"><a name="p_npu_add_quant_matmul__desc"></a><a name="p_npu_add_quant_matmul__desc"></a><span>训练场景下micro-batch的梯度累积会存在大量QuantBatchMatmul操作接InplaceAdd操作，本接口将操作融合起来，以提高网络性能。</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_matmul__desc"><a name="p_npu_add_quant_matmul__desc"></a><a name="p_npu_add_quant_matmul__desc"></a><span>在micro-batch训练场景，需要做micro-batch的梯度累积，会存在大量QuantBatchMatmul操作接InplaceAdd操作的场景。</span></p>
 </td>
 </tr>
 <tr id="npu_dynamic_dual_level_mx_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_dynamic_dual_level_mx_quant"><a name="p_npu_dynamic_dual_level_mx_quant"></a><a name="p_npu_dynamic_dual_level_mx_quant"></a><a href="torch_npu-npu_dynamic_dual_level_mx_quant.md">torch_npu.npu_dynamic_dual_level_mx_quant</a></p>
@@ -989,11 +989,6 @@
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_token_unpermute_with_routing_map.md">torch_npu.npu_moe_token_unpermute_with_routing_map</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回原unpermuted_tokens，支持drop_and_pad填充模式。</p>
-</td>
-</tr>
-<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>训练场景下micro-batch的梯度累计会存在大量GroupedMatMul操作接InplaceAdd操作，本接口将操作融合起来，实现分组矩阵乘计算和加法计算，仅支持mx量化、T-C量化和T-T量化场景。</span></p>
 </td>
 </tr>
 <tr id="npu_apply_adam_w"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_adam_w"><a name="p_npu_apply_adam_w"></a><a name="p_npu_apply_adam_w"></a><a href="torch_npu-npu_apply_adam_w.md">torch_npu.npu_apply_adam_w</a></p>

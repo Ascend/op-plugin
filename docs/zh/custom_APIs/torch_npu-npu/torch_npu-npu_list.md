@@ -18,7 +18,7 @@
 </tr>
 <tr id="row1066418791520"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p166411751513"><a name="p166411751513"></a><a name="p166411751513"></a><a href="（beta）torch_npu-npu-clear_npu_overflow_flag.md">（beta）torch_npu.npu.clear_npu_overflow_flag</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p466412710151"><a name="p466412710151"></a><a name="p466412710151"></a>对NPU芯片溢出检测进行清零。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p466412710151"><a name="p466412710151"></a><a name="p466412710151"></a>对NPU溢出检测进行清零。</p>
 </td>
 </tr>
 <tr id="row2074316127585"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7858135417578"><a name="p7858135417578"></a><a name="p7858135417578"></a><a href="torch_npu-npu-enable_deterministic_with_backward.md">torch_npu.npu.enable_deterministic_with_backward</a></p>
@@ -43,7 +43,7 @@
 </tr>
 <tr id="row11664117121511"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p116643710154"><a name="p116643710154"></a><a name="p116643710154"></a><a href="torch_npu-npu-matmul-cubeMathType.md">torch_npu.npu.matmul.cube_math_type</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，以控制算子的数学计算模式。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p26648741510"><a name="p26648741510"></a><a name="p26648741510"></a>用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，控制算子的数学计算模式。</p>
 </td>
 </tr>
 <tr id="row196641378158"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p36640731519"><a name="p36640731519"></a><a name="p36640731519"></a><a href="（beta）torch_npu-npu-set_option.md">（beta）torch_npu.npu.set_option</a></p>
@@ -133,7 +133,7 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent.md">torch_npu.npu.ExternalEvent</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>ExternalEvent是AscendCL Event的封装。NPUGraph场景在执行图捕获时，ExternalEvent会被作为图外部节点被捕获，用于非图内时序控制场景。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>ExternalEvent是AscendCL Event的封装。NPUGraph场景在执行图捕获时，ExternalEvent会被作为图外部节点捕获，用于非图内时序控制场景。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().record().md">torch_npu.npu.ExternalEvent().record()</a></p>

@@ -100,7 +100,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 - **actual_seq_qlen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$，默认值为`None`。
 
-- **actual_seq_klen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示key每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$，默认值为为`None`。
+- **actual_seq_klen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示key每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$，默认值为`None`。
 
 - **layout**(`str`)：可选参数，用于标识输入`query`的数据排布格式。当前支持$BSND$、$TND$，默认值为"BSND"。
 

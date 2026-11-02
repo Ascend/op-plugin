@@ -22,7 +22,7 @@
 
 设置或查询matmul类算子的cube计算类型。
 
-`torch_npu.npu.matmul.cube_math_type` 用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，以控制算子的数学计算模式。
+`torch_npu.npu.matmul.cube_math_type` 用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，控制算子的数学计算模式。
 
 ## 函数原型
 

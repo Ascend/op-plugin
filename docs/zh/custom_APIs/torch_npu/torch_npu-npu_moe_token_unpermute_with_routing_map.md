@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回原unpermuted_tokens，支持drop_and_pad填充模式。
+- API功能：对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回unpermuted_tokens，支持drop_and_pad填充模式。
 
 - 计算公式：
 

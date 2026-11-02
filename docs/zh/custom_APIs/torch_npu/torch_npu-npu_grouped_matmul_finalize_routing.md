@@ -126,7 +126,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id21 -->
 
 - **`shared_input_weight`**（`float`）：**可选参数**，共享专家与MoE专家进行combine的系数，`shared_input`先与该参数乘，然后再和MoE专家结果累加。默认为1.0。
-- **`shared_input_offset`**（`int`）：**可选参数**，共享专家输出的在总输出中的偏移。默认值为0。当`shared_input`不为None时，`shared_input_offset`+`shared_input`的第一维度总和不允许超过输出的第一维大小。
+- **`shared_input_offset`**（`int`）：**可选参数**，共享专家输出在总输出中的偏移。默认值为0。当`shared_input`不为None时，`shared_input_offset`+`shared_input`的第一维度总和不允许超过输出的第一维大小。
 - **`output_bs`**（`int`）：**可选参数**，输出的最高维大小。默认值为0，此时输出的第一维大小取`x`的第一维大小。
 - **`group_list_type`**（`int`）：**可选参数**，GroupedMatMul的分组模式。默认为1，表示count模式；若配置为0，表示cumsum模式，即为前缀和。
 - **`x_dtype`**（`int`）：**可选参数**，输入`x`的真实数据类型，默认为None。

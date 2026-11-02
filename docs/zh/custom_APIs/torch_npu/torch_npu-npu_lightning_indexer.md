@@ -1,4 +1,4 @@
-# torch_npu-npu_lightning_indexer
+# torch_npu.npu_lightning_indexer
 
 ## 产品支持情况
 

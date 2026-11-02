@@ -38,7 +38,7 @@
 
     - 专家剪枝：支持根据阈值对token发送的topK个专家进行剪枝。计算方法如下所示：
 
-        将shape为$(BS,)$的`active_mask`进行broadcast成为shape为$(BS,K)$的active_mask_tensor，其中`active_mask`中值为False的token会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
+        将shape为$(BS,)$的`active_mask`进行broadcast成shape为$(BS,K)$的active_mask_tensor，其中`active_mask`中值为False的token会直接被剪枝。对于active_mask_tensor为True的`expert_scales`的元素，满足条件也将被剪枝。
 
         ```python
         active_mask_tensor = broadcast(active_mask, (BS, K))
@@ -88,7 +88,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
     - `log_expert_num`：表示逻辑专家数量，即`eplb_table`的行数，每个逻辑专家对应映射表中的一行，取值范围\(0, 1024\)。
     - `moe_expert_num`：表示物理专家数，取值范围\(0, 1024\]。
     - `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]，第一列为各行号对应逻辑专家部署的实例个数（值>0），后F-1列为该逻辑专家部署的物理卡号。
-    - 每个专家部署副本个数值（即`eplb_table`第一列的count），最小为1，最大为`world_size`。
+    - 每个专家部署副本个数（即`eplb_table`第一列的count），最小为1，最大为`world_size`。
     - 所有专家部署的副本个数和（即`eplb_table`第一列count之和）需小于等于1024，且整除`world_size`。
 
 - 该接口必须与`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`接口配合使用。
@@ -109,7 +109,7 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
 - 单算子模式调用
 
     ```python
-    # 调用示例单算子模式调用
+    # 单算子模式调用
     import os
     import torch
     import random

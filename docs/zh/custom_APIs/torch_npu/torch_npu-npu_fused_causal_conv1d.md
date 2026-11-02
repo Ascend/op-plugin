@@ -168,7 +168,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
 - **cache\_indices**（`Tensor`）：可选参数，表示缓存索引，指定每个序列对应的缓存状态在conv\_states中的索引。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
 - **initial\_state\_mode**（`Tensor`）：可选参数，遗留参数，该参数在当前接口内无作用。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
 - **bias**（`Tensor`）：可选参数，遗留参数，该参数在当前接口内无作用。数据类型和数据格式与x保持一致，不支持非连续的Tensor。默认值为None。
-- **num\_accepted\_tokens**（`Tensor`）：可选参数，表示每个batch的随机投机数。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
+- **num\_accepted\_tokens**（`Tensor`）：可选参数，表示每个batch的投机数。数据类型支持`torch.int32`，数据格式要求为ND，不支持非连续的Tensor。默认值为None。
 - **activation**（`str`）：可选参数，表示激活函数类型，该参数在当前接口内无作用。默认值为"None"。
 - **pad\_slot\_id**（`int`）：可选参数，用于跳过不需要参与计算的batch，默认值为-1。
 - **run\_mode**（`int`）：可选参数，该参数在当前接口内无作用。默认值为0。

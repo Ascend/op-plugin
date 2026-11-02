@@ -84,7 +84,7 @@
         return torch.ops.cpp_extension_base.add_custom(self, other)
     ```
 
-## 调用样例
+## 调用示例
 
 完成了算子适配开发后，即可通过C++ extensions的方式调用自定义算子。
 
@@ -92,7 +92,7 @@
 2. 下载示例代码。
 
     ```bash
-    # 下载样例代码
+    # 下载示例代码
     git clone https://gitcode.com/Ascend/op-plugin
     # 进入代码目录
     cd examples/cpp_extension_base

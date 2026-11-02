@@ -110,7 +110,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
   <!-- npu="950" id8 -->
   - <term>Ascend 950PR&950DT系列产品</term>还支持`quarter`、`interleave-half`模式。
   <!-- end id8 -->
-- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变化矩阵，构造方式参考调用示例，默认值为`None`。
+- **rotate** (`Tensor`)：可选参数，表示实现`input`位置变换的等价变换矩阵，构造方式参考调用示例，默认值为`None`。
 
     <!-- npu="A3,910b" id9 -->
     - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：输入维度支持2维，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。

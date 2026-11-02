@@ -44,7 +44,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - H：表示hidden size隐藏层大小，取值范围为1152 ≤ `H` ≤ 8320。
 
-    - HS：表示hidden与scale 隐藏层大小，取值范围为1024 ≤ `HS` ≤ 8192。
+    - HS：表示hidden与scale隐藏层大小，取值范围为1024 ≤ `HS` ≤ 8192。
 
     - MicroBatchNum：表示microBatch的大小，目前仅支持MicroBatchNum = 1。
 

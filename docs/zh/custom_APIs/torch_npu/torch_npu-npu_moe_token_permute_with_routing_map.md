@@ -16,7 +16,7 @@
 
 - API功能：MoE的permute计算，将token和expert的标签作为routing_map传入，根据routing_map将tokens和可选probs广播后排序。
 
-- 计算公式：tokens_num为routing_map的第0维大小，expert_num为routing_map的第1维大小。
+- 计算公式：tokens_num为routing_map的第0维大小，experts_num为routing_map的第1维大小。
 
   当drop_and_pad为`False`时：
 
@@ -61,7 +61,7 @@
   $$
 
   $$
-  sortedIndicesOut = argsort[routingMap.T,dim=-1](:, :capacity)
+  sortedIndicesOut = argsort(routingMap.T, dim=-1)[:, :capacity]
   $$
 
   $$
@@ -115,9 +115,9 @@ torch_npu.npu_moe_token_permute_with_routing_map(tokens, routing_map, *, probs=N
   - 非drop_and_pad模式下，topK = num_out_tokens // tokens_num，实际输出token数outToken = topK * tokens_num。
   - drop_and_pad模式下，capacity = num_out_tokens // experts_num，实际输出token数outToken = capacity * experts_num。
 
-- **drop_and_pad**（`bool`）：可选参数，表示是否开启dropAndPad模式，默认值为`False`。
-  - `False`：表示非dropAndPad模式。
-  - `True`：表示dropAndPad模式，每个专家按固定capacity对token进行选择，不足的部分进行pad。
+- **drop_and_pad**（`bool`）：可选参数，表示是否开启drop_and_pad模式，默认值为`False`。
+  - `False`：表示非drop_and_pad模式。
+  - `True`：表示drop_and_pad模式，每个专家按固定capacity对token进行选择，不足的部分进行pad。
 
 ## 返回值说明
 

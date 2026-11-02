@@ -45,7 +45,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 - 该接口支持单算子模式。
 
 <!-- npu="950" id6 -->
-- 该接口在<term>Ascend 950PR&950DT系列产品</term>产品上支持图模式调用。
+- 该接口在<term>Ascend 950PR&950DT系列产品</term>上支持图模式调用。
 <!-- end id6 -->
 
 ## 调用示例

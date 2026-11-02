@@ -40,7 +40,7 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **bidirectional** (`bool`)：如果值为True，LSTM为双向。当前不支持。
 - **batch_first** (`bool`)：如果值为True，则输入和输出张量将表示为(batch, seq, feature)。当前不支持。
 - **flag_seq** (`bool`)：如果值为True，输入为PackedSequence。当前不支持。
-- **direction** (`bool`)：如果值为True，则方向为“REDIRECTIONAL”，否则为“UNIDIRECTIONAL”。
+- **direction** (`bool`)：如果值为True，则方向为“BIDIRECTIONAL”，否则为“UNIDIRECTIONAL”。
 
 ## 输出说明
 

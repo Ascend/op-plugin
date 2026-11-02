@@ -88,7 +88,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`。
   <!-- end id5 -->
   <!-- npu="950" id6 -->
-  - <term>Ascend 950DT系列产品</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
+  - <term>Ascend 950DT系列产品</term>：支持`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
   <!-- end id6 -->
 
 - **x2**（`Tensor`）：必选参数，MM右矩阵，即计算公式中的$x2$。当前版本仅支持两维输入，支持转置/不转置场景，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。数据类型支持如下：

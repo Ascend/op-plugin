@@ -102,7 +102,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - **comm\_quant\_scale\_1**（`Tensor`）：**可选参数**，默认值为`None`，alltoall通信前后的量化、去量化系数。支持`torch.float16`、`torch.bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
 - **comm\_quant\_scale\_2**（`Tensor`）：**可选参数**，默认值为`None`，allgather通信前后的量化、去量化系数。支持`torch.float16`、`torch.bfloat16`，支持$ND$格式。`x2`为\[k, n\]时shape为\[1, n\]或\[n\]，用户需保证每张卡上数据保持一致且正确。
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
-- **antiquant\_group\_size**（`int`）：**可选参数**，表示伪量化pre-group算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pre-group时传入0；当伪量化算法模式为pre-group时传入值的范围为\[32, min\(k-1, INT\_MAX\)\]且值要求是32的倍数，其中k为`x2`第一维的大小。默认值0，为0则表示非per-group场景。
+- **antiquant\_group\_size**（`int`）：**可选参数**，表示伪量化pergroup算法模式下，对输入`x2`进行反量化计算的groupSize输入，描述一组反量化参数对应的待反量化数据量在k轴方向的大小。当伪量化算法模式不为pergroup时传入0；当伪量化算法模式为pergroup时传入值的范围为\[32, min\(k-1, INT\_MAX\)\]且值要求是32的倍数，其中k为`x2`第一维的大小。默认值0，为0则表示非per-group场景。
 - **group\_sizes**（`List[int]`）：**可选参数**，默认值为`None`，用于表示反量化中x1Scale/x2Scale输入的一个数在其所在的对应维度方向上可以用于该方向`x1`/`x2`输入的多少个数的反量化。group\_sizes为\[groupSizeM，groupSizeN，groupSizeK\]。groupSizeM，groupSizeN，groupSizeK表示一个反量化系数在各个维度对应的数的个数。支持参数自动推导，当根据计算公式分解的groupSizeM/groupSizeN/groupSizeK任一或多个参数为0时，算子自动推导对应的参数值，推导原理为：假设groupSizeM=0，表示m方向量化分组值由接口推断，推断公式为groupSizeM = m / scaleM（需保证m能被scaleM整除），其中m与`x1` shape中的m一致，scaleM与`x1Scale` shape中的m一致。
 
     <!-- npu="910b" id15 -->

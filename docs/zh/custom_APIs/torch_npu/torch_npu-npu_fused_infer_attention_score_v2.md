@@ -160,7 +160,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
   - <term>Ascend 950PR&950DT系列产品</term>：支持per-token叠加per-head和per-block，此时数据类型为`torch.float32`；支持per-channel-group，此时数据类型为`torch.float8_e8m0fnu`。
   <!-- end id16 -->
 
-- **dequant_scale_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据格式支持$ND$。通常支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
+- **dequant_scale_key**（`Tensor`）：可选参数，kv伪量化参数分离时表示`key`的反量化因子。数据格式支持$ND$。支持perchannel、pertensor、pertoken、pertensor叠加perhead、pertoken叠加perhead、pertoken叠加使用page attention模式管理scale、pertoken叠加perhead并使用page attention模式管理scale。如不使用该功能可传入None。综合约束请见[Q_S>1约束](#zh-cn_topic_0000001832267082_section_qs_gt1_constraint)、[Q_S=1约束](#zh-cn_topic_0000001832267082_section_qs_eq1_constraint)、[GQA伪量化+KV NZ格式约束](#zh-cn_topic_0000001832267082_section_gqa_nz_constraint)和[MLA场景约束](#zh-cn_topic_0000001832267082_section_mla_constraint)。
 
   <!-- npu="A3,910b" id17 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
@@ -619,7 +619,7 @@ torch_npu.npu_fused_infer_attention_score_v2(query, key, value, *, query_rope=No
 
         <!-- npu="A3,910b" id65 -->
         - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
-            - 仅支持pertoken和perchannel模式，pertoken模式下要求两个参数的shape均为\(B, KV\_S\)，数据类型固定为`torch.float32`；perchannel模式下要求两个参数的shape为（KV\_N, D），\(KV\_N, D\)，\(H\)，数据类型固定为`torch.bfloat16`,H为KV\_N*D。
+            - 仅支持pertoken和perchannel模式，pertoken模式下要求两个参数的shape均为\(B, KV\_S\)，数据类型固定为`torch.float32`；perchannel模式下要求两个参数的shape为\(KV\_N, D\)，\(H\)，数据类型固定为`torch.bfloat16`,H为KV\_N*D。
             - `dequant_scale_key`与`dequant_scale_value`非空场景，要求`query`的s小于等于16；要求`query`的dtype为`torch.bfloat16`，`key`、`value`的dtype为`torch.int8`，输出的dtype为`torch.bfloat16`；不支持tensorlist、page attention特性。
         <!-- end id65 -->
         <!-- npu="950" id66 -->
