@@ -154,7 +154,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 - **comm_mode** (`str`)：可选参数，通信模式，默认值为`None`（等效`"ai_cpu"`）。
 
   <!-- npu="950" id17 -->
-  - <term>Ascend 950DT系列产品</term>：支持`"ai_cpu"`、`"ccu"`。
+  - <term>Ascend 950DT系列产品</term>：支持`"ai_cpu"`、`"ccu"`、`None`。
   <!-- end id17 -->
   <!-- npu="A3,910b" id18 -->
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：仅支持`"aiv"`。
@@ -195,236 +195,193 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 
 ## 调用示例
 
-### 场景1：8卡场景，每张卡上的m为16，AllGather后的总m为128
+- 单算子模式调用
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_all_gather_base_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
 
-    tensor_allgather_shape = x1_shape
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
 
-    self_t = torch.randn(single_shape, dtype=dtype).npu()
-    x2 = torch.randn(x2_shape, dtype=dtype).npu()
-    output, gather_out, _ = torch_npu.npu_all_gather_quant_mm(self_t, x2, hcomm_info, world_size, comm_mode="aiv") #运行于A2/A3上，需要添加comm_mode="aiv"
-    print(output.shape, output.dtype)
-    print(gather_out.shape, gather_out.dtype)
+        self_t = torch.randn(single_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(self_t, x2, hcomm_info, world_size, comm_mode="aiv") #运行于A2/A3上，需要添加comm_mode="aiv"
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
 
-if __name__ == "__main__":
-    worksize = 8
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 256]
-    dtype = torch.float16
+    if __name__ == "__main__":
+        worksize = 8
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 256]
+        dtype = torch.float16
 
-    mp.spawn(run_all_gather_base_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-输出如下所示
+    输出如下所示
 
-```text
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-```
+    ```text
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    ```
 
-<!-- npu="A3,910b" id24 -->
-### 场景2：`x1、x2`数据类型为`torch.int8`的perchannel、pertoken场景（<term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>）
+- 单算子模式调用（MX量化）
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    import math
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
 
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    self_t = torch.randint(-128, 127, single_shape, dtype=dtype).npu()
-    x2 = torch.randint(-128, 127, x2_shape, dtype=dtype).npu()
-    # pertoken场景：x1_scale的shape为(m, 1)；perchannel场景：x2_scale的shape为(1, n)
-    x1_scale = torch.rand((single_shape[0], 1), dtype=torch.float32).npu()
-    x2_scale = torch.rand((1, x2_shape[1]), dtype=torch.float32).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16, comm_mode="aiv")
-    print(output.shape, output.dtype)  # (torch.Size([128, 256]), torch.float16)
-    print(gather_out.shape, gather_out.dtype)  # (torch.Size([128, 512]), torch.int8)
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        m_rank, k = single_shape
+        n = x2_shape[1]
+        self_t = torch.randn(single_shape).to(dtype).npu()
+        x2 = torch.randn(x2_shape).to(dtype).npu()
+        # mx场景：scale数据类型为float8_e8m0fnu，shape分别为(m, ceilDiv(k, 64), 2)、(ceilDiv(k, 64), n, 2)
+        x1_scale = torch.rand((m_rank, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
+        x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
+        y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
+            self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
+            gather_output=True, y_dtype=torch.float16)
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
 
-if __name__ == "__main__":
-    worksize = 8
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 256]
-    dtype = torch.int8
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [64, 256]
+        x2_shape = [256, 128]
+        dtype = torch.float8_e4m3fn
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-输出如下所示
+    输出如下所示
 
-```text
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-```
-<!-- end id24 -->
+    ```text
+    torch.Size([64, 128]) torch.float16
+    torch.Size([64, 256]) torch.float8_e4m3fn
+    torch.Size([64, 128]) torch.float16
+    torch.Size([64, 256]) torch.float8_e4m3fn
+    ```
 
-<!-- npu="950" id25 -->
-### 场景3：`x1、x2`数据类型为`torch.float8_e4m3fn`的perblock场景（仅<term>Ascend 950DT系列产品</term>）
+- 图模式调用
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    class ALLGATHER_QUANT_MM_GRAPH_Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, input, weight, hcomm_info, world_size, gather_output):
+            y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
+                input, weight, hcomm_info, world_size,
+                gather_output=gather_output, comm_mode="aiv") #运行于A2/A3上，需要添加comm_mode="aiv"
+            return y, gather_out
+    def define_model(model, graph_type):
+        import torchair
+        if graph_type == 1:
+            npu_backend = torchair.get_npu_backend(compiler_config=None)
+            model = torch.compile(model, backend=npu_backend, dynamic=False)
+        elif graph_type == 2:
+            npu_backend = torchair.get_npu_backend(compiler_config=None)
+            model = torch.compile(model, backend=npu_backend, dynamic=True)
+        else:
+            print("Error type")
+        return model
+    def get_graph(input, weight, hcomm_info, world_size, gather_output):
+        model = ALLGATHER_QUANT_MM_GRAPH_Model()
+        model = define_model(model, 2)
+        model_output = model(input, weight, hcomm_info, world_size, gather_output=gather_output)
+        y_npu = model_output[0]
+        gather_out_npu = model_output[1]
+        return y_npu, gather_out_npu
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        self_t = torch.randn(single_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        is_gather_out = True
+        y, gather_out = get_graph(self_t, x2, hcomm_info, world_size, is_gather_out)
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
+    if __name__ == "__main__":
+        worksize = 8
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 256]
+        dtype = torch.float16
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    m_rank, k = single_shape
-    n = x2_shape[1]
-    self_t = torch.randn(single_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # perblock场景：blockSize为128，x1_scale、x2_scale均为float32，shape分别为(ceilDiv(m,128), ceilDiv(k,128))、(ceilDiv(k,128), ceilDiv(n,128))
-    x1_scale = torch.rand((math.ceil(m_rank / 128), math.ceil(k / 128)), dtype=torch.float32).npu()
-    x2_scale = torch.rand((math.ceil(k / 128), math.ceil(n / 128)), dtype=torch.float32).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16)
-    print(output.shape, output.dtype)  # (torch.Size([256, 256]), torch.float16)
-    print(gather_out.shape, gather_out.dtype)  # (torch.Size([256, 512]), torch.float8_e4m3fn)
-    print(amax)  # amax_output为False时返回空Tensor
+    输出如下所示
 
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [256, 512]
-    x2_shape = [512, 256]
-    dtype = torch.float8_e4m3fn
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
-
-输出如下所示
-
-```text
-torch.Size([256, 256]) torch.float16
-torch.Size([256, 512]) torch.float8_e4m3fn
-None
-torch.Size([256, 256]) torch.float16
-torch.Size([256, 512]) torch.float8_e4m3fn
-None
-```
-<!-- end id25 -->
-
-<!-- npu="950" id26 -->
-### 场景4：`x1、x2`数据类型为`torch.float8_e4m3fn`的mx量化场景（仅<term>Ascend 950DT系列产品</term>）
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    m_rank, k = single_shape
-    n = x2_shape[1]
-    self_t = torch.randn(single_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # mx场景：scale数据类型为float8_e8m0fnu，shape分别为(m, ceilDiv(k, 64), 2)、(ceilDiv(k, 64), n, 2)
-    x1_scale = torch.rand((m_rank, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
-    x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16)
-    print(output.shape, output.dtype)
-    print(gather_out.shape, gather_out.dtype)
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [64, 256]
-    x2_shape = [256, 128]  # 转置输入(n, k)
-    dtype = torch.float8_e4m3fn
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
-
-输出如下所示
-
-```text
-torch.Size([64, 128]) torch.float16
-torch.Size([64, 256]) torch.float8_e4m3fn
-torch.Size([64, 128]) torch.float16
-torch.Size([64, 256]) torch.float8_e4m3fn
-```
-
-<!-- end id26 -->
+    ```text
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    ```

@@ -154,7 +154,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 - **`comm_mode`** (`str`): Optional. Communication mode. The default value is `None` (equivalent to `"ai_cpu"`).
 
   <!-- npu="950" id17 -->
-  - <term>Ascend 950DT products</term>: `"ai_cpu"` and `"ccu"` are supported.
+  - <term>Ascend 950DT products</term>: `"ai_cpu"`, `"ccu"`, and `None` are supported.
   <!-- end id17 -->
   <!-- npu="A3,910b" id18 -->
   - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Only `"aiv"` is supported.
@@ -195,236 +195,193 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
 
 ## Examples
 
-### Scenario 1: 8-NPU scenario where `m` on each NPU is `16`, and the total `m` after `AllGather` is `128`
+- Single-operator call
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_all_gather_base_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
 
-    tensor_allgather_shape = x1_shape
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
 
-    self_t = torch.randn(single_shape, dtype=dtype).npu()
-    x2 = torch.randn(x2_shape, dtype=dtype).npu()
-    output, gather_out, _ = torch_npu.npu_all_gather_quant_mm(self_t, x2, hcomm_info, world_size, comm_mode="aiv") # When running on A2/A3, comm_mode="aiv" must be added.
-    print(output.shape, output.dtype)
-    print(gather_out.shape, gather_out.dtype)
+        self_t = torch.randn(single_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(self_t, x2, hcomm_info, world_size, comm_mode="aiv") # When running on A2/A3, comm_mode="aiv" must be added.
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
 
-if __name__ == "__main__":
-    worksize = 8
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 256]
-    dtype = torch.float16
+    if __name__ == "__main__":
+        worksize = 8
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 256]
+        dtype = torch.float16
 
-    mp.spawn(run_all_gather_base_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-The output is as follows:
+    The output is as follows:
 
-```text
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.float16
-```
+    ```text
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    ```
 
-<!-- npu="A3,910b" id24 -->
-### Scenario 2: perchannel and pertoken scenario where the data types of `x1` and `x2` are `torch.int8` (<term>Atlas A3 products</term> and <term>Atlas A2 products</term>)
+- Single-operator call (MX quantization)
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    import math
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
 
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    self_t = torch.randint(-128, 127, single_shape, dtype=dtype).npu()
-    x2 = torch.randint(-128, 127, x2_shape, dtype=dtype).npu()
-    # pertoken scenario: the shape of x1_scale is (m, 1). perchannel scenario: the shape of x2_scale is (1, n).
-    x1_scale = torch.rand((single_shape[0], 1), dtype=torch.float32).npu()
-    x2_scale = torch.rand((1, x2_shape[1]), dtype=torch.float32).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16, comm_mode="aiv")
-    print(output.shape, output.dtype)  # (torch.Size([128, 256]), torch.float16)
-    print(gather_out.shape, gather_out.dtype)  # (torch.Size([128, 512]), torch.int8)
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        m_rank, k = single_shape
+        n = x2_shape[1]
+        self_t = torch.randn(single_shape).to(dtype).npu()
+        x2 = torch.randn(x2_shape).to(dtype).npu()
+        # MX scenario: the scale data type is float8_e8m0fnu, and the shapes are (m, ceilDiv(k, 64), 2) and (ceilDiv(k, 64), n, 2).
+        x1_scale = torch.rand((m_rank, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
+        x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
+        y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
+            self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
+            gather_output=True, y_dtype=torch.float16)
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
 
-if __name__ == "__main__":
-    worksize = 8
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 256]
-    dtype = torch.int8
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [64, 256]
+        x2_shape = [256, 128]
+        dtype = torch.float8_e4m3fn
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-The output is as follows:
+    The output is as follows:
 
-```text
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-torch.Size([128, 256]) torch.float16
-torch.Size([128, 512]) torch.int8
-```
-<!-- end id24 -->
+    ```text
+    torch.Size([64, 128]) torch.float16
+    torch.Size([64, 256]) torch.float8_e4m3fn
+    torch.Size([64, 128]) torch.float16
+    torch.Size([64, 256]) torch.float8_e4m3fn
+    ```
 
-<!-- npu="950" id25 -->
-### Scenario 3: perblock scenario where the data types of `x1` and `x2` are `torch.float8_e4m3fn` (only <term>Ascend 950DT products</term>)
+- Graph mode call
 
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    class ALLGATHER_QUANT_MM_GRAPH_Model(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+        def forward(self, input, weight, hcomm_info, world_size, gather_output):
+            y, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
+                input, weight, hcomm_info, world_size,
+                gather_output=gather_output, comm_mode="aiv") # When running on A2/A3, comm_mode="aiv" must be added.
+            return y, gather_out
+    def define_model(model, graph_type):
+        import torchair
+        if graph_type == 1:
+            npu_backend = torchair.get_npu_backend(compiler_config=None)
+            model = torch.compile(model, backend=npu_backend, dynamic=False)
+        elif graph_type == 2:
+            npu_backend = torchair.get_npu_backend(compiler_config=None)
+            model = torch.compile(model, backend=npu_backend, dynamic=True)
+        else:
+            print("Error type")
+        return model
+    def get_graph(input, weight, hcomm_info, world_size, gather_output):
+        model = ALLGATHER_QUANT_MM_GRAPH_Model()
+        model = define_model(model, 2)
+        model_output = model(input, weight, hcomm_info, world_size, gather_output=gather_output)
+        y_npu = model_output[0]
+        gather_out_npu = model_output[1]
+        return y_npu, gather_out_npu
+    def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+        single_shape = [x1_shape[0] // world_size, x1_shape[1]]
+        self_t = torch.randn(single_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        is_gather_out = True
+        y, gather_out = get_graph(self_t, x2, hcomm_info, world_size, is_gather_out)
+        print(y.shape, y.dtype)
+        print(gather_out.shape, gather_out.dtype)
+    if __name__ == "__main__":
+        worksize = 8
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 256]
+        dtype = torch.float16
+        mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
+    ```
 
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    m_rank, k = single_shape
-    n = x2_shape[1]
-    self_t = torch.randn(single_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # perblock scenario: blockSize is 128, x1_scale and x2_scale are both float32, with shapes (ceilDiv(m,128), ceilDiv(k,128)) and (ceilDiv(k,128), ceilDiv(n,128)).
-    x1_scale = torch.rand((math.ceil(m_rank / 128), math.ceil(k / 128)), dtype=torch.float32).npu()
-    x2_scale = torch.rand((math.ceil(k / 128), math.ceil(n / 128)), dtype=torch.float32).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16)
-    print(output.shape, output.dtype)  # (torch.Size([256, 256]), torch.float16)
-    print(gather_out.shape, gather_out.dtype)  # (torch.Size([256, 512]), torch.float8_e4m3fn)
-    print(amax)  # When amax_output is False, an empty Tensor is returned.
+    The output is as follows:
 
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [256, 512]
-    x2_shape = [512, 256]
-    dtype = torch.float8_e4m3fn
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
-
-The output is as follows:
-
-```text
-torch.Size([256, 256]) torch.float16
-torch.Size([256, 512]) torch.float8_e4m3fn
-None
-torch.Size([256, 256]) torch.float16
-torch.Size([256, 512]) torch.float8_e4m3fn
-None
-```
-<!-- end id25 -->
-
-<!-- npu="950" id26 -->
-### Scenario 4: MX quantization scenario where the data types of `x1` and `x2` are `torch.float8_e4m3fn` (only <term>Ascend 950DT products</term>)
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_all_gather_quant_mm(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    single_shape = [x1_shape[0] // world_size, x1_shape[1]]
-    m_rank, k = single_shape
-    n = x2_shape[1]
-    self_t = torch.randn(single_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # MX scenario: the scale data type is float8_e8m0fnu, and the shapes are (m, ceilDiv(k, 64), 2) and (ceilDiv(k, 64), n, 2).
-    x1_scale = torch.rand((m_rank, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
-    x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
-    output, gather_out, amax = torch_npu.npu_all_gather_quant_mm(
-        self_t, x2, hcomm_info, world_size, bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-        gather_output=True, y_dtype=torch.float16)
-    print(output.shape, output.dtype)
-    print(gather_out.shape, gather_out.dtype)
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [64, 256]
-    x2_shape = [256, 128]  # Transposed input (n, k)
-    dtype = torch.float8_e4m3fn
-    mp.spawn(run_npu_all_gather_quant_mm, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
-```
-
-The output is as follows:
-
-```text
-torch.Size([64, 128]) torch.float16
-torch.Size([64, 256]) torch.float8_e4m3fn
-torch.Size([64, 128]) torch.float16
-torch.Size([64, 256]) torch.float8_e4m3fn
-```
-
-<!-- end id26 -->
+    ```text
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    torch.Size([128, 256]) torch.float16
+    torch.Size([128, 512]) torch.float16
+    ```

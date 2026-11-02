@@ -102,7 +102,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
     <!-- end id14 -->
 
 - **gather\_index**（`int`）：**可选参数**，表示gather操作对象，0：对`input`做gather，1：对`x2`做gather。默认值0。**当前版本仅支持输入0。**
-- **gather\_output**（`bool`）：**可选参数**，表示是否需要gather输出。默认值为`True`。`comm_mode`为`ai_cpu`时，`gather_output`支持`True`和`False`；`comm_mode`为`aiv`时，`gather_output`仅支持`True`。
+- **gather\_output**（`bool`）：**可选参数**，表示是否需要gather输出。默认值为`True`。`comm_mode`为`aiv`时，`gather_output`仅支持`True`。
 - **comm\_turn**（`int`）：**可选参数**，表示rank间通信切分粒度，默认值为0，表示默认的切分方式。**当前版本仅支持输入0。**
 - **output\_dtype**（`ScalarType`）：**可选参数**，表示第一个输出的数据类型。仅支持在量化场景且`x1_scale`和`x2_scale`均为`torch.float32`时，可指定输出数据类型为`torch.bfloat16`或`torch.float16`，默认值为`torch.bfloat16`。
 
@@ -137,7 +137,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - 该接口支持单算子模式和TorchAir图模式。
 - `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
 - **通信模式约束**：
-  - `comm_mode`为`ai_cpu`时：
+  - `comm_mode`为`ai_cpu/ccu`时：
       - 该接口支持训练场景下使用。
       - 该接口支持图模式。
 
@@ -148,7 +148,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
   - `comm_mode`为`aiv`时，训练和推理场景均可使用。
 
 <!-- npu="950" id21 -->
-- <term>Ascend 950PR&950DT系列产品</term>：allgather\(x1\)集合通信数据总量不能超过63\*256MB，集合通信数据总量计算方式为：m \* k \* sizeof\(x1\_dtype\) \* 卡数。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+- <term>Ascend 950PR&950DT系列产品</term>：使用`"ccu"`通信引擎时，allgather\(x1\)集合通信数据总量不能超过63\*256MB，集合通信数据总量计算方式为：m \* k \* sizeof\(x1\_dtype\) \* 卡数。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 <!-- end id21 -->
 
 ## 调用示例
