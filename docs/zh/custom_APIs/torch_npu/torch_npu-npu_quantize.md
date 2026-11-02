@@ -47,7 +47,7 @@ torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) 
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.float`、`torch.float16`。
     <!-- end id5 -->
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float`、`torch.float16`、`torch.bfloat16`。`div_mode`为`False`时，且当数据类型为`torch.float`时，数据格式支持$NZ$。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float`、`torch.float16`、`torch.bfloat16`。`div_mode`为`False`且数据类型为`torch.float`时，数据格式支持$NZ$。
     <!-- end id6 -->
     <!-- npu="950" id7 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float`、`torch.float16`、`torch.bfloat16`。

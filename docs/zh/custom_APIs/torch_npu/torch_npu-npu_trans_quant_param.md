@@ -120,7 +120,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 - 图模式调用
 
-    图模式下，`npu_trans_quant_param`计算出的结果tensor为`torch.uint64`数据类型。由于torch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
+    图模式下，`npu_trans_quant_param`计算出的结果tensor为`torch.uint64`数据类型。由于PyTorch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
 
     ```python
     import torch

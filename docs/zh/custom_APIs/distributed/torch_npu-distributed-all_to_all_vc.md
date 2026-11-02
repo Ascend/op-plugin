@@ -27,7 +27,7 @@ torch_npu.distributed.all_to_all_vc(output, input, send_count_matrix, group=None
 
 ## 参数说明
 
-- **output** (`Tensor`)：必选参数，输出Tensor，用于接收数据，元素个数须等于本rank接收列（`send_count_matrix`第i列中i为本rank的元素之和）之和。
+- **output** (`Tensor`)：必选参数，输出Tensor，用于接收数据，元素个数须等于本rank接收列的元素之和（`send_count_matrix`第i列中i为本rank的元素之和）。
 - **input** (`Tensor`)：必选参数，输入Tensor，用于发送数据，元素个数须等于本rank发送行（`send_count_matrix`中本rank对应行）之和；发送数据按目标rank在`input`内连续排布。
 - **send_count_matrix** (`List[List[int]]`)：必选参数，全局`[group size][group size]`方阵，`send_count_matrix[i][j]`表示rank i向rank j发送的元素个数，所有rank须传入同一份完整矩阵。
     - 行数不等于group size时报错：`ValueError: send_count_matrix must have {world_size} rows (group size), got {实际行数}`。
@@ -46,7 +46,7 @@ torch_npu.distributed.all_to_all_vc(output, input, send_count_matrix, group=None
 
 - `input`与`output`须为NPU上的连续Tensor，且dtype一致。
 
-- 不支持原地操作：`input`与`output`不能指向同一内存地址（HCCL要求recvBuf与sendBuf配置的地址不能相同）。
+- 不支持原地操作：`input`与`output`不能指向同一内存地址（HCCL要求recvBuf与sendBuf的地址不能相同）。
 
 - `send_count_matrix`为`[group size][group size]`方阵且元素非负；本rank发送行之和等于`input`元素个数，接收列之和等于`output`元素个数。
 

@@ -28,7 +28,7 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 ## 参数说明
 
 - **input1** (`Tensor`)：输入张量。
-- **shifts** (`Tuple` of `ints`)：每个维度张量滚动（roll）的位移量。
+- **shifts** (`Tuple` of `ints`)：每个维度滚动的位移量。
 - **dims** (`Tuple` of `ints`)：要滚动的维度。
 
 ## 返回值说明

@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-- **API功能**：在micro-batch训练场景，需要做micro-batch的梯度累计，会存在大量GroupedMatmul操作接InplaceAdd操作的融合场景。本算子（GroupedMatmulAdd）在非量化场景中将上述算子融合起来，以提高网络性能。
+- **API功能**：在micro-batch训练场景，需要做micro-batch的梯度累加，会存在大量GroupedMatmul操作接InplaceAdd操作的融合场景。本算子（GroupedMatmulAdd）在非量化场景中将上述算子融合起来，以提高网络性能。
 
 - **计算公式**：
 

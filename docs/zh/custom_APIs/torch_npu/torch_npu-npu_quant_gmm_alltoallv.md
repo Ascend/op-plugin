@@ -68,7 +68,7 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **mm\_weight**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的右矩阵，数据类型与`gmm_x`一致。支持2维，shape为\(H2, N2\)。数据格式为$ND$。全量化场景下，当`mm_x`、`mm_weight`均为float4系列时，仅支持推理场景，此时输入`mm_x`的H2需要为偶数，且当`mm_weight`不转置时内轴N2需为偶数，转置时内轴H2需要为偶数，以保证8bits可以转换为2个float4。
 - **mm\_x\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul左矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(BS, ceil\(H2/64\), 2\)。数据格式为$ND$。
 - **mm\_weight\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul右矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(ceil\(H2/64\), N2, 2\)。数据格式为$ND$。
-- **comm\_quant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示低比特通信的量化参数，数据类型为`torch.float32`，维度为1维，当前暂不支持。
+- **comm\_quant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示低比特通信的量化参数，数据类型为`torch.float32`，维度为1，当前暂不支持。
 - **gmm\_x\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示左矩阵量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。
 - **gmm\_weight\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示右矩阵量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。
 - **mm\_x\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵的量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。

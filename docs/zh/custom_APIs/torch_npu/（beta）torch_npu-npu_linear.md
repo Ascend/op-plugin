@@ -53,7 +53,7 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 
 ## 返回值说明
 
-- **out**(`Tensor`)：输出张量，数据类型与计算输入`input`和`weight`的类型一致。数据格式支持$ND$。
+- **out**(`Tensor`)：输出张量，数据类型与输入`input`和`weight`的类型一致。数据格式支持$ND$。
 
 ## 约束说明
 

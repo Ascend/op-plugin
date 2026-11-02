@@ -65,7 +65,7 @@
     - 当`dst_type_max`为0.0、6.0或7.0时：
       - 将输入`input`在`axis`维度上按k = `block_size`个数分组，一组k个数 $\{\{V_i\}_{i=1}^{k}\}$ 动态量化为 $\{mxscale, \{P_i\}_{i=1}^{k}\}$, k = `block_size`：
       $$
-      shared\_exp = \begin{cases} ceil(log_2(max_i(|V_i|))) - emax, & \text{如果尾数位的高比特前一/两位为1，且尾数不全为0} \\ floor(log_2(max_i(|V_i|))) - emax, & \text{其它} \end{cases}
+      shared\_exp = \begin{cases} ceil(log_2(max_i(|V_i|))) - emax, & \text{如果尾数位的高比特前一/两位为1，且尾数不全为0} \\ floor(log_2(max_i(|V_i|))) - emax, & \text{否则} \end{cases}
       $$
       $$
       P_i = cast\_to\_dst\_type(V_i/mxscale, round\_mode), \space i\space from\space 1\space to\space block\_size

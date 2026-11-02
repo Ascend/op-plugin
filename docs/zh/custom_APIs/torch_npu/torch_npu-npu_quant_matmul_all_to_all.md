@@ -108,7 +108,7 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 
 - 当前`x1_quant_mode`和`x2_quant_mode`的组合仅支持\[3, 2\]和\[6, 6\]，分别表示K-C量化和mx量化。
 - mx量化场景下，`x2`必须转置（即需要使用.t\(\)方法），转置后的shape需满足\(H1, H2\)。
-- mx量化场景下，且`x1`和`x2`的输入为`torch_npu.float4_e2m1fn_x2`时，需要满足ceil\(H1/32\)为偶数，且H1为偶数。
+- mx量化场景下，`x1`和`x2`的输入为`torch_npu.float4_e2m1fn_x2`时，需要满足ceil\(H1/32\)为偶数，且H1为偶数。
 - 当前场景`x1_scale`和`x2_scale`必须传入，不允许为None。
 - `x1_dtype`和`x2_dtype`在mx量化模式下，当数据类型为`torch_npu.float4_e2m1fn_x2`时，需要设置为296，其它场景传默认值即可。
 - `x1_scale_dtype`和`x2_scale_dtype`在mx量化模式下需要设置为`torch.float8_e8m0fnu`，其它场景传默认值即可。

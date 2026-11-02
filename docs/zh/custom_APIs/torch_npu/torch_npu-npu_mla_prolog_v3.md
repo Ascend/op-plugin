@@ -172,7 +172,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **weight_quant_mode**（`int`）：可选参数，表示weight_dq、weight_uq_qr、weight_uk、weight_dkv_kr的量化模式。0表示非量化，1表示weightUqQr量化，2表示weightDq、weightUqQr、weightDkvKr `torch.int8`量化，3表示weightDq、weightUqQr、weightDkvKr mxfp8量化，4表示weightDq、weightUqQr、weightDkvKr fp8量化，5表示weightDq、weightUqQr、weightDkvKr hif8量化，默认值为0。
 
-- **kv_cache_quant_mode**（`int`）：可选参数，表示kv_cache的量化模式。0表示非量化，1表示pertensor量化，2表示perchannel量化，3-表示pertoken-pergroup量化，默认值为0。
+- **kv_cache_quant_mode**（`int`）：可选参数，表示kv_cache的量化模式。0表示非量化，1表示pertensor量化，2表示perchannel量化，3表示pertoken-pergroup量化，默认值为0。
 
 - **query_quant_mode**（`int`）：可选参数，表示query的量化模式。0表示非量化，1表示per-token-head量化，默认值为0。
 

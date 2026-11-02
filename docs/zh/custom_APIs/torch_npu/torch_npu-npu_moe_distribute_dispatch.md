@@ -334,7 +334,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     - <term>Atlas A3系列产品</term>：要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
     <!-- end id52 -->
     <!-- npu="950" id53 -->
-    - <term>Ascend 950DT系列产品</term>：要求\>=2且满足1024^2\*\(HCCL\_BUFFSIZE-2\)/2\>=BS\*2\*\(H+128\)\*\(ep\_world\_size\*local\_expert\_num+K+1\)，local\_expert\_num表示需使用MoE专家卡的本卡专家数。
+    - <term>Ascend 950DT系列产品</term>：要求\>=2且满足1024^2\*\(HCCL\_BUFFSIZE-2\)/2\>=BS\*2\*\(H+128\)\*\(ep\_world\_size\*local\_expert\_num+K+1\)，local\_expert\_num需使用MoE专家卡的本卡专家数。
     <!-- end id53 -->
 
 <!-- npu="910b" id54 -->

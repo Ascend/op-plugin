@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-- API功能：将各SP域PA算子输出的中间结果`lse`、`local_out`两个局部变量结果更新成全局结果。
+- API功能：将各SP域PA算子输出的中间结果`lse`、`local_out`两个局部变量更新成全局结果。
 
 - 计算公式：
 
@@ -46,7 +46,7 @@ torch_npu.npu_attention_update(lse, local_out, update_type) -> (Tensor, Tensor)
 ## 参数说明
 
 - **lse**(`Tensor[]`)：必选参数，表示各SP域的局部lse，对应公式中的$lse_i$，tensorList长度为SP，每个Tensor的shape为$(batch \times seqLen \times headNum)$。数据类型支持`torch.float32`，数据格式支持$ND$。支持空Tensor。
-- **local_out**(`Tensor[]`)：必选参数，表示各SP域的局部attentionout，对应公式中的$O_i$，tensorList长度为SP，每个Tensor的shape为$(batch \times seqLen \times headNum, head\_dim)$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。支持空Tensor。
+- **local_out**(`Tensor[]`)：必选参数，表示各SP域的局部attention out，对应公式中的$O_i$，tensorList长度为SP，每个Tensor的shape为$(batch \times seqLen \times headNum, head\_dim)$。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。支持空Tensor。
 - **update_type**(`int`)：必选参数，指定执行的操作类型。取值为`0`时，仅输出合并后的out；取值为`1`时，同时输出合并后的out和lse_out。
 
 ## 返回值说明

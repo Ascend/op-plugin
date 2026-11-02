@@ -79,7 +79,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
   <!-- end id14 -->
 
-- **scale** (`Tensor`)：必选参数，表示量化过程中得到y进行的scale张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持ND，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
+- **scale** (`Tensor`)：必选参数，表示量化过程中得到y的scale张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持ND，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
 
   <!-- npu="310p,310b" id15 -->
   - <term>Atlas推理系列产品</term>、<term>Atlas 200I/500 A2推理产品</term>：数据类型支持`torch.float16`。

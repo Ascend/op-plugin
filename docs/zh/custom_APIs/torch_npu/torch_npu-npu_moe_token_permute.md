@@ -69,7 +69,7 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
   <!-- end id6 -->
 
 - **indices**（`Tensor`）：必选参数，表示输入indices索引。要求是一个1D或2D的Tensor，支持空tensor。数据类型支持`torch.int32`、`torch.int64`，数据格式支持$ND$，支持非连续Tensor。
-  - 当`padded_mode`为`False`时，表示每一个输入token对应的topK个处理专家索引：维度为2时shape为(num_tokens, topK)，维度为1时shape为(num_tokens)，此时topK视为1。
+  - 当`padded_mode`为`False`时，表示每一个输入token对应的topK个专家索引：维度为2时shape为(num_tokens, topK)，维度为1时shape为(num_tokens)，此时topK视为1。
   - 当`padded_mode`为`True`时，表示每个专家选中的token索引（当前暂不支持）。
   - 元素个数要求小于16777215，元素值要求大于等于0且小于16777215。
 

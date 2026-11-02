@@ -78,7 +78,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
   - $0 \lt Nv \le 64, 0 \lt Nk \le 64$, 且 $Nv \bmod Nk = 0$
   - $0 \lt Dv \le 128$, $0 \lt Dk \le 128$
   - $B \gt 0$, $T \gt 0$
-- 由于算法特性，用户需保障以下数值约束，否则计算结果可能出现溢出：
+- 由于算法特性，用户需保证以下数值约束，否则计算结果可能出现溢出：
   - $-1 \le query[i][j][k] \le 1$，且query需要归一化处理
   - $-1 \le key[i][j][k] \le 1$，且key需要归一化处理
   - $-1 \le g[i][j] \le 0$

@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-AI Core的性能指标采集项。用于作为_ExperimentalConfig类的aic_metrics参数。
+AI Core的性能指标采集项。作为_ExperimentalConfig类的aic_metrics参数。
 
 ## 类签名
 

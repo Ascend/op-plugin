@@ -49,7 +49,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 
 ## 返回值说明
 
-**self**（`Tensor`）：QuantBatchMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，支持数据类型、shape、数据格式均与输入self保持一致。
+**self**（`Tensor`）：QuantBatchMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，数据类型、shape、数据格式均与输入self保持一致。
 
 ## 约束说明
 

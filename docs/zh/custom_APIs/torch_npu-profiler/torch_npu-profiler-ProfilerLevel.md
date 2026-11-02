@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-采集等级。用于作为_ExperimentalConfig类的profiler_level参数。
+采集等级。作为_ExperimentalConfig类的profiler_level参数。
 
 ## 类签名
 

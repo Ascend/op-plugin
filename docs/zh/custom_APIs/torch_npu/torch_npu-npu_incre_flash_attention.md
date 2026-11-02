@@ -167,7 +167,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
     - page attention场景下，输入kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$或$（blocknum, blocksize, H）$，其中$blocknum$表示kv cache中物理block总数，不应小于每个batch所需block个数的总和。通常情况下，kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$时，性能比kv cache排布格式为$（blocknum, blocksize, H）$时更好。
     - page attention场景下，支持kv cache排布格式为$（blocknum, numKvHeads, blocksize, headDims）$，但此时`query layout`仅支持$BNSD$。
     - page attention场景下，当输入kv cache排布格式为$（blocknum, blocksize, H）$，且$H（H=numKvHeads * headDims）$超过64k时，受硬件指令约束，会被拦截报错。
-    - page attention场景下，必须传入输入`actual_seq_lengths`，每个batch的`actual_seq_length`表示每个batch的`sequence`真实长度，该值除以属性输入`block_size`即表示每个batch所需block数量。
+    - page attention场景下，必须传入`actual_seq_lengths`，每个batch的`actual_seq_length`表示每个batch的`sequence`真实长度，该值除以属性输入`block_size`即表示每个batch所需block数量。
     - page attention场景下，`block_table`必须为二维`Tensor`，shape为`(B, maxBlockNumPerSeq)`，其中`B`表示batch数，`maxBlockNumPerSeq`表示各batch中所需block数量的最大值。`block_table[i][j]`表示第`i`个batch的第`j`个逻辑block映射到kv cache中的物理block索引。
     - page attention场景下，`block_table`第一维长度需等于batch数，第二维长度不能小于`maxBlockNumPerSeq`（`maxBlockNumPerSeq`为每个batch中最大`actual_seq_lengths`对应的block数量）。例如，batch数为2，属性`block_size=128`，当每个batch的`actual_seq_length`为512时，表明每个batch至少需要4个block，因此`block_table`的排布可以为`(2, 4)`。
     - page attention场景下，`block_table`中的有效值表示物理block编号，取值范围应在`[0, blocknum - 1]`内。
@@ -175,7 +175,7 @@ torch_npu.npu_incre_flash_attention(query, key, value, *, padding_mask=None, pse
 
 - `quant_scale2`、`quant_offset2`为一组参数，其中`quant_offset2`可选，传入该组参数后算子输出数据类型会推导为`torch.int8`，若不期望`torch.int8`输出，请勿传入该组参数。
 - KV左`padding`场景使用限制：
-    - `kvCache`的搬运起点计算公式为：`Smax-kv_padding_size-actual_seq_lengths`。`kvCache`的搬运终点计算公式为：`Smax-kv_padding_size`。其中`kvCache`的搬运起点或终点小于0时，返回数据结果为全0。
+    - `kvCache`的搬运起点计算公式为：`Smax-kv_padding_size-actual_seq_lengths`。`kvCache`的搬运终点计算公式为：`Smax-kv_padding_size`。其中`kvCache`的搬运起点或终点小于0时，返回的结果全为0。
     - KV左`padding`场景`kv_padding_size`小于0时将被置为0。
     - KV左`padding`场景需要同时存在`kv_padding_size`和`actual_seq_lengths`参数，否则默认为KV右`padding`场景。
 

@@ -97,7 +97,7 @@ torch_npu.npu_rotate_quant(x, rotation, *, alpha=None, dst_dtype=None, axis=-1, 
     - `dst_type_max`在Atlas A2系列产品和Atlas A3系列产品上仅支持0.0。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - `dst_type_max`在在Ascend 950PR&950DT系列产品平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
+    - `dst_type_max`在Ascend 950PR&950DT系列产品平台上，当`scale_alg`为2时取值范围为[6.0, 12.0]，其余场景仅支持0.0。
     <!-- end id19 -->
 - `x`和`rotation`的数据类型必须一致。
 

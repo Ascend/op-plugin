@@ -38,7 +38,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 `Tensor`
 
-代表框转换deltas。
+框转换deltas。
 
 ## 约束说明
 

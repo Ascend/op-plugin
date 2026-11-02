@@ -2,7 +2,7 @@
 
 本章节包含适配后的jit接口，提供即时编译能力以获取更好的性能及部署能力。
 
-**表1** torch_npu jit API
+**表1** torch_npu.jit API
 
 <a name="table11262189101319"></a>
 <table><thead align="left"><tr id="row226215991312"><th class="cellrowborder" valign="top" width="50%" id="mcps1.2.3.1.1"><p id="p2026217991316"><a name="p2026217991316"></a><a name="p2026217991316"></a>API名称</p>

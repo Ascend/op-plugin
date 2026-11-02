@@ -99,7 +99,7 @@ PyTorch2.5.1及以上版本，移除以下成员函数，PyTorch2.5.1之前版�
 
 - **void at_npu::NPUGeneratorImpl::capture_prologue()**
 
-    NPUGeneratorImpl设置offset_extragraph，用于NPUGraph来预留图捕获区域，支持图捕获，与void at::CUDAGeneratorImpl::capture_prologue()相同。
+    NPUGeneratorImpl设置offset_extragraph，用于NPUGraph预留图捕获区域，支持图捕获，与void at::CUDAGeneratorImpl::capture_prologue()相同。
 
 - **uint64_t at_npu::NPUGeneratorImpl::capture_epilogue()**
 

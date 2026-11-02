@@ -114,7 +114,7 @@ torch_npu.npu_moe_finalize_routing(expanded_permuted_rows, skip1, skip2, bias, s
 > - $E$: 表示专家数，$E$需要大于等于$K$。
 > - $C$: 表示专家处理token数量的能力阈值。
 
-- **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedRows$，经过专家处理过的结果，要求为一个2维张量，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式要求为$ND$。`drop_pad_mode`参数为0或2时，shape为$(NUM\_ROWS * K, H)$，`drop_pad_mode`参数为1或3时，shape为$(E, C, H)$。
+- **expanded_permuted_rows** (`Tensor`)：必选参数，对应公式中的$expandPermutedRows$，经过专家处理的结果，要求为一个2维张量，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式要求为$ND$。`drop_pad_mode`参数为0或2时，shape为$(NUM\_ROWS * K, H)$，`drop_pad_mode`参数为1或3时，shape为$(E, C, H)$。
 - **skip1** (`Tensor`)：必选参数，允许为None，对应公式中的$skip1$，求和的输入参数1，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。
 - **skip2** (`Tensor`)：必选参数，允许为None，对应公式中的$skip2$，求和的输入参数2，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致，shape要求与输出`out`的shape一致。`skip1`参数为`None`时，`skip2`参数必须也为`None`。
 - **bias** (`Tensor`)：必选参数，允许为None，对应公式中的$bias$，专家的偏差，要求为一个2维张量，数据类型要求与`expanded_permuted_rows`一致。shape支持$(E，H)$。
