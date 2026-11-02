@@ -27,3 +27,22 @@
 ```python
 torch_npu.npu.finalize_dump()
 ```
+
+## 调用示例
+
+```python
+>>> import torch
+>>> import torch_npu
+>>>
+>>> # 1. 初始化Dump
+>>> torch_npu.npu.init_dump()
+>>>
+>>> # 2. 指定Dump配置文件路径，dump.json的实际路径由用户指定，此处仅为示例
+>>> torch_npu.npu.set_dump("/home/HwHiAiUser/dump.json")
+>>>
+>>> # 3. 执行模型推理（示例）
+>>> # output = model(input_data)
+>>>
+>>> # 4. 结束Dump
+>>> torch_npu.npu.finalize_dump()
+```
