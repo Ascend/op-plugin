@@ -67,7 +67,7 @@
 > The default value for <term>Atlas A3 products</term> and <term>Atlas A2 products</term> is "aiv".
 > <!-- end id24 -->
 > <!-- npu="950" id25 -->
-> The default value for <term>Ascend 950DT products</term> is "ai_cpu".
+> The default value for <term>Ascend 950DT products</term> is "None". Input supports "ai_cpu", "ccu", and "None". When it is None, "ai_cpu" communication is used by default.
 > <!-- end id25 -->
 
 ## Prototype
@@ -136,7 +136,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: In the perchannel scenario, the shape is (1, n). The data type can be `torch.float32` or `torch.int64` (supported only when the output data type is `torch.float16`).
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950DT products</term>: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(k, 128), ceildiv(n, 128)]. The data type can be `torch.float32`. In the MX quantization scenario, the data type is `torch.float8_e8m0fnu`. The shape follows whether `x2` is transposed. For details about the shape requirements, see Constraints. Only non-contiguous Tensors caused by transposition are supported.
+  - <term>Ascend 950DT products</term>: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(k, 128), ceildiv(n, 128)]. The data type can be `torch.float32`. In the MX quantization scenario (MXFP8 and MXFP4), the data type is `torch.float8_e8m0fnu`. The shape follows whether `x2` is transposed. For details about the shape requirements, see Constraints. Only non-contiguous Tensors caused by transposition are supported.
   <!-- end id16 -->
 
 - **`quant_scale`** (`Tensor`): Optional. Quantization scale of the output matrix. Currently, only None is supported. The default value is None.
@@ -191,7 +191,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - In the MX quantization scenario, the input x2_scale is 3D, and its shape follows whether x2 is transposed. When x2 is transposed, the shape of x2_scale is (n, ceildiv(k, 64), 2). When x2 is not transposed, the shape of x2_scale is (ceildiv(k, 64), n, 2).
   - In the MX quantization scenario, when the inputs x1 and x2 are `torch_npu.float4_e2m1fn_x2` (MXFP4 quantization), k must be even. When x2 is not transposed, n must also be even.
   - 2, 4, 8, 16, 32, and 64 NPUs are supported.
-  - The total ReduceScatter collective communication data volume must not exceed 16 \* 256MB. The total collective communication data volume is calculated as m \* n \* sizeof(output_dtype). Because shapes differ, the internal implementation of the operator may vary, and the actual supported total communication volume may be slightly smaller than this value.
+  - The total ReduceScatter collective communication data volume must not exceed 63 \* 256MB. The total collective communication data volume is calculated as m \* n \* sizeof(output_dtype). Because shapes differ, the internal implementation of the operator may vary, and the actual supported total communication volume may be slightly smaller than this value.
 <!-- end id21 -->
 <!-- npu="A3,910b" id22 -->
 - <term>Atlas A3 products</term> and <term>Atlas A2 products</term> constraints:
@@ -207,14 +207,134 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 
 ## Examples
 
-### Scenario 1: Both `x1` and `x2` are `torch.float16` or `torch.bfloat16`
+- Single-operator call
+  - Non-quantization scenario
+  
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+
+    def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+        self_t = torch.randn(x1_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None, x1_scale=None, x2_scale=None, amax_output=amax_output)
+        print(output.shape, output.dtype)
+
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 64]
+        dtype = torch.float16
+        amax_output = False
+        mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    ```
+
+    The output is as follows:
+
+    ```text
+    torch.Size([64, 64]) torch.float16
+    None
+    torch.Size([64, 64]) torch.float16
+    None
+    ```
+  
+  - Mx quantization scenario: `torch.float8_e4m3fn` input dtype
+
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    import math
+
+    def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+        m, k = x1_shape
+        n = x2_shape[1]
+        self_t = torch.randn(x1_shape).to(dtype).npu()
+        x2 = torch.randn(x2_shape).to(dtype).npu()
+        x1_scale = torch.rand((m, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
+        x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
+        output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
+                                                             x1_scale=x1_scale, x2_scale=x2_scale,
+                                                             amax_output=amax_output, y_dtype=torch.float16)
+        print(output.shape, output.dtype)
+
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 256]
+        x2_shape = [256, 64]
+        dtype = torch.float8_e4m3fn
+        amax_output = False
+        mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    ```
+
+    The output is as follows:
+
+    ```text
+    torch.Size([64, 64]) torch.float16
+    torch.Size([64, 64]) torch.float16
+    ```
+
+- Graph mode call
 
 ```python
 import torch
 import torch_npu
 import torch.distributed as dist
 import torch.multiprocessing as mp
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+
+class MM_REDUCESCATTER_GRAPH_Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, input, weight, hcomm_info, world_size, reduce_op):
+        output, amax_out = torch_npu.npu_quant_mm_reduce_scatter(input, weight, hcomm_info, world_size,reduce_op=reduce_op)
+        return output
+
+def define_model(model, graph_type):
+    import torchair
+    if graph_type == 1:
+        npu_backend = torchair.get_npu_backend(compiler_config=None)
+        model = torch.compile(model, backend=npu_backend, dynamic=False)
+    elif graph_type == 2:
+        npu_backend = torchair.get_npu_backend(compiler_config=None)
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
+    else:
+        print("Error type")
+    return model
+
+def get_graph(input, weight, hcomm_info, world_size):
+    model = MM_REDUCESCATTER_GRAPH_Model()
+    model = define_model(model, 2)
+    model_output = model(input, weight, hcomm_info, world_size, reduce_op="sum")
+    return model_output
+
+def run_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
     torch_npu.npu.set_device(rank)
     init_method = 'tcp://' + master_ip + ':' + master_port
     dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
@@ -224,13 +344,10 @@ def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1
         hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
     else:
         hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    self_t = torch.randn(x1_shape, dtype=dtype).npu()
-    x2 = torch.randn(x2_shape, dtype=dtype).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None, x1_scale=None, x2_scale=None, amax_output=amax_output)
-    print(output.shape, output.dtype)
-    # When amax_output is False, an empty Tensor is returned.
-    print(amax)  # torch.Size([0])
+    input = torch.randn(x1_shape, dtype=dtype).npu()
+    weight = torch.randn(x2_shape, dtype=dtype).npu()
+    output = get_graph(input, weight, hcomm_info, world_size)
+    print("output:", output)
 
 if __name__ == "__main__":
     worksize = 2
@@ -239,177 +356,7 @@ if __name__ == "__main__":
     x1_shape = [128, 512]
     x2_shape = [512, 64]
     dtype = torch.float16
-    amax_output = False  # When amax_output is False, an empty Tensor is returned.
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-    amax_output = True  # When amax_output is True, a [1] float32 maximum value result is returned.
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-```
-
-The output is as follows:
-
-```text
-torch.Size([64, 64]) torch.float16
-None
-torch.Size([64, 64]) torch.float16
-None
-
-torch.Size([64, 64]) torch.float16
-torch.Size([64, 64]) torch.float16
-tensor([0.], device='npu:0')
-tensor([0.], device='npu:1')
-```
-
-### Scenario 2: perchannel and pertoken scenario where the data types of `x1` and `x2` are `torch.int8` (amax is not output)
-
-> [!NOTE]
->
-> Scenario 2 with `torch.int8` in the perchannel and pertoken scenarios (<term>Atlas A3 products</term> and <term>Atlas A2 products</term>) is similar: the data types of x1 and x2 are `torch.int8`. In the pertoken scenario, the shape of `x1_scale` is (m, 1), and `x2_scale` is not passed. In the perchannel scenario, the shape of `x2_scale` is (1, n), and `x1_scale` is not passed. The data type of the scale can be `torch.float32` (`x2_scale` in the perchannel scenario also supports `torch.int64`).
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    self_t = torch.randint(-128, 127, x1_shape, dtype=dtype).npu()
-    x2 = torch.randint(-128, 127, x2_shape, dtype=dtype).npu()
-    # pertoken scenario: the shape of x1_scale is (m, 1). perchannel scenario: the shape of x2_scale is (1, n).
-    x1_scale = torch.rand((x1_shape[0], 1), dtype=torch.float32).npu()
-    x2_scale = torch.rand((1, x2_shape[1]), dtype=torch.float32).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size,
-                                                         bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-                                                         amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50002'
-    x1_shape = [128, 512]
-    x2_shape = [512, 64]
-    dtype = torch.int8
-    amax_output = False  # amax is not output in scenario 2.
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-```
-
-The output is as follows:
-
-```text
-torch.Size([64, 64]) torch.float16
-torch.Size([64, 64]) torch.float16
-```
-
-### Scenario 3: perblock scenario where the data types of `x1` and `x2` are `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8` (amax is not output)
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    m, k = x1_shape
-    n = x2_shape[1]
-    self_t = torch.randn(x1_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # perblock scenario: blockSize is 128, and the shapes of the scales are (ceildiv(m, 128), ceildiv(k, 128)) and (ceildiv(k, 128), ceildiv(n, 128)).
-    x1_scale = torch.rand((math.ceil(m / 128), math.ceil(k / 128)), dtype=torch.float32).npu()
-    x2_scale = torch.rand((math.ceil(k / 128), math.ceil(n / 128)), dtype=torch.float32).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
-                                                          x1_scale=x1_scale, x2_scale=x2_scale,
-                                                          amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-    # When amax_output is False, an empty Tensor is returned.
-    print(amax)  # torch.Size([0])
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 128]
-    dtype = torch.float8_e4m3fn
-    amax_output = False  # amax is not output in scenario 3.
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-
-```
-
-The output is as follows:
-
-```text
-torch.Size([64, 128]) torch.float16
-None
-torch.Size([64, 128]) torch.float16
-None
-```
-
-### Scenario 4: MX quantization scenario where the data types of `x1` and `x2` are `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2` (amax is not output, MXFP8 is used as an example)
-
-> [!NOTE]
->
-> In the MXFP4 case of scenario 4 (the data types of x1 and x2 are `torch_npu.float4_e2m1fn_x2`), `x1_dtype` and `x2_dtype` (value `torch_npu.float4_e2m1fn_x2`) and `x1_scale_dtype` and `x2_scale_dtype` (value `torch_npu.float8_e8m0fnu`) must also be passed, and k must be even.
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    m, k = x1_shape   # x1_shape is (m, k)
-    n = x2_shape[1]   # MX quantization supports only transposed input of x2 and x2_scale. After transposition, the shape of x2 is (k, n).
-    self_t = torch.randn(x1_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # MX quantization scenario: the scale data type is float8_e8m0fnu, and the shapes are (m, ceildiv(k, 64), 2) and (ceildiv(k, 64), n, 2).
-    x1_scale = torch.rand((m, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
-    x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
-                                                          x1_scale=x1_scale, x2_scale=x2_scale,
-                                                          amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-    # When amax_output is False, an empty Tensor is returned.
-    print(amax)  # torch.Size([0])
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 256]
-    x2_shape = [256, 64] 
-    dtype = torch.float8_e4m3fn
-    amax_output = False  # amax is not output in scenario 4.
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    mp.spawn(run_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
 ```
 
 The output is as follows:

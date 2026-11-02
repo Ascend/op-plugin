@@ -204,13 +204,6 @@ The shape of the output tensor is `(m // world_size, n)`.
     - `input` data type: `torch.float16` / `torch.bfloat16`
     - Supported: Yes
   <!-- end id31 -->
-  <!-- npu="950" id32 -->
-  - <term>Ascend 950PR&950DT products</term>:
-    - Scenario: Quantization scenario
-    - `comm_mode`: -
-    - `input` data type: -
-    - Supported: No (only the basic scenario is supported)
-  <!-- end id32 -->
 <!-- npu="A3,910b" id33 -->
 - **scale parameter combination constraints** (quantization scenarios, supported only by <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
 

@@ -204,13 +204,6 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
     - `input`数据类型：`torch.float16` / `torch.bfloat16`
     - 是否支持：支持
   <!-- end id31 -->
-  <!-- npu="950" id32 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：
-    - 场景：量化场景
-    - `comm_mode`：- 
-    - `input`数据类型：-
-    - 是否支持：不支持（仅支持基础场景）
-  <!-- end id32 -->
 <!-- npu="A3,910b" id33 -->
 - **scale参数组合约束**（量化场景，仅<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>支持）：
 

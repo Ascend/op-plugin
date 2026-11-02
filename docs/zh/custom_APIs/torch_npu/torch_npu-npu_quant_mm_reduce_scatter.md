@@ -67,7 +67,7 @@
 > <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>默认值为"aiv"。
 > <!-- end id24 -->
 > <!-- npu="950" id25 -->
-> <term>Ascend 950DT系列产品</term>默认值为"ai_cpu"。
+> <term>Ascend 950DT系列产品</term>默认值为None。输入支持"ai_cpu"、"ccu"和None。当为None时，默认使用"ai_cpu"通信。
 > <!-- end id25 -->
 
 ## 函数原型
@@ -136,7 +136,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：perchannel场景shape为(1, n)，数据类型支持`torch.float32`、`torch.int64`（仅在output数据类型为`torch.float16`场景支持）。
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950DT系列产品</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(k, 128), ceildiv(n, 128)]，数据类型支持`torch.float32`；mx量化场景数据类型为`torch.float8_e8m0fnu`，shape跟随`x2`转置/不转置，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。
+  - <term>Ascend 950DT系列产品</term>：pertensor场景shape为[1]，perblock场景shape为[ceildiv(k, 128), ceildiv(n, 128)]，数据类型支持`torch.float32`；mx量化场景（MXFP8和MXFP4）数据类型为`torch.float8_e8m0fnu`，shape跟随`x2`转置/不转置，具体shape要求详见约束说明，仅支持转置带来的非连续Tensor。
   <!-- end id16 -->
 
 - **quant\_scale**（`Tensor`）：可选参数，输出矩阵量化scale。当前仅支持传入None。默认值为None。
@@ -191,7 +191,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - 输入x2\_scale在mx量化场景时为3维，其shape跟随x2转置/不转置，x2转置时x2\_scale的shape为(n, ceildiv(k, 64), 2)，x2不转置时x2\_scale的shape为(ceildiv(k, 64), n, 2)。
   - mx量化场景下，x1和x2输入为`torch_npu.float4_e2m1fn_x2`（MXFP4量化）时，k必须是偶数，当x2不转置时，n也必须是偶数。
   - 支持2、4、8、16、32、64卡。
-  - ReduceScatter集合通信数据总量不能超过16 \* 256MB，集合通信数据总量计算方式为：m \* n \* sizeof(output\_dtype)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+  - ReduceScatter集合通信数据总量不能超过63 \* 256MB，集合通信数据总量计算方式为：m \* n \* sizeof(output\_dtype)。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 <!-- end id21 -->
 <!-- npu="A3,910b" id22 -->
 - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>约束：
@@ -207,14 +207,134 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 
 ## 调用示例
 
-### 场景1：`x1，x2`均为`torch.float16`或`torch.bfloat16`
+- 单算子调用
+  - 非量化输入场景：
+  
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+
+    def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+        self_t = torch.randn(x1_shape, dtype=dtype).npu()
+        x2 = torch.randn(x2_shape, dtype=dtype).npu()
+        output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None, x1_scale=None, x2_scale=None, amax_output=amax_output)
+        print(output.shape, output.dtype)
+
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 512]
+        x2_shape = [512, 64]
+        dtype = torch.float16
+        amax_output = False  # amax_output当前仅支持输入为False
+        mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    ```
+
+    输出如下所示
+
+    ```text
+    torch.Size([64, 64]) torch.float16
+    torch.Size([64, 64]) torch.float16
+    ```
+  
+  - mx量化场景：以`torch.float8_e4m3fn`输入为例
+
+    ```python
+    import torch
+    import torch_npu
+    import torch.distributed as dist
+    import torch.multiprocessing as mp
+    import math
+
+    def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+        torch_npu.npu.set_device(rank)
+        init_method = 'tcp://' + master_ip + ':' + master_port
+        dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
+        from torch.distributed.distributed_c10d import _get_default_group
+        default_pg = _get_default_group()
+        if torch.__version__ > '2.0.1':
+            hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
+        else:
+            hcomm_info = default_pg.get_hccl_comm_name(rank)
+
+        m, k = x1_shape
+        n = x2_shape[1]
+        self_t = torch.randn(x1_shape).to(dtype).npu()
+        x2 = torch.randn(x2_shape).to(dtype).npu()
+        # mx量化场景：x1_scale/x2_scale的数据类型为torch.float8_e8m0fnu，
+        # x1_scale的shape为(m, ceildiv(k, 64), 2)，x2不转置时x2_scale的shape为(ceildiv(k, 64), n, 2)
+        x1_scale = torch.rand((m, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
+        x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
+        output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
+                                                             x1_scale=x1_scale, x2_scale=x2_scale,
+                                                             amax_output=amax_output, y_dtype=torch.float16)
+        print(output.shape, output.dtype)
+
+    if __name__ == "__main__":
+        worksize = 2
+        master_ip = '127.0.0.1'
+        master_port = '50001'
+        x1_shape = [128, 256]
+        x2_shape = [256, 64]  # 不转置场景
+        dtype = torch.float8_e4m3fn
+        amax_output = False  # amax_output当前仅支持输入为False
+        mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    ```
+
+    输出如下所示
+
+    ```text
+    torch.Size([64, 64]) torch.float16
+    torch.Size([64, 64]) torch.float16
+    ```
+
+- 图模式调用
 
 ```python
 import torch
 import torch_npu
 import torch.distributed as dist
 import torch.multiprocessing as mp
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
+
+class MM_REDUCESCATTER_GRAPH_Model(torch.nn.Module):
+    def __init__(self):
+        super().__init__()
+    def forward(self, input, weight, hcomm_info, world_size, reduce_op):
+        output, amax_out = torch_npu.npu_quant_mm_reduce_scatter(input, weight, hcomm_info, world_size,reduce_op=reduce_op)
+        return output
+
+def define_model(model, graph_type):
+    import torchair
+    if graph_type == 1:
+        npu_backend = torchair.get_npu_backend(compiler_config=None)
+        model = torch.compile(model, backend=npu_backend, dynamic=False)
+    elif graph_type == 2:
+        npu_backend = torchair.get_npu_backend(compiler_config=None)
+        model = torch.compile(model, backend=npu_backend, dynamic=True)
+    else:
+        print("Error type")
+    return model
+
+def get_graph(input, weight, hcomm_info, world_size):
+    model = MM_REDUCESCATTER_GRAPH_Model()
+    model = define_model(model, 2)
+    model_output = model(input, weight, hcomm_info, world_size, reduce_op="sum")
+    return model_output
+
+def run_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype):
     torch_npu.npu.set_device(rank)
     init_method = 'tcp://' + master_ip + ':' + master_port
     dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
@@ -224,13 +344,10 @@ def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1
         hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
     else:
         hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    self_t = torch.randn(x1_shape, dtype=dtype).npu()
-    x2 = torch.randn(x2_shape, dtype=dtype).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None, x1_scale=None, x2_scale=None, amax_output=amax_output)
+    input = torch.randn(x1_shape, dtype=dtype).npu()
+    weight = torch.randn(x2_shape, dtype=dtype).npu()
+    output = get_graph(input, weight, hcomm_info, world_size)
     print(output.shape, output.dtype)
-    # amax_output为False时返回空Tensor
-    print(amax)  # torch.Size([0])
 
 if __name__ == "__main__":
     worksize = 2
@@ -239,68 +356,7 @@ if __name__ == "__main__":
     x1_shape = [128, 512]
     x2_shape = [512, 64]
     dtype = torch.float16
-    amax_output = False  # amax_output为False时返回空Tensor
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-    amax_output = True  # amax_output为True时返回[1]的float32最大值结果
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-```
-
-输出如下所示
-
-```text
-torch.Size([64, 64]) torch.float16
-None
-torch.Size([64, 64]) torch.float16
-None
-
-torch.Size([64, 64]) torch.float16
-torch.Size([64, 64]) torch.float16
-tensor([0.], device='npu:0')
-tensor([0.], device='npu:1')
-```
-
-### 场景2：`x1，x2`数据类型为`torch.int8`的perchannel、pertoken场景（不输出amax）
-
-> [!NOTE]
->
-> 场景2中`torch.int8`的perchannel、pertoken场景（<term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>）与此类似：x1、x2数据类型为`torch.int8`，pertoken时`x1_scale`的shape为(m, 1)、`x2_scale`不传；perchannel时`x2_scale`的shape为(1, n)、`x1_scale`不传，scale数据类型支持`torch.float32`（perchannel的`x2_scale`还支持`torch.int64`）。
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    self_t = torch.randint(-128, 127, x1_shape, dtype=dtype).npu()
-    x2 = torch.randint(-128, 127, x2_shape, dtype=dtype).npu()
-    # pertoken场景：x1_scale的shape为(m, 1)；perchannel场景：x2_scale的shape为(1, n)
-    x1_scale = torch.rand((x1_shape[0], 1), dtype=torch.float32).npu()
-    x2_scale = torch.rand((1, x2_shape[1]), dtype=torch.float32).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size,
-                                                         bias=None, x1_scale=x1_scale, x2_scale=x2_scale,
-                                                         amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50002'
-    x1_shape = [128, 512]
-    x2_shape = [512, 64]
-    dtype = torch.int8
-    amax_output = False  # 场景2不输出amax
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
+    mp.spawn(run_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype), nprocs=worksize)
 ```
 
 输出如下所示
@@ -308,115 +364,4 @@ if __name__ == "__main__":
 ```text
 torch.Size([64, 64]) torch.float16
 torch.Size([64, 64]) torch.float16
-```
-
-### 场景3：`x1，x2`数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`的perblock场景（不输出amax）
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    m, k = x1_shape
-    n = x2_shape[1]
-    self_t = torch.randn(x1_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # perblock场景：blockSize为128，scale的shape分别为(ceildiv(m, 128), ceildiv(k, 128))、(ceildiv(k, 128), ceildiv(n, 128))
-    x1_scale = torch.rand((math.ceil(m / 128), math.ceil(k / 128)), dtype=torch.float32).npu()
-    x2_scale = torch.rand((math.ceil(k / 128), math.ceil(n / 128)), dtype=torch.float32).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
-                                                          x1_scale=x1_scale, x2_scale=x2_scale,
-                                                          amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-    # amax_output为False时返回空Tensor
-    print(amax)  # torch.Size([0])
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 512]
-    x2_shape = [512, 128]
-    dtype = torch.float8_e4m3fn
-    amax_output = False  # 场景3不输出amax
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-
-```
-
-输出如下所示
-
-```text
-torch.Size([64, 128]) torch.float16
-None
-torch.Size([64, 128]) torch.float16
-None
-```
-
-### 场景4：`x1，x2`数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`的mx量化场景（不输出amax，以MXFP8为例）
-
-> [!NOTE]
->
-> 场景4的MXFP4场景（x1、x2数据类型为`torch_npu.float4_e2m1fn_x2`）还需额外传入`x1_dtype`、`x2_dtype`（取值为`torch_npu.float4_e2m1fn_x2`）以及`x1_scale_dtype`、`x2_scale_dtype`（取值为`torch_npu.float8_e8m0fnu`），且k须为偶数。
-
-```python
-import torch
-import torch_npu
-import torch.distributed as dist
-import torch.multiprocessing as mp
-import math
-def run_npu_quant_mm_reduce_scatter(rank, world_size, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output):
-    torch_npu.npu.set_device(rank)
-    init_method = 'tcp://' + master_ip + ':' + master_port
-    dist.init_process_group(backend="hccl", rank=rank, world_size=world_size, init_method=init_method)
-    from torch.distributed.distributed_c10d import _get_default_group
-    default_pg = _get_default_group()
-    if torch.__version__ > '2.0.1':
-        hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
-    else:
-        hcomm_info = default_pg.get_hccl_comm_name(rank)
-
-    m, k = x1_shape   # x1_shape为(m, k)
-    n = x2_shape[1]   # mx量化仅支持x2、x2_scale转置输入，x2转置后shape为(k, n)
-    self_t = torch.randn(x1_shape).to(dtype).npu()
-    x2 = torch.randn(x2_shape).to(dtype).npu()
-    # mx量化场景：scale数据类型为float8_e8m0fnu，shape分别为(m, ceildiv(k, 64), 2)、(ceildiv(k, 64), n, 2)
-    x1_scale = torch.rand((m, math.ceil(k / 64), 2)).to(torch.float8_e8m0fnu).npu()
-    x2_scale = torch.rand((math.ceil(k / 64), n, 2)).to(torch.float8_e8m0fnu).npu()
-    output, amax = torch_npu.npu_quant_mm_reduce_scatter(self_t, x2, hcomm_info, world_size, bias=None,
-                                                          x1_scale=x1_scale, x2_scale=x2_scale,
-                                                          amax_output=amax_output, y_dtype=torch.float16)
-    print(output.shape, output.dtype) # (torch.Size([64, 64]), torch.float16)
-    # amax_output为False时返回空Tensor
-    print(amax)  # torch.Size([0])
-
-if __name__ == "__main__":
-    worksize = 2
-    master_ip = '127.0.0.1'
-    master_port = '50001'
-    x1_shape = [128, 256]
-    x2_shape = [256, 64] 
-    dtype = torch.float8_e4m3fn
-    amax_output = False  # 场景4不输出amax
-    mp.spawn(run_npu_quant_mm_reduce_scatter, args=(worksize, master_ip, master_port, x1_shape, x2_shape, dtype, amax_output), nprocs=worksize)
-```
-
-输出如下所示
-
-```text
-torch.Size([64, 64]) torch.float16
-None
-torch.Size([64, 64]) torch.float16
-None
 ```
