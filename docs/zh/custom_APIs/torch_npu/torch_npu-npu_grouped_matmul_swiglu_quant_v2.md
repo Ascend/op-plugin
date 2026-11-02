@@ -211,7 +211,7 @@
          | :-----------: | :--: |
          | `torch.float8_e4m3fn` |  8   |
          | `torch.float8_e5m2`  |  15  |
-         | `torch.float4_e2m1fn_x2`  |  2   |
+         | `torch.float4_e2m1fn_x2`/ `torch_npu.float4_e2m1fn_x2`  |  2   |
          | `torch_npu.float4_e1m2fn_x2`  |  1   |
 
          其中，$blocksize$表示每次量化的元素个数，仅支持32。
@@ -284,7 +284,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持）。其中`torch_npu.hifloat8`和`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`x_dtype`为对应类型，此时输入`x`自身的`dtype`不再生效，但仍需保证输入`x`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴`K`需为偶数，以保证8 bit数据可以转换为2个float4。数据格式支持$ND$。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持）。其中`torch_npu.hifloat8`和`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`x_dtype`为对应类型，此时输入`x`自身的`dtype`不再生效，但仍需保证输入`x`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴`K`需为偶数，以保证8 bit数据可以转换为2个float4。数据格式支持$ND$。
   <!-- end id7 -->
 
 - **`weight`**（`List[Tensor]`）：**必选参数**，权重矩阵（矩阵乘法右矩阵），支持非连续的`Tensor`。
@@ -292,11 +292,11 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`。
     - 数据格式为$ND$时，`shape`支持3维\[e, k, n\]。
-    - 数据格式为$FRACTAL\_NZ$（通过接口`npu_format_cast`可实现格式转换）时，`shape`支持5维。以非转置为例，`torch.float8_e4m3fn`场景的`shape`为\[e, k/32, n/16, 16, 32\]，`torch.float4_e2m1fn_x2`场景的`shape`为\[e, k/64, n/16, 16, 64\]。
+    - 数据格式为$FRACTAL\_NZ$（通过接口`npu_format_cast`可实现格式转换）时，`shape`支持5维。以非转置为例，`torch.float8_e4m3fn`场景的`shape`为\[e, k/32, n/16, 16, 32\]，`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`场景的`shape`为\[e, k/64, n/16, 16, 64\]。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：支持单个`Tensor`（`Tensor`列表长度必须为1）和多个`Tensor`（`Tensor`列表长度为e）。
-    - 数据格式为$ND$时，`shape`支持3维，非转置`shape`为\[\[e, k, n\]\]，转置`shape`为\[\[e, n, k\]\]。数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`，其中`torch_npu.hifloat8`和`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`weight_dtype`为对应类型，此时输入`weight`自身的`dtype`不再生效，但仍需保证输入`weight`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴需为偶数，以保证8 bit数据可以转换为2个float4。
+    - 数据格式为$ND$时，`shape`支持3维，非转置`shape`为\[\[e, k, n\]\]，转置`shape`为\[\[e, n, k\]\]。数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`，其中`torch_npu.hifloat8`和`torch_npu.float4_e1m2fn_x2`系列需配置可选参数`weight_dtype`为对应类型，此时输入`weight`自身的`dtype`不再生效，但仍需保证输入`weight`自身的`dtype`为8 bit数据类型，以保证`shape`正确；其中float4内轴需为偶数，以保证8 bit数据可以转换为2个float4。
     - 数据格式为$FRACTAL\_NZ$（通过接口`npu_format_cast`可实现格式转换）时，单单单场景其中`Tensor`的`shape`支持5维，单多单场景其中`Tensor`的`shape`支持4维；数据类型仅支持`torch.float8_e4m3fn`、`torch_npu.float4_e1m2fn_x2`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`。
   <!-- end id9 -->
 
@@ -306,7 +306,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`shape`支持2维\[\[e, n\]\]，数据类型支持`torch.float32`。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，单多单且`weight`数据格式为$FRACTAL\_NZ$时，其中`Tensor`的`shape`支持3维；其余场景其中`Tensor`的`shape`支持4维。数据类型支持`torch.float8_e8m0fnu`。Pertoken量化场景下，`shape`支持2维，`shape`为\[\[e, n\]\]；当`x`为`torch.int8`时，`weight_scale`需支持`torch.bfloat16`、`torch.float32`、`torch.float16`；当`x`为`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`时，`weight_scale`支持`torch.bfloat16`、`torch.float32`。目前仅支持`Tensor`列表长度为1。
+  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，单多单且`weight`数据格式为$FRACTAL\_NZ$时，其中`Tensor`的`shape`支持3维；其余场景其中`Tensor`的`shape`支持4维。数据类型支持`torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu`。Pertoken量化场景下，`shape`支持2维，`shape`为\[\[e, n\]\]；当`x`为`torch.int8`时，`weight_scale`需支持`torch.bfloat16`、`torch.float32`、`torch.float16`；当`x`为`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`时，`weight_scale`支持`torch.bfloat16`、`torch.float32`。目前仅支持`Tensor`列表长度为1。
   <!-- end id11 -->
 
 - **`x_scale`**（`Tensor`）：**必选参数**，左矩阵的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
@@ -315,7 +315,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，`shape`支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持`torch.float8_e8m0fnu`；Pertoken量化场景下，`shape`支持1维\[m\]，数据类型支持`torch.float32`。
+  - <term>Ascend 950PR&950DT系列产品</term>：MX量化场景下，`shape`支持3维\[m, ceil\(k / 64\), 2\]，数据类型支持`torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu`；Pertoken量化场景下，`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id13 -->
 
 - **`*`**：代表`*`之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -376,7 +376,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：当`x`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`x_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`x`为`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`x_dtype`需要传入`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
   <!-- end id23 -->
 
 - **`weight_dtype`**（`int`）：**可选参数**，指定输入`weight`的真实数据类型。当前仅支持默认值`None`，表示输入`weight`真实的`dtype`。
@@ -385,7 +385,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id24 -->
   <!-- npu="950" id25 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：当`weight`为`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`weight_dtype`需要传入`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`weight`为`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`时，`weight_dtype`需要传入`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch_npu.hifloat8`。
   <!-- end id25 -->
 
 - **`weight_scale_dtype`**（`int`）：**可选参数**，指定输入`weight_scale`的真实数据类型。默认值为`None`，表示输入`weight_scale`真实的`dtype`。
@@ -394,7 +394,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id26 -->
   <!-- npu="950" id27 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：当`weight_scale`为`torch.float8_e8m0fnu`时，`weight_scale_dtype`需要传入`torch_npu.float8_e8m0fnu`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`weight_scale`为`torch_npu.float8_e8m0fnu`时，`weight_scale_dtype`需要传入`torch_npu.float8_e8m0fnu`。
   <!-- end id27 -->
 
 - **`x_scale_dtype`**（`int`）：**可选参数**，指定输入`x_scale`的真实数据类型。默认值为`None`，表示输入`x_scale`真实的`dtype`。
@@ -403,7 +403,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值。
   <!-- end id28 -->
   <!-- npu="950" id29 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：当`x_scale`为`torch.float8_e8m0fnu`时，`x_scale_dtype`需要传入`torch_npu.float8_e8m0fnu`。
+  - <term>Ascend 950PR&950DT系列产品</term>：当`x_scale`为`torch_npu.float8_e8m0fnu`时，`x_scale_dtype`需要传入`torch_npu.float8_e8m0fnu`。
   <!-- end id29 -->
 
 ## 返回值说明
@@ -414,7 +414,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`，`shape`支持2维\[m, n / 2\]。
   <!-- end id30 -->
   <!-- npu="950" id31 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持），`shape`支持2维\[m, n / 2\]。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`、`torch.int8`、`torch_npu.hifloat8`、`torch_npu.float4_e1m2fn_x2`（仅`weight`为$FRACTAL\_NZ$格式时支持），`shape`支持2维\[m, n / 2\]。
   <!-- end id31 -->
 
 - **`output_scale`**（`Tensor`）：输出的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
@@ -424,7 +424,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   <!-- end id32 -->
   <!-- npu="950" id33 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - MX量化场景：数据类型支持`torch.float8_e8m0fnu`，`shape`支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。
+    - MX量化场景：数据类型支持`torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu`，`shape`支持3维\[m, ceil\(\(n / 2\) / 64\), 2\]。
     - Pertoken量化场景：`shape`支持1维\[m\]，数据类型支持`torch.float32`。
   <!-- end id33 -->
 
@@ -438,9 +438,6 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - WeightNZ场景说明（仅适用于Ascend 950PR&950DT系列产品）：
   - MXFP4、MXFP8场景支持静态图模式，不支持动态图模式。
   - 单多单MXFP4、MXFP8场景支持单算子模式，不支持图模式。
-  - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为2对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为4对齐。
-  - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为64对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为128对齐。
-  - MXFP4场景不支持k=2，MXFP4场景需满足K为偶数。
 <!-- end id34 -->
 
 <!-- npu="950" id49 -->
@@ -455,14 +452,6 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - e：表示分组数目，取值范围为1-1024。
   - m：输出矩阵output的倒数第二维大小，取值范围为1-2147483647。
   - n：输出矩阵output的倒数第一维大小的两倍，取值范围为1-2147483647。
-
-    <!-- npu="950" id48 -->
-    MX量化场景下要求（仅适用于Ascend 950PR&950DT系列产品）：
-
-    - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为2对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为4对齐。
-    - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足`n`为64对齐；当输入为`torch.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足`n`为128对齐。
-    <!-- end id48 -->
-
   - k：矩阵乘法reduce轴的大小，取值范围为1-2147483647。
 
 - 输入和输出Tensor支持的数据类型组合如下：
@@ -480,19 +469,19 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
     | 量化模式 | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-    | MXFP8量化（ND格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` |
-    | MXFP4量化（ND格式） | `torch.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` |
-     | MXFP4量化（ND格式） | `torch.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` |
-    | MXFP8量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch.float8_e8m0fnu` |
-    | MXFP4量化（FRACTAL_NZ格式） | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float4_e2m1fn_x2`/`torch.float8_e4m3fn`/`torch_npu.float4_e1m2fn_x2` | `torch.float8_e8m0fnu` |
+    | MXFP8量化（ND格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
+    | MXFP4量化（ND格式） | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
+     | MXFP4量化（ND格式） | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
+    | MXFP8量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
+    | MXFP4量化（FRACTAL_NZ格式） | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`/`torch.float8_e4m3fn`/`torch_npu.float4_e1m2fn_x2` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
     | Pertoken量化 | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.int8` | `torch.float32` |
     | Pertoken量化 | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.hifloat8` | `torch.float32` |
     | Pertoken量化（ND格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` |
     | Pertoken量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` |
-    | MxFP8FP4量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch.float8_e8m0fnu` |
+    | MxFP8FP4量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
 
     > **MxA8W4场景**：
-    > - `x`数据类型为`torch.float8_e4m3fn`，`weight`数据类型为`torch.float4_e2m1fn_x2`。`weight`数据格式要求$FRACTAL\_NZ$格式，可通过`torch_npu.npu_format_cast`接口实现$ND$转$FRACTAL\_NZ$格式。`k`要求32对齐，N要求128对齐。
+    > - `x`数据类型为`torch.float8_e4m3fn`，`weight`数据类型为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`。`weight`数据格式要求$FRACTAL\_NZ$格式，可通过`torch_npu.npu_format_cast`接口实现$ND$转$FRACTAL\_NZ$格式。`k`要求32对齐，N要求128对齐。
     > - 支持单单单和单多单场景。
     <!-- end id45 -->
 
@@ -516,6 +505,10 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     | 单单单 | MxFP8FP4量化（FRACTAL_NZ格式） | (m, k) | 转置shape形如{(e, k/32, n/16,16, 32)} | 转置shape形如{(e, n, ceil(k / 64), 2)} | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
     | 单多单 | MXFP8量化（FRACTAL_NZ格式） | (m, k) | <li>非转置shape形如{e个(n/32, k/16, 16, 32)}</li><li>转置shape形如{e个(k/32, n/16,16, 32)}</li> | <li>非转置shape形如{e个(ceil(k / 64), n, 2)}</li><li>转置shape形如{e个(n, ceil(k / 64), 2)}</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
     | 单多单 | MXFP4量化（FRACTAL_NZ格式） | (m, k) | <li>非转置shape形如{e个(n/64, k/16, 16, 64)}</li><li>转置shape形如{e个(k/64, n/16,16, 64)}</li> | <li>非转置shape形如{e个(ceil(k / 64), n, 2)}</li><li>转置shape形如{e个(n, ceil(k / 64), 2)}</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
+
+    - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为2对齐；当输入为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为4对齐。
+    - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为64对齐；当输入为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为128对齐。
+    - MXFP4场景不支持k=2，MXFP4场景需满足K为偶数。
 <!-- end id46 -->
 
 ## 调用示例
@@ -643,7 +636,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         xScale, groupList,
         dequant_mode=0,
         quant_mode=0,
-        quant_dtype=torch_npu.float8_e5m2,
+        quant_dtype=torch.float8_e5m2,
         dequant_dtype=torch.float,
         group_list_type=1)
     print("y.shape: ", y.shape)
