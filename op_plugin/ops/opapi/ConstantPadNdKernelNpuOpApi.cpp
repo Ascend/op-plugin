@@ -81,8 +81,8 @@ at::Tensor constant_pad_nd(const at::Tensor& self, at::IntArrayRef pad, const at
   // construct the output tensor of the NPU
   at::Tensor result = npu_preparation::apply_tensor_without_format(self, new_shape);
 
-  // Return the padded empty result directly when the input tensor is empty.
-  if (self.numel() == 0) {
+  // Return the padded result directly when the INPUT or OUTPUT tensor is empty
+  if (self.numel() == 0 || result.numel() == 0) {
     op_api::fill_(result, value);
     return result;
   }
