@@ -124,6 +124,20 @@ class TestRepeatInterleave(TestCase):
         npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), input2)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_repeat_interleave_int_without_dim(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.float32)
+        input2 = 2
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, input2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), input2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_1d(self):
+        cpu_input1 = self.generate_data(0, 100, (7,), np.float32)
+        input2 = 3
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, input2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), input2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
     def cpu_op_exec_repeats_only(self, repeats):
         output = torch.repeat_interleave(repeats)
         output = output.numpy()
