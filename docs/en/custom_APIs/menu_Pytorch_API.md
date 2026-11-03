@@ -1,4 +1,4 @@
-# Custom API Reference
+# Custom APIs
 
 - [Overview](./overview.md)
 - [Python APIs<a npu_parse_enabled="true"></a>](./Python_interface.md)
