@@ -15,6 +15,18 @@ _TORCH_HAS_NAMED_TENSOR = hasattr(torch.Tensor, "refine_names")
 
 
 class TestKthvalues(TestCase):
+    def assert_indices_select_values(self, x, values, indices, dim, keepdim):
+        self.assertEqual(indices.dtype, np.dtype(np.int64))
+        self.assertEqual(indices.shape, values.shape)
+        index = torch.from_numpy(indices)
+        if not keepdim:
+            index = index.unsqueeze(dim)
+        selected = torch.gather(x, dim, index)
+        if not keepdim:
+            selected = selected.squeeze(dim)
+        # Tied k-th values may have different valid indices on CPU and NPU.
+        self.assertTrue(torch.equal(selected, torch.from_numpy(values)))
+
     def generate_data(self, min1, max1, shape, dtype):
         if dtype == np.float32:
             x = np.random.uniform(min1, max1, shape).astype(np.float16)
@@ -92,15 +104,6 @@ class TestKthvalues(TestCase):
         self.assertRtolEqual(cpu_y, npu_y)
         self.assertRtolEqual(cpu_indices.astype(np.int32), npu_indices.astype(np.int32))
 
-    # kthvalue's index tiebreak differs between CPU and Ascend when the k-th
-    # value has duplicates. Both indices are valid k-th positions (they point
-    # to elements with the correct value), just to a different one of the tied
-    # entries. The input distributions used below are dense with duplicates
-    # (int32 in a 200-wide range over 360 elements; float16 with 3-digit
-    # precision), so the strict index equality below is unreliable. Skip until
-    # we either restrict inputs to a duplicate-free regime or relax the
-    # indices comparison to check `x[indices] == y` instead of exact match.
-    @unittest.skip("kthvalue indices tiebreak differs between CPU and NPU on duplicated k-th values")
     def test_kthvalues_without_dim(self):
         x = self.generate_data(-100, 100, (3, 4, 5, 6), np.int32)
         k = self.generate_int_k(3)
@@ -108,9 +111,8 @@ class TestKthvalues(TestCase):
         cpu_y, cpu_indices = self.cpu_op_exec_without_dim(x, k, keepdim)
         npu_y, npu_indices = self.npu_op_exec_without_dim(x, k, keepdim)
         self.assertRtolEqual(cpu_y, npu_y)
-        self.assertRtolEqual(cpu_indices.astype(np.int32), npu_indices.astype(np.int32))
+        self.assert_indices_select_values(x, npu_y, npu_indices, -1, keepdim)
 
-    @unittest.skip("kthvalue indices tiebreak differs between CPU and NPU on duplicated k-th values")
     def test_kthvalues_without_keepdim(self):
         x = self.generate_data(-100, 100, (3, 4, 5, 6), np.float16)
         k = self.generate_int_k(3)
@@ -118,7 +120,19 @@ class TestKthvalues(TestCase):
         cpu_y, cpu_indices = self.cpu_op_exec_without_keepdim(x.float(), k, dim)
         npu_y, npu_indices = self.npu_op_exec_without_keepdim(x, k, dim)
         self.assertRtolEqual(cpu_y.astype(np.float16), npu_y)
-        self.assertRtolEqual(cpu_indices.astype(np.int32), npu_indices.astype(np.int32))
+        self.assert_indices_select_values(x, npu_y, npu_indices, dim, False)
+
+    def test_kthvalues_duplicate_values(self):
+        for dtype in (torch.int32, torch.float16):
+            x = torch.tensor([[1, 1, 2], [3, 3, 4]], dtype=dtype)
+            for dim in (0, 1, -1, -2):
+                for keepdim in (False, True):
+                    for k in range(1, x.size(dim) + 1):
+                        with self.subTest(dtype=dtype, dim=dim, keepdim=keepdim, k=k):
+                            cpu_y, _ = self.cpu_op_exec(x.float(), k, dim, keepdim)
+                            npu_y, npu_indices = self.npu_op_exec(x, k, dim, keepdim)
+                            self.assertRtolEqual(cpu_y.astype(x.numpy().dtype), npu_y)
+                            self.assert_indices_select_values(x, npu_y, npu_indices, dim, keepdim)
 
     def test_kthvalues_out(self):
         x = self.generate_data(-100, 100, (3, 4, 5, 6), np.float32)
