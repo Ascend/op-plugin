@@ -3,10 +3,6 @@ name: Build Job
 on:
   workflow_call:
     inputs:
-      py_version:
-        required: false
-        type: string
-        default: ${{ '3.10' }}
       REMOTE_URL:
         required: false
         type: string
@@ -52,6 +48,12 @@ jobs:
           TARGET_BRANCH="${{ inputs.TARGET_BRANCH }}"
           echo "TARGET_BRANCH=${TARGET_BRANCH}"
           echo "PYTORCH_BRANCH=${PYTORCH_BRANCH}"
+          if [ "${PYTORCH_BRANCH}" = "master" ] || [ "${PYTORCH_BRANCH}" = "v2.15.0" ]; then
+            PY_VERSION="3.11"
+          else
+            PY_VERSION="3.10"
+          fi
+          echo "py_version=${PY_VERSION}" >> "$ATOMGIT_OUTPUT"
           if [ "${TARGET_BRANCH}" = "master" ]; then
             echo "master branch, build all versions"
             echo "need_build=yes" >> "$ATOMGIT_OUTPUT"
@@ -90,6 +92,8 @@ jobs:
         if: ${{ steps.check_support.outputs.need_build == 'yes' && inputs.pytorch_branch == 'master' }}
         run: |
           ARCH="${{ inputs.runs_on_arch }}"
+          PY_VERSION="${{ steps.check_support.outputs.py_version }}"
+          PY_TAG="${PY_VERSION//./}"
           if [ "${ARCH}" = "x64" ] || [ "${ARCH}" = "x86" ]; then
             TORCH_ARCH="x86_64"
           elif [ "${ARCH}" = "arm64" ] || [ "${ARCH}" = "arm" ]; then
@@ -111,9 +115,9 @@ jobs:
             url_base="https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}"
           fi
 
-          torch_url="${url_base}/torch-${ver}%2Bcpu-cp310-cp310-manylinux_2_28_${TORCH_ARCH}.whl"
+          torch_url="${url_base}/torch-${ver}%2Bcpu-cp${PY_TAG}-cp${PY_TAG}-manylinux_2_28_${TORCH_ARCH}.whl"
           echo "torch_url=${torch_url}"
-          pip3.10 install $torch_url
+          pip${PY_VERSION} install $torch_url
 
       - name: checkout
         if: ${{ steps.check_support.outputs.need_build == 'yes' }}
@@ -130,7 +134,7 @@ jobs:
           source cie/.gitcode/workflows/scripts/ccache_env.sh
           export CCACHE_BASEDIR="${ATOMGIT_WORKSPACE}"/build/pytorch
           export OMP_NUM_THREADS=32
-          bash ci/build.sh --python=3.10 --pytorch=${{ steps.check_support.outputs.pytorch_build_branch }}
+          bash ci/build.sh --python=${{ steps.check_support.outputs.py_version }} --pytorch=${{ steps.check_support.outputs.pytorch_build_branch }}
           ls -al
           ccache -p -V -s
 

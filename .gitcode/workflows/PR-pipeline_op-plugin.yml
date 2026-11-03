@@ -23,7 +23,7 @@ env:
   pr_id: ${{ atomgit.event.pull_request.number }}
   TARGET_BRANCH: ${{ atomgit.event.pull_request.base.ref }}
   org_name: "Ascend"
-  img_master_arm: "pytorch_master_a2_aarch64_builder:20260922"
+  img_master_arm: "pytorch_master_a2_aarch64_test:20261018"
   img_2_10_0_arm: "pytorch_2.10.0_a2_aarch64_builder:20260804"
   img_2_11_0_arm: "pytorch_2.11.0_a2_aarch64_builder:20260804"
   img_2_12_0_arm: "pytorch_2.12.0_a2_aarch64_builder:20260804"
@@ -218,7 +218,7 @@ stages:
                 img: "pytorch_2.12.0_a1_x86_64_builder:20260704"
               - branch: "master"
                 arch: "arm"
-                img: "pytorch_master_a2_aarch64_builder:20260922"
+                img: "pytorch_master_a2_aarch64_test:20261018"
               - branch: "v2.10.0"
                 arch: "arm"
                 img: "pytorch_2.10.0_a2_aarch64_builder:20260804"
@@ -246,11 +246,11 @@ stages:
           matrix:
             include:
               - branch: "master"
-                img: "pytorch_master_a2_aarch64_builder:20260922"
+                img: "pytorch_master_a2_aarch64_test:20261018"
                 TEST_RANK: "1"
                 TEST_WORLD_SIZE: "2"
               - branch: "master"
-                img: "pytorch_master_a2_aarch64_builder:20260922"
+                img: "pytorch_master_a2_aarch64_test:20261018"
                 TEST_RANK: "2"
                 TEST_WORLD_SIZE: "2"
               - branch: "v2.10.0"

@@ -36,19 +36,21 @@ function torch_install_other() {
 }
 
 function torch_install_master() {
+    py_tag=${py_version//./}
     if [ "${ARCH}" == "x86_64" ]; then
-        wget --no-check-certificate --no-verbose -P ${WORKSPACE} https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}/torch-${nightly_version}%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl
+        wget --no-check-certificate --no-verbose -P ${WORKSPACE} https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}/torch-${nightly_version}%2Bcpu-cp${py_tag}-cp${py_tag}-manylinux_2_28_x86_64.whl
     elif [ "${ARCH}" == "aarch64" ]; then
-        wget --no-check-certificate --no-verbose -P ${WORKSPACE} https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}/torch-${nightly_version}%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl
+        wget --no-check-certificate --no-verbose -P ${WORKSPACE} https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/master/${nightly_date}/torch-${nightly_version}%2Bcpu-cp${py_tag}-cp${py_tag}-manylinux_2_28_aarch64.whl
     fi
 }
 
 function torch_install_master_2() {
     test_version=${nightly_version:0:6}
+    py_tag=${py_version//./}
     if [ "${ARCH}" == "x86_64" ]; then
-        wget --no-check-certificate --no-verbose -P "${WORKSPACE}" https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${test_version}/torch-${test_version}%2Bcpu-cp310-cp310-manylinux_2_28_x86_64.whl
+        wget --no-check-certificate --no-verbose -P "${WORKSPACE}" https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${test_version}/torch-${test_version}%2Bcpu-cp${py_tag}-cp${py_tag}-manylinux_2_28_x86_64.whl
     elif [ "${ARCH}" == "aarch64" ]; then
-        wget --no-check-certificate --no-verbose -P "${WORKSPACE}" https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${test_version}/torch-${test_version}%2Bcpu-cp310-cp310-manylinux_2_28_aarch64.whl
+        wget --no-check-certificate --no-verbose -P "${WORKSPACE}" https://pytorch-package.obs.cn-north-4.myhuaweicloud.com/pta/torch/v${test_version}/torch-${test_version}%2Bcpu-cp${py_tag}-cp${py_tag}-manylinux_2_28_aarch64.whl
     fi
 }
 
@@ -59,7 +61,7 @@ function torch_npu_install() {
 }
 
 function main() {
-    pip"${py_version}" install https://mirrors.huaweicloud.com/ascend/repos/pypi/triton-ascend/triton_ascend-3.2.2-cp310-cp310-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
+    pip"${py_version}" install https://mirrors.huaweicloud.com/ascend/repos/pypi/triton-ascend/triton_ascend-3.2.2-cp${py_version//./}-cp${py_version//./}-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl
     cd ${WORKSPACE}
     rm -rf "${python_path}"/lib/python"${py_version}"/site-packages/torch
     rm -rf "${python_path}"/lib/python"${py_version}"/site-packages/~orch
@@ -80,7 +82,7 @@ function main() {
 
     if [ ${pytorch_version:0:6} == "v2.1.0" ] || [ ${pytorch_version:0:6} == "v2.6.0" ] || [ ${pytorch_version:0:6} == "v2.7.1" ] || [ ${pytorch_version:0:6} == "v2.8.0" ] || [ ${pytorch_version:0:6} == "v2.9.0" ]; then
         torch_install_other "${pytorch_version:1:5}" "${py_version//./}"
-    elif [ ${pytorch_version:0:7} == "v2.10.0" ] || [ ${pytorch_version:0:7} == "v2.11.0" ]|| [ ${pytorch_version:0:7} == "v2.12.0" ] ; then
+    elif [ ${pytorch_version:0:7} == "v2.10.0" ] || [ ${pytorch_version:0:7} == "v2.11.0" ]|| [ ${pytorch_version:0:7} == "v2.12.0" ] || [ ${pytorch_version:0:7} == "v2.15.0" ] ; then
         torch_install_other "${pytorch_version:1:6}" "${py_version//./}"
     elif [ "${pytorch_version}" = "master" ]; then
         bash ${WORKSPACE}/cie/.gitcode/workflows/scripts/common/retry_command.sh "rm -rf ${WORKSPACE}/tmp_pytorch && git clone --depth=1 https://gitcode.com/Ascend/pytorch.git ${WORKSPACE}/tmp_pytorch"

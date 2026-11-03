@@ -3,10 +3,6 @@ name: UT Job
 on:
   workflow_call:
     inputs:
-      py_version:
-        required: false
-        type: string
-        default: "3.10"
       REMOTE_URL:
         required: false
         type: string
@@ -61,6 +57,12 @@ jobs:
           PYTORCH_BRANCH="${{ inputs.pytorch_branch }}"
           echo "TARGET_BRANCH=${TARGET_BRANCH}"
           echo "PYTORCH_BRANCH=${PYTORCH_BRANCH}"
+          if [ "${PYTORCH_BRANCH}" = "master" ] || [ "${PYTORCH_BRANCH}" = "v2.15.0" ]; then
+            PY_VERSION="3.11"
+          else
+            PY_VERSION="3.10"
+          fi
+          echo "py_version=${PY_VERSION}" >> "$ATOMGIT_OUTPUT"
           if [ "${TARGET_BRANCH}" = "master" ]; then
             echo "master branch, build all versions"
             echo "need_ut=yes" >> "$ATOMGIT_OUTPUT"
@@ -112,4 +114,4 @@ jobs:
           # 将 download-artifact 下载的构建产物拷回工作目录供 UT 脚本使用
           cp -rf ../output/${{ inputs.pr_id }}/* ./
           ls ${ATOMGIT_WORKSPACE}
-          bash cie/.gitcode/workflows/scripts/UT/op-plugin_ut_general.sh ${{ inputs.pytorch_branch }} ${{ inputs.py_version }} ${{ inputs.pr_id }} ${ATOMGIT_WORKSPACE} ${{ atomgit.event.pull_request.base.ref }}
+          bash cie/.gitcode/workflows/scripts/UT/op-plugin_ut_general.sh ${{ inputs.pytorch_branch }} ${{ steps.check_support.outputs.py_version }} ${{ inputs.pr_id }} ${ATOMGIT_WORKSPACE} ${{ atomgit.event.pull_request.base.ref }}
