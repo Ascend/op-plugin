@@ -52,3 +52,22 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 - **f** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
 - **o** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
 - **tanhct** (`Tensor`)：4D张量。数据类型支持`torch.float16`，`torch.float32`。当train=True（训练模式）时，格式为FRACTAL_NZ；当train=False（推理模式）时，格式为ND。
+
+## 调用示例
+
+```python
+>>> import torch
+>>> import torch_npu
+>>> input_size, hidden_size, batch_size, seq_length = 10, 5, 3, 5
+>>> x = torch_npu.npu_format_cast(torch.rand(seq_length, batch_size, input_size).npu(), 29).half()
+>>> weight_ih = torch_npu.npu_format_cast(torch.rand(input_size, 4 * hidden_size).npu(), 2).half()
+>>> weight_hh = torch_npu.npu_format_cast(torch.rand(hidden_size, 4 * hidden_size).npu(), 2).half()
+>>> weight = torch.cat((weight_ih, weight_hh), 0)
+>>> bias = torch_npu.npu_format_cast(torch.rand(4 * hidden_size).npu(), 2).half()
+>>> seq_mask = torch.tensor(seq_length, dtype=torch.int32).npu()
+>>> h = torch_npu.npu_format_cast(torch.rand(1, batch_size, hidden_size).npu(), 29).half()
+>>> c = torch_npu.npu_format_cast(torch.rand(1, batch_size, hidden_size).npu(), 29).half()
+>>> y, output_h, output_c, i, j, f, o, tanhct = torch_npu.npu_lstm(
+...     x, weight, bias, seq_mask, h, c, True, 1, 0.0, True, False, False, False, False)
+>>> print(y.shape, output_h.shape, output_c.shape)
+```

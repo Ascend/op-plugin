@@ -33,3 +33,19 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 ## 约束说明
 
 不支持动态shape。
+
+## 调用示例
+
+```python
+>>> import torch
+>>> import torch.nn as nn
+>>> import torch_npu
+>>> from torch_npu.contrib import NpuFairseqDropout
+>>> dropout = NpuFairseqDropout(0.5)
+>>> model = nn.Sequential(dropout).npu()
+>>> NpuFairseqDropout.enable_dropout_ensemble(model)
+>>> x = torch.randn(2, 3, 4, 4).npu()
+>>> _ = model(x)
+>>> output = model(x)
+>>> print(output.shape)
+```
