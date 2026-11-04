@@ -289,7 +289,7 @@
     \end{cases}
     $$
 
-  * This sampling process is based on `aclnnMultinomial`. For details, see <https://gitcode.com/cann/ops-math/blob/9.2.0/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>.
+  * This sampling process is based on `aclnnMultinomial`. For details, see <https://www.hiascend.com/en-sg/document/detail/en/CANNCommunityEdition/920/API/aolapi/context/ops-math/aclnnMultinomial.md>.
 
   * When called through TorchNPU, built-in values are used as the default sampling seed and offset. For details, see <https://gitcode.com/Ascend/op-plugin/blob/26.2.0/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>.
 

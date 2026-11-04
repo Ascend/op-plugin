@@ -14,7 +14,7 @@
 
 - Formulas:
 
-    The formula for the mx quantization scenario is as follows. For more information about quantization technologies, see [Quantization Introduction](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/en/context/quant_mode_introduction.md) in the *CANN Operator Library*.
+    The formula for the mx quantization scenario is as follows. For more information about quantization technologies, see [Quantization Introduction](https://www.hiascend.com/en-sg/document/detail/en/CANNCommunityEdition/920/API/aolapi/context/common/quant_mode_introduction.md) in the *CANN Operator Library*.
 
     ![](../../figures/en-us_formulaimage_0000002521244910.png)
 

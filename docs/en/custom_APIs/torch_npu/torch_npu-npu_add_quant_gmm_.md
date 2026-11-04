@@ -17,7 +17,7 @@
 
 - **Formulas**:
 
-  The formulas for different quantization scenarios are as follows. For more information about quantization, see [Quantization](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/en/context/quant_mode_introduction.md) in the *CANN Operator Library*.
+  The formulas for different quantization scenarios are as follows. For more information about quantization, see [Quantization Introduction](https://www.hiascend.com/en-sg/document/detail/en/CANNCommunityEdition/920/API/aolapi/context/common/quant_mode_introduction.md) in the *CANN Operator Library*.
 
   - T-T/T-C quantization scenario:
 

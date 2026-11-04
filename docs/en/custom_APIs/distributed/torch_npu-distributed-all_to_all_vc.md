@@ -6,7 +6,7 @@
 ## Supported Products
 
 <!-- npu="910b" id1 -->
-- <term>Atlas A2 training products/Atlas 800I A2 inference server</term>: Supported
+- <term>Atlas A2 training products/Atlas 800I A2</term>: Supported
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
 - <term>Atlas A3 products</term>: Supported

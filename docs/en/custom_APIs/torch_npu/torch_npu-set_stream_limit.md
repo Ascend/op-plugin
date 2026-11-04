@@ -59,7 +59,7 @@ Represents no return value.
 **Core control example**
 
 1. Use the Ascend PyTorch Profiler API to collect performance data, including PyTorch layer operator information, CANN layer operator information, underlying NPU operator information, and operator memory usage information.
-   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. By adding the Ascend PyTorch Profiler API (the torch_npu.profiler.profile API is recommended) to a PyTorch script, the specified metric data is collected, and performance data is collected synchronously during model execution. For details about the usage and the result files, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Tuning Tool</a>.
+   > **Note**: Ascend PyTorch Profiler is a performance analysis tool developed by CANN for the PyTorch framework. By adding the Ascend PyTorch Profiler API (the torch_npu.profiler.profile API is recommended) to a PyTorch script, the specified metric data is collected, and performance data is collected synchronously during model execution. For details about the usage and the result files, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>.
 
      ```python
      >>> import torch

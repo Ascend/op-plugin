@@ -65,7 +65,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     |torch_npu.Format.NCL|47|3D data layout format. The corresponding AscendCL data layout format is `ACL_FORMAT_NCL`.|
 
     > [!NOTE]
-    > For details about data layouts, see the <a href="https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">Data Layout</a> section in *CANN Ascend C Operator Development*.
+    > For details about the data layout formats, see the "<a href="https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/en/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">Data Layout Formats</a>" section in the *CANN Ascend C Operator Development* guide.
 
 <!-- npu="950,A3,910b" id15 -->
 - **`customize_dtype`** (`int`): Optional. Target data type for the layout conversion. This parameter can control the C0 value. The default value is `None`. The default C0 value of the `torch.float32` and `torch.int32` data types is 16, and the default C0 value of the `torch.int8` data type is 32.

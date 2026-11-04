@@ -9,7 +9,7 @@
 - <term>Ascend 950DT products</term>: Supported
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term>Atlas A2 training products/Atlas 800I A2 inference server</term>: Supported
+- <term>Atlas A2 training products/Atlas 800I A2</term>: Supported
 <!-- end id2 -->
 <!-- npu="310p" id3 -->
 - <term>Atlas inference products</term>: Supported

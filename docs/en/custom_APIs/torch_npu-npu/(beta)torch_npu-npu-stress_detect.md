@@ -42,7 +42,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
     - `2`: Online precision detection failed due to a hardware fault.
 
-- If the following exception occurs, voltage recovery has failed. Refer to ["Comprehensive Check"](https://gitcode.com/cann/oam-tools/blob/9.2.0/docs/en/asys/comprehensive_detection.md) in *CANN Troubleshooting* to manually restore the voltage, or reboot the system.
+- If the following exception occurs, voltage recovery has failed. Refer to ["Comprehensive Detection"](https://gitcode.com/cann/oam-tools/blob/9.2.0/docs/en/asys/comprehensive_detection.md) in *CANN Troubleshooting* to manually restore the voltage, or reboot the system.
 
     ```shell
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.

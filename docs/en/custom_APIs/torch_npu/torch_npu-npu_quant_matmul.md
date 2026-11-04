@@ -24,7 +24,7 @@
 
 - Formulas:
 
-  In the formula, x1Scale, x2Scale, and yScale correspond to the parameters `pertoken_scale`, `scale`, and `y_scale`, respectively. x2Offset and yOffset are both provided by the parameter `offset`, and the specific meaning is determined by the quantization scenario. For details about quantization modes, see [Quantization Introduction](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/en/context/quant_mode_introduction.md) in the *CANN Operator Library*.
+  In the formula, x1Scale, x2Scale, and yScale correspond to the parameters `pertoken_scale`, `scale`, and `y_scale`, respectively. x2Offset and yOffset are both provided by the parameter `offset`, and the specific meaning is determined by the quantization scenario. For details about quantization modes, see [Quantization Introduction](https://www.hiascend.com/en-sg/document/detail/en/CANNCommunityEdition/920/API/aolapi/context/common/quant_mode_introduction.md) in the *CANN Operator Library*.
 
   <!-- npu="A3,910b" id5 -->
   - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:

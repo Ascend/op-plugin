@@ -32,7 +32,7 @@ torch_npu.profiler.dynamic_profile.init(path: str)
 
 **`path`** (`str`): Required. Specifies the path where `dynamic_profile` automatically creates the template file `profiler_config.json`. You can modify configuration items based on this template file. The path can contain only letters, digits, underscores, and hyphens. Symbolic links are not supported.
 
-For details about the `profiler_config.json` file, see "<a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/ascend_pytorch_profiler/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>".
+For details about the `profiler_config.json` file, see "<a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch Profiler</a>".
 
 ## Return Values
 

@@ -23,7 +23,7 @@
 
 ## Function
 
-Queries the ACLNN operator version information. For details about ACLNN operators, see the "<a href="https://gitcode.com/cann/docs/blob/9.2.0/docs/en/ops-lib/introduction.md">Introduction</a>" section in the *CANN Operator Library*.
+Queries the ACLNN operator version information. For details about ACLNN operators, see the "<a href="https://www.hiascend.com/en-sg/document/detail/en/CANNCommunityEdition/920/API/aolapi/operatorlist_00001.html">Introduction</a>" section in the *CANN Operator Library*.
 
 ## Prototype
 
