@@ -138,6 +138,66 @@ class TestRepeatInterleave(TestCase):
         npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), input2)
         self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_repeat_interleave_int_dim0(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.float32)
+        cpu_output = self.cpu_op_exec(cpu_input1, 2, 0)
+        npu_output = self.npu_op_exec(cpu_input1.npu(), 2, 0)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_dim1(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.float32)
+        cpu_output = self.cpu_op_exec(cpu_input1, 2, 1)
+        npu_output = self.npu_op_exec(cpu_input1.npu(), 2, 1)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_dim_neg1(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.float32)
+        cpu_output = self.cpu_op_exec(cpu_input1, 2, -1)
+        npu_output = self.npu_op_exec(cpu_input1.npu(), 2, -1)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_dim0_2d(self):
+        cpu_input1 = self.generate_data(0, 100, (4, 5), np.float32)
+        cpu_output = self.cpu_op_exec(cpu_input1, 3, 0)
+        npu_output = self.npu_op_exec(cpu_input1.npu(), 3, 0)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_2d(self):
+        cpu_input1 = self.generate_data(0, 100, (4, 5), np.float32)
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, 2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), 2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_float16(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.float16)
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, 2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), 2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_int32(self):
+        cpu_input1 = self.generate_data(0, 100, (3, 3, 3), np.int32)
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, 2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), 2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_output_size(self):
+        cpu_input1 = self.generate_data(0, 100, (8, 8), np.float32)
+        cpu_output = torch.repeat_interleave(cpu_input1, 2, output_size=128).numpy()
+        npu_output = torch.repeat_interleave(cpu_input1.npu(), 2, output_size=128).cpu().numpy()
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_0d(self):
+        cpu_input1 = torch.tensor(3, dtype=torch.float32)
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, 5)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), 5)
+        self.assertRtolEqual(cpu_output, npu_output)
+
+    def test_repeat_interleave_int_without_dim_empty(self):
+        cpu_input1 = torch.empty(0, dtype=torch.float32)
+        cpu_output = self.cpu_op_exec_without_dim(cpu_input1, 2)
+        npu_output = self.npu_op_exec_without_dim(cpu_input1.npu(), 2)
+        self.assertRtolEqual(cpu_output, npu_output)
+
     def cpu_op_exec_repeats_only(self, repeats):
         output = torch.repeat_interleave(repeats)
         output = output.numpy()
