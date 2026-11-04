@@ -107,11 +107,17 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     <!-- end id11 -->
 
 - **ep\_rank\_id**（`int`）：**必选参数**，EP通信域本卡ID，取值范围\[0, ep\_world\_size\)，同一个EP通信域中各卡的`ep_rank_id`不重复。
-- **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，取值范围\[1, 1024\]，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
+- **moe\_expert\_num**（`int`）：**必选参数**，MoE专家数量，并且满足以下条件：moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0。
 
+    <!-- npu="910b,A3" id72 -->
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：取值范围为\[1, 1024\]。
+    <!-- end id72 -->
     <!-- npu="A3" id12 -->
     - <term>Atlas A3系列产品</term>：`comm_alg`设置为"hierarchy"时，取值范围为\(0, 512\]。
     <!-- end id12 -->
+    <!-- npu="950" id70 -->
+    - <term>Ascend 950DT系列产品</term>：取值范围为\[1, 2048\]。
+    <!-- end id70 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **tp\_send\_counts**（`Tensor`）：**可选参数**，表示本卡每个专家发给TP（Tensor Parallelism）通信域每个卡的数据量。对应[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)的`tp_recv_counts`输出。
@@ -364,9 +370,12 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         - 对于共享专家卡，local\_expert\_num=1。
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。
 
-        <!-- npu="950,A3" id62 -->
-        - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：应满足0 < local\_expert\_num \* ep\_world\_size ≤ 2048。
+        <!-- npu="A3" id62 -->
+        - <term>Atlas A3系列产品</term>：应满足0 < local\_expert\_num \* ep\_world\_size ≤ 2048。
         <!-- end id62 -->
+        <!-- npu="950" id71 -->
+        - <term>Ascend 950DT系列产品</term>：应满足0 < local\_expert\_num \* ep\_world\_size ≤ 4096。
+        <!-- end id71 -->
 
 - HCCL通信域缓存区大小：
 
