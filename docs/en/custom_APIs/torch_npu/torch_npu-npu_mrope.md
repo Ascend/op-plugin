@@ -147,7 +147,7 @@
       query = torch.cat((queryRot, queryPass), dim=-1)
       $$
 
-    - When `rotary_mode` is `"interleaved"` (GPT-J style):
+    - When `rotary_mode` is `"interleave"` (GPT-J style):
 
       $$
       x1 = queryRot[..., ::2]
@@ -215,7 +215,7 @@
     query = torch.cat((queryRot, queryPass), dim=-1)
     $$
 
-  - When `rotary_mode` is `"interleaved"` (GPT-J style):
+  - When `rotary_mode` is `"interleave"` (GPT-J style):
 
     $$
     x1 = queryRot[..., ::2]
@@ -260,7 +260,7 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 - **`cos_sin_cache`** (`Tensor`): Required. Precomputed position embedding cache, $cosSinCache$ in the formulas. This parameter must be 2D with shape `(max_seq_len, rotary_dim)`. The last dimension is split into cosine and sine halves using `chunk(2, dim=-1)`. Floating-point data types of `query`, `key`, and `cos_sin_cache` must be identical.
 - **`head_size`** (`int`): Required. Size of each attention head, indicating the feature dimension of a single attention head.
 - **`mrope_section`** (`List[int]`): Optional. Length configuration of each MRoPE segment in the half-rotation dimension, $mropeSection$ in the formulas. If omitted or set to `[0, 0, 0]`, RoPE mode is used. If set to `[16, 24, 24]`, `[24, 20, 20]`, `[8, 12, 12]`, or `[16, 16, 16, 16]`, MRoPE mode is used. In MRoPE scenarios, the number of elements in `mrope_section` must be identical to the number of rows in `positions`.
-- **`rotary_mode`** (`str`): Optional. Rotation style. Valid values are `"half"` (NeoX-style) or `"interleaved"` (GPT-J-style). The default value is `half`.
+- **`rotary_mode`** (`str`): Optional. Rotation style. Valid values are `"half"` (NeoX-style) or `"interleave"` (GPT-J-style). The default value is `half`.
 - **`cache_mode`** (`str`): Optional. Concatenation style. Valid values are `"default"` (segmented cosine/sine concatenation) or `"interleave"` (interleaved concatenation). The default value is `default`. In RoPE scenarios, only `"default"` is supported. In MRoPE scenarios, `"default"` or `"interleave"` can be used.
 
 ## Return Values
