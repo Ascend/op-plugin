@@ -1,6 +1,6 @@
 # Overview
 
-Provides function descriptions, prototypes, parameter descriptions, and call examples for custom TorchNPU APIs based on PyTorch versions such as 2.12.0, 2.11.0, 2.10.0, 2.9.0, and 2.7.1.
+Provides detailed function descriptions, prototypes, parameter descriptions, and call examples for custom TorchNPU APIs.
 
 The APIs provided by TorchNPU comply with the public API conventions defined by the PyTorch community. For details, see [Public API definition and documentation](https://github.com/pytorch/pytorch/wiki/Public-API-definition-and-documentation). The APIs described in this document are the public APIs of TorchNPU. Internal APIs may be modified or removed in future releases. Therefore, you are advised not to use them. If you must use them, submit an issue in the [Ascend community](https://gitcode.com/ascend/pytorch/issues) for assistance.
 
