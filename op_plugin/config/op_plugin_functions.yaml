@@ -680,6 +680,10 @@ official:
     acl_op: [v2.1, newest]
     op_api: all_version
 
+  - func: _native_batch_norm_legit.no_stats(Tensor input, Tensor? weight, Tensor? bias, bool training, float momentum, float eps) -> (Tensor, Tensor, Tensor)
+    acl_op: [v2.1, newest]
+    op_api: all_version
+
   - func: _nnpack_spatial_convolution(Tensor input, Tensor weight, Tensor? bias, SymInt[2] padding, int[2] stride=1) -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
@@ -3739,23 +3743,10 @@ official:
     acl_op: all_version
     dvm: all_version
     op_api: all_version
-    gen_opapi:
-      out0:
-        size: input
-        dtype: input
-      out1:
-        size: c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)}
-        dtype: 'training ? at::kFloat : input.scalar_type()'
-      out2:
-        size: c10::SmallVector<int64_t, op_infer::SIZE>{input.size(1)}
-        dtype: 'training ? at::kFloat : input.scalar_type()'
-      exec: aclnnBatchNorm
 
   - func: native_batch_norm.out(Tensor input, Tensor? weight, Tensor? bias, Tensor? running_mean, Tensor? running_var, bool training, float momentum, float eps, *, Tensor(a!) out, Tensor(b!) save_mean, Tensor(c!) save_invstd) -> (Tensor(a!), Tensor(b!), Tensor(c!))
     acl_op: all_version
     op_api: all_version
-    gen_opapi:
-      exec: aclnnBatchNorm
 
   - func: native_batch_norm_backward(Tensor grad_out, Tensor input, Tensor? weight, Tensor? running_mean, Tensor? running_var, Tensor? save_mean, Tensor? save_invstd, bool train, float eps, bool[3] output_mask) -> (Tensor, Tensor, Tensor)
     acl_op: all_version

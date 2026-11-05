@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "op_plugin/AclOpsInterface.h"
+#include "op_plugin/utils/AdvancedIndex.h"
 #include "op_plugin/utils/OpAdapter.h"
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 
@@ -121,6 +122,23 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> batch_norm_impl(
     double eps) {
   if (!train) {
     batch_norm_infer_nocheck(result, self, weight, bias, running_mean, running_var, train, momentum, eps);
+    save_mean.copy_(running_mean);
+    auto variance = running_var;
+    if (variance.scalar_type() == at::kHalf || variance.scalar_type() == at::kBFloat16) {
+      variance = variance.to(at::kFloat);
+    }
+    TORCH_CHECK(op_plugin::AdvanceIndex::is_expandable_to(variance.sizes(), save_invstd.sizes()),
+        "shape mismatch: running_var of shape ", variance.sizes(),
+        " cannot be broadcast to save_invstd of shape ", save_invstd.sizes(),
+        OPS_ERROR(ErrCode::PARAM));
+    if (save_invstd.scalar_type() == variance.scalar_type() && save_invstd.sizes().equals(variance.sizes()) &&
+        npu_preparation::get_tensor_npu_format(save_invstd) == ACL_FORMAT_ND &&
+        npu_preparation::get_tensor_npu_format(variance) == ACL_FORMAT_ND &&
+        npu_utils::check_match(&save_invstd)) {
+      at::rsqrt_out(save_invstd, variance + eps);
+    } else {
+      save_invstd.copy_(at::rsqrt(variance + eps));
+    }
     return std::tie(result, save_mean, save_invstd);
   }
 
@@ -269,18 +287,22 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
       self_npu_format,
       ") is not supported in BatchNorm." + OPS_ERROR(ErrCode::TYPE));
 
+  // Never rebind `result`: when it is the caller's out tensor, the returned reference must keep
+  // pointing at it. Compute into `output` and copy back at the end if needed.
+  at::Tensor output;
   if (self.dim() <= 4) {
     c10::SmallVector<int64_t, N> nchw_shape(self_shape);
     nchw_shape.resize(4, 1);
     self_reshape = self.reshape(nchw_shape);
     if (result.defined()) {
-      result = result.reshape(nchw_shape);
+      output = result.reshape(nchw_shape);
     }
   } else if (train && self.dim() == 5) {
     // Use 3D BN ops for training, merging axes is not required.
     self_reshape = self;
+    output = result;
   } else {
-    // Infering uses 2dInfer Op, case no matched 3DInfer Op
+    // Inferring uses 2dInfer Op, case no matched 3DInfer Op
     // ncdhw -> ndchw
     self_reshape = self.permute({0, 2, 1, 3, 4});
     // nchw=(n*d, c, h, w)
@@ -288,12 +310,9 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
         self_shape[0] * self_shape[2], self_shape[1], self_shape[3], self_shape[4]};
     // ndchw -> nchw
     self_reshape = self_reshape.reshape(nchw_shape);
-    if (result.defined()) {
-      result = npu_preparation::apply_tensor(self_reshape);
-    }
   }
 
-  // process when affine=Flase and track_running_stats=False
+  // process when affine=False and track_running_stats=False
   int64_t dim_c = self_reshape.size(1);
   at::TensorOptions options = self.options().dtype(at::ScalarType::Float);
 
@@ -308,12 +327,12 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
   at::Tensor weight_tensor = weight.defined() ? weight_cp : at::ones({dim_c}, options);
   at::Tensor bias_tensor = bias.defined() ? bias_cp : at::zeros({dim_c}, options);
 
-  if (!result.defined()) {
-    result = npu_preparation::apply_tensor(self_reshape);
+  if (!output.defined()) {
+    output = npu_preparation::apply_tensor(self_reshape);
   }
 
   batch_norm_impl(
-      result,
+      output,
       save_mean,
       save_invstd,
       self_reshape,
@@ -329,12 +348,19 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> native_batch_norm_out(
   if (!train && self.dim() == 5) {
     // NCHW -> NDCHW -> NCDHW
     std::swap(self_shape[1], self_shape[2]);
-    result = result.view(self_shape);
-    result = npu_utils::format_contiguous(result);
-    result = result.permute({0, 2, 1, 3, 4}).clone();
+    output = output.view(self_shape);
+    output = npu_utils::format_contiguous(output);
+    output = output.permute({0, 2, 1, 3, 4}).clone();
   } else if (self.dim() < 5) {
-    result = result.view(self_shape);
-    result = npu_utils::format_contiguous(result);
+    output = output.view(self_shape);
+    output = npu_utils::format_contiguous(output);
+  }
+
+  if (!result.defined()) {
+    result = output;
+  } else if (!(output.data_ptr() == result.data_ptr() && output.sizes().equals(result.sizes()) &&
+               output.strides().equals(result.strides()))) {
+    result.copy_(output);
   }
 
   return std::tie(result, save_mean, save_invstd);
@@ -351,4 +377,12 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
     double eps) {
   return acl_op::native_batch_norm(input, weight, bias, running_mean, running_var, training, momentum, eps);
 }
+std::tuple<at::Tensor, at::Tensor, at::Tensor> _native_batch_norm_legit(
+    const at::Tensor& input, const c10::optional<at::Tensor>& weight,
+    const c10::optional<at::Tensor>& bias, bool training, double momentum, double eps) {
+  TORCH_CHECK(training, "_native_batch_norm_legit.no_stats requires training=True", OPS_ERROR(ErrCode::PARAM));
+    return acl_op::native_batch_norm(
+        input, weight, bias, c10::nullopt, c10::nullopt, training, momentum, eps);
+}
+
 } // namespace acl_op
