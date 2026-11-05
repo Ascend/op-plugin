@@ -28,8 +28,24 @@ torch_npu.contrib.module.NpuCachedDropout(p, module_name=None)
 ## 参数说明
 
 - **p** (`float`)：元素归零的概率。
-- **module_name** (`string`)：模块名称。
+- **module_name** (`str`)：可选参数，模块名称，用于标识当前Dropout所属的模块，默认为`None`。该参数仅作标识用途，不参与实际计算逻辑。
 
 ## 约束说明
 
 不支持动态shape。
+
+## 调用示例
+
+```python
+>>> import torch
+>>> import torch.nn as nn
+>>> import torch_npu
+>>> from torch_npu.contrib.module import NpuCachedDropout
+>>> dropout = NpuCachedDropout(0.5)
+>>> model = nn.Sequential(dropout).npu()
+>>> NpuCachedDropout.enable_dropout_ensemble(model)
+>>> x = torch.randn(2, 3, 4, 4).npu()
+>>> _ = model(x)
+>>> output = model(x)
+>>> print(output.shape)
+```
