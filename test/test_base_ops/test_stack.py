@@ -140,6 +140,18 @@ class TestStack(TestCase):
             npu_output = npu_op_exec(npu_input1)
             self.assertRtolEqual(cpu_output, npu_output)
 
+    def test_stack_out_mixed_dtype(self):
+        cpu_a = torch.ones(2, dtype=torch.float32)
+        cpu_b = torch.ones(2, dtype=torch.float64)
+        npu_a = cpu_a.npu()
+        npu_b = cpu_b.npu()
+        out_dtype = torch.result_type(cpu_a, cpu_b)
+        cpu_out = torch.empty(2, 2, dtype=out_dtype)
+        npu_out = torch.empty(2, 2, dtype=out_dtype, device="npu")
+        torch.stack((cpu_a, cpu_b), 0, out=cpu_out)
+        torch.stack((npu_a, npu_b), 0, out=npu_out)
+        self.assertRtolEqual(cpu_out.numpy(), npu_out.cpu().numpy())
+
 
 if __name__ == "__main__":
     run_tests()

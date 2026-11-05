@@ -4980,7 +4980,7 @@ official:
     gen_opapi:
       out:
         size: stack_output_size(tensors, dim)
-        dtype: tensors[0]
+        dtype: at::native::result_type(tensors)
       exec: aclnnStack
 
   - func: std.correction(Tensor self, int[1]? dim=None, *, Scalar? correction=None, bool keepdim=False) -> Tensor

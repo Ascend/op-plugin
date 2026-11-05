@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ATen/native/TypeProperties.h>
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -58,7 +59,8 @@ at::Tensor& stack_out_nocheck(at::Tensor& result, at::TensorList tensors, int64_
 at::Tensor& stack_out(at::TensorList tensors, int64_t dim, at::Tensor& out) {
   auto output_size = stack_npu_output_size(tensors, dim);
 
-  npu_preparation::CheckOut({tensors[0]}, out, ACL_FORMAT_ND, tensors[0].scalar_type(), output_size);
+  npu_preparation::CheckOut(
+      {tensors[0]}, out, ACL_FORMAT_ND, at::native::result_type(tensors), output_size);
   if (!npu_utils::check_match(&out)) {
     at::Tensor contiguous_result = npu_utils::format_contiguous(out);
     stack_out_nocheck(contiguous_result, tensors, dim);
