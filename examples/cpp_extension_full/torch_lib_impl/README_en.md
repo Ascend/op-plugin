@@ -140,7 +140,7 @@ After completing the operator adaptation development, you can call the custom op
     # Download the code sample
     git clone https://gitcode.com/Ascend/op-plugin
     # Go to the code directory
-    cd examples/cpp_extension_full/torch_library_impl
+    cd examples/cpp_extension_full/torch_lib_impl
     ```
 
 3. Complete operator adaptation. For details, see [Operator Adaptation Development](#operator-adaptation-development).
