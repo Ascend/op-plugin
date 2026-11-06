@@ -118,24 +118,6 @@ std::tuple<at::Tensor, at::Tensor> max(const at::Tensor& self, int64_t dim, bool
   return std::tie(outputs, indices);
 }
 
-at::Tensor& max_out(const at::Tensor& self, const at::Tensor& other, at::Tensor& result) {
-  DO_COMPATIBILITY(aclnnMaximum, acl_op::max_out(self, other, result));
-  at::Tensor cp_self = self;
-  if (at_npu::native::OpPreparation::IsCPUScalar(self)) {
-    at::Scalar scalar = self.item();
-    cp_self = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, self.scalar_type(), other.device());
-  }
-  at::Tensor cp_other = other;
-  if (at_npu::native::OpPreparation::IsCPUScalar(other)) {
-    at::Scalar scalar = other.item();
-    cp_other = at_npu::native::OpPreparation::copy_scalar_to_device(scalar, other.scalar_type(), self.device());
-  }
-  auto output_size = op_infer::broadcast_ops_npu_output_size(cp_self, cp_other);
-  at_npu::native::OpPreparation::check_tensor({cp_self, cp_other}, result, result.scalar_type(), output_size);
-  EXEC_NPU_CMD(aclnnMaximum, cp_self, cp_other, result);
-  return result;
-}
-
 #if !VERSION_BETWEEN(V2R13, VERSION_NEWEST)
 std::tuple<at::Tensor&, at::Tensor&> max_out(
     const at::Tensor& self,

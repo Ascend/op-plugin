@@ -3188,9 +3188,6 @@
   "func: max.names_dim_max(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) max, Tensor(b!) max_values) -> (Tensor(a!) values, Tensor(b!) indices)": {
     "version": ["v2.1", "v2.2", "v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8", "v2.9", "v2.10", "v2.11", "v2.12"]
   },
-  "func: max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
-  },
   "func: max_pool2d_with_indices(Tensor self, int[2] kernel_size, int[2] stride=[], int[2] padding=0, int[2] dilation=1, bool ceil_mode=False) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
@@ -3271,9 +3268,6 @@
   },
   "func: min.names_dim_min(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)": {
     "version": ["v2.1", "v2.2", "v2.3", "v2.4", "v2.5", "v2.6", "v2.7", "v2.8", "v2.9", "v2.10", "v2.11", "v2.12"]
-  },
-  "func: min.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
-    "version": ["all_version"]
   },
   "func: minimum(Tensor self, Tensor other) -> Tensor": {
     "version": ["all_version"]

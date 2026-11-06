@@ -3416,10 +3416,6 @@ official:
     acl_op: [v2.1, v2.12]
     op_api: [v2.1, v2.12]
 
-  - func: max.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: all_version
-    op_api: all_version
-
   - func: max_unpool2d(Tensor self, Tensor indices, SymInt[2] output_size) -> Tensor
     acl_op: [v2.1, newest]
     op_api: [v2.1, newest]
@@ -3561,10 +3557,6 @@ official:
   - func: min.names_dim_min(Tensor self, Dimname dim, bool keepdim=False, *, Tensor(a!) min, Tensor(b!) min_indices) -> (Tensor(a!) values, Tensor(b!) indices)
     acl_op: [v2.1, v2.12]
     op_api: [v2.1, v2.12]
-
-  - func: min.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
-    acl_op: all_version
-    op_api: all_version
 
   - func: minimum(Tensor self, Tensor other) -> Tensor
     acl_op: all_version
