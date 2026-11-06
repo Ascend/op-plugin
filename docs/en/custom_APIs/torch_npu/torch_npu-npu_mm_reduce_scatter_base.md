@@ -164,7 +164,7 @@ The shape of the output tensor is `(m // world_size, n)`.
   - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: `comm_mode` supports the `ai_cpu` and `aiv` modes. The `ai_cpu` mode is used only in training scenarios, and the `aiv` mode can be used in both training and inference scenarios.
   <!-- end id25 -->
   <!-- npu="950" id26 -->
-  - <term>Ascend 950PR&950DT products</term>: `comm_mode` supports the `ai_cpu` and `ccu` modes, and both modes are used only in training scenarios. The total data volume of the ReduceScatter collective communication must not exceed 16*256MB. The total collective communication data volume is calculated as m \* n \* sizeof(output_dtype). Due to different shapes, the internal implementation of the operator may differ, and the actually supported total communication volume may be slightly smaller than this value.
+  - <term>Ascend 950PR&950DT products</term>: `comm_mode` supports the `ai_cpu` and `ccu` modes, and both modes are used only in training scenarios. The total data volume of the ReduceScatter collective communication must not exceed 16*256MB under `ccu` mode. The total collective communication data volume is calculated as m \* n \* sizeof(output_dtype). Due to different shapes, the internal implementation of the operator may differ, and the actually supported total communication volume may be slightly smaller than this value.
   <!-- end id26 -->
 
 - **`comm_mode` support matrix**:
