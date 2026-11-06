@@ -19,7 +19,7 @@
 ## 函数原型
 
 ```python
-torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, analyse_flag=True, async_mode=False)
+torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, analyse_flag=True, async_mode=False, use_gzip=False)
 ```
 
 ## 参数说明
@@ -43,6 +43,15 @@ torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, an
     - False：关闭异步解析，即同步解析。
 
     默认值为False。
+
+- **use_gzip** (`bool`)：可选参数，是否生成采集目录的.tar.gz压缩包。取值为：
+
+    - True：生成压缩包。
+    - False：不生成压缩包。
+
+    默认值为False。
+
+    开启后，生成的压缩包保存在dir_name参数指定的目录下，与采集目录同名。异步解析完成后才生成该压缩包，压缩完成后删除采集目录，仅保留压缩包。
 
 ## 返回值说明
 
