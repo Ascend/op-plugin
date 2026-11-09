@@ -2984,6 +2984,15 @@
   "func: linalg_cross.out(Tensor self, Tensor other, *, int dim=-1, Tensor(a!) out) -> Tensor(a!)": {
     "version": ["all_version"]
   },
+  "func: linalg_matrix_sqrth(Tensor self) -> Tensor": {
+    "version": ["v2.14", "newest"]
+  },
+  "func: npu_linalg_matrix_sqrth_backward(Tensor grad, Tensor self) -> Tensor": {
+    "version": ["v2.14", "newest"]
+  },
+  "func: linalg_matrix_sqrth.out(Tensor self, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["v2.14", "newest"]
+  },
   "func: linalg_qr(Tensor self, str mode='reduced') -> (Tensor Q, Tensor R)": {
     "version": ["all_version"]
   },

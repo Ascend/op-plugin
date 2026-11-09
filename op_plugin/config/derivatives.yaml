@@ -1,5 +1,11 @@
 all_version: [v2.1, v2.2, v2.3, v2.4, v2.5, v2.6, v2.7, v2.8, v2.9, v2.10, v2.11, v2.12, v2.13, v2.14, v2.15, v2.16]
 backward:
+
+- name: linalg_matrix_sqrth(Tensor self) -> Tensor
+  self: npu_linalg_matrix_sqrth_backward(grad, self)
+  result: at_npu::redispatch::npu_linalg_matrix_sqrth_backward(ks & c10::after_autograd_keyset, self_t, self_p)
+  version: [v2.14, newest]
+
 - name: linalg_cholesky(Tensor self, *, bool upper=False) -> Tensor
   self: cholesky_backward(grad, upper, result)
   result: cholesky_jvp(self_t, result, upper)

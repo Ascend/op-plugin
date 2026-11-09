@@ -7363,3 +7363,11 @@ def _npu_matmul_abft_verify_meta(a, b, c, checksum_weight, *, e_max=0.001):
     row_bytes = (a.size(0) + 7) // 8
     split_n = (b.size(1) + 255) // 256
     return torch.empty([row_bytes * split_n], dtype=torch.uint8, device='meta')
+
+
+if hasattr(torch.ops.npu, "npu_linalg_matrix_sqrth_backward"):
+    @impl(m, "npu_linalg_matrix_sqrth_backward")
+    def npu_linalg_matrix_sqrth_backward_meta(grad, self):
+        # NPU backward of torch.linalg.matrix_sqrth: the output has the same shape as the input A,
+        # used by the fake tensor / compile paths for shape inference.
+        return torch.empty_like(self)

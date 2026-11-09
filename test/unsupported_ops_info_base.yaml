@@ -1216,6 +1216,24 @@ linalg.matrix_rank:
   test_variant_consistency_eager:
   - complex64
   - float32
+linalg.matrix_sqrth:
+  test_backward:
+  - float32
+  test_compare_cpu:
+  - float32
+  test_conj_view:
+  - complex64
+  test_forward_ad:
+  - float32
+  test_neg_conj_view:
+  - complex128
+  test_neg_view:
+  - float64
+  test_operator:
+  - float32
+  test_variant_consistency_eager:
+  - complex64
+  - float32
 linalg.multi_dot:
   test_backward:
   - float32
