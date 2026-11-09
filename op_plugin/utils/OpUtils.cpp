@@ -21,7 +21,7 @@
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 #include "torch_npu/csrc/aten/mirror/NPUTypeProperties.h"
 #include "torch_npu/csrc/core/npu/GetCANNInfo.h"
-#include "torch_npu/csrc/custom_dtype/Init.h"
+#include "torch_npu/csrc/custom_dtype/CustomDType.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "op_plugin/utils/OpUtils.h"
 
