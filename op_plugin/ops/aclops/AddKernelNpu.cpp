@@ -16,6 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
 namespace acl_op {
@@ -227,7 +228,7 @@ at::Tensor& add_(
   npu_preparation::CheckMemory({self_cp, other_cp}, {self_cp});
   if (!npu_utils::check_match(&self_cp)) {
     at::Tensor contiguous_self;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+    if (op_plugin::utils::is_gte_soc_version_910b1()) {
       contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self_cp);
     } else {
       contiguous_self = npu_utils::format_contiguous(self_cp);
@@ -252,7 +253,7 @@ at::Tensor& add_(
     const at::Scalar& alpha) {
   if (!npu_utils::check_match(&self)) {
     at::Tensor contiguous_self;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+    if (op_plugin::utils::is_gte_soc_version_910b1()) {
       contiguous_self = npu_utils::format_contiguous_add_copy_optimize(self);
     } else {
       contiguous_self = npu_utils::format_contiguous(self);
@@ -291,7 +292,7 @@ at::Tensor& add_out(
 
   if (!npu_utils::check_match(&result)) {
     at::Tensor contiguous_result;
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+    if (op_plugin::utils::is_gte_soc_version_910b1()) {
       contiguous_result =
           npu_utils::format_contiguous_add_copy_optimize(result);
     } else {

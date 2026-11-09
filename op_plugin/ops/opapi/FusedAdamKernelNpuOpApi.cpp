@@ -185,7 +185,7 @@ void _fused_adam_(
 		TORCH_CHECK(false, "the size of tensor list should be same.");
 	}
 
-	if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+	if (op_plugin::utils::is_lt_soc_version_950()) {
 		TORCH_NPU_WARN(
 			"CAUTION: The operator 'aten::_fused_adam_' is not currently supported "
 			"on the NPU backend and will fall back to run on the CPU."

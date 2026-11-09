@@ -73,7 +73,7 @@ static std::pair<std::string, std::string> get_query_and_attention_out_layout(
         query_layout = it->second.qLayout;
         attention_out_layout = it->second.outLayout;
         query_dim = it->second.qDim;
-        
+
         TORCH_CHECK(query.dim() == query_dim,
             "query's dim should be consistent with that of Layout", OPS_ERROR(ErrCode::VALUE));
     } else {
@@ -320,7 +320,7 @@ std::tuple<at::Tensor, at::Tensor> construct_fia_output_tensor(
         OPS_ERROR(ErrCode::VALUE)
     );
     kv_num_heads = (kv_num_heads == 0) ? num_heads : kv_num_heads;
-    
+
     // get query_layout, attention_out_layout
     auto [query_layout, attention_out_layout] = get_query_and_attention_out_layout(query, input_layout_str);
 
@@ -413,8 +413,8 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
     at::Tensor default_kv_start_idx {nullptr};
     int64_t default_query_quant_mode = 0;
     int64_t default_pse_type_value = 0;
-    
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         // dispatch hostAPI
         if (!op_plugin::utils::is_gte_cann_version_810rc1() &&
             (query_rope.has_value() || key_rope.has_value() || key_rope_antiquant_scale.has_value())) {
@@ -439,7 +439,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_symint(
             value_antiquant_offset, key_shared_prefix, value_shared_prefix, actual_shared_prefix_len, query_rope, key_rope, key_rope_antiquant_scale, default_dequant_scale_query, default_learnable_sink, default_q_start_idx, default_kv_start_idx, num_heads, scale, pre_tokens, next_tokens, input_layout_ptr,
             num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, softmax_lse_flag, key_antiquant_mode, value_antiquant_mode, default_query_quant_mode, default_pse_type_value, output, softmax_lse);
     }
-    
+
     return std::tuple<at::Tensor, at::Tensor>(output, softmax_lse);
 }
 
@@ -494,7 +494,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_out_symin
     int64_t default_query_quant_mode = 0;
     int64_t default_pse_type_value = 0;
 
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         // dispatch hostAPI
         if (!op_plugin::utils::is_gte_cann_version_810rc1() &&
             (query_rope.has_value() || key_rope.has_value() || key_rope_antiquant_scale.has_value())) {
@@ -605,7 +605,7 @@ at::Tensor _npu_fused_infer_attention_score_get_max_workspace_symint(
     int64_t default_pse_type_value = 0;
     uint64_t workspace_size = 0;
 
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         // dispatch hostAPI
         if (!op_plugin::utils::is_gte_cann_version_810rc1() &&
             (query_rope.has_value() || key_rope.has_value() || key_rope_antiquant_scale.has_value())) {

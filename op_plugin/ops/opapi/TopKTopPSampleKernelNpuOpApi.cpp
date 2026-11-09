@@ -136,7 +136,9 @@ tensor_list npu_top_k_top_p_sample(
           batch,
       },
       logits.options().dtype(at::kLong));
-  if (check_aclnn_kernel_available("aclnnTopKTopPSampleV2")) {
+  static const bool is_top_k_top_p_sample_v2_available =
+      check_aclnn_kernel_available("aclnnTopKTopPSampleV2");
+  if (is_top_k_top_p_sample_v2_available) {
     EXEC_NPU_CMD(
         aclnnTopKTopPSampleV2,
         logits,

@@ -618,8 +618,10 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(
   bool trans_gmm_weight = false;
   bool trans_mm_weight = false;
   if (comm_mode.has_value()) {
+    static const bool is_quant_grouped_mat_mul_allto_allv_v2_available =
+        check_aclnn_kernel_available("aclnnQuantGroupedMatMulAlltoAllvV2");
     TORCH_CHECK(
-        check_aclnn_kernel_available("aclnnQuantGroupedMatMulAlltoAllvV2"),
+        is_quant_grouped_mat_mul_allto_allv_v2_available,
         "Current CANN version do not support this api. Please try to update the version of CANN." +
             OPS_ERROR(ErrCode::PARAM));
     std::string comm_mode_str = std::string(comm_mode.value());

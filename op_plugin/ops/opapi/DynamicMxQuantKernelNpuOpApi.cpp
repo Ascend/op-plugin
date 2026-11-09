@@ -84,8 +84,8 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
   TensorWrapper y_wrapper = {y, y_acltype};
   TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
   int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
-  static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicMxQuantV3");
-  static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantV2");
+  static const bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicMxQuantV3");
+  static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantV2");
   if (npu_support_v3) {
     EXEC_NPU_CMD(
         aclnnDynamicMxQuantV3,

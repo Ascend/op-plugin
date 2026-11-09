@@ -15,6 +15,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -24,9 +25,9 @@ using npu_preparation = at_npu::native::OpPreparation;
 namespace {
 inline bool is_support_group_norm_swish()
 {
-    if ((c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1 &&
-         c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1) ||
-        (c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4)) {
+    if ((op_plugin::utils::is_gte_soc_version_910b1() &&
+         op_plugin::utils::is_lt_soc_version_310b1()) ||
+        op_plugin::utils::is_gt_soc_version_310b4()) {
         return true;
     }
 

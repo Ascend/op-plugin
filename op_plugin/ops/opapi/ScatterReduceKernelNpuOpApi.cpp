@@ -112,7 +112,7 @@ at::Tensor scatter_reduce(
     c10::string_view reduce,
     bool include_self) {
   if (include_self && (reduce == "sum" || reduce == "add") &&
-      c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && self.scalar_type() == at::kFloat) {
+      op_plugin::utils::is_lt_soc_version_950() && self.scalar_type() == at::kFloat) {
     DO_COMPATIBILITY_COMMON(
         aclnnScatterReduce, scatter_reduce_cpu_fallback(self, dim, index, src, reduce, include_self));
     auto result = self.clone(at::MemoryFormat::Contiguous);
@@ -133,12 +133,16 @@ at::Tensor& scatter_reduce_out(
     c10::string_view reduce,
     bool include_self,
     at::Tensor& out) {
-  DO_COMPATIBILITY_COMMON(
-      aclnnScatterReduce, scatter_reduce_out_cpu_fallback(self, dim, index, src, reduce, include_self, out));
-  npu_preparation::CheckMemory({self, index, src}, {out});
-  int64_t reduction = get_reduce(reduce, "scatter_reduce_out()");
-  EXEC_NPU_CMD(aclnnScatterReduce, self, dim, index, src, reduction, include_self, out);
-  return out;
+  if (include_self && (reduce == "sum" || reduce == "add") &&
+      op_plugin::utils::is_lt_soc_version_950() && self.scalar_type() == at::kFloat) {
+    DO_COMPATIBILITY_COMMON(
+        aclnnScatterReduce, scatter_reduce_out_cpu_fallback(self, dim, index, src, reduce, include_self, out));
+    npu_preparation::CheckMemory({self, index, src}, {out});
+    int64_t reduction = get_reduce(reduce, "scatter_reduce_out()");
+    EXEC_NPU_CMD(aclnnScatterReduce, self, dim, index, src, reduction, include_self, out);
+    return out;
+  }
+  return scatter_reduce_out_cpu_fallback(self, dim, index, src, reduce, include_self, out);
 }
 
 at::Tensor& scatter_reduce_(
@@ -149,7 +153,7 @@ at::Tensor& scatter_reduce_(
     c10::string_view reduce,
     bool include_self) {
   if (include_self && (reduce == "sum" || reduce == "add") &&
-      c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && self.scalar_type() == at::kFloat) {
+      op_plugin::utils::is_lt_soc_version_950() && self.scalar_type() == at::kFloat) {
     DO_COMPATIBILITY_COMMON(
         aclnnInplaceScatterReduce, scatter_reduce_inplace_cpu_fallback(self, dim, index, src, reduce, include_self));
     npu_preparation::CheckMemory({self, index, src}, {self});

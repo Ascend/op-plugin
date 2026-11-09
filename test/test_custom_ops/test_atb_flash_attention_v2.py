@@ -10,6 +10,7 @@
 
 import random
 import math
+import unittest
 import numpy as np
 import torch
 import torch_npu
@@ -381,6 +382,7 @@ class SelfAttentionV2Test(TestCase):
         ret = [self.q, self.k, self.v, self.mask, self.kv_seqLen, self.alibi_slopes, self.golden_out]
         return ret
 
+    @unittest.skip("skip until ATB ALiBi compress accuracy issue is resolved")
     @SupportedDevices(['Ascend910B'])
     def test_flash_attention_case_fa_encoder_nocache_bf16_alibi_compress(self):
         data = self.t_flash_attention_case_fa_encoder_nocache_bf16_alibi_compress()

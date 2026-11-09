@@ -98,7 +98,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_
   TensorWrapper y2_wrapper = {y2, y_acltype};
   TensorWrapper mxscale1_wrapper = {mxscale1, aclDataType::ACL_FLOAT8_E8M0};
   TensorWrapper mxscale2_wrapper = {mxscale2, aclDataType::ACL_FLOAT8_E8M0};
-  static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantWithDualAxisV2");
+  static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantWithDualAxisV2");
 
   if (npu_support_v2) {
     EXEC_NPU_CMD(

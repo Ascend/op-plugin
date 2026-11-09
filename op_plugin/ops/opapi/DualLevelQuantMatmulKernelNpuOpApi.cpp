@@ -41,7 +41,7 @@ at::Tensor npu_dual_level_quant_matmul(
     const c10::optional<at::Tensor>& bias,
     int64_t output_dtype) {
   TORCH_CHECK(
-      c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950,
+      op_plugin::utils::is_gte_soc_version_950(),
       "This interface is supported only on the Ascend950 platform and after.",
       OPS_ERROR(ErrCode::PARAM));
 

@@ -17,6 +17,7 @@
 #define TORCHNPU_TORCH_NPU_CSRC_ATEN_OPS_OP_API_PTA_COMMON_H_
 
 #include "op_api_common_base.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/framework/OpParamMaker.h"
 #include "torch_npu/csrc/core/npu/NPUFunctions.h"
 
@@ -42,10 +43,7 @@ std::string real_path(const std::string& path);
 bool checkOwner(string cusLibPath);
 
 inline bool Is310PBoolCheck() {
-  bool isSoc310P =
-      (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1 &&
-       c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend310P7);
-  return isSoc310P;
+  return op_plugin::utils::is_gte_soc_version_310p1() && op_plugin::utils::is_lte_soc_version_310p7();
 }
 
 #define GET_OP_API_FUNC(apiName) reinterpret_cast<_##apiName>(GetOpApiFuncAddr(#apiName))
@@ -932,7 +930,7 @@ inline std::tuple<at::Tensor, at::Tensor> prepare_binary_tensors(const at::Tenso
 
 // Check if current platform is Ascend950 with CANN >= 9.1.0.
 inline bool is_ascend950_path() {
-  return c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 && op_plugin::utils::is_gte_cann_version_910();
+  return op_plugin::utils::is_gte_soc_version_950() && op_plugin::utils::is_gte_cann_version_910();
 }
 
 // Check if npu_sparse_flash_attention supports value=None: CANN >= 9.2.0.

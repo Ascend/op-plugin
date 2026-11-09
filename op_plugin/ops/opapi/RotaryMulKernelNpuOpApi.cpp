@@ -37,21 +37,19 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& r2,
     c10::string_view rotary_mode,
     const c10::optional<at::Tensor>& rotate) {
-  static bool notNeedCheck = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
   TORCH_CHECK(
-      (notNeedCheck || (rotary_mode == "half" || rotary_mode == "interleave")),
+      (op_plugin::utils::is_gte_soc_version_950() || (rotary_mode == "half" || rotary_mode == "interleave")),
       "The rotary_mode of npu_rotary_mul should be half or interleave, but got ",
       rotary_mode,
       OPS_ERROR(ErrCode::PARAM));
-  static bool isRotateUnsupported = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
   TORCH_CHECK(
-      (!isRotateUnsupported || !(rotate.has_value() && rotate->defined())),
+      (!op_plugin::utils::is_gte_soc_version_950() || !(rotate.has_value() && rotate->defined())),
       "the rotate parameter is only supported on Ascend910B/Ascend910_93, please set rotate to None or omit it",
       OPS_ERROR(ErrCode::PARAM));
   DO_COMPATIBILITY(aclnnRotaryPositionEmbedding, acl_op::npu_rotary_mul(self, r1, r2, rotary_mode));
 
   int64_t mode = op_plugin::utils::get_rotary_mode(rotary_mode);
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+  if (op_plugin::utils::is_lt_soc_version_910b1()) {
     return acl_op::npu_rotary_mul(self, r1, r2, rotary_mode);
   }
   at::Tensor result = npu_preparation::apply_tensor_without_format(self.sizes(), self.options());

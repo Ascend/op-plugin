@@ -181,7 +181,7 @@ at::Tensor& random_(at::Tensor& self, int64_t to, c10::optional<at::Generator> g
 }
 
 at::Tensor& random_(at::Tensor& self, c10::optional<at::Generator> generator) {
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 && self.scalar_type() != at::kDouble) {
+  if (op_plugin::utils::is_gte_soc_version_950() && self.scalar_type() != at::kDouble) {
     DO_COMPATIBILITY(aclnnInplaceRandomWithoutFromTo, acl_op::random_(self, generator));
     random_without_from_to_op_api_(self, generator);
   } else {

@@ -57,9 +57,10 @@ tensor_list npu_add_rms_norm_quant(
 
   TensorWrapper y1_wrapper = {y1, y_acltype};
   TensorWrapper y2_wrapper = {y2, y_acltype};
-  if ((c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 ||
+  static const bool is_add_rms_norm_quant_v2_available = check_aclnn_kernel_available("aclnnAddRmsNormQuantV2");
+  if ((op_plugin::utils::is_lt_soc_version_950() ||
        beta.has_value()) &&
-      check_aclnn_kernel_available("aclnnAddRmsNormQuantV2")) {
+      is_add_rms_norm_quant_v2_available) {
     // 在有V2的情况下，A2/A3优先走V2, A5在使用beta的时候走V2。
     EXEC_NPU_CMD(
         aclnnAddRmsNormQuantV2,
@@ -79,7 +80,7 @@ tensor_list npu_add_rms_norm_quant(
         x_out,
         rmsnorm_out);
   } else if (
-      c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
+      op_plugin::utils::is_gte_soc_version_950() &&
       !beta.has_value()) {
     // Ascend950及后续平台上，没有beta调用V1。防止老CANN包 + 新的PTA由于没有V2报错。
     EXEC_NPU_CMD(

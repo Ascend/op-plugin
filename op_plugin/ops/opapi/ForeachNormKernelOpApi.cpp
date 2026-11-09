@@ -49,14 +49,14 @@ bool checkData(const at::TensorList self, const at::Scalar& scalar) {
 
 bool checkDataWithInfinit(const at::TensorList self, const at::Scalar& scalar) {
   double p = 0.0;
-  static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
+
   scalarProcess(scalar, &p);
 
   const bool has_int_or_complex = std::any_of(self.begin(), self.end(), [](const auto& t) {
     const auto scalar_type = t.scalar_type();
     return at::isIntegralType(scalar_type, true) || at::isComplexType(scalar_type);
   });
-  if (isRegBaseSoc) {
+  if (op_plugin::utils::is_gte_soc_version_950()) {
     return !at::native::can_use_fast_route(self) || has_int_or_complex ||
         !(p == static_cast<double>(L1_NORM) || p == static_cast<double>(L2_NORM) ||
           p == std::numeric_limits<double>::infinity());

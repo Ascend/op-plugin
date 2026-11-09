@@ -25,7 +25,7 @@
 namespace op_api {
 
 at::Tensor& exponential_(at::Tensor& self, double lambd, c10::optional<at::Generator> generator) {
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 && self.scalar_type() != at::kDouble) {
+  if (op_plugin::utils::is_gte_soc_version_950() && self.scalar_type() != at::kDouble) {
     TORCH_CHECK(
         lambd > 0.0, "npu_sim_exponential_ expects lambd > 0.0, but found lambd=", lambd, OPS_ERROR(ErrCode::PARAM));
     if (std::isinf(lambd)) {

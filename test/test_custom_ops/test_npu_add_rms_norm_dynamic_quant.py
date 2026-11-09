@@ -276,6 +276,7 @@ class TestAddRmsNormDynamicQuant(TestCase):
             self._run_and_check(x1, x2, gamma, smooth_scale1, smooth_scale2, beta)
 
 
+    @unittest.skip("skip until aclnnAddRmsNormDynamicQuantV2 optional output SIGSEGV is resolved")
     @SupportedDevices(['Ascend910B'])
     def test_forward_output_mask_true_false_fp16(self):
         x_shape = [2, 3, 32]

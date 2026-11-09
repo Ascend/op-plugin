@@ -124,7 +124,7 @@ at::Tensor npu_weight_quant_batchmatmul(
 
   TensorWrapper weight_wrapper = make_wrapper(weight, weight_dtype);
 
-  if (is_weight_nz && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+  if (is_weight_nz && op_plugin::utils::is_gte_soc_version_950()) {
     static const bool is_weight_quant_matmul_nz_available =
         check_aclnn_kernel_available("aclnnWeightQuantBatchMatmulNz");
     TORCH_CHECK(

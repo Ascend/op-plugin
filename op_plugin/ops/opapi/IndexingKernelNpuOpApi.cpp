@@ -536,7 +536,7 @@ at::Tensor& npu_indexing_out(
     const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask,
     int64_t end_mask, int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask, at::Tensor& out)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         return acl_op::npu_indexing_out(
             self, begin, end, strides, begin_mask, end_mask, ellipsis_mask, new_axis_mask, shrink_axis_mask, out);
     }
@@ -558,7 +558,7 @@ at::Tensor npu_indexing(
     const at::Tensor& self, at::IntArrayRef begin, at::IntArrayRef end, at::IntArrayRef strides, int64_t begin_mask,
     int64_t end_mask, int64_t ellipsis_mask, int64_t new_axis_mask, int64_t shrink_axis_mask)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         return acl_op::npu_indexing(
             self, begin, end, strides, begin_mask, end_mask, ellipsis_mask, new_axis_mask, shrink_axis_mask);
     }

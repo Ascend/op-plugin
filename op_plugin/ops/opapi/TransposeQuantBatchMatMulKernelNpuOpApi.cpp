@@ -127,7 +127,9 @@ at::Tensor npu_transpose_quant_batchmatmul(
   TensorWrapper x2_wrapper = make_wrapper(x2, x2_dtype);
   TensorWrapper result_wrapper = make_wrapper(result, dtype);
   if (is_nd_nz_format) {
-    if (check_aclnn_kernel_available("aclnnTransposeQuantBatchMatMulWeightNz")) {
+    static const bool is_transpose_quant_batch_mat_mul_weight_nz_available =
+        check_aclnn_kernel_available("aclnnTransposeQuantBatchMatMulWeightNz");
+    if (is_transpose_quant_batch_mat_mul_weight_nz_available) {
       EXEC_NPU_CMD(
           aclnnTransposeQuantBatchMatMulWeightNz,
           x1_wrapper,

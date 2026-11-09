@@ -57,7 +57,7 @@ at::Tensor& avg_pool3d_backward_out(
     bool count_include_pad,
     c10::optional<int64_t> divisor_override,
     at::Tensor& grad_input) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+  if (op_plugin::utils::is_lt_soc_version_910b1()) {
     return acl_op::avg_pool3d_backward_out(
         grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override, grad_input);
   }
@@ -81,7 +81,7 @@ at::Tensor avg_pool3d_backward(
     bool ceil_mode,
     bool count_include_pad,
     c10::optional<int64_t> divisor_override) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+  if (op_plugin::utils::is_lt_soc_version_910b1()) {
     return acl_op::avg_pool3d_backward(
         grad_output, self, kernel_size, stride, padding, ceil_mode, count_include_pad, divisor_override);
   }

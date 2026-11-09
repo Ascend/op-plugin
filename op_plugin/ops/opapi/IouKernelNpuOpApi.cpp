@@ -10,7 +10,7 @@ at::Tensor npu_iou(
     const at::Tensor& gtboxes,
     int64_t mode)
 {
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         return acl_op::npu_iou(bboxes, gtboxes, mode);
     }
     c10::SmallVector<int64_t, SIZE> output_size = {bboxes.size(0), gtboxes.size(0)};

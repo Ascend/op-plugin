@@ -16,6 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -134,7 +135,7 @@ bool mm_check_nd_to_nz_on_the_fly(const at::Tensor& self, const at::Tensor& mat2
 bool is_transpose_inner_axis(const at::Tensor& self) {
   const static int64_t kInnerAxisMinBytes = 256;
   const static int64_t kInnerAxisMaxLimit = 65535;
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1 || self.dim() < DIMENSION_2D ||
+  if (op_plugin::utils::is_lt_soc_version_910b1() || self.dim() < DIMENSION_2D ||
       (self.scalar_type() != at::ScalarType::Half && self.scalar_type() != at::ScalarType::Float &&
        self.scalar_type() != at::ScalarType::BFloat16)) {
     return false;
@@ -298,7 +299,6 @@ at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
 
   at::Tensor result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
   bool need_nd_out = false;
-  static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
   // check format_out of mm is NCHW. Delate after definite NLP model.
   if ((self.scalar_type() == at::ScalarType::Half)) {
     // check is 16-algined with high-performance
@@ -310,7 +310,8 @@ at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
     // being, only aligned scenes are supported.
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
     if (format_helper::IsBaseFormatType(self) && format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
-        ((is_support_nd_out && mm_check_nd_to_nz_on_the_fly(self, mat2)) || (!is_support_nd_out && is_align()))) {
+        ((op_plugin::utils::is_gte_soc_version_910b1() && mm_check_nd_to_nz_on_the_fly(self, mat2)) ||
+         (!op_plugin::utils::is_gte_soc_version_910b1() && is_align()))) {
       result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     } else {
       need_nd_out = mm_bmm_nd;

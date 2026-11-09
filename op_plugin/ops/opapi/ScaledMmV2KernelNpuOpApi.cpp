@@ -364,7 +364,7 @@ at::Tensor _scaled_mm_v2(
 
   // check A5
   TORCH_CHECK(
-      c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950,
+      op_plugin::utils::is_gte_soc_version_950(),
       "_scaled_mm is supported only on the Ascend950 platform and after.",
       OPS_ERROR(ErrCode::PARAM));
 

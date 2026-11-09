@@ -16,6 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 
@@ -48,7 +49,7 @@ bool check_mul_out_result(const at::Tensor* result) {
     return false;
   }
   if (at_npu::native::FormatHelper::IsBaseFormatType(*result)) {
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+    if (op_plugin::utils::is_gte_soc_version_910b1()) {
       return true;
     } else if ((result->numel() * result->element_size()) % 32 == 0) {
       return true;

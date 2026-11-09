@@ -345,11 +345,12 @@ at::Tensor npu_mm_all_reduce_base(
                                         : dequant_scale_tensor_dtype};
 
   // a8w8: x1/x2: fp8; a4w4 x1/x2 fp4
+  static const bool is_quant_matmul_all_reduce_v5_available = check_aclnn_kernel_available("aclnnQuantMatmulAllReduceV5");
   if (is_a8 || is_a4) {
     TORCH_CHECK(dequant_scale.has_value(), "a8w8 or a4w4 scense should input dequant_scale", OPS_ERROR(ErrCode::PARAM));
     if (is_comm_mode) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnQuantMatmulAllReduceV5"),
+          is_quant_matmul_all_reduce_v5_available,
           "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.",
           OPS_ERROR(ErrCode::PARAM));
       EXEC_NPU_CMD(
@@ -392,9 +393,10 @@ at::Tensor npu_mm_all_reduce_base(
   }
 
   if (!isIntegralType(x1.scalar_type(), false) && !isIntegralType(x2.scalar_type(), false) && !is_fp8 && !is_a4) {
+    static const bool is_matmul_all_reduce_v3_available = check_aclnn_kernel_available("aclnnMatmulAllReduceV3");
     if (is_comm_mode) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnMatmulAllReduceV3"),
+          is_matmul_all_reduce_v3_available,
           "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.",
           OPS_ERROR(ErrCode::PARAM));
       EXEC_NPU_CMD(
@@ -431,7 +433,7 @@ at::Tensor npu_mm_all_reduce_base(
   if (isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false) && !is_fp8 && !is_a4) {
     if (is_comm_mode) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnQuantMatmulAllReduceV5"),
+          is_quant_matmul_all_reduce_v5_available,
           "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.",
           OPS_ERROR(ErrCode::PARAM));
       EXEC_NPU_CMD(
@@ -506,9 +508,10 @@ at::Tensor npu_mm_all_reduce_base(
   }
 
   if (!isIntegralType(x1.scalar_type(), false) && isIntegralType(x2.scalar_type(), false) || (!is_a8 && is_w8)) {
+    static const bool is_weight_quant_matmul_all_reduce_v2_available = check_aclnn_kernel_available("aclnnWeightQuantMatmulAllReduceV2");
     if (is_comm_mode) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnWeightQuantMatmulAllReduceV2"),
+          is_weight_quant_matmul_all_reduce_v2_available,
           "In this CANN Version, comm_mode is not supported, please upgrade CANN Version.",
           OPS_ERROR(ErrCode::PARAM));
       EXEC_NPU_CMD(

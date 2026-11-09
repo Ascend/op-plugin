@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 
 at::Tensor argsort(const at::Tensor& self, int64_t dim, bool descending) {
   // Regbase supports int32/int64 sorting on AiCore; keep this warning for legacy SoCs only.
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 &&
+  if (op_plugin::utils::is_lt_soc_version_950() &&
       (self.dtype() == at::kInt || self.dtype() == at::kLong)) {
     TORCH_NPU_WARN_ONCE(
         "Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "
@@ -40,7 +40,7 @@ at::Tensor argsort(const at::Tensor& self, at::Dimname dim, bool descending) {
 
 at::Tensor argsort(const at::Tensor& self, bool stable, int64_t dim, bool descending) {
   // Regbase supports int32/int64 sorting on AiCore; keep this warning for legacy SoCs only.
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 &&
+  if (op_plugin::utils::is_lt_soc_version_950() &&
       (self.dtype() == at::kInt || self.dtype() == at::kLong)) {
     TORCH_NPU_WARN_ONCE(
         "Warning: kernel [ArgSort] can not support dtype int32 or int64 on AiCore, Now this kernel "

@@ -17,6 +17,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 #include "torch_npu/csrc/framework/interface/EnvVariables.h"
 
@@ -189,7 +190,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         ((attn_mask.has_value() && attn_mask->dtype() == at::kBool) || !attn_mask.has_value()) &&
         query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM && query.size(1) <= N_LIMIT &&
         query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT && query.size(1) % key.size(1) == 0 &&
-        query.size(1) / key.size(1) > 0 && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        query.size(1) / key.size(1) > 0 && op_plugin::utils::is_gte_soc_version_910b1()) {
         auto processed_mask = preprocess_attn_mask_for_npu(attn_mask, query, key);
 
         /* The implementation of the NPU FlashAttention fusion operator without grad constraints:
@@ -225,7 +226,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         (query.size(0) <= B_LIMIT && query.size(1) <= FIA_N_LIMIT && query.size(3) <= D_LIMIT &&
             key.size(1) <= FIA_N_LIMIT) &&
         (key.size(1) != 0 && query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) <= 64) &&
-        c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        op_plugin::utils::is_gte_soc_version_910b1()) {
         /* The implementation of the NPU Fused Infer Attention operator constraints:
         1. It only supports the type of fp16 or bf16, and dim = BNSD_DIM
         2. The shape [B, N1, S1, D] of the query is suppported, where B <= B_LIMIT, N1 <= FIA_N_LIMIT,
@@ -297,7 +298,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         ((attn_mask.has_value() && attn_mask->dtype() == at::kBool) || !attn_mask.has_value()) &&
         query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM && query.size(1) <= N_LIMIT &&
         query.size(3) <= D_LIMIT && key.size(1) <= N_LIMIT && query.size(1) % key.size(1) == 0 &&
-        query.size(1) / key.size(1) > 0 && c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        query.size(1) / key.size(1) > 0 && op_plugin::utils::is_gte_soc_version_910b1()) {
         auto processed_mask = preprocess_attn_mask_for_npu(attn_mask, query, key);
 
         /* The implementation of the NPU FlashAttention fusion operator without grad constraints:
@@ -317,7 +318,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         c10::optional<at::Tensor> nulltensor = c10::nullopt;
         c10::OptionalArrayRef<c10::SymInt> nullsymlen = c10::nullopt;
         int64_t inner_precise = calculate_inner_precise_for_fa(query, attn_mask, is_causal);
-        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+        if (op_plugin::utils::is_lt_soc_version_950()) {
             auto outputv3 = at_npu::native::custom_ops::npu_fusion_attention_v3(query, key, value, head_num,
                 input_layout, nulltensor, nulltensor, atten_mask, input_scale.as_float_unchecked(), keep_prob,
                 TOKEN_MAX, next_tockens, inner_precise, nullsymlen, nulltensor, nulltensor, sparse_mode, true, false);
@@ -340,7 +341,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         (query.size(0) <= B_LIMIT && query.size(1) <= FIA_N_LIMIT && query.size(3) <= D_LIMIT &&
             key.size(1) <= FIA_N_LIMIT) &&
         (key.size(1) != 0 && query.size(1) % key.size(1) == 0 && query.size(1) / key.size(1) <= 64) &&
-        c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1) {
+        op_plugin::utils::is_gte_soc_version_910b1()) {
         /* The implementation of the NPU Fused Infer Attention operator constraints:
                 1. It only supports the type of fp16 or bf16, and dim = BNSD_DIM
                 2. The shape [B, N1, S1, D] of the query is suppported, where B <= B_LIMIT, N1 <= FIA_N_LIMIT,

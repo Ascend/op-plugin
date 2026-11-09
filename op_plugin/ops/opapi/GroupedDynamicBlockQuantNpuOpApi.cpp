@@ -65,7 +65,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_block_quant(const at::Ten
     ASCEND_LOGI("[npu_grouped_dynamic_block_quant]: Setting aclTensor y dtype to: %s",
         at_npu::native::AclDataTypeToString(y_acltype).c_str());
     TensorWrapper y_wrapper = {y, y_acltype};
-    static bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicBlockQuantV2");
+    static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicBlockQuantV2");
     if (npu_support_v2) {
         EXEC_NPU_CMD(aclnnGroupedDynamicBlockQuantV2, x, group_list, min_scale, round_mode_ptr, y_acltype,
             row_block_size, col_block_size, group_list_type, dst_type_max, y_wrapper, scale);

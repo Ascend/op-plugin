@@ -21,9 +21,10 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 inline bool wrapped_to_scalar(const at::Tensor& tensor) {
+
   return tensor.dim() == 0 &&
       (tensor.scalar_type() == at::ScalarType::Double || tensor.scalar_type() == at::ScalarType::Long) &&
-      c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
+      op_plugin::utils::is_gte_soc_version_950();
 }
 
 static at::Tensor self_tensor_to_device(

@@ -761,9 +761,9 @@ std::tuple<c10::SmallVector<int64_t, SIZE>, c10::SmallVector<int64_t, SIZE>> ctc
   }
   c10::SmallVector<int64_t, SIZE> neg_log_likelihood_size = {batch_size};
   int64_t alpha_tail_size = 2 * max_length + 1;
-  static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
   // Apply for a 32 byte aligned space to avoid address shifting in the OP.
-  int64_t alpha_tail_size_align = isRegBaseSoc ? alpha_tail_size : (alpha_tail_size + 7) / 8 * 8;
+  int64_t alpha_tail_size_align =
+      op_plugin::utils::is_gte_soc_version_950() ? alpha_tail_size : (alpha_tail_size + 7) / 8 * 8;
   c10::SmallVector<int64_t, SIZE> log_alpha_size = {batch_size, time_size, alpha_tail_size_align};
 
   if (log_probs.dim() == dim_num_two) {

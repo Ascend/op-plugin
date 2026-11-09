@@ -136,6 +136,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(
   TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
   TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
 
+  static const bool is_allto_all_quant_matmul_v2_available = check_aclnn_kernel_available("aclnnAlltoAllQuantMatmulV2");
   // 推导alltoallOutput
   if (all2all_out_flag) {
     aclDataType alltoall_out_acl_type =
@@ -151,7 +152,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(
     // 调用aclnn接口
     if (comm_mode.has_value()) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnAlltoAllQuantMatmulV2"),
+          is_allto_all_quant_matmul_v2_available,
           "Current CANN version do not support this api. Please try to update the version of CANN." +
               OPS_ERROR(ErrCode::PARAM));
       char* comm_mode_ptr = const_cast<char*>(comm_mode.value().data());
@@ -209,7 +210,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(
     // 调用aclnn接口
     if (comm_mode.has_value()) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnAlltoAllQuantMatmulV2"),
+          is_allto_all_quant_matmul_v2_available,
           "Current CANN version do not support this api. Please try to update the version of CANN." +
               OPS_ERROR(ErrCode::PARAM));
       char* comm_mode_ptr = const_cast<char*>(comm_mode.value().data());

@@ -175,7 +175,7 @@ at::Tensor _scaled_grouped_mm_v2(const at::Tensor& mat_a, const at::Tensor& mat_
     at::TensorList scale_b(scale_b_owned);
 
     // check A5
-    TORCH_CHECK(c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950,
+    TORCH_CHECK(op_plugin::utils::is_gte_soc_version_950(),
         "This interface is supported only on the Ascend950 platform and after.", OPS_ERROR(ErrCode::PARAM));
 
     auto scaling_a = convert_int_to_enum<ScalingType>(scale_recipe_a);

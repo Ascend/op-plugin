@@ -100,6 +100,17 @@ OP_PLUGIN_HIDDEN void check_input_same_type_as_parameters(const at::Tensor& inpu
 OP_PLUGIN_HIDDEN void check_packed_lstm_args(
     const at::Tensor& data, const at::Tensor& batch_sizes, at::TensorList hx,
     at::TensorList params, int64_t num_layers, bool bidirectional);
+OP_PLUGIN_HIDDEN bool is_gte_soc_version_910b1();
+OP_PLUGIN_HIDDEN bool is_lt_soc_version_910b1();
+OP_PLUGIN_HIDDEN bool is_gte_soc_version_310p1();
+OP_PLUGIN_HIDDEN bool is_lte_soc_version_310p7();
+OP_PLUGIN_HIDDEN bool is_lt_soc_version_310b1();
+OP_PLUGIN_HIDDEN bool is_gt_soc_version_310b4();
+OP_PLUGIN_HIDDEN bool is_gte_soc_version_950();
+OP_PLUGIN_HIDDEN bool is_lt_soc_version_950();
+OP_PLUGIN_HIDDEN bool is_lte_soc_version_950();
+OP_PLUGIN_HIDDEN bool is_ne_soc_version_950();
+OP_PLUGIN_HIDDEN bool is_gt_soc_version_910_9362();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_810rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_820rc1();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_830rc1();

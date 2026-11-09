@@ -74,9 +74,10 @@ at::Tensor npu_matmul_all_to_all(
   bool transpose_x2 = false;
 
   // 调用aclnn接口
+  static const bool is_matmul_allto_all_v2_available = check_aclnn_kernel_available("aclnnMatmulAlltoAllV2");
   if (comm_mode.has_value()) {
     TORCH_CHECK(
-        check_aclnn_kernel_available("aclnnMatmulAlltoAllV2"),
+        is_matmul_allto_all_v2_available,
         "Too old ops-transformer package, please update. Or use comm_mode = None." + OPS_ERROR(ErrCode::PARAM));
     char* comm_mode_ptr = const_cast<char*>(comm_mode.value().data());
     EXEC_NPU_CMD(

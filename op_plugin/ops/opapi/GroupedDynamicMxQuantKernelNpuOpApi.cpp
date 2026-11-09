@@ -76,7 +76,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(const at::Tensor
     int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
     double dst_type_max_optional = dst_type_max.has_value() ? dst_type_max.value() : DEFAULT_DST_TYPE_MAX;
 
-    static bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicMxQuantV2");
+    static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnGroupedDynamicMxQuantV2");
     if (npu_support_v2) {
         EXEC_NPU_CMD(aclnnGroupedDynamicMxQuantV2, x, group_index, round_mode_ptr, y_acltype, blocksize,
             scale_alg_optional, dst_type_max_optional, y_wrapper, mxscale_wrapper);

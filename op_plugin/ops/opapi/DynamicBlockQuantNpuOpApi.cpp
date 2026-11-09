@@ -56,7 +56,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_block_quant(
       "[npu_dynamic_block_quant]: Setting aclTensor y dtype to: %s",
       at_npu::native::AclDataTypeToString(y_acltype).c_str());
   TensorWrapper y_wrapper = {y, y_acltype};
-  static bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicBlockQuantV2");
+  static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicBlockQuantV2");
   if (npu_support_v2) {
     EXEC_NPU_CMD(
         aclnnDynamicBlockQuantV2,

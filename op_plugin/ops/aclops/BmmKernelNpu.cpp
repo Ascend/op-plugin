@@ -16,6 +16,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 
 #include "torch_npu/csrc/framework/utils/InternalFormatOpAdapter.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
@@ -102,12 +103,12 @@ at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
           (!(static_cast<uint64_t>(mat2.size(1)) & 0xF)) && (!(static_cast<uint64_t>(mat2.size(2)) & 0xF));
     };
     static auto mm_bmm_nd = !at_npu::native::env::CheckMmBmmNDDisable();
-    static bool is_support_nd_out = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
     // There is a data trampling problem in non-aligned scenes.
     // For the time being, only aligned scenes are supported.
     if (npu_format_helper::IsBaseFormatType(self) && npu_format_helper::IsBaseFormatType(mat2) && mm_bmm_nd &&
-        ((is_support_nd_out && op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) ||
-         (!is_support_nd_out && is_aligin()))) {
+        ((op_plugin::utils::is_gte_soc_version_910b1() &&
+          op_plugin::utils::is_nd_to_nz_on_fly(self, mat2)) ||
+         (!op_plugin::utils::is_gte_soc_version_910b1() && is_aligin()))) {
       result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_ND);
     } else {
       result = npu_preparation::apply_tensor_with_format(output_size, self.options(), ACL_FORMAT_FRACTAL_NZ, true);

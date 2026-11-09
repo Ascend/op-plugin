@@ -47,7 +47,7 @@ at::Tensor _cdist_backward(
     }
     // Before CANN 9.2.0, aclnn has precision issues when handling integers and infinity.
     bool p_in_range = (p_cast >= 0.0 && p_cast <= 2.0) || (p_cast == -1);
-    if (p_in_range && (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) &&
+    if (p_in_range && op_plugin::utils::is_lt_soc_version_950() &&
         !op_plugin::utils::is_gte_cann_version_920()) {
         return acl_op::_cdist_backward(grad_contiguous, x1, x2, p, cdist);
     }

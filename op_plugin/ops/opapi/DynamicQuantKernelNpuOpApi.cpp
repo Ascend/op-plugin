@@ -85,8 +85,8 @@ struct DynamicQuantParams {
 };
 
 int select_version(const DynamicQuantParams& attr) {
-  static bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
-  static bool npu_support_v4 = check_aclnn_kernel_available("aclnnDynamicQuantV4");
+  static const bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicQuantV3");
+  static const bool npu_support_v4 = check_aclnn_kernel_available("aclnnDynamicQuantV4");
   if (!npu_support_v3 && !npu_support_v4) {
     return USE_ACLNN_DYNAMIC_QUANT_V2;
   }

@@ -54,7 +54,6 @@ at::Tensor npu_mm_reduce_scatter_base(
       "The M-axis in input of Matmul should be be divisible by world_size." + OPS_ERROR(ErrCode::PARAM));
   std::string hcom_str = std::string(hcom);
   std::string reduce_op_str = std::string(reduce_op);
-  bool isSocBelowAscend950 = (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
   c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
   std::string comm_mode_str = std::string(comm_mode_value);
   auto output_size = {self.size(0) / world_size, x2.size(1)};
@@ -74,7 +73,7 @@ at::Tensor npu_mm_reduce_scatter_base(
   int64_t group_size = 0;
   at::Tensor quant_scale;
   at::Tensor amax_out;
-  if (isSocBelowAscend950) {
+  if (op_plugin::utils::is_lt_soc_version_950()) {
     if (comm_mode_str == "ai_cpu") {
       TORCH_CHECK(!has_quant, "When comm_mode is ai_cpu, quantization not supported." + OPS_ERROR(ErrCode::PARAM));
       EXEC_NPU_CMD(

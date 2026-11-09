@@ -493,7 +493,8 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = static_cast<int64_t>(pair.first);
         offset = static_cast<int64_t>(pair.second);
-        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+        if (op_plugin::utils::is_lt_soc_version_950()) {
             drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
         }
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
@@ -569,7 +570,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
 
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
             std::string softmax_layout_str = std::string(softmax_layout);
             static const bool is_fa_grad_V4_available =
@@ -704,7 +706,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += LENGTH_BIAS;
     at::Tensor drop_mask;
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
+
+    if (op_plugin::utils::is_lt_soc_version_950() && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
@@ -897,7 +900,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) {
             if (softmax_layout_str == "TND" && is_fa_V4_available) {
                 softmax_layout_str = "same_as_input";
@@ -974,8 +978,9 @@ at::Tensor npu_prompt_flash_attention(
     int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
+
     TORCH_CHECK(
-        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        op_plugin::utils::is_ne_soc_version_950(),
         "Interface npu_prompt_flash_attention is no longer supported on Ascend950.",
         OPS_ERROR(ErrCode::NOT_SUPPORT)
     );
@@ -1045,7 +1050,8 @@ at::Tensor dropout_gen_mask(const at::Tensor &query, const at::Tensor &key, doub
         auto pair = at::check_generator<at_npu::NPUGeneratorImpl>(gen)->philox_engine_inputs(10);
         seed = static_cast<int64_t>(pair.first);
         offset = static_cast<int64_t>(pair.second);
-        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+        if (op_plugin::utils::is_lt_soc_version_950()) {
             drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
         }
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
@@ -1130,7 +1136,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
 
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -1141,8 +1148,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
             at::Tensor dk_rope = at::empty({0}, key.options());
 
             if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) { // TND
+                static const bool is_flash_attention_unpadding_score_grad_v5_available = check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5"),
+                    is_flash_attention_unpadding_score_grad_v5_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionUnpaddingScoreGradV5 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1158,8 +1166,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
                     scale_value, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char, inner_precise, sparse_mode, pse_type, softmax_layout_char, // +softmax_layout
                     dq, dq_rope, dk, dk_rope, dv, dpse, dsink); // +dsink
             } else {
+                static const bool is_flash_attention_score_grad_v3_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreGradV3");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionScoreGradV3"),
+                    is_flash_attention_score_grad_v3_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionScoreGradV3 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1307,7 +1316,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t length = (numels + 128 - 1) / 128 * 128 / 8;
     length += LENGTH_BIAS;
     at::Tensor drop_mask;
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
+
+    if (op_plugin::utils::is_lt_soc_version_950() && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         drop_mask = dropout_gen_mask_dispatch(query, keep_prob, seed, offset, numels, gen_mask_parallel, sync);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
@@ -1501,7 +1511,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -1510,8 +1521,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
             int64_t pse_type = 1;
 
             if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) { // TND
+                static const bool is_flash_attention_var_len_score_v5_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV5");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV5"),
+                    is_flash_attention_var_len_score_v5_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionVarLenScoreV5 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1526,8 +1538,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int
                     input_layout_char, inner_precise, sparse_mode, pse_type, softmax_layout_char, softmax_max, softmax_sum, // +softmax_layout
                     softmax_out, attention_score);
             } else {
+                static const bool is_flash_attention_score_v3_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreV3");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionScoreV3"),
+                    is_flash_attention_score_v3_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionScoreV3 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1615,8 +1628,9 @@ at::Tensor npu_prompt_flash_attention(
     int64_t sparse_mode)
 {
     // construct the output tensor of the NPU
+
     TORCH_CHECK(
-        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        op_plugin::utils::is_ne_soc_version_950(),
         "Interface npu_prompt_flash_attention is no longer supported on Ascend950.",
         OPS_ERROR(ErrCode::NOT_SUPPORT)
     );
@@ -1679,8 +1693,9 @@ at::Tensor npu_incre_flash_attention_symint(
     int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
+
     TORCH_CHECK(
-        c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950,
+        op_plugin::utils::is_ne_soc_version_950(),
         "Interface npu_incre_flash_attention is no longer supported on Ascend950.",
         OPS_ERROR(ErrCode::NOT_SUPPORT)
     );
@@ -1741,7 +1756,8 @@ at::Tensor dropout_gen_mask_tensor(const at::Tensor &query, const at::Tensor &ke
             offset = gen_state_.offset_.ptr->clone();
             offset.add_(gen_state_.offset_intragraph_);
         }
-        if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+        if (op_plugin::utils::is_lt_soc_version_950()) {
             drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed, offset, numels,
                 gen_mask_parallel, sync, is_capture, offset_intragraph);
         }
@@ -1835,7 +1851,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
 
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout.c_str(), LAYOUT_MAX_LENGTH - 1);
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -1846,8 +1863,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
             at::Tensor dk_rope = at::empty({0}, key.options());
 
             if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) { // TND
+                static const bool is_flash_attention_unpadding_score_grad_v5_available = check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5"),
+                    is_flash_attention_unpadding_score_grad_v5_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionUnpaddingScoreGradV5 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1863,8 +1881,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
                     scale_value, keep_prob, pre_tockens, next_tockens, head_num, input_layout_char, inner_precise, sparse_mode, pse_type, softmax_layout_char, // +softmax_layout
                     dq, dq_rope, dk, dk_rope, dv, dpse, dsink); // +dsink
             } else {
+                static const bool is_flash_attention_score_grad_v3_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreGradV3");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionScoreGradV3"),
+                    is_flash_attention_score_grad_v3_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionScoreGradV3 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -1952,7 +1971,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     c10::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950, "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
+
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(), "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     TORCH_CHECK(query.dim() == DIMENSION_3D || query.dim() == DIMENSION_4D,
         "The shapes of the input query should be 3 or 4 dimensional, but got ",
@@ -2029,7 +2049,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     length += LENGTH_BIAS;
     at::Tensor drop_mask;
     c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
+    if (op_plugin::utils::is_lt_soc_version_950() && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const at::Tensor &seed_const = seed.value_or(at::Tensor());
         const at::Tensor &offset_const = offset.value_or(at::Tensor());
         drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed_const, offset_const, numels, gen_mask_parallel, sync, is_capture);
@@ -2060,7 +2080,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
     c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950, "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
+
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(), "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     std::string input_layout_str1(input_layout);
     std::string softmax_layout_str1(softmax_layout);
@@ -2229,7 +2250,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_lt_soc_version_950()) {
         if (format_sink.defined()) { // sink is defined
             auto format_query_rope = at::Tensor();
             auto format_key_rope = at::Tensor();
@@ -2238,8 +2259,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
             int64_t pse_type = 1;
 
             if (!ac_seq_qlen.empty() && !ac_seq_kvlen.empty()) { // TND
+                static const bool is_flash_attention_var_len_score_v5_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV5");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV5"),
+                    is_flash_attention_var_len_score_v5_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionVarLenScoreV5 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -2254,8 +2276,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
                     input_layout_char, inner_precise, sparse_mode, pse_type, softmax_layout_char, softmax_max, softmax_sum, // +softmax_layout
                     softmax_out, attention_score);
             } else {
+                static const bool is_flash_attention_score_v3_available = check_aclnn_kernel_available("aclnnFlashAttentionScoreV3");
                 TORCH_CHECK(
-                    check_aclnn_kernel_available("aclnnFlashAttentionScoreV3"),
+                    is_flash_attention_score_v3_available,
                     "The param sink is not supported in this CANN version, aclnnFlashAttentionScoreV3 is not available",
                     OPS_ERROR(ErrCode::PARAM)
                 );
@@ -2327,7 +2350,8 @@ npu_fusion_attention_v3_out(
     at::Tensor &attention_score, at::Tensor &softmax_max, at::Tensor &softmax_sum,
     at::Tensor &softmax_out, at::Tensor &seed, at::Tensor &offset)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950,
+
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(),
                 "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
@@ -2475,7 +2499,8 @@ npu_fusion_attention_grad_v3_out(
     at::Tensor &dpse,
     at::Tensor &dsink)
 {
-    TORCH_CHECK(c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950,
+
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(),
                 "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     // ==================== Step 1: Validate Input Parameters ====================
@@ -2544,7 +2569,7 @@ npu_fusion_attention_grad_v3_out(
     at::Tensor drop_mask;
     c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
 
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 &&
+    if (op_plugin::utils::is_lt_soc_version_950() &&
         get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const at::Tensor &seed_const = seed.value_or(at::Tensor());
         const at::Tensor &offset_const = offset.value_or(at::Tensor());
@@ -2592,8 +2617,9 @@ npu_fusion_attention_grad_v3_out(
     at::Tensor dk_rope = at::empty({0}, key.options());
 
     if (format_sink.defined()) {
+        static const bool is_flash_attention_unpadding_score_grad_v5_available = check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5");
         TORCH_CHECK(
-            check_aclnn_kernel_available("aclnnFlashAttentionUnpaddingScoreGradV5"),
+            is_flash_attention_unpadding_score_grad_v5_available,
             "The param sink is not supported in this CANN version, aclnnFlashAttentionUnpaddingScoreGradV5 is not available",
             OPS_ERROR(ErrCode::PARAM)
         );
@@ -2830,7 +2856,8 @@ at::Tensor _npu_fusion_attention_grad_v3_get_max_workspace(
     at::Tensor drop_mask;
     c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
 
-    if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950 &&
+
+    if (op_plugin::utils::is_lt_soc_version_950() &&
         get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const at::Tensor &seed_const = seed.value_or(at::Tensor());
         const at::Tensor &offset_const = offset.value_or(at::Tensor());
@@ -2924,4 +2951,3 @@ at::Tensor _npu_fusion_attention_grad_v3_get_max_workspace(
 
 #endif
 }
-

@@ -276,7 +276,9 @@ tensor_list npu_moe_distribute_dispatch_v2(
   TensorWrapper dynamic_scales_wrapper = {
       dynamic_scales, acl_dynamic_scale_dtype};
 
-  if (check_aclnn_kernel_available("aclnnMoeDistributeDispatchV4")) {
+  static const bool is_moe_distribute_dispatch_v4_available = check_aclnn_kernel_available("aclnnMoeDistributeDispatchV4");
+  static const bool is_moe_distribute_dispatch_v3_available = check_aclnn_kernel_available("aclnnMoeDistributeDispatchV3");
+  if (is_moe_distribute_dispatch_v4_available) {
     EXEC_NPU_CMD(
         aclnnMoeDistributeDispatchV4,
         x_wrapper,
@@ -310,7 +312,7 @@ tensor_list npu_moe_distribute_dispatch_v2(
         ep_recv_counts,
         tp_recv_counts,
         expand_scales);
-  } else if (check_aclnn_kernel_available("aclnnMoeDistributeDispatchV3")) {
+  } else if (is_moe_distribute_dispatch_v3_available) {
     TORCH_CHECK(
         !performance_info.has_value(),
         "The performance_info is not supported in this CANN version, aclnnMoeDistributeDispatchV4 is not "

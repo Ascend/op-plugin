@@ -114,7 +114,7 @@ int64_t infer_nz_logical_n(const at::Tensor &weight_scale, bool is_mx_quant)
 bool is_mx_weight_nz_multi_tensor(const at::TensorList weight, const at::TensorList weight_scale, bool is_weight_nz,
                                   bool is_mx_quant, bool is_mxfp8w4)
 {
-    return c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950 &&
+    return op_plugin::utils::is_gte_soc_version_950() &&
            is_weight_nz && is_mx_quant && !is_mxfp8w4 &&
            weight.size() > NUM_ZERO && weight_scale.size() > NUM_ZERO &&
            weight.size() == weight_scale.size() &&
@@ -184,7 +184,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
     } else if (is_mx_weight_nz_multi) {
         n = static_cast<int>(weight_scale[DIM_0].sizes()[DIM_1]);
     } else {
-        if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+        if (op_plugin::utils::is_gte_soc_version_950()) {
             if (mxfp8w4) {
                 auto last_dim =  weight[DIM_0].dim() - 1;
                 n = static_cast<int>(weight[DIM_0].sizes()[last_dim]);
@@ -233,7 +233,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
                     "The optional parameter x_scale_dtype only supports float8_e8m0fnu or None, but the actual value is ",
                     c10_npu::CustomDataTypeToString(x_scale_dtype.value()), "." + OPS_ERROR(ErrCode::VALUE));
     }
-    if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_gte_soc_version_950()) {
         if (dequant_dtype.has_value()) {
             TORCH_CHECK(dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Float)
                         || dequant_dtype.value() == static_cast<int64_t>(c10::ScalarType::Char)
@@ -308,7 +308,7 @@ std::tuple<at::Tensor, at::Tensor> npu_grouped_matmul_swiglu_quant_v2(
         if (!is_weight_nz) {
             TORCH_CHECK(weight[DIM_0].dim() == DIM_3, "weight[0] dim should be equal to 3, but the actual value is ",
                         weight[DIM_0].dim(), OPS_ERROR(ErrCode::PARAM));
-            if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+            if (op_plugin::utils::is_gte_soc_version_950()) {
                 n = static_cast<int>(weight[DIM_0].sizes()[DIM_2]);
             } else {
                 n = static_cast<int>(weight_scale[DIM_0].sizes().back());

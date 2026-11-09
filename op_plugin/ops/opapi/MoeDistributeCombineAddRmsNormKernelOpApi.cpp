@@ -95,7 +95,8 @@ static bool check_v2_param(const c10::optional<at::Tensor> &elastic_info, int64_
             output3 = npu_preparation::apply_tensor_without_format({n, 1, h}, expert_ids.options().dtype(at::kHalf));
         }
         float norm_eps_float = static_cast<float>(norm_eps);
-        if (check_aclnn_kernel_available("aclnnMoeDistributeCombineAddRmsNormV2")) {
+        static const bool is_moe_distribute_combine_add_rms_norm_v2_available = check_aclnn_kernel_available("aclnnMoeDistributeCombineAddRmsNormV2");
+        if (is_moe_distribute_combine_add_rms_norm_v2_available) {
             EXEC_NPU_CMD(aclnnMoeDistributeCombineAddRmsNormV2, expand_x, expert_ids, expand_idx, ep_send_counts, expert_scales, residual_x, gamma, tp_send_counts, x_active_mask,
                          activation_scale, weight_scale, group_list, expand_scales,
                          shared_expert_x, elastic_info, ori_x, const_expert_alpha_1, const_expert_alpha_2, const_expert_v,

@@ -19,6 +19,7 @@
 
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/AdvancedIndex.h"
 #include "torch_npu/csrc/framework/utils/UtilForOpAdapter.h"
 #include "torch_npu/csrc/aten/mirror/NPUMemoryOverlap.h"
@@ -50,8 +51,7 @@ bool is_aicpu_valid(const at::Tensor &self, const std::vector<at::Tensor> &all_d
                     const at::SmallVector<int64_t, N> masks)
 {
     // using aicpu at non-binary scene
-    if (!at_npu::native::env::CheckJitDisable() &&
-        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1) {
+    if (!at_npu::native::env::CheckJitDisable() && op_plugin::utils::is_lt_soc_version_910b1()) {
         return true;
     }
     // using aicore when index is continous, otherwise aicpu

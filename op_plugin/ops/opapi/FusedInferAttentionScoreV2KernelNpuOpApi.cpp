@@ -72,7 +72,7 @@ static std::pair<std::string, std::string> get_query_and_attention_out_layout(
         query_layout = it->second.qLayout;
         attention_out_layout = it->second.outLayout;
         query_dim = it->second.qDim;
-        
+
         TORCH_CHECK(query.dim() == query_dim,
             "query's dim should be consistent with that of Layout", OPS_ERROR(ErrCode::VALUE));
     } else {
@@ -455,7 +455,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_infer_attention_score_v2_symint(
     auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
 
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         EXEC_NPU_NO_FORMAT_CHECK_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
             quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
             dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
@@ -544,7 +544,7 @@ std::tuple<at::Tensor &, at::Tensor &> npu_fused_infer_attention_score_v2_out_sy
     auto dequant_scale_value_tmp = dequant_scale_value.has_value() ? dequant_scale_value.value() : null_tensor;
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
 
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         if (workspace.has_value()) {
             void* workspace_addr = const_cast<void *>(workspace.value().storage().data());
             uint64_t workspace_size = static_cast<uint64_t>(workspace.value().numel() * workspace.value().element_size());
@@ -656,7 +656,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
     TensorWrapper dequant_scale_value_wrapper = make_wrapper(dequant_scale_value_tmp, dequant_scale_value_dtype);
     uint64_t workspace_size = 0;
 
-    if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+    if (op_plugin::utils::is_ne_soc_version_950()) {
         workspace_size = EXEC_GET_MAX_WORKSPACE_CMD(aclnnFusedInferAttentionScoreV4, query_wrapper, keyTensors_wrapper, valueTensors_wrapper, pse_shift, atten_mask, actual_seq_qlen, actual_seq_kvlen, dequant_scale1, quant_scale1, dequant_scale2,
             quant_scale_out, quant_offset_out, antiquant_scale, antiquant_offset, block_table, query_padding_size, kv_padding_size, dequant_scale_key_wrapper, dequant_offset_key, dequant_scale_value_wrapper,
             dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
@@ -668,7 +668,7 @@ at::Tensor _npu_fused_infer_attention_score_v2_get_max_workspace_symint(
             dequant_offset_value, key_shared_prefix, value_shared_prefix, default_actual_shared_prefix_len, query_rope_wrapper, key_rope_wrapper, dequant_scale_key_rope, dequant_scale_query_wrapper, learnable_sink, default_q_start_idx, default_kv_start_idx, num_query_heads, softmax_scale, pre_tokens, next_tokens, input_layout_ptr,
             num_key_value_heads, sparse_mode, inner_precise, block_size, antiquant_mode, return_softmax_lse, key_quant_mode, value_quant_mode, query_quant_mode, default_pse_type_value, outTensor_wrapper, softmax_lse);
     }
-    
+
     at::Tensor workspace_tensor = npu_preparation::apply_tensor_without_format({workspace_size}, query.options().dtype(query.dtype()));
     return workspace_tensor;
 }

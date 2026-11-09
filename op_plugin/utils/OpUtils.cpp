@@ -134,7 +134,7 @@ bool is_nd_nz_format(const at::Tensor &self, const at::Tensor &mat2)
         return true;
     }
     // Case 2: 3D ND * 3D NZ, only support Ascend950
-    if (d1 == k3D && d2 == k3D && c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend910_9362) {
+    if (d1 == k3D && d2 == k3D && is_gt_soc_version_910_9362()) {
         return true;
     }
     return false;
@@ -455,6 +455,72 @@ void check_packed_lstm_args(
                     "Expected hidden[", i, "] size (", layers, ", ", batch_size, ", ", hidden_size,
                     "), got ", sizes);
     }
+}
+
+bool is_gte_soc_version_910b1()
+{
+    static const bool result = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend910B1;
+    return result;
+}
+
+bool is_lt_soc_version_910b1()
+{
+    static const bool result = c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend910B1;
+    return result;
+}
+
+bool is_gte_soc_version_310p1()
+{
+    static const bool result = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend310P1;
+    return result;
+}
+
+bool is_lte_soc_version_310p7()
+{
+    static const bool result = c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend310P7;
+    return result;
+}
+
+bool is_lt_soc_version_310b1()
+{
+    static const bool result = c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend310B1;
+    return result;
+}
+
+bool is_gt_soc_version_310b4()
+{
+    static const bool result = c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend310B4;
+    return result;
+}
+
+bool is_gte_soc_version_950()
+{
+    static const bool result = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
+    return result;
+}
+
+bool is_lt_soc_version_950()
+{
+    static const bool result = c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950;
+    return result;
+}
+
+bool is_lte_soc_version_950()
+{
+    static const bool result = c10_npu::GetSocVersion() <= c10_npu::SocVersion::Ascend950;
+    return result;
+}
+
+bool is_ne_soc_version_950()
+{
+    static const bool result = c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950;
+    return result;
+}
+
+bool is_gt_soc_version_910_9362()
+{
+    static const bool result = c10_npu::GetSocVersion() > c10_npu::SocVersion::Ascend910_9362;
+    return result;
 }
 
 bool is_gte_cann_version_810rc1()

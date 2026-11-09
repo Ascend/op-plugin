@@ -78,6 +78,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(
   bool transpose_x1 = false;
   bool transpose_x2 = false;
 
+  static const bool is_allto_all_matmul_v2_available = check_aclnn_kernel_available("aclnnAlltoAllMatmulV2");
   // 推导alltoallOutput
   if (all2all_out_flag) {
     aclDataType alltoall_out_acl_type =
@@ -91,7 +92,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(
     // 调用aclnn接口
     if (comm_mode.has_value()) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnAlltoAllMatmulV2"),
+          is_allto_all_matmul_v2_available,
           "Current CANN version do not support this api. Please try to update the version of CANN." +
               OPS_ERROR(ErrCode::PARAM));
       char* comm_mode_ptr = const_cast<char*>(comm_mode.value().data());
@@ -127,7 +128,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_matmul(
     // 调用aclnn接口
     if (comm_mode.has_value()) {
       TORCH_CHECK(
-          check_aclnn_kernel_available("aclnnAlltoAllMatmulV2"),
+          is_allto_all_matmul_v2_available,
           "Current CANN version do not support this api. Please try to update the version of CANN." +
               OPS_ERROR(ErrCode::PARAM));
       char* comm_mode_ptr = const_cast<char*>(comm_mode.value().data());

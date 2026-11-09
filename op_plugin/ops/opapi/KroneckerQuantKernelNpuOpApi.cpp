@@ -83,7 +83,8 @@ c10::SmallVector<int64_t, SIZE> cal_quant_scale_size(const at::Tensor& self, acl
     TensorWrapper out_wrapper = {out, dst_acltype};
     TensorWrapper scale_wrapper = {quant_scale,
         dst_acltype == aclDataType::ACL_FLOAT4_E2M1? aclDataType::ACL_FLOAT8_E8M0 : aclDataType::ACL_FLOAT};
-    if (check_aclnn_kernel_available("aclnnFlatQuantV2")) {
+    static const bool is_flat_quant_v2_available = check_aclnn_kernel_available("aclnnFlatQuantV2");
+    if (is_flat_quant_v2_available) {
         EXEC_NPU_CMD(aclnnFlatQuantV2, x, kronecker_p1, kronecker_p2, clip_ratio_attr, dst_type_max_attr, out_wrapper, scale_wrapper);
     } else {
         EXEC_NPU_CMD(aclnnFlatQuant, x, kronecker_p1, kronecker_p2, clip_ratio_attr, out_wrapper, scale_wrapper);

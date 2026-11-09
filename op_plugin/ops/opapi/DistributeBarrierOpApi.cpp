@@ -37,7 +37,8 @@ at::Tensor _npu_distribute_barrier(
     const c10::optional<at::Tensor>& time_out,
     const c10::optional<at::Tensor>& elastic_info) {
   char* group_ptr = const_cast<char*>(group.data());
-  if (check_aclnn_kernel_available("aclnnDistributeBarrierV2")) {
+  static const bool is_distribute_barrier_v2_available = check_aclnn_kernel_available("aclnnDistributeBarrierV2");
+  if (is_distribute_barrier_v2_available) {
     EXEC_NPU_CMD(aclnnDistributeBarrierV2, x_ref, time_out, elastic_info, group_ptr, world_size);
   } else {
     TORCH_CHECK(

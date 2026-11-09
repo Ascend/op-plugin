@@ -33,7 +33,7 @@ at::Tensor& multinomial_op_api(
       at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
 
   int64_t counter_offset = 10;
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_gte_soc_version_950()) {
     if (!replacement || num_samples == 1) {
       counter_offset = op_plugin::utils::calc_counter_offset(self.numel(), op_plugin::utils::UNROLL_4);
     } else {

@@ -46,7 +46,7 @@ at::Tensor npu_confusion_transpose(
     at::IntArrayRef perm,
     at::IntArrayRef shape,
     bool transpose_first) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_lt_soc_version_950()) {
     return acl_op::npu_confusion_transpose(self, perm, shape, transpose_first);
   }
   DO_COMPATIBILITY(aclnnConfusionTranspose, acl_op::npu_confusion_transpose(self, perm, shape, transpose_first));
@@ -62,7 +62,7 @@ at::Tensor npu_confusion_transpose_backward_symint(
     at::IntArrayRef perm,
     c10::SymIntArrayRef shape_symint,
     bool transpose_first) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_lt_soc_version_950()) {
     return acl_op::npu_confusion_transpose_backward_symint(grad, perm, shape_symint, transpose_first);
   }
   DO_COMPATIBILITY(

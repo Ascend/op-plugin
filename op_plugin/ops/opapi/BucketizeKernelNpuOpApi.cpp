@@ -26,10 +26,9 @@ at::Tensor bucketize(const at::Tensor& self, const at::Tensor& boundaries, bool 
       boundaries.dim(),
       ")" + OPS_ERROR(ErrCode::PARAM));
 
-  static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
   bool typeSupport = self.dtype() != at::kDouble && boundaries.dtype() != at::kDouble;
   static const bool is_bucketize_available = check_aclnn_kernel_available("aclnnBucketize");
-  if (isRegBaseSoc && typeSupport && is_bucketize_available) {
+  if (op_plugin::utils::is_gte_soc_version_950() && typeSupport && is_bucketize_available) {
     at::ScalarType expectedType = out_int32 ? at::kInt : at::kLong;
     at::TensorOptions opts = self.options().dtype(expectedType);
     at::Tensor result = at_npu::native::OpPreparation::apply_tensor_without_format(self.sizes(), opts);
@@ -61,10 +60,9 @@ at::Tensor& bucketize_out(
       boundaries.dim(),
       ")" + OPS_ERROR(ErrCode::PARAM));
 
-  static bool isRegBaseSoc = c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950;
   bool typeSupport = self.dtype() != at::kDouble && boundaries.dtype() != at::kDouble;
   static const bool is_bucketize_available = check_aclnn_kernel_available("aclnnBucketize");
-  if (isRegBaseSoc && typeSupport && is_bucketize_available) {
+  if (op_plugin::utils::is_gte_soc_version_950() && typeSupport && is_bucketize_available) {
     at_npu::native::OpPreparation::check_tensor({self, boundaries}, out, out.scalar_type(), self.sizes());
     EXEC_NPU_CMD(aclnnBucketize, self, boundaries, out_int32, right, out);
     return out;

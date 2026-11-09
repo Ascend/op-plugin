@@ -17,6 +17,7 @@
 #include "torch_npu/csrc/core/npu/NPUException.h"
 #include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "op_plugin/utils/KernelNpuOutputDtype.h"
+#include "op_plugin/utils/OpUtils.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "op_plugin/OpApiInterface.h"
 namespace op_infer {
@@ -50,7 +51,7 @@ at::ScalarType npu_group_norm_silu_dst_type(
   at::native::ResultTypeState state = {};
   state = at::native::update_result_type_state(input, state);
 
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_gte_soc_version_950()) {
     if (weight.has_value()) {
       state = at::native::update_result_type_state(weight.value(), state);
     } else if (bias.has_value()) {

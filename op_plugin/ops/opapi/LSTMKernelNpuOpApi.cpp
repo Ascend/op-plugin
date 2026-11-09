@@ -222,7 +222,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> lstm(
     bool bidirectional,
     bool batch_first) {
   // Preserve the existing fallback behavior on devices other than Ascend950.
-  if (c10_npu::GetSocVersion() != c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_ne_soc_version_950()) {
     if (ShouldFallbackToAclOp(input, hx, params)) {
       return acl_op::lstm(input, hx, params, has_biases, num_layers, dropout, train, bidirectional, batch_first);
     }

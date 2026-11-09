@@ -55,7 +55,7 @@ std::tuple<at::Tensor, at::Tensor> _npu_ciou(
     bool is_cross,
     int64_t mode,
     bool atan_sub_flag) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_lt_soc_version_950()) {
     return acl_op::_npu_ciou(self, gtboxes, trans, is_cross, mode, atan_sub_flag);
   }
   bool self_is_half = self.scalar_type() == at::kHalf;
@@ -84,7 +84,7 @@ at::Tensor npu_ciou(
     bool is_cross,
     int64_t mode,
     bool atan_sub_flag) {
-  if (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_lt_soc_version_950()) {
     return acl_op::npu_ciou(self, gtboxes, trans, is_cross, mode, atan_sub_flag);
   }
 
@@ -100,7 +100,7 @@ std::tuple<at::Tensor, at::Tensor> npu_ciou_backward(
     bool trans,
     bool is_cross,
     int64_t mode) {
-  if (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950) {
+  if (op_plugin::utils::is_gte_soc_version_950()) {
     TORCH_CHECK(false, "npu_ciou_backward is not supported on Ascend950 and above", OPS_ERROR(ErrCode::NOT_SUPPORT));
   }
   return acl_op::npu_ciou_backward(grad, bboxes, gtboxes, atan_sub_opt, trans, is_cross, mode);
