@@ -91,6 +91,12 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - <term>Ascend 950PR&950DT products</term>: This parameter is supported. The default value `None` indicates that the actual type of `input` is the same as the data type of the tensor.
   <!-- end id11 -->
 
+## Return Values
+
+`Tensor`
+
+Returns the `input` modified in place.
+
 ## Constraints
 
 <!-- npu="950,A3,910b" id15 -->
@@ -139,12 +145,6 @@ The `customize_dtype` parameter is supported only for Atlas A2 training products
   - If either of the last two dimensions of the shape of `srcTensor` is 1, no operation that modifies the Tensor (including transpose) is allowed after the conversion to $FRACTAL\_NZ$.
   - In the $FRACTAL\_NZ$ to $ND$ scenario, non-contiguous `srcTensor` input is not supported.
 <!-- end id12 -->
-
-## Return Values
-
-`Tensor`
-
-Returns the `input` modified in place.
 
 ## Examples
 

@@ -11,13 +11,13 @@
 
 ## Function
 
-- API function: Performs MX quantization on the input variable by using data blocks (32*32) as basic blocks and converts the result to the target data type.
+- API function: Performs MX quantization on the input variable by using data blocks (32\*32) as basic blocks and converts the result to the target data type.
 
-    In each basic block, a different scale algorithm is used according to the value of `scale_alg` to calculate the quantization parameter `scale` (1*1) of the current block. It is broadcast to `scale1` (32*1) and `scale2` (1*32) for output. At the same time, each number in the basic block is divided by `scale` and converted to the corresponding `dst_type` according to `round_mode` to obtain the quantization result `y`.
+    In each basic block, a different scale algorithm is used according to the value of `scale_alg` to calculate the quantization parameter `scale` (1\*1) of the current block. It is broadcast to `scale1` (32\*1) and `scale2` (1\*32) for output. At the same time, each number in the basic block is divided by `scale` and converted to the corresponding `dst_type` according to `round_mode` to obtain the quantization result `y`.
 
 - Formulas:
   - Scenario 1, when `scale_alg` is 0:
-    - The input is grouped by data blocks (32*32) as basic blocks. The numbers in a data block $\{\{V_i\}_{i=1}^{32*32}\}$ are quantized into $\{scale, \{P_i\}_{i=1}^{32*32}\}$.
+    - The input is grouped by data blocks (32\*32) as basic blocks. The numbers in a data block $\{\{V_i\}_{i=1}^{32*32}\}$ are quantized into $\{scale, \{P_i\}_{i=1}^{32*32}\}$.
 
       $$
       shared\_exp = floor(log_2(max_i(|V_i|))) - emax \\
@@ -25,7 +25,7 @@
       P_i = cast\_to\_dst\_type(V_i/scale, round\_mode), \space i\space from\space 1\space to\space 32*32
       $$
 
-    - At the same time, scale (1*1) is broadcast to scale1 (32*1) and scale2 (1*32) as the output scale1 and scale2. The quantized $P_i$ is placed at the corresponding $V_i$ position to form the output y.
+    - At the same time, scale (1\*1) is broadcast to scale1 (32\*1) and scale2 (1\*32) as the output scale1 and scale2. The quantized $P_i$ is placed at the corresponding $V_i$ position to form the output y.
 
     - emax: Exponent bit of the maximum normal number of the corresponding data type.
 

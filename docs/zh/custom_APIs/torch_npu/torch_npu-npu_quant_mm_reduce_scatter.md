@@ -121,7 +121,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：当x1和x2数据类型为`torch.int8`时，bias数据类型可以是`torch.float16`、`torch.bfloat16`、`torch.float32`；当x1和x2数据类型为`torch.float16`时，bias数据类型必须为`torch.float16`、`torch.float32`；当x1和x2数据类型为`torch.bfloat16`时，bias数据类型必须为`torch.bfloat16`、`torch.float32`。
   <!-- end id11 -->
   <!-- npu="950" id12 -->
-  - <term>Ascend 950DT系列产品</term>：如果x1的数据类型是`torch.float16`、`torch.bfloat16`，则bias的数据类型必须为`torch.float16`、`torch.bfloat16`。如果x1的数据类型是`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`时，在pertensor和mx量化场景下，bias的数据类型必须为`torch.float32`。在perblock场景下，仅支持输入为None。
+  - <term>Ascend 950DT系列产品</term>：如果x1的数据类型是`torch.float16`、`torch.bfloat16`，则bias的数据类型必须为`torch.float16`、`torch.bfloat16`。如果x1的数据类型是`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`时，在pertensor和mx量化场景下，bias的数据类型必须为`torch.float32`。在perblock场景下，仅支持输入为None。
   <!-- end id12 -->
 
 - **x1\_scale**（`Tensor`）：可选参数，mm左矩阵反量化参数，支持传入None。当x1和x2数据类型为`torch.float16`/`torch.bfloat16`时，仅支持传入None。

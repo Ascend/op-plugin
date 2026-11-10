@@ -89,7 +89,9 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 
 ## Return Values
 
-**`out`** (`Tensor`): Output Tensor after the data layout is changed.
+`Tensor`
+
+Returns the new tensor after the change.
 
 ## Constraints
 
@@ -139,12 +141,6 @@ The `customize_dtype` parameter is supported only on Atlas A2 training products/
   - In the scenario where either of the last two dimensions of the `srcTensor` shape is equal to 1, after conversion to $FRACTAL\_NZ$, any operation that can modify the Tensor, including transpose, is not allowed.
   - In the $FRACTAL\_NZ$ to $ND$ scenario, non-contiguous input `srcTensor` is not supported.
 <!-- end id12 -->
-
-## Return Values
-
-`Tensor`
-
-Returns the new tensor after the change.
 
 ## Example
 

@@ -12,7 +12,7 @@
 ## Function
 
 - API function: Performs MX quantization with the target data type `float4` (`torch_npu.float4_e1m2fn_x2`, `torch_npu.float4_e2m1fn_x2`) or `float8` (`torch.float8_e4m3fn`, `torch.float8_e5m2`) simultaneously on the -1 and -2 axes of the input Tensor. On the -1 and -2 axes, the quantization scales mxscale1 and mxscale2 are calculated for every 32 values and used as the corresponding parts of the output tensors mxscale1 and mxscale2. Then, all elements in the two groups are divided by the corresponding quantization scale and converted to the corresponding dst_type according to round_mode to obtain the quantization results y1 and y2.
-  - Axis merging: In the operator implementation, all axes before the -2 axis (exclusive) are merged. That is, for an input Tensor with shape `(d_0, d_1, ..., d_{n-3}, d_{n-2}, d_{n-1})`, the dimensions before the -2 axis `(d_0, d_1, ..., d_{n-3})` are merged into one dimension, which is equivalent to reshaping the input to `(d_0 \times d_1 \times ... \times d_{n-3}, d_{n-2}, d_{n-1})` before quantization.
+  - Axis merging: In the operator implementation, all axes before the -2 axis (exclusive) are merged. That is, for an input Tensor with shape $(d_0, d_1, ..., d_{n-3}, d_{n-2}, d_{n-1})$, the dimensions before the -2 axis $(d_0, d_1, ..., d_{n-3})$ are merged into one dimension, which is equivalent to reshaping the input to $(d_0 \times d_1 \times ... \times d_{n-3}, d_{n-2}, d_{n-1})$ before quantization.
 - Formulas:
   - Scenario 1, when scale_alg is 0, that is, the implementation of the OCP Microscaling Formats (Mx) Specification:
     - The input x is grouped along the -1 axis into groups of 32 values. A group of 32 values $\{\{V_i\}_{i=1}^{32}\}$ is quantized to $\{mxscale1, \{P_i\}_{i=1}^{32}\}$:
