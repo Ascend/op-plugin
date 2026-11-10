@@ -3904,13 +3904,13 @@ def add_quant_gmm_check(*args):
     )
     if x1_dtype is not None:
         torch._check(
-            x1_dtype == torch_npu.hifloat8,
-            lambda: "x1_dtype is only supported hifloat8 for now, but it is " + str(x1_dtype),
+            x1_dtype == torch_npu.hifloat8 or x1_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "x1_dtype only supports hifloat8 or float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(x1_dtype),
         )
     if x2_dtype is not None:
         torch._check(
-            x2_dtype == torch_npu.hifloat8,
-            lambda: "x2_dtype is only supported hifloat8 for now, but it is " + str(x2_dtype),
+            x2_dtype == torch_npu.hifloat8 or x2_dtype == torch_npu.float4_e2m1fn_x2,
+            lambda: "x2_dtype only supports hifloat8 or float4_e2m1fn_x2 for now, but it is " + npu_dtype_to_str(x2_dtype),
         )
 
     if x1_scale_dtype is not None:
