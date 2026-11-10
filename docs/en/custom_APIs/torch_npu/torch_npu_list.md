@@ -991,11 +991,6 @@ This section describes commonly used custom APIs, including Tensor creation and 
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>For the permuted_tokens processed by the permute computation, accumulates them back to the original unpermuted_tokens according to sorted_indices and routing_map, supporting the drop_and_pad filling mode.</p>
 </td>
 </tr>
-<tr id="npu_add_quant_gmm_"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_add_quant_gmm_"><a name="p_npu_add_quant_gmm_"></a><a name="p_npu_add_quant_gmm_"></a><a href="torch_npu-npu_add_quant_gmm_.md">torch_npu.npu_add_quant_gmm_</a></p>
-</td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_add_quant_gmm__desc"><a name="p_npu_add_quant_gmm__desc"></a><a name="p_npu_add_quant_gmm__desc"></a><span>In training scenarios, micro-batch gradient accumulation involves a large number of scenarios in which GroupedMatMul operations are followed by InplaceAdd operations. This API fuses the operations to implement grouped matrix multiplication computation and addition computation. Only the mx quantization, T-C quantization, and T-T quantization scenarios are supported.</span></p>
-</td>
-</tr>
 <tr id="npu_apply_adam_w"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_apply_adam_w"><a name="p_npu_apply_adam_w"></a><a name="p_npu_apply_adam_w"></a><a href="torch_npu-npu_apply_adam_w.md">torch_npu.npu_apply_adam_w</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_apply_adam_w_desc"><a name="p_npu_apply_adam_w_desc"></a><a name="p_npu_apply_adam_w_desc"></a><span>Implements the AdamW optimizer function, decoupling weight decay from the gradient-based parameter update and updating the weight parameters and the first- and second-order moment estimates in place.</span></p></td>

@@ -88,6 +88,12 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - <term>Ascend 950PR&950DT系列产品</term>：支持该参数。默认值`None`表示`input`的真实类型和tensor的数据类型一致。
   <!-- end id11 -->
 
+## 返回值说明
+
+`Tensor`
+
+返回原地修改后的`input`。
+
 ## 约束说明
 
 <!-- npu="950,A3,910b" id15 -->
@@ -136,12 +142,6 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
   - $FRACTAL\_NZ$转$ND$场景，不支持输入`srcTensor`非连续。
 <!-- end id12 -->
-
-## 返回值说明
-
-`Tensor`
-
-返回原地修改后的`input`。
 
 ## 调用示例
 

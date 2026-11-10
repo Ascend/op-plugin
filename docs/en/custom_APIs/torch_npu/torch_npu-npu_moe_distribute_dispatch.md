@@ -34,8 +34,8 @@
         $$
         expand\_x =
         \begin{cases}
-        allgatherv(alltoall_x_out), & with TP communication domain \\
-        alltoall_x_out, & without TP communication domain
+        allgatherv(alltoall\_x\_out), & with TP communication domain \\
+        alltoall\_x\_out, & without TP communication domain
         \end{cases}
         $$
 
@@ -64,16 +64,16 @@
         $$
         expand\_x =
         \begin{cases}
-        allgatherv(alltoall_x_out), & with TP communication domain \\
-        alltoall_x_out, & without TP communication domain
+        allgatherv(alltoall\_x\_out), & with TP communication domain \\
+        alltoall\_x\_out, & without TP communication domain
         \end{cases}
         $$
 
         $$
         dynamic\_scales =
         \begin{cases}
-        allgatherv(alltoall_dynamic_scales_out), & with TP communication domain \\
-        alltoall_dynamic_scales_out, & without TP communication domain
+        allgatherv(alltoall\_dynamic\_scales\_out), & with TP communication domain \\
+        alltoall\_dynamic\_scales\_out, & without TP communication domain
         \end{cases}
         $$
 

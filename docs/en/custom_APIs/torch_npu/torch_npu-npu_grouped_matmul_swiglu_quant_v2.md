@@ -226,12 +226,12 @@
       - **Input**:
         - $X∈\mathbb{Z_8}^{M \times K}$: Activation matrix (left matrix), where M is the total number of tokens and K is the feature dimension.
         - $W∈\mathbb{Z_8}^{E \times K \times N}$: Grouped weight matrix (right matrix), where E is the number of experts, K is the feature dimension, and N is the output dimension.
-        - $w_scale∈\mathbb{R}^{E \times N}$: Per-channel scaling factor of the weight matrix.
-        - $x_scale∈\mathbb{R}^{M}$: Per-token scaling factor of the activation matrix.
+        - $w\_scale∈\mathbb{R}^{E \times N}$: Per-channel scaling factor of the weight matrix.
+        - $x\_scale∈\mathbb{R}^{M}$: Per-token scaling factor of the activation matrix.
         - $groupList∈\mathbb{N}^{E}$: Group index list in cumsum or count form.
       - **Output**:
         - $Q∈\mathbb{Z_8}^{M \times N / 2}$: Quantized output matrix.
-        - $Q_scale∈\mathbb{R}^{M}$: Per-token quantization scaling factor of the output matrix.
+        - $Q\_scale∈\mathbb{R}^{M}$: Per-token quantization scaling factor of the output matrix.
       - **Computation process**:
 
       1. Determine the tokens of the current group based on groupList[i], where $i \in [0,Len(groupList)]$.
@@ -283,7 +283,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.int8`.
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch.float4_e2m1fn_x2`, `torch.int8`, `torch_npu.hifloat8`, or `torch_npu.float4_e1m2fn_x2` (supported only when `weight` is in $FRACTAL_NZ$ format). For the `torch_npu.hifloat8` and `torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` series, the optional parameter `x_dtype` must be set to the corresponding type. In this case the `dtype` of the input `x` itself no longer takes effect, but the `dtype` of the input `x` itself must still be an 8-bit data type to ensure that the `shape` is correct. The inner axis `K` of float4 must be even so that 8-bit data can be converted into two float4 values. The data format supports $ND$.
+  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch.float4_e2m1fn_x2`, `torch.int8`, `torch_npu.hifloat8`, or `torch_npu.float4_e1m2fn_x2` (supported only when `weight` is in $FRACTAL\_NZ$ format). For the `torch_npu.hifloat8` and `torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` series, the optional parameter `x_dtype` must be set to the corresponding type. In this case the `dtype` of the input `x` itself no longer takes effect, but the `dtype` of the input `x` itself must still be an 8-bit data type to ensure that the `shape` is correct. The inner axis `K` of float4 must be even so that 8-bit data can be converted into two float4 values. The data format supports $ND$.
   <!-- end id7 -->
 
 - **`weight`** (`List[Tensor]`): Required. Weight matrix (right matrix of the matrix multiplication). Non-contiguous `Tensor`s are supported.
@@ -413,7 +413,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
   - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.int8`. The shape must be 2D with shape `[m, n/2]`.
   <!-- end id30 -->
   <!-- npu="950" id31 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.float4_e2m1fn_x2`, `torch.int8`, `torch_npu.hifloat8`, or `torch_npu.float4_e1m2fn_x2` (supported only when `weight` is in $FRACTAL_NZ$ format). The `shape` supports 2D `[m, n / 2]`.
+  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.float4_e2m1fn_x2`, `torch.int8`, `torch_npu.hifloat8`, or `torch_npu.float4_e1m2fn_x2` (supported only when `weight` is in $FRACTAL\_NZ$ format). The `shape` supports 2D `[m, n / 2]`.
   <!-- end id31 -->
 
 - **`output_scale`** (`Tensor`): Quantization factor for the output, $Q_{\text{scale}}$ in the formulas. The data layout can be `ND`. Non-contiguous tensors are supported.

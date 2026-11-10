@@ -1157,6 +1157,6 @@ print(f"  single op output shape: {single_out.shape}")
 
 ## References
 
-- **BMM1 (Batch Matrix Multiply 1)**: The first matrix multiplication, which computes the attention score: $attention_score = query \cdot key^{\top}$.
-- **BMM2 (Batch Matrix Multiply 2)**: The second matrix multiplication, which applies the attention weights to value: $attention_out = atten_prob \cdot value$, where $atten_prob = softmax(\cdot)$.
+- **BMM1 (Batch Matrix Multiply 1)**: The first matrix multiplication, which computes the attention score: $attention\_score = query \cdot key^{\top}$.
+- **BMM2 (Batch Matrix Multiply 2)**: The second matrix multiplication, which applies the attention weights to value: $attention\_out = atten\_prob \cdot value$, where $atten\_prob = softmax(\cdot)$.
 - **Ring Attention**: A distributed attention algorithm that splits long sequences into blocks across multiple devices and computes attention block by block through ring communication to reduce the memory usage of a single device. On a single device, it degrades to standard attention. Multi-device merging relies on the LSE value output when `softmax_lse_flag=True`. For details, see [Return values](#return-values).

@@ -54,9 +54,9 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 - **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int32`. The default value is `3`. Currently, only mode `3` is supported.
 
-- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
+- **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is $2^{63}-1$.
 
-- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2^{63}-1`.
+- **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is $2^{63}-1$.
 
 ## Return Values
 
