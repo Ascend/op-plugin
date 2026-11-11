@@ -91,6 +91,11 @@ bool is_weight_trans(const at::Tensor &tensor)
     return tensor.stride(dim2) == 1 && tensor.stride(dim1) == tensor.size(dim2);
 }
 
+size_t restore_k_split_dim_m(size_t dim_m, const at::Tensor &x_tensor, bool mxfp4_valid)
+{
+    return (mxfp4_valid && is_weight_trans(x_tensor)) ? dim_m * FP4_IN_INT8 : dim_m;
+}
+
 // Motivation for adapting this interface for each Torch version separately:
 // 1. Optional TensorList is only supported in Torch2.1 and later versions.
 //    Thus, "Tensor[] bias" is used in Torch1.11 and Torch2.0, while
@@ -224,9 +229,12 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
         mxfp4_valid = mxfp4_valid && weight[0].scalar_type() == at::ScalarType::Float4_e2m1fn_x2;
     }
 #endif
+
     size_t n_new = (mxfp4_valid && !weight_trans) ? (n0 * FP4_IN_INT8) : n0;
     if (mxfp4_valid) {
-        TORCH_CHECK(x[0].size(1) != 1, "In mxfp4, dim K should not be 2.", OPS_ERROR(ErrCode::VALUE));
+        if (!(group_type_value == K_SPLIT && is_weight_trans(x[0]))) {
+            TORCH_CHECK(x[0].size(1) != 1, "In mxfp4, dim K should not be 2.", OPS_ERROR(ErrCode::VALUE));
+        }
     }
     if (split_item_value == IN_NOT_SPLIT_OUT_NOT_SPLIT || split_item_value == IN_SPLIT_OUT_NOT_SPLIT) {
         if (group_type_value == K_SPLIT) {
@@ -264,7 +272,7 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
         if (num_x > 1) {
             size_t dim_m = 0;
             for (size_t i = 0; i < num_x; i++) {
-                dim_m += static_cast<size_t>(x[i].size(0));
+                dim_m += restore_k_split_dim_m(static_cast<size_t>(x[i].size(0)), x[i], mxfp4_valid);
             }
             weight[0].dtype() == at::ScalarType::Int ?
                 create_new_tensor(y, dim_m, n0 * INT4_NUMS_IN_INT32, options) :
@@ -273,9 +281,10 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
             if (group_type_value == K_SPLIT) {
                 TORCH_CHECK(num_weight == 1,
                             "When group_list is 2(K_SPLIT) and split_item is 2/3, the length of weight must equal x.");
+                size_t dim_m = restore_k_split_dim_m(static_cast<size_t>(x[0].size(0)), x[0], mxfp4_valid);
                 weight[0].dtype() == at::ScalarType::Int ?
-                    create_new_tensor_batch(y, num_group_list, x[0].size(0), n0 * INT4_NUMS_IN_INT32, options) :
-                    create_new_tensor_batch(y, num_group_list, x[0].size(0), n_new, options);
+                    create_new_tensor_batch(y, num_group_list, dim_m, n0 * INT4_NUMS_IN_INT32, options) :
+                    create_new_tensor_batch(y, num_group_list, dim_m, n_new, options);
             } else {
                 (weight[0].dtype() == at::ScalarType::Int ||
                  (weight[0].dtype() == at::ScalarType::Float && weight[0].dtype() != x[0].dtype())) && (!weight_trans)
@@ -347,7 +356,20 @@ std::vector<at::Tensor> npu_grouped_matmul(const at::TensorList x,
     static const bool dtypeValid = x[0].scalar_type() != at::ScalarType::Float8_e5m2 &&
                                    x[0].scalar_type() != at::ScalarType::Float8_e4m3fn &&
                                    !x_dtype.has_value() && !weight_dtype.has_value();
-    if (!is_grouped_matmul_V5_available || !dtypeValid || mxfp4_valid) {
+    const bool is_mxfp4_k_split = mxfp4_valid && group_type_value == K_SPLIT;
+    if (is_mxfp4_k_split) {
+        const at::Tensor& xt = x[0];
+        const at::Tensor& wt = weight[0];
+        int64_t k = xt.size(1);
+        int64_t m = static_cast<int64_t>(restore_k_split_dim_m(static_cast<size_t>(xt.size(0)), xt, mxfp4_valid));
+        int64_t n = weight_trans ? (wt.dim() == 3 ? wt.size(wt.dim() - 1) : wt.size(0))
+                                 : wt.size(wt.dim() - 1) * FP4_IN_INT8;
+        TORCH_CHECK(!(k == 1 && (m == 2 || n == 2)),
+                    "In mxfp4 groupType=2 (split K), when k==1, m and n must not be 2 "
+                    + OPS_ERROR(ErrCode::VALUE));
+    }
+    const bool useV5 = is_grouped_matmul_V5_available && (dtypeValid || is_mxfp4_k_split);
+    if (!useV5) {
         EXEC_NPU_CMD(aclnnGroupedMatmulV4, x_wrapper, weight_wrapper, bias_real, scale_wrapper, offset_real, antiquant_scale_real,
             antiquant_offset_real, per_token_scale_wrapper, group_list_real, activation_input_real,
             activation_quant_scale_real, activation_quant_offset_real, split_item_value, group_type_value,
