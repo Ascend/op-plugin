@@ -12,7 +12,7 @@ C++ extensions插件提供了将自定义算子映射到昇腾AI处理器的功�
 ├── cpp_extension_base                 // 基础样例
 ├── cpp_extension_full                 // 完整样例
 │   ├── module                         // 前反向绑定通过python实现
-│   └── torch_library_impl             // 前反向绑定通过c++实现
+│   └── torch_lib_impl             // 前反向绑定通过c++实现
 ├── cpp_extension_structured           // 结构化适配实现
 ├── cpp_extension_asc                  // 算子通过Ascend C实现
 └── cpp_extension_pybind               // 通过pybind绑定对外接口

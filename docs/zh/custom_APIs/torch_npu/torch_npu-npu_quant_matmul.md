@@ -751,7 +751,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     npu_x2 = cpu_x2.npu()
     npu_x2 = torch_npu.npu_format_cast(npu_x2, 29, customize_dtype=torch.float8_e4m3fn)
     npu_x2 = torch_npu.npu_convert_weight_to_int4pack(npu_x2)
-    # per-group场景把y_scale从float32变为int64
+    # pergroup场景把y_scale从float32变为int64
     if (pertoken_scale == None) :
         y_scale = torch_npu.npu_trans_quant_param(y_scale)
 

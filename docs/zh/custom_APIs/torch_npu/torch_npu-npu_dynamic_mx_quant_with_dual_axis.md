@@ -60,7 +60,7 @@
       Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{32})
       $$
 
-      将fp32映射到目标数据类型为float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
+      将fp32映射到目标数据类型float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
 
       $$
       S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
@@ -156,7 +156,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
   - mxscale1.shape[-1] = 2。
   - mxscale2.shape[-1] = 2。
   - 其他维度与输入input一致。
-  - 举例：输入input的shape为[B, M, N]，目的数据类型为float8时，对应的y1和y2的shape为[B, M, N]，mxscale1的shape为[B, M, (ceil(N/32)+2-1)/2, 2]，mxscale2的shape为[B, (ceil(M/32)+2-1)/2, N, 2]。
+  - 举例：输入input的shape为[B, M, N]，目标数据类型为float8时，对应的y1和y2的shape为[B, M, N]，mxscale1的shape为[B, M, (ceil(N/32)+2-1)/2, 2]，mxscale2的shape为[B, (ceil(M/32)+2-1)/2, N, 2]。
 
 ## 调用示例
 

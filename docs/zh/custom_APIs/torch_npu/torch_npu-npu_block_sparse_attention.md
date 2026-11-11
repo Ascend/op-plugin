@@ -38,7 +38,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
   - BNSD：shape为`[batch, headNum, maxQSeqLength, headDim]`；
 
 - **key** (`Tensor`)：必选参数，表示Attention中的key，对应公式中的$key$。数据格式为$ND$；数据类型与`query`一致。
-  - TND：shape为`[totalKTokens, numKeyValueHeads, headDim]`；
+  - TND：shape为`[totalKvTokens, numKeyValueHeads, headDim]`；
   - BNSD：shape为`[batch, numKeyValueHeads, maxKvSeqLength, headDim]`；
 
 - **value** (`Tensor`)：必选参数，表示Attention中的value，对应公式中的$value$。shape和数据类型与`key`一致。

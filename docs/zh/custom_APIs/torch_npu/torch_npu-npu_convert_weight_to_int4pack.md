@@ -34,10 +34,10 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 - **weight**(`Tensor`)：必选参数，待处理的张量。数据格式支持$ND$、$FRACTAL\_NZ$，使用接口torch_npu.npu_format_cast可以将数据格式转换为$FRACTAL\_NZ$，不支持非连续的Tensor。
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维度需要8个元素对齐。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维需要8个元素对齐。
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维度需要8个元素对齐。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维需要8个元素对齐。
 
     > [!NOTE]
     >
