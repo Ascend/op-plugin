@@ -48,3 +48,4 @@ NPU设备上的数据预取器，主要用于优化数据加载流程，提升�
 ...     while input is not None:
 ...         # 对input和target进行训练操作
 ...         input, target = prefetcher.next()
+```
