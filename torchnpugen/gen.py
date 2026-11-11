@@ -252,6 +252,7 @@ def gen_function_declaration(
 def gen_return(
     f: NativeFunction,
     deprecated_dict: Dict,
+    migrated_set: set = None,
 ) -> List[Optional[str]]:
     ret = []
     with native_function_manager(f):
@@ -281,6 +282,17 @@ def gen_return(
 Use {deprecated_replace} instead.");'
             else:
                 deprecated_warn += f'TORCH_WARN_ONCE("{deprecated_func} is deprecated and will be removed in future version.");'
+
+        migrated_warn = ""
+        if migrated_set and op_name_with_overload in migrated_set:
+            migrated_func = f'torch_npu.{str(f.func.name.name)}'
+            migrated_warn += f'TORCH_WARN_ONCE("{migrated_func} has been migrated to taco. '
+            migrated_warn += f'Please install torch_npu_custom_ops and import taco after torch_npu '
+            migrated_warn += f'to continue using this API. '
+            migrated_warn += f'See https://gitcode.com/Ascend/taco/blob/master/README.md for details. '
+            migrated_warn += f'This API will be removed from torch_npu in a future version.");'
+
+        warn_block = deprecated_warn + migrated_warn
 
         format_check = []
         format_display = []
@@ -318,13 +330,13 @@ Use {deprecated_replace} instead.");'
         if "op_api" in f.impl_ns and "acl_op" in f.impl_ns:
             if aclnn_extension:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     return op_api::{impl_name}({args_exprs_str});
 }}
 """)
             elif not f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
 {"".join(format_for_args)}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
@@ -345,7 +357,7 @@ Use {deprecated_replace} instead.");'
 """)
             else:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     bool is_jit_disable = at_npu::native::env::CheckJitDisable();
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     ASCEND_LOGI("{impl_name} exec with jit compile: %d", !is_jit_disable);
@@ -361,13 +373,13 @@ Use {deprecated_replace} instead.");'
             ns = f.impl_ns[0]
             if aclnn_extension:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     return {ns}::{impl_name}({args_exprs_str});
 }}
 """)
             elif f.internal_format_opapi:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     {dvm_call}
     return {ns}::{impl_name}({args_exprs_str});
@@ -375,7 +387,7 @@ Use {deprecated_replace} instead.");'
 """)
             else:
                 ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
 {"".join(format_for_args)}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     if ({("".join(format_check)).replace(" && ", " || !").replace(" || ", "", 1)}) {{
@@ -390,7 +402,7 @@ Use {deprecated_replace} instead.");'
         elif "acl_op" in f.impl_ns:
             ns = f.impl_ns[0]
             ret.append(f"""{sig.defn(name=op_name)}{{
-    {deprecated_warn}
+    {warn_block}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     if ({is_aclnn_only}) {{
         TORCH_CHECK(false,
@@ -403,7 +415,7 @@ Use {deprecated_replace} instead.");'
 """)
         if f.sparse is not None:
             ret.append(f"""{sig.defn(name=op_name + "_sparse")}{{
-    {deprecated_warn}
+    {warn_block}
     OP_EXEC_LOG({impl_name}, "exec aten", {inputs_list});
     return sparse::{impl_name}_sparse({args_exprs_str});
 }}
@@ -426,6 +438,7 @@ def should_generate_op_interface(f: NativeFunction) -> bool:
 def parse_native_yaml(
     path: str,
     deprecate_path: str,
+    migrated_path: str = None,
 ) -> Tuple[Dict[str, list], List[Optional[str]]]:
 
     with open(path, "r") as f:
@@ -445,7 +458,15 @@ def parse_native_yaml(
     if deprecated:
         for item in deprecated:
             deprecated_dict[item.get("name")] = item.get("replace", None)
-    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict),
+    migrated_set = set()
+    if migrated_path:
+        with open(migrated_path, "r") as f:
+            mp = yaml.safe_load(f)
+        migrated = mp.get("migrated", []) if mp else []
+        if migrated:
+            for item in migrated:
+                migrated_set.add(item.get("name"))
+    dispatch_registrations_body = sorted(set(concatMap(lambda f: gen_return(f, deprecated_dict, migrated_set),
                                                        filter(should_generate_op_interface, res))))
 
     return backend_declarations, dispatch_registrations_body

@@ -18,6 +18,10 @@ def main() -> None:
         '--deprecate_yaml',
         help='path to yaml file containing functions which is deprecated.')
     parser.add_argument(
+        '--migrated_yaml',
+        default=None,
+        help='path to yaml file containing functions migrated to taco.')
+    parser.add_argument(
         '-o', '--output_dir', help='output directory')
     parser.add_argument(
         '--dry_run', type=bool, default=False, help='output directory')
@@ -31,7 +35,11 @@ def main() -> None:
     deprecate_yaml_path = os.path.realpath(options.deprecate_yaml)
     PathManager.check_directory_path_readable(source_yaml_path)
     PathManager.check_directory_path_readable(deprecate_yaml_path)
-    backend_declarations, dispatch_registrations_body = parse_native_yaml(source_yaml_path, deprecate_yaml_path)
+    migrated_yaml_path = None
+    if options.migrated_yaml:
+        migrated_yaml_path = os.path.realpath(options.migrated_yaml)
+        PathManager.check_directory_path_readable(migrated_yaml_path)
+    backend_declarations, dispatch_registrations_body = parse_native_yaml(source_yaml_path, deprecate_yaml_path, migrated_yaml_path)
 
     env_aclnn_extension_switch = os.getenv('ACLNN_EXTENSION_SWITCH')
     if env_aclnn_extension_switch:

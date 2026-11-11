@@ -63,6 +63,7 @@ ${python_execute} -m torchnpugen.gen_op_backend  \
   --output_dir="$CDIR/op_plugin/" \
   --source_yaml="$OUTPUT_DIR/op_plugin_functions.yaml" \
   --deprecate_yaml="$CDIR/op_plugin/config/deprecated.yaml" \
+  --migrated_yaml="$CDIR/op_plugin/config/decoupled_to_taco.yaml" \
   --impl_path="$CDIR/torch_npu/csrc/aten"  # Used to double-check the yaml file definitions.
 
 ${python_execute} -m torchnpugen.struct.gen_struct_opapi  \

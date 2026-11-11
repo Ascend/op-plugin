@@ -1,0 +1,31 @@
+migrated:
+  # APIs decoupled to taco - will be removed from torch_npu in a future version.
+  # Install taco (pip install taco) and import taco after torch_npu to continue using these APIs.
+  - name: npu_attn_softmax_
+  - name: npu_attn_softmax_backward_
+  - name: npu_deep_norm
+  - name: npu_deep_norm_backward
+  - name: npu_geglu
+  - name: npu_geglu_grad
+  - name: npu_nsa_compress
+  - name: npu_nsa_compress_attention_infer
+  - name: npu_nsa_compress_grad
+  - name: npu_nsa_select_attention
+  - name: npu_nsa_select_attention_infer
+  - name: npu_nsa_select_attention_grad
+  - name: npu_add_rms_norm_v2_functional
+  - name: npu_batch_gather_matmul
+  - name: npu_batch_gather_matmul_
+  - name: npu_fused_causal_conv1d_v2
+  - name: npu_hans_encode.out
+  - name: npu_hans_decode.out
+  - name: npu_matmul_compress_dequant
+  - name: npu_masked_softmax_with_rel_pos_bias
+  - name: npu_qkv_rms_norm_rope_cache
+  - name: npu_qkv_rms_norm_rope_cache_functional
+  - name: npu_kv_rmsnorm_rope_cache_v2_functional
+  - name: npu_quant_matmul_dequant
+  - name: npu_quant_max
+  - name: npu_ring_attention_update
+  - name: npu_scatter_list
+  - name: npu_scatter_list_
