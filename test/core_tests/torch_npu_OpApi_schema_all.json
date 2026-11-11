@@ -835,6 +835,15 @@
   "func: logit_backward(Tensor grad_output, Tensor self, float? eps=None) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: _nested_tensor_from_mask_left_aligned(Tensor t, Tensor mask) -> bool": {
+    "version": ["all_version"]
+  },
+  "func: _nested_tensor_from_mask(Tensor t, Tensor mask, bool mask_check=True) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: _transformer_encoder_layer_fwd(Tensor src, int embed_dim, int num_heads, Tensor qkv_weight, Tensor qkv_bias, Tensor proj_weight, Tensor proj_bias, bool use_gelu, bool norm_first, float eps, Tensor norm_weight_1, Tensor norm_bias_1, Tensor norm_weight_2, Tensor norm_bias_2, Tensor ffn_weight_1, Tensor ffn_bias_1, Tensor ffn_weight_2, Tensor ffn_bias_2, Tensor? mask=None, int? mask_type=None) -> Tensor": {
+    "version": ["all_version"]
+  },
   "func: _native_multi_head_attention(Tensor query, Tensor key, Tensor value, int embed_dim, int num_head, Tensor qkv_weight, Tensor qkv_bias, Tensor proj_weight, Tensor proj_bias, Tensor? mask=None, bool need_weights=True, bool average_attn_weights=True, int? mask_type=None) -> (Tensor, Tensor)": {
     "version": ["all_version"]
   },
