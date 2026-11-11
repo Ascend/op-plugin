@@ -48,7 +48,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - MicroBatchNum：表示microBatch的大小，目前仅支持MicroBatchNum = 1。
 
-    - ExpertNumPerToken：表示每个Token对应的发送的Expert数量，`ExpertNumPerToken` = `K` + `sharedExpertNum`。
+    - ExpertNumPerToken：表示每个Token对应的需发送的Expert数量，`ExpertNumPerToken` = `K` + `sharedExpertNum`。
 
     - K：表示选取topK个专家，取值范围为0 < `K` ≤ 16。
 

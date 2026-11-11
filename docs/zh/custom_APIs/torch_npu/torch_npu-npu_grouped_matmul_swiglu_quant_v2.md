@@ -205,7 +205,7 @@
          Q_i = quantize\_to\_element\_format(S_i/Q\_scale), \space i\space from\space 1\space to\space blocksize
          $$
 
-         其中，$emax$表示对应数据类型的最大正则数的指数位：
+         其中，$emax$表示对应数据类型的最大正规数的指数位：
 
          |   DataType    | emax |
          | :-----------: | :--: |

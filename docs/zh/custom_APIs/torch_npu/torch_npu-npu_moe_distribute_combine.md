@@ -85,7 +85,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     - <term>Atlas A3系列产品</term>：支持TP通信域，要求是一个1维张量，shape为\(tp\_world\_size, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id11 -->
 
-- **x\_active\_mask**（`Tensor`）：**可选参数**，表示输出x中的token是否有效，false表示无效，不接收。
+- **x\_active\_mask**（`Tensor`）：**可选参数**，表示输出x中的token是否有效，false表示无效。
 
     <!-- npu="950,910b" id12 -->
     - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：**预留参数，暂未使用，使用默认值即可。**
