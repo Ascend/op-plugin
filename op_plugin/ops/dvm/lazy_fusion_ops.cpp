@@ -1436,7 +1436,9 @@ at::Tensor& gelu_out(const at::Tensor& self, c10::string_view approximate, at::T
 
 at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, c10::string_view approximate) {
   static auto enable = IsEnabled("gelu_backward");
-  if (!enable || !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
+  // The DVM formula implements only the tanh approximation.
+  if (!enable || approximate != "tanh" ||
+      !InputCheck(grad_output, IsFloatType, /*allow_non_contig=*/true) ||
       !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || grad_output.scalar_type() != self.scalar_type()) {
     return op_api::gelu_backward(grad_output, self, approximate);
   }
@@ -1628,13 +1630,14 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t chann
                                                       : at::zeros({channels}, input.options().dtype(at::kFloat));
   auto running_var_tensor = running_var.has_value() ? running_var.value().contiguous()
                                                     : at::ones({channels}, input.options().dtype(at::kFloat));
-  auto save_mean = at::zeros({channels}, input.options().dtype(at::kFloat));
-  auto save_invstd = at::zeros({channels}, input.options().dtype(at::kFloat));
 
   // Inference BatchNorm:
   //   y = ((x - running_mean) / sqrt(running_var + eps)) * weight + bias
   // Here invstd is materialized in-graph as:
   //   invstd = rsqrt(running_var + eps)
+  // The same expression is stored as save_invstd, and save_mean stores
+  // running_mean, matching what the aclnn entry writes into the inference
+  // statistics instead of leaving those caller buffers undefined.
   LazyFusionFlush();
   auto k = g_lazy_fusion_manager.Get();
   auto out_obj = k->Input(x);
@@ -1642,8 +1645,13 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t chann
   ShapeVector new_shape(x.dim(), 1);
   new_shape[1] = channels;
   auto new_shape_ref = k->GetShapeRef(new_shape);
+  ShapeVector stats_shape{channels};
+  auto stats_shape_ref = k->GetShapeRef(stats_shape);
   auto mean_obj = k->Cast(k->Input(running_mean_tensor, true, new_shape_ref), input_dtype);
   auto var_obj = k->Cast(k->Input(running_var_tensor, true, new_shape_ref), input_dtype);
+  auto save_mean_obj = k->Input(running_mean_tensor, true, stats_shape_ref);
+  auto save_invstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(k->Unary<dvm::UnaryType::kSqrt>(
+      k->Binary<dvm::BinaryType::kAdd>(k->Input(running_var_tensor, true, stats_shape_ref), static_cast<float>(eps))));
   auto invstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(
       k->Unary<dvm::UnaryType::kSqrt>(k->Binary<dvm::BinaryType::kAdd>(var_obj, static_cast<float>(eps))));
   out_obj = k->Binary<dvm::BinaryType::kSub>(out_obj, mean_obj);
@@ -1657,6 +1665,9 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t chann
         k->Binary<dvm::BinaryType::kAdd>(out_obj, k->Cast(k->Input(bias_tensor, true, new_shape_ref), input_dtype));
   }
   auto out = k->Output(out_obj, k->GetShape(out_obj), input.options().dtype(input.scalar_type()));
+  auto stats_options = input.options().dtype(input.scalar_type());
+  auto save_mean = k->Output(save_mean_obj, k->GetShape(save_mean_obj), stats_options);
+  auto save_invstd = k->Output(save_invstd_obj, k->GetShape(save_invstd_obj), stats_options);
   DumpOp("native_batch_norm", input, weight, bias, running_mean, running_var, training, momentum, eps);
   return std::make_tuple(std::move(out), std::move(save_mean), std::move(save_invstd));
 }
@@ -1673,7 +1684,9 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t chann
     double eps,
     ::std::array<bool, 3> output_mask) {
   static auto enable = IsEnabled("native_batch_norm_backward", Level::kO2);
-  if (!enable || grad_out.scalar_type() != at::ScalarType::Float || input.scalar_type() != at::ScalarType::Float ||
+  // Native training backward avoids the slow DVM pointwise path and preserves
+  // the device-specific saved-statistic contract.
+  if (!enable || train || grad_out.scalar_type() != at::ScalarType::Float || input.scalar_type() != at::ScalarType::Float ||
       grad_out.scalar_type() != input.scalar_type() || input.dim() < 2 || input.dim() > 4 ||
       !NpuCheck(grad_out, input, weight, running_mean, running_var)) {
     return op_api::native_batch_norm_backward(
@@ -1681,43 +1694,6 @@ bool BatchNormVectorCheck(const c10::optional<at::Tensor>& tensor, int64_t chann
   }
   auto channels = input.size(1);
 
-  if (train) {
-    // === Training BatchNorm backward ===
-    if (!save_mean.has_value() || !save_invstd.has_value() || channels == 0 ||
-        !BatchNormVectorCheck(weight, channels) || !BatchNormVectorCheck(save_mean, channels) ||
-        !BatchNormVectorCheck(save_invstd, channels) || !NpuCheck(save_mean.value(), save_invstd.value())) {
-      return op_api::native_batch_norm_backward(
-          grad_out, input, weight, running_mean, running_var, save_mean, save_invstd, train, eps, output_mask);
-    }
-    bool need_input_reduce = output_mask[0] || output_mask[1];
-    auto reduce_res = op_api::batch_norm_backward_reduce(
-        grad_out, input, save_mean.value(), save_invstd.value(), weight, need_input_reduce, false, output_mask[2]);
-    at::Tensor grad_input;
-    at::Tensor grad_weight;
-    at::Tensor grad_bias = output_mask[2] ? std::get<3>(reduce_res) : at::Tensor();
-    if (need_input_reduce) {
-      at::Tensor sum_dy = std::get<0>(reduce_res);
-      at::Tensor sum_dy_xmu = std::get<1>(reduce_res);
-      auto k = g_lazy_fusion_manager.Get();
-      auto rstd_obj = k->Unary<dvm::UnaryType::kReciprocal>(k->Unary<dvm::UnaryType::kSqrt>(
-          k->Binary<dvm::BinaryType::kAdd>(k->Input(save_invstd.value().contiguous()), static_cast<float>(eps))));
-      at::Tensor rstd;
-      if (output_mask[0]) {
-        rstd = k->Output(rstd_obj, k->GetShape(rstd_obj), input.options().dtype(at::kFloat));
-      }
-      if (output_mask[1]) {
-        auto gw_obj = k->Binary<dvm::BinaryType::kMul>(rstd_obj, k->Input(sum_dy_xmu));
-        grad_weight = k->Output(gw_obj, k->GetShape(gw_obj), input.options().dtype(at::kFloat));
-      }
-      if (output_mask[0]) {
-        auto count = at::full({1}, static_cast<double>(input.numel() / channels), input.options().dtype(at::kFloat));
-        grad_input = lazy_fusion::batch_norm_backward_elemt(
-            grad_out, input, save_mean.value(), rstd, weight, sum_dy, sum_dy_xmu, count);
-      }
-    }
-    DumpOp("native_batch_norm_backward", grad_out, input, weight, save_mean, save_invstd, train, eps);
-    return std::make_tuple(std::move(grad_input), std::move(grad_weight), std::move(grad_bias));
-  }
   if (!BatchNormVectorCheck(weight, channels) || !BatchNormVectorCheck(running_mean, channels) ||
       !BatchNormVectorCheck(running_var, channels)) {
     return op_api::native_batch_norm_backward(
