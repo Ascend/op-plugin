@@ -22,7 +22,7 @@ torch_npu.npu_prefetch(input, dependency, max_size, offset=0) -> None
 - **`input`** (`Tensor`): Weights to be prefetched. No data processing is performed. This parameter is independent of data type and data layout. The input must not contain a null pointer.
 - **`dependency`** (`Tensor`): Node that specifies the start of prefetching. This parameter does not take effect in single-operator mode and can be set to `None`. In graph capture mode, this parameter must not be `None`. No data processing is performed. This parameter is independent of data type and data layout.
 - **`max_size`** (`int`): Maximum size of weights to prefetch. The value must be greater than 0. When the size of the weights exceeds this value, it is set to the maximum size of the weights. The data type can be `int32` or `int64`.
-- **`offset`** (`int`): Memory address offset for weight prefetching. The value must not exceed the weight address range. The data type can be `int32` or `int64`.
+- **`offset`** (`int`): Memory address offset for weight prefetching. The default value is `0`, and the value must be greater than or equal to `0` and must not exceed the weight address range. The data type can be `int32` or `int64`.
 
 ## Return Values
 

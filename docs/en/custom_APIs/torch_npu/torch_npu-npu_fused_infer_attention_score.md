@@ -11,7 +11,7 @@
 
 - Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The following two scenarios are supported:
   - PromptFlashAttention: Used during the prefill/prompt stage. Typically, `query`, `key`, and `value` are tensors containing the entire sequence and can be used in conjunction with `atten_mask` and the optional `pse_shift`. This mode prioritizes throughput; for long-sequence scenarios, pay close attention to timeout risks and splitting strategies.
-  - IncreFlashAttention: Used during the decode stage, where the S dimension of `query` is 1, and `key`/`value` typically come from the KV Cache. This mode prioritizes per-step latency and KV Cache access efficiency. Enabling PagedAttention can improve throughput and memory access efficiency, but introduces additional constraints.
+  - IncreFlashAttention: Used during the decode stage, where the S dimension of `query` is 1, and `key`/`value` typically come from the KV Cache. This mode prioritizes per-step latency and KV Cache access efficiency. Enabling Paged Attention can improve throughput and memory access efficiency, but introduces additional constraints.
 - Formulas:
 
   Basic formula:
@@ -143,15 +143,15 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
 - **`quant_offset2`** (`Tensor`): Optional. The data type can be `float32` or `bfloat16`. The data layout can be ND. This parameter indicates the output quantization offset. `pertensor` and `perchannel` modes are supported. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`antiquant_scale`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization factor. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`antiquant_offset`** (`Tensor`): Optional. The data type can be `float16` or `bfloat16`. The data layout can be ND. This parameter indicates the fake-quantization offset. `pertensor` and `perchannel` modes are supported. When `Q_S` is `1`, only `perchannel` is supported. When `Q_S` is greater than or equal to `2`, only `float16` is supported. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`block_table`** (`Tensor`): Optional. The data type can be `int32`. The data layout can be ND. This parameter indicates the block mapping table used for KV storage in PagedAttention. This parameter can be set to `None` if this feature is not used.
+- **`block_table`** (`Tensor`): Optional. The data type can be `int32`. The data layout can be ND. This parameter indicates the block mapping table used for KV storage in Paged Attention. This parameter can be set to `None` if this feature is not used.
 - **`query_padding_size`** (`Tensor`): Optional. The data type can be `int64`. The data layout can be ND. This parameter indicates whether the data of each batch in `query` is right-aligned and the number of right-aligned data records. It is valid only when `Q_S` is greater than 1. In other scenarios, it is invalid. The default value is `None`.
 - **`kv_padding_size`** (`Tensor`): Optional. The data type can be `int64`. The data layout can be ND. This parameter indicates whether the data of each batch in `key` and `value` is right-aligned and the number of right-aligned data records. The default value is `None`.
-- **`key_antiquant_scale`** (`Tensor`): Optional. The data layout can be `float16`, `bfloat16`, and `float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by PagedAttention, and `pertoken` + `perhead` with scale managed by PagedAttention.
+- **`key_antiquant_scale`** (`Tensor`): Optional. The data layout can be `float16`, `bfloat16`, and `float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by Paged Attention, and `pertoken` + `perhead` with scale managed by Paged Attention.
 
-- **`key_antiquant_offset`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization offset of `key` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by PagedAttention, and `pertoken` + `perhead` with offset managed by PagedAttention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
-- **`value_antiquant_scale`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by PagedAttention, and `pertoken` + `perhead` with scale managed by PagedAttention.
+- **`key_antiquant_offset`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization offset of `key` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by Paged Attention, and `pertoken` + `perhead` with offset managed by Paged Attention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`value_antiquant_scale`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization factor of `value` when the KV fake-quantization parameters are separated. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214). The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with scale managed by Paged Attention, and `pertoken` + `perhead` with scale managed by Paged Attention.
 
-- **`value_antiquant_offset`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization offset of `value` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by PagedAttention, and `pertoken` + `perhead` with offset managed by PagedAttention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
+- **`value_antiquant_offset`** (`Tensor`): Optional. The data type can be `float16`, `bfloat16`, or `float32`. The data layout can be ND. This parameter indicates the dequantization offset of `value` when the KV fake-quantization parameters are separated. The following modes are supported: `perchannel`, `pertensor`, `pertoken`, `pertensor` + `perhead`, `pertoken` + `perhead`, `pertoken` with offset managed by Paged Attention, and `pertoken` + `perhead` with offset managed by Paged Attention. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`key_shared_prefix`** (`Tensor`): Optional. Key prefix parameter in the attention structure. The data type can be `float16`, `bfloat16`, or `int8`. Non-contiguous tensors are not supported. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`value_shared_prefix`** (`Tensor`): Optional. Value prefix parameter in the attention structure. The data type can be `float16`, `bfloat16`, or `int8`. Non-contiguous tensors are not supported. The data layout can be ND. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
 - **`actual_shared_prefix_len`** (`List[int]`): Optional. Valid sequence length of `key_shared_prefix` and `value_shared_prefix`. The data type can be `int64`. The default value is `None`, indicating that the value is identical to the sequence length `S` in the `key_shared_prefix` and `value_shared_prefix` shapes. Restriction: The valid sequence length in this parameter must be less than or equal to the sequence length in `key_shared_prefix` and `value_shared_prefix`.
@@ -188,7 +188,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     > [!NOTE]   
     > For `bfloat16` and `int8`, no distinction is made between high-precision and high-performance modes. Invalid row correction applies to `float16`, `bfloat16`, and `int8`. Currently, `0` and `1` are reserved values. If any row in the mask involved in computation consists entirely of `1`s, precision may degrade. In this case, you can set this parameter to `2` or `3` to enable invalid row correction and improve precision. However, this configuration may degrade performance.
 
-- **`block_size`** (`int`): Optional. Maximum number of tokens in each block stored in the KV cache in PagedAttention mode. The default value is `0`. The data type can be `int64`.
+- **`block_size`** (`int`): Optional. Maximum number of tokens in each block stored in the KV cache in Paged Attention mode. The default value is `0`. The data type can be `int64`.
 - **`antiquant_mode`** (`int`): Optional. Fake-quantization mode. A value of `0` indicates `perchannel` (which includes `pertensor`), and a value of `1` indicates `pertoken`. The default value is `0`.
     
     This parameter is invalid when `Q_S` is greater than or equal to `2`. If `Q_S` is `1`, passing a value other than `0` or `1` causes an execution exception.
@@ -202,8 +202,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     - `1`: enables `pertoken` mode.
     - `2`: enables `pertensor` + `perhead` mode.
     - `3`: enables `pertoken` + `perhead` mode.
-    - `4`: enables `pertoken` mode with scale or offset managed by PagedAttention.
-    - `5`: enables `pertoken` + `perhead` mode with scale or offset managed by PagedAttention.
+    - `4`: enables `pertoken` mode with scale or offset managed by Paged Attention.
+    - `5`: enables `pertoken` + `perhead` mode with scale or offset managed by Paged Attention.
 
 - **`value_antiquant_mode`** (`int`): Optional. Fake-quantization mode for `value`. Mode numbering is identical to that of `key_antiquant_mode`. The default value is `0`. Except for scenarios where `key_antiquant_mode` is `0` and `value_antiquant_mode` is `1`, this value must be identical to `key_antiquant_mode`. For details about the overall constraints, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
     
@@ -258,7 +258,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             - When `key_rope` is configured: the `N` dimension must be `1` and the `D` dimension must be `512` for `key`. The `D` dimension of `key_rope` must be `64`, and all other dimensions must match those of `key`.
             - Supported data layouts for `key`, `value`, and `key_rope`: ND or `NZ`. When the data layout is `NZ`, the layout of the input parameters `key` and `value` is `[blockNum, KV_N, D/16, blockSize, 16]` for the `float16` or `bfloat16` data type, and `[blockNum, KV_N, D/32, blockSize, 32]` for the `int8` data type.
             - Supported `input_layout` values: `BSH`, `BSND`, `BNSD`, `BNSD_NBSD`, `BSND_NBSD`, `BSH_NBSD`, `TND`, and `TND_NTD`.
-            - PagedAttention is supported: `block_size` must be divisible by 16 and cannot exceed 1024.
+            - Paged Attention is supported: `block_size` must be divisible by 16 and cannot exceed 1024.
             - `softmax_lse`, left padding, tensorlist, PSE, prefix, fake-quantization, full quantization, and post quantization are not supported.
 
         - When `D` of `query` is `128`:
@@ -273,7 +273,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - When `D` of `query` is `512`:
             - `sparse_mode`: Valid values: `0`, `3`, or `4`.
             - `TND` and `TND_NTD` layouts are supported.
-            - PagedAttention can be enabled. In this case, the length of `actual_seq_lengths_kv` must be identical to the batch size of `key` or `value`, representing the actual sequence length of each batch, and each value must not exceed `KV_S`.
+            - Paged Attention can be enabled. In this case, the length of `actual_seq_lengths_kv` must be identical to the batch size of `key` or `value`, representing the actual sequence length of each batch, and each value must not exceed `KV_S`.
             - The `N` dimension of `query` must be `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`, while the `N` dimension of `key` and `value` must be `1`.
             - `query_rope` and `key_rope` must both be provided, and their `D` dimension must be `64`.
             - Left padding, tensorlist, PSE, prefix, fake-quantization, and full quantization are not supported.
@@ -281,7 +281,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - When `D` of `query` is not `512`:
             - When `query_rope` and `key_rope` are omitted: in `TND` layouts, `Q_D`, `K_D`, and `V_D` must all be `128`, or `Q_D` and `K_D` must be `192` with `V_D` equal to `128` or `192`; in `NTD` layouts, `V_D` must not be `192`; and in `NTD_TND` layouts, `Q_D` and `K_D` must be `128` or `192`, and `V_D` must be `128`. When `query_rope` and `key_rope` are provided, `Q_D`, `K_D`, and `V_D` must all be `128`.
             - `TND`, `NTD`, and `NTD_TND` layouts are supported.
-            - In PagedAttention scenarios, `block_size` must be a multiple of 16 and less than or equal to 1024.
+            - In Paged Attention scenarios, `block_size` must be a multiple of 16 and less than or equal to 1024.
             - Left padding, tensorlist, PSE, prefix, fake-quantization, full quantization, and post quantization are not supported.
 
 - Constraints on parameters in GQA fake-quantization scenarios when `key` and `value` are in `NZ` layout:
@@ -302,7 +302,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     - Usage constraints for `query`, `key`, and `value` inputs:
         - The `B` dimension must be less than or equal to 65536. If the `D` dimension is not 32-byte aligned, only values up to 128 are supported.
         - The `N` dimension must be less than or equal to 256, and the `D` dimension must be less than or equal to 512. When `input_layout` is `BSH` or `BSND`, the product of `N` and `D` should be less than 65535.
-        - The `S` dimension must be less than or equal to 20971520 (20M). In certain long-sequence scenarios, excessive computation may cause the PFA operator to time out (raising an aicore error with an `errorStr` of "timeout or trap error"). In such cases, slicing along the `S` dimension is recommended. (Note: The computation volume depends on `B`, `S`, `N`, and `D`. Larger values result in higher computation cost). Typical timeout-prone long-sequence scenarios (where the product of `B`, `S`, `N`, and `D` is large) include but are not limited to:
+        - The `S` dimension must be less than or equal to 20971520 (20M). In certain long-sequence scenarios, excessive computation may cause the PFA operator to time out (raising an AI Core error with an `errorStr` of "timeout or trap error"). In such cases, slicing along the `S` dimension is recommended. (Note: The computation volume depends on `B`, `S`, `N`, and `D`. Larger values result in higher computation cost). Typical timeout-prone long-sequence scenarios (where the product of `B`, `S`, `N`, and `D` is large) include but are not limited to:
             - `B = 1`, `Q_N = 20`, `Q_S = 2097152`, `D = 256`, `KV_N = 1`, `KV_S = 2097152`
             - `B = 1`, `Q_N = 2`, `Q_S = 20971520`, `D = 256`, `KV_N = 2`, `KV_S = 20971520`
             - `B = 20`, `Q_N = 1`, `Q_S = 2097152`, `D = 256`, `KV_N = 1`, `KV_S = 2097152`
@@ -327,16 +327,16 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - When `sparse_mode` is `1`, `2`, or `3`, the input parameters `pre_tokens` and `next_tokens` are ignored and assigned based on the relevant rules.
         
     - Combined-parameter scenarios for KV Cache dequantization support only dequantizing `int8` to `float16`. If the product of the data ranges of `key` and `value` and `antiquant_scale` falls within the range of (-1, 1), accuracy is guaranteed in high-performance mode. Otherwise, high-precision mode must be enabled to ensure accuracy.
-    - PagedAttention scenarios:
-        - PagedAttention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in contiguous memory based on the indices in `block_table`. The supported data types for `key` and `value` are `float16` and `bfloat16`. In this case, `input_layout` of `key` and `value` is ignored. The `block_table` contains block IDs. Their validity is not verified and must be ensured by the user.
-        - `block_size` is a user-defined parameter that affects PagedAttention performance. When PagedAttention is enabled, `block_size` must range from 128 to 512 and must be a multiple of 128. Generally, PagedAttention improves throughput but reduces performance.
+    - Paged Attention scenarios:
+        - Paged Attention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in contiguous memory based on the indices in `block_table`. The supported data types for `key` and `value` are `float16` and `bfloat16`. In this case, `input_layout` of `key` and `value` is ignored. The `block_table` contains block IDs. Their validity is not verified and must be ensured by the user.
+        - `block_size` is a user-defined parameter that affects Paged Attention performance. When Paged Attention is enabled, `block_size` must range from 128 to 512 and must be a multiple of 128. Generally, Paged Attention improves throughput but reduces performance.
     
-        - In PagedAttention scenarios, when the input KV cache layout is `(blocknum, blocksize, H)` and the product of `KV_N` and `D` is greater than 65535, execution is blocked and an error is raised due to hardware constraints. This can be resolved by enabling GQA (to reduce `KV_N`) or by changing the KV cache layout to `(blocknum, KV_N, blocksize, D)`. When the `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When it is `BSH` or `BSND`, only `(blocknum, blocksize, H)` is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
-        - PagedAttention does not support fake-quantization, tensorlist, or left padding.
-        - In PagedAttention scenarios, `actual_seq_lengths_kv` must be provided.
-        - In PagedAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
-        - In PagedAttention scenarios, two formats are supported, and the supported data types are `float32` and `bfloat16`. Cases where `query` is `int8` are not supported.
-        - When PagedAttention is enabled, the input sequence length `KV_S` must be greater than or equal to the product of `maxBlockNumPerSeq` and `block_size` in the following scenarios:
+        - In Paged Attention scenarios, when the input KV cache layout is `(blocknum, blocksize, H)` and the product of `KV_N` and `D` is greater than 65535, execution is blocked and an error is raised due to hardware constraints. This can be resolved by enabling GQA (to reduce `KV_N`) or by changing the KV cache layout to `(blocknum, KV_N, blocksize, D)`. When the `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When it is `BSH` or `BSND`, only `(blocknum, blocksize, H)` is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
+        - Paged Attention does not support fake-quantization, tensorlist, or left padding.
+        - In Paged Attention scenarios, `actual_seq_lengths_kv` must be provided.
+        - In Paged Attention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
+        - In Paged Attention scenarios, two formats are supported, and the supported data types are `float32` and `bfloat16`. Cases where `query` is `int8` are not supported.
+        - When Paged Attention is enabled, the input sequence length `KV_S` must be greater than or equal to the product of `maxBlockNumPerSeq` and `block_size` in the following scenarios:
             - When `atten_mask` is provided and its shape is identical to `(B, 1, Q_S, KV_S)`.
             - When `pse_shift` is provided and its shape is identical to `(B, Q_N, Q_S, KV_S)`.
     
@@ -344,13 +344,13 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - In left padding for `query`, the start index for data transfer is calculated as: `Q_S - query_padding_size - actual_seq_lengths`. The end index is calculated as: `Q_S - query_padding_size`. The start index must not be less than 0, and the end index must not exceed `Q_S`. Otherwise, the result may be incorrect.
         - In left padding for `query`, if `kv_padding_size` is less than 0, it is set to `0`.
         - Left padding for `query` must be enabled together with the `actual_seq_lengths` parameter. Otherwise, right-padding for `query` is used by default.   
-        - Left padding for `query` does not support PagedAttention and cannot be enabled together with the `block_table` parameter.
+        - Left padding for `query` does not support Paged Attention and cannot be enabled together with the `block_table` parameter.
         
     - Left padding for `key` and `value`:
         - Left padding for `key` and `value`, the start index for KV cache transfer is calculated as: `KV_S - kv_padding_size - actual_seq_lengths_kv`. The end index is calculated as: `KV_S - kv_padding_size`. The start index must not be less than 0, and the end index must not exceed `KV_S`. Otherwise, the result may be incorrect.
         - In left padding for `key` and `value`, if `kv_padding_size` is less than 0, it is set to `0`.
         - Left padding for `key` and `value` must be enabled together with the `actual_seq_lengths_kv` parameter. Otherwise, right padding for `key` and `value` is used by default.   
-        - Left padding for `key` and `value` does not support PagedAttention and cannot be enabled together with the `block_table` parameter.
+        - Left padding for `key` and `value` does not support Paged Attention and cannot be enabled together with the `block_table` parameter.
         
     - The input parameters `quant_scale2` and `quant_offset2` support `pertensor` or `perchannel` quantization, and their data types can be `float32` or `bfloat16`. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. When the input data type is `bfloat16`, both `float32` and `bfloat16` are supported. Otherwise, only `float32` is supported. In `perchannel` scenarios, when the output layout is `BSH`, the product of all dimensions of `quant_scale2` must equal `H`. For other layouts, the product must equal `N * D`. The recommended shape for `quant_scale2` is `(1, 1, H)` or `(H,)` for the `BSH` output layout, `(1, Q_N, 1, D)` or `(Q_N, D)` for the `BNSD` output layout, and `(1, 1, Q_N, D)` or `(Q_N, D)` for the `BSND` output layout.
     - When the output data type is `int8` and `quant_scale2` and `quant_offset2` are in `perchannel` mode, left padding, Ring Attention, and cases where the `D` dimension is not 32-byte aligned are not supported.
@@ -373,7 +373,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - When `key_shared_prefix` and `value_shared_prefix` are both provided, the batch size (first dimension) of `key_shared_prefix` must be `1`. For `BNSD` and `BSND` layouts, the `N` and `D` dimensions must be identical to those of `key`. For the `BSH` layout, the `H` dimension must be identical to that of `key`. The same applies to `value_shared_prefix`. The `S` dimensions of `key_shared_prefix` and `value_shared_prefix` must be identical.
         - When `actual_shared_prefix_len` is provided, its shape must be `[1]`, and its value must not exceed the `S` dimension of `key_shared_prefix` and `value_shared_prefix`.
         - The sum of the prefix `S` and the `S` of `key` or `value` must satisfy the original `S` constraints for `key` or `value`.
-        - Prefix is not supported in PagedAttention, left padding, or tensorlist scenarios.
+        - Prefix is not supported in Paged Attention, left padding, or tensorlist scenarios.
         - In prefix scenarios, the data types of `query`, `key`, and `value` cannot all be `int8`.
         - In prefix scenarios, when `sparse_mode` is `0` or `1` and `atten_mask` is provided, `S2` must be greater than or equal to the sum of `actual_shared_prefix_len` and the `S` of `key`.
         - In prefix scenarios, the input data types of `query`, `key`, and `value` cannot all be `int8`.
@@ -385,7 +385,7 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
         - When `key_antiquant_scale` and `value_antiquant_scale` are both provided, their shapes must be identical. When `key_antiquant_offset` and `value_antiquant_offset` are both provided, their shapes must be identical. 
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
             - Only `pertoken` and `perchannel` modes are supported. In `pertoken` mode, the shapes of both parameters must be `(B, KV_S)`, and their data types must be `float32`. In `perchannel` mode, the shapes of both parameters must be `(KV_N, D)` or `(H)`, and their data types must be `bfloat16`.
-            - When `key_antiquant_scale` and `value_antiquant_scale` are both provided, the `query` sequence length `S` must be less than or equal to `16`. The data type of `query` must be `bfloat16`, the data types of `key` and `value` must be `int8`, and the output data type must be `bfloat16`. Tensorlist, left padding, PagedAttention, and prefix are not supported.
+            - When `key_antiquant_scale` and `value_antiquant_scale` are both provided, the `query` sequence length `S` must be less than or equal to `16`. The data type of `query` must be `bfloat16`, the data types of `key` and `value` must be `int8`, and the output data type must be `bfloat16`. Tensorlist, left padding, Paged Attention, and prefix are not supported.
     
         - The following table describes quantization modes for scale and offset management.
     
@@ -437,23 +437,23 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
     
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products: The valid sequence length of each batch in this parameter must be less than or equal to the sequence length of the corresponding batch in `key` and `value` If the length of this parameter is 1, all batches use the same sequence length. If the length is greater than or equal to the batch size, only the first `batch_size` elements are used. Other lengths are not supported. For details about the overall constraints when `input_layout` of `key` or `value` is `TND` or `TND_NTD`, see [Constraints](#en-us_topic_0000001832267082_section12345537164214).
         
-    - PagedAttention scenarios:
-        - PagedAttention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in a contiguous memory space based on the indices in `block_table`. In this case, the `input_layout` parameter of `key` and `value` is ignored.
+    - Paged Attention scenarios:
+        - Paged Attention can be enabled only when `block_table` exists and is valid, and `key` and `value` are arranged in a contiguous memory space based on the indices in `block_table`. In this case, the `input_layout` parameter of `key` and `value` is ignored.
         - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
             - The data types of `key` and `value` can be `float16`, `bfloat16`, or `int8`.
             - Scenarios where `query` is `bfloat16` or `float16` while `key` and `value` are `int4` (`int32`) are not supported.
     
-        - In these scenarios, `block_size` is a user-defined parameter that affects PagedAttention performance. `block_size` must be a non-zero value and must not exceed 512. When the input data types of `key` and `value` are `float16` or `bfloat16`, the `block_size` must be a multiple of 16; when the input data type is `int8`, it must be a multiple of 32. A value of 128 is recommended. Generally, PagedAttention improves throughput but reduces performance.
+        - In these scenarios, `block_size` is a user-defined parameter that affects Paged Attention performance. `block_size` must be a non-zero value and must not exceed 512. When the input data types of `key` and `value` are `float16` or `bfloat16`, the `block_size` must be a multiple of 16; when the input data type is `int8`, it must be a multiple of 32. A value of 128 is recommended. Generally, Paged Attention improves throughput but reduces performance.
         - The product of all dimensions of the tensors corresponding to `key` and `value` must not exceed the representable range of `int32`.
-        - In PagedAttention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
-        - In PagedAttention scenarios, when `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When `input_layout` of `query` is `BSH` or `BSND`, only the `(blocknum, blocksize, H)` format is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
-        - In PagedAttention scenarios, the `(blocknum, KV_N, blocksize, D)` layout format of the KV cache typically provides better performance than `(blocknum, blocksize, H)`, and is therefore recommended.
-        - In PagedAttention scenarios, when the KV cache layout format is `(blocknum, blocksize, H)` and the product of `numKvHeads` and `headDim` exceeds 64K, execution is blocked and an error is raised due to hardware instruction constraints. This can be resolved by enabling GQA (to reduce `numKvHeads`) or by adjusting the KV cache layout format to `(blocknum, numKvHeads, blocksize, D)`.
-        - PagedAttention does not support tensorlist or left padding.
-        - In PagedAttention scenarios, the product of all dimensions of the tensors corresponding to `key` and `value` must not exceed the representable range of `int32`.
-        - In PagedAttention scenarios, when `atten_mask` is provided, if `sparse_mode` is not `2`, `3`, or `4`, the last dimension of `atten_mask` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
-        - In PagedAttention scenarios, when `pse_shift` is provided, the last dimension of `pse_shift` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
-        - In PagedAttention scenarios, the input sequence length `S` must be greater than or equal to the product of the second dimension of `block_table` and `block_size` in the following scenarios:
+        - In Paged Attention scenarios, `block_table` must be a 2D tensor. Its first dimension must equal `B`, and its second dimension must be no less than `maxBlockNumPerSeq` (the maximum number of blocks corresponding to `actual_seq_lengths_kv` across batches).
+        - In Paged Attention scenarios, when `input_layout` of `query` is `BNSD` or `TND`, the KV cache supports both `(blocknum, blocksize, H)` and `(blocknum, KV_N, blocksize, D)` layouts. When `input_layout` of `query` is `BSH` or `BSND`, only the `(blocknum, blocksize, H)` format is supported. The value of `blocknum` must not be less than the total number of blocks required across all batches, calculated using `actual_seq_lengths_kv` and `block_size`. The shapes of `key` and `value` must be identical.
+        - In Paged Attention scenarios, the `(blocknum, KV_N, blocksize, D)` layout format of the KV cache typically provides better performance than `(blocknum, blocksize, H)`, and is therefore recommended.
+        - In Paged Attention scenarios, when the KV cache layout format is `(blocknum, blocksize, H)` and the product of `numKvHeads` and `headDim` exceeds 64K, execution is blocked and an error is raised due to hardware instruction constraints. This can be resolved by enabling GQA (to reduce `numKvHeads`) or by adjusting the KV cache layout format to `(blocknum, numKvHeads, blocksize, D)`.
+        - Paged Attention does not support tensorlist or left padding.
+        - In Paged Attention scenarios, the product of all dimensions of the tensors corresponding to `key` and `value` must not exceed the representable range of `int32`.
+        - In Paged Attention scenarios, when `atten_mask` is provided, if `sparse_mode` is not `2`, `3`, or `4`, the last dimension of `atten_mask` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
+        - In Paged Attention scenarios, when `pse_shift` is provided, the last dimension of `pse_shift` must be greater than or equal to the product of the second dimension of `block_table` and `block_size`.
+        - In Paged Attention scenarios, the input sequence length `S` must be greater than or equal to the product of the second dimension of `block_table` and `block_size` in the following scenarios:
             - In `pertoken` fake-quantization mode: the shapes of `antiquant_scale` and `antiquant_offset` must both be `(2, B, S)`.
             - In `pertoken` + `perhead` mode: The shapes of these parameters must be `(B, N, S)`, and their data types must be `float32`. The data types of `key` and `value` can be `int8` and `int4` (`int32`).
     
@@ -542,14 +542,14 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p162285131891"><a name="en-us_topic_0000001832267082_p162285131891"></a><a name="en-us_topic_0000001832267082_p162285131891"></a>The data types of <code>key</code> and <code>value</code> must be <code>int4</code> (<code>int32</code>) or <code>int8</code>.</p>
             </td>
             </tr>
-            <tr id="en-us_topic_0000001832267082_row1037716581001"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1757135414112"><a name="en-us_topic_0000001832267082_p1757135414112"></a><a name="en-us_topic_0000001832267082_p1757135414112"></a>pertoken + PagedAttention</p>
+            <tr id="en-us_topic_0000001832267082_row1037716581001"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1757135414112"><a name="en-us_topic_0000001832267082_p1757135414112"></a><a name="en-us_topic_0000001832267082_p1757135414112"></a>pertoken + Paged Attention</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p1025316567221"><a name="en-us_topic_0000001832267082_p1025316567221"></a><a name="en-us_topic_0000001832267082_p1025316567221"></a>The shapes of these parameters must be <code>(blocknum, blocksize)</code>, and their data types must be <code>float32</code>.</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.3 "><p id="en-us_topic_0000001832267082_p04417476217"><a name="en-us_topic_0000001832267082_p04417476217"></a><a name="en-us_topic_0000001832267082_p04417476217"></a>The data types of <code>key</code> and <code>value</code> must be <code>int8</code>.</p>
             </td>
             </tr>
-            <tr id="en-us_topic_0000001832267082_row15621736192312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1986911315215"><a name="en-us_topic_0000001832267082_p1986911315215"></a><a name="en-us_topic_0000001832267082_p1986911315215"></a>pertoken + per head + PagedAttention</p>
+            <tr id="en-us_topic_0000001832267082_row15621736192312"><td class="cellrowborder" valign="top" headers="mcps1.1.5.1.1 "><p id="en-us_topic_0000001832267082_p1986911315215"><a name="en-us_topic_0000001832267082_p1986911315215"></a><a name="en-us_topic_0000001832267082_p1986911315215"></a>pertoken + per head + Paged Attention</p>
             </td>
             <td class="cellrowborder" valign="top" headers="mcps1.1.5.1.2 "><p id="en-us_topic_0000001832267082_p2621173692313"><a name="en-us_topic_0000001832267082_p2621173692313"></a><a name="en-us_topic_0000001832267082_p2621173692313"></a>The shapes of these parameters must be <code>(blocknum, KV_N, blocksize)</code>, and their data types must be <code>float32</code>.</p>
             </td>
@@ -691,8 +691,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
   $$
   attention\_out = atten\_prob \cdot value
   $$
-
   `atten_prob` is the normalized attention weight:
+
   $$
   atten\_prob = softmax(\cdot)
   $$
@@ -706,8 +706,8 @@ torch_npu.npu_fused_infer_attention_score(query, key, value, *, pse_shift=None, 
   $$
   O_{global} = \frac{e^{lse_1 - lse_{max}} O_1 + e^{lse_2 - lse_{max}} O_2}{e^{lse_1 - lse_{max}} + e^{lse_2 - lse_{max}}}
   $$
-
   `lse_max` is defined as follows:
+
   $$
   lse_{max} = max(lse_1, lse_2)
   $$

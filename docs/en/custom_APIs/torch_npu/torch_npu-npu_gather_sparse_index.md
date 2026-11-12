@@ -68,10 +68,10 @@ Result obtained through the API computation, containing the elements extracted b
      1. The product of the dimensions in the shape of `input` must be greater than $150 * 1024/itemsize$. The `itemsize` variable indicates the element size of the `input` data type, which can be queried using `torch.dtype.itemsize`.
      2. The product of the dimensions in the shape of `index` must be greater than 960.
      3. The data must be aggregated. That is, the zero-valued and non-zero-valued elements in `input` should each be concentrated in contiguous regions rather than frequently interleaved. Flatten `input != 0` into a one-dimensional Boolean sequence $\mathrm{mask}$ in row-major order, and calculate the ratio of state transitions between adjacent elements:
-    $$
-    \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}
-    $$
-    where $N$ is the total number of elements in `input`, and $\mathrm{mask}_i$ denotes the $i$-th element in the Boolean sequence $\mathrm{mask}$. A smaller $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more contiguously distributed and that the data is more highly aggregated. A larger $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more dispersed, and the expected performance benefits may not be achieved.
+     $$
+     \mathrm{switch\_ratio} = \frac{\sum_{i=1}^{N-1} \mathbf{1}(\mathrm{mask}_i \ne \mathrm{mask}_{i-1})}{N - 1}
+     $$
+     where $N$ is the total number of elements in `input`, and $\mathrm{mask}_i$ denotes the $i$-th element in the Boolean sequence $\mathrm{mask}$. A smaller $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more contiguously distributed and that the data is more highly aggregated. A larger $\mathrm{switch\_ratio}$ indicates that zero-valued and non-zero-valued elements are more dispersed, and the expected performance benefits may not be achieved.
 
 ## Example
 

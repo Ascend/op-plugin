@@ -11,11 +11,11 @@
 
 - Performs quantization on token data (optional), followed by `alltoallv` communication in the Expert Parallelism (EP) domain, and then `allgatherv` communication in the Tensor Parallelism (TP) domain (optional). This API must be used together with [torch_npu.npu_moe_distribute_combine](torch_npu-npu_moe_distribute_combine.md) to implement token dispatch and combine for MoE parallel deployment.
 - Formulas: ($x$ indicates the input `x`, $scales$ indicates the input `scales`, and $quant\_mode$ indicates the input `quant_mode`.)
-    - When `quant_mode` is not `2` (non-dynamic quantization scenario):
+    - When `quant_mode` is not `2` (non-dynamic quantization scenario)
 
         ![](../../figures/en-us_formulaimage_0000002244554688.png)
 
-    - When `quant_mode` is set to 2 (dynamic quantization scenario):
+    - When `quant_mode` is set to 2 (dynamic quantization scenario)
 
         ![](../../figures/en-us_formulaimage_0000002244394892.png)
 
@@ -132,7 +132,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
         The buffer size can be configured using the `HCCL_BUFFSIZE` environment variable.
         - The value must be greater than or equal to `2 * (bs * ep_world_size * min(local_expert_num, K) * H * sizeof(uint16) + 2MB)`.
     - Atlas A3 training products/Atlas A3 inference products:
-    This scenario supports configuration through both the `HCCL_BUFFSIZE` environment variable and [`hccl_buffer_size`](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/en/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size).
+        This scenario supports configuration through both the `HCCL_BUFFSIZE` environment variable and [`hccl_buffer_size`](https://gitcode.com/Ascend/ModelZoo-PyTorch/blob/master/PyTorch/docs/en/performance_tuning/performance_tuning_methods/communication_basics_overview.md#hccl_buffer_size).
         - Within the EP communication domain: The value must be greater than or equal to 2 and satisfy the condition `1024^2 * (HCCL_BUFFSIZE - 2) / 2 >= bs * 2 * (H + 128) * (ep_world_size * local_expert_num + K + 1)`. The parameter `local_expert_num` must be the number of experts on the current MoE expert rank.
         - Within the TP communication domain: The value must be greater than or equal to `A * (H * 2 + 128) * 2`.
 - Atlas A2 training products/Atlas A2 inference products: Configuring the environment variables `HCCL_INTRA_PCIE_ENABLE=1` and `HCCL_INTRA_ROCE_ENABLE=0` can reduce the cross-server communication data volume and improve operator performance. In this case, the condition `HCCL_BUFFSIZE >= moe_expert_num * bs * (H * sizeof(dtype_x) + 4 * ((K + 7) / 8 * 8) * sizeof(uint32)) + 4MB + 100MB` must be satisfied. Furthermore, for the input parameter `moe_expert_num`, only the condition `moe_expert_num % (ep_world_size - shared_expert_rank_num) == 0` must be satisfied, and the condition `moe_expert_num / (ep_world_size - shared_expert_rank_num) <= 24` is not required.

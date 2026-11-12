@@ -13,7 +13,7 @@
 
 ## Function
 
-- Updates the local intermediate variables `lse` and `local_out` output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.
+- Updates the local intermediate variables `lse` and `local_out` output by the Paged Attention (PA) operator across each Sequence Parallelism (SP) domain into global results.
 
 - Formulas:
 

@@ -37,9 +37,9 @@
 
     4. When `quantMode` is not `-1`, compute the quantization results.
         - Static quantization:
-        $$
+            $$
             quantResult=round((x∗scaleOptional)+offsetOptional)
-        $$
+            $$
         
         - Dynamic quantization:
             - If `scale` is not specified:

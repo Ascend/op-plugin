@@ -133,7 +133,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent.md">torch_npu.npu.ExternalEvent</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Wraps the AscendCL Event. During graph capture in <code>NPUGraph</code> scenarios, <code>ExternalEvent</code> is captured as an external graph node for timing control outside the graph.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Wraps the Ascend CL Event. During graph capture in <code>NPUGraph</code> scenarios, <code>ExternalEvent</code> is captured as an external graph node for timing control outside the graph.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().record().md">torch_npu.npu.ExternalEvent().record()</a></p>
@@ -268,7 +268,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001788617484_row1616454104711"><td class="cellrowborder" valign="top" width="38.76%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p16616105411477"><a name="en-us_topic_0000001788617484_p16616105411477"></a><a name="en-us_topic_0000001788617484_p16616105411477"></a>(<span id="en-us_topic_0000001788617484_ph168289415199"><a name="en-us_topic_0000001788617484_ph168289415199"></a><a name="en-us_topic_0000001788617484_ph168289415199"></a>beta</span>) torch_npu.npu.get_rng_state</p>
 </td>
-<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001788617484_p45278137545"><a name="en-us_topic_0000001788617484_p45278137545"></a><a name="en-us_topic_0000001788617484_p45278137545"></a>Random number generator-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="9" valign="top" width="61.24000000000001%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001788617484_p45278137545"><a name="en-us_topic_0000001788617484_p45278137545"></a><a name="en-us_topic_0000001788617484_p45278137545"></a>Random number generator-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001788617484_row1661655484720"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001788617484_p116160540479"><a name="en-us_topic_0000001788617484_p116160540479"></a><a name="en-us_topic_0000001788617484_p116160540479"></a>(<span id="en-us_topic_0000001788617484_ph81516268336"><a name="en-us_topic_0000001788617484_ph81516268336"></a><a name="en-us_topic_0000001788617484_ph81516268336"></a>beta</span>) torch_npu.npu.set_rng_state</p>
@@ -309,7 +309,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001835217389_row939163412547"><td class="cellrowborder" valign="top" width="54.559999999999995%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p13919348541"><a name="en-us_topic_0000001835217389_p13919348541"></a><a name="en-us_topic_0000001835217389_p13919348541"></a>(<span id="en-us_topic_0000001835217389_ph168289415199"><a name="en-us_topic_0000001835217389_ph168289415199"></a><a name="en-us_topic_0000001835217389_ph168289415199"></a>beta</span>) torch_npu.npu.is_initialized</p>
 </td>
-<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p20972816174218"><a name="en-us_topic_0000001835217389_p20972816174218"></a><a name="en-us_topic_0000001835217389_p20972816174218"></a>Device-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="11" valign="top" width="45.440000000000005%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001835217389_p20972816174218"><a name="en-us_topic_0000001835217389_p20972816174218"></a><a name="en-us_topic_0000001835217389_p20972816174218"></a>Device-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001835217389_row13391173465410"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001835217389_p173915341547"><a name="en-us_topic_0000001835217389_p173915341547"></a><a name="en-us_topic_0000001835217389_p173915341547"></a>(<span id="en-us_topic_0000001835217389_ph1943317523417"><a name="en-us_topic_0000001835217389_ph1943317523417"></a><a name="en-us_topic_0000001835217389_ph1943317523417"></a>beta</span>) torch_npu.npu.init</p>
@@ -361,7 +361,7 @@ This section describes the APIs of various submodules, such as random numbers an
 </thead>
 <tbody><tr id="en-us_topic_0000001863035964_row12860101605513"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p486019163553"><a name="en-us_topic_0000001863035964_p486019163553"></a><a name="en-us_topic_0000001863035964_p486019163553"></a>(<span id="en-us_topic_0000001863035964_ph168289415199"><a name="en-us_topic_0000001863035964_ph168289415199"></a><a name="en-us_topic_0000001863035964_ph168289415199"></a>beta</span>) torch_npu.npu.caching_allocator_alloc</p>
 </td>
-<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p6146131084320"><a name="en-us_topic_0000001863035964_p6146131084320"></a><a name="en-us_topic_0000001863035964_p6146131084320"></a>Memory management-related APIs provided by TorchNPU. For details, see torch.cuda.</p>
+<td class="cellrowborder" rowspan="18" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001863035964_p6146131084320"><a name="en-us_topic_0000001863035964_p6146131084320"></a><a name="en-us_topic_0000001863035964_p6146131084320"></a>Memory management-related APIs provided by TorchNPU. For details, see <a href="https://gitcode.com/Ascend/pytorch/blob/v2.7.1-26.1.0/docs/en/native_apis/pytorch_2-7-1/torch-cuda.md">torch.cuda</a>.</p>
 </td>
 </tr>
 <tr id="en-us_topic_0000001863035964_row0860131635519"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="en-us_topic_0000001863035964_p19860111610554"><a name="en-us_topic_0000001863035964_p19860111610554"></a><a name="en-us_topic_0000001863035964_p19860111610554"></a>(<span id="en-us_topic_0000001863035964_ph1545853943420"><a name="en-us_topic_0000001863035964_ph1545853943420"></a><a name="en-us_topic_0000001863035964_ph1545853943420"></a>beta</span>) torch_npu.npu.caching_allocator_delete</p>

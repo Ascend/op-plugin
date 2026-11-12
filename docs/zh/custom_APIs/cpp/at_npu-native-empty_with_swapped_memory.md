@@ -46,17 +46,28 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 `npu_hans_decode`<br>
 
 - 当安装CANN版本8.5.0及以上，且Ascend HDK版本26.0.rc1及以上时，该接口申请的特殊Tensor支持直接打印。
-- 当安装CANN版本小于8.5.0或者Ascend HDK版本小于26.0.rc1时，该接口申请的特殊Tensor不支持直接打印，此时会打印warning日志，需要查看值时要先通过`mul_`转为普通Tensor再打印。
+- 当安装CANN版本小于8.5.0或者Ascend HDK版本小于26.0.rc1时，该接口申请的特殊Tensor不支持直接打印，此时会打印warning日志。若要查看值，请创建一个与该特殊张量具有相同shape、dtype和device的常规NPU张量，将其填充为1，以该特殊张量作为操作数对其调用`mul_`，然后打印该常规张量即可。
 
 ## 调用示例
 
 ```cpp
+#include <iostream>
 #include <torch/extension.h>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
 
-// 创建指定shape和dtype的特殊Tensor
-at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
+int main() {
+    // 创建指定shape和dtype的特殊Tensor（swapped memory格式）
+    at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
+    tensor.fill_(3.14);
 
-// 该接口申请的特殊Tensor需通过mul_算子转为普通Tensor后才能查看具体值
-at::mul_(tensor, 1.0);
+    // 创建与特殊Tensor同shape、同dtype的普通NPU张量，并填充为1
+    auto out = at::empty(tensor.sizes(), tensor.options());
+    out.fill_(1.0);
+
+    // 以特殊Tensor为操作数做原地乘法，结果写入普通NPU张量out
+    out.mul_(tensor);
+
+    std::cout << out << '\n';
+    return 0;
+}
 ```

@@ -100,8 +100,8 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     - `D`: dimension of query and key without position embedding. The value must be `128`.
     - `Dr`: dimension of query and key position embedding. The value must be `64`.
     - `Nkv`: attention head count for key and value. The value must be `1`.
-    - `BlockNum`: number of blocks in PagedAttention scenarios, that is, the size of the 0-th dimension of `kv_cache` and `kr_cache`. Given a batch size of `B`, a KV sequence length of `Skv`, and a block size of `BlockSize`, the following condition should generally be satisfied: `BlockNum` ≥ ⌈`B` × `Skv` / `BlockSize`⌉ (`Skv` can be 0).
-    - `BlockSize`: block size in the PagedAttention scenario. Supported values are `16` and `128`.
+    - `BlockNum`: number of blocks in Paged Attention scenarios, that is, the size of the 0-th dimension of `kv_cache` and `kr_cache`. Given a batch size of `B`, a KV sequence length of `Skv`, and a block size of `BlockSize`, the following condition should generally be satisfied: `BlockNum` ≥ ⌈`B` × `Skv` / `BlockSize`⌉ (`Skv` can be 0).
+    - `BlockSize`: block size in the Paged Attention scenario. Supported values are `16` and `128`.
     - `T`: size after the fusion of the `B` and `S` axes. The value ranges from 0 to 1048576.
 
 - Shape constraints:

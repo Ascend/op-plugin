@@ -10,24 +10,24 @@
 
 ## Function
 
-Controls the profiler action state, Enum type. It manages actions such as profile data collection, profile data collection warmup, and profile data collection and saving.
+Profiler collection action state, enum type. It is returned by `torch_npu.profiler.schedule` at each step and controls the collection action of `torch_npu.profiler.profile` for that step: no action, warmup, collection, or collection and saving.
 
-## Prototype
+## Class Signature
 
 ```python
-torch_npu.profiler.ProfilerAction
+class ProfilerAction(Enum)
 ```
 
-## Parameters
+## Members
 
-- **`torch_npu.profiler.ProfilerAction.NONE`**: Optional. No action is performed.
-- **`torch_npu.profiler.ProfilerAction.WARMUP`**: Optional. Profile data collection warmup.
-- **`torch_npu.profiler.ProfilerAction.RECORD`**: Optional. Profile data collection.
-- **`torch_npu.profiler.ProfilerAction.RECORD_AND_SAVE`**: Optional. Profile data collection and saving.
+> All enum values are read-only and cannot be modified at runtime.
 
-## Return Values
-
-None
+| Member | Value | Description |
+| :--- | :--- | :--- |
+| `NONE` | `0` | No action is performed. |
+| `WARMUP` | `1` | Warms up profile data collection. |
+| `RECORD` | `2` | Collects profile data. |
+| `RECORD_AND_SAVE` | `3` | Collects and saves profile data. |
 
 ## Example
 

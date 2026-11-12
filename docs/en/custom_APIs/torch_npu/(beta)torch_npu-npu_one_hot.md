@@ -14,7 +14,7 @@
 
 ## Function
 
-Returns a one-hot tensor. The positions indicated by indices in `input` take the `on_value`, whereas all other positions take the `off_value`.
+Returns a one-hot tensor. Each value `v` in `input` is used as a class index: the output is filled with `on_value` at index `v` in the one-hot dimension (with depth `depth`), and all other positions are filled with `off_value`. `input` must be an integer index tensor. Element values are recommended to be in the range `[0, depth)`. For out-of-range elements, all corresponding output positions are filled with `off_value`.
 
 ## Prototype
 
@@ -24,11 +24,11 @@ torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -
 
 ## Parameters
 
-- **`input`** (`Tensor`): Class values of any shape.
-- **`num_classes`** (`int`): Axis to be filled. The default value is `-1`.
-- **`depth`** (`int`): Depth of the one-hot dimension. The default value is `1`.
-- **`on_value`** (`Scalar`): Value filled in the output when `indices[j] == i`. The default value is `1`.
-- **`off_value`** (`Scalar`): Value filled in the output when `indices[j] != i`. The default value is `0`.
+- **`input`** (`Tensor`): Required. Class index tensor of any shape. Each element value is used as an index in the one-hot dimension. An integer tensor is recommended.
+- **`num_classes`** (`int`): Axis position at which the one-hot dimension is inserted. The default value is `-1`, indicating that the one-hot dimension is appended after the last dimension of the input.
+- **`depth`** (`int`): Depth of the one-hot dimension (number of classes). The default value is `1`. If set to `-1`, the depth is inferred as the maximum value of `input` plus 1.
+- **`on_value`** (`Scalar`): Value filled at the output position where the index `i` in the one-hot dimension equals the corresponding value in `input`. The default value is `1`.
+- **`off_value`** (`Scalar`): Value filled at the output position where the index `i` in the one-hot dimension does not equal the corresponding value in `input`. The default value is `0`.
 
 ## Example
 

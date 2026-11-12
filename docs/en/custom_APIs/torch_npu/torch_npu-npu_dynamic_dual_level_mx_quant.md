@@ -40,12 +40,12 @@
     3. Finally, the data type is converted according to `round_mode` to obtain the quantized result $y_i$ for each group.
 
         $$
-        y_i = cast\_to\_FP4\_E2M1(temp_i / level1\_scale_i, round_mode), \space i \space \text{ranges from} \space 1 \space \text{to} \space 32
+        y_i = cast\_to\_FP4\_E2M1(temp_i / level1\_scale_i, round\_mode), \space i \space \text{ranges from} \space 1 \space \text{to} \space 32
         $$
 
         Quantized $y_i$ values are arranged according to the positions of the corresponding $x_i$ elements to form the output $y$. Output `level0_scale` is formed by grouping $level0\_scale_i$ values along the last axis, and output `level1_scale` is formed by grouping $level1\_scale_i$ values along the last axis.
 
-        $max_i$ represents the maximum value in the $i$-th group, and `emax` represents the exponent of the maximum finite normal positive number of the corresponding data type. The mappings are defined as follows:
+        $max_i$ represents the maximum value in the $i$-th group, and `emax` represents the exponent of the maximum finite normal positive number of the corresponding data type. The mappings are defined as follows.
 
         | dst_type | emax |
         | --- | --- |

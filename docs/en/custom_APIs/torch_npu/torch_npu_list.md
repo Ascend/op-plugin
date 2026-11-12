@@ -12,312 +12,312 @@ This section describes common custom APIs, including tensor creation and computa
 </th>
 </tr>
 </thead>
-<tbody><tr id="row1149711715114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13497217191119"><a name="p13497217191119"></a><a name="p13497217191119"></a><a href="(beta)torch_npu-_npu_dropout.md">(beta)torch_npu._npu_dropout</a></p>
+<tbody><tr id="row1149711715114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13497217191119"><a name="p13497217191119"></a><a name="p13497217191119"></a><a href="(beta)torch_npu-_npu_dropout.md">(beta) torch_npu._npu_dropout</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p349751701118"><a name="p349751701118"></a><a name="p349751701118"></a>Counts dropout results without using a random seed.</p>
 </td>
 </tr>
-<tr id="row13497417121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11170526121211"><a name="p11170526121211"></a><a name="p11170526121211"></a><a href="(beta)torch_npu-copy_memory_.md">(beta)torch_npu.copy_memory_</a></p>
+<tr id="row13497417121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11170526121211"><a name="p11170526121211"></a><a name="p11170526121211"></a><a href="(beta)torch_npu-copy_memory_.md">(beta) torch_npu.copy_memory_</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p74971174115"><a name="p74971174115"></a><a name="p74971174115"></a>Copies elements from the source tensor <code>src</code> into the target tensor <code>self</code> and returns <code>self</code> in place.</p>
 </td>
 </tr>
-<tr id="row949751712110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p164971017121112"><a name="p164971017121112"></a><a name="p164971017121112"></a><a href="(beta)torch_npu-empty_with_format.md">(beta)torch_npu.empty_with_format</a></p>
+<tr id="row949751712110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p164971017121112"><a name="p164971017121112"></a><a name="p164971017121112"></a><a href="(beta)torch_npu-empty_with_format.md">(beta) torch_npu.empty_with_format</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p8497111791114"><a name="p8497111791114"></a><a name="p8497111791114"></a>Returns a tensor filled with uninitialized data.</p>
 </td>
 </tr>
-<tr id="row949712178110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5497817161113"><a name="p5497817161113"></a><a name="p5497817161113"></a><a href="(beta)torch_npu-fast_gelu.md">(beta)torch_npu.fast_gelu</a></p>
+<tr id="row949712178110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5497817161113"><a name="p5497817161113"></a><a name="p5497817161113"></a><a href="(beta)torch_npu-fast_gelu.md">(beta) torch_npu.fast_gelu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p9497101717113"><a name="p9497101717113"></a><a name="p9497101717113"></a>Computes the forward result of <code>FastGelu</code> for each input element by using the Fast Gaussian Error Linear Units (FastGELU) activation function.</p>
 </td>
 </tr>
-<tr id="row17497217181119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16497617191116"><a name="p16497617191116"></a><a name="p16497617191116"></a><a href="(beta)torch_npu-npu_alloc_float_status.md">(beta)torch_npu.npu_alloc_float_status</a></p>
+<tr id="row17497217181119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16497617191116"><a name="p16497617191116"></a><a name="p16497617191116"></a><a href="(beta)torch_npu-npu_alloc_float_status.md">(beta) torch_npu.npu_alloc_float_status</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p6497141711115"><a name="p6497141711115"></a><a name="p6497141711115"></a>Allocates a tensor dedicated to storing floating-point operation status flags. This tensor is used to record overflow status during subsequent computations.</p>
 </td>
 </tr>
-<tr id="row104977172114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1849701710119"><a name="p1849701710119"></a><a name="p1849701710119"></a><a href="(beta)torch_npu-npu_anchor_response_flags.md">(beta)torch_npu.npu_anchor_response_flags</a></p>
+<tr id="row104977172114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1849701710119"><a name="p1849701710119"></a><a name="p1849701710119"></a><a href="(beta)torch_npu-npu_anchor_response_flags.md">(beta) torch_npu.npu_anchor_response_flags</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p69023133817"><a name="en-us_topic_0000001655404257_p69023133817"></a><a name="en-us_topic_0000001655404257_p69023133817"></a>Generates anchor response flags in a single feature map.</p>
 </td>
 </tr>
-<tr id="row1120483231119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p152051325111"><a name="p152051325111"></a><a name="p152051325111"></a><a href="(beta)torch_npu-npu_apply_adam.md">(beta)torch_npu.npu_apply_adam</a></p>
+<tr id="row1120483231119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p152051325111"><a name="p152051325111"></a><a name="p152051325111"></a><a href="(beta)torch_npu-npu_apply_adam.md">(beta) torch_npu.npu_apply_adam</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p18205193215119"><a name="p18205193215119"></a><a name="p18205193215119"></a>Obtains the computation results of the Adam optimizer.</p>
 </td>
 </tr>
-<tr id="row1920533291116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13205173251112"><a name="p13205173251112"></a><a name="p13205173251112"></a><a href="(beta)torch_npu-npu_batch_nms.md">(beta)torch_npu.npu_batch_nms</a></p>
+<tr id="row1920533291116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13205173251112"><a name="p13205173251112"></a><a name="p13205173251112"></a><a href="(beta)torch_npu-npu_batch_nms.md">(beta) torch_npu.npu_batch_nms</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p820523261113"><a name="p820523261113"></a><a name="p820523261113"></a>Performs multi-batch and multi-class Non-Maximum Suppression (NMS) by evaluating and sorting bounding box scores, and removes redundant input boxes based on the <code>iou_threshold</code> to improve detection accuracy. This operation suppresses non-maximum elements by searching for local maxima, commonly used for detection-based models in computer vision tasks.</p>
 </td>
 </tr>
-<tr id="row162057328112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11205193211112"><a name="p11205193211112"></a><a name="p11205193211112"></a><a href="(beta)torch_npu-npu_bert_apply_adam.md">(beta)torch_npu.npu_bert_apply_adam</a></p>
+<tr id="row162057328112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11205193211112"><a name="p11205193211112"></a><a name="p11205193211112"></a><a href="(beta)torch_npu-npu_bert_apply_adam.md">(beta) torch_npu.npu_bert_apply_adam</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12061132181116"><a name="p12061132181116"></a><a name="p12061132181116"></a>Obtains the computation results of the Adam optimizer for the BERT model.</p>
 </td>
 </tr>
-<tr id="row182061132151115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p52061332161110"><a name="p52061332161110"></a><a name="p52061332161110"></a><a href="(beta)torch_npu-npu_bmmV2.md">(beta)torch_npu.npu_bmmV2</a></p>
+<tr id="row182061132151115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p52061332161110"><a name="p52061332161110"></a><a name="p52061332161110"></a><a href="(beta)torch_npu-npu_bmmV2.md">(beta) torch_npu.npu_bmmV2</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p1582323323616"><a name="en-us_topic_0000001655404257_p1582323323616"></a><a name="en-us_topic_0000001655404257_p1582323323616"></a>Multiplies matrix <code>a</code> by matrix <code>b</code> to produce matrix <code>a * b</code>.</p>
 </td>
 </tr>
-<tr id="row520615328117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p020653281114"><a name="p020653281114"></a><a name="p020653281114"></a><a href="(beta)torch_npu-npu_bounding_box_decode.md">(beta)torch_npu.npu_bounding_box_decode</a></p>
+<tr id="row520615328117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p020653281114"><a name="p020653281114"></a><a name="p020653281114"></a><a href="(beta)torch_npu-npu_bounding_box_decode.md">(beta) torch_npu.npu_bounding_box_decode</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p2640134717250"><a name="en-us_topic_0000001655404257_p2640134717250"></a><a name="en-us_topic_0000001655404257_p2640134717250"></a>Generates bounding boxes based on <code>rois</code> and <code>deltas</code>. This is a custom Faster R-CNN operator.</p>
 </td>
 </tr>
-<tr id="row657717509111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2577105001114"><a name="p2577105001114"></a><a name="p2577105001114"></a><a href="(beta)torch_npu-npu_bounding_box_encode.md">(beta)torch_npu.npu_bounding_box_encode</a></p>
+<tr id="row657717509111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p2577105001114"><a name="p2577105001114"></a><a name="p2577105001114"></a><a href="(beta)torch_npu-npu_bounding_box_encode.md">(beta) torch_npu.npu_bounding_box_encode</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p2577105019119"><a name="p2577105019119"></a><a name="p2577105019119"></a>Computes the coordinate changes between anchor boxes and ground-truth boxes. This is a custom Faster R-CNN operator.</p>
 </td>
 </tr>
-<tr id="row989165331120"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p38965316111"><a name="p38965316111"></a><a name="p38965316111"></a><a href="(beta)torch_npu-npu_broadcast.md">(beta)torch_npu.npu_broadcast</a></p>
+<tr id="row989165331120"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p38965316111"><a name="p38965316111"></a><a name="p38965316111"></a><a href="(beta)torch_npu-npu_broadcast.md">(beta) torch_npu.npu_broadcast</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p918313310142"><a name="en-us_topic_0000001655404257_p918313310142"></a><a name="en-us_topic_0000001655404257_p918313310142"></a>Returns a new view of <code>self</code> with singleton dimensions expanded, and the result is contiguous. The tensor can also be expanded by more dimensions, and new dimensions are added at the front.</p>
 </td>
 </tr>
-<tr id="row589165316115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1489155321111"><a name="p1489155321111"></a><a name="p1489155321111"></a><a href="(beta)torch_npu-npu_ciou.md">(beta)torch_npu.npu_ciou</a></p>
+<tr id="row589165316115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1489155321111"><a name="p1489155321111"></a><a name="p1489155321111"></a><a href="(beta)torch_npu-npu_ciou.md">(beta) torch_npu.npu_ciou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p749621223015"><a name="en-us_topic_0000001655404257_p749621223015"></a><a name="en-us_topic_0000001655404257_p749621223015"></a>Computes the Complete Intersection over Union (CIoU) loss between the predicted bounding box and the ground-truth bounding box using an NPU-based CIoU operation.</p>
 </td>
 </tr>
-<tr id="row138914536113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1289453191113"><a name="p1289453191113"></a><a name="p1289453191113"></a><a href="(beta)torch_npu-npu_clear_float_status.md">(beta)torch_npu.npu_clear_float_status</a></p>
+<tr id="row138914536113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1289453191113"><a name="p1289453191113"></a><a name="p1289453191113"></a><a href="(beta)torch_npu-npu_clear_float_status.md">(beta) torch_npu.npu_clear_float_status</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p289105341110"><a name="p289105341110"></a><a name="p289105341110"></a>Clears the status flags related to overflow detection.</p>
 </td>
 </tr>
-<tr id="row158945317117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5901953141111"><a name="p5901953141111"></a><a name="p5901953141111"></a><a href="(beta)torch_npu-npu_confusion_transpose.md">(beta)torch_npu.npu_confusion_transpose</a></p>
+<tr id="row158945317117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p5901953141111"><a name="p5901953141111"></a><a name="p5901953141111"></a><a href="(beta)torch_npu-npu_confusion_transpose.md">(beta) torch_npu.npu_confusion_transpose</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p7908532119"><a name="p7908532119"></a><a name="p7908532119"></a>Fuses the reshape and transpose operations.</p>
 </td>
 </tr>
-<tr id="row2090953141119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1690125311117"><a name="p1690125311117"></a><a name="p1690125311117"></a><a href="(beta)torch_npu-npu_conv_transpose2d.md">(beta)torch_npu.npu_conv_transpose2d</a></p>
+<tr id="row2090953141119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1690125311117"><a name="p1690125311117"></a><a name="p1690125311117"></a><a href="(beta)torch_npu-npu_conv_transpose2d.md">(beta) torch_npu.npu_conv_transpose2d</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p122041623817"><a name="en-us_topic_0000001655404257_p122041623817"></a><a name="en-us_topic_0000001655404257_p122041623817"></a>Applies a 2D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as "deconvolution".</p>
 </td>
 </tr>
-<tr id="row49065381112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p189035310112"><a name="p189035310112"></a><a name="p189035310112"></a><a href="(beta)torch_npu-npu_conv2d.md">(beta)torch_npu.npu_conv2d</a></p>
+<tr id="row49065381112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p189035310112"><a name="p189035310112"></a><a name="p189035310112"></a><a href="(beta)torch_npu-npu_conv2d.md">(beta) torch_npu.npu_conv2d</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1790753191113"><a name="p1790753191113"></a><a name="p1790753191113"></a>Applies a 2D convolution to an input image composed of multiple input planes.</p>
 </td>
 </tr>
-<tr id="row109045310113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p49035381110"><a name="p49035381110"></a><a name="p49035381110"></a><a href="(beta)torch_npu-npu_conv3d.md">(beta)torch_npu.npu_conv3d</a></p>
+<tr id="row109045310113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p49035381110"><a name="p49035381110"></a><a name="p49035381110"></a><a href="(beta)torch_npu-npu_conv3d.md">(beta) torch_npu.npu_conv3d</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p18901253111116"><a name="p18901253111116"></a><a name="p18901253111116"></a>Applies a 3D convolution to an input image composed of multiple input planes.</p>
 </td>
 </tr>
-<tr id="row0901534111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1090253101111"><a name="p1090253101111"></a><a name="p1090253101111"></a><a href="(beta)torch_npu-npu_convolution.md">(beta)torch_npu.npu_convolution</a></p>
+<tr id="row0901534111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1090253101111"><a name="p1090253101111"></a><a name="p1090253101111"></a><a href="(beta)torch_npu-npu_convolution.md">(beta) torch_npu.npu_convolution</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p890053121116"><a name="p890053121116"></a><a name="p890053121116"></a>Applies a 2D or 3D convolution to an input image composed of multiple input planes.</p>
 </td>
 </tr>
-<tr id="row9577205019119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7577105010119"><a name="p7577105010119"></a><a name="p7577105010119"></a><a href="(beta)torch_npu-npu_convolution_transpose.md">(beta)torch_npu.npu_convolution_transpose</a></p>
+<tr id="row9577205019119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p7577105010119"><a name="p7577105010119"></a><a name="p7577105010119"></a><a href="(beta)torch_npu-npu_convolution_transpose.md">(beta) torch_npu.npu_convolution_transpose</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p35776509119"><a name="p35776509119"></a><a name="p35776509119"></a>Applies a 2D or 3D transposed convolution operator to an input image composed of multiple input planes. Sometimes, this process is also referred to as "deconvolution".</p>
 </td>
 </tr>
-<tr id="row75771250101115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p15771150151111"><a name="p15771150151111"></a><a name="p15771150151111"></a><a href="(beta)torch_npu-npu_deformable_conv2d.md">(beta)torch_npu.npu_deformable_conv2d</a></p>
+<tr id="row75771250101115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p15771150151111"><a name="p15771150151111"></a><a name="p15771150151111"></a><a href="(beta)torch_npu-npu_deformable_conv2d.md">(beta) torch_npu.npu_deformable_conv2d</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p1888192943717"><a name="en-us_topic_0000001655404257_p1888192943717"></a><a name="en-us_topic_0000001655404257_p1888192943717"></a>Computes the deformed convolution output using the expected input.</p>
 </td>
 </tr>
-<tr id="row125771550121117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16577135019112"><a name="p16577135019112"></a><a name="p16577135019112"></a><a href="(beta)torch_npu-npu_diou.md">(beta)torch_npu.npu_diou</a></p>
+<tr id="row125771550121117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16577135019112"><a name="p16577135019112"></a><a name="p16577135019112"></a><a href="(beta)torch_npu-npu_diou.md">(beta) torch_npu.npu_diou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p12796833183010"><a name="en-us_topic_0000001655404257_p12796833183010"></a><a name="en-us_topic_0000001655404257_p12796833183010"></a>This API implements NPU-based DIoU (Distance Intersection over Union) computation. The algorithm comprehensively considers the distance between the centers of predicted and ground-truth bounding boxes as well as the overlap ratio of bounding boxes, making bounding box regression more stable and improving object localization accuracy.</p>
 </td>
 </tr>
-<tr id="row95771950161112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35771150191112"><a name="p35771150191112"></a><a name="p35771150191112"></a><a href="(beta)torch_npu-npu_dtype_cast.md">(beta)torch_npu.npu_dtype_cast</a></p>
+<tr id="row95771950161112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35771150191112"><a name="p35771150191112"></a><a name="p35771150191112"></a><a href="(beta)torch_npu-npu_dtype_cast.md">(beta) torch_npu.npu_dtype_cast</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p1221456142618"><a name="en-us_topic_0000001655404257_p1221456142618"></a><a name="en-us_topic_0000001655404257_p1221456142618"></a>Converts the data type (<code>dtype</code>) of a tensor.</p>
 </td>
 </tr>
-<tr id="row195782506118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1857885061113"><a name="p1857885061113"></a><a name="p1857885061113"></a><a href="(beta)torch_npu-npu_format_cast.md">(beta)torch_npu.npu_format_cast</a></p>
+<tr id="row195782506118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1857885061113"><a name="p1857885061113"></a><a name="p1857885061113"></a><a href="(beta)torch_npu-npu_format_cast.md">(beta) torch_npu.npu_format_cast</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p68591917123"><a name="en-us_topic_0000001655404257_p68591917123"></a><a name="en-us_topic_0000001655404257_p68591917123"></a>Modifies the data layout format of an NPU tensor.</p>
 </td>
 </tr>
-<tr id="row457855012117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p557813506114"><a name="p557813506114"></a><a name="p557813506114"></a><a href="(beta)torch_npu-npu_format_cast_.md">(beta)torch_npu.npu_format_cast_</a></p>
+<tr id="row457855012117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p557813506114"><a name="p557813506114"></a><a name="p557813506114"></a><a href="(beta)torch_npu-npu_format_cast_.md">(beta) torch_npu.npu_format_cast_</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p125789503117"><a name="p125789503117"></a><a name="p125789503117"></a>Modifies the data layout format of the <code>self</code> tensor in place, matching the format of <code>src</code>.</p>
 </td>
 </tr>
-<tr id="row1757895091111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17578195010114"><a name="p17578195010114"></a><a name="p17578195010114"></a><a href="(beta)torch_npu-npu_get_float_status.md">(beta)torch_npu.npu_get_float_status</a></p>
+<tr id="row1757895091111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17578195010114"><a name="p17578195010114"></a><a name="p17578195010114"></a><a href="(beta)torch_npu-npu_get_float_status.md">(beta) torch_npu.npu_get_float_status</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p8144193193519"><a name="en-us_topic_0000001655404257_p8144193193519"></a><a name="en-us_topic_0000001655404257_p8144193193519"></a>Obtains the overflow detection result.</p>
 </td>
 </tr>
-<tr id="row3206113212114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p42065329112"><a name="p42065329112"></a><a name="p42065329112"></a><a href="(beta)torch_npu-npu_giou.md">(beta)torch_npu.npu_giou</a></p>
+<tr id="row3206113212114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p42065329112"><a name="p42065329112"></a><a name="p42065329112"></a><a href="(beta)torch_npu-npu_giou.md">(beta) torch_npu.npu_giou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p0835111286"><a name="en-us_topic_0000001655404257_p0835111286"></a><a name="en-us_topic_0000001655404257_p0835111286"></a>First computes the minimum enclosing area and IoU of two boxes, then calculates the proportion of the enclosing area that does not belong to either box, and finally subtracts this proportion from the IoU to obtain the GIoU.</p>
 </td>
 </tr>
-<tr id="row5377163616111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p937723691115"><a name="p937723691115"></a><a name="p937723691115"></a><a href="(beta)torch_npu-npu_grid_assign_positive.md">(beta)torch_npu.npu_grid_assign_positive</a></p>
+<tr id="row5377163616111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p937723691115"><a name="p937723691115"></a><a name="p937723691115"></a><a href="(beta)torch_npu-npu_grid_assign_positive.md">(beta) torch_npu.npu_grid_assign_positive</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p258994112512"><a name="en-us_topic_0000001655404257_p258994112512"></a><a name="en-us_topic_0000001655404257_p258994112512"></a><span>Computes the position-sensitive candidate region pooling gradients.</span></p>
 </td>
 </tr>
-<tr id="row14377936121116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1337753621111"><a name="p1337753621111"></a><a name="p1337753621111"></a><a href="(beta)torch_npu-npu_gru.md">(beta)torch_npu.npu_gru</a></p>
+<tr id="row14377936121116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1337753621111"><a name="p1337753621111"></a><a name="p1337753621111"></a><a href="(beta)torch_npu-npu_gru.md">(beta) torch_npu.npu_gru</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p798911210261"><a name="en-us_topic_0000001655404257_p798911210261"></a><a name="en-us_topic_0000001655404257_p798911210261"></a>Computes DynamicGRUV2.</p>
 </td>
 </tr>
-<tr id="row557919470115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p157994710118"><a name="p157994710118"></a><a name="p157994710118"></a><a href="(beta)torch_npu-npu_indexing.md">(beta)torch_npu.npu_indexing</a></p>
+<tr id="row557919470115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p157994710118"><a name="p157994710118"></a><a name="p157994710118"></a><a href="(beta)torch_npu-npu_indexing.md">(beta) torch_npu.npu_indexing</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p191786291"><a name="en-us_topic_0000001655404257_p191786291"></a><a name="en-us_topic_0000001655404257_p191786291"></a>Slices the input tensor by using <code>begin</code> as the start index, <code>end</code> as the end index, and <code>strides</code> as the stride.</p>
 </td>
 </tr>
-<tr id="row11579164761115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p195798473119"><a name="p195798473119"></a><a name="p195798473119"></a><a href="(beta)torch_npu-npu_iou.md">(beta)torch_npu.npu_iou</a></p>
+<tr id="row11579164761115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p195798473119"><a name="p195798473119"></a><a name="p195798473119"></a><a href="(beta)torch_npu-npu_iou.md">(beta) torch_npu.npu_iou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p10544194202310"><a name="en-us_topic_0000001655404257_p10544194202310"></a><a name="en-us_topic_0000001655404257_p10544194202310"></a>Computes the intersection over union (IoU) or intersection over foreground (IoF) based on the ground-truth boxes and predicted regions.</p>
 </td>
 </tr>
-<tr id="row10579184741114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35791247141119"><a name="p35791247141119"></a><a name="p35791247141119"></a><a href="(beta)torch_npu-npu_layer_norm_eval.md">(beta)torch_npu.npu_layer_norm_eval</a></p>
+<tr id="row10579184741114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p35791247141119"><a name="p35791247141119"></a><a name="p35791247141119"></a><a href="(beta)torch_npu-npu_layer_norm_eval.md">(beta) torch_npu.npu_layer_norm_eval</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p75791547101117"><a name="p75791547101117"></a><a name="p75791547101117"></a>Computes the layer normalization result. The semantics are identical to those of <code>torch.nn.functional.layer_norm</code> and is optimized for NPUs.</p>
 </td>
 </tr>
-<tr id="row11579104721117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p135794473113"><a name="p135794473113"></a><a name="p135794473113"></a><a href="(beta)torch_npu-npu_linear.md">(beta)torch_npu.npu_linear</a></p>
+<tr id="row11579104721117"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p135794473113"><a name="p135794473113"></a><a name="p135794473113"></a><a href="(beta)torch_npu-npu_linear.md">(beta) torch_npu.npu_linear</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p8579144781110"><a name="p8579144781110"></a><a name="p8579144781110"></a>Multiplies matrix <code>a</code> by matrix <code>b</code> to produce matrix <code>a * b</code>.</p>
 </td>
 </tr>
-<tr id="row9579184715119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p85793478116"><a name="p85793478116"></a><a name="p85793478116"></a><a href="(beta)torch_npu-npu_lstm.md">(beta)torch_npu.npu_lstm</a></p>
+<tr id="row9579184715119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p85793478116"><a name="p85793478116"></a><a name="p85793478116"></a><a href="(beta)torch_npu-npu_lstm.md">(beta) torch_npu.npu_lstm</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p757912479111"><a name="p757912479111"></a><a name="p757912479111"></a>Computes the forward pass of a Long Short-Term Memory (LSTM) network.</p>
 </td>
 </tr>
-<tr id="row3579194701112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16579184717113"><a name="p16579184717113"></a><a name="p16579184717113"></a><a href="(beta)torch_npu-npu_max.md">(beta)torch_npu.npu_max</a></p>
+<tr id="row3579194701112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p16579184717113"><a name="p16579184717113"></a><a name="p16579184717113"></a><a href="(beta)torch_npu-npu_max.md">(beta) torch_npu.npu_max</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1758054719115"><a name="p1758054719115"></a><a name="p1758054719115"></a>Computes the maximum values along <code>dim</code>. This API is similar to <code>torch.max</code> and is optimized for NPUs.</p>
 </td>
 </tr>
-<tr id="row2580347161118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p12580124781118"><a name="p12580124781118"></a><a name="p12580124781118"></a><a href="(beta)torch_npu-npu_min.md">(beta)torch_npu.npu_min</a></p>
+<tr id="row2580347161118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p12580124781118"><a name="p12580124781118"></a><a name="p12580124781118"></a><a href="(beta)torch_npu-npu_min.md">(beta) torch_npu.npu_min</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p1171133519333"><a name="en-us_topic_0000001655404257_p1171133519333"></a><a name="en-us_topic_0000001655404257_p1171133519333"></a>Computes the minimum values along <code>dim</code>. This API is similar to <code>torch.min</code> and is optimized for NPUs.</p>
 </td>
 </tr>
-<tr id="row115511438538"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p75511930538"><a name="p75511930538"></a><a name="p75511930538"></a><a href="(beta)torch_npu-npu_mish.md">(beta)torch_npu.npu_mish</a></p>
+<tr id="row115511438538"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p75511930538"><a name="p75511930538"></a><a name="p75511930538"></a><a href="(beta)torch_npu-npu_mish.md">(beta) torch_npu.npu_mish</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p12741142714357"><a name="p12741142714357"></a><a name="p12741142714357"></a>Computes the element-wise results of the Mish activation function.</p>
 </td>
 </tr>
-<tr id="row558010477110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17580147201113"><a name="p17580147201113"></a><a name="p17580147201113"></a><a href="(beta)torch_npu-npu_nms_rotated.md">(beta)torch_npu.npu_nms_rotated</a></p>
+<tr id="row558010477110"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p17580147201113"><a name="p17580147201113"></a><a name="p17580147201113"></a><a href="(beta)torch_npu-npu_nms_rotated.md">(beta) torch_npu.npu_nms_rotated</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p2907120192218"><a name="en-us_topic_0000001655404257_p2907120192218"></a><a name="en-us_topic_0000001655404257_p2907120192218"></a>Selects a subset of rotated bounding boxes in descending order of scores.</p>
 </td>
 </tr>
-<tr id="row1158054718119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1858004714112"><a name="p1858004714112"></a><a name="p1858004714112"></a><a href="(beta)torch_npu-npu_nms_v4.md">(beta)torch_npu.npu_nms_v4</a></p>
+<tr id="row1158054718119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1858004714112"><a name="p1858004714112"></a><a name="p1858004714112"></a><a href="(beta)torch_npu-npu_nms_v4.md">(beta) torch_npu.npu_nms_v4</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p296295602119"><a name="en-us_topic_0000001655404257_p296295602119"></a><a name="en-us_topic_0000001655404257_p296295602119"></a>Selects a subset of bounding boxes in descending order of scores.</p>
 </td>
 </tr>
-<tr id="row85801547131119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p105802478112"><a name="p105802478112"></a><a name="p105802478112"></a><a href="(beta)torch_npu-npu_nms_with_mask.md">(beta)torch_npu.npu_nms_with_mask</a></p>
+<tr id="row85801547131119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p105802478112"><a name="p105802478112"></a><a name="p105802478112"></a><a href="(beta)torch_npu-npu_nms_with_mask.md">(beta) torch_npu.npu_nms_with_mask</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1358054721113"><a name="p1358054721113"></a><a name="p1358054721113"></a>Generates values <code>0</code> or <code>1</code>, which are used by the NMS operator to determine valid bits.</p>
 </td>
 </tr>
-<tr id="row858014718113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p25801047101117"><a name="p25801047101117"></a><a name="p25801047101117"></a><a href="(beta)torch_npu-npu_one_hot.md">(beta)torch_npu.npu_one_hot</a></p>
+<tr id="row858014718113"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p25801047101117"><a name="p25801047101117"></a><a name="p25801047101117"></a><a href="(beta)torch_npu-npu_one_hot.md">(beta) torch_npu.npu_one_hot</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5580547191120"><a name="p5580547191120"></a><a name="p5580547191120"></a>Returns a one-hot tensor. The positions indicated by indices in <code>input</code> take the <code>on_value</code>, whereas all other positions take the <code>off_value</code>.</p>
 </td>
 </tr>
-<tr id="row2037715364114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p173771360112"><a name="p173771360112"></a><a name="p173771360112"></a><a href="(beta)torch_npu-npu_pad.md">(beta)torch_npu.npu_pad</a></p>
+<tr id="row2037715364114"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p173771360112"><a name="p173771360112"></a><a name="p173771360112"></a><a href="(beta)torch_npu-npu_pad.md">(beta) torch_npu.npu_pad</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p93771036191114"><a name="p93771036191114"></a><a name="p93771036191114"></a>Pads a tensor.</p>
 </td>
 </tr>
-<tr id="row1537743614119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p737793615117"><a name="p737793615117"></a><a name="p737793615117"></a><a href="(beta)torch_npu-npu_ps_roi_pooling.md">(beta)torch_npu.npu_ps_roi_pooling</a></p>
+<tr id="row1537743614119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p737793615117"><a name="p737793615117"></a><a name="p737793615117"></a><a href="(beta)torch_npu-npu_ps_roi_pooling.md">(beta) torch_npu.npu_ps_roi_pooling</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1037763620111"><a name="p1037763620111"></a><a name="p1037763620111"></a>Performs position-sensitive ROI pooling.</p>
 </td>
 </tr>
-<tr id="row2037743613112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p12377203601118"><a name="p12377203601118"></a><a name="p12377203601118"></a><a href="(beta)torch_npu-npu_ptiou.md">(beta)torch_npu.npu_ptiou</a></p>
+<tr id="row2037743613112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p12377203601118"><a name="p12377203601118"></a><a name="p12377203601118"></a><a href="(beta)torch_npu-npu_ptiou.md">(beta) torch_npu.npu_ptiou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1593155184019"><a name="p1593155184019"></a><a name="p1593155184019"></a>Computes the intersection over union (IoU) or intersection over foreground (IoF) based on the ground-truth boxes and predicted regions.</p>
 </td>
 </tr>
-<tr id="row1337793616112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p133781436181115"><a name="p133781436181115"></a><a name="p133781436181115"></a><a href="(beta)torch_npu-npu_random_choice_with_mask.md">(beta)torch_npu.npu_random_choice_with_mask</a></p>
+<tr id="row1337793616112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p133781436181115"><a name="p133781436181115"></a><a name="p133781436181115"></a><a href="(beta)torch_npu-npu_random_choice_with_mask.md">(beta) torch_npu.npu_random_choice_with_mask</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001655404257_p219311346269"><a name="en-us_topic_0000001655404257_p219311346269"></a><a name="en-us_topic_0000001655404257_p219311346269"></a>Shuffles the indices of non-zero elements.</p>
 </td>
 </tr>
-<tr id="row837833671119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1137810369111"><a name="p1137810369111"></a><a name="p1137810369111"></a><a href="(beta)torch_npu-npu_reshape.md">(beta)torch_npu.npu_reshape</a></p>
+<tr id="row837833671119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1137810369111"><a name="p1137810369111"></a><a name="p1137810369111"></a><a href="(beta)torch_npu-npu_reshape.md">(beta) torch_npu.npu_reshape</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14378123610113"><a name="p14378123610113"></a><a name="p14378123610113"></a>Reshapes a tensor. This operation only changes the tensor shape while its data remains unchanged.</p>
 </td>
 </tr>
-<tr id="row11378336161116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83782360112"><a name="p83782360112"></a><a name="p83782360112"></a><a href="(beta)torch_npu-npu_roi_align.md">(beta)torch_npu.npu_roi_align</a></p>
+<tr id="row11378336161116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p83782360112"><a name="p83782360112"></a><a name="p83782360112"></a><a href="(beta)torch_npu-npu_roi_align.md">(beta) torch_npu.npu_roi_align</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11378133620112"><a name="p11378133620112"></a><a name="p11378133620112"></a>Obtains the candidate region feature matrix from a feature map. This is a custom Faster R-CNN operator.</p>
 </td>
 </tr>
-<tr id="row168411042171118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11841184214110"><a name="p11841184214110"></a><a name="p11841184214110"></a><a href="(beta)torch_npu-npu_rotated_iou.md">(beta)torch_npu.npu_rotated_iou</a></p>
+<tr id="row168411042171118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p11841184214110"><a name="p11841184214110"></a><a name="p11841184214110"></a><a href="(beta)torch_npu-npu_rotated_iou.md">(beta) torch_npu.npu_rotated_iou</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p384134214117"><a name="p384134214117"></a><a name="p384134214117"></a>Computes the IoU of rotated bounding boxes.</p>
 </td>
 </tr>
-<tr id="row1284118427112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p0841184211115"><a name="p0841184211115"></a><a name="p0841184211115"></a><a href="(beta)torch_npu-npu_rotated_overlaps.md">(beta)torch_npu.npu_rotated_overlaps</a></p>
+<tr id="row1284118427112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p0841184211115"><a name="p0841184211115"></a><a name="p0841184211115"></a><a href="(beta)torch_npu-npu_rotated_overlaps.md">(beta) torch_npu.npu_rotated_overlaps</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p20841164221110"><a name="p20841164221110"></a><a name="p20841164221110"></a>Computes the overlap area of rotated bounding boxes.</p>
 </td>
 </tr>
-<tr id="row68411842121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384134221114"><a name="p1384134221114"></a><a name="p1384134221114"></a><a href="(beta)torch_npu-npu_sign_bits_pack.md">(beta)torch_npu.npu_sign_bits_pack</a></p>
+<tr id="row68411842121111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384134221114"><a name="p1384134221114"></a><a name="p1384134221114"></a><a href="(beta)torch_npu-npu_sign_bits_pack.md">(beta) torch_npu.npu_sign_bits_pack</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p484114213112"><a name="p484114213112"></a><a name="p484114213112"></a>Packs float-type 1-bit Adam parameters into uint8.</p>
 </td>
 </tr>
-<tr id="row128412042131111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p784116424113"><a name="p784116424113"></a><a name="p784116424113"></a><a href="(beta)torch_npu-npu_sign_bits_unpack.md">(beta)torch_npu.npu_sign_bits_unpack</a></p>
+<tr id="row128412042131111"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p784116424113"><a name="p784116424113"></a><a name="p784116424113"></a><a href="(beta)torch_npu-npu_sign_bits_unpack.md">(beta) torch_npu.npu_sign_bits_unpack</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p58411242191112"><a name="p58411242191112"></a><a name="p58411242191112"></a>Unpacks uint8-type 1-bit Adam parameters into float.</p>
 </td>
 </tr>
-<tr id="row17842154219116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384284211115"><a name="p1384284211115"></a><a name="p1384284211115"></a><a href="(beta)torch_npu-npu_silu.md">(beta)torch_npu.npu_silu</a></p>
+<tr id="row17842154219116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1384284211115"><a name="p1384284211115"></a><a name="p1384284211115"></a><a href="(beta)torch_npu-npu_silu.md">(beta) torch_npu.npu_silu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p11842194231120"><a name="p11842194231120"></a><a name="p11842194231120"></a>Computes the Swish activation function of <code>self</code>. Swish is an activation function defined as [<i>x</i> * <code>sigmoid</code>(<i>x</i>)].</p>
 </td>
 </tr>
-<tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="(beta)torch_npu-npu_slice.md">(beta)torch_npu.npu_slice</a></p>
+<tr id="row68428425112"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1842204218113"><a name="p1842204218113"></a><a name="p1842204218113"></a><a href="(beta)torch_npu-npu_slice.md">(beta) torch_npu.npu_slice</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p0842124210117"><a name="p0842124210117"></a><a name="p0842124210117"></a>Extracts a slice from a tensor.</p>
 </td>
 </tr>
-<tr id="row7842204261115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13842442161112"><a name="p13842442161112"></a><a name="p13842442161112"></a><a href="(beta)torch_npu-npu_softmax_cross_entropy_with_logits.md">(beta)torch_npu.npu_softmax_cross_entropy_with_logits</a></p>
+<tr id="row7842204261115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13842442161112"><a name="p13842442161112"></a><a name="p13842442161112"></a><a href="(beta)torch_npu-npu_softmax_cross_entropy_with_logits.md">(beta) torch_npu.npu_softmax_cross_entropy_with_logits</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1842144291119"><a name="p1842144291119"></a><a name="p1842144291119"></a>Computes the softmax cross-entropy cost.</p>
 </td>
 </tr>
-<tr id="row1084224211115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p188421442111120"><a name="p188421442111120"></a><a name="p188421442111120"></a><a href="(beta)torch_npu-npu_sort_v2.md">(beta)torch_npu.npu_sort_v2</a></p>
+<tr id="row1084224211115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p188421442111120"><a name="p188421442111120"></a><a name="p188421442111120"></a><a href="(beta)torch_npu-npu_sort_v2.md">(beta) torch_npu.npu_sort_v2</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p5842442111110"><a name="p5842442111110"></a><a name="p5842442111110"></a>Sorts the elements of the input tensor in ascending order along the specified dimension (currently, only the last dimension is supported) without returning indices. If <code>dim</code> is not specified, the last dimension of the input is selected. If <code>descending</code> is set to <code>True</code>, the elements are sorted in descending order by value.</p>
 </td>
 </tr>
-<tr id="row884254219118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1784284271118"><a name="p1784284271118"></a><a name="p1784284271118"></a><a href="(beta)torch_npu-npu_transpose.md">(beta)torch_npu.npu_transpose</a></p>
+<tr id="row884254219118"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1784284271118"><a name="p1784284271118"></a><a name="p1784284271118"></a><a href="(beta)torch_npu-npu_transpose.md">(beta) torch_npu.npu_transpose</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1884294261114"><a name="p1884294261114"></a><a name="p1884294261114"></a>Returns a view of the original tensor with its dimensions permuted, and the result is contiguous.</p>
 </td>
 </tr>
-<tr id="row118421942161116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p188423429111"><a name="p188423429111"></a><a name="p188423429111"></a><a href="(beta)torch_npu-npu_yolo_boxes_encode.md">(beta)torch_npu.npu_yolo_boxes_encode</a></p>
+<tr id="row118421942161116"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p188423429111"><a name="p188423429111"></a><a name="p188423429111"></a><a href="(beta)torch_npu-npu_yolo_boxes_encode.md">(beta) torch_npu.npu_yolo_boxes_encode</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p68421942191116"><a name="p68421942191116"></a><a name="p68421942191116"></a>Generates bounding boxes based on YOLO anchor boxes and ground-truth boxes. This is a custom MMDetection operator.</p>
 </td>
 </tr>
-<tr id="row6842164251115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p19842134241119"><a name="p19842134241119"></a><a name="p19842134241119"></a><a href="(beta)torch_npu-npu_fused_attention_score.md">(beta)torch_npu.npu_fused_attention_score</a></p>
+<tr id="row6842164251115"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p19842134241119"><a name="p19842134241119"></a><a name="p19842134241119"></a><a href="(beta)torch_npu-npu_fused_attention_score.md">(beta) torch_npu.npu_fused_attention_score</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p98421642101113"><a name="p98421642101113"></a><a name="p98421642101113"></a>Implements the fused computation logic of Transformer attention scores, primarily fusing operations such as <code>matmul</code>, <code>transpose</code>, <code>add</code>, <code>softmax</code>, <code>dropout</code>, <code>batchmatmul</code>, and <code>permute</code>.</p>
 </td>
 </tr>
-<tr id="row2378193620119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p9378836161118"><a name="p9378836161118"></a><a name="p9378836161118"></a><a href="(beta)torch_npu-npu_multi_head_attention.md">(beta)torch_npu.npu_multi_head_attention</a></p>
+<tr id="row2378193620119"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p9378836161118"><a name="p9378836161118"></a><a name="p9378836161118"></a><a href="(beta)torch_npu-npu_multi_head_attention.md">(beta) torch_npu.npu_multi_head_attention</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14378143615111"><a name="p14378143615111"></a><a name="p14378143615111"></a>Implements the Multi-Head Attention (MHA) computation logic in the Transformer module.</p>
 </td>
 </tr>
-<tr id="row14545161172716"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p854661182710"><a name="p854661182710"></a><a name="p854661182710"></a><a href="(beta)torch_npu-npu_rms_norm.md">(beta)torch_npu.npu_rms_norm</a></p>
+<tr id="row14545161172716"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p854661182710"><a name="p854661182710"></a><a name="p854661182710"></a><a href="(beta)torch_npu-npu_rms_norm.md">(beta) torch_npu.npu_rms_norm</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p125461318273"><a name="p125461318273"></a><a name="p125461318273"></a>The RMSNorm operator is a normalization operation commonly used in foundation models. Compared with the LayerNorm operator, it removes the mean subtraction step.</p>
 </td>
 </tr>
-<tr id="row2791419328"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1990671211278"><a name="p1990671211278"></a><a name="p1990671211278"></a><a href="(beta)torch_npu-npu_dropout_with_add_softmax.md">(beta)torch_npu.npu_dropout_with_add_softmax</a></p>
+<tr id="row2791419328"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p1990671211278"><a name="p1990671211278"></a><a name="p1990671211278"></a><a href="(beta)torch_npu-npu_dropout_with_add_softmax.md">(beta) torch_npu.npu_dropout_with_add_softmax</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p15906141216278"><a name="p15906141216278"></a><a name="p15906141216278"></a>Implements the functions of <code>axpy_v2</code>, <code>softmax_v2</code>, and <code>drop_out_domask_v3</code>.</p>
 </td>
@@ -337,12 +337,12 @@ This section describes common custom APIs, including tensor creation and computa
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p1290691218270"><a name="p1290691218270"></a><a name="p1290691218270"></a>Computes the Softmax result after scaling the input tensor <code>x</code> and applying the <code>mask</code>.</p>
 </td>
 </tr>
-<tr id="row480181910211"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p137651452352"><a name="p137651452352"></a><a name="p137651452352"></a><a href="(beta)torch_npu-npu_swiglu.md">(beta)torch_npu.npu_swiglu</a></p>
+<tr id="row480181910211"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p137651452352"><a name="p137651452352"></a><a name="p137651452352"></a><a href="(beta)torch_npu-npu_swiglu.md">(beta) torch_npu.npu_swiglu</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p14325153814812"><a name="p14325153814812"></a><a name="p14325153814812"></a>Provides the SwiGLU activation function.</p>
 </td>
 </tr>
-<tr id="row178010191727"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13901449479"><a name="p13901449479"></a><a name="p13901449479"></a><a href="(beta)torch_npu-one_.md">(beta)torch_npu.one_</a></p>
+<tr id="row178010191727"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p13901449479"><a name="p13901449479"></a><a name="p13901449479"></a><a href="(beta)torch_npu-one_.md">(beta) torch_npu.one_</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="en-us_topic_0000001726825729_en-us_topic_0000001655404257_p5268123310116"><a name="en-us_topic_0000001726825729_en-us_topic_0000001655404257_p5268123310116"></a><a name="en-us_topic_0000001726825729_en-us_topic_0000001655404257_p5268123310116"></a>Fills the <code>self</code> tensor with <code>1</code>s.</p>
 </td>
@@ -384,7 +384,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_attention_update.md">torch_npu.npu_attention_update</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Updates the local intermediate variables <code>lse</code> and <code>local_out</code> output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Updates the local intermediate variables <code>lse</code> and <code>local_out</code> output by the Paged Attention (PA) operator across each Sequence Parallelism (SP) domain into global results.</p>
 </td>
 </tr>
 <tr id="row_block_sparse_attention"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p10326218132921"><a name="p10326218132921"></a><a name="p10326218132921"></a><a href="torch_npu-npu_block_sparse_attention.md">torch_npu.npu_block_sparse_attention</a></p>
@@ -504,7 +504,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr id="row1457134215217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p258365124912"><a name="p258365124912"></a><a name="p258365124912"></a><a href="torch_npu-npu_mla_prolog_v3.md">torch_npu.npu_mla_prolog_v3</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios.</span></p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p55830512496"><a name="p55830512496"></a><a name="p55830512496"></a><span>Performs computation during Multi-Head Latent Attention (MLA) preprocessing in inference scenarios. Compared with v2, v3 adds the <code>query_norm</code> and <code>dequant_scale_q_norm</code> outputs, the <code>pertoken-pergroup</code> quantization mode, a scale correction factor, support for multiple <code>cache_mode</code> formats, and several quantization configuration parameters, and makes <code>cache_index</code> optional.</span></p>
 </td>
 </tr>
 <tr id="row125419366217"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p18998182119294"><a name="p18998182119294"></a><a name="p18998182119294"></a><a href="torch_npu-npu_mm_all_reduce_base.md">torch_npu.npu_mm_all_reduce_base</a></p>
@@ -669,12 +669,12 @@ This section describes common custom APIs, including tensor creation and computa
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_combine_v2.md">torch_npu.npu_moe_distribute_combine_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>reduce_scatterv</code> communication, <code>alltoallv</code> communication, and final data aggregation by multiplying the corresponding weights and summing the results.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Fuses <code>reduce_scatterv</code> communication, <code>alltoallv</code> communication, and final data aggregation by multiplying the corresponding weights and summing the results. The v2 version adds support for special expert scenarios (zero expert, copy expert, and constant expert) and works with <code>assist_info_for_combine</code> in <code>dispatch_v2</code> to implement more efficient all-device synchronization.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_distribute_dispatch_v2.md">torch_npu.npu_moe_distribute_dispatch_v2</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs quantization on token data (optional), followed by <code>alltoallv</code> communication in the Expert Parallelism (EP) domain, and then <code>allgatherv</code> communication in the Tensor Parallelism (TP) domain (optional).</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Performs optional quantization on token data, followed by <code>alltoallv</code> communication in the Expert Parallelism (EP) domain, and then <code>allgatherv</code> communication in the Tensor Parallelism (TP) domain (optional). The v2 version replaces the <code>expand_idx</code> return value with <code>assist_info_for_combine</code> to include more detailed token information, and adds the <code>comm_alg</code> parameter to replace the <code>HCCL_INTRA_PCIE_ENABLE</code> and <code>HCCL_INTRA_ROCE_ENABLE</code> environment variables.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu_moe_gating_top_k.md">torch_npu.npu_moe_gating_top_k</a></p>
@@ -860,7 +860,7 @@ This section describes common custom APIs, including tensor creation and computa
 </tr> 
 <tr id="npu_grouped_dynamic_block_quant"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_grouped_dynamic_block_quant"><a name="p_npu_grouped_dynamic_block_quant"></a><a name="p_npu_grouped_dynamic_block_quant"></a><a href="torch_npu-npu_grouped_dynamic_block_quant.md">torch_npu.npu_grouped_dynamic_block_quant</a></p> 
 </td> 
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiFP8 and outputs the quantization parameter <code>scale</code> (FP32).</span></p></td> 
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p id="p_npu_grouped_dynamic_block_quant_desc"><a name="p_npu_grouped_dynamic_block_quant_desc"></a><a name="p_npu_grouped_dynamic_block_quant_desc"></a><span>Quantizes each group at block granularity based on the starting values of the group indices (<code>group_list</code>) to FP8/HiF8 and outputs the quantization parameter <code>scale</code> (FP32).</span></p></td> 
 </tr> 
 <tr id="npu_mhc_post"><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p id="p_npu_mhc_post"><a name="p_npu_mhc_post"></a><a name="p_npu_mhc_post"></a><a href="torch_npu-npu_mhc_post.md">torch_npu.npu_mhc_post</a></p> 
 </td> 

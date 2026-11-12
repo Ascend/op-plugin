@@ -100,7 +100,7 @@
     \end{cases}
     $$
 
-  * The processing strategy of this module varies depending on the value of the input `top_p[b]`:
+  * The processing strategy of this module varies depending on the value of the input `top_p[b]`.
 
   | Parameter| ≤ | Valid Range| Invalid Range|
   | :-------:| :------:|:-------:|:-------:|
@@ -157,9 +157,9 @@
     logitsSortMasked[b,:] = sortedValue[b]
     $$
 
-  min-P sampling
+  `min_p` sampling
 
-  * If `min_ps[b] ∈ (0, 1)`, perform min-P sampling.
+  * If `min_ps[b] ∈ (0, 1)`, perform `min_p` sampling.
 
     $$
     \text{logitsMax}[b] = \text{Max}(\text{logitsSortMasked}[b])
@@ -319,7 +319,7 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
 - **`ks_max`** (`int`): Optional. Constrains the upper limit of valid `top_k[batch]` values allowed in top-K sampling, which affects the conditions for skipping top-K sampling. Any non-zero positive integer can be provided. The valid values are integers in the range [1, 1024]. Providing a value greater than `1024` automatically sets it to `1024`.
 - **`input_is_logits`** (`bool`): Optional. Controls whether the input `logits` undergo normalization before top-P and subsequent steps, and determines the default invalid logit type for the optional output `logits_top_kp_select`. `logits` represents unnormalized raw values, whereas normalized values are defined as `probs`. The effects of this parameter value are as follows:
     - When this parameter is set to `True`, the values in the input `logits` are not guaranteed to be within the `[0, 1]` interval. Since the `logits` are unnormalized, softmax processing is applied to the input before top-P sampling and subsequent steps. The default invalid logit value in `logits_top_kp_select` is `defLogit = -inf`.
-    - When this parameter is set to `False`, all elements in the input `logits` are guaranteed to be within the `[0, 1]` interval. Since the input `logits` are already normalized, subsequent steps such as top-P sampling directly use the results of the preceding stage to avoid gradient smoothing. The default invalid logit value in `logits_top_kp_select` is `defLogit = 0`.
+    - When this parameter is set to `False`, all elements in the input `logits` are guaranteed to be within the `[0, 1]` interval. Since the input `logits` are already normalized, subsequent steps such as `top_p` sampling directly use the results of the preceding stage to avoid gradient smoothing. The default invalid logit value in `logits_top_kp_select` is `defLogit = 0`.
 - **`post_sample`** (`str`): Optional. Controls the subsequent processing strategy after top-K-top-P sampling. First, check whether `q` is `None`. If so, the content provided in the `post_sample` parameter is ignored, and the subsequent processing mode is forcibly set to `None`. Valid values are:
     - `qSample` (default): prioritizes the use of qSample sampling.
     - `multiNomial`: uses multiNomial sampling (multiNomial random sampling). In this case, the input `q` matrix is parsed as random seeds to execute multiNomial-gather operations.

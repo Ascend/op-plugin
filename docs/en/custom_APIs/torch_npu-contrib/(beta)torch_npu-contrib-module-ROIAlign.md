@@ -23,7 +23,7 @@ torch_npu.contrib.module.ROIAlign(output_size, spatial_scale, sampling_ratio, al
 
 **Computation Parameters**
 
-- **`output_size`** (`Tuple[int, int]`): Output size `(height, width)` representing the target shape.
+- **`output_size`** (`Tuple`): Output size `(height, width)` representing the target shape.
 - **`spatial_scale`** (`float`): Scale factor applied to the input bounding boxes.
 - **`sampling_ratio`** (`int`): Number of input samples to take for each output sample. The value `0` indicates dense sampling.
 - **`aligned`** (`bool`): If set to `False`, the original Detectron implementation is used. If set to `True`, the results are aligned more accurately.

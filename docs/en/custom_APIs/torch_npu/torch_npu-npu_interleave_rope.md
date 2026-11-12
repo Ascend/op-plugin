@@ -27,7 +27,7 @@
 
      For example, if $q = [1, 2, 3, 4]$, the first half is $[1, 2]$ and the second half is $[3, 4]$. After the transformation, $\text{RotateHalf}(q) = [-3, -4, 1, 2]$.
 
-     $$\text{RotateHalf}(q)_i = \begin{cases} -q_{i+D/2}, & i < D/2 \\ q_{i-D/2}, & i \geq D/2 \end{cases}$$
+    $$\text{RotateHalf}(q)_i = \begin{cases} -q_{i+D/2}, & i < D/2 \\ q_{i-D/2}, & i \geq D/2 \end{cases}$$
 
 ## Prototype
 

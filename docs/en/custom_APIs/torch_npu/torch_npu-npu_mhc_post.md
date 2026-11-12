@@ -12,7 +12,6 @@
 ## Function
 
 - Performs post mapping on the output h<sub>l</sub><sup>out</sup> of layer l in the Manifold-Constrained Hyper-Connections (mHC) architecture and Res mapping on the input x<sub>l</sub> of layer l, and then applies a residual connection to the two results to obtain the input x<sub>l+1</sub> of layer l+1.
-
 - Formula:
 
     $$ x_{l+1} = (H_l^{res}) \times x_l + h_l^{out} \otimes H_l^{post} $$

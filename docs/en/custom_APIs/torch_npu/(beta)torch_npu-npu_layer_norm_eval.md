@@ -14,8 +14,7 @@
 
 ## Function
 
-Computes the layer normalization result. The semantics are identical to those of `torch.nn.functional.layer_norm`, and the operation is accelerated on the NPU.
-
+- Computes the layer normalization result. The semantics are identical to those of `torch.nn.functional.layer_norm`, and the operation is accelerated on the NPU.
 - Formula: Let $x$ be a slice vector consisting of the last several dimensions of `input`, with a total of $N$ elements. Let $\gamma_i$ and $\beta_i$ represent `weight` and `bias`, respectively; $E[x]$ be the mean of $x$; $Var[x]$ be the population variance of $x$ (with $N$ as the denominator); and $\varepsilon$ represent `eps`. Then
     $$
     \begin{cases}

@@ -77,7 +77,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 - Atlas A2 training products/Atlas A2 inference products: When `dst_dtype` is `"quint4x2"`, the last dimension of `x`, `gamma`, and `beta` must be an even number, and the last dimension of `x` must be divisible by 8.
 - Description of data types supported by different product models:
   
-  - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products:
+  - Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
@@ -86,14 +86,14 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
     | bfloat16  | bfloat16      | bfloat16      | bfloat16      | int8           | double      |int32      |
 
-  - Atlas inference series products and Atlas 200I/500 A2 inference series products:
+  - Atlas inference products and Atlas 200I/500 A2 inference products
 
     | x | gamma | beta | scale | offset | epsilon | y
     | --------- | ------------- | ------------- | ------------- | -------------- | --------- |--------- |
     | float16   | float16       | float16       | float16       | int8           | double      |int8      |
     | float16   | float16       | float16       | float16       | int8           | double      |int32      |
 
-  - <term>Ascend 950DT</term>：
+  - Ascend 950DT
 
     | x | gamma | beta | scale | offset | epsilon | y |
     | :---: | :---: | :---: | :---: | :---: | :---: | :---: |

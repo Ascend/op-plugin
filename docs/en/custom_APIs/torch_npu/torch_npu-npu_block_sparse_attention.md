@@ -75,7 +75,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 - `actual_seq_lengths` and `actual_seq_lengths_kv` must be either both provided or both omitted. If only one of them is provided, the operator will reject the input.
 - The sequence length does not need to be divisible by `block_shape`. The total number of blocks is calculated using ceiling division.
 - For the forward path, `headDim` can be `64` or `128`. The backward path supports `headDim=128` only.
-- The backward path supports both "BNSD" and "TND" layouts for `q_input_layout` and `kv_input_layout`, and supports both MHA and GQA scenarios. In MHA scenarios, $N1 = N2$. In GQA scenarios, $N1 > N2$ and $N1 \bmod N2 = 0$, where $N1$ denotes the number of heads in `query`, and $N2$ denotes the number of heads in `key`/`value`.
+- The backward path supports both "BNSD" and "TND" layouts for `q_input_layout` and `kv_input_layout`, and supports both MHA and GQA scenarios. In MHA scenarios, $N1 = N2$. In GQA scenarios, $N1 > N2$ and $N1 \% N2 = 0$, where $N1$ denotes the number of heads in `query`, and $N2$ denotes the number of heads in `key`/`value`.
 
 ## Examples
 

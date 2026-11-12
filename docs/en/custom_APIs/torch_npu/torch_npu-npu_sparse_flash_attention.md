@@ -21,7 +21,7 @@
     \text{softmax}(\frac{Q@\tilde{K}^T}{\sqrt{d_k}})@\tilde{V}
     $$
 
-    $\tilde{K}$ and $\tilde{V}$ represent key and value tensors with higher importance obtained through a selection algorithm such as `lightning_indexer`. They typically feature sparse or block-sparse characteristics. $d_k$ represents the per-head dimension of $Q$ and $\tilde{K}$. It corresponds to an index value of `b` in `sparse_indices`, indicating a contiguous segment of tokens in the KV sequence starting from `b * sparse_block_size`. The `key/value` tensors are collected according to `sparse_indices` to obtain $\tilde{K}$ and $\tilde{V}$ in the formula.
+    $\tilde{K},\tilde{V}$ represent key and value tensors with higher importance obtained through a selection algorithm such as `lightning_indexer`. They typically feature sparse or block-sparse characteristics. $d_k$ represents the per-head dimension of $Q$ and $\tilde{K}$. It corresponds to an index value of `b` in `sparse_indices`, indicating a contiguous segment of tokens in the KV sequence starting from `b * sparse_block_size`. The `key/value` tensors are collected according to `sparse_indices` to obtain $\tilde{K},\tilde{V}$ in the formula.
 
     When `attention_mode = 2`, the MLA-absorb mode is used. In this mode, $Q$ and $\tilde{K}$ in the original formula are formed by concatenating the `nope` and `rope` components:
 
@@ -29,11 +29,11 @@
     Q = [Q_{nope}, Q_{rope}], \quad \tilde{K} = [\tilde{K}_{nope}, \tilde{K}_{rope}]
     $$
 
-   `query` and `key` provide $Q_{nope}$ and $\tilde{K}_{nope}$, respectively, while `query_rope` and `key_rope` provide $Q_{rope}$ and $\tilde{K}_{rope}$, respectively.
+    `query` and `key` provide $Q_{nope}$ and $\tilde{K}_{nope}$, respectively, while `query_rope` and `key_rope` provide $Q_{rope}$ and $\tilde{K}_{rope}$, respectively.
 
-    The "effective KV set" corresponding to $\tilde{K}$ and $\tilde{V}$ in the formula differs depending on `sparse_mode`:
+    The "effective KV set" corresponding to $\tilde{K},\tilde{V}$ in the formula differs depending on `sparse_mode`:
 
-    - When `sparse_mode = 0`, $\tilde{K}$ and $\tilde{V}$ are constructed solely from the KV positions selected by `sparse_indices`, meaning that only sparse selection is performed without any additional causal mask.
+    - When `sparse_mode = 0`, $\tilde{K},\tilde{V}$ are constructed solely from the KV positions selected by `sparse_indices`, meaning that only sparse selection is performed without any additional causal mask.
     - When `sparse_mode = 3`, the `rightDownCausal` constraint is additionally applied to the KV positions selected by `sparse_indices`, limiting the causal range accessible to the current query. If the valid query and KV lengths of the current batch are $L_q$ and $L_{kv}$, respectively, then for the $i$-th query position, the accessible KV positions $j$ satisfy:
 
       $$
@@ -64,7 +64,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 >- `Q_S` or `S1` indicates the S dimension in the shape of `query`.<br>`KV_S` or `S2` indicates the S dimension in the shape of `key`.<br>`Q_N` or `N1` indicates `num_query_heads`.<br>`KV_N` or `N2` indicates `num_key_value_heads`.<br>`T1` indicates the T dimension in the shape of `query`.<br>`T2` indicates the accumulated sum of the input sample sequence lengths in the shape of `key`.
 >
 - **`query`** (`Tensor`): Required. $Q$ in the formula. Non-contiguous tensors are not supported. The data layout can be `ND`. The data type can be `bfloat16` or `float16`. When `layout_query` is `BSND`, the shape must be `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape must be `[T1, N1, D]`. For Atlas A3 inference products/Atlas A2 inference products, the value of `N1` can be `1`, `2`, `4`, `8`, `16`, `32`, `64`, or `128`. For Ascend 950PR/Ascend 950DT, the value of `N1` ranges from `1` to `128`.
-- **`key`** (`Tensor`): Required. $\tilde{K}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_kv` is `PA_BSND`, the shape must be `[block_num, block_size, KV_N, D]`. The parameter `block_num` indicates the total number of blocks in PagedAttention. The parameter `block_size` indicates the number of tokens in one block. The value of `block_size` must be a multiple of `16` and must be less than or equal to `1024`. When `layout_kv` is `BSND`, the shape must be `[B, S2, KV_N, D]`. When `layout_kv` is `TND`, the shape must be `[T2, KV_N, D]`. The value of `KV_N` must be `1`.
+- **`key`** (`Tensor`): Required. $\tilde{K}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16` or `float16`. When `layout_kv` is `PA_BSND`, the shape must be `[block_num, block_size, KV_N, D]`. The parameter `block_num` indicates the total number of blocks in Paged Attention. The parameter `block_size` indicates the number of tokens in one block. The value of `block_size` must be a multiple of `16` and must be less than or equal to `1024`. When `layout_kv` is `BSND`, the shape must be `[B, S2, KV_N, D]`. When `layout_kv` is `TND`, the shape must be `[T2, KV_N, D]`. The value of `KV_N` must be `1`.
 
 - **`value`** (`Tensor`): Required. $\tilde{V}$ in the formula. Non-contiguous tensors are not supported. The size of the dimension `N` must be `1`. The data layout can be ND. The data type can be `bfloat16` or `float16`. The shape must be identical to that of `key`.
     
@@ -74,7 +74,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
-- **`block_table`** (`Tensor`): Optional. Block mapping table used for kvCache storage in PagedAttention. The data layout can be ND. The data type can be `int32`. The shape of this parameter is 2D. The length of the first dimension must be identical to the batch size `B`, and the length of the second dimension must not be less than the block count corresponding to the maximum `S2` across all batches, computed through dividing `S2_max` by `block_size` and rounding the result up.
+- **`block_table`** (`Tensor`): Optional. Block mapping table used for kvCache storage in Paged Attention. The data layout can be ND. The data type can be `int32`. The shape of this parameter is 2D. The length of the first dimension must be identical to the batch size `B`, and the length of the second dimension must not be less than the block count corresponding to the maximum `S2` across all batches, computed through dividing `S2_max` by `block_size` and rounding the result up.
 
 - **`actual_seq_lengths_query`** (`Tensor`): Optional. Valid token count of `query` in different batches. The data type can be `int32`. If not specified, this parameter can be set to `None`, indicating that its length is identical to the size of the S dimension in the shape of `query`. The valid token count for each batch must not exceed the size of the S dimension in `query` and must be greater than or equal to 0. This parameter must be a 1D tensor of length `B`.<br>When `layout_query` is `TND`, this parameter must be provided, where its element count determines the batch size `B`, and each element indicates the cumulative token count of the current batch and all preceding batches, representing a prefix sum. Therefore, the value of each element must be greater than or equal to that of the preceding element.
 
@@ -90,7 +90,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **`layout_query`** (`str`): Optional. Data layout of the input `query`. Valid values are `BSND` or `TND`. If omitted, the default value `BSND` is used.
 
-- **`layout_kv`** (`str`): Optional. Data layout of the input `key`. Valid values are `TND`, `BSND`, or `PA_BSND`. If omitted, the default value `BSND` is used. `PA_BSND` is used when PagedAttention is enabled.
+- **`layout_kv`** (`str`): Optional. Data layout of the input `key`. Valid values are `TND`, `BSND`, or `PA_BSND`. If omitted, the default value `BSND` is used. `PA_BSND` is used when Paged Attention is enabled.
 
 - **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int64`.
     - `0`: enables full computation.

@@ -10,33 +10,27 @@
 
 ## Function
 
-Defines AI Core performance metric collection items (enumeration type), used as the `aic_metrics` parameter of the `_ExperimentalConfig` class.
+AI Core performance metric collection items. They are used as the `aic_metrics` parameter of the `_ExperimentalConfig` class.
 
-## Prototype
+## Class Signature
 
 ```python
 torch_npu.profiler.AiCMetrics
 ```
 
-## Parameters
+## Members
 
 For details about result data of the following collection items, see <a href="https://gitcode.com/Ascend/msprof/blob/26.1.0/docs/en/user_guide/profile_data_file_references.md#op_summary-operator-details">op_summary (Operator Details)</a> in the *msProf* documentation. The actual collection results prevail.
 
-- **`torch_npu.profiler.AiCMetrics.AiCoreNone`**: Optional. Disables the collection of AI Core performance metrics.
-- **`torch_npu.profiler.AiCMetrics.PipeUtilization`**: Optional. Execution duration percentage of computation units and data transfer units.
-- **`torch_npu.profiler.AiCMetrics.ArithmeticUtilization`**: Optional. Percentage statistics of various computation metrics.
-- **`torch_npu.profiler.AiCMetrics.Memory`**: Optional. Percentage of external memory read/write instructions.
-- **`torch_npu.profiler.AiCMetrics.MemoryL0`**: Optional. Percentage of internal L0 memory read/write instructions.
-- **`torch_npu.profiler.AiCMetrics.ResourceConflictRatio`**: Optional. Percentage of pipeline queue instructions.
-- **`torch_npu.profiler.AiCMetrics.MemoryUB`**: Optional. Percentage of internal UB memory read/write instructions.
-- **`torch_npu.profiler.AiCMetrics.L2Cache`**: Optional. Read/write cache hit counts and reallocation counts after cache misses.
-- **`torch_npu.profiler.AiCMetrics.MemoryAccess`**: Optional. Memory access bandwidth data of operators on the core.
-
-The default value is `torch_npu.profiler.AiCMetrics.AiCoreNone`.
-
-## Return Values
-
-None
+- **`torch_npu.profiler.AiCMetrics.AiCoreNone`**: Disables the collection of AI Core performance metrics.
+- **`torch_npu.profiler.AiCMetrics.PipeUtilization`**: Execution duration percentage of computation units and data transfer units.
+- **`torch_npu.profiler.AiCMetrics.ArithmeticUtilization`**: Percentage statistics of various computation metrics.
+- **`torch_npu.profiler.AiCMetrics.Memory`**: Percentage of external memory read/write instructions.
+- **`torch_npu.profiler.AiCMetrics.MemoryL0`**: Percentage of internal L0 memory read/write instructions.
+- **`torch_npu.profiler.AiCMetrics.ResourceConflictRatio`**: Percentage of pipeline queue instructions.
+- **`torch_npu.profiler.AiCMetrics.MemoryUB`**: Percentage of internal UB memory read/write instructions.
+- **`torch_npu.profiler.AiCMetrics.L2Cache`**: Read/write cache hit counts and reallocation counts after cache misses.
+- **`torch_npu.profiler.AiCMetrics.MemoryAccess`**: Memory access bandwidth data of operators on the core.
 
 ## Example
 

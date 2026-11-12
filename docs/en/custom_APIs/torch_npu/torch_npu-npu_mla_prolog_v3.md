@@ -91,7 +91,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > - `B` (Batch Size) indicates the input sample batch size.<br>`S` (Sequence Length) indicates the input sample sequence length.<br>`He` (Head Size) indicates the hidden layer size.<br>`N` (Head Num) indicates the attention head count.<br>`Hcq` indicates the dimension of the low-rank query matrix.<br>`Hckv` indicates the dimension of the low-rank KV matrix.<br>`Dtile` indicates the `kv_cache` D-axis dimension.<br>`D` indicates the query and key dimension excluding position embedding.<br>`Dr` indicates the query and key position embedding dimension.<br>`Nkv` indicates the attention head count for key and value.<br>`BlockNum` indicates the number of blocks in the PagedAttention scenario.<br>`BlockSize` indicates the block size in the PagedAttention scenario.<br>`T` indicates the size after the fusion of the `B` and `S` axes.
+  > - `B` (Batch Size) indicates the input sample batch size.<br>`S` (Sequence Length) indicates the input sample sequence length.<br>`He` (Head Size) indicates the hidden layer size.<br>`N` (Head Num) indicates the attention head count.<br>`Hcq` indicates the dimension of the low-rank query matrix.<br>`Hckv` indicates the dimension of the low-rank KV matrix.<br>`Dtile` indicates the `kv_cache` D-axis dimension.<br>`D` indicates the query and key dimension excluding position embedding.<br>`Dr` indicates the query and key position embedding dimension.<br>`Nkv` indicates the attention head count for key and value.<br>`BlockNum` indicates the number of blocks in the Paged Attention scenario.<br>`BlockSize` indicates the block size in the Paged Attention scenario.<br>`T` indicates the size after the fusion of the `B` and `S` axes.
 
 - **`token_x`** (`Tensor`): Required. Input tensor used to compute the query and key in the formulas. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `bfloat16`, `int8`, `float8_e4m3fn`, or `hifloat8`. When `B` and `S` axes are fused, the shape of this parameter is `[T, He]`. When `B` and `S` axes are not fused, the shape is `[B, S, He]`.
 
@@ -173,7 +173,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   >
   > - `token_x`, `weight_dq`, `weight_uq_qr`, `weight_dkv_kr`, and `kv_cache` do not support the `float8_e4m3fn` or `hifloat8` data types.
   > - `dequant_scale_x`, `dequant_scale_w_dq`, `dequant_scale_w_uq_qr`, and `dequant_scale_w_dkv_kr` do not support the `float8_e8m0` data type.
@@ -192,7 +192,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   >
   > - `query` and `query_norm` do not support the `float8_e4m3fn` or `hifloat8` data types.
   > - `dequant_scale_q_norm` does not support the `float8_e8m0` data type.
@@ -217,15 +217,15 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     | D            | QK dimension without position encoding           | Valid values: `128` or `192`.                                                            |
     | Dr           | QK position embedding dimension               | The value is fixed at `64`.                                                             |
     | Nkv          | Number of KV heads                 | The value is fixed at `1`.                                                              |
-    | BlockNum     | Number of `pertoken-pergroup` blocks in the PagedAttention scenario   | The value is rounded up to the nearest integer after the result of `B*Skv/BlockSize` is calculated. (`Skv` indicates the sequence length of KV, which can be `0`.)|
-    | BlockSize    | Block size in the PagedAttention scenario | Value range: a multiple of 16 ranging from 16 to 1024.                                                          |
+    | BlockNum     | Number of `pertoken-pergroup` blocks in the Paged Attention scenario   | The value is rounded up to the nearest integer after the result of `B*Skv/BlockSize` is calculated. (`Skv` indicates the sequence length of KV, which can be `0`.)|
+    | BlockSize    | Block size in the Paged Attention scenario | Value range: a multiple of 16 ranging from 16 to 1024.                                                          |
     | T            | Size after the fusion of the `B` and `S` axes               | Value range: not limited. Note: When the `B` and `S` axes are fused, `token_x`, `rope_sin`, `rope_cos`, and `query_norm` are 2D, `query_out` and `query_rope_out` are 3D, and `cache_index` is 1D.|
 
 - Supported scenarios:
 
   > [!NOTE]
   >
-  > <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  > Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
   >
   > - Full FP8, HiF8, and MXFP8 quantization scenarios are currently not supported.
 
@@ -237,64 +237,64 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     <tr>
       <td colspan="2"><em>Non-quantization</em></td>
       <td>
-          - <code>weight_quant_mode=0</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
-          - Inputs: All inputs are non-quantized data.<br>
-          - Outputs: All outputs are non-quantized data.
+          <code>weight_quant_mode=0</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
+          Inputs: All inputs are non-quantized data.<br>
+          Outputs: All outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td rowspan="3"><em>Partial quantization</em></td>
       <td><code>kv_cache</code> non-quantized</td>
       <td>
-          - <code>weight_quant_mode=1</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
-          - Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, and all other inputs must be non-quantized data. The <code>dequant_scale_w_uq_qr</code> field is required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          - Outputs: All outputs are non-quantized data.
+          <code>weight_quant_mode=1</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
+          Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, and all other inputs must be non-quantized data. The <code>dequant_scale_w_uq_qr</code> field is required, and the <code>smooth_scales_cq</code> field is optional.<br>
+          Outputs: All outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td><code>kv_cache</code> quantized in <code>perchannel</code> mode</td>
       <td>
-          - <code>weight_quant_mode=2</code>, <code>kv_cache_quant_mode=2</code>, <code>query_quant_mode=0</code><br>
-          - Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> and <code>kr_cache</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
+          <code>weight_quant_mode=1</code>, <code>kv_cache_quant_mode=2</code>, <code>query_quant_mode=0</code><br>
+          Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> and <code>kr_cache</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_w_uq_qr</code>, <code>quant_scale_ckv</code>, and <code>quant_scale_ckr</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          - Outputs: <code>kv_cache</code> and <code>kr_cache</code> are <code>perchannel</code> quantized data, and all other outputs are non-quantized data.
+          Outputs: <code>kv_cache</code> and <code>kr_cache</code> are <code>perchannel</code> quantized data, and all other outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td><code>kv_cache</code> quantized in <code>pertoken-pergroup</code> mode</td>
       <td>
-          - weight_quant_mode=3, kv_cache_quant_mode=3, query_quant_mode=0<br>
-          - Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> must be provided as <code>pertoken-pergroup</code> quantized data, and all other inputs must be non-quantized data.<br>
-          The <code>dequant_scale_w_uq_qr</code> and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          - Outputs: <code>kv_cache_out</code> is <code>pertoken-pergroup</code> quantized data, and all other outputs are non-quantized data.
+          <code>weight_quant_mode=1</code>, <code>kv_cache_quant_mode=3</code>, <code>query_quant_mode=0</code><br>
+          Inputs: <code>weight_uq_qr</code> must be provided as <code>pertoken</code> quantized data, <code>kv_cache</code> must be provided as <code>pertoken-pergroup</code> quantized data, and all other inputs must be non-quantized data.<br>
+          The <code>dequant_scale_w_uq_qr</code> field is required, and the <code>smooth_scales_cq</code> field is optional.<br>
+          Outputs: <code>kv_cache_out</code> is <code>pertoken-pergroup</code> quantized data, and all other outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td rowspan="3"><em>int8/fp8/hif8 Full quantization</em></td>
       <td><code>kv_cache</code> non-quantized</td>
       <td>
-          - <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
-          - Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
+          <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=0</code>, <code>query_quant_mode=0</code><br>
+          Inputs: <code>token_x</code> must be provided as <code>pertoken</code> quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, and <code>dequant_scale_w_dkv_kr</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          - Outputs: All outputs are non-quantized data.
+          Outputs: All outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td><code>kv_cache</code> quantized in <code>pertensor</code> mode</td>
       <td>
-          - <code>weight_quant_mode=2</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
-          - Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, <code>kv_cache</code> must be provided as <code>pertensor</code> quantized data, and all other inputs must be non-quantized data.<br>
-          The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scale_cq</code> field is optional.<br>
-          - Outputs: <code>query_out</code> is <code>pertoken_head</code> quantized data, the <code>kv_cache</code> output parameter is <code>pertensor</code> quantized data, and all other outputs are non-quantized data.
+          <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=1</code>, <code>query_quant_mode=1</code><br>
+          Inputs: <code>token_x</code> must be provided as <code>pertoken</code> quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, <code>kv_cache</code> must be provided as <code>pertensor</code> quantized data, and all other inputs must be non-quantized data.<br>
+          The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, <code>dequant_scale_w_dkv_kr</code>, and <code>quant_scale_ckv</code> fields are required, and the <code>smooth_scales_cq</code> field is optional.<br>
+          Outputs: <code>query_out</code> is <code>pertoken_head</code> quantized data, the <code>kv_cache</code> output parameter is <code>pertensor</code> quantized data, and all other outputs are non-quantized data.
       </td>
     </tr>
     <tr>
       <td><code>kv_cache</code> quantized in <code>pertoken-pergroup</code> mode</td>
       <td>
-          - <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=3</code>, <code>query_quant_mode=0</code><br>
-          - Inputs: <code>token_x</code> must be provided as pertoken quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
+          <code>weight_quant_mode=2/4/5</code>, <code>kv_cache_quant_mode=3</code>, <code>query_quant_mode=0</code><br>
+          Inputs: <code>token_x</code> must be provided as <code>pertoken</code> quantized data, <code>weight_dq</code>, <code>weight_uq_qr</code>, and <code>weight_dkv_kr</code> must be provided as <code>perchannel</code> quantized data, and all other inputs must be non-quantized data.<br>
           The <code>dequant_scale_x</code>, <code>dequant_scale_w_dq</code>, <code>dequant_scale_w_uq_qr</code>, and <code>dequant_scale_w_dkv_kr</code> are required, and the <code>smooth_scales_cq</code> field is optional.<br>
-          - Outputs: <code>query_out</code> returns per-token-per-head quantized data, <code>kv_cache</code> returns pertoken-pergroup quantized data, and all other outputs return non-quantized data
+          Outputs: <code>query_out</code> returns <code>pertoken_head</code> quantized data, <code>kv_cache</code> returns <code>pertoken-pergroup</code> quantized data, and all other outputs return non-quantized data.
       </td>
     </tr>
     <tr>

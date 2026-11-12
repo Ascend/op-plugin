@@ -48,3 +48,4 @@ Provides a data prefetcher on NPU devices, primarily used to optimize data loadi
 ...     while input is not None:
 ...         # Perform training operations on input and target
 ...         input, target = prefetcher.next()
+```

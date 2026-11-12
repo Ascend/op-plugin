@@ -16,7 +16,7 @@
 - Provides an efficient method to perform fused computation of grouped matrix multiplication (`GroupedMatMul`), dequantization (`dequant`), the `SwiGLU` activation function, and quantization (`quant`). This method is applicable to scenarios where the output of matrix multiplication requires `SwiGLU` activation. The fused operator enables partial parallel execution at the kernel level, improving computational efficiency. The following quantization scenarios are supported.
 
 - Formulas
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
     <details>
     <summary>A8W8 quantization scenarios (A indicates the activation matrix, W indicates the weight matrix, and 8 indicates the int8 data type):</summary>
 
@@ -33,16 +33,16 @@
         1. Determine the token range for each group based on `groupList[i]`, where $i \in [0,Len(groupList)]$.
         2. Perform the following computations based on the inputs determined by grouping.
 
-           $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}$
+          $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i\ Broadcast} \odot w\_scale_{i\ Broadcast}$
 
-           $C_{i,act}, gate_{i} = split(C_{i})$
+          $C_{i,act}, gate_{i} = split(C_{i})$
 
-           $S_{i}=Swish(C_{i,act})\odot gate_{i}$, where $Swish(x)=\frac{x}{1+e^{-x}}$
+          $S_{i}=Swish(C_{i,act})\odot gate_{i}$, where $Swish(x)=\frac{x}{1+e^{-x}}$
         3. Quantize the output results.
 
-           $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
+          $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$
 
-           $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
+          $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$
 
     </details>
 
@@ -63,7 +63,7 @@
         1. Determine the token range for each group based on `groupList[i]`, using identical grouping logic to that of A8W8.
         2. Split the `int8` left matrix input into high and low 4-bit parts.
 
-          $X\_high\_4bits_{i} = \lfloor \frac{X_{i}}{16} \rfloor$，$X\_low\_4bits_{i} = X_{i}\ \&\ 0x0f - 8$
+          $X\_high\_4bits_{i} = \lfloor \frac{X_{i}}{16} \rfloor$,$X\_low\_4bits_{i} = X_{i}\ \&\ 0x0f - 8$
         3. Perform matrix multiplication separately for the high and low parts, apply `perchannel` or `pergroup` quantization scaling, and combine the results with the auxiliary matrix.
 
           $C_{i} = (C\_high_{i} * 16 + C\_low_{i} + weightAssistMatrix_{i}) \odot x\_scale_{i}$
@@ -113,7 +113,7 @@
 
     </details>
   
-  - <term>Ascend 950PR/Ascend 950DT</term>：  
+  - Ascend 950PR/Ascend 950DT:  
     <details>
     <summary>MX quantization scenarios:</summary>
 
@@ -133,7 +133,7 @@
 
          $Q_i = quantize\_to\_element\_format(S_i/Q\_scale), \space i\space from\space 1\space to\space blocksize$
 
-         where $emax$ denotes the exponent of the maximum normal value for the corresponding data type:
+         where $emax$ denotes the exponent of the maximum normal value for the corresponding data type
 
          |   DataType    | emax |
          | :-----------: | :--: |
@@ -148,7 +148,7 @@
     <details>
     <summary>pertoken quantization scenarios:</summary>
 
-      1. Perform the following computation using the inputs determined based on the grouping:：
+      1. Perform the following computation using the inputs determined based on the grouping:
 
          $C_{i} = (X_{i}\cdot W_{i} )\odot x\_scale_{i} \odot w\_scale_{i}$
 
@@ -175,75 +175,75 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 ## Parameters
 
 - **`x`** (`Tensor`): Required. Left matrix for matrix multiplication, $X$ in the formulas. This parameter must be 2D with shape `[m, k]`. The data layout can be ND. Non-contiguous tensors are supported.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `int4`, `int8`, or `int32`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, or `torch_npu.hifloat8`. For `torch_npu.hifloat8` and the `float4` series, the optional parameter `x_dtype` must be set to the corresponding data type. In this case, the data type of `x` itself is ignored, but `x` must still have an 8-bit data type to ensure the shape is correct. For the `float4` series, the inner dimension `k` must be even so that 8 bits can be converted into two `float4` values. The data layout is `ND`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: The data type can be `int4`, `int8`, or `int32`.
+  - Ascend 950PR/Ascend 950DT: The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, or `torch_npu.hifloat8`. For `torch_npu.hifloat8` and the `float4` series, the optional parameter `x_dtype` must be set to the corresponding data type. In this case, the data type of `x` itself is ignored, but `x` must still have an 8-bit data type to ensure the shape is correct. For the `float4` series, the inner dimension `k` must be even so that 8 bits can be converted into two `float4` values. The data layout is `ND`.
 
 - **`weight`** (`TensorList`): Required. Weight matrix (the right matrix for matrix multiplication), $W$ in the formulas. Currently, only a `TensorList` of length `1` is supported. This parameter must be 3D with shape `[e, k, n]` (in ND layout), or a 5D tensor in NZ layout. The data layout can be ND or FRACTAL_NZ, which can be converted using `npu_format_cast`. Non-contiguous tensors are supported. 
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
     - The data type can be `int4`, `int8`, or `int32`. `int32` is used for adaptation in A8W4 and A4W4 scenarios. In practice, a single `int32` value is interpreted as eight `int4` elements.
     - In A8W8 scenarios, `weight` supports only the `FRACTAL_NZ` layout and does not support the `ND` layout.
-  - <term>Ascend 950PR/Ascend 950DT</term>:
+  - Ascend 950PR/Ascend 950DT:
     - When the data layout is `ND`, 3D shapes are supported: non-transposed shape `(e, k, n)` and transposed shape `(e, n, k)`. Supported data types are `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, and `torch_npu.hifloat8`. For `torch_npu.hifloat8` and the `float4` series, the optional parameter `weight_dtype` must be set to the corresponding data type. In this case, the data type of `weight` itself is ignored, but `weight` must still have an 8-bit data type to ensure the shape is correct. For the `float4` series, the inner dimension must be even so that 8 bits can be converted into two `float4` values.
     - When the data layout is `FRACTAL_NZ` (conversion can be performed using `npu_format_cast`), 5D shapes are supported: non-transposed shape `(e, n/32, k/16, 16, 32)` and transposed shape `(e, k/32, n/16, 16, 32)`. Only `torch.float8_e4m3fn` is supported.
 
 - **`weight_scale`** (`TensorList`): Required. Quantization factor for the weight matrix,  $w_{scale}$ in the formulas. Currently, only a `TensorList` of length `1` is supported. The data layout can be ND. Non-contiguous tensors are supported.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: When the data type of `weight` is `int8`, the shape of `weight_scale` can have 2 dimensions. When the data type of `weight` is `int32`, the shape of `weight_scale` can have 2 or 3 dimensions. The data type can be `float32`, `float16`, `bfloat16`, or `uint64`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: In MX quantization scenarios, this parameter can be 4D with shape `(e, ceil(k / 64), n, 2)` (non-transposed) or `(e, n, ceil(k / 64), 2)` (transposed); and the data type can be `torch_npu.float8_e8m0fnu`. In `pertoken` quantization scenarios, this parameter can be 2D with shape `(e, n)`. When `x` is `torch.int8`, the data type of `weight_scale` can be `torch.bfloat16`, `torch.float32`, or `torch.float16`. When `x` is `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`, the data type of `weight_scale` can be `torch.bfloat16` or `torch.float32`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: When the data type of `weight` is `int8`, the shape of `weight_scale` can have 2 dimensions. When the data type of `weight` is `int32`, the shape of `weight_scale` can have 2 or 3 dimensions. The data type can be `float32`, `float16`, `bfloat16`, or `uint64`.
+  - Ascend 950PR/Ascend 950DT: In MX quantization scenarios, this parameter can be 4D with shape `(e, ceil(k / 64), n, 2)` (non-transposed) or `(e, n, ceil(k / 64), 2)` (transposed); and the data type can be `torch_npu.float8_e8m0fnu`. In `pertoken` quantization scenarios, this parameter can be 2D with shape `(e, n)`. When `x` is `torch.int8`, the data type of `weight_scale` can be `torch.bfloat16`, `torch.float32`, or `torch.float16`. When `x` is `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`, the data type of `weight_scale` can be `torch.bfloat16` or `torch.float32`.
 
 - **`x_scale`** (`Tensor`): Required. Quantization factor for the activation matrix, $x\_scale$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: This parameter must be 1D with shape `(m)`. The data type can be `float32`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: In MX quantization scenarios, this parameter can be 3D with shape `(m, ceil(k / 64), 2)`. The data type can be `torch_npu.float8_e8m0fnu`. In `pertoken` quantization scenarios, this parameter must be 1D with shape `(m)`. The data type can be `torch.float32`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: This parameter must be 1D with shape `(m)`. The data type can be `float32`.
+  - Ascend 950PR/Ascend 950DT: In MX quantization scenarios, this parameter can be 3D with shape `(m, ceil(k / 64), 2)`. The data type can be `torch_npu.float8_e8m0fnu`. In `pertoken` quantization scenarios, this parameter must be 1D with shape `(m)`. The data type can be `torch.float32`.
 
 - **`group_list`** (`Tensor`): Required. Number of tokens in each group involved in the computation, $groupList$ in the formulas. This parameter must be 1D with shape `[e]`, and its length must be identical to the first axis dimension of `weight`. The data type can be `int64`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`smooth_scale`** (`Tensor`): Optional. Smooth scaling factor, $smoothScale$ in the formulas. The data type can be `float32`. The data layout can be ND. This parameter must be provided only in A4W4 scenarios, and its first axis length must be identical to the first axis dimension of `weight`. The shape of this parameter is `(E, N/2)` or `(E,)`. When shape `(E,)` is used, broadcast multiplication is applied. In other scenarios, the default value is `None`.
 - **`weight_assist_matrix`** (`TensorList`): Optional. Auxiliary matrix for the right matrix, $weightAssistMatrix$ in the formulas. The data type can be `float32`. The data layout can be ND. This parameter must be a 2D tensor. This parameter must be provided only in A8W4 scenarios, where the length of its first dimension must be identical to that of the first dimension of `weight`, and the length of its last dimension must be identical to that of the last dimension of `weight` when restored to the ND layout. In other scenarios, the default value is `None`.
 - **`bias`** (`Tensor`): Optional. Offset value for matrix multiplication computation, $bias$ in the formulas. This parameter must be a 2D tensor. The data type can be `int32`. Currently, only the default value `None` is supported.
 - **`dequant_mode`** (`int`): Optional. Dequantization mode. This parameter is of type `int32` and has a default value of `0`. A value of `0` indicates `pertoken` quantization for the activation matrix and `perchannel` quantization for the weight matrix. A value of `1` indicates `pertoken` quantization for the activation matrix and `pergroup` quantization for the weight matrix. A value of `2` indicates MX quantization.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: In A8W4 scenarios, `dequant_mode` can be `0` or `1`. In A8W8 and A4W4 scenarios, `dequant_mode` can only be `0`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: Currently, only `0` and `2` are supported.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: In A8W4 scenarios, `dequant_mode` can be `0` or `1`. In A8W8 and A4W4 scenarios, `dequant_mode` can only be `0`.
+  - Ascend 950PR/Ascend 950DT: Currently, only `0` and `2` are supported.
 
 - **`dequant_dtype`** (`int`): Optional. Dequantization data type. This parameter is of type `int32`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `0` (indicating `float32`) is supported.
-  - <term>Ascend 950PR/Ascend 950DT</term>: The default value is `torch.int8`. Currently, `torch.float32`, `torch.bfloat16`, and `torch.float16` are supported.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, only the default value `0` (indicating `float32`) is supported.
+  - Ascend 950PR/Ascend 950DT: The default value is `torch.int8`. Currently, `torch.float32`, `torch.bfloat16`, and `torch.float16` are supported.
 
 - **`quant_mode`** (`int`): Optional. Quantization mode after SwiGLU. This parameter is of type `int32`. Valid values are `0` (default, `pertoken` quantization), `1` (`pergroup` quantization), or `2` (MX quantization).
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `0` (`pertoken` quantization) is supported.
-  - <term>Ascend 950PR/Ascend 950DT</term>: Currently, only `0` and `2` are supported.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, only the default value `0` (`pertoken` quantization) is supported.
+  - Ascend 950PR/Ascend 950DT: Currently, only `0` and `2` are supported.
 
 - **`quant_dtype`** (`int`): Optional. Low-bit data type after quantization. This parameter is of type `int32`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, only the default value `0` (indicating `int8`) is supported.
-  - <term>Ascend 950PR/Ascend 950DT</term>: The default value is `torch.int8`. Currently, `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, and `torch_npu.hifloat8` are supported.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, only the default value `0` (indicating `int8`) is supported.
+  - Ascend 950PR/Ascend 950DT: The default value is `torch.int8`. Currently, `torch.float8_e5m2`, `torch.float8_e4m3fn`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, and `torch_npu.hifloat8` are supported.
 
 - **`group_list_type`** (`int`): Optional. Input type of `group_list`. This parameter is of type `int32` and has a default value of `0`.
-  - A value of `0` indicates cumsum mode, where each element in `group_list` represents the cumulative length of the current group.
-  - A value of `1` indicates count mode, where each element in `group_list` represents the number of elements in the corresponding group.
+    - A value of `0` indicates cumsum mode, where each element in `group_list` represents the cumulative length of the current group.
+    - A value of `1` indicates count mode, where each element in `group_list` represents the number of elements in the corresponding group.
 - **`tuning_config`** (`List[int]`): Optional. The first element in this parameter array specifies the expected number of tokens processed by each expert. Elements from the second element onward are reserved for future expansion and do not need to be specified by the user. The default value is `None`.
 
 - **`x_dtype`** (`int`): Optional. Actual data type of the input `x`. Currently, only the default value `None` is supported, indicating that the actual data type of `x` is the same as its `dtype`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Use the default value.
-  - <term>Ascend 950PR/Ascend 950DT</term>: When `x` is `float4_e2m1fn_x2` or `hifloat8`, `x_dtype` must be set to `torch_npu.float4_e2m1fn_x2` or `torch_npu.hifloat8`, respectively.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Use the default value.
+  - Ascend 950PR/Ascend 950DT: When `x` is `float4_e2m1fn_x2` or `hifloat8`, `x_dtype` must be set to `torch_npu.float4_e2m1fn_x2` or `torch_npu.hifloat8`, respectively.
 
 - **`weight_dtype`** (`int`): Optional. Actual data type of the input `weight`. Currently, only the default value `None` is supported, indicating that the actual data type of `weight` is the same as its `dtype`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Use the default value.
-  - <term>Ascend 950PR/Ascend 950DT</term>: When `weight` is `float4_e2m1fn_x2` or `hifloat8`, `weight_dtype` must be set to `torch_npu.float4_e2m1fn_x2` or `torch_npu.hifloat8`, respectively.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Use the default value.
+  - Ascend 950PR/Ascend 950DT: When `weight` is `float4_e2m1fn_x2` or `hifloat8`, `weight_dtype` must be set to `torch_npu.float4_e2m1fn_x2` or `torch_npu.hifloat8`, respectively.
 
 - **`weight_scale_dtype`** (`int`): Optional. Actual data type of the input `weight_scale`. The default value is `None`, indicating that the actual data type of `weight_scale` is the same as its `dtype`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Use the default value.
-  - <term>Ascend 950PR/Ascend 950DT</term>: When `weight_scale` is `float8_e8m0fnu`, `weight_scale_dtype` must be set to `torch_npu.float8_e8m0fnu`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Use the default value.
+  - Ascend 950PR/Ascend 950DT: When `weight_scale` is `float8_e8m0fnu`, `weight_scale_dtype` must be set to `torch_npu.float8_e8m0fnu`.
 
 - **`x_scale_dtype`** (`int`): Optional. Actual data type of the input `x_scale`. The default value is `None`, indicating that the actual data type of `x_scale` is the same as its `dtype`.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: Currently, this parameter is not supported. Use the default value.
-  - <term>Ascend 950PR/Ascend 950DT</term>: When `x_scale` is `float8_e8m0fnu`, `x_scale_dtype` must be set to `torch_npu.float8_e8m0fnu`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: Currently, this parameter is not supported. Use the default value.
+  - Ascend 950PR/Ascend 950DT: When `x_scale` is `float8_e8m0fnu`, `x_scale_dtype` must be set to `torch_npu.float8_e8m0fnu`.
 
 ## Return Values
 
 - **`output`** (`Tensor`): Quantized output, $Q$ in the formulas. The data layout can be `ND`. Non-contiguous tensors are supported.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `int8`. The shape must be 2D with shape `[m, n/2]`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: The data type can be `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, or `torch_npu.hifloat8`. The shape can be 2D with shape `[m, n/2]`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: The data type can be `int8`. The shape must be 2D with shape `[m, n/2]`.
+  - Ascend 950PR/Ascend 950DT: The data type can be `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.float4_e2m1fn_x2`, `torch.int8`, or `torch_npu.hifloat8`. The shape can be 2D with shape `[m, n/2]`.
 
 - **`output_scale`** (`Tensor`): Quantization factor for the output, $Q_{\text{scale}}$ in the formulas. The data layout can be `ND`. Non-contiguous tensors are supported.
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>: The data type can be `float32`. The shape must be 1D with shape `(m)`.
-  - <term>Ascend 950PR/Ascend 950DT</term>: In MX quantization scenarios, the data type can be `torch_npu.float8_e8m0fnu`, and the parameter can be 3D with shape `(m, ceil((n/2)/64), 2)`. In `pertoken` quantization scenarios, the shape must be 1D with shape `(m)`, and the data type can be `torch.float32`.
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products: The data type can be `float32`. The shape must be 1D with shape `(m)`.
+  - Ascend 950PR/Ascend 950DT: In MX quantization scenarios, the data type can be `torch_npu.float8_e8m0fnu`, and the parameter can be 3D with shape `(m, ceil((n/2)/64), 2)`. In `pertoken` quantization scenarios, the shape must be 1D with shape `(m)`, and the data type can be `torch.float32`.
 
 ## Constraints
 
@@ -256,7 +256,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - Variables used in tensor shapes in the parameter descriptions:
   - `e`: Number of groups, ranging from 1 to 1024.
   - `m`: Size of the second-to-last dimension of the output matrix `output`, ranging from 1 to 2147483647.
-  - `n`: Twice the size of the last dimension of the output matrix `output`, ranging from 1 to 2147483647. In MX quantization scenarios on <term>Ascend 950PR/Ascend 950DT</term>, `n` must be aligned to 128.
+  - `n`: Twice the size of the last dimension of the output matrix `output`, ranging from 1 to 2147483647. In MX quantization scenarios on Ascend 950PR/Ascend 950DT, `n` must be aligned to 128.
   - `k`: Size of the reduction axis for matrix multiplication, ranging from 1 to 2147483647.
 
 - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
@@ -279,37 +279,37 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     - In A8W8 scenarios, the size of the N axis must not exceed 10240, and the size of the last axis of `x` must be less than 65536.
     - In A8W4 scenarios, the size of the N axis must not exceed 10240, and the size of the last axis of `x` must be less than 20000.
     - In A4W4 scenarios, the size of the N axis must not exceed 10240, and the size of the last axis of `x` must be less than 20000.
-- <term>Ascend 950PR/Ascend 950DT</term>:
-  - Supported data type combinations for input and output tensors are as follows:
+- Ascend 950PR/Ascend 950DT:
+    - Supported data type combinations for input and output tensors are as follows:
 
-    - MX quantization scenarios:
+      - MX quantization scenarios
 
-      | Quantization Mode | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
-      | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-      | MXFP8 quantization (ND layout) | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
-      | MXFP4 quantization (ND layout) | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch_npu.float4_e2m1fn_x2` / `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
-      | MXFP8 quantization (FRACTAL_NZ layout) | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` |
+        | Quantization Mode | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
+        | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+        | MXFP8 quantization (ND layout) | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
+        | MXFP4 quantization (ND layout) | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch_npu.float4_e2m1fn_x2` / `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch_npu.float8_e8m0fnu` |
+        | MXFP8 quantization (FRACTAL_NZ layout) | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch_npu.float8_e8m0fnu` | `torch_npu.float8_e8m0fnu` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` | `torch_npu.float8_e8m0fnu` |
 
-    - `pertoken` quantization scenarios:
+      - `pertoken` quantization scenarios
 
-      | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
-      | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-      | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float32` |
-      | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` / `torch.float16` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch.int8` | `torch.float32` |
-      | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch_npu.hifloat8` | `torch.float32` |
+        | x | weight | group_list | weight_scale | x_scale | bias | weight_assist_matrix | smooth_scale | output | output_scale |
+        | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+        | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch.float8_e4m3fn` / `torch.float8_e5m2` | `torch.float32` |
+        | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32` / `torch.float16` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch.int8` | `torch.float32` |
+        | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32` / `torch.bfloat16` | `torch.float32` | Not supported | Not supported | Not supported | `torch_npu.hifloat8` | `torch.float32` |
 
-  - Supported shape combinations for input and output tensors are as follows:
+    - Supported shape combinations for input and output tensors are as follows.
 
-    | Quantization Mode | x | weight | weight_scale | x_scale | output | output_scale |
-    | --- | --- | --- | --- | --- | --- | --- |
-    | MX quantization (ND layout) | `(m, k)` | Non-transposed shape: `(e, k, n)`<br>Transposed shape: `(e, n, k)` | Non-transposed shape: `(e, ceil(k / 64), n, 2)`<br>Transposed shape: `(e, n, ceil(k / 64), 2)` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
-    | MX quantization (FRACTAL_NZ layout) | `(m, k)` | Non-transposed shape: `(e, n / 32, k / 16, 16, 32)`<br>Transposed shape: `(e, k / 32, n / 16, 16, 32)` | Non-transposed shape: `(e, ceil(k / 64), n, 2)`<br>Transposed shape: `(e, n, ceil(k / 64), 2)` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
-    | `pertoken` quantization | `(m, k)` | Non-transposed shape: `(e, k, n)`<br>Transposed shape: `(e, n, k)` | `(e, n)` | `(m,)` | `(m, n / 2)` | `(m,)` |
+      | Quantization Mode | x | weight | weight_scale | x_scale | output | output_scale |
+      | --- | --- | --- | --- | --- | --- | --- |
+      | MX quantization (ND layout) | `(m, k)` | Non-transposed shape: `(e, k, n)`<br>Transposed shape: `(e, n, k)` | Non-transposed shape: `(e, ceil(k / 64), n, 2)`<br>Transposed shape: `(e, n, ceil(k / 64), 2)` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
+      | MX quantization (FRACTAL_NZ layout) | `(m, k)` | Non-transposed shape: `(e, n / 32, k / 16, 16, 32)`<br>Transposed shape: `(e, k / 32, n / 16, 16, 32)` | Non-transposed shape: `(e, ceil(k / 64), n, 2)`<br>Transposed shape: `(e, n, ceil(k / 64), 2)` | `(m, ceil(k / 64), 2)` | `(m, n / 2)` | `(m, ceil((n / 2) / 64), 2)` |
+      | `pertoken` quantization | `(m, k)` | Non-transposed shape: `(e, k, n)`<br>Transposed shape: `(e, n, k)` | `(e, n)` | `(m,)` | `(m, n / 2)` | `(m,)` |
 
 ## Examples
 
 - Single-operator call
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
 
     ```python
     import numpy as np
@@ -335,7 +335,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     output0_npu, output1_npu = torch_npu.npu_grouped_matmul_swiglu_quant_v2(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu())
     ```
   
-  - <term>Ascend 950PR/Ascend 950DT</term>: MX quantization example (mxfp8)
+  - Ascend 950PR/Ascend 950DT: MX quantization example (mxfp8)
 
     ```python
     import unittest
@@ -375,7 +375,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         x_scale_dtype=torch_npu.float8_e8m0fnu)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>: MX quantization example (mxfp4)
+  - Ascend 950PR/Ascend 950DT: MX quantization example (mxfp4)
 
     ```python
     import numpy as np
@@ -412,7 +412,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     print("y_scale.shape: ", y_scale.shape)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>: `pertoken` quantization example
+  - Ascend 950PR/Ascend 950DT: `pertoken` quantization example
 
     ```python
     import numpy as np
@@ -442,7 +442,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     ```
 
 - Graph mode call
-  - <term>Atlas A3 training products/Atlas A3 inference products</term> and <term>Atlas A2 training products/Atlas A2 inference products</term>:
+  - Atlas A3 training products/Atlas A3 inference products and Atlas A2 training products/Atlas A2 inference products:
 
     ```python
     import numpy as np
@@ -483,7 +483,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     y = model(x.npu(), [weight_npu], [weightScale.npu()], xScale.npu(), groupList.npu(), quant_dtype)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>: MX quantization example (mxfp8)
+  - Ascend 950PR/Ascend 950DT: MX quantization example (mxfp8)
 
     ```python
     import os
@@ -556,7 +556,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         run_npu(x_npu, weight_npu, weightScale_npu, xScale_npu, groupList_npu, transpose)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>: MX quantization example (mxfp4)
+  - Ascend 950PR/Ascend 950DT: MX quantization example (mxfp4)
 
     ```python
     import os
@@ -677,7 +677,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         print("y_scale shape: ", y_scale.shape)
     ```
 
-  - <term>Ascend 950PR/Ascend 950DT</term>: `pertoken` quantization example
+  - Ascend 950PR/Ascend 950DT: `pertoken` quantization example
 
     ```python
     import os

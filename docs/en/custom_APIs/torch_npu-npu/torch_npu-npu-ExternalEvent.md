@@ -13,7 +13,7 @@
 
 ## Function
 
-Wraps the AscendCL Event. During graph capture in `NPUGraph` scenarios, `ExternalEvent` is captured as an external graph node for timing control outside the graph.
+Wraps the Ascend CL Event. During graph capture in `NPUGraph` scenarios, `ExternalEvent` is captured as an external graph node for timing control outside the graph.
 
 ## Prototype
 

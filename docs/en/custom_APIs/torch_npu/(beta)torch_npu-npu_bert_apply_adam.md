@@ -23,15 +23,15 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 
 ## Parameters
 
-- **`lr`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`beta1`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`beta2`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`epsilon`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
+- **`lr`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`beta1`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`beta2`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`epsilon`** (`Scalar`): Required. The data type must be identical to that of `var`.
 - **`grad`** (`Tensor`): Required. The data type and shape must be identical to those of `var`.
-- **`max_grad_norm`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`global_grad_norm`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`weight_decay`** (`Scalar`): Required. The data type must be identical to that of `var`. The shape is `(1,)`.
-- **`step_size`** (`Tensor`): Optional. The data type must be identical to that of `var`. The shape is `(1,)`. The default value is `None`.
+- **`max_grad_norm`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`global_grad_norm`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`weight_decay`** (`Scalar`): Required. The data type must be identical to that of `var`.
+- **`step_size`** (`Scalar`): Optional. The data type must be identical to that of `var`. The default value is `None`.
 - **`adam_mode`** (`int`): Optional. Selects the Adam mode. Valid values are `0` (`"adam"`) or `1` (`"mbert_adam"`). The default value is `0`.
 - **`out`** (`tuple[Tensor, Tensor, Tensor]`): Required. A tuple containing the three output tensors `var`, `m`, and `v`. `var` is a tensor of type `float16` or `float32`. The data types and shapes of `m` and `v` must be identical to those of `var`.
 

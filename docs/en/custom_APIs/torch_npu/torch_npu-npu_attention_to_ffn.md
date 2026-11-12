@@ -60,6 +60,8 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
     - `shared_expert_num`: Number of shared experts (a shared expert can be replicated and deployed across multiple FFN ranks). The value range is [0, 4].
 
+    - `M`: Number of FFN ranks corresponding to each expert or the related mapping dimension. The value must be determined based on the actual deployment configuration.
+
 - HCCL communication buffer size: Before calling this API, verify that the configured HCCL communication domain buffer size is reasonable. The unit is MB, and the default value is `200` MB if not configured.
 
 ## Examples

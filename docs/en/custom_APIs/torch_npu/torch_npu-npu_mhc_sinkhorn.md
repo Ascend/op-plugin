@@ -12,9 +12,7 @@
 ## Function
 
 - Performs Sinkhorn iterative normalization on the H<sup>res</sup>' matrix (that is, the input data of the mHC layer) in the mHC architecture to obtain the doubly stochastic matrix H<sub>res</sub>. It supports outputting the intermediate normalization results (<code>norm_out</code>) and summation results (<code>sum_out</code>) during the iterations for backward gradient computation.
-
 - Formulas:
-
     1. During the first iteration (initialization):
 
         $$

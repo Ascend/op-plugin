@@ -8,7 +8,7 @@
 
 ## Function
 
-- Provides load balancing and expert pruning features, where the mapped expert table and mask can be passed into the MoE layer for data dispatching and processing.
+Provides load balancing and expert pruning features, where the mapped expert table and mask can be passed into the MoE layer for data dispatching and processing.
 
 - Load balancing: Maps the logical rank IDs of the top-K experts assigned to each token to physical rank IDs in redundant expert deployment scenarios. The computation method is as follows:
 

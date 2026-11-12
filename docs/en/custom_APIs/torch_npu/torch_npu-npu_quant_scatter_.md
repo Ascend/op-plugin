@@ -36,7 +36,7 @@ torch_npu.npu_quant_scatter_(input, indices, updates, quant_scales, quant_zero_p
 
 - **`axis`** (`int`): Optional. Axis on `updates` used for updating. The default value is `-2`.
 - **`quant_axis`** (`int`): Optional. Axis on `updates` used for quantization. The default value is `-1`.
-- **`reduce`** (`str`): Optional. Data operation mode. The default value is `'update'`.
+- **`reduce`** (`str`): Optional. Data operation mode. The default value is `'update'`. Currently, only `'update'` (the update operation) is supported.
 
 ## Return Values
 

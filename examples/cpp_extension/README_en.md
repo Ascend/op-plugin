@@ -1,7 +1,5 @@
 # Adaptation Development and Usage
 
-<!-- md-trans-meta sourceCommit=c6d785c77c92c77d7fc800bb1620ff277b5750a9 translatedAt=2026-08-11T01:28:45.249Z pushedAt=2026-08-11T11:57:12.291Z -->
-
 ## Directory Structure
 
 ```text
@@ -27,13 +25,13 @@ This sample uses the `Add` operator to demonstrate how to implement a custom ope
 
 ### Kernel Implementation
 
-This section describes how to implement the kernel operator. This sample is developed based on Ascend C. For information about how to implement an operator kernel using Ascend C, refer to the Ascend Community documentation: [Ascend C](https://www.hiascend.com/ascend-c).
+  This section describes how to implement the kernel operator. This sample is developed based on Ascend C. For information about how to implement an operator kernel using Ascend C, refer to the Ascend Community documentation: [Ascend C](https://www.hiascend.com/ascend-c).
 
-Create a file named `add_custom.asc` under the `./csrc/` directory, which serves as the implementation file for the custom `Add` kernel. A kernel function named `run_ascendc_add` is implemented in this sample.
+  Create a file named `add_custom.asc` under the `./csrc/` directory, which serves as the implementation file for the custom `Add` kernel. A kernel function named `run_ascendc_add` is implemented in this sample.
 
 ### Kernel Implementation and Python API Integration
 
-This section describes how to encapsulate the implemented kernel operator and bind it to a Python API.
+  This section describes how to encapsulate the implemented kernel operator and bind it to a Python API.
   The code is located under the `./csrc/` directory.
 
 #### Wrapping the Python Module
@@ -47,7 +45,7 @@ The `pybind11.asc` file uses the `pybind11` library to wrap C++ code into a Pyth
   }
   ```
 
-Through this binding, the Python side can call the custom API through `op_extension.ops.custom_add`.
+  Through this binding, the Python side can call the custom API through `op_extension.ops.custom_add`.
 
 #### Aten IR Implementation
 
@@ -131,9 +129,7 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 **Solution**:
 
 - Ensure that the CANN toolkit is correctly installed.
-
 - Run `source /usr/local/Ascend/ascend-toolkit/set_env.sh` to configure environment variables.
-
 - Verify whether the `bisheng` compiler is available by running `bisheng --version`.
 
 ### 2. Runtime Error: "ModuleNotFoundError: No module named 'op_extension'"
@@ -142,9 +138,7 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 **Solution**:
 
 - Ensure the wheel package has been successfully built and installed.
-
 - Check whether the installation directory is included in the module search path of Python.
-
 - Try reinstalling the wheel package through `pip install --force-reinstall *.whl`.
 
 ## Precautions
@@ -152,23 +146,17 @@ output = op_extension.ops.custom_add(x_npu, y_npu)
 ### 1. Data Type Support
 
 - The current implementation only supports the `int32` data type.
-
 - To support other data types (such as `float32` or `float16`), you must modify the kernel implementation.
-
 - When modifying the implementation, pay attention to the byte size and alignment requirements for data types.
 
 ### 2. Hardware Compatibility
 
 - This sample is developed based on Ascend NPUs and supports only Ascend hardware.
-
 - Different Ascend NPU models may require adjustments to compilation parameters.
-
 - You must specify the correct NPU architecture during compilation, such as `--npu-arch=dav-2201`.
 
 ### 3. Version Compatibility
 
 - Ensure that the PyTorch, TorchNPU, and CANN versions are compatible.
-
 - Version mismatch may cause compilation or runtime errors.
-
 - Refer to the [TorchNPU Documentation](https://gitcode.com/Ascend/pytorch#installation) for compatible version information.

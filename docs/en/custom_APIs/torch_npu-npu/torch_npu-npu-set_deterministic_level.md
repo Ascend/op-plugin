@@ -13,10 +13,9 @@
 
 ## Function
 
-Controls the strong consistency feature on the CANN side by reconfiguring CANN parameters. For detailed parameter descriptions, see aclSysParamOpt.
-<!-- see [aclSysParamOpt](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/runtimeapi/aclcppdevg_03_1393.html) -->
+Controls the strong consistency feature on the CANN side by reconfiguring CANN parameters. For detailed parameter descriptions, see [aclSysParamOpt](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/runtimeapi/aclpythondevg_01_1010.html).
 
-The following table describes the mapping between configuration levels and their actual behaviors:
+The following table describes the mapping between configuration levels and their actual behaviors.
 
 | `torch_npu.npu.set_deterministic_level` Configuration | `aclrtSetSysParamOpt` Configuration | Actual Behavior | Correspondence with Native API `torch.use_deterministic_algorithms` |
 | :----------------------------------------------------- | :----------------------------------- | :-------------- | :------------------------------------------------------------------- |
@@ -44,7 +43,7 @@ None
 
 - This feature currently affects only `torch.mm` computations.
 
-- This API does not support dynamic modification. Changing the configuration during operator delivery or execution causes unexpected behavior.
+- This API does not support dynamic modification. Changing the configuration during operator dispatch or execution causes unexpected behavior.
 
 - Calling this API overrides any prior `torch.use_deterministic_algorithms` configuration based on the specified `level`.
 

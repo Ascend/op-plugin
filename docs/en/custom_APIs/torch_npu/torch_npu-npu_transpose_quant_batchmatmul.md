@@ -12,7 +12,6 @@
 ## Function
 
 - Performs quantized matrix multiplication on tensor <code>x1</code> and tensor <code>x2</code>. Only three-dimensional tensors are supported. Tensors can be transposed based on the input index arrays. <code>perm_x1</code> and <code>perm_x2</code> represent the permutation sequences for tensors <code>x1</code> and <code>x2</code>, respectively. The dimension with a sequence value of <code>0</code> represents the batch dimension, while the remaining two dimensions are used for matrix multiplication.
-
 - Formula:
 
     T1, T2, and Ty are described by the parameters `perm_x1`, `perm_x2`, and `perm_y`, respectively, which specify the transpose sequences.

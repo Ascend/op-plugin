@@ -34,7 +34,7 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 
 `Tensor`
 
-DIoU values with shape `[1,n]`.
+ DIoU values with shape `[1,n]`.
 
 ## Constraints
 

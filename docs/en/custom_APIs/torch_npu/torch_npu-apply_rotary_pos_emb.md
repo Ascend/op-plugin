@@ -50,13 +50,13 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 ## Constraints
 
-- For <term>Atlas inference products</term>, <term>Atlas A2 training products/Atlas A2 inference products</term>, and <term>Atlas A3 training products/Atlas A3 inference products</term>:
+- For Atlas inference products, Atlas A2 training products/Atlas A2 inference products, and Atlas A3 training products/Atlas A3 inference products:
   - When `layout` is `"BSND"`, the first two dimensions (B and S) of the input shapes for `query`, `key`, `cos`, and `sin` must match. When `layout` is `"TND"`, their first dimension (T) must match.
   - The last dimension (D) of the input shapes for `query` and `key` must match, and the last dimension (D) of the input shapes for `cos` and `sin` must match.
   - The input tensors `query`, `key`, `cos`, and `sin` must have the same data type.
   - When `layout` is `"BSND"`, the shape of the input `query` is represented by `(q_b, q_s, q_n, q_d)`, the shape of the input `key` is represented by `(q_b, q_s, k_n, q_d)`, and the shapes of `cos` and `sin` are represented by `(q_b, q_s, 1, cos_d)`. `b` indicates `batch_size`, `s` indicates `seq_length`, `n` indicates `head_num`, and `d` indicates `head_dim`. When `layout` is `"TND"`, the shape of the input `query` is represented by `(q_t, q_n, q_d)`, the shape of the input `key` is represented by `(q_t, k_n, q_d)`, and the shapes of `cos` and `sin` are represented by `(q_t, 1, cos_d)`. `t` indicates the combined axis of `b` and `s`, `n` indicates `head_num`, and `d` indicates `head_dim`.
 
-- <term>Ascend 950DT</term>:
+- Ascend 950DT:
   - For any `layout`, the dimensions of `query` and `key` must match except for the N dimension. The last dimension (D) of the input shapes for `query` and `key` must match. The last dimension (D) of the input shapes for `cos` and `sin` must match, and must be less than or equal to the last dimension (D) of the input shapes for `query` and `key`.
   - The input tensors `query`, `key`, `cos`, and `sin` must have the same data type.
   - When `rotary_mode` is `"half"` or `"interleave"`, the last dimension of the input shape must be divisible by 2. When `rotary_mode` is `"quarter"`, the last dimension of the input shape must be divisible by 4.

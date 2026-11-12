@@ -81,7 +81,7 @@ Return value. Non-contiguous tensors are not supported. The output data type is 
     import torch_npu
     from scipy.special import softmax
      
-     torch_npu.npu.config.allow_internal_format = True
+    torch_npu.npu.config.allow_internal_format = True
 
     m, k, n = 576, 2048, 7168
     batch = 72

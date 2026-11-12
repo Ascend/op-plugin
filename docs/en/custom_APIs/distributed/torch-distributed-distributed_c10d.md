@@ -28,7 +28,7 @@ Note: This method belongs to the PyTorch `ProcessGroup` class using the NPU back
 
 - **`rankid`** (`int`): Required. Rank ID of the device in the collective communication domain. The input is a global rank ID, which uniquely identifies a device across multiple servers.
 
-- **`init_comm`** (`bool`): Optional. Specifies whether to force initialization if `HCCL` is uninitialized. The default value is `True`. When set to `True`, calling `get_hccl_comm_name` initializes `HCCL` if it has not yet been initialized and returns the group name. When set to `False`, the API does not initialize `HCCL`. Instead, it returns an empty string if `HCCL` is not already initialized.
+- **`init_comm`** (`int`): Optional. Specifies whether to force initialization if `HCCL` is uninitialized. The default value is `True`. When set to `True`, calling `get_hccl_comm_name` initializes `HCCL` if it has not yet been initialized and returns the group name. When set to `False`, the API does not initialize `HCCL`. Instead, it returns an empty string if `HCCL` is not already initialized.
 
 >**Note**:<br>
 >`HCCL` initialization allocates memory resources, increasing memory usage. By default, 200 MB is allocated for the `send` buffer and 200 MB for the `receive` buffer, totaling 400 MB. The buffer size is controlled by the `HCCL_BUFFSIZE` environment variable.

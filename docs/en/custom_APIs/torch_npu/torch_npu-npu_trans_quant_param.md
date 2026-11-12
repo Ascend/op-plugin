@@ -31,8 +31,8 @@
     4. Perform the subsequent computation based on the value of `offset`.
         - If `offset` is not provided, no further computation is performed.
         - If `offset` is provided:
-    
             1. Convert the `offset` value to an integer within the range [-256, 255].
+    
                 $$
                 offset = Max(Min(INT(Round(offset)),255),-256)
                 $$

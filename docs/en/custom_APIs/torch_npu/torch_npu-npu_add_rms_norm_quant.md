@@ -82,7 +82,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
   The size of each dimension in the shapes of `x1`, `x2`, `gamma`, `scales1`, `zero_points1`, `beta`, `scales2`, `zero_points2`, `y1`, `y2`, and `x` must be less than or equal to 2147483647, which is the maximum value of `int32`. 
 
 - **Data types supported by different product models**
-  - Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components and Atlas A3 training products/Atlas A3 inference products:
+  - Atlas A2 training products/Atlas 800I A2 inference products/A200I A2 Box heterogeneous components and Atlas A3 training products/Atlas A3 inference products
 
      | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
      | ---------- | ---------- | ------------- | --------------- | ----------------------- | --------------------------- | --------------------------- | -------------------- | ------------- | ------------- | ------------ |

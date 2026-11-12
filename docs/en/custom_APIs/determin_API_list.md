@@ -44,7 +44,7 @@ For details about the usage and effects of deterministic computation, see the of
 
 ## API Lists
 
-When using <term>Atlas A2 training products/Atlas A2 inference products</term> or <term>Atlas A3 training products/Atlas A3 inference products</term>, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
+When using Atlas A2 training products/Atlas A2 inference products or Atlas A3 training products/Atlas A3 inference products, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 1** API list<a id="api-list-for-enabling-deterministic-computation-1"></a>
 
@@ -54,7 +54,7 @@ When using <term>Atlas A2 training products/Atlas A2 inference products</term> o
 | `torch_npu.npu_linear` |
 | `torch_npu.npu_deformable_conv2d` |
 
-When using <term>Ascend 950DT</term>, the APIs listed in [Table 2](#api-list-for-enabling-deterministic-computation-2) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
+When using Ascend 950DT, the APIs listed in [Table 2](#api-list-for-enabling-deterministic-computation-2) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 2** API list<a id="api-list-for-enabling-deterministic-computation-2"></a>
 

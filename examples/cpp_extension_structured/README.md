@@ -91,7 +91,7 @@ cpp_extension_structured/
     # 下载样例代码
     git clone https://gitcode.com/Ascend/op-plugin
     # 进入代码目录
-    cd examples/cpp_extension_structured
+    cd op-plugin/examples/cpp_extension_structured
     ```
 
 3. 完成算子适配，具体可参考[适配开发](#算子适配开发)。

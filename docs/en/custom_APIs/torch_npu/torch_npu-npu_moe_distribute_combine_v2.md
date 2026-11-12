@@ -163,19 +163,19 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
 - **`zero_expert_num`** (`int`): Optional. Number of zero experts.
     - Atlas A2 training products/Atlas A2 inference products:
-         - When `comm_alg` is set to `"fullmesh"`, the value range is [0, MAX_INT32), where the value of `MAX_INT32` is `2147483647`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
+         - When `comm_alg` is set to `"fullmesh"`, the value range is [0, MAX_INT32), where `MAX_INT32 = 2^31 - 1`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`).
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where `MAX_INT32 = 2^31 - 1`. Valid zero-expert ID values are in the range [`moe_expert_num`, `moe_expert_num + zero_expert_num`).
 
 - **`copy_expert_num`** (`int`): Optional. Number of copy experts.
     - Atlas A2 training products/Atlas A2 inference products:
-         - When `comm_alg` is set to `"fullmesh"`, the value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
+         - When `comm_alg` is set to `"fullmesh"`, the value range is [0, `MAX_INT32`), where `MAX_INT32 = 2^31 - 1`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`). A non-zero value enables the zero-computation expert feature, which is currently experimental and must be used with caution.
          - When `comm_alg` is set to `"hierarchy"`, this parameter is currently not supported. Use the default value `None`.
-    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`).
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where `MAX_INT32 = 2^31 - 1`. Valid copy-expert ID values are in the range [`moe_expert_num + zero_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num`).
 
 - **`const_expert_num`** (`int`): Optional. Number of constant experts.
     - Atlas A2 training products/Atlas A2 inference products: This parameter is currently not supported. Set it to `0`.
-    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where the value of `MAX_INT32` is `2147483647`. Valid constant-expert ID values are in the range [`moe_expert_num + zero_expert_num + copy_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num`).
+    - Atlas A3 training products/Atlas A3 inference products: The value range is [0, `MAX_INT32`), where `MAX_INT32 = 2^31 - 1`. Valid constant-expert ID values are in the range [`moe_expert_num + zero_expert_num + copy_expert_num`, `moe_expert_num + zero_expert_num + copy_expert_num + const_expert_num`).
 
 ## Return Values<a name="en-us_topic_0000002168254826_section22231435517"></a>
 

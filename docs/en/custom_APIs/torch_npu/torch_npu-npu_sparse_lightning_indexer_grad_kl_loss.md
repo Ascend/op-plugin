@@ -126,7 +126,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 | N1index | 8, 16, 32, 64                           | -                     |
 | N2      | 1                                       | -                     |
 | N2index | 1                                     | -                     |
-| D       | 512                                   | The values of `D` for `query` and `query_index` are different.|
+| D       | 512 (`query`/`key`) / 128 (`query_index`/`key_index`) | The values of `D` for `query` and `query_index` can be different. |
 | Dr      | 64                                    | -                     |
 | K       | 1024, 2048, 3081, 4096, 5120, 6144, 7168, 8192| -                     |
 | layout  | BSND/TND                              | -                     |

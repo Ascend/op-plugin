@@ -13,8 +13,8 @@
    |                       | Atlas 900 PoD (model 9000)      |
    |                       | Atlas 300T training card (model 9000)   |
    |                       | Atlas 300T Pro training card (model 9000)|
-   | Atlas A2 training products | Atlas 800T A2 training server         |
-   |                       | Atlas 900 A2 PoD cluster basic unit    |
+   | Atlas A2 training products | Atlas 800T A2 server         |
+   |                       | Atlas 900 A2 PoD basic unit    |
    |                       | Atlas 200T A2 Box16 heterogeneous subrack     |
    | Atlas A3 training products | Atlas 800T A3 training server         |
    |                       | Atlas 900 A3 SuperPoD    |
@@ -23,7 +23,7 @@
        
    | Product Series              | Product Model                        |
    |-----------------------|----------------------------------|
-   | Atlas 800I A2 inference products | Atlas 800I A2 inference server         |
+   | Atlas 800I A2 inference products | Atlas 800I A2         |
 
 2. Software Support
 
@@ -62,7 +62,7 @@
    cd op-plugin
    ```
 
-   Run the build script to generate the binary installation package. The following example uses PyTorch 2.10.1:
+   Run the build script to generate the binary installation package. The following example uses PyTorch 2.10.0:
 
    ```bash
    bash ci/build.sh --python=3.9 --pytorch=v2.10.0

@@ -34,7 +34,7 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 - **`stds1`** (`float`): Scaling value for `y0`. The default value is `1.0`.
 - **`stds2`** (`float`): Scaling value for `x1`. The default value is `1.0`.
 - **`stds3`** (`float`): Scaling value for `y1`. The default value is `1.0`.
-- **`max_shape`** (`List[int]`/`Tuple[int]`): Size of the image provided to the network. The shape is `(h, w)`. This parameter is used to ensure that the converted bounding box shape does not exceed `max_shape`.
+- **`max_shape`** (`List[int]`/`Tuple[int]` of length `2`): Size of the image provided to the network. The shape is `(h, w)`. This parameter is used to ensure that the converted bounding box shape does not exceed `max_shape`.
 - **`wh_ratio_clip`** (`float`): The values of `dw` and `dh` must be within the range `(-wh_ratio_clip, wh_ratio_clip)`.
 
 ## Return Values

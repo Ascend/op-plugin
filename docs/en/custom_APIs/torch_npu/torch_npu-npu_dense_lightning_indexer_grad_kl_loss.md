@@ -120,7 +120,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - The data types of `query`, `key`, `query_index`, and `key_index` must be identical.
 - When the data type of `weights` is not `float32`, the data types of `query`, `key`, `query_index`, `key_index`, and `weights` must be identical.
-- Shape variable constraints:
+- Shape variable constraints
 
 | Item   | Value      | Description        |
 |-----------|------------|-----------------|

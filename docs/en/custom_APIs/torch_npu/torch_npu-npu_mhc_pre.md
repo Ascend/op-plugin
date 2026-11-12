@@ -12,7 +12,6 @@
 ## Function
 
 - Obtains the $H^{res}$ and $H^{post}$ projection matrices of the hidden layer in the Manifold-Constrained Hyper-Connections (mHC) architecture, as well as the input matrix $h^{in}$ of the Attention or MLP layer.
-
 - Formulas:
 
 $$

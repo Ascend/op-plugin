@@ -13,11 +13,11 @@
 - Formulas:
 
     Performs Sigmoid computation on the input (the `bias` parameter is optional):
-    - When `norm_type` is `1`:
+    - When `norm_type` is `1`
 
       ![](../../figures/en-us_formulaimage_0000002258672873.png)
 
-    - When `norm_type` is `0`:
+    - When `norm_type` is `0`
 
       ![](../../figures/en-us_formulaimage_0000002313785750.png)
 

@@ -22,7 +22,7 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 ## Parameters
 
 - **`p`** (`float`): Probability that elements are zeroed.
-- **`module_name`** (`str`): Module name.
+- **`module_name`** (`str`): Optional. Module name used to identify the module to which the current Dropout belongs. The default value is `None`. This parameter is used only as an identifier and does not participate in the actual computation logic.
 
 ## Constraints
 

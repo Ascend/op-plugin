@@ -10,24 +10,18 @@
 
 ## Function
 
-Defines the event collection list, Enum type. It is used to assign a value to the `activities` parameter of `torch_npu.profiler.profile`.
+Event collection list, enum type. It is used to assign a value to the `activities` parameter of `torch_npu.profiler.profile`.
 
-## Prototype
+## Class Signature
 
 ```python
 torch_npu.profiler.ProfilerActivity
 ```
 
-## Parameters
+## Members
 
-- **`torch_npu.profiler.ProfilerActivity.CPU`**: Optional. Switch for framework-side data collection.
-- **`torch_npu.profiler.ProfilerActivity.NPU`**: Optional. Switch for CANN software stack and NPU data collection.
-
-By default, both of them are specified.
-
-## Return Values
-
-None
+- **`torch_npu.profiler.ProfilerActivity.CPU`**: Enum member used to enable framework-side data collection.
+- **`torch_npu.profiler.ProfilerActivity.NPU`**: Enum member used to enable CANN software stack and NPU data collection.
 
 ## Example
 

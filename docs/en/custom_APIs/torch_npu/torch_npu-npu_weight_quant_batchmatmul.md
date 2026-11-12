@@ -134,7 +134,6 @@ When `quant_scale` is provided, the data type of the output must be `int8`. If `
 
         - Atlas A2 training products/Atlas A2 inference products
         - Atlas A3 training products/Atlas A3 inference products
-        - Atlas inference accelerator cards
 
             ```python
             import torch

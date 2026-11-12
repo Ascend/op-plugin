@@ -17,14 +17,13 @@
 
 - Formulas:
 
-    The formula for the MX quantization scenario is as follows. For more information about quantization techniques, see "Basic Concepts > Introduction to Quantization Mode" in CANN Operator Library.
-    <!-- in [CANN Operator Library](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/latest/API/aolapi/context/common/quant_mode_introduction.md) -->
+    The formula for the MX quantization scenario is as follows. For more information about quantization techniques, see "Basic Concepts > Introduction to Quantization Mode" in [CANN Operator Library](https://www.hiascend.com/document/detail/en/CANNCommunityEdition/910/API/aolapi/context/common/quant_mode_introduction.md).
 
     ![](../../figures/en-us_formulaimage_0000002521244910.png)
 
     `gsk` represents the block size for MX quantization along the K axis, which is 32. `x1_slice<sub>i</sub>` represents a vector of length `gsk` in row `m` of `x1<sub>i</sub>`, and `x2_slice<sub>i</sub>` represents a vector of length `gsk` in column `n` of `x2<sub>i</sub>`. Slicing along the K axis starts at `j * gsk`. The value range of `j` is [0, `k_loops`), and `k_loops = ceil(K<sub>i</sub> / gsk)`. The length of the final slice can be less than `gsk`.
 
-    The computation formula for the T-T quantization scenario is as follows:
+    The computation formula for the T-T quantization scenario is as follows.
 
     ![](../../figures/en-us_formulaimage_0000002594063675.png)
 
@@ -59,14 +58,14 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 
 - This API can be used in training scenarios.
 - This API supports single-operator mode and TorchAir graph mode.
-- Data type constraints:
+- Data type constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
     | MX quantization | <code>float8_e4m3fn</code>/<code>float8_e5m2</code> | <code>float8_e4m3fn</code>/<code>float8_e5m2</code> | <code>float8_e8m0fnu</code> | <code>float8_e8m0fnu</code> | <code>float32</code> |
     | T-T quantization | <code>hifloat8</code> | <code>hifloat8</code> | <code>float32</code> | <code>float32</code> | <code>float32</code> |
 
-- Shape constraints:
+- Shape constraints
 
     | Scenario | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |

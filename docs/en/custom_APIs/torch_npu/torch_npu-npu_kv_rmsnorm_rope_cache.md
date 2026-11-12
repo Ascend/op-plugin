@@ -11,13 +11,13 @@
 
 - Fuses Root Mean Square Normalization (RMSNorm), Rotary Position Embedding (RoPE), and KV cache update operations (ScatterUpdate) within the Multi-Head Latent Attention (MLA) structure.
     - **Multi-Head Latent Attention (MLA)**:
-    An efficient attention mechanism proposed in DeepSeek-V2. It compresses Key/Value states into low-rank latent representations to reduce KV cache footprint and computational overhead while maintaining long-sequence modeling capabilities.
+      An efficient attention mechanism proposed in DeepSeek-V2. It compresses Key/Value states into low-rank latent representations to reduce KV cache footprint and computational overhead while maintaining long-sequence modeling capabilities.
 
     - **Rotary Position Embedding (RoPE)**:
-    A positional encoding method that injects positional information by applying a rotational transformation to vectors. It can model relative positional relationships and is suitable for long-context scenarios, with vector rotation implemented via the `RotateHalf` operation.
+      A positional encoding method that injects positional information by applying a rotational transformation to vectors. It can model relative positional relationships and is suitable for long-context scenarios, with vector rotation implemented via the `RotateHalf` operation.
 
     - **Root Mean Square Normalization (RMSNorm)**:
-    A normalization method that scales the input using the root mean square. It is computationally simple with low overhead and is commonly used in large language model training.
+      A normalization method that scales the input using the root mean square. It is computationally simple with low overhead and is commonly used in large language model training.
 
 - Formulas:
     - **Input tensor `kv` splitting**: The input tensor `kv` is split into two parts, where `B` indicates the batch size and `T` indicates the sequence length.
@@ -43,7 +43,7 @@
             ![](../../figures/en-us_formulaimage_0000002239721042.png)
 
             - `cos` and `sin` are precomputed rotation parameters.
-            - `RotateHalf(k)` moves the elements in the second half of `k` to the first half and negates them, while moving the elements in the first half to the second half and preserving their original values. Specifically, when the size of the `D` dimension is `64`:
+            - `RotateHalf(k)` moves the elements in the second half of `k` to the first half and negates them, while moving the elements in the first half to the second half and preserving their original values. Specifically, when the size of the `D` dimension is `64`.
 
             ![](../../figures/en-us_formulaimage_0000002242091560.png)
 
@@ -64,8 +64,8 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 > - `rms_size`: length of the RMSNorm branch vector. Only the value `512` is supported.
 > - `rope_size`: length of the RoPE branch vector. Only the value `64` is supported.
 > - `cache_length`: maximum KV cache length, which is valid only in `Norm` mode.
-> - `block_num`: number of blocks, which is valid only in PagedAttention mode.
-> - `block_size`: block size, which is valid only in PagedAttention mode.
+> - `block_num`: number of blocks, which is valid only in Paged Attention mode.
+> - `block_size`: block size, which is valid only in Paged Attention mode.
 
 - **`kv`** (`Tensor`): Required. Input feature tensor. The data type can be `bfloat16` or `float16`. The data layout is `BNSD`. This parameter must be 4D with shape `[batch_size, 1, seq_len, hidden_size]`, where `hidden_size` = `rms_size` (RMS) + `rope_size` (RoPE).
 - `gamma` (`Tensor`): Required. Scaling parameter for RMSNorm. The data type can be `bfloat16` or `float16`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
@@ -100,14 +100,14 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     </tr>
     <tr id="en-us_topic_0000002236535552_row1699810579398"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p1699810576392"><a name="en-us_topic_0000002236535552_p1699810576392"></a><a name="en-us_topic_0000002236535552_p1699810576392"></a>PA/PA_BNSD</p>
     </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p1934914484406"><a name="en-us_topic_0000002236535552_p1934914484406"></a><a name="en-us_topic_0000002236535552_p1934914484406"></a>PagedAttention mode</p>
+    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p1934914484406"><a name="en-us_topic_0000002236535552_p1934914484406"></a><a name="en-us_topic_0000002236535552_p1934914484406"></a>Paged Attention mode</p>
     </td>
     <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p19457162584119"><a name="en-us_topic_0000002236535552_p19457162584119"></a><a name="en-us_topic_0000002236535552_p19457162584119"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * seq_len]</code>, where the values inside <code>index</code> indicate the offset for each token.</p>
     </td>
     </tr>
     <tr id="en-us_topic_0000002236535552_row179981757193914"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p99981257113913"><a name="en-us_topic_0000002236535552_p99981257113913"></a><a name="en-us_topic_0000002236535552_p99981257113913"></a>PA_NZ</p>
     </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p6349174814019"><a name="en-us_topic_0000002236535552_p6349174814019"></a><a name="en-us_topic_0000002236535552_p6349174814019"></a>PagedAttention mode with cache data layout of FRACTAL_NZ</p>
+    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p6349174814019"><a name="en-us_topic_0000002236535552_p6349174814019"></a><a name="en-us_topic_0000002236535552_p6349174814019"></a>Paged Attention mode with cache data layout of FRACTAL_NZ</p>
     </td>
     <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p15265174112368"><a name="en-us_topic_0000002236535552_p15265174112368"></a><a name="en-us_topic_0000002236535552_p15265174112368"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * seq_len]</code>, where the values inside <code>index</code> indicate the offset for each token.</p>
     <p id="en-us_topic_0000002236535552_p10572135917168"><a name="en-us_topic_0000002236535552_p10572135917168"></a><a name="en-us_topic_0000002236535552_p10572135917168"></a><br>The data layout varies across different quantization modes:</p>
@@ -116,14 +116,14 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     </tr>
     <tr id="en-us_topic_0000002236535552_row428921319407"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p18290111311409"><a name="en-us_topic_0000002236535552_p18290111311409"></a><a name="en-us_topic_0000002236535552_p18290111311409"></a>PA_BLK_BNSD</p>
     </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p12349144844010"><a name="en-us_topic_0000002236535552_p12349144844010"></a><a name="en-us_topic_0000002236535552_p12349144844010"></a>Special PagedAttention mode</p>
+    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p12349144844010"><a name="en-us_topic_0000002236535552_p12349144844010"></a><a name="en-us_topic_0000002236535552_p12349144844010"></a>Special Paged Attention mode</p>
     </td>
     <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p329011315406"><a name="en-us_topic_0000002236535552_p329011315406"></a><a name="en-us_topic_0000002236535552_p329011315406"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * Ceil(seq_len/block_size)]</code>, where the values inside <code>index</code> indicate the starting offset of each block and no longer correspond to tokens on a one-to-one basis.</p>
     </td>
     </tr>
     <tr id="en-us_topic_0000002236535552_row182905133408"><td class="cellrowborder" valign="top" width="10.34%" headers="mcps1.1.4.1.1 "><p id="en-us_topic_0000002236535552_p13290313134017"><a name="en-us_topic_0000002236535552_p13290313134017"></a><a name="en-us_topic_0000002236535552_p13290313134017"></a>PA_BLK_NZ</p>
     </td>
-    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p173491486403"><a name="en-us_topic_0000002236535552_p173491486403"></a><a name="en-us_topic_0000002236535552_p173491486403"></a>Special PagedAttention mode with cache data layout of FRACTAL_NZ</p>
+    <td class="cellrowborder" valign="top" width="19.84%" headers="mcps1.1.4.1.2 "><p id="en-us_topic_0000002236535552_p173491486403"><a name="en-us_topic_0000002236535552_p173491486403"></a><a name="en-us_topic_0000002236535552_p173491486403"></a>Special Paged Attention mode with cache data layout of FRACTAL_NZ</p>
     </td>
     <td class="cellrowborder" valign="top" width="69.82000000000001%" headers="mcps1.1.4.1.3 "><p id="en-us_topic_0000002236535552_p637504423711"><a name="en-us_topic_0000002236535552_p637504423711"></a><a name="en-us_topic_0000002236535552_p637504423711"></a>The shape of <code>k_cache</code> is <code>[block_num, block_size, 1, rope_size]</code>, and the shape of <code>ckv_cache</code> is <code>[block_num, block_size, 1, rms_size]</code>. The shape of <code>index</code> is <code>[batch_size * Ceil(seq_len/block_size)]</code>, where the values inside <code>index</code> indicate the starting offset of each block and no longer correspond to tokens on a one-to-one basis.</p>
     <p id="en-us_topic_0000002236535552_p916702812303"><a name="en-us_topic_0000002236535552_p916702812303"></a><a name="en-us_topic_0000002236535552_p916702812303"></a><br>The data layout varies across different quantization modes:</p>
@@ -156,7 +156,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 - Shape association rules: Different `cache_mode` configurations have different shape rules.
     - `Norm`: The shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`, and the shape of `index` is `[batch_size, seq_len]`, where `cache_length` must be greater than or equal to `seq_len`.
-    - Non-`Norm` modes (PagedAttention-related modes): The size of `block_num` must be greater than or equal to `Ceil(seq_len/block_size) * batch_size`.
+    - Non-`Norm` modes (Paged Attention-related modes): The size of `block_num` must be greater than or equal to `Ceil(seq_len/block_size) * batch_size`.
 
 ## Examples<a name="en-us_topic_0000002236535552_section3235105212365"></a>
 

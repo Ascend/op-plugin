@@ -51,13 +51,13 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 
 **Computation Input**
 
-- **`x1`** (`Tensor`): Input tensor. The shape is `(N, C_in, *)`.
-- **`x2`** (`Tensor`): Input tensor. The shape is `(N, C_in, *)`.
+- **`x1`** (`Tensor`): Input tensor. The shape is $(N, C_{in}, *)$.
+- **`x2`** (`Tensor`): Input tensor. The shape is $(N, C_{in}, *)$.
 
 ## Return Values
 
-- **`out1`** (`Tensor`): Output tensor with shape `(N, C_out, *)`.
-- **`out2`** (`Tensor`): Output tensor with shape `(N, C_out, *)`.
+- **`out1`** (`Tensor`): Output tensor with shape $(N, C_{out}, *)$.
+- **`out2`** (`Tensor`): Output tensor with shape $(N, C_{out}, *)$.
 
 ## Constraints
 

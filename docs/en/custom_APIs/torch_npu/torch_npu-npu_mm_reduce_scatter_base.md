@@ -27,13 +27,13 @@
         $$
         Usage of scale parameters in the quantization scenario:
         - When only `x2_scale` is provided:
-          $$
-          output = reducescatter(x2\_scale * (x_1 \mathbin{@} x_2 + bias))
-          $$
+            $$
+            output = reducescatter(x2\_scale * (x_1 \mathbin{@} x_2 + bias))
+            $$
         - When both `x1_scale` and `x2_scale` are provided:
-          $$
-          output = reducescatter((x1\_scale * x2\_scale) * (x_1 \mathbin{@} x_2 + bias))
-          $$
+            $$
+            output = reducescatter((x1\_scale * x2\_scale) * (x_1 \mathbin{@} x_2 + bias))
+            $$
         - `x1_scale` is broadcast to shape `[m, 1]`, and `x2_scale` is broadcast to shape `[1, n]`.
 
 > [!NOTE]
@@ -79,7 +79,7 @@ In quantization scenarios, if the data type of `x2_scale` is `int64`, the output
   - When `comm_mode` is `ai_cpu`:
        - This API is supported only in training scenarios.
        - This API supports graph mode.
-       - <term>Atlas A2 training products</term>: The communication domains of the communication-compute fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a model must be the same.
+       - Atlas A2 training products: The communication domains of the communication-compute fusion operators (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) within a model must be the same.
   - When `comm_mode` is `aiv`, this API can be used in both training and inference scenarios.
 
 - **`comm_mode` Support Matrix**

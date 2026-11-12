@@ -12,7 +12,7 @@
 
 - Encapsulates the `torch_npu.npu_quant_conv2d` API to provide quantization-related functionality for the `Conv2d` operator.
 
-- Formula:
+- Formula
 
   ![](../../figures/en-us_formulaimage_0000001855947305.png)
 
@@ -28,11 +28,11 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 - **`in_channels`** (`int`): Required. Number of input channels of `Conv2d`.
 - **`out_channels`** (`int`): Required. Number of output channels of `Conv2d`.
-- **`kernel_size`** (`int`/`tuple`): Required. Size of the convolution kernel. It can be provided as a single value or a 2D tuple. The value range of `kernel_size` is [1, 255].
+- **`kernel_size`** (`int`/`tuple`): Required. Size of the convolution kernel. It can be provided as a single value or a 2D tuple. Currently, only values in the range [1, 255] are supported.
 - **`output_dtype`** (`torch.dtype`): Required. Output data type. Currently, only `float16` is supported.
-- **`stride`** (`int`/`tuple`): Optional. Stride of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. The value range of `stride` is [1, 63].
-- **`padding`** (`int`/`tuple`): Optional. Padding of `Conv2d`. The default value is `0`. It can be provided as a single value or a 2D tuple. The value range of `padding` is [0, 255].
-- **`dilation`** (`int`/`tuple`): Optional. Dilation of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. The value range of `dilation` is [1, 255].
+- **`stride`** (`int`/`tuple`): Optional. Stride of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. Currently, only values in the range [1, 63] are supported.
+- **`padding`** (`int`/`tuple`): Optional. Padding of `Conv2d`. The default value is `0`. It can be provided as a single value or a 2D tuple. Currently, only values in the range [0, 255] are supported.
+- **`dilation`** (`int`/`tuple`): Optional. Dilation of `Conv2d`. The default value is `1`. It can be provided as a single value or a 2D tuple. Currently, only values in the range [1, 255] are supported.
 - **`groups`** (`int`): Optional. Group of `Conv2d`. The default value is `1`. Currently, only the value `1` is supported.
 - **`bias`** (`bool`): Optional. Specifies whether to include bias in the computation. The default value is `True`. If set to `False`, `bias` is excluded from the `QuantConv2d` computation.
 - **`offset`** (`bool`): Optional. **Reserved parameter, currently not used**. The default value is `False`.

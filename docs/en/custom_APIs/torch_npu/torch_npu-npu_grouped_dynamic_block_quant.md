@@ -11,8 +11,7 @@
 
 ## Function
 
-- Quantizes each group at block granularity based on the starting values of the group indices (`group_list`) to FP8/HiFP8 and outputs the quantization parameter `scale` (FP32).
-
+- Quantizes each group at block granularity based on the starting values of the group indices (`group_list`) to FP8/HiF8 and outputs the quantization parameter `scale` (FP32).
 - Formulas:
 
 $$
