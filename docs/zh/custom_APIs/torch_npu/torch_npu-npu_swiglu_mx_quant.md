@@ -120,7 +120,7 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - **group_index**(`Tensor`)：可选参数，MoE分组所需的`group_index`。要求为1维张量，shape为$[groupNum]$（$groupNum$取值范围$[1,256]$），数据类型支持`torch.int64`，数据格式为$ND$。默认值为`None`，表示不进行分组。
 - **activate_dim**(`int`)：可选参数，Swish计算时选择的切分轴。取值范围为$[-1,-2,x.dim()-2,x.dim()-1]$。默认值为`-1`。
 - **activate_left**(`bool`)：可选参数，是否对切分后的左半部分做Swish激活。取`True`时对左半部分做激活；取`False`时对右半部分做激活；当`swiglu_mode=1`时默认对偶数块做激活。默认值为`False`。
-- **swiglu_mode**(`int`)：可选参数，swiglu计算模式。取值范围为$[0,3]$：`0`表示传统swiglu；`1`表示变种swiglu（GPT-OSS变体），使用奇偶分块，并支持`clamp_limit`、`glu_alpha`、`glu_bias`；`2`计算方式同`1`但采用前后切分（同`0`）；`3`表示变种swiglu，切分方式同`2`，区别在于先激活（sigmoid系数固定为1）再截断，不支持`glu_alpha`、`glu_bias`。默认值为`0`。当`activate_dim`为非尾轴时，`swiglu_mode`必须为`0`。
+- **swiglu_mode**(`int`)：可选参数，swiglu计算模式。取值范围为$[0,3]$：`0`表示传统swiglu；`1`表示变种swiglu（GPT-OSS变体），使用奇偶分块，并支持`clamp_limit`、`glu_alpha`、`glu_bias`；`2`计算方式同`1`但采用前后切分（同`0`）；`3`表示变种swiglu，切分方式同`2`，区别在于先激活（sigmoid系数固定为1）再截断，不支持`glu_alpha`、`glu_bias`。默认值为`0`。当`activate_dim`为非尾轴时，`swiglu_mode`不能为`1`。
 - **clamp_limit**(`float`)：可选参数，变种swiglu输入门限，用于对输入裁剪。需大于0且有限。默认值为`7.0`。
 - **glu_alpha**(`float`)：可选参数，GLU激活函数系数。默认值为`1.702`。
 - **glu_bias**(`float`)：可选参数，swiglu计算中的偏差。默认值为`1.0`。
@@ -141,7 +141,7 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - 该接口仅支持推理场景下使用。
 - 该接口支持Eager模式和图模式。
 - 输入`x`对应`activate_dim`轴的维度需为2的倍数，且`x`的维数必须大于1维。
-- 当`activate_dim`为非尾轴时，`swiglu_mode`必须为`0`。
+- 当`activate_dim`为非尾轴时，`swiglu_mode`不能为`1`。
 - 当`swiglu_mode`为`2`或`3`时，`axis`必须为`-1`。
 - 当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，`y`的最后一维需为2的倍数，且`scale_alg`必须为`0`。
 - 当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时，`round_mode`必须为`"rint"`。
