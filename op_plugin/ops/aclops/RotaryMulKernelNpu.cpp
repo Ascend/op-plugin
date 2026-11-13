@@ -111,7 +111,7 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2,
-    c10::string_view rotary_mode,
+    std::string_view rotary_mode,
     const c10::optional<at::Tensor>& rotate) {
   TORCH_CHECK(
       rotary_mode == "half",
@@ -129,7 +129,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rotary_mul_backward(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2,
-    c10::string_view rotary_mode) {
+    std::string_view rotary_mode) {
   TORCH_CHECK(
       rotary_mode == "half",
       "npu_rotary_mul_backward in aclop only support rotary_mode with half, but got ",

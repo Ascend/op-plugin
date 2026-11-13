@@ -161,7 +161,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_quant(
     const c10::optional<at::Tensor>& smooth_scales,
     const c10::optional<at::Tensor>& group_index,
     c10::optional<int64_t> dst_type,
-    c10::string_view quant_mode,
+    std::string_view quant_mode,
     double dst_type_max) {
   TORCH_CHECK(
       input.dim() > INPUT_DIM_LOWER_BOUND, "Input shape dim should be greater than 1" + OPS_ERROR(ErrCode::PARAM));
@@ -210,7 +210,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_quant_asymmetric(
     const c10::optional<at::Tensor>& smooth_scales,
     const c10::optional<at::Tensor>& group_index,
     c10::optional<int64_t> dst_type,
-    c10::string_view quant_mode,
+    std::string_view quant_mode,
     double dst_type_max) {
   TORCH_CHECK(
       input.dim() > INPUT_DIM_LOWER_BOUND, "Input shape dim should be greater than 1" + OPS_ERROR(ErrCode::PARAM));

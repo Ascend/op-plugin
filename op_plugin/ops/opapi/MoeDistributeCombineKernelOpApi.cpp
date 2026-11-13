@@ -26,7 +26,7 @@ namespace op_api {
 at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tensor &expert_ids,
                                       const at::Tensor &expand_idx,
                                       const at::Tensor &ep_send_counts, const at::Tensor &expert_scales,
-                                      c10::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
+                                      std::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
                                       int64_t moe_expert_num,
                                       const c10::optional<at::Tensor> &tp_send_counts,
                                       const c10::optional<at::Tensor> &x_active_mask,
@@ -35,7 +35,7 @@ at::Tensor npu_moe_distribute_combine(const at::Tensor &expand_x, const at::Tens
                                       const c10::optional<at::Tensor> &group_list,
                                       const c10::optional<at::Tensor> &expand_scales,
                                       const c10::optional<at::Tensor> &shared_expert_x,
-                                      c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
+                                      std::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                       int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
                                       int64_t global_bs, int64_t out_dtype, int64_t comm_quant_mode, int64_t group_list_type)
 {

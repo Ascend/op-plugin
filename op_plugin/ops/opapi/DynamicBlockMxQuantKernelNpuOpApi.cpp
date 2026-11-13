@@ -28,7 +28,7 @@ constexpr int64_t MIN_INPUT_DIM = 2;
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_block_mx_quant(
     const at::Tensor& input,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_type,
     int64_t scale_alg,
     double dst_type_max) {

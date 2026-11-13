@@ -32,7 +32,7 @@ static bool check_TimeOut_ElaticInfo_param(
 }
 at::Tensor _npu_distribute_barrier(
     const at::Tensor& x_ref,
-    c10::string_view group,
+    std::string_view group,
     int64_t world_size,
     const c10::optional<at::Tensor>& time_out,
     const c10::optional<at::Tensor>& elastic_info) {

@@ -19,7 +19,7 @@
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, c10::string_view approximate)
+at::Tensor gelu_backward(const at::Tensor & grad_output, const at::Tensor & self, std::string_view approximate)
 {
     static auto gelu_sc = at_npu::native::env::CheckCompatibleImpl();
     auto output_size_0 = op_infer::broadcast_ops_npu_output_size(grad_output, self);

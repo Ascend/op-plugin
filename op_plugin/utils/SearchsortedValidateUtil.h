@@ -21,7 +21,7 @@
 #include <c10/core/Scalar.h>
 #include <c10/util/Exception.h>
 #include <c10/util/Optional.h>
-#include <c10/util/string_view.h>
+#include <string_view>
 
 namespace op_plugin {
 
@@ -46,10 +46,10 @@ inline void searchsorted_pre_check_npu(
     const at::Tensor* output,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view>& side_opt,
+    const c10::optional<std::string_view>& side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   if (side_opt.has_value()) {
-    c10::string_view side = *side_opt;
+    std::string_view side = *side_opt;
     TORCH_CHECK(
         side == "left" || side == "right",
         "torch.searchsorted(): side can only be 'left' or 'right' but got ",
@@ -168,7 +168,7 @@ inline int searchsorted_validate_core_no_output(
     const at::Tensor& self,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view>& side_opt,
+    const c10::optional<std::string_view>& side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   searchsorted_pre_check_npu(sorted_sequence, self, nullptr, out_int32, right, side_opt, sorter_opt);
   return 0;
@@ -181,7 +181,7 @@ inline int searchsorted_validate_tensor_out_op(
     const at::Tensor& out,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view>& side_opt,
+    const c10::optional<std::string_view>& side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   searchsorted_pre_check_npu(sorted_sequence, self, &out, out_int32, right, side_opt, sorter_opt);
   return 0;
@@ -193,7 +193,7 @@ inline int searchsorted_validate_scalar_op(
     const c10::Scalar& self,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view>& side_opt,
+    const c10::optional<std::string_view>& side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   at::Tensor input_t = at::empty({}, sorted_sequence.options());
   input_t.fill_(self);

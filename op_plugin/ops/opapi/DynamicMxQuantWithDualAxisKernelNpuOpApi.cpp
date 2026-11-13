@@ -30,7 +30,7 @@ constexpr double DEFAULT_DST_TYPE_MAX = 0.0;
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dynamic_mx_quant_with_dual_axis(
     const at::Tensor& input,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_type,
     int64_t scale_alg,
     c10::optional<double> dst_type_max) {

@@ -17,9 +17,9 @@
 
 namespace atb {
 namespace {
-std::unordered_map<c10::string_view, int> activation_type_map = {{"activation_sigmoid", 8}};
+std::unordered_map<std::string_view, int> activation_type_map = {{"activation_sigmoid", 8}};
 
-int get_fused_add_div_mode(c10::optional<c10::string_view> activation_type_opt) {
+int get_fused_add_div_mode(c10::optional<std::string_view> activation_type_opt) {
   int activation_type =
       atb::utils::get_op_mode(activation_type_map, activation_type_opt, "activation_sigmoid", "activation_type");
   return activation_type;
@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor> npu_fused_add_topk_div(
     const at::Tensor& add_num,
     const c10::optional<at::Tensor>& mapping_num,
     const c10::optional<at::Tensor>& mapping_table,
-    c10::optional<c10::string_view> activation_type_opt,
+    c10::optional<std::string_view> activation_type_opt,
     int64_t group_num,
     int64_t group_topk,
     int64_t n,
@@ -69,7 +69,7 @@ std::tuple<at::Tensor&, at::Tensor&> npu_fused_add_topk_div_out(
     const at::Tensor& add_num,
     const c10::optional<at::Tensor>& mapping_num,
     const c10::optional<at::Tensor>& mapping_table,
-    c10::optional<c10::string_view> activation_type_opt,
+    c10::optional<std::string_view> activation_type_opt,
     int64_t group_num,
     int64_t group_topk,
     int64_t n,

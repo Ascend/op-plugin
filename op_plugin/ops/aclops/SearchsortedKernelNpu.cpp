@@ -49,7 +49,7 @@ at::Tensor& searchsorted_out(
     const at::Tensor& self,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view> side_opt,
+    const c10::optional<std::string_view> side_opt,
     const c10::optional<at::Tensor>& sorter_opt,
     at::Tensor& result) {
   (void)op_plugin::searchsorted_validate_tensor_out_op(
@@ -75,7 +75,7 @@ at::Tensor searchsorted(
     const at::Tensor& self,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view> side_opt,
+    const c10::optional<std::string_view> side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   at::ScalarType scalar_type = out_int32 ? at::kInt : at::kLong;
   at::Tensor result = npu_preparation::apply_tensor(self.sizes(), self.options().dtype(scalar_type), self);
@@ -92,7 +92,7 @@ at::Tensor searchsorted(
     const at::Scalar& self,
     bool out_int32,
     bool right,
-    const c10::optional<c10::string_view> side_opt,
+    const c10::optional<std::string_view> side_opt,
     const c10::optional<at::Tensor>& sorter_opt) {
   at::ScalarType scalar_type = out_int32 ? at::kInt : at::kLong;
   (void)op_plugin::searchsorted_validate_scalar_op(sorted_sequence, self, out_int32, right, side_opt, sorter_opt);

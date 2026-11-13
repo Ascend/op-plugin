@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_lightning_indexer_grad(
     const at::Tensor &weights,
     const c10::optional<at::Tensor> &actual_seq_lengths_query,
     const c10::optional<at::Tensor> &actual_seq_lengths_key,
-    c10::optional<c10::string_view> layout,
+    c10::optional<std::string_view> layout,
     c10::optional<int64_t> sparse_mode,
     c10::optional<int64_t> pre_tokens,
     c10::optional<int64_t> next_tokens)
@@ -43,7 +43,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_lightning_indexer_grad(
     at::Tensor d_key = OpPreparation::apply_tensor_without_format(key);
     at::Tensor d_weights = OpPreparation::apply_tensor_without_format(weights);
 
-    c10::string_view layout_str_view = layout.value_or("BSND");
+    std::string_view layout_str_view = layout.value_or("BSND");
     char *layout_ptr = const_cast<char *>(layout_str_view.data());
     const int64_t sparse_mode_const = sparse_mode.value_or(0);
     const int64_t pre_tokens_const = pre_tokens.value_or(9223372036854775807);

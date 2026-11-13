@@ -28,7 +28,7 @@ std::tuple<at::Tensor, at::Tensor> _npu_rms_norm_backward_quant(
     const at::Tensor& scale_x,
     const c10::optional<at::Tensor>& offset_x,
     c10::optional<bool> div_mode,
-    c10::string_view quant_mode,
+    std::string_view quant_mode,
     c10::optional<int64_t> dst_type) {
   TORCH_CHECK(
       dy.dim() >= 1,

@@ -31,7 +31,7 @@ enum class ScatterReduceType : int64_t {
   REDUCE_MEAN = 5,
 };
 
-const std::pair<c10::string_view, ScatterReduceType> REDUCE_TYPE_MAP[] = {
+const std::pair<std::string_view, ScatterReduceType> REDUCE_TYPE_MAP[] = {
     {"none", ScatterReduceType::REDUCE_NONE},
     {"sum", ScatterReduceType::REDUCE_ADD},
     {"add", ScatterReduceType::REDUCE_ADD},
@@ -44,7 +44,7 @@ const std::pair<c10::string_view, ScatterReduceType> REDUCE_TYPE_MAP[] = {
     {"mean", ScatterReduceType::REDUCE_MEAN},
 };
 
-int64_t get_reduce(c10::string_view reduce, const char* op_name) {
+int64_t get_reduce(std::string_view reduce, const char* op_name) {
   for (const auto& reduce_pair : REDUCE_TYPE_MAP) {
     if (reduce == reduce_pair.first) {
       return static_cast<int64_t>(reduce_pair.second);
@@ -63,7 +63,7 @@ at::Tensor scatter_reduce_cpu_fallback(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self) {
   at::Tensor self_cpu = self.cpu();
   at::Tensor index_cpu = index.cpu();
@@ -76,7 +76,7 @@ at::Tensor& scatter_reduce_out_cpu_fallback(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self,
     at::Tensor& out) {
   at::Tensor self_cpu = self.cpu();
@@ -93,7 +93,7 @@ at::Tensor& scatter_reduce_inplace_cpu_fallback(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self) {
   at::Tensor self_cpu = self.cpu();
   at::Tensor index_cpu = index.cpu();
@@ -109,7 +109,7 @@ at::Tensor scatter_reduce(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self) {
   if (include_self && (reduce == "sum" || reduce == "add") &&
       op_plugin::utils::is_lt_soc_version_950() && self.scalar_type() == at::kFloat) {
@@ -130,7 +130,7 @@ at::Tensor& scatter_reduce_out(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self,
     at::Tensor& out) {
   if (include_self && (reduce == "sum" || reduce == "add") &&
@@ -150,7 +150,7 @@ at::Tensor& scatter_reduce_(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     bool include_self) {
   if (include_self && (reduce == "sum" || reduce == "add") &&
       op_plugin::utils::is_lt_soc_version_950() && self.scalar_type() == at::kFloat) {

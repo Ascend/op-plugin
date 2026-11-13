@@ -52,7 +52,7 @@ at::Tensor &div_out_nocheck(at::Tensor &result, const at::Tensor &self, const at
     return result;
 }
 
-void div_torch_check(c10::optional<c10::string_view> rounding_mode)
+void div_torch_check(c10::optional<std::string_view> rounding_mode)
 {
     TORCH_CHECK(false,
         "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
@@ -128,7 +128,7 @@ at::Tensor &div_out(const at::Tensor &self, const at::Tensor &other, at::Tensor 
     return div_out_with_dtype(result, self, other, result_type, false);
 }
 
-at::Tensor &div_out(const at::Tensor &self, const at::Tensor &other, c10::optional<c10::string_view> rounding_mode,
+at::Tensor &div_out(const at::Tensor &self, const at::Tensor &other, c10::optional<std::string_view> rounding_mode,
                     at::Tensor &result)
 {
     if (!rounding_mode.has_value()) {
@@ -161,7 +161,7 @@ at::Tensor div(const at::Tensor &self, const at::Scalar &other)
     return result;
 }
 
-at::Tensor div(const at::Tensor &self, const at::Scalar &other, c10::optional<c10::string_view> rounding_mode)
+at::Tensor div(const at::Tensor &self, const at::Scalar &other, c10::optional<std::string_view> rounding_mode)
 {
     if (rounding_mode.has_value() && *rounding_mode == "floor") {
         return acl_op::floor_divide(self, other);
@@ -180,7 +180,7 @@ at::Tensor div(const at::Tensor &self, const at::Scalar &other, c10::optional<c1
     div_torch_check(rounding_mode);
 }
 
-at::Tensor div(const at::Tensor &self, const at::Tensor &other, c10::optional<c10::string_view> rounding_mode)
+at::Tensor div(const at::Tensor &self, const at::Tensor &other, c10::optional<std::string_view> rounding_mode)
 {
     if (!rounding_mode.has_value()) {
         return acl_op::div(self, other);
@@ -213,7 +213,7 @@ at::Tensor &div_(at::Tensor &self, const at::Scalar &other)
     return self;
 }
 
-at::Tensor &div_(at::Tensor &self, const at::Scalar &other, c10::optional<c10::string_view> rounding_mode)
+at::Tensor &div_(at::Tensor &self, const at::Scalar &other, c10::optional<std::string_view> rounding_mode)
 {
     if (rounding_mode.has_value() && *rounding_mode == "floor") {
         return acl_op::floor_divide_(self, other);
@@ -227,7 +227,7 @@ at::Tensor &div_(at::Tensor &self, const at::Scalar &other, c10::optional<c10::s
     div_torch_check(rounding_mode);
 }
 
-at::Tensor &div_(at::Tensor &self, const at::Tensor &other, c10::optional<c10::string_view> rounding_mode)
+at::Tensor &div_(at::Tensor &self, const at::Tensor &other, c10::optional<std::string_view> rounding_mode)
 {
     return acl_op::div_out(self, other, rounding_mode, self);
 }

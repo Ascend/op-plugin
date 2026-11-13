@@ -23,7 +23,7 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 namespace {
-int64_t get_norm_RFFT(c10::string_view norm) {
+int64_t get_norm_RFFT(std::string_view norm) {
   if (norm == "backward") {
     return 1;
   }
@@ -41,8 +41,8 @@ at::Tensor fft_rfft(
     const at::Tensor& self,
     c10::optional<int64_t> n,
     int64_t dim,
-    c10::optional<c10::string_view> norm) {
-  c10::string_view norm1 = norm.value_or("backward");
+    c10::optional<std::string_view> norm) {
+  std::string_view norm1 = norm.value_or("backward");
 
   if (dim < 0) {
     dim += self.dim();

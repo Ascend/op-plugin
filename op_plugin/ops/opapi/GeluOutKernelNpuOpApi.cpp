@@ -18,7 +18,7 @@
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
-at::Tensor& gelu_out(const at::Tensor & self, c10::string_view approximate, at::Tensor& out)
+at::Tensor& gelu_out(const at::Tensor & self, std::string_view approximate, at::Tensor& out)
 {
     static auto gelu_sc = at_npu::native::env::CheckCompatibleImpl();
     if (!c10_npu::IsAclnnOnly() && !gelu_sc) {

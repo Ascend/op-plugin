@@ -17,7 +17,7 @@
 namespace atb {
 
 namespace {
-std::unordered_map<c10::string_view, int> mask_type_map = {
+std::unordered_map<std::string_view, int> mask_type_map = {
     {"mask_type_norm_compress", 3},
     {"mask_type_alibi_compress", 4},
     {"mask_type_alibi_compress_sort", 5},
@@ -36,7 +36,7 @@ at::Tensor npu_self_attention_prefix_encoder(
     int64_t kv_headnum,
     const c10::optional<at::Tensor>& mask,
     const c10::optional<at::Tensor>& slopes,
-    c10::optional<c10::string_view> mask_type_opt) {
+    c10::optional<std::string_view> mask_type_opt) {
   const c10::OptionalDeviceGuard device_guard(device_of(query));
   at::Tensor output = at::empty(query.sizes(), query.options());
   auto mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "mask_type_causal_mask", "mask_type");
@@ -73,7 +73,7 @@ at::Tensor& npu_self_attention_prefix_encoder_out(
     int64_t kv_headnum,
     const c10::optional<at::Tensor>& mask,
     const c10::optional<at::Tensor>& slopes,
-    c10::optional<c10::string_view> mask_type_opt,
+    c10::optional<std::string_view> mask_type_opt,
     at::Tensor& output) {
   const c10::OptionalDeviceGuard device_guard(device_of(query));
   auto mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "mask_type_causal_mask", "mask_type");

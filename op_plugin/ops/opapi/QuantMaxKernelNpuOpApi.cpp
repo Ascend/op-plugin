@@ -27,7 +27,7 @@ constexpr int64_t AMAX_SHAPE_SIZE = 1;
 std::tuple<at::Tensor, at::Tensor> npu_quant_max(
     const at::Tensor& x,
     const at::Tensor& scale,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_dtype,
     const c10::optional<at::Tensor>& group_list) {
   // 1. 推导 aclDataType（将 torch_npu DType 枚举值 -256 得到 ACL 枚举值）

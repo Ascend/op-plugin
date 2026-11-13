@@ -72,8 +72,8 @@ std::tuple<at::Tensor, at::Tensor> npu_mrope(
     const at::Tensor& cos_sin_cache,
     int64_t head_size,
     c10::OptionalIntArrayRef mrope_section,
-    c10::optional<c10::string_view> rotary_mode,
-    c10::optional<c10::string_view> cache_mode) {
+    c10::optional<std::string_view> rotary_mode,
+    c10::optional<std::string_view> cache_mode) {
   at::IntArrayRef mrope_section_value = mrope_section.value_or(at::IntArrayRef{0, 0, 0});
   std::string rotary_mode_str = rotary_mode.has_value() ? std::string(rotary_mode.value()) : "half";
   std::string cache_mode_str = cache_mode.has_value() ? std::string(cache_mode.value()) : "default";

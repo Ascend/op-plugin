@@ -529,7 +529,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     c10::OptionalIntArrayRef actual_seq_qlen,
     c10::OptionalIntArrayRef actual_seq_kvlen,
     int64_t sparse_mode,
-    c10::string_view softmax_layout)
+    std::string_view softmax_layout)
 {
     double scale = scale_value;
 
@@ -641,7 +641,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     const at::Tensor &value,
     const at::Tensor &dy,
     int64_t head_num,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
@@ -663,7 +663,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
     int64_t sparse_mode,
     bool gen_mask_parallel,
     bool sync,
-    c10::string_view softmax_layout)
+    std::string_view softmax_layout)
 {
     TORCH_CHECK(query.dim() == DIMENSION_3D || query.dim() == DIMENSION_4D,
         "The shapes of the input query should be 3 or 4 dimensional, but got ",
@@ -728,13 +728,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int64_t> npu_fusion_attention(
     const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &value, int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
     c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen,
     c10::OptionalIntArrayRef actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &dropout_mask, int64_t seed, int64_t offset)
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &dropout_mask, int64_t seed, int64_t offset)
 {
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
     const at::Tensor &padding_mask_const = padding_mask.value_or(at::Tensor());
@@ -973,7 +973,7 @@ at::Tensor npu_prompt_flash_attention(
     const c10::optional<at::Tensor> &quant_offset2,
     int64_t num_heads, double scale_value,
     int64_t pre_tokens, int64_t next_tokens,
-    c10::string_view input_layout, int64_t num_key_value_heads,
+    std::string_view input_layout, int64_t num_key_value_heads,
     c10::OptionalIntArrayRef actual_seq_lengths_kv,
     int64_t sparse_mode)
 {
@@ -1086,7 +1086,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     c10::OptionalIntArrayRef actual_seq_qlen,
     c10::OptionalIntArrayRef actual_seq_kvlen,
     int64_t sparse_mode,
-    c10::string_view softmax_layout,
+    std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
     double scale = scale_value;
@@ -1249,7 +1249,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     const at::Tensor &value,
     const at::Tensor &dy,
     int64_t head_num,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
@@ -1271,7 +1271,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t sparse_mode,
     bool gen_mask_parallel,
     bool sync,
-    c10::string_view softmax_layout,
+    std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
     TORCH_CHECK(query.dim() == DIMENSION_3D || query.dim() == DIMENSION_4D,
@@ -1338,13 +1338,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, int64_t, int64_t, int64_t> npu_fusion_attention(
     const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &value, int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
     c10::OptionalIntArrayRef prefix, c10::OptionalIntArrayRef actual_seq_qlen,
     c10::OptionalIntArrayRef actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink, const c10::optional<at::Tensor> &dropout_mask,
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &sink, const c10::optional<at::Tensor> &dropout_mask,
     int64_t seed, int64_t offset)
 {
     const at::Tensor &pse_const = pse.value_or(at::Tensor());
@@ -1623,7 +1623,7 @@ at::Tensor npu_prompt_flash_attention(
     const c10::optional<at::Tensor> &quant_offset2,
     int64_t num_heads, double scale_value,
     int64_t pre_tokens, int64_t next_tokens,
-    c10::string_view input_layout, int64_t num_key_value_heads,
+    std::string_view input_layout, int64_t num_key_value_heads,
     c10::OptionalIntArrayRef actual_seq_lengths_kv,
     int64_t sparse_mode)
 {
@@ -1689,7 +1689,7 @@ at::Tensor npu_incre_flash_attention_symint(
     const c10::optional<at::Tensor> &dequant_scale1, const c10::optional<at::Tensor> &quant_scale1,
     const c10::optional<at::Tensor> &dequant_scale2, const c10::optional<at::Tensor> &quant_scale2,
     const c10::optional<at::Tensor> &quant_offset2, const c10::optional<at::Tensor> &kv_padding_size,
-    int64_t num_heads, double scale_value, c10::string_view input_layout, int64_t num_key_value_heads,
+    int64_t num_heads, double scale_value, std::string_view input_layout, int64_t num_key_value_heads,
     int64_t block_size, int64_t inner_precise)
 {
     // construct the output tensor of the NPU
@@ -1804,7 +1804,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     at::IntArrayRef ac_seq_qlen,
     at::IntArrayRef ac_seq_kvlen,
     int64_t sparse_mode,
-    c10::string_view softmax_layout,
+    std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
     double scale = scale_value;
@@ -1947,7 +1947,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     const at::Tensor &value,
     const at::Tensor &dy,
     int64_t head_num,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
@@ -1968,7 +1968,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     int64_t sparse_mode,
     bool gen_mask_parallel,
     bool sync,
-    c10::string_view softmax_layout,
+    std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
 
@@ -2072,13 +2072,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
 
 std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusion_attention_v3_symint(
     const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &value, int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
     c10::OptionalArrayRef<c10::SymInt> prefix, const c10::optional<at::Tensor> &actual_seq_qlen,
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
 
     TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(), "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
@@ -2339,13 +2339,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
 std::tuple<at::Tensor &, at::Tensor &, at::Tensor &, at::Tensor &, at::Tensor &, at::Tensor &>
 npu_fusion_attention_v3_out(
     const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &value, int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
     c10::OptionalArrayRef<int64_t> prefix, const c10::optional<at::Tensor> &actual_seq_qlen,
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink,
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &sink,
     const c10::optional<at::Tensor> &workspace,
     at::Tensor &attention_score, at::Tensor &softmax_max, at::Tensor &softmax_sum,
     at::Tensor &softmax_out, at::Tensor &seed, at::Tensor &offset)
@@ -2469,7 +2469,7 @@ npu_fusion_attention_grad_v3_out(
     const at::Tensor &value,
     const at::Tensor &dy,
     int64_t head_num,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const c10::optional<at::Tensor> &pse,
     const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
@@ -2490,7 +2490,7 @@ npu_fusion_attention_grad_v3_out(
     int64_t sparse_mode,
     bool gen_mask_parallel,
     bool sync,
-    c10::string_view softmax_layout,
+    std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink,
     const c10::optional<at::Tensor> &workspace,
     at::Tensor &dq,
@@ -2662,7 +2662,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _npu_fusion_attention_v3_infer_ou
     const at::Tensor &key,
     const at::Tensor &value,
     int64_t head_num,
-    c10::string_view input_layout)
+    std::string_view input_layout)
 {
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
@@ -2684,13 +2684,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> _npu_fusi
 
 at::Tensor _npu_fusion_attention_v3_get_max_workspace(
     const at::Tensor &query, const at::Tensor &key,
-    const at::Tensor &value, int64_t head_num, c10::string_view input_layout,
+    const at::Tensor &value, int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     double scale, double keep_prob, int64_t pre_tockens, int64_t next_tockens, int64_t inner_precise,
     c10::OptionalArrayRef<int64_t> prefix, const c10::optional<at::Tensor> &actual_seq_qlen,
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
@@ -2801,7 +2801,7 @@ at::Tensor _npu_fusion_attention_v3_get_max_workspace(
 at::Tensor _npu_fusion_attention_grad_v3_get_max_workspace(
     const at::Tensor &query, const at::Tensor &key,
     const at::Tensor &value, const at::Tensor &dy,
-    int64_t head_num, c10::string_view input_layout,
+    int64_t head_num, std::string_view input_layout,
     const c10::optional<at::Tensor> &pse, const c10::optional<at::Tensor> &padding_mask,
     const c10::optional<at::Tensor> &atten_mask,
     const c10::optional<at::Tensor> &softmax_max, const c10::optional<at::Tensor> &softmax_sum,
@@ -2810,7 +2810,7 @@ at::Tensor _npu_fusion_attention_grad_v3_get_max_workspace(
     const c10::optional<at::Tensor> &seed, const c10::optional<at::Tensor> &offset,
     c10::OptionalArrayRef<int64_t> prefix, const c10::optional<at::Tensor> &actual_seq_qlen,
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
-    c10::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
+    std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {

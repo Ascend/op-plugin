@@ -35,7 +35,7 @@ std::tuple<at::Tensor, at::Tensor> npu_rotate_quant(
     const c10::optional<at::Tensor>& alpha,
     c10::optional<int64_t> dst_dtype,
     c10::optional<int64_t> axis,
-    c10::optional<c10::string_view> round_mode,
+    c10::optional<std::string_view> round_mode,
     c10::optional<int64_t> scale_alg,
     c10::optional<double> dst_type_max,
     c10::optional<bool> transpose_y) {

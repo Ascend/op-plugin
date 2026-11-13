@@ -68,7 +68,7 @@ at::Tensor npu_kv_quant_sparse_flash_attention(
     const c10::optional<at::Tensor> &block_table,
     const c10::optional<at::Tensor> &actual_seq_lengths_query,
     const c10::optional<at::Tensor> &actual_seq_lengths_kv,
-    int64_t sparse_block_size, c10::string_view layout_query, c10::string_view layout_kv,
+    int64_t sparse_block_size, std::string_view layout_query, std::string_view layout_kv,
     int64_t sparse_mode, int64_t pre_tokens, int64_t next_tokens, int64_t attention_mode, int64_t quant_scale_repo_mode,
     int64_t tile_size, int64_t rope_head_dim,
     c10::optional<int64_t> key_dtype, c10::optional<int64_t> value_dtype)

@@ -22,7 +22,7 @@ namespace op_api {
 namespace {
 constexpr size_t ASSERT_ASYNC_MAX_MSG_LEN = 255;
 
-void assert_async_cpu(const at::Tensor& self, c10::string_view assert_msg) {
+void assert_async_cpu(const at::Tensor& self, std::string_view assert_msg) {
   const auto self_cpu = self.cpu();
   if (assert_msg.empty()) {
     at::_assert_async(self_cpu);
@@ -38,10 +38,10 @@ bool is_npu_supported() {
 } // namespace
 
 void _assert_async(const at::Tensor& self) {
-  op_api::_assert_async(self, c10::string_view{});
+  op_api::_assert_async(self, std::string_view{});
 }
 
-void _assert_async(const at::Tensor& self, c10::string_view assert_msg) {
+void _assert_async(const at::Tensor& self, std::string_view assert_msg) {
   TORCH_CHECK(
       self.numel() == 1,
       "_assert_async: Expected one element, but got ",

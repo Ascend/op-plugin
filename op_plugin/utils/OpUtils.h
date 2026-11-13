@@ -18,6 +18,7 @@
 
 #include <ATen/ATen.h>
 #include <acl/acl_base.h>
+#include <string_view>
 #include "op_plugin/utils/OpConstants.h"
 #include "op_plugin/utils/Export.h"
 #include "op_plugin/utils/Version.h"
@@ -120,7 +121,7 @@ OP_PLUGIN_HIDDEN bool is_gte_cann_version_851();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_900();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_910();
 OP_PLUGIN_HIDDEN bool is_gte_cann_version_920();
-OP_PLUGIN_HIDDEN int64_t get_rotary_mode(c10::string_view mode);
+OP_PLUGIN_HIDDEN int64_t get_rotary_mode(std::string_view mode);
 OP_PLUGIN_HIDDEN const std::string DTypeToString(int64_t input_type);
 OP_PLUGIN_HIDDEN aclDataType get_dynamic_scales_dtype(
     const at::Tensor& x,

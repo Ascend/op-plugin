@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dense_lightning_indexer_softmax_lse_symin
     const at::Tensor& weights,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_qlen,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_klen,
-    c10::optional<c10::string_view> layout,
+    c10::optional<std::string_view> layout,
     c10::optional<int64_t> sparse_mode,
     c10::optional<int64_t> pre_tokens,
     c10::optional<int64_t> next_tokens) {
@@ -48,7 +48,7 @@ std::tuple<at::Tensor, at::Tensor> npu_dense_lightning_indexer_softmax_lse_symin
       "-dimensional",
       OPS_ERROR(ErrCode::PARAM));
 
-  c10::string_view layout_str = layout.value_or("BSND");
+  std::string_view layout_str = layout.value_or("BSND");
   char* layout_ptr = const_cast<char*>(layout_str.data());
   int64_t sparse_mode_const = sparse_mode.value_or(3);
   int64_t pre_tokens_const = pre_tokens.value_or(9223372036854775807);

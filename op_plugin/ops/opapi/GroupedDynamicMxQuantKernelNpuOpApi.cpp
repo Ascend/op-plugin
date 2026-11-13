@@ -29,7 +29,7 @@ constexpr int64_t FP4_IN_UINT8_NUM = 2;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_grouped_dynamic_mx_quant(const at::Tensor &x, const at::Tensor &group_index,
-    c10::string_view round_mode, int64_t dst_type, int64_t blocksize, c10::optional<int64_t> scale_alg,
+    std::string_view round_mode, int64_t dst_type, int64_t blocksize, c10::optional<int64_t> scale_alg,
     c10::optional<double> dst_type_max) {
     // input x and group_index dim check
     TORCH_CHECK(

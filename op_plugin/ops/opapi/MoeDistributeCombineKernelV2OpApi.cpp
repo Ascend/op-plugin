@@ -43,7 +43,7 @@ static bool check_v3_param(const c10::optional<at::Tensor> &elastic_info, int64_
 at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::Tensor &expert_ids,
                                          const at::Tensor &assist_info_for_combine,
                                          const at::Tensor &ep_send_counts, const at::Tensor &expert_scales,
-                                         c10::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
+                                         std::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
                                          int64_t moe_expert_num,
                                          const c10::optional<at::Tensor> &tp_send_counts,
                                          const c10::optional<at::Tensor> &x_active_mask,
@@ -55,10 +55,10 @@ at::Tensor npu_moe_distribute_combine_v2(const at::Tensor &expand_x, const at::T
                                          const c10::optional<at::Tensor> &const_expert_alpha_2,
                                          const c10::optional<at::Tensor> &const_expert_v,
                                          const c10::optional<at::Tensor> &performance_info,
-                                         c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
+                                         std::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                          int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
                                          int64_t global_bs, int64_t comm_quant_mode,
-                                         c10::string_view comm_alg, int64_t zero_expert_num, int64_t copy_expert_num,
+                                         std::string_view comm_alg, int64_t zero_expert_num, int64_t copy_expert_num,
                                          int64_t const_expert_num, bool enable_pre_reduce)
 {
     TORCH_CHECK((expand_x.dim() == DIM_TWO) && (expert_ids.dim() == DIM_TWO), "The x and expert_ids should be 2D", OPS_ERROR(ErrCode::PARAM));

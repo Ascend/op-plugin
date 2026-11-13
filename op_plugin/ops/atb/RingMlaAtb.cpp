@@ -17,21 +17,21 @@
 
 namespace atb {
 namespace {
-std::unordered_map<c10::string_view, int> kernel_type_map = {
+std::unordered_map<std::string_view, int> kernel_type_map = {
     {"kernel_type_default", 0},
     {"kernel_type_high_precision", 1}};
 
-std::unordered_map<c10::string_view, int> mask_type_map = {{"no_mask", 0}, {"mask_type_triu", 1}};
+std::unordered_map<std::string_view, int> mask_type_map = {{"no_mask", 0}, {"mask_type_triu", 1}};
 
-std::unordered_map<c10::string_view, int> input_layout_map = {{"type_bsnd", 0}};
+std::unordered_map<std::string_view, int> input_layout_map = {{"type_bsnd", 0}};
 
-std::unordered_map<c10::string_view, int> calc_type_map = {{"calc_type_default", 0}, {"calc_type_first_ring", 1}};
+std::unordered_map<std::string_view, int> calc_type_map = {{"calc_type_default", 0}, {"calc_type_first_ring", 1}};
 
 std::tuple<int, int, int, int> get_ring_mode(
-    c10::optional<c10::string_view> kernel_type_opt,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> input_layout_opt,
-    c10::optional<c10::string_view> calc_type_opt) {
+    c10::optional<std::string_view> kernel_type_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> input_layout_opt,
+    c10::optional<std::string_view> calc_type_opt) {
   int kernel_type =
       atb::utils::get_op_mode(kernel_type_map, kernel_type_opt, "kernel_type_high_precision", "kernel_type");
   int mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "no_mask", "mask_type");
@@ -55,10 +55,10 @@ std::tuple<at::Tensor, at::Tensor> npu_ring_mla(
     const c10::optional<at::Tensor>& pre_out,
     const c10::optional<at::Tensor>& prev_lse,
     double qk_scale,
-    c10::optional<c10::string_view> kernel_type_opt,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> input_layout_opt,
-    c10::optional<c10::string_view> calc_type_opt) {
+    c10::optional<std::string_view> kernel_type_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> input_layout_opt,
+    c10::optional<std::string_view> calc_type_opt) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));
   int64_t q_ntokens = q_nope.size(0);
   int64_t head_size_v = value.size(2);
@@ -110,10 +110,10 @@ std::tuple<at::Tensor&, at::Tensor&> npu_ring_mla_out(
     const c10::optional<at::Tensor>& pre_out,
     const c10::optional<at::Tensor>& prev_lse,
     double qk_scale,
-    c10::optional<c10::string_view> kernel_type_opt,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> input_layout_opt,
-    c10::optional<c10::string_view> calc_type_opt,
+    c10::optional<std::string_view> kernel_type_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> input_layout_opt,
+    c10::optional<std::string_view> calc_type_opt,
     at::Tensor& output,
     at::Tensor& softmax_lse) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));

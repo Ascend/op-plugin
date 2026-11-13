@@ -33,8 +33,8 @@ void check_attention_inputs(
     const at::Tensor& cur_softmax_max,
     const at::Tensor& cur_softmax_sum,
     const c10::optional<at::Tensor>& actual_seq_qlen,
-    c10::string_view input_layout,
-    c10::string_view input_softmax_layout) {
+    std::string_view input_layout,
+    std::string_view input_softmax_layout) {
   std::string input_layout_str = std::string(input_layout);
   std::string input_softmax_layout_str = std::string(input_softmax_layout);
 
@@ -126,8 +126,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_ring_attention_update(
     const at::Tensor& cur_softmax_max,
     const at::Tensor& cur_softmax_sum,
     const c10::optional<at::Tensor>& actual_seq_qlen,
-    c10::string_view input_layout,
-    c10::string_view input_softmax_layout) {
+    std::string_view input_layout,
+    std::string_view input_softmax_layout) {
   check_attention_inputs(
       prev_attn_out,
       prev_softmax_max,

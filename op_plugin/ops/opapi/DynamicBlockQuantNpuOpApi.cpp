@@ -25,7 +25,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 std::tuple<at::Tensor, at::Tensor> npu_dynamic_block_quant(
     const at::Tensor& x,
     double min_scale,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_type,
     int64_t row_block_size,
     int64_t col_block_size,

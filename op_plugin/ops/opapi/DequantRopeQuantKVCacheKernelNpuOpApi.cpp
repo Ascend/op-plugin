@@ -36,9 +36,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_dequa
     const c10::optional<at::Tensor>& activation_scale_optional,
     const c10::optional<at::Tensor>& bias_optional,
     int64_t quant_mode,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const bool kv_output,
-    c10::string_view cache_mode) {
+    std::string_view cache_mode) {
   TORCH_CHECK((x.scalar_type() == at::kInt), "x dtype should be Int32" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((size_splits[0] >= 0), "size_splits[0] should not less than 0" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((x.dim() == 3 || x.dim() == 2), "3D or 2D tensor expected for input x" + OPS_ERROR(ErrCode::PARAM));

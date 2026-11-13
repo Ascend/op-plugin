@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_spars
     const c10::optional<at::Tensor>& key_rope,
     const c10::optional<at::Tensor>& actual_seq_qlen,
     const c10::optional<at::Tensor>& actual_seq_kvlen,
-    c10::optional<c10::string_view> layout,
+    c10::optional<std::string_view> layout,
     c10::optional<int64_t> sparse_mode,
     c10::optional<int64_t> pre_tokens,
     c10::optional<int64_t> next_tokens,
@@ -112,7 +112,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_spars
     d_key_rope = at::empty({0}, key.options());
   }
 
-  c10::string_view layout_str_view = layout.value_or("BSND");
+  std::string_view layout_str_view = layout.value_or("BSND");
   char* layout_ptr = const_cast<char*>(layout_str_view.data());
 
   const int64_t sparse_mode_const = sparse_mode.value_or(3);

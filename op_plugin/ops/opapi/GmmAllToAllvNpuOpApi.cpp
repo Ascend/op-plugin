@@ -19,11 +19,11 @@
 
 namespace op_api {
     std::tuple<at::Tensor, at::Tensor> npu_gmm_alltoallv(const at::Tensor &gmm_x, const at::Tensor &gmm_weight,
-                                                         c10::string_view hcom, int64_t ep_world_size, at::IntArrayRef send_counts, at::IntArrayRef recv_counts,
+                                                         std::string_view hcom, int64_t ep_world_size, at::IntArrayRef send_counts, at::IntArrayRef recv_counts,
                                                          const c10::optional<at::Tensor> &send_counts_tensor,
                                                          const c10::optional<at::Tensor> &recv_counts_tensor, const c10::optional<at::Tensor> &mm_x,
                                                          const c10::optional<at::Tensor> &mm_weight, bool trans_gmm_weight, bool trans_mm_weight,
-                                                         c10::optional<c10::string_view> comm_mode)
+                                                         c10::optional<std::string_view> comm_mode)
     {
         at::Tensor mm_y{nullptr};
         int64_t bsk = 0;

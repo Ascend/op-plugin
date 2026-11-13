@@ -28,7 +28,7 @@ constexpr int8_t USE_FP32_ADD = 4;
 
 bool need_fused_add_mul_high_precision(
     const at::Tensor &x, const at::Tensor &x2, const c10::optional<at::Tensor> &x3,
-    c10::string_view fused_op_type)
+    std::string_view fused_op_type)
 {
     static auto compatible_env = std::getenv("TORCH_NPU_USE_COMPATIBLE_IMPL");
     bool compatible_impl_enabled = compatible_env != nullptr && std::string(compatible_env) == "1";
@@ -66,7 +66,7 @@ void infer_out_batch_shape(const at::Tensor &x1, const at::Tensor &x2, std::vect
 at::Tensor npu_fused_matmul(
     const at::Tensor &x, const at::Tensor &x2,
     const c10::optional<at::Tensor> &bias, const c10::optional<at::Tensor> &x3,
-    c10::string_view fused_op_type
+    std::string_view fused_op_type
     )
 {
     auto x1_dim_num = x.dim();

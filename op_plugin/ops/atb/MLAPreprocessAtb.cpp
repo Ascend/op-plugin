@@ -3,12 +3,12 @@
 
 namespace atb {
 namespace {
-std::unordered_map<c10::string_view, uint16_t> cache_mode_map = {
+std::unordered_map<std::string_view, uint16_t> cache_mode_map = {
     {"krope_ctkv", 1},
     {"int8_nzcache", 2},
     {"nzcache", 3}};
 
-std::unordered_map<c10::string_view, uint16_t> quant_mode_map = {
+std::unordered_map<std::string_view, uint16_t> quant_mode_map = {
     {"per_tensor_quant_asymm", 0},
     {"per_token_quant_symm", 1},
 };
@@ -39,8 +39,8 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> npu_mla_preproces
     const c10::optional<at::Tensor>& bias1,
     const c10::optional<at::Tensor>& ctkv_scale,
     const c10::optional<at::Tensor>& q_nope_scale,
-    c10::optional<c10::string_view> cache_mode_opt,
-    c10::optional<c10::string_view> quant_mode_opt,
+    c10::optional<std::string_view> cache_mode_opt,
+    c10::optional<std::string_view> quant_mode_opt,
     at::Tensor& q_out0,
     at::Tensor& kv_cache_out0,
     at::Tensor& q_out1,
@@ -126,8 +126,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_preprocess(
     const c10::optional<at::Tensor>& bias1,
     const c10::optional<at::Tensor>& ctkv_scale,
     const c10::optional<at::Tensor>& q_nope_scale,
-    c10::optional<c10::string_view> cache_mode_opt,
-    c10::optional<c10::string_view> quant_mode_opt) {
+    c10::optional<std::string_view> cache_mode_opt,
+    c10::optional<std::string_view> quant_mode_opt) {
   const c10::OptionalDeviceGuard device_guard(device_of(input));
   uint32_t wdq_dim = 0;
   uint32_t q_rope_dim = 0;

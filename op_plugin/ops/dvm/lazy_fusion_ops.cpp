@@ -1405,7 +1405,7 @@ at::Tensor tanh_backward(const at::Tensor& grad_output, const at::Tensor& output
   return out;
 }
 
-at::Tensor& gelu_out(const at::Tensor& self, c10::string_view approximate, at::Tensor& out) {
+at::Tensor& gelu_out(const at::Tensor& self, std::string_view approximate, at::Tensor& out) {
   static auto enable = IsEnabled("gelu");
   if (!enable || !InputCheck(self, IsFloatType, /*allow_non_contig=*/true) || !OutputCheck(out) ||
       approximate != "tanh" || out.sizes() != self.sizes() || out.scalar_type() != self.scalar_type()) {
@@ -1434,7 +1434,7 @@ at::Tensor& gelu_out(const at::Tensor& self, c10::string_view approximate, at::T
   return out;
 }
 
-at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, c10::string_view approximate) {
+at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, std::string_view approximate) {
   static auto enable = IsEnabled("gelu_backward");
   // The DVM formula implements only the tanh approximation.
   if (!enable || approximate != "tanh" ||

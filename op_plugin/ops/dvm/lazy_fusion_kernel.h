@@ -23,6 +23,7 @@
 #include <thread>
 #include <ATen/Tensor.h>
 #include <ATen/ATen.h>
+#include <string_view>
 #include <torch/csrc/autograd/graph_task.h>
 #include "op_plugin/utils/OpAdapter.h"
 #include "op_plugin/ops/dvm/lazy_fusion_flags.h"
@@ -170,7 +171,7 @@ class LazyFusionKernel final : public dvm::Kernel, public dvm::WsAllocator {
   std::string ToString(bool t) {
     return t ? "True" : "False";
   }
-  std::string ToString(c10::string_view t) {
+  std::string ToString(std::string_view t) {
     return std::string(t);
   }
   std::string ToString(const c10::ScalarType& t) {

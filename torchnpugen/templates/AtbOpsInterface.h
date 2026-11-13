@@ -23,7 +23,7 @@
 #include <c10/core/SymIntArrayRef.h>
 #include <c10/util/Optional.h>
 #include <c10/util/OptionalArrayRef.h>
-#include <c10/util/string_view.h>
+#include <string_view>
 
 #include "torch_npu/csrc/core/npu/NPUMacros.h"
 

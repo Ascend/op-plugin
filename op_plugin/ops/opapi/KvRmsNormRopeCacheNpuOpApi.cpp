@@ -44,7 +44,7 @@ namespace op_api {
         const c10::optional<at::Tensor> &c_kv_offset,
         const c10::optional<at::Tensor> &v,
         double epsilon,
-        c10::string_view cache_mode,
+        std::string_view cache_mode,
         bool is_output_kv)
     {
         TORCH_CHECK((kv.dim() == MAX_DIM), "4D tensor expected for input kv" + OPS_ERROR(ErrCode::PARAM));
@@ -107,7 +107,7 @@ namespace op_api {
         const c10::optional<at::Tensor> &c_kv_offset,
         const c10::optional<at::Tensor> &v,
         double epsilon,
-        c10::string_view cache_mode,
+        std::string_view cache_mode,
         bool is_output_kv,
         c10::optional<int64_t> k_cache_dtype,
         c10::optional<int64_t> ckv_cache_dtype)
@@ -181,7 +181,7 @@ namespace op_api {
         const c10::optional<at::Tensor> &c_kv_offset,
         const c10::optional<at::Tensor> &v,
         double epsilon,
-        c10::string_view cache_mode,
+        std::string_view cache_mode,
         bool is_output_kv,
         c10::optional<int64_t> k_cache_dtype,
         c10::optional<int64_t> ckv_cache_dtype)

@@ -30,7 +30,7 @@ constexpr int64_t DEFAULT_SCALE_ALG = 0;
 std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
     const at::Tensor& input,
     const int64_t axis,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_type,
     int64_t block_size,
     c10::optional<int64_t> scale_alg,

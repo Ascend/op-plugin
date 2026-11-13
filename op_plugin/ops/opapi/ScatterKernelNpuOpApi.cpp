@@ -21,11 +21,11 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
 // reduce value must be "add" or "multiply"
-static inline bool reduce_valid(c10::string_view reduce) {
+static inline bool reduce_valid(std::string_view reduce) {
   return (reduce == "add" || reduce == "multiply");
 }
 
-static int64_t get_reduce(c10::string_view reduce) {
+static int64_t get_reduce(std::string_view reduce) {
   if (reduce == "add") {
     return 1;
   } else if (reduce == "multiply") {
@@ -52,7 +52,7 @@ at::Tensor& scatter_out(
     int64_t dim,
     const at::Tensor& index,
     const at::Tensor& src,
-    c10::string_view reduce,
+    std::string_view reduce,
     at::Tensor& out) {
   npu_preparation::check_tensor({self, src, index}, out, self);
   TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));
@@ -79,7 +79,7 @@ at::Tensor& scatter_out(
     int64_t dim,
     const at::Tensor& index,
     const at::Scalar& value,
-    c10::string_view reduce,
+    std::string_view reduce,
     at::Tensor& out) {
   npu_preparation::check_tensor({self, index}, out, self);
   TORCH_CHECK(reduce_valid(reduce), "Reduce should be either add or multiply", OPS_ERROR(ErrCode::PARAM));

@@ -22,7 +22,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     const at::Tensor& A,
     bool full_matrices,
     bool compute_uv,
-    c10::optional<c10::string_view> driver) {
+    c10::optional<std::string_view> driver) {
   int64_t MIN_DIM = 2;
   TORCH_CHECK(
       A.dtype() == at::kFloat || A.dtype() == at::kDouble || A.dtype() == at::kComplexFloat ||

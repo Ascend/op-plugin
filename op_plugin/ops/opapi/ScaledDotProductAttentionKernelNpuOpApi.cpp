@@ -202,7 +202,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
             multiple of N2. */
         c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, processed_mask, is_causal);
         int64_t head_num = query.size(1);
-        c10::string_view input_layout = "BNSD";
+        std::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
         double keep_prob = 1 - dropout_p;
         int64_t next_tockens = is_causal ? 0 : TOKEN_MAX;
@@ -247,7 +247,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, processed_mask_fia, is_causal);
         int64_t head_num = query.size(1);
         int64_t head_num_kv = key.size(1);
-        c10::string_view input_layout = "BNSD";
+        std::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
         int64_t next_tockens = is_causal ? 0 : TOKEN_MAX;
         int64_t sparse_mode = is_causal ? LEFT_UP_CAUSAL : 0;
@@ -310,7 +310,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
             multiple of N2. */
         c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, processed_mask, is_causal);
         int64_t head_num = query.size(1);
-        c10::string_view input_layout = "BNSD";
+        std::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
         double keep_prob = 1 - dropout_p;
         int64_t next_tockens = is_causal ? 0 : TOKEN_MAX;
@@ -362,7 +362,7 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         c10::optional<at::Tensor> atten_mask = convert_boolean_attn_mask(query, processed_mask_fia, is_causal);
         int64_t head_num = query.size(1);
         int64_t head_num_kv = key.size(1);
-        c10::string_view input_layout = "BNSD";
+        std::string_view input_layout = "BNSD";
         auto input_scale = calculate_scale(query, scale);
         int64_t next_tockens = is_causal ? 0 : TOKEN_MAX;
         int64_t sparse_mode = is_causal ? LEFT_UP_CAUSAL : 0;

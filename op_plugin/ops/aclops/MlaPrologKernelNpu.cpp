@@ -42,7 +42,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&, at::Tensor&> npu_mla_prolog_no
     const at::Tensor& smooth_scales_cq,
     double rmsnorm_epsilon_cq,
     double rmsnorm_epsilon_ckv,
-    c10::string_view cache_mode,
+    std::string_view cache_mode,
     at::Tensor& query,
     at::Tensor& query_rope,
     at::Tensor& kv_cache_out,
@@ -142,7 +142,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_prolog(
     const c10::optional<at::Tensor>& smooth_scales_cq_opt,
     double rmsnorm_epsilon_cq,
     double rmsnorm_epsilon_ckv,
-    c10::string_view cache_mode) {
+    std::string_view cache_mode) {
   TORCH_CHECK(
       !c10_npu::IsAclnnOnly(),
       "npu_mla_prolog not support on this soc version, please use npu_mla_prolog_v3",

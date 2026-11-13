@@ -75,7 +75,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_qkv_rms_norm_rope_cache(
     const c10::optional<at::Tensor>& k_offset,
     const c10::optional<at::Tensor>& v_offset,
     double epsilon,
-    c10::string_view cache_mode,
+    std::string_view cache_mode,
     bool is_output_qkv) {
   at::Tensor q_out_before_quant;
   at::Tensor k_out_before_quant;
@@ -128,7 +128,7 @@ npu_qkv_rms_norm_rope_cache_functional(
     const c10::optional<at::Tensor>& k_offset,
     const c10::optional<at::Tensor>& v_offset,
     double epsilon,
-    c10::string_view cache_mode,
+    std::string_view cache_mode,
     bool is_output_qkv) {
   at::Tensor q_out_before_quant;
   at::Tensor k_out_before_quant;

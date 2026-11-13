@@ -24,10 +24,10 @@ std::tuple<at::Tensor, at::Tensor> npu_gelu_quant(
     const at::Tensor &self,
     const c10::optional<at::Tensor> &input_scale,
     const c10::optional<at::Tensor> &input_offset,
-    c10::string_view approximate,
-    c10::string_view quant_mode,
+    std::string_view approximate,
+    std::string_view quant_mode,
     c10::optional<int64_t> dst_type,
-    c10::string_view round_mode)
+    std::string_view round_mode)
 {
     const at::Tensor &input_scale_value = c10::value_or_else(input_scale, [] { return at::Tensor(); });
     const at::Tensor &input_offset_value = c10::value_or_else(input_offset, [] { return at::Tensor(); });

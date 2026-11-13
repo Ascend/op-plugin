@@ -40,7 +40,7 @@ static c10::SmallVector<int64_t, op_infer::SIZE> get_output_size_gather(
 std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(
     const at::Tensor& self,
     const at::Tensor& x2,
-    c10::string_view hcom,
+    std::string_view hcom,
     int64_t world_size,
     const c10::optional<at::Tensor>& bias,
     const c10::optional<at::Tensor>& x1_scale,
@@ -49,7 +49,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(
     bool gather_output,
     int64_t comm_turn,
     c10::optional<at::ScalarType> output_dtype,
-    c10::optional<c10::string_view> comm_mode) {
+    c10::optional<std::string_view> comm_mode) {
   TORCH_CHECK(
       world_size == 2 || world_size == 4 || world_size == 8 ||
           world_size == 16 || world_size == 32,
@@ -72,7 +72,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_gather_base_mm(
       "." + OPS_ERROR(ErrCode::PARAM));
   bool isSocBelowAscend950 =
       (c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950);
-  c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
+  std::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
   auto out_gather_mm_size =
       get_output_size_gather_mm(self, x2, world_size, gather_index);
   auto out_gather_size =

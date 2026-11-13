@@ -35,7 +35,7 @@ at::Tensor npu_rotary_mul(
     const at::Tensor& self,
     const at::Tensor& r1,
     const at::Tensor& r2,
-    c10::string_view rotary_mode,
+    std::string_view rotary_mode,
     const c10::optional<at::Tensor>& rotate) {
   TORCH_CHECK(
       (op_plugin::utils::is_gte_soc_version_950() || (rotary_mode == "half" || rotary_mode == "interleave")),

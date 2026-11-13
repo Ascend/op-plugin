@@ -36,7 +36,7 @@ at::Tensor npu_quant_grouped_matmul_dequant(
     const c10::optional<at::Tensor>& x_scale,
     const c10::optional<at::Tensor>& x_offset,
     const c10::optional<at::Tensor>& smooth_scale,
-    c10::optional<c10::string_view> quant_mode) {
+    c10::optional<std::string_view> quant_mode) {
   if (is_nz_format(quantized_weight)) {
     static const bool is_weight_nz_available = check_aclnn_kernel_available("aclnnQuantGroupedMatmulDequantWeightNZ");
     TORCH_CHECK(

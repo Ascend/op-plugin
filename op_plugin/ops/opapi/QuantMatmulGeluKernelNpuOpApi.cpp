@@ -74,7 +74,7 @@ at::Tensor npu_quant_matmul_gelu(
     const at::Tensor& x1_scale,
     const at::Tensor& x2_scale,
     const c10::optional<at::Tensor>& bias,
-    const c10::optional<c10::string_view> approximate) {
+    const c10::optional<std::string_view> approximate) {
   // 1. 校验输入场景，确定支持的量化场景（A4W4（INT4/INT32）或A8W8）
   bool is_a4w4 = (x1.dtype() == at::ScalarType::QUInt4x2 && x2.dtype() == at::ScalarType::QUInt4x2);
   bool is_a4w4_int32 = (x1.dtype() == at::kInt && x2.dtype() == at::kInt);
@@ -89,7 +89,7 @@ at::Tensor npu_quant_matmul_gelu(
       OPS_ERROR(ErrCode::TYPE));
 
   // 2. 处理并校验 approximate 参数
-  c10::string_view approximate_value = approximate.value_or("gelu_erf"); // 默认值为 "gelu_erf"
+  std::string_view approximate_value = approximate.value_or("gelu_erf"); // 默认值为 "gelu_erf"
   TORCH_CHECK(
       approximate_value == "gelu_tanh" || approximate_value == "gelu_erf",
       "approximate must be 'gelu_tanh' or 'gelu_erf', but got: ",

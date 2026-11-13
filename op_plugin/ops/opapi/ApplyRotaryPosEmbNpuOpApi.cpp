@@ -37,8 +37,8 @@ std::tuple<at::Tensor, at::Tensor> npu_apply_rotary_pos_emb(
     const at::Tensor& key,
     const at::Tensor& cos,
     const at::Tensor& sin,
-    c10::string_view layout,
-    c10::string_view rotary_mode) {
+    std::string_view layout,
+    std::string_view rotary_mode) {
   std::string layout_str = std::string(layout);
   std::string rotary_mode_str = std::string(rotary_mode);
   TORCH_CHECK(

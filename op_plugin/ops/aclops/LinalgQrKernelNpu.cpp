@@ -42,12 +42,12 @@ std::tuple<c10::SmallVector<int64_t, N>, c10::SmallVector<int64_t, N>> qr_npu_ou
     return std::tie(q_size, r_size);
 }
 
-inline bool mode_valid(c10::string_view mode)
+inline bool mode_valid(std::string_view mode)
 {
     return (mode == "reduced" || mode == "complete" || mode == "r");
 }
 
-void check_linalg_qr_input(const at::Tensor& self, c10::string_view mode)
+void check_linalg_qr_input(const at::Tensor& self, std::string_view mode)
 {
     constexpr int MATRIX_DIM = 2;
     TORCH_CHECK(
@@ -84,7 +84,7 @@ std::tuple<at::Tensor&, at::Tensor&> qr_out_npu_nocheck(
 
 std::tuple<at::Tensor&, at::Tensor&> linalg_qr_out(
     const at::Tensor& self,
-    c10::string_view mode,
+    std::string_view mode,
     at::Tensor& Q,
     at::Tensor& R)
 {
@@ -125,7 +125,7 @@ std::tuple<at::Tensor&, at::Tensor&> linalg_qr_out(
 
 std::tuple<at::Tensor, at::Tensor> linalg_qr(
     const at::Tensor& self,
-    c10::string_view mode)
+    std::string_view mode)
 {
     check_linalg_qr_input(self, mode);
     bool some = (mode == "complete") ? false : true;

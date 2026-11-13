@@ -135,7 +135,7 @@ std::tuple<at::Tensor, at::Tensor> _native_multi_head_attention(
         c10::optional<at::Tensor> atten_mask = prepare_mha_attn_mask(mask, mask_type, B, num_head, S);
         c10::optional<at::Tensor> nulltensor = c10::nullopt;
         c10::OptionalIntArrayRef nulllen = c10::nullopt;
-        c10::string_view input_layout = "BNSD";
+        std::string_view input_layout = "BNSD";
         double scale = 1.0 / std::sqrt(static_cast<double>(head_dim));
         double keep_prob = 1.0;
         // Mirror the SDPA accuracy knob: use high precision softmax when a mask is applied on multi-token sequences.

@@ -19,7 +19,7 @@
 
 namespace acl_op {
 
-at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, c10::string_view approximate)
+at::Tensor gelu_backward(const at::Tensor& grad_output, const at::Tensor& self, std::string_view approximate)
 {
     return gelu_backward_common_nocheck(grad_output, self);
 }

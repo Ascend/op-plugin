@@ -29,7 +29,7 @@ std::tuple<at::Tensor, at::Tensor> npu_scatter_pa_kv_cache_functional(
     const c10::optional<at::Tensor>& compress_lens,
     const c10::optional<at::Tensor>& compress_seq_offsets,
     const c10::optional<at::Tensor>& seq_lens,
-    c10::optional<c10::string_view> cache_mode) {
+    c10::optional<std::string_view> cache_mode) {
   char* cache_mode_ptr = cache_mode.has_value() ? const_cast<char*>(cache_mode.value().data()) : nullptr;
   char* scatter_mode = "None";
   c10::SmallVector<int64_t, op_infer::SIZE> strides_size = {1, 1};
@@ -64,7 +64,7 @@ void npu_scatter_pa_kv_cache(
     const c10::optional<at::Tensor>& compress_lens,
     const c10::optional<at::Tensor>& compress_seq_offsets,
     const c10::optional<at::Tensor>& seq_lens,
-    c10::optional<c10::string_view> cache_mode) {
+    c10::optional<std::string_view> cache_mode) {
   static char default_cache_mode[] = "Norm";
   char* cache_mode_ptr = cache_mode.has_value() ? const_cast<char*>(cache_mode.value().data()) : default_cache_mode;
   char* scatter_mode = "None";

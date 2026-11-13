@@ -31,7 +31,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_rms_norm_dynamic_mx_quant(
     const c10::optional<at::Tensor>& beta,
     double epsilon,
     const int64_t scale_alg,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t dst_type) {
   // output
   at::Tensor y;

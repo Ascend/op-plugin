@@ -77,7 +77,7 @@ tensor_list npu_top_k_top_p_sample(
     const c10::optional<at::Tensor>& min_ps_option,
     c10::optional<int64_t> ks_max_potion,
     c10::optional<bool> input_is_logits_option,
-    c10::optional<c10::string_view> post_sample_option,
+    c10::optional<std::string_view> post_sample_option,
     c10::optional<at::Generator> generator) {
   const at::Tensor& q = c10::value_or_else(q_option, [] { return at::Tensor(); });
   const at::Tensor& min_ps = c10::value_or_else(min_ps_option, [] { return at::Tensor(); });
@@ -86,7 +86,7 @@ tensor_list npu_top_k_top_p_sample(
   int64_t top_k_guess = c10::value_or_else(top_k_guess_option, [] { return 32; });
   int64_t ks_max = c10::value_or_else(ks_max_potion, [] { return 1024; });
   bool input_is_logits = c10::value_or_else(input_is_logits_option, [] { return true; });
-  c10::string_view post_sample = post_sample_option.value_or("qSample");
+  std::string_view post_sample = post_sample_option.value_or("qSample");
 
   /* output shape construct */
   auto logits_size = logits.sizes();

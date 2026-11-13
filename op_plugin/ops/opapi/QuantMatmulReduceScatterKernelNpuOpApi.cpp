@@ -47,12 +47,12 @@ const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16, 32, 64};
 static const int DIM_TWO = 2;
 static const int64_t FP4_FACTOR = 2;
 std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor &self, const at::Tensor &x2,
-    c10::string_view hcom, int64_t world_size, c10::string_view reduce_op, const c10::optional<at::Tensor> &bias,
+    std::string_view hcom, int64_t world_size, std::string_view reduce_op, const c10::optional<at::Tensor> &bias,
     const c10::optional<at::Tensor> &x1_scale, const c10::optional<at::Tensor> &x2_scale,
     const c10::optional<at::Tensor> &quant_scale, int64_t block_size, int64_t comm_turn,
     c10::OptionalIntArrayRef group_sizes, bool amax_output, c10::optional<int64_t> y_dtype,
     c10::optional<int64_t> x1_dtype, c10::optional<int64_t> x2_dtype, c10::optional<int64_t> x1_scale_dtype,
-    c10::optional<int64_t> x2_scale_dtype, c10::optional<c10::string_view> comm_mode) {
+    c10::optional<int64_t> x2_scale_dtype, c10::optional<std::string_view> comm_mode) {
     TORCH_CHECK(SUPPORT_WORLD_SIZE_LIST.find(world_size) != SUPPORT_WORLD_SIZE_LIST.end(),
         "world_size should be in [2, 4, 8, 16, 32, 64], but the actual value is ", world_size,
         OPS_ERROR(ErrCode::VALUE));
@@ -62,9 +62,9 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_mm_reduce_scatter(const at::Tensor 
     TORCH_CHECK(world_size != 0, "world_size cannot be zero", OPS_ERROR(ErrCode::PARAM));
     TORCH_CHECK(self.size(0) % world_size == 0, "The M-axis in input of Matmul should be be divisible by world_size",
         OPS_ERROR(ErrCode::PARAM));
-    c10::string_view default_comm_mode =
+    std::string_view default_comm_mode =
         op_plugin::utils::is_lt_soc_version_950() ? "aiv" : "ai_cpu";
-    c10::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
+    std::string_view comm_mode_value = comm_mode.value_or(default_comm_mode);
     std::string hcom_str = std::string(hcom);
     std::string reduce_op_str = std::string(reduce_op);
     std::string comm_mode_str = std::string(comm_mode_value);

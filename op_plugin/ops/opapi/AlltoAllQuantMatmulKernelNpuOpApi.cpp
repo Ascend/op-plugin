@@ -36,7 +36,7 @@ const std::set<int> SUPPORT_WORLD_SIZE_LIST{2, 4, 8, 16};
 std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(
     const at::Tensor& x1,
     const at::Tensor& x2,
-    c10::string_view hcom,
+    std::string_view hcom,
     int64_t world_size,
     bool all2all_out_flag,
     const c10::optional<at::Tensor>& bias,
@@ -59,7 +59,7 @@ std::tuple<at::Tensor, at::Tensor> npu_all_to_all_quant_matmul(
     c10::optional<int64_t> output_scale_dtype,
     c10::optional<int64_t> comm_scale_dtype,
     c10::optional<int64_t> y_dtype,
-    c10::optional<c10::string_view> comm_mode) {
+    c10::optional<std::string_view> comm_mode) {
   // 校验x1x2的shape, 2维(m, k) or (k, n)
   TORCH_CHECK(
       x1.dim() == TWO_DIMS,

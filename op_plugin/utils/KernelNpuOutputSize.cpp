@@ -2024,7 +2024,7 @@ at::SmallVector<int64_t, SIZE> upsample_nearest_exact2d_output_size_npu(
 
 at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_loss_output_size(
     const at::Tensor& input,
-    c10::string_view reduction) {
+    std::string_view reduction) {
   at::SmallVector<int64_t, SIZE> outputSize;
   if (reduction == "none") {
     outputSize = {input.size(0)};
@@ -2036,7 +2036,7 @@ at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_loss_output_size(
 
 at::SmallVector<int64_t, SIZE> npu_cross_entropy_loss_zloss_output_size(
     const at::Tensor& input,
-    c10::string_view reduction,
+    std::string_view reduction,
     bool return_zloss) {
   at::SmallVector<int64_t, SIZE> outputSize;
   if (return_zloss) {
@@ -2200,7 +2200,7 @@ c10::SmallVector<int64_t, SIZE> npu_nsa_compress_attention_infer_out_size(
     const at::Tensor& query,
     const at::Tensor& value,
     int64_t key_value_head_num,
-    c10::string_view layout) {
+    std::string_view layout) {
   std::string input_layout = std::string(layout);
   TORCH_CHECK(
       input_layout == "TND" || input_layout == "BSND",
@@ -2223,7 +2223,7 @@ c10::SmallVector<int64_t, SIZE> npu_nsa_compress_attention_infer_topk_out_size(
     const at::Tensor& query,
     int64_t key_value_head_num,
     int64_t select_block_count,
-    c10::string_view layout) {
+    std::string_view layout) {
   std::string input_layout = std::string(layout);
   TORCH_CHECK(
       input_layout == "TND" || input_layout == "BSND",
@@ -2246,7 +2246,7 @@ c10::SmallVector<int64_t, SIZE> npu_nsa_select_attention_infer_out_size(
     const at::Tensor& value,
     int64_t head_num,
     int64_t key_value_head_num,
-    c10::string_view layout) {
+    std::string_view layout) {
   std::string input_layout = std::string(layout);
   TORCH_CHECK(
       input_layout == "BSH" || input_layout == "BSND" || input_layout == "TND",

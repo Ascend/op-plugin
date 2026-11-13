@@ -29,7 +29,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_swiglu_mx_quant_w
     const at::Tensor& x,
     const c10::optional<at::Tensor>& group_index,
     bool activate_left,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t scale_alg,
     int64_t dst_type,
     double dst_type_max) {

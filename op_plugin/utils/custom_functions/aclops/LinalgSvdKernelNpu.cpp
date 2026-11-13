@@ -154,7 +154,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _svd_helper(const at::Tensor& sel
   return std::make_tuple(U_working_copy, S_working_copy, VT_working_copy.mH());
 }
 
-static void linalg_check_errors(const at::Tensor& infos, const c10::string_view api_name, bool is_matrix) {
+static void linalg_check_errors(const at::Tensor& infos, const std::string_view api_name, bool is_matrix) {
   TORCH_CHECK(infos.scalar_type() == at::kInt, OPS_ERROR(ErrCode::TYPE));
   TORCH_CHECK(infos.is_contiguous(), OPS_ERROR(ErrCode::VALUE));
   if (infos.is_meta()) {

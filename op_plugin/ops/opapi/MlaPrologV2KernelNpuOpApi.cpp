@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_mla_p
     const c10::optional<at::Tensor>& smooth_scales_cq,
     double rmsnorm_epsilon_cq,
     double rmsnorm_epsilon_ckv,
-    c10::string_view cache_mode) {
+    std::string_view cache_mode) {
   TORCH_CHECK(
       !c10_npu::IsAclnnOnly(),
       "npu_mla_prolog_v2 not support on this soc version, please use npu_mla_prolog_v3",

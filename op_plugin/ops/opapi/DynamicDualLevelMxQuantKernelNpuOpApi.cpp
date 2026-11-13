@@ -27,7 +27,7 @@ constexpr int64_t FP4_IN_UINT8_NUM = 2;
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_dynamic_dual_level_mx_quant(
     const at::Tensor& input,
     const c10::optional<at::Tensor>& smooth_scale,
-    c10::string_view round_mode) {
+    std::string_view round_mode) {
   at::Tensor y;
   at::Tensor level0_scale;
   at::Tensor level1_scale;

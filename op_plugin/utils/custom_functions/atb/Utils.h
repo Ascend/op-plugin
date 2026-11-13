@@ -16,6 +16,7 @@
 
 #include <ATen/ATen.h>
 #include <acl/acl.h>
+#include <string_view>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
 #include "op_plugin/third_party/atb/inc/atb_infer.h"
 
@@ -81,10 +82,10 @@ aclFormat GetFormatForAtb(const at::Tensor& at_tensor);
 template <typename MapType>
 inline int get_op_mode(
     const MapType& mode_map,
-    c10::optional<c10::string_view> mode_opt,
-    c10::string_view default_mode,
+    c10::optional<std::string_view> mode_opt,
+    std::string_view default_mode,
     const char* mode_name) {
-  c10::string_view mode_str = mode_opt.value_or(default_mode);
+  std::string_view mode_str = mode_opt.value_or(default_mode);
   auto it = mode_map.find(mode_str);
   TORCH_CHECK(it != mode_map.end(), "Unsupported ", mode_name, " value: '", mode_str, "'");
   return it->second;

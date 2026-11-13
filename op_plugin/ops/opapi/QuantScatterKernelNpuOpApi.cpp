@@ -30,9 +30,9 @@ at::Tensor npu_quant_scatter(
     const c10::optional<at::Tensor>& quant_zero_points,
     int64_t axis,
     int64_t quant_axis,
-    c10::string_view reduce,
+    std::string_view reduce,
     c10::optional<int64_t> dst_type,
-    c10::optional<c10::string_view> round_mode) {
+    c10::optional<std::string_view> round_mode) {
   at::Tensor result = self.clone();
   int64_t reduction = 1;
   static const bool isAclnnQuantScatterV2Available =
@@ -78,9 +78,9 @@ at::Tensor& npu_quant_scatter_(
     const c10::optional<at::Tensor>& quant_zero_points,
     int64_t axis,
     int64_t quant_axis,
-    c10::string_view reduce,
+    std::string_view reduce,
     c10::optional<int64_t> dst_type,
-    c10::optional<c10::string_view> round_mode) {
+    c10::optional<std::string_view> round_mode) {
   int64_t reduction = 1;
   static const bool isAclnnQuantScatterV2Available =
       check_aclnn_kernel_available("aclnnInplaceQuantScatterV2");

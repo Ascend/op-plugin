@@ -33,9 +33,9 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_rope_
     const c10::optional<at::Tensor>& offset_k_optional,
     const c10::optional<at::Tensor>& offset_v_optional,
     int64_t quant_mode,
-    c10::string_view input_layout,
+    std::string_view input_layout,
     const bool kv_output,
-    c10::string_view cache_mode) {
+    std::string_view cache_mode) {
   TORCH_CHECK((size_splits[0] >= 0), "size_splits[0] should not less than 0" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((x.dim() == 3 || x.dim() == 2), "3D or 2D tensor expected for input x" + OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK((v_cache_ref.dim() == 4), "4D tensor expected for input cache" + OPS_ERROR(ErrCode::PARAM));

@@ -30,7 +30,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> _npu_swiglu_backward_
     const at::Tensor& y_grad,
     const c10::optional<at::Tensor>& group_index,
     bool activate_left,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t scale_alg,
     int64_t dst_type,
     double dst_type_max) {

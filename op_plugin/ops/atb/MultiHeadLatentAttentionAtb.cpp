@@ -18,22 +18,22 @@
 namespace atb {
 
 namespace {
-std::unordered_map<c10::string_view, int> mask_type_map = {
+std::unordered_map<std::string_view, int> mask_type_map = {
     {"undefined", 0},
     {"mask_type_spec", 1},
     {"mask_type_free", 2}};
 
-std::unordered_map<c10::string_view, int> calc_type_map = {
+std::unordered_map<std::string_view, int> calc_type_map = {
     {"calc_type_undefined", 0},
     {"calc_type_spec", 1},
     {"calc_type_ring", 2}};
 
-std::unordered_map<c10::string_view, int> cache_mode_map = {{"krope_ctkv", 1}, {"int8_nzcache", 2}, {"nzcache", 3}};
+std::unordered_map<std::string_view, int> cache_mode_map = {{"krope_ctkv", 1}, {"int8_nzcache", 2}, {"nzcache", 3}};
 
 std::tuple<int, int, int> get_mla_mode(
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt) {
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt) {
   int mask_type = atb::utils::get_op_mode(mask_type_map, mask_type_opt, "undefined", "mask_type");
   int calc_type = atb::utils::get_op_mode(calc_type_map, calc_type_opt, "calc_type_undefined", "calc_type");
   int cache_mode = atb::utils::get_op_mode(cache_mode_map, cache_mode_opt, "krope_ctkv", "cache_mode");
@@ -55,9 +55,9 @@ at::Tensor npu_multi_head_latent_attention(
     c10::OptionalArrayRef<c10::SymInt> qseqlen,
     const c10::optional<at::Tensor>& qk_descale,
     const c10::optional<at::Tensor>& pv_descale,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt) {
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));
   at::Tensor output = at::empty(q_nope.sizes(), q_rope.options());
   at::Tensor lse;
@@ -106,9 +106,9 @@ at::Tensor& npu_multi_head_latent_attention_out(
     c10::OptionalArrayRef<c10::SymInt> qseqlen,
     const c10::optional<at::Tensor>& qk_descale,
     const c10::optional<at::Tensor>& pv_descale,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt,
     at::Tensor& output) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));
   float qkScale_float = static_cast<float>(qk_scale);
@@ -158,9 +158,9 @@ std::tuple<at::Tensor, at::Tensor> npu_multi_head_latent_attention_lse(
     c10::OptionalArrayRef<c10::SymInt> qseqlen,
     const c10::optional<at::Tensor>& qk_descale,
     const c10::optional<at::Tensor>& pv_descale,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt,
     const c10::optional<at::Tensor>& workspace) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));
   at::Tensor output = at::empty(q_nope.sizes(), q_rope.options());
@@ -243,9 +243,9 @@ at::Tensor _npu_multi_head_latent_attention_lse_get_workspace(
     c10::OptionalArrayRef<c10::SymInt> qseqlen,
     const c10::optional<at::Tensor>& qk_descale,
     const c10::optional<at::Tensor>& pv_descale,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt) {
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt) {
   const c10::OptionalDeviceGuard device_guard(device_of(q_nope));
   at::Tensor output = at::empty(q_nope.sizes(), q_rope.options());
   at::Tensor lse;
@@ -299,9 +299,9 @@ std::tuple<at::Tensor&, at::Tensor&> npu_multi_head_latent_attention_lse_out(
     c10::OptionalArrayRef<c10::SymInt> qseqlen,
     const c10::optional<at::Tensor>& qk_descale,
     const c10::optional<at::Tensor>& pv_descale,
-    c10::optional<c10::string_view> mask_type_opt,
-    c10::optional<c10::string_view> calc_type_opt,
-    c10::optional<c10::string_view> cache_mode_opt,
+    c10::optional<std::string_view> mask_type_opt,
+    c10::optional<std::string_view> calc_type_opt,
+    c10::optional<std::string_view> cache_mode_opt,
     const c10::optional<at::Tensor>& workspace,
     at::Tensor& output,
     at::Tensor& lse) {

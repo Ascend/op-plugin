@@ -96,7 +96,7 @@ static void check_dtype_itemsize_compatible(
 std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     const at::Tensor& self,
     const at::Tensor& x2,
-    c10::string_view hcom,
+    std::string_view hcom,
     int64_t world_size,
     const c10::optional<at::Tensor>& bias,
     const c10::optional<at::Tensor>& x1_scale,
@@ -113,7 +113,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
     c10::optional<int64_t> x2_dtype,
     c10::optional<int64_t> x1_scale_dtype,
     c10::optional<int64_t> x2_scale_dtype,
-    c10::optional<c10::string_view> comm_mode) {
+    c10::optional<std::string_view> comm_mode) {
   TORCH_CHECK(
       world_size >= MIN_SUPPORT_WORLD_SIZE &&
           world_size <= MAX_SUPPORT_WORLD_SIZE &&
@@ -206,7 +206,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_all_gather_quant_mm(
   TensorWrapper x1_scale_wrapper = make_wrapper(x1_scale_real, x1_scale_dtype);
   check_dtype_itemsize_compatible(x2_scale_real, x2_scale_dtype, "x2_scale");
   TensorWrapper x2_scale_wrapper = make_wrapper(x2_scale_real, x2_scale_dtype);
-  c10::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
+  std::string_view comm_mode_value = comm_mode.value_or("ai_cpu");
   char* comm_mode_ptr = const_cast<char*>(comm_mode_value.data());
   EXEC_NPU_CMD(
       aclnnAllGatherMatmulV2,

@@ -40,7 +40,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_sparse_lightning_
     const c10::optional<at::Tensor>& key_rope,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_qlen,
     c10::OptionalArrayRef<c10::SymInt> actual_seq_klen,
-    c10::optional<c10::string_view> layout,
+    c10::optional<std::string_view> layout,
     c10::optional<int64_t> sparse_mode,
     c10::optional<int64_t> pre_tokens,
     c10::optional<int64_t> next_tokens,
@@ -52,7 +52,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_sparse_lightning_
   auto actual_seq_klen_const =
       actual_seq_klen.has_value() ? c10::asIntArrayRefUnchecked(actual_seq_klen.value()) : at::IntArrayRef{};
   const at::Tensor& sinks_const = sinks.value_or(at::Tensor());
-  c10::string_view layout_str = layout.value_or("BSND");
+  std::string_view layout_str = layout.value_or("BSND");
   char* layout_ptr = const_cast<char*>(layout_str.data());
   int64_t sparse_mode_const = sparse_mode.value_or(3);
   int64_t pre_tokens_const = pre_tokens.value_or(9223372036854775807);

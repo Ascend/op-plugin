@@ -23,7 +23,7 @@ std::tuple<at::Tensor&, at::Tensor&, at::Tensor&> _linalg_svd_out(
     const at::Tensor& A,
     bool full_matrices,
     bool compute_uv,
-    c10::optional<c10::string_view> driver,
+    c10::optional<std::string_view> driver,
     at::Tensor& U,
     at::Tensor& S,
     at::Tensor& Vh)
@@ -35,7 +35,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> _linalg_svd(
     const at::Tensor& A,
     bool full_matrices,
     bool compute_uv,
-    c10::optional<c10::string_view> driver)
+    c10::optional<std::string_view> driver)
 {
     return _svd_helper(A, !full_matrices, compute_uv);
 }

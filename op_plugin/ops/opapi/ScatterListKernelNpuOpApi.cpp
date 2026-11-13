@@ -25,7 +25,7 @@ std::vector<at::Tensor> npu_scatter_list(
     const at::Tensor& indice,
     const at::Tensor& updates,
     const c10::optional<at::Tensor>& mask,
-    c10::string_view reduce,
+    std::string_view reduce,
     int64_t axis) {
   std::string reduce_str = std::string(reduce);
   char* reduce_ptr = const_cast<char*>(reduce_str.c_str());
@@ -46,7 +46,7 @@ void npu_scatter_list_(
     const at::Tensor& indice,
     const at::Tensor& updates,
     const c10::optional<at::Tensor>& mask,
-    c10::string_view reduce,
+    std::string_view reduce,
     int64_t axis) {
   std::string reduce_str = std::string(reduce);
   char* reduce_ptr = const_cast<char*>(reduce_str.c_str());

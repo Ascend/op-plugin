@@ -29,8 +29,8 @@ static void check_params(
     const at::Tensor& value,
     const c10::OptionalIntArrayRef actual_seq_lengths,
     const c10::OptionalIntArrayRef actual_seq_lengths_kv,
-    c10::string_view q_input_layout,
-    c10::string_view kv_input_layout) {
+    std::string_view q_input_layout,
+    std::string_view kv_input_layout) {
   // Q/K/V must use the same dtype.
   TORCH_CHECK(
       query.scalar_type() == key.scalar_type() && key.scalar_type() == value.scalar_type(),
@@ -79,8 +79,8 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor> npu_block_sparse_attention_backwa
     const c10::OptionalIntArrayRef block_shape,
     const c10::OptionalIntArrayRef actual_seq_lengths,
     const c10::OptionalIntArrayRef actual_seq_lengths_kv,
-    c10::string_view q_input_layout,
-    c10::string_view kv_input_layout,
+    std::string_view q_input_layout,
+    std::string_view kv_input_layout,
     int64_t num_key_value_heads,
     double scale_value) {
   check_params(query, key, value, actual_seq_lengths, actual_seq_lengths_kv, q_input_layout, kv_input_layout);

@@ -14,7 +14,7 @@
 
 namespace op_infer {
 
-int64_t npu_gelu_approximate_mode(c10::string_view approximate) {
+int64_t npu_gelu_approximate_mode(std::string_view approximate) {
   std::string approximate_str = std::string(approximate);
   TORCH_CHECK(
       approximate_str == "tanh" || approximate_str == "none",
@@ -24,7 +24,7 @@ int64_t npu_gelu_approximate_mode(c10::string_view approximate) {
   return approximate_mode;
 }
 
-std::string npu_gelu_approximate_str(c10::string_view approximate) {
+std::string npu_gelu_approximate_str(std::string_view approximate) {
   std::string approximate_str = std::string(approximate);
   TORCH_CHECK(
       approximate_str == "tanh" || approximate_str == "none",

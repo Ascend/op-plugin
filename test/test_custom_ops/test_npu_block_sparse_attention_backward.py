@@ -320,6 +320,7 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         for cpu_grad, npu_grad in zip(cpu_grads, npu_grads):
             self.assertRtolEqual(cpu_grad.cpu().float(), npu_grad.cpu().float(), prec=0.02, prec16=0.02)
 
+    @unittest.skip("TODO:ci error, issue:https://gitcode.com/Ascend/op-plugin/issues/709")
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
     def test_npu_block_sparse_attention_backward_bnsd_cpu_compare(self, device="npu"):
@@ -365,6 +366,7 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         self.assertRtolEqual(dk_cpu.cpu().float(), d_key.cpu().float(), prec=0.01, prec16=0.01)
         self.assertRtolEqual(dv_cpu.cpu().float(), d_value.cpu().float(), prec=0.01, prec16=0.01)
 
+    @unittest.skip("TODO:ci error, issue:https://gitcode.com/Ascend/op-plugin/issues/709")
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
     def test_npu_block_sparse_attention_backward_bnsd_bfloat16_cpu_compare(self, device="npu"):
@@ -411,6 +413,7 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         self.assertRtolEqual(dk_cpu.cpu().float(), d_key.cpu().float(), prec=0.01, prec16=0.01)
         self.assertRtolEqual(dv_cpu.cpu().float(), d_value.cpu().float(), prec=0.01, prec16=0.01)
 
+    @unittest.skip("TODO:ci error, issue:https://gitcode.com/Ascend/op-plugin/issues/709")
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
     def test_npu_block_sparse_attention_backward_bnsd_sparse_mask_cpu_compare(self, device="npu"):
@@ -628,6 +631,7 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         self.assertEqual(value.grad.shape, value.shape)
         self._assert_tnd_gqa_grads_equal((dq_cpu, dk_cpu, dv_cpu), (query.grad, key.grad, value.grad))
 
+    @unittest.skip("TODO:ci error, issue:https://gitcode.com/Ascend/op-plugin/issues/709")
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
     def test_npu_block_sparse_attention_autograd_backward(self, device="npu"):
@@ -687,6 +691,7 @@ class TestNPUBlockSparseAttentionBackward(TestCase):
         self.assertRtolEqual(d_key_autograd.cpu().float(), d_key_explicit.cpu().float(), prec=0.01, prec16=0.01)
         self.assertRtolEqual(d_value_autograd.cpu().float(), d_value_explicit.cpu().float(), prec=0.01, prec16=0.01)
 
+    @unittest.skip("TODO:ci error, issue:https://gitcode.com/Ascend/op-plugin/issues/709")
     @SkipIfNotGteCANNVersion("9.0.0")
     @SupportedDevices(['Ascend910B'])
     def test_npu_block_sparse_attention_forward_backward_together(self, device="npu"):

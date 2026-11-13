@@ -22,12 +22,12 @@ namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 using small_vector_list = std::tuple<c10::SmallVector<int64_t, op_infer::N>, c10::SmallVector<int64_t, op_infer::N>>;
 
-static inline bool mode_valid(c10::string_view mode)
+static inline bool mode_valid(std::string_view mode)
 {
     return (mode == "reduced" || mode == "complete" || mode == "r");
 }
 
-static void check_linalg_qr_input(const at::Tensor& self, c10::string_view mode)
+static void check_linalg_qr_input(const at::Tensor& self, std::string_view mode)
 {
     constexpr int MATRIX_DIM = 2;
     TORCH_CHECK(
@@ -44,7 +44,7 @@ static void check_linalg_qr_input(const at::Tensor& self, c10::string_view mode)
         OPS_ERROR(ErrCode::PARAM));
 }
 
-static inline int64_t get_mode(c10::string_view mode)
+static inline int64_t get_mode(std::string_view mode)
 {
     if (mode == "complete") {
         // complete模式对应输入为1
@@ -57,7 +57,7 @@ static inline int64_t get_mode(c10::string_view mode)
     return 0;
 }
 
-static small_vector_list linalg_qr_infer_shape(const at::Tensor &self, c10::string_view mode)
+static small_vector_list linalg_qr_infer_shape(const at::Tensor &self, std::string_view mode)
 {
     int m = self.size(-2);
     int n = self.size(-1);
@@ -79,7 +79,7 @@ static small_vector_list linalg_qr_infer_shape(const at::Tensor &self, c10::stri
     return std::tie(Qsize, Rsize);
 }
 
-std::tuple<at::Tensor &, at::Tensor &> linalg_qr_out(const at::Tensor &self, c10::string_view mode, at::Tensor &Q,
+std::tuple<at::Tensor &, at::Tensor &> linalg_qr_out(const at::Tensor &self, std::string_view mode, at::Tensor &Q,
                                                      at::Tensor &R)
 {
     DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr_out(self, mode, Q, R));
@@ -93,7 +93,7 @@ std::tuple<at::Tensor &, at::Tensor &> linalg_qr_out(const at::Tensor &self, c10
     return std::tie(Q, R);
 }
 
-std::tuple<at::Tensor, at::Tensor> linalg_qr(const at::Tensor &self, c10::string_view mode)
+std::tuple<at::Tensor, at::Tensor> linalg_qr(const at::Tensor &self, std::string_view mode)
 {
     DO_COMPATIBILITY(aclnnLinalgQr, acl_op::linalg_qr(self, mode));
     check_linalg_qr_input(self, mode);

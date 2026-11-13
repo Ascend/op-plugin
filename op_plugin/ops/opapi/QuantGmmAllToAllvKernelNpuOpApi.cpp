@@ -62,7 +62,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(
     const at::Tensor& gmm_weight,
     const at::Tensor& gmm_x_scale,
     const at::Tensor& gmm_weight_scale,
-    c10::string_view hcom,
+    std::string_view hcom,
     int64_t ep_world_size,
     at::IntArrayRef send_counts,
     at::IntArrayRef recv_counts,
@@ -90,7 +90,7 @@ std::tuple<at::Tensor, at::Tensor> npu_quant_gmm_alltoallv(
     c10::optional<int64_t> mm_weight_scale_dtype,
     c10::optional<int64_t> comm_quant_dtype,
     c10::optional<int64_t> mm_y_dtype,
-    c10::optional<c10::string_view> comm_mode) {
+    c10::optional<std::string_view> comm_mode) {
   // gmm_x_quant_mode
   TORCH_CHECK(
       gmm_x_quant_mode.has_value(),

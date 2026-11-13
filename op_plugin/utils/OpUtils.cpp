@@ -59,7 +59,7 @@ std::string get_vector_str(const std::vector<int64_t> &vec)
     return shape_str;
 }
 
-int64_t get_rotary_mode(c10::string_view mode)
+int64_t get_rotary_mode(std::string_view mode)
 {
     if (mode == "half") {
         // ROTATE_HALF模式对应输入为0

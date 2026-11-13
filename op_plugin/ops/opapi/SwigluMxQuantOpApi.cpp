@@ -32,7 +32,7 @@ std::tuple<at::Tensor, at::Tensor> npu_swiglu_mx_quant(
     int64_t group_mode,
     int64_t axis,
     int64_t dst_type,
-    c10::string_view round_mode,
+    std::string_view round_mode,
     int64_t scale_alg,
     double max_dtype_value) {
   TORCH_CHECK(x.dim() > 1, "x dim should larger than 1", OPS_ERROR(ErrCode::PARAM));

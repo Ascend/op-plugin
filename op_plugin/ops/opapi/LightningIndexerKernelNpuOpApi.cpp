@@ -63,8 +63,8 @@ std::tuple<at::Tensor, at::Tensor> npu_lightning_indexer(
     const at::Tensor &query, const at::Tensor &key, const at::Tensor &weights,
     const c10::optional<at::Tensor> &actual_seq_lengths_query,
     const c10::optional<at::Tensor> &actual_seq_lengths_key,
-    const c10::optional<at::Tensor> &block_table, c10::string_view layout_query,
-    c10::string_view layout_key, int64_t sparse_count, int64_t sparse_mode,
+    const c10::optional<at::Tensor> &block_table, std::string_view layout_query,
+    std::string_view layout_key, int64_t sparse_count, int64_t sparse_mode,
     int64_t pre_tokens, int64_t next_tokens, bool return_value)
 {
     TORCH_CHECK(query.numel() > 0, "Tensor query is empty.")

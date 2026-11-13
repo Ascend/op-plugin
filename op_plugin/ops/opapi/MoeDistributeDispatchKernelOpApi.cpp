@@ -24,12 +24,12 @@ namespace op_api {
     const int DIM_TWO = 2;
 
 tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &expert_ids,
-                                        c10::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
+                                        std::string_view group_ep, int64_t ep_world_size, int64_t ep_rank_id,
                                         int64_t moe_expert_num,
                                         const c10::optional<at::Tensor> &scales,
                                         const c10::optional<at::Tensor> &x_active_mask,
                                         const c10::optional<at::Tensor> &expert_scales,
-                                        c10::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
+                                        std::string_view group_tp, int64_t tp_world_size, int64_t tp_rank_id,
                                         int64_t expert_shard_type, int64_t shared_expert_num, int64_t shared_expert_rank_num,
                                         int64_t quant_mode, int64_t global_bs, int64_t expert_token_nums_type)
 {
@@ -89,7 +89,7 @@ tensor_list npu_moe_distribute_dispatch(const at::Tensor &x, const at::Tensor &e
         expand_x = npu_preparation::apply_tensor_without_format({a * tp_world_size, h}, x.options().dtype(output_dtype));
         dynamic_scales = npu_preparation::apply_tensor_without_format({a * tp_world_size}, x.options().dtype(at::kFloat));
     }
-    
+
     at::Tensor expand_idx = npu_preparation::apply_tensor_without_format({n * k}, x.options().dtype(at::kInt));
     at::Tensor expert_token_nums = npu_preparation::apply_tensor_without_format({local_moe_expert_num}, x.options().dtype(at::kLong));
     at::Tensor ep_recv_counts = npu_preparation::apply_tensor_without_format({ep_recv_cnt_num}, x.options().dtype(at::kInt));

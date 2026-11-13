@@ -22,7 +22,7 @@ using npu_preparation = at_npu::native::OpPreparation;
 static const int MODE_TRUNC = 1;
 static const int MODE_FLOOR = 2;
 
-static void check_rounding_mode_npu(c10::optional<c10::string_view> rounding_mode)
+static void check_rounding_mode_npu(c10::optional<std::string_view> rounding_mode)
 {
     TORCH_CHECK((!rounding_mode.has_value() || *rounding_mode == "trunc" || *rounding_mode == "floor"),
                 "div expected rounding_mode to be one of None, 'trunc', or 'floor' "
@@ -74,7 +74,7 @@ at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, at::Tensor&
     return result;
 }
 
-at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode,
+at::Tensor& div_out(const at::Tensor& self, const at::Tensor& other, c10::optional<std::string_view> rounding_mode,
                     at::Tensor& result)
 {
     DO_COMPATIBILITY(aclnnDivMods, acl_op::div_out(self, other, rounding_mode, result));
@@ -136,7 +136,7 @@ at::Tensor div(const at::Tensor& self, const at::Tensor& other) {
     return result;
 }
 
-at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode)
+at::Tensor div(const at::Tensor& self, const at::Tensor& other, c10::optional<std::string_view> rounding_mode)
 {
     DO_COMPATIBILITY(aclnnDivMods, acl_op::div(self, other, rounding_mode));
     DO_COMPATIBILITY(aclnnDivMod, acl_op::div(self, other, rounding_mode));
@@ -216,7 +216,7 @@ at::Tensor& div_(at::Tensor& self, const at::Tensor& other) {
     return self;
 }
 
-at::Tensor& div_(at::Tensor& self, const at::Tensor& other, c10::optional<c10::string_view> rounding_mode) {
+at::Tensor& div_(at::Tensor& self, const at::Tensor& other, c10::optional<std::string_view> rounding_mode) {
     DO_COMPATIBILITY(aclnnInplaceDivMods, acl_op::div_(self, other, rounding_mode));
     DO_COMPATIBILITY(aclnnInplaceDivMod, acl_op::div_(self, other, rounding_mode));
     std::vector<at::Tensor> tensor_list = {self, other};
@@ -249,7 +249,7 @@ at::Tensor div(const at::Tensor& self, const at::Scalar& other) {
     return result;
 }
 
-at::Tensor div(const at::Tensor& self, const at::Scalar& other, c10::optional<c10::string_view> rounding_mode) {
+at::Tensor div(const at::Tensor& self, const at::Scalar& other, c10::optional<std::string_view> rounding_mode) {
     DO_COMPATIBILITY(aclnnDivMods, acl_op::div(self, other, rounding_mode));
     check_rounding_mode_npu(rounding_mode);
     auto outputSize = op_infer::input_same_output_size(self);
@@ -277,7 +277,7 @@ at::Tensor& div_(at::Tensor& self, const at::Scalar& other) {
   return self;
 }
 
-at::Tensor& div_(at::Tensor& self, const at::Scalar& other, c10::optional<c10::string_view> rounding_mode) {
+at::Tensor& div_(at::Tensor& self, const at::Scalar& other, c10::optional<std::string_view> rounding_mode) {
   DO_COMPATIBILITY(aclnnInplaceDivMods, acl_op::div_(self, other, rounding_mode));
   check_rounding_mode_npu(rounding_mode);
   int mode = 0;
