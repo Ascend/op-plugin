@@ -5146,5 +5146,11 @@
   },
   "func: _npu_matmul_abft_verify(Tensor a, Tensor b, Tensor c, Tensor checksum_weight, *, float e_max=0.001) -> Tensor": {
     "version": ["all_version"]
+  },
+  "func: _fused_rms_norm(Tensor input, int[] normalized_shape, Tensor? weight, float? eps) -> (Tensor, Tensor)": {
+    "version": ["v2.9", "newest"]
+  },
+  "func: _fused_rms_norm_backward(Tensor grad_out, Tensor input, int[] normalized_shape, Tensor rstd, Tensor? weight, bool[2] output_mask) -> (Tensor, Tensor)": {
+    "version": ["v2.9", "newest"]
   }
 }
