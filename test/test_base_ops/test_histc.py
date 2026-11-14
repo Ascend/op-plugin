@@ -68,5 +68,22 @@ class TestHistc(TestCase):
         self.assertEqual(torch.histc(torch.tensor([1., 2., float("nan")], dtype=torch.float, device=device), bins=4, max=3), torch.tensor([0, 1, 1, 0], dtype=torch.float, device=device))
 
 
+    def test_histc_minmax_edge_semantics(self):
+        device = "npu"
+        actual = torch.histc(torch.empty(0, dtype=torch.float32, device=device), bins=4)
+        self.assertRtolEqual(torch.zeros(4), actual.cpu())
+
+        x = torch.full((100,), 5.0)
+        self.assertRtolEqual(torch.histc(x, bins=4, min=5.0, max=5.0),
+                             torch.histc(x.npu(), bins=4, min=5.0, max=5.0).cpu())
+
+    @SupportedDevices(['Ascend950'])
+    def test_histc_int64_scalar_inverted_range(self):
+        device = "npu"
+        big = 1 << 60
+        with self.assertRaisesRegex(RuntimeError, "max must be larger than min"):
+            torch.histc(torch.tensor([1, 2], dtype=torch.int64, device=device), bins=4, min=big + 1, max=big)
+
+
 if __name__ == "__main__":
     run_tests()

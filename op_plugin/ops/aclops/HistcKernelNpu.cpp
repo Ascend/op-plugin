@@ -14,6 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cmath>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/utils/OpAdapter.h"
 
@@ -25,13 +27,29 @@ namespace {
 at::Tensor &histc_out_nocheck(at::Tensor &result, const at::Tensor &self, int64_t bins, const at::Scalar &min,
                               const at::Scalar &max)
 {
+    double leftmostEdge = min.to<double>();
+    double rightmostEdge = max.to<double>();
+    if (leftmostEdge == rightmostEdge && self.numel() > 0) {
+        leftmostEdge = self.min().item<double>();
+        rightmostEdge = self.max().item<double>();
+    }
+    if (leftmostEdge == rightmostEdge) {
+        leftmostEdge -= 1.0;
+        rightmostEdge += 1.0;
+    }
+    TORCH_CHECK(
+        !(std::isinf(leftmostEdge) || std::isinf(rightmostEdge) || std::isnan(leftmostEdge) || std::isnan(rightmostEdge)),
+        "range of [", leftmostEdge, ", ", rightmostEdge, "] is not finite",
+        OPS_ERROR(ErrCode::VALUE));
+    TORCH_CHECK(leftmostEdge < rightmostEdge, "max must be larger than min", OPS_ERROR(ErrCode::VALUE));
+
     at_npu::native::OpCommand cmd;
     cmd.Name("Histogram")
         .Input(self)
         .Output(result)
         .Attr("bins", bins)
-        .Attr("min", min)
-        .Attr("max", max)
+        .Attr("min", at::Scalar(leftmostEdge))
+        .Attr("max", at::Scalar(rightmostEdge))
         .Run();
     return result;
 }
