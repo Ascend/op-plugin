@@ -358,9 +358,9 @@ class SelfAttentionV2Test(TestCase):
         isdecoder = 0
         heads = 12
         embeddim = 128
-        max_seq = 1024
+        max_seq = 256
         tor = 1
-        kv_seqLen = [1024]
+        kv_seqLen = [256]
         is_clamp = 0
         clamp_min = 0
         clamp_max = 0
@@ -382,7 +382,6 @@ class SelfAttentionV2Test(TestCase):
         ret = [self.q, self.k, self.v, self.mask, self.kv_seqLen, self.alibi_slopes, self.golden_out]
         return ret
 
-    @unittest.skip("skip until ATB ALiBi compress accuracy issue is resolved")
     @SupportedDevices(['Ascend910B'])
     def test_flash_attention_case_fa_encoder_nocache_bf16_alibi_compress(self):
         data = self.t_flash_attention_case_fa_encoder_nocache_bf16_alibi_compress()
