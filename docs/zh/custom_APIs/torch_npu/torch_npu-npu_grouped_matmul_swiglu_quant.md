@@ -174,10 +174,10 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch.int32`（`torch.int32`为适配用途，实际1个`torch.int32`会被解释为8个`torch_npu.int4`数据）。
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型仅支持`torch.int8`，view shape仅支持3维。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型仅支持`torch.int8`。
   <!-- end id10 -->
 
-- **group\_list**（`Tensor`）：必选参数，指示每个分组参与计算的Token个数，公式中的$groupList$。shape支持1维，长度需与weight的首轴维度（专家数E）相等，数据类型支持`torch.int64`，数据格式支持ND，支持非连续Tensor。为cumsum形式的分组索引列表，最后一个值约束了输出数据的有效部分。
+- **group\_list**（`Tensor`）：必选参数，指示每个分组参与计算的Token个数，公式中的$groupList$。shape支持1维，长度需与weight的首轴维度（专家数E）相等，必须为非负单调非递减数列，数据类型支持`torch.int64`，数据格式支持ND，支持非连续Tensor。为cumsum形式的分组索引列表，最后一个值不大于M，最后一个值约束了输出数据的有效部分。
 - **weight\_scale**（`Tensor`）：必选参数，右矩阵的量化因子，公式中的$w\_scale$。数据格式支持ND，支持非连续Tensor。
 
   <!-- npu="A3,910b" id11 -->
@@ -221,28 +221,24 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 
 <!-- npu="950" id6 -->
 - <term>Ascend 950PR&950DT系列产品</term>：
-
-  - group\_list第1维最大支持1024，即最多支持1024个group。
   - **A8W8** pertoken量化场景需满足以下约束条件：
-    - 输入和输出Tensor的数据类型组合如下；本接口仅支持表中的INT8组合。
+    - 输入和输出Tensor的数据类型组合如下：
 
       **表 1** 输入和输出Tensor的数据类型组合
 
-      | A8W8 pertoken量化场景 | x | weight | group_list | weight_scale | x_scale | bias | offset | output | output_scale |
+      | 量化场景 | x | weight | group_list | weight_scale | x_scale | bias | offset | output | output_scale |
       | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-      | INT8 | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32` | None | None | `torch.int8` | `torch.float32` |
+      | pertoken量化（K-C） | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32` | None | None | `torch.int8` | `torch.float32` |
 
-    - 输入和输出Tensor的shape组合如下；weight的物理存储格式必须为FRACTAL\_NZ格式。
+    - 输入和输出Tensor的shape组合如下：
 
       **表 2** 输入和输出Tensor的shape组合
 
-      | 支持场景 | 量化模式 | x | weight | weight_scale | x_scale | output | output_scale |
-      | --- | --- | --- | --- | --- | --- | --- | --- |
-      | 单单单 | Pertoken量化 | (M, K) | shape形如{(E, K, N)} | shape形如{(E, N)} | (M, ) | (M, N / 2) | (M, ) |
+      | 量化场景 | x | weight | weight_scale | x_scale | output | output_scale |
+      | --- | --- | --- | --- | --- | --- | --- |
+      | pertoken量化（K-C） | (M, K) | 支持非转置和转置，view shape统一为(E, K, N)，<br>非转置使用连续stride，FRACTAL_NZ storage shape为(E, ceil(N/32), ceil(K/16), 16, 32)；<br>转置使用stride (K * N, 1, K)，FRACTAL_NZ storage shape为(E, ceil(K/32), ceil(N/16), 16, 32)。 | shape形如{(E, N)} | (M, ) | (M, N / 2) | (M, ) |
 
-    - `x`仅支持非转置；`weight`支持非转置和转置，view shape统一为(E, K, N)：非转置使用连续stride，FRACTAL_NZ storage shape为(E, ceil(N/32), ceil(K/16), 16, 32)；转置使用stride (K * N, 1, K)，FRACTAL_NZ storage shape为(E, ceil(K/32), ceil(N/16), 16, 32)。
-    - N必须大于0且为64的整数倍。所有输入必须位于同一设备，bias和offset必须为None。
-    - `group_list`使用cumsum形式，最后一个值不大于M；仅比较或读取`group_list`覆盖的有效输出区域。
+    - N必须大于0且为64的整数倍。
 
 <!-- end id6 -->
 
@@ -363,23 +359,40 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 <!-- end id13 -->
 
 <!-- npu="950" id14 -->
-- <term>Ascend 950PR&950DT系列产品</term>：单算子模式调用(A8W8 pertoken perchannel场景)
+- <term>Ascend 950PR&950DT系列产品</term>：单算子模式调用（A8W8 pertoken perchannel场景）
 
     ```python
     import torch
     import torch_npu
 
-    torch.npu.config.allow_internal_format = True
-    E, M, K, N = 4, 17, 128, 256
-    x = torch.randint(-128, 128, (M, K), dtype=torch.int8, device="npu")
-    weight = torch.randint(-128, 128, (E, K, N), dtype=torch.int8, device="npu")
-    weight_nz = torch_npu.npu_format_cast(weight, 29)
-    weight_scale = torch.full((E, N), 0.01, dtype=torch.float32, device="npu")
-    x_scale = torch.full((M,), 0.01, dtype=torch.float32, device="npu")
-    group_list = torch.tensor([3, 7, 7, 17], dtype=torch.int64, device="npu")
-    output, output_scale, output_offset = torch_npu.npu_grouped_matmul_swiglu_quant(
-        x, weight_nz, group_list, weight_scale, x_scale, bias=None, offset=None)
-    # output: [17, 128], INT8；output_scale: [17], FLOAT32。
-    # output_offset仅为0维FLOAT32占位Tensor，不读取其数值。
+    torch.npu.config.allow_internal_format = True  # 必须开启，否则FRACTAL_NZ格式无法正确传递
+
+    def gen_input_data():
+        E, M, K, N = 4, 17, 128, 256
+        x = torch.randint(-128, 128, (M, K), dtype=torch.int8).npu()
+        weight = torch.randint(-128, 128, (E, K, N), dtype=torch.int8).npu()
+        # 转为FRACTAL_NZ格式，逻辑shape保持为(E, K, N)
+        weight_npu = torch_npu.npu_format_cast(weight, 29)
+        weight_scale = torch.full((E, N), 0.01, dtype=torch.float32).npu()
+        x_scale = torch.full((M,), 0.01, dtype=torch.float32).npu()
+        group_list = torch.tensor([3, 7, 7, 17], dtype=torch.int64).npu()
+        output, output_scale, output_offset = torch_npu.npu_grouped_matmul_swiglu_quant(
+            x, weight_npu, group_list, weight_scale, x_scale, bias=None, offset=None)
+        return output, output_scale, output_offset
+
+    if __name__ == "__main__":
+        output, output_scale, output_offset = gen_input_data()
+        print(output.shape, output.dtype)
+        print(output_scale.shape, output_scale.dtype)
+        print(output_offset.shape)
     ```
+
+    输出为
+
+    ```text
+    torch.Size([17, 128]) torch.int8
+    torch.Size([17]) torch.float32
+    torch.Size([])
+    ```
+
 <!-- end id14 -->
