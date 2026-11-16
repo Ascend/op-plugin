@@ -1,7 +1,7 @@
 # torch_npu.npu_group_norm_silu
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -45,37 +45,37 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - **`input`** (`Tensor`): Required. Source data Tensor. The number of dimensions must be 2 to 8, and the first dimension must be divisible by `group`. The data layout can be ND. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id4 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id4 -->
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id6 -->
 
 - **`weight`** (`Tensor`): Optional. Scaling Tensor. The number of dimensions must be 1, and the number of elements must be the same as that of the first dimension of the input `input`. The data layout can be ND. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id7 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id7 -->
     <!-- npu="910b" id8 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id9 -->
 
 - **`bias`** (`Tensor`): Optional. Offset Tensor. The number of dimensions must be 1, and the number of elements must be the same as that of the first dimension of the input `input`. The data layout can be ND. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id10 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id10 -->
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id12 -->
 
 - **`group`** (`int`): Required. Divides the first dimension of the input `input` into `group` groups. The value of `group` must be greater than 0. The data type can be `int64`.
@@ -87,37 +87,37 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
 - **`out`** (`Tensor`): The data type and shape are the same as those of `input`. ND is supported. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id13 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id13 -->
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id15 -->
 
 - **`meanOut`** (`Tensor`): The data type is the same as that of `input`, and the shape is `(N, group)`, where N is the value of dimension 0 of `input`. The data layout can be ND. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id16 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id16 -->
     <!-- npu="910b" id17 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id17 -->
     <!-- npu="950" id18 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id18 -->
 
 - **`rstdOut`** (`Tensor`): The data type is the same as that of `input`, and the shape is `(N, group)`, where N is the value of dimension 0 of `input`. The data layout can be ND. Non-contiguous Tensors are supported.
 
     <!-- npu="310p" id19 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float16`, `torch.float32`.
     <!-- end id19 -->
     <!-- npu="910b" id20 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id20 -->
     <!-- npu="950" id21 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`.
     <!-- end id21 -->
 
 ## Constraints
@@ -167,7 +167,7 @@ torch_npu.npu_group_norm_silu(input, weight, bias, group, eps=0.00001) -> (Tenso
     ```
 
 <!-- npu="950" id22 -->
-- Graph mode call: Applicable only to <term>Ascend 950PR&950DT products</term>.
+- Graph mode call: Applicable only to Ascend 950PR&950DT products.
 
     ```python
     import torch

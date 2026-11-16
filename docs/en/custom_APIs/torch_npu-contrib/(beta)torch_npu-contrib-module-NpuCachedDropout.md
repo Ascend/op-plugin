@@ -28,8 +28,24 @@ torch_npu.contrib.module.NpuCachedDropout(p, module_name=None)
 ## Parameters
 
 - **`p`** (`float`): Probability that elements are zeroed.
-- **`module_name`** (`string`): Module name.
+- **`module_name`** (`str`): Optional. Module name used to identify the module to which the current Dropout belongs. The default value is `None`. This parameter is used only as an identifier and does not participate in the actual computation logic.
 
 ## Constraints
 
 Dynamic shapes are not supported.
+
+## Example
+
+```python
+>>> import torch
+>>> import torch.nn as nn
+>>> import torch_npu
+>>> from torch_npu.contrib.module import NpuCachedDropout
+>>> dropout = NpuCachedDropout(0.5)
+>>> model = nn.Sequential(dropout).npu()
+>>> NpuCachedDropout.enable_dropout_ensemble(model)
+>>> x = torch.randn(2, 3, 4, 4).npu()
+>>> _ = model(x)
+>>> output = model(x)
+>>> print(output.shape)
+```

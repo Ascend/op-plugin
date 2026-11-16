@@ -32,7 +32,7 @@ torch_npu.save_npugraph_tensor(input, save_path=None, overwrite=False) -> None
 - **`save_path`** (`str`): Optional. Full path for saving the file.
   - Absolute and relative paths are supported. The path must include a file name. The path configuration rules are the same as those of the native PyTorch `torch.save`. The caller must ensure that the parent path exists.
   - The supported file extensions are the same as those of the native `torch.save`, including ".pt", ".pth", and ".bin".
-  - If no file save path is specified, the file is saved in the current path by default, with the default naming format "tensor_\<timestamp>\_device\_<device\_index>\_\<counter>.pt", for example, "tensor_20260101_000000_000000_device_0_0.pt".
+  - If no file save path is specified, the file is saved in the current path by default, with the default naming format "tensor_\<timestamp>\_device_\<device_index>_\<counter>.pt", for example, "tensor_20260101_000000_000000_device_0_0.pt".
   
 - **`overwrite`** (`bool`): Optional. Specifies whether to overwrite an existing file with the same name. The default value is `False`.
   - When `overwrite=False`, a counter is automatically added when a file with the same name is encountered, for example, "tensor_device_0_0.pt" and "tensor_device_0_1.pt".

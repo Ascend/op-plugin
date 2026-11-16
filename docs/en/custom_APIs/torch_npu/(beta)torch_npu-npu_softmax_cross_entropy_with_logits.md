@@ -40,13 +40,13 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 - **`features`** (`Tensor`): Required. Input features, $x_i$ in the formula. This parameter must be a matrix with shape `(1, batch_size * num_classes)`. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 2D. Empty tensors are supported. The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`.
 
   <!-- npu="910,310p" id5 -->
-  - <term>Atlas training products</term> and <term>Atlas inference products</term>: The `torch.bfloat16` data type is not supported.
+  - Atlas training products and Atlas inference products: The `torch.bfloat16` data type is not supported.
   <!-- end id5 -->
 
 - **`labels`** (`Tensor`): Required. Input labels, $y_i$ in the formula. The shape and data type must be identical to those of `features`. The data layout can be ND. Non-contiguous tensors are supported. This parameter can be up to 2D. Empty tensors are supported. The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`.
 
   <!-- npu="910,310p" id6 -->
-  - <term>Atlas training products</term> and <term>Atlas inference products</term>: The `torch.bfloat16` data type is not supported.
+  - Atlas training products and Atlas inference products: The `torch.bfloat16` data type is not supported.
   <!-- end id6 -->
 
 ## Return Values

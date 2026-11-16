@@ -1,7 +1,7 @@
 # torch_npu.npu_moe_token_permute_with_routing_map
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -19,7 +19,7 @@
 
 - API function: MoE permute computation. The token and expert labels are passed as routing_map, and tokens and optional probs are broadcast and sorted according to routing_map.
 
-- Formulas: tokens_num is the size of dimension 0 of routing_map, and expert_num is the size of dimension 1 of routing_map.
+- Formulas: tokens_num is the size of dimension 0 of routing_map, and experts_num is the size of dimension 1 of routing_map.
 
   When drop_and_pad is `False`:
 

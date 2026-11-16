@@ -46,32 +46,32 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
 - **`x1`** (`Tensor`): Required. `x1` in the matrix multiplication. The data layout can be ND. Non-contiguous Tensors are supported. When `fused_op_type` is `"relu"` or `""`, the input can have 2 to 6 dimensions. When it is `"add"` or `"mul"`, the input can be 2D (M,K) or 3D (B,M,K). In other cases, the input has 2 dimensions (M, K). In multi-dimensional scenarios, the batch dimension must be the same when the broadcast condition is not met.
 
   <!-- npu="950" id2 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type supports `torch.float16`, `torch.bfloat16`, and `torch.float32` (HF32).
+  - Ascend 950PR&950DT products: The data type supports `torch.float16`, `torch.bfloat16`, and `torch.float32` (HF32).
   <!-- end id2 -->
 
 - **`x2`** (`Tensor`): Required. `x2` in the matrix multiplication. The data layout can be ND. Non-contiguous Tensors are supported. When `fused_op_type` is `"relu"` or `""`, the input can have 2 to 6 dimensions. When it is `"add"` or `"mul"`, the input can be 2D (K,N) or 3D (B,K,N). In other cases, the input has 2 dimensions (K, N) and must be the same as that of `x1`. In multi-dimensional scenarios, the batch dimension must be the same when the broadcast condition is not met.
 
   <!-- npu="950" id3 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type must be the same as that of the input `x1`.
+  - Ascend 950PR&950DT products: The data type must be the same as that of the input `x1`.
   <!-- end id3 -->
 
 - **`*`**: Variables before it can be passed by position or assigned by using key-value pairs. Variables after it can be assigned only by using key-value pairs; variables with default values use their default values when not assigned, and variables without default values must be assigned.
-- **`bias`** (`Tensor`): Optional. Bias in the matrix multiplication. The default value is None. The data layout can be ND. Non-contiguous Tensors are not supported. The input can have 2 dimensions (1, N) or 1 dimension (N,). It takes effect only when `fused_op_type` is `""`, `"relu"`, `"add"`, or `"mul"`. In other cases, use the default None.
+- **`bias`** (`Tensor`): **Optional**. Bias in the matrix multiplication. The default value is None. The data layout can be ND. Non-contiguous Tensors are not supported. The input can have 2 dimensions (1, N) or 1 dimension (N,). It takes effect only when `fused_op_type` is `""`, `"relu"`, `"add"`, or `"mul"`. In other cases, use the default None.
 
   <!-- npu="950" id4 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type supports `torch.float16`, `torch.float32`, and `torch.bfloat16`. When the data type of `x1` is `torch.bfloat16`, `bias` can be `torch.float32` or `torch.bfloat16`. When the data type of `x1` is `torch.float16`, `bias` must be `torch.float16`.
+  - Ascend 950PR&950DT products: The data type supports `torch.float16`, `torch.float32`, and `torch.bfloat16`. When the data type of `x1` is `torch.bfloat16`, `bias` can be `torch.float32` or `torch.bfloat16`. When the data type of `x1` is `torch.float16`, `bias` must be `torch.float16`.
   <!-- end id4 -->
 
-- **`x3`** (`Tensor`): Optional. `x3` in the matrix multiplication. The default value is None. The data layout can be ND. Non-contiguous Tensors are supported. If `fused_op_type` is `"add"` or `"mul"`, `x3` is required. In other cases, `x3` must be None. The dimensions of `x3` must be the same as the shape of the matrix multiplication output `y` or satisfy the batch-dimension broadcast relationship. If the output has 2 dimensions (M,N), `x3` supports 2 dimensions (M,N). If the output has 3 dimensions (B,M,N), `x3` supports (B,M,N), (1,M,N), or (M,N). When the input dimensions are (1,M,N) and (M,N), `x3` must be broadcast along the batch dimension and must be the same as the output dimension. Broadcasting along M or N is not supported.
+- **`x3`** (`Tensor`): **Optional**. `x3` in the matrix multiplication. The default value is None. The data layout can be ND. Non-contiguous Tensors are supported. If `fused_op_type` is `"add"` or `"mul"`, `x3` is required. In other cases, `x3` must be None. The dimensions of `x3` must be the same as the shape of the matrix multiplication output `y` or satisfy the batch-dimension broadcast relationship. If the output has 2 dimensions (M,N), `x3` supports 2 dimensions (M,N). If the output has 3 dimensions (B,M,N), `x3` supports (B,M,N), (1,M,N), or (M,N). When the input dimensions are (1,M,N) and (M,N), `x3` must be broadcast along the batch dimension and must be the same as the output dimension. Broadcasting along M or N is not supported.
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type must be the same as that of the input `x1`.
+  - Ascend 950PR&950DT products: The data type must be the same as that of the input `x1`.
   <!-- end id5 -->
 
 - **`fused_op_type`** (`str`): Required. Operator fusion type. The value can be `""` (no fusion), `"16cast32"` (no fusion, and the output is `torch.float32`; when the input is `torch.float16` or `torch.bfloat16`, the output is converted to `torch.float32`), `"add"`, `"mul"`, `"gelu_tanh"`, `"gelu_erf"`, or `"relu"`.
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT products</term>: The supported values are `""`, `"16cast32"`, `"add"`, `"mul"`, `"gelu_tanh"`, `"gelu_erf"`, and `"relu"`.
+  - Ascend 950PR&950DT products: The supported values are `""`, `"16cast32"`, `"add"`, `"mul"`, `"gelu_tanh"`, `"gelu_erf"`, and `"relu"`.
   <!-- end id6 -->
   - When `fused_op_type` is `"gelu_erf"` or `"gelu_tanh"`, the data types of `x1` and `x2` must be `torch.bfloat16` or `torch.float16`.
   - When `fused_op_type` is `""` or `"relu"`, the data types of `x1` and `x2` must be `torch.bfloat16`, `torch.float16`, or `torch.float32` (HF32).

@@ -23,7 +23,7 @@
        
    | Product Series | Product Model |
    |-----------------------|----------------------------------|
-   | Atlas 800I A2 products | Atlas 800I A2 |
+   | Atlas 800I A2 inference products | Atlas 800I A2 |
 
 2. Software compatibility
 
@@ -39,7 +39,7 @@
    | 2.12.0  | v2.12.0                      | master   | 3.10, 3.11, 3.12, 3.13      | 13.3 |
    | 2.13.0  | master                       | master   | 3.10, 3.11, 3.12, 3.13      | 13.3 |
 
-## Installation Dependencies
+## Installing Dependencies
 
 You are advised to use the development image provided by TorchNPU for compilation. There are two ways to obtain the image: pull an already built image directly from the Ascend image repository, or build one yourself using the Dockerfile.
 
@@ -91,7 +91,7 @@ _{code_path}_ indicates the path of the OpPlugin source code. Replace it accordi
 > - To run OpPlugin on the NPU environment in the container, ensure that the driver exists on the host (you can confirm this using the `npu-smi` command) and mount the driver when starting the container. For details, see the README in this directory (op-plugin/docker/devel).
 > - In container scenarios, images and source code are obtained from external networks. For network problems related to proxy configuration, see the [official Docker documentation](https://docs.docker.com/engine/cli/proxy/).
 
-In physical machine and virtual machine scenarios, you need to install the system dependencies and the official PyTorch framework yourself. For dependency installation guidance, see [TorchNPU](https://gitcode.com/Ascend/pytorch/tree/master#%E6%BA%90%E7%A0%81%E7%BC%96%E8%AF%91%E5%AE%89%E8%A3%85).
+In physical machine and virtual machine scenarios, you need to install the system dependencies and the official PyTorch framework yourself. For dependency installation guidance, see [TorchNPU](https://gitcode.com/Ascend/pytorch/tree/master#from-source).
  
 ## Procedure
  
@@ -101,7 +101,7 @@ In physical machine and virtual machine scenarios, you need to install the syste
    source <CANN_install_dir>/<CANN_path>/set_env.sh
    ```
  
-   The default path of the environment variable script is /usr/local/npu/ascend-toolkit/set_env.sh. The path of ascend-toolkit depends on the name of the installed CANN software.
+   The default path of the environment variable script is `/usr/local/npu/ascend-toolkit/set_env.sh`. The installation path of `ascend-toolkit` depends on the name of the installed CANN software.
  
 2. Compile and generate the binary installation package of the plug-in.
  

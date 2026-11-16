@@ -1,7 +1,7 @@
 # (beta) torch_npu.npu_swiglu
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -53,7 +53,7 @@ Corresponds to $outputs$ in the formulas. The data type is the same as that of t
   ```
 
 <!-- npu="950" id3 -->
-- Graph mode call: Applicable only to <term>Ascend 950PR&950DT products</term>.
+- Graph mode call: Applicable only to Ascend 950PR&950DT products.
 
     ```python
     import torch

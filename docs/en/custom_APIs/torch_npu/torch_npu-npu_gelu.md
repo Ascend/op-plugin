@@ -1,7 +1,7 @@
 # torch_npu.npu_gelu
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.<br>
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.<br>
 > When the native PyTorch `gelu` API is used in the NPU environment, the `approximate` parameter does not take effect and defaults to `tanh`. Use this API if you need to set the default value of `approximate` to `None` or to distinguish between different `approximate` methods.
 
 ## Supported Products
@@ -46,10 +46,10 @@ torch_npu.npu_gelu(self, *, approximate='none') -> Tensor
 - **`self`** (`Tensor`): Required. Input to be computed by `npu_gelu`, $x$ in the formula. The data layout can be $ND$. Non-contiguous tensors are supported. Empty tensors are supported. Up to 8 dimensions are supported.
 
     <!-- npu="910,310p" id5 -->
-    - <term>Atlas training products</term> and <term>Atlas inference products</term>: The data type can be `torch.float16` or `torch.float32`.
+    - Atlas training products and Atlas inference products: The data type can be `torch.float16` or `torch.float32`.
     <!-- end id5 -->
     <!-- npu="950,910b" id6 -->
-    - <term>Atlas A2 products</term> and <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+    - Atlas A2 products and Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
     <!-- end id6 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.

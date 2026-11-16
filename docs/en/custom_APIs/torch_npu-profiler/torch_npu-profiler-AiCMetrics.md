@@ -1,7 +1,7 @@
 # torch_npu.profiler.AiCMetrics
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -20,7 +20,7 @@
 
 ## Function
 
-AI Core performance metric collection items. They are used as the aic\_metrics parameter of the _ExperimentalConfig class.
+AI Core performance metric collection items. They are used as the `aic_metrics` parameter of the `_ExperimentalConfig` class.
 
 ## Class Signature
 

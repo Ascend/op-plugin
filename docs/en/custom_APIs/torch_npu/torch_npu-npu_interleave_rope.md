@@ -1,7 +1,7 @@
 # torch\_npu.npu\_interleave\_rope
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -48,28 +48,28 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 - **`x`** (`Tensor`): Required. Tensor to be processed. This parameter must be 4D with shape `(B, N, S, D)`. The data type can be `torch.bfloat16` or `torch.float16`. The data layout can be ND. Non-contiguous tensors are not supported.
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
+    - Ascend 950PR&950DT products: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
     <!-- end id5 -->
 
 - **`cos`** (`Tensor`): Required. Cosine component of the RoPE rotary position embedding. This parameter must be 4D with shape `(B, N, S, D)`, where the size of the $S$ dimension can be `1` or identical to that of `x`. The data type and data format must be identical to those of `x`. Non-contiguous tensors are not supported.
 
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
+    - Ascend 950PR&950DT products: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
     <!-- end id7 -->
 
 - **`sin`** (`Tensor`): Required. Sine component of the RoPE rotary position embedding. The shape, data type, and data format must be identical to those of `cos`. Non-contiguous tensors are not supported.
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.bfloat16` or `torch.float16`, and non-contiguous tensors are not supported.
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
+    - Ascend 950PR&950DT products: the data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`, and non-contiguous tensors are supported.
     <!-- end id9 -->
 
 ## Return Values
@@ -84,10 +84,10 @@ Represents the result after rotary encoding. The shape, data type, and data layo
 - This API supports graph mode.
 
 <!-- npu="A3,910b" id10 -->
-- <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the D dimension of the inputs `x`, `cos`, and `sin` must all be equal to 64, and the N dimension of `cos` and `sin` must be equal to 1.
+- Atlas A2 products and Atlas A3 products: the D dimension of the inputs `x`, `cos`, and `sin` must all be equal to 64, and the N dimension of `cos` and `sin` must be equal to 1.
 <!-- end id10 -->
 <!-- npu="950" id11 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
     - The size of the D dimension of the input tensors `x`, `cos`, and `sin` and the output tensor must be equal to 64.
     - The shapes of the input tensors `cos` and `sin` must be exactly the same, and the N dimension must be equal to 1. The S dimension can be 1 or the same as the S dimension of `x`.
 <!-- end id11 -->

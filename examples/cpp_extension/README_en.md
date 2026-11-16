@@ -1,4 +1,4 @@
-# Adaptation Development and Usage
+# Custom Operator C++ Extension Development Sample
 
 This sample demonstrates how to implement a custom operator kernel using Ascend C, integrate it into PyTorch through a C++ extension (`cpp_extension`), and finally call it from Python. It covers the complete workflow of project structure, compilation, installation, and testing.
 

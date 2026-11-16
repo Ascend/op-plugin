@@ -1,7 +1,7 @@
 # torch_npu.npu_sparse_lightning_indexer_grad_kl_loss
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -116,7 +116,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 - **`sinks`**(`Tensor`): Optional. Sinks information in the attention structure. Non-contiguous tensors are not supported. The data layout can be $ND$. The data type can be `torch.float32`, and the shape is $(N1)$.
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 training products</term>/<term>Atlas A3 training products</term>: the optional input sinks is not supported currently. Pass the default value.
+  - Atlas A2 training products/Atlas A3 training products: the optional input sinks is not supported currently. Pass the default value.
   <!-- end id4 -->
 
 ## Return Values
@@ -147,7 +147,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
   | layout  | BSND/TND                              | -                     |
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: N1 additionally supports 48 and N1index additionally supports 24. These two values can only be paired as (48, 24), and pairing with other values is not allowed. B, S1, and S2 all support generalization.
+  - Ascend 950PR&950DT products: N1 additionally supports 48 and N1index additionally supports 24. These two values can only be paired as (48, 24), and pairing with other values is not allowed. B, S1, and S2 all support generalization.
   <!-- end id5 -->
 
 ## Example

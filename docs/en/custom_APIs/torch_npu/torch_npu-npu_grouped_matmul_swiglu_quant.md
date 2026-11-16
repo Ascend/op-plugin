@@ -1,7 +1,7 @@
 # torch_npu.npu_grouped_matmul_swiglu_quant
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -15,7 +15,7 @@
 ## Function
 
 <!-- npu="A3,910b" id3 -->
-- API function: Fuses four computation stages: GroupedMatmul, dequant, swiglu (SwiGLU activation), and quant. It is used by the DeepSeek model to optimize performance compared with small operators. The weight must be passed in FRACTAL_NZ format. This API is a simplified version of `npu_grouped_matmul_swiglu_quant_v2` and supports only <term>Atlas A3 products</term> and <term>Atlas A2 products</term>.
+- API function: Fuses four computation stages: GroupedMatmul, dequant, swiglu (SwiGLU activation), and quant. It is used by the DeepSeek model to optimize performance compared with small operators. The weight must be passed in FRACTAL_NZ format. This API is a simplified version of `npu_grouped_matmul_swiglu_quant_v2` and supports only Atlas A3 products and Atlas A2 products.
   
   Multi-operator fusion computation order (executed in sequence):
   1. GroupedMatmul: Split tokens into groups according to group_list, and compute $X_{i}\cdot W_{i}$ for each group.

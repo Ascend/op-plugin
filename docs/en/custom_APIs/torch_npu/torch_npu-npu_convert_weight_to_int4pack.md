@@ -1,7 +1,7 @@
 # torch_npu.npu_convert_weight_to_int4pack
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -20,7 +20,7 @@
 Packs an input Tensor of the `torch.int32` type for storage as `torch_npu.int4`. Every eight `torch_npu.int4` values are carried by one `torch.int32` value, and they are stored in an interleaved manner.
 
 <!-- npu="950" id11 -->
-<term>Ascend 950PR&950DT products</term>: In addition to the preceding capability, these products also support packing an input Tensor of the `torch.float32` type for storage as `torch_npu.float4_e2m1fn_x2`. Every eight `torch_npu.float4_e2m1fn_x2` values are carried by one `torch.float32` value, and they are stored in an interleaved manner.
+Ascend 950PR&950DT products: In addition to the preceding capability, these products also support packing an input Tensor of the `torch.float32` type for storage as `torch_npu.float4_e2m1fn_x2`. Every eight `torch_npu.float4_e2m1fn_x2` values are carried by one `torch.float32` value, and they are stored in an interleaved manner.
 <!-- end id11 -->
 
 ## Prototype
@@ -34,10 +34,10 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 - **`weight`** (`Tensor`): Required. Input weight. The data layout can be ND or FRACTAL_NZ. The data type can be `torch.int32`. Non-contiguous tensors are not supported. This parameter must be 2D with shape `(k, n)` or `(n, k)`. The size of the last dimension must be a multiple of 8. Individual element values must be within the `torch_npu.int4` representation range of [-8, 7].
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.int32`, and the element values in `weight` must be within the representation range of `torch_npu.int4`, that is, $[-8, 7]$. Two dimensions are supported, the shape can be $(k, n)$ or $(n, k)$, and the last dimension must be 8-element aligned.
+  - Atlas A2 products and Atlas A3 products: the data type can be `torch.int32`, and the element values in `weight` must be within the representation range of `torch_npu.int4`, that is, $[-8, 7]$. Two dimensions are supported, the shape can be $(k, n)$ or $(n, k)$, and the last dimension must be 8-element aligned.
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int32` or `torch.float32`. When the input data type is `torch.int32`, the element values in `weight` must be within the representation range of `torch_npu.int4`, that is, $[-8, 7]$. When the input data type is `torch.float32`, the element values in `weight` must be within the representation range of `torch_npu.float4_e2m1fn_x2`, that is, $[-6.0, 6.0]$. Two or three dimensions are supported, the shape can be $(k, n)$, $(n, k)$, $(g, k, n)$, or $(g, n, k)$, and the last dimension must be 8-element aligned.
+  - Ascend 950PR&950DT products: the data type can be `torch.int32` or `torch.float32`. When the input data type is `torch.int32`, the element values in `weight` must be within the representation range of `torch_npu.int4`, that is, $[-8, 7]$. When the input data type is `torch.float32`, the element values in `weight` must be within the representation range of `torch_npu.float4_e2m1fn_x2`, that is, $[-6.0, 6.0]$. Two or three dimensions are supported, the shape can be $(k, n)$, $(n, k)$, $(g, k, n)$, or $(g, n, k)$, and the last dimension must be 8-element aligned.
 
     > [!NOTE]
     >
@@ -52,10 +52,10 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
 **`out`** (`Tensor`): packed output tensor. The shape is $(k, n/8)$, $(n, k/8)$, or $(g, k, n/8)$, and the data layout is the same as that of `weight`.
 
 <!-- npu="A3,910b" id6 -->
-- <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.int32`.
+- Atlas A2 products and Atlas A3 products: the data type can be `torch.int32`.
 <!-- end id6 -->
 <!-- npu="950" id7 -->
-- <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int32` (corresponding to `weight` of `torch.int32`) or `torch.float32` (corresponding to `weight` of `torch.float32`).
+- Ascend 950PR&950DT products: the data type can be `torch.int32` (corresponding to `weight` of `torch.int32`) or `torch.float32` (corresponding to `weight` of `torch.float32`).
 <!-- end id7 -->
 
 ## Constraints
@@ -100,7 +100,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
     ```
 
   <!-- npu="950" id8 -->
-  - Scenario where the input is `torch.float32`: This example is supported only on <term>Ascend 950PR&950DT products</term>.
+  - Scenario where the input is `torch.float32`: This example is supported only on Ascend 950PR&950DT products.
 
     ```python
     import torch
@@ -240,7 +240,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
     ```
 
   <!-- npu="950" id9 -->
-  - $ND$ format, input type `torch.float32`, supported only on <term>Ascend 950PR&950DT products</term>
+  - $ND$ format, input type `torch.float32`, supported only on Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -293,7 +293,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
     ```
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - $FRACTAL\_NZ$ format, input type `torch.float32`, supported only on <term>Ascend 950PR&950DT products</term>
+  - $FRACTAL\_NZ$ format, input type `torch.float32`, supported only on Ascend 950PR&950DT products
 
     ```python
     import torch

@@ -1,7 +1,7 @@
 # torch_npu.npu_quant_matmul_all_to_all
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -50,34 +50,34 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 
 ## Parameters
 
-- **`x1`** (`Tensor`): Required. Left matrix input of the fused operator and the left matrix of the Matmul computation, corresponding to x1 in the formulas. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2`. The number of dimensions can only be 2D, with shape `(BS, H1)`. The data layout can be ND. **Non-contiguous Tensors are not supported.**
-- **`x2`** (`Tensor`): Required. Right matrix input of the fused operator and the right matrix of the Matmul computation, corresponding to x2 in the formulas. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2`. The number of dimensions can only be 2D, with shape `(H1, H2)`. The data layout can be ND. Transposed non-contiguous Tensors are supported.
-- **`hcom`** (`str`): Required. String that identifies the column group on the host side, that is, the communication domain name. It is obtained by using the get_hccl_comm_name API.
-- **`world_size`** (`int`): Required. Total number of ranks in the communication domain, corresponding to rankSize in the formulas. The supported range is [2, 4, 8, 16]. CCU supports only intra-node UB-domain interconnection, while AICPU supports inter-node UB-domain interconnection.
-- **`bias`** (`Tensor`): Optional. Bias accumulated after the matrix multiplication, corresponding to bias in the formulas. The data type can be `torch.float32`. The number of dimensions can only be 1D, with shape `(H2)`. The data layout can be ND.
-- **`x1_scale`** (`Tensor`): Optional. Quantization coefficient of the left matrix, corresponding to x1Scale in the formulas. In the K-C quantization scenario, the data type can be `torch.float32`, the number of dimensions is 1D, the shape is `(BS)`, and the data layout can be ND. In the MX quantization scenario, the data type can be `torch.float8_e8m0fnu`, the number of dimensions is 3D, the shape is `(BS, ceil(H1/64), 2)`, and the data layout can be ND.
-- **`x2_scale`** (`Tensor`): Optional. Quantization coefficient of the right matrix, corresponding to x2Scale in the formulas. In the K-C quantization scenario, the data type can be `torch.float32`, the number of dimensions is 1D, the shape is `(H2)`, and the data layout can be ND. In the MX quantization scenario, the data type can be `torch.float8_e8m0fnu`, the number of dimensions is 3D, the shape is `(H2, ceil(H1/64), 2)`, and the data layout can be ND.
-- **`common_scale`** (`Tensor`): Optional. Quantization coefficient for low-bit communication. Reserved parameter. In the current version, pass the default value.
-- **`x1_offset`** (`Tensor`): Optional. Quantization bias of the left matrix. Reserved parameter. In the current version, pass the default value.
-- **`x2_offset`** (`Tensor`): Optional. Quantization bias of the right matrix. Reserved parameter. In the current version, pass the default value.
-- **`x1_quant_mode`** (`int`): Optional. Quantization method of the left matrix. In the current version, the value can be 3 or 6, representing pertoken quantization and MX quantization respectively.
-- **`x2_quant_mode`** (`int`): Optional. Quantization method of the right matrix. In the current version, the value can be 2 or 6, representing perchannel quantization and MX quantization respectively.
-- **`common_quant_mode`** (`int`): Optional. Quantization method for low-bit communication. Reserved parameter. In the current version, pass the default value.
-- **`group_sizes`** (`List[int]`): Optional. Quantization group size in the three directions of the Matmul computation. It must be configured in the MX quantization scenario. In the K-C quantization scenario, the default value can be used and the configuration does not take effect.
+- **`x1`** (`Tensor`): **Required**. Left matrix input of the fused operator and the left matrix of the Matmul computation, corresponding to x1 in the formulas. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2`. The number of dimensions can only be 2D, with shape `(BS, H1)`. The data layout can be ND. **Non-contiguous Tensors are not supported.**
+- **`x2`** (`Tensor`): **Required**. Right matrix input of the fused operator and the right matrix of the Matmul computation, corresponding to x2 in the formulas. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.float4_e2m1fn_x2`. The number of dimensions can only be 2D, with shape `(H1, H2)`. The data layout can be ND. Transposed non-contiguous Tensors are supported.
+- **`hcom`** (`str`): **Required**. String that identifies the column group on the host side, that is, the communication domain name. It is obtained by using the get_hccl_comm_name API.
+- **`world_size`** (`int`): **Required**. Total number of ranks in the communication domain, corresponding to rankSize in the formulas. The supported range is [2, 4, 8, 16]. CCU supports only intra-node UB-domain interconnection, while AICPU supports inter-node UB-domain interconnection.
+- **`bias`** (`Tensor`): **Optional**. Bias accumulated after the matrix multiplication, corresponding to bias in the formulas. The data type can be `torch.float32`. The number of dimensions can only be 1D, with shape `(H2)`. The data layout can be ND.
+- **`x1_scale`** (`Tensor`): **Optional**. Quantization coefficient of the left matrix, corresponding to x1Scale in the formulas. In the K-C quantization scenario, the data type can be `torch.float32`, the number of dimensions is 1D, the shape is `(BS)`, and the data layout can be ND. In the MX quantization scenario, the data type can be `torch.float8_e8m0fnu`, the number of dimensions is 3D, the shape is `(BS, ceil(H1/64), 2)`, and the data layout can be ND.
+- **`x2_scale`** (`Tensor`): **Optional**. Quantization coefficient of the right matrix, corresponding to x2Scale in the formulas. In the K-C quantization scenario, the data type can be `torch.float32`, the number of dimensions is 1D, the shape is `(H2)`, and the data layout can be ND. In the MX quantization scenario, the data type can be `torch.float8_e8m0fnu`, the number of dimensions is 3D, the shape is `(H2, ceil(H1/64), 2)`, and the data layout can be ND.
+- **`common_scale`** (`Tensor`): **Optional**. Quantization coefficient for low-bit communication. Reserved parameter. In the current version, pass the default value.
+- **`x1_offset`** (`Tensor`): **Optional**. Quantization bias of the left matrix. Reserved parameter. In the current version, pass the default value.
+- **`x2_offset`** (`Tensor`): **Optional**. Quantization bias of the right matrix. Reserved parameter. In the current version, pass the default value.
+- **`x1_quant_mode`** (`int`): **Optional**. Quantization method of the left matrix. In the current version, the value can be 3 or 6, representing pertoken quantization and MX quantization respectively.
+- **`x2_quant_mode`** (`int`): **Optional**. Quantization method of the right matrix. In the current version, the value can be 2 or 6, representing perchannel quantization and MX quantization respectively.
+- **`common_quant_mode`** (`int`): **Optional**. Quantization method for low-bit communication. Reserved parameter. In the current version, pass the default value.
+- **`group_sizes`** (`List[int]`): **Optional**. Quantization group size in the three directions of the Matmul computation. It must be configured in the MX quantization scenario. In the K-C quantization scenario, the default value can be used and the configuration does not take effect.
     - When it is not None, only a 3-element list is supported, in the form [group_m, group_n, group_k], representing the quantization grouping on the m, n, and k dimensions respectively. For example, group_m indicates that group_m values on the m dimension correspond to one quantization parameter.
     - When one or more of [group_m, group_n, group_k] are 0, the API resets the value based on the input shapes of `x1`, `x2`, `x1_scale`, and `x2_scale`. Calculation principle: if group_m=0, the quantization group value in the m direction is inferred by the API. The inference formula is group_m=m/scale_m (m must be divisible by scale_m), where m is the m in the shape of `x1` and scale_m is the m in the shape of pertoken_scale. The n and k directions are similar.
     - **In the MX quantization scenario, this value must be configured as [1, 1, 32]**, or ensure that the derived value is [1, 1, 32] when it can be derived.
 
-- **`all2all_axes`** (`List[int]`): Optional. Direction of the AlltoAll and Permute data exchange. It can be empty or `[-1, -2]`, indicating that the Matmul result is converted from `(BS, H2)` to `(BS*rankSize, H2/rankSize)`.
-- **`comm_quant_dtype`** (`int`): Optional. Quantization data type for low-bit communication. Reserved parameter. In the current version, pass the default value.
-- **`x1_dtype`** (`int`): Optional. Data type of the input left matrix. For data types not natively supported by PyTorch (such as `torch_npu.float4_e2m1fn_x2`), the data type must be configured by using this parameter.
-- **`x2_dtype`** (`int`): Optional. Data type of the input right matrix. For data types not natively supported by PyTorch (such as `torch_npu.float4_e2m1fn_x2`), the data type must be configured by using this parameter.
-- **`x1_scale_dtype`** (`int`): Optional. Data type of the quantization coefficient of the input left matrix. In the MX quantization scenario, `torch.float8_e8m0fnu` can be passed to explicitly specify the logical data type of the quantization coefficient.
-- **`x2_scale_dtype`** (`int`): Optional. Data type of the quantization coefficient of the input right matrix. In the MX quantization scenario, `torch.float8_e8m0fnu` can be passed to explicitly specify the logical data type of the quantization coefficient.
-- **`output_scale_dtype`** (`int`): Optional. Data type of the output quantization coefficient. Reserved parameter. In the current version, pass the default value.
-- **`comm_scale_dtype`** (`int`): Optional. Data type of the low-bit communication quantization coefficient. Reserved parameter. In the current version, pass the default value.
-- **`y_dtype`** (`int`): Optional. Output data type. The value is 5 (`torch.float16`), 6 (`torch.float32`), or 15 (`torch.bfloat16`).
-- **`comm_mode`** (`str`): Optional. Communication engine mode. The default value is `None`. The value can be `None`, `ai_cpu`, or `ccu`. When `None` is passed, `ai_cpu` communication is used.
+- **`all2all_axes`** (`List[int]`): **Optional**. Direction of the AlltoAll and Permute data exchange. It can be empty or `[-1, -2]`, indicating that the Matmul result is converted from `(BS, H2)` to `(BS*rankSize, H2/rankSize)`.
+- **`comm_quant_dtype`** (`int`): **Optional**. Quantization data type for low-bit communication. Reserved parameter. In the current version, pass the default value.
+- **`x1_dtype`** (`int`): **Optional**. Data type of the input left matrix. For data types not natively supported by PyTorch (such as `torch_npu.float4_e2m1fn_x2`), the data type must be configured by using this parameter.
+- **`x2_dtype`** (`int`): **Optional**. Data type of the input right matrix. For data types not natively supported by PyTorch (such as `torch_npu.float4_e2m1fn_x2`), the data type must be configured by using this parameter.
+- **`x1_scale_dtype`** (`int`): **Optional**. Data type of the quantization coefficient of the input left matrix. In the MX quantization scenario, `torch.float8_e8m0fnu` can be passed to explicitly specify the logical data type of the quantization coefficient.
+- **`x2_scale_dtype`** (`int`): **Optional**. Data type of the quantization coefficient of the input right matrix. In the MX quantization scenario, `torch.float8_e8m0fnu` can be passed to explicitly specify the logical data type of the quantization coefficient.
+- **`output_scale_dtype`** (`int`): **Optional**. Data type of the output quantization coefficient. Reserved parameter. In the current version, pass the default value.
+- **`comm_scale_dtype`** (`int`): **Optional**. Data type of the low-bit communication quantization coefficient. Reserved parameter. In the current version, pass the default value.
+- **`y_dtype`** (`int`): **Optional**. Output data type. The value is 5 (`torch.float16`), 6 (`torch.float32`), or 15 (`torch.bfloat16`).
+- **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`. The value can be `None`, `ai_cpu`, or `ccu`. When `None` is passed, `ai_cpu` communication is used.
 
 ## Return Values
 

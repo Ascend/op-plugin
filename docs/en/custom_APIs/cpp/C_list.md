@@ -141,7 +141,7 @@ The standard C++ APIs provide fundamental capabilities such as NPU device initia
 </tr>
 <tr id="row395820517240"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1495814522412"><a name="p1495814522412"></a><a name="p1495814522412"></a><a href="(beta)at_npu-native-get_npu_storage_sizes.md">(beta) at_npu::native::get_npu_storage_sizes</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p17958115172419"><a name="p17958115172419"></a><a name="p17958115172419"></a>Obtains the memory size of an NPU tensor. The return value type is <code>vector&lt;int64_t&gt;</code>, which represents the allocated memory size of the NPU tensor.</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p17958115172419"><a name="p17958115172419"></a><a name="p17958115172419"></a>Obtains the size of each stored dimension of an NPU tensor. The return value type is <code>vector&lt;int64_t&gt;</code>, which represents the size of each underlying stored dimension of the NPU tensor.</p>
 </td>
 </tr>
 <tr id="row978610882412"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p678619815247"><a name="p678619815247"></a><a name="p678619815247"></a><a href="(beta)at_npu-native-npu_format_cast.md">(beta) at_npu::native::npu_format_cast</a></p>
@@ -200,7 +200,7 @@ The standard C++ APIs provide fundamental capabilities such as NPU device initia
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-NPUStreamGuard-reset_stream.md">c10_npu::NPUStreamGuard::reset_stream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Resets the guard to a new NPU stream.</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>Resets the guard to an NPU stream.</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="c10_npu-stream_synchronize.md">c10_npu::stream_synchronize</a></p>

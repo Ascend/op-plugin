@@ -1,7 +1,7 @@
 # torch_npu.npu_transpose_batchmatmul
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -46,41 +46,41 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 - **`input`** (`Tensor`): Required. The first input matrix for matrix multiplication. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The size of the -1 dimension (the last dimension) must be $\le 65535$. The data layout can be ND. This parameter must be 3D with shape `(B, M, K)` or `(M, B, K)`, where the value range of `B` is [1, 65536). Non-contiguous tensors are supported.
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the last axis (-1 axis) <= 65535, and the value range of B is [1, 65536).
+  - Atlas A2 products and Atlas A3 products: the last axis (-1 axis) <= 65535, and the value range of B is [1, 65536).
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: the shape can be 3D (B, M, K) or (M, B, K).
+  - Ascend 950PR&950DT products: the shape can be 3D (B, M, K) or (M, B, K).
   <!-- end id5 -->
 
 - **`weight`** (`Tensor`): Required. The second input matrix for matrix multiplication. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The size of the -1 dimension (the last dimension) must be $\le 65535$. The data layout can be ND. This parameter must be 3D with shape `(B, K, N)`, where the value range of `N` is `[1, 65536)`. Non-contiguous tensors are supported. The reduction dimension of `weight` must match the size of the reduction dimension of `input`.
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the last axis (-1 axis) <= 65535. The shape can be 3D (B, K, N), and the value range of N is [1, 65536).
+  - Atlas A2 products and Atlas A3 products: the last axis (-1 axis) <= 65535. The shape can be 3D (B, K, N), and the value range of N is [1, 65536).
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: the shape can be 3D (B, K, N) or (B, N, K).
+  - Ascend 950PR&950DT products: the shape can be 3D (B, K, N) or (B, N, K).
   <!-- end id7 -->
 
 - \*: Variables before it support positional input or key-value assignment; variables after it support only key-value assignment. A variable with a default value uses the default value if not assigned, and a variable without a default value must be assigned.
-- **`bias`** (`Tensor`): Optional. The bias matrix for matrix multiplication. This parameter is currently not supported. Use its default value.
-- **`scale`** (`Tensor`): Optional. Quantization scale factor. The data type can be `torch.int64` and `torch.uint64`. The data layout can be ND. This parameter must be 1D with shape `(B*N,)`, where the value range of `B*N` is [1, 65536). Non-contiguous tensors are supported.
+- **`bias`** (`Tensor`): **Optional**. The bias matrix for matrix multiplication. This parameter is currently not supported. Use its default value.
+- **`scale`** (`Tensor`): **Optional**. Quantization scale factor. The data type can be `torch.int64` and `torch.uint64`. The data layout can be ND. This parameter must be 1D with shape `(B*N,)`, where the value range of `B*N` is [1, 65536). Non-contiguous tensors are supported.
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the value range of B*N is [1, 65536).
+  - Atlas A2 products and Atlas A3 products: the value range of B*N is [1, 65536).
   <!-- end id8 -->
 
-- **`perm_x1`** (`List[int]`): Optional. The permutation sequence for transposing the first matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Valid values are `[0, 1, 2]` or `[1, 0, 2]`.
-- **`perm_x2`** (`List[int]`): Optional. The permutation sequence for transposing the second matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Only `[0, 1, 2]` is supported.
+- **`perm_x1`** (`List[int]`): **Optional**. The permutation sequence for transposing the first matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Valid values are `[0, 1, 2]` or `[1, 0, 2]`.
+- **`perm_x2`** (`List[int]`): **Optional**. The permutation sequence for transposing the second matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Only `[0, 1, 2]` is supported.
 
   <!-- npu="A3,910b" id9 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only [0, 1, 2] is supported.
+  - Atlas A2 products and Atlas A3 products: only [0, 1, 2] is supported.
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - <term>Ascend 950PR&950DT products</term>: [0, 1, 2] and [0, 2, 1] are supported.
+  - Ascend 950PR&950DT products: [0, 1, 2] and [0, 2, 1] are supported.
   <!-- end id10 -->
 
-- **`perm_y`** (`List[int]`): Optional. The permutation sequence for transposing the output matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Only `[1, 0, 2]` is supported.
-- **`batch_split_factor`** (`int`): Optional. Split size of the $N$ dimension in the output matrix of the matrix multiplication. The data type can be `int32`. The value range is [1, N], and $N$ must be divisible by this value. The default value is `1`. Note: When `scale` is provided, `batch_split_factor` must be 1.
+- **`perm_y`** (`List[int]`): **Optional**. The permutation sequence for transposing the output matrix. The size must be 3. The data type is `torch.int64`. The data layout can be ND. Only `[1, 0, 2]` is supported.
+- **`batch_split_factor`** (`int`): **Optional**. Split size of the $N$ dimension in the output matrix of the matrix multiplication. The data type can be `int32`. The value range is [1, N], and $N$ must be divisible by this value. The default value is `1`. Note: When `scale` is provided, `batch_split_factor` must be 1.
 
 ## Return Values
 
@@ -95,7 +95,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 - This API supports single-operator mode and TorchAir graph mode.
 
 <!-- npu="A3,910b" id11 -->
-- <term>Atlas A2 products</term> and <term>Atlas A3 products</term>:
+- Atlas A2 products and Atlas A3 products:
   - When `perm_x1` is [1, 0, 2], that is, when the `input` matrix must be transposed, the value range of K*B is [1, 65536); when `perm_x1` is [0, 1, 2], K must be less than 65536.
   - K and N must be divisible by 16.
 <!-- end id11 -->

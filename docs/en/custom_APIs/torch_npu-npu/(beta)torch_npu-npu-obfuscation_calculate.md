@@ -41,10 +41,10 @@ torch_npu.npu.obfuscation_calculate(fd, x, param, obf_coefficient) -> Tensor
 - **`fd`** (`Tensor`): Required. Socket file descriptor. The data type is `torch.int32`. Use the return value of the [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md) API.
 - **`x`** (`Tensor`): Required. Input tensor to be obfuscated. The tensor supports arbitrary dimensions with shape `(*, ..., hidden_size)`, where the last dimension size must match the `hidden_size` parameter of [obfuscation_initialize]((beta)torch_npu-npu-obfuscation_initialize.md). The data layout can be ND.
     <!-- npu="310p" id3 -->
-    * <term>Atlas inference products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
+    * Atlas inference products: The data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
     <!-- end id3 -->
     <!-- npu="910b" id4 -->
-    * <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+    * Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id4 -->
 - **`param`** (`Tensor`): Required. Size of the last dimension of tensor `x`. The data type is `torch.int32`.
 - **`obf_coefficient`** (`float`): Optional. Obfuscation coefficient in the range (0.0, 1.0]. The default value is `1.0`.

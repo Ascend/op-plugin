@@ -1,7 +1,7 @@
 # (beta) torch\_npu.\_npu\_dropout
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -48,7 +48,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 - This API supports single-operator mode.
 
 <!-- npu="950" id6 -->
-- On <term>Ascend 950PR&950DT products</term>, this API supports graph mode calls.
+- On Ascend 950PR&950DT products, this API supports graph mode calls.
 <!-- end id6 -->
 
 ## Example
@@ -64,7 +64,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
     ```
 
 <!-- npu="950" id7 -->
-- Graph mode call: (only for <term>Ascend 950PR&950DT products</term>)
+- Graph mode call: (only for Ascend 950PR&950DT products)
 
     ```python
     import torch

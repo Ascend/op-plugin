@@ -1,7 +1,7 @@
 # torch_npu.npu_gmm_alltoallv
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -55,14 +55,14 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 - **`gmm_x`** (`Tensor`): **Required**. Left matrix of the GroupedMatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. Two dimensions are supported, the shape is (A, H1), and the data layout can be $ND$.
 - **`gmm_weight`** (`Tensor`): **Required**. Right matrix of the GroupedMatMul computation. The data type must be the same as that of `gmm_x`. Three dimensions are supported, the shape is (e, H1, N1), and the data layout can be $ND$.
-- **`hcom`** (`str`): Required. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
+- **`hcom`** (`str`): **Required**. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
 - **`ep_world_size`** (`int`): **Required**. Size of the EP communication domain. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
 
     <!-- npu="A3" id3 -->
-    - <term>Atlas A3 products</term>: the supported values are 8, 16, 32, 64, and 128.
+    - Atlas A3 products: the supported values are 8, 16, 32, 64, and 128.
     <!-- end id3 -->
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT products</term>: the supported values are 2, 4, 8, 16, 32, and 64.
+    - Ascend 950DT products: the supported values are 2, 4, 8, 16, 32, and 64.
     <!-- end id4 -->
 
 - **`send_counts`** (`List[int]`): **Required**. Number of tokens sent to other devices. The data type can be int. The value size is e\*`ep_world_size` and the maximum is 256. The input type must be list.
@@ -77,10 +77,10 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`.
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
+    - Atlas A3 products: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
+    - Ascend 950DT products: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
     <!-- end id6 -->
 
 ## Return Values
@@ -95,10 +95,10 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **Single-device communication volume requirement**:
 
   <!-- npu="A3" id7 -->
-  - <term>Atlas A3 products</term>: the single-device communication volume must be greater than or equal to 2 MB.
+  - Atlas A3 products: the single-device communication volume must be greater than or equal to 2 MB.
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT products</term>: there is no constraint on the single-device communication volume.
+  - Ascend 950DT products: there is no constraint on the single-device communication volume.
   <!-- end id8 -->
 
 - Description of the variables used in the shapes of the input parameter Tensors:

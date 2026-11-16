@@ -1,7 +1,7 @@
 # torch_npu.npu_fused_infer_attention_score
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -17,9 +17,9 @@
 
 ## Function<a name="en-us_topic_0000001832267082_section14441124184110"></a>
 
-- Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The following two scenarios are supported:
+- **API function**: Adapts to the `FlashAttention` operator in the incremental and full inference scenarios, supporting both full computation (`PromptFlashAttention`) and incremental computation (`IncreFlashAttention`). When `S` of the `query` matrix is `1`, the execution enters the `IncreFlashAttention` branch. Otherwise, it enters the `PromptFlashAttention` branch. The following two scenarios are supported:
 
-- Formulas:
+- **Formulas**:
 
   $$
   attention\_out = softmax \left(scale \cdot (query \cdot key^\top) + atten\_mask \right) \cdot value
@@ -62,7 +62,7 @@ torch_npu.npu_fused_infer_attention_score(
 | ---- | -------- | ------------ | ------------ |
 | Basic Prefill (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout` | [General basic constraints](#base_constraints), [Q_S > 1 constraints](#qs_gt_1) |
 | Basic Decode (MHA) | `query, key, value` | `atten_mask, num_heads, scale, input_layout, actual_seq_lengths_kv` | [General basic constraints](#base_constraints), [Q_S = 1 constraints](#qs_eq_1) |
-| Decode + PagedAttention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [PagedAttention constraints](#pa_constraints) |
+| Decode + Paged Attention | `query, key, value, block_table, block_size` | `actual_seq_lengths_kv` | [Paged Attention constraints](#pa_constraints) |
 | GQA | `query, key, value, num_heads, num_key_value_heads` | - | [General basic constraints](#base_constraints) |
 | MLA | `query, key, value, query_rope, key_rope` | `num_heads, scale, input_layout` | [MLA constraints](#mla_constraints) |
 | Prefix (shared prefix) | `query, key, value, key_shared_prefix, value_shared_prefix` | `actual_shared_prefix_len` | [Prefix constraints](#prefix_constraints) |
@@ -97,10 +97,10 @@ torch_npu.npu_fused_infer_attention_score(
 - **`query`** (`Tensor`): Attention Query input. Data format: $ND$. Non-contiguous tensors are not supported.
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Data type: `torch.float16` or `torch.bfloat16`.
+  - Atlas A2 products and Atlas A3 products: Data type: `torch.float16` or `torch.bfloat16`.
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: Data type: `torch.float16` or `torch.bfloat16`.
+  - Ascend 950PR&950DT products: Data type: `torch.float16` or `torch.bfloat16`.
   <!-- end id5 -->
 
 - **`key`** (`Tensor`): Attention Key input. Data type: `torch.float16`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4` (in a `torch.int32` container, that is, eight `torch_npu.int4` values packed into one `torch.int32`). Data format: $ND$. Non-contiguous tensors are not supported.
@@ -112,10 +112,10 @@ torch_npu.npu_fused_infer_attention_score(
 - **`pse_shift`** (`Tensor`, optional): Position encoding parameter. Data type: `torch.float16` or `torch.bfloat16` (must satisfy the derivation rules with the type of `query`). Data format: $ND$. Non-contiguous tensors are not supported. Default value: `None`.
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Data types: When `Q_S` > 1, the shape is (B, Q_N, Q_S, KV_S) or (1, Q_N, Q_S, KV_S); if KV_S is not 32-byte aligned, padding to 32 bytes is recommended. When `Q_S` = 1, the shape is (B, Q_N, 1, KV_S) or (1, Q_N, 1, KV_S); only the D axis divisible by 16 is supported.
+  - Atlas A2 products and Atlas A3 products: Data types: When `Q_S` > 1, the shape is (B, Q_N, Q_S, KV_S) or (1, Q_N, Q_S, KV_S); if KV_S is not 32-byte aligned, padding to 32 bytes is recommended. When `Q_S` = 1, the shape is (B, Q_N, 1, KV_S) or (1, Q_N, 1, KV_S); only the D axis divisible by 16 is supported.
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - When Q_S is not 1, `query` must be of the `torch.float16` type when `pse_shift` is of the `torch.float16` type, and `query` must be of the `torch.bfloat16` type when `pse_shift` is of the `torch.bfloat16` type. The input shape must be (B, N, Q_S, KV_S) or (1, N, Q_S, KV_S), where Q_S is the S in the shape of query, and KV_S is the S in the shapes of key and value. When KV_S of `pse_shift` is not aligned to 32, padding to 32 bytes is recommended to improve performance, and the padding values in the extra part are not restricted.
     - When Q_S is 1, `query` must be of the `torch.float16` type when `pse_shift` is of the `torch.float16` type, and `query` must be of the `torch.bfloat16` type when `pse_shift` is of the `torch.bfloat16` type. The input shape must be (B, N, 1, KV_S) or (1, N, 1, KV_S), where N is num_heads, and KV_S is the S in the shapes of key and value. When KV_S of `pse_shift` is not aligned to 32, padding to 32 bytes is recommended to improve performance, and the padding values in the extra part are not restricted.
   <!-- end id7 -->
@@ -125,10 +125,10 @@ torch_npu.npu_fused_infer_attention_score(
 - **`atten_mask`** (`Tensor`, optional): Applies a mask to the Q x K result to indicate whether the correlation between tokens is computed. Data type: `torch.bool`, `torch.int8`, `torch.uint8`. Data layout: $ND$. Non-contiguous tensors are not supported. Default value: None.
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: When `sparse_mode` is 0/1: the shapes (1, Q_S, KV_S), (B, 1, Q_S, KV_S), and (1, 1, Q_S, KV_S) are supported. When `input_layout` is BSH/BSND/BNSD/BNSD_BSND and RoPE is not passed, (B, KV_S) is supported when Q_S=1, and (Q_S, KV_S) is supported when Q_S>1. When `sparse_mode` is 2/3/4: the shape must be (2048, 2048), (1, 2048, 2048), or (1, 1, 2048, 2048), and the user must ensure that it is lower triangular.
+  - Atlas A2 products and Atlas A3 products: When `sparse_mode` is 0/1: the shapes (1, Q_S, KV_S), (B, 1, Q_S, KV_S), and (1, 1, Q_S, KV_S) are supported. When `input_layout` is BSH/BSND/BNSD/BNSD_BSND and RoPE is not passed, (B, KV_S) is supported when Q_S=1, and (Q_S, KV_S) is supported when Q_S>1. When `sparse_mode` is 2/3/4: the shape must be (2048, 2048), (1, 2048, 2048), or (1, 1, 2048, 2048), and the user must ensure that it is lower triangular.
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - When Q_S is not 1, the recommended input shapes are (B, Q_S, KV_S), (1, Q_S, KV_S), (B, 1, Q_S, KV_S), and (1, 1, Q_S, KV_S).
     - When Q_S is 1, the recommended input shapes are (B, 1, KV_S) and (B, 1, 1, KV_S).
     - Here, Q_S is the S in the shape of `query`, and KV_S is the S in the shapes of `key` and `value`. However, if Q_S and KV_S are not aligned to 16 or 32, they can be rounded up to the aligned S.
@@ -137,13 +137,13 @@ torch_npu.npu_fused_infer_attention_score(
 - **`actual_seq_lengths`** (`List[int]`, optional): Valid sequence length of `query` in each batch. Data type: `torch.int64`. Default value: None (indicating the same as the S of `query`).
 
   <!-- npu="A3,910b" id10 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The valid sequence length of each batch must be less than or equal to the sequence length of the corresponding batch in `query`. If the value has length 1, all batches share it. If the length is greater than or equal to the batch size, the first `batch` values are used. **This parameter must be passed in the TND layout**: each element is the **cumulative sum** of the sequence lengths of the current batch and all preceding batches (each value is greater than or equal to the preceding value and non-negative), and the number of elements equals the batch value (≤ 4096).
+  - Atlas A2 products and Atlas A3 products: The valid sequence length of each batch must be less than or equal to the sequence length of the corresponding batch in `query`. If the value has length 1, all batches share it. If the length is greater than or equal to the batch size, the first `batch` values are used. **This parameter must be passed in the TND layout**: each element is the **cumulative sum** of the sequence lengths of the current batch and all preceding batches (each value is greater than or equal to the preceding value and non-negative), and the number of elements equals the batch value (≤ 4096).
   <!-- end id10 -->
 
 - **`actual_seq_lengths_kv`** (`List[int]`, optional): Valid sequence length of `key/value` in each batch. Data type: `torch.int64`. Default value: None (indicating the same as the S of `key/value`).
 
   <!-- npu="A3,910b" id11 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The constraints are the same as those of `actual_seq_lengths`. This parameter must be passed in the PagedAttention scenario.
+  - Atlas A2 products and Atlas A3 products: The constraints are the same as those of `actual_seq_lengths`. This parameter must be passed in the Paged Attention scenario.
   <!-- end id11 -->
 
 #### `torch.int8` quantization parameters
@@ -165,32 +165,32 @@ torch_npu.npu_fused_infer_attention_score(
 - **`antiquant_scale`** (`Tensor`, optional): Fake-quantization factor, supporting pertensor, perchannel, or pertoken. Data type: `torch.float16`, `torch.bfloat16` (only `torch.float16` when Q_S >= 2; when Q_S = 1, perchannel uses the same type as `query`, and pertoken uses `torch.float32`). Default value: None. The KV fake-quantization separation mode is recommended (`key_antiquant_scale` and `value_antiquant_scale`).
 
   <!-- npu="950" id12 -->
-  - <term>Ascend 950PR&950DT products</term>: This parameter is not supported.
+  - Ascend 950PR&950DT products: This parameter is not supported.
   <!-- end id12 -->
 
 - **`antiquant_offset`** (`Tensor`, optional): Fake-quantization offset, supporting pertensor, perchannel, or pertoken. The constraints are the same as those of `antiquant_scale` (the shape must be consistent). Default value: None. It is not passed (None) in symmetric quantization and must be passed in asymmetric quantization.
 
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR&950DT products</term>: This parameter is not supported.
+  - Ascend 950PR&950DT products: This parameter is not supported.
   <!-- end id13 -->
 
 - **`antiquant_mode`** (`int`, optional): Fake-quantization mode. 0=perchannel (including pertensor), 1=pertoken. Default value: 0.
 
   <!-- npu="A3,910b" id14 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: This parameter has no effect when Q_S ≥ 2. When Q_S = 1, passing a value other than 0 or 1 causes an execution error.
+  - Atlas A2 products and Atlas A3 products: This parameter has no effect when Q_S ≥ 2. When Q_S = 1, passing a value other than 0 or 1 causes an execution error.
   <!-- end id14 -->
   <!-- npu="950" id15 -->
-  - <term>Ascend 950PR&950DT products</term>: The values 0 and 1 are supported.
+  - Ascend 950PR&950DT products: The values 0 and 1 are supported.
   <!-- end id15 -->
 
-#### PagedAttention parameters
+#### Paged Attention parameters
 
-- **`block_table`** (`Tensor`, optional): Block mapping table of the KV storage in PagedAttention. Data type: `torch.int32`. Data layout: $ND$. It must be 2D: [B, maxBlockNumPerSeq]. The validity of the blockid is guaranteed by the user. Passing this parameter enables PagedAttention. Default value: None.
+- **`block_table`** (`Tensor`, optional): Block mapping table of the KV storage in Paged Attention. Data type: `torch.int32`. Data layout: $ND$. It must be 2D: [B, maxBlockNumPerSeq]. The validity of the blockid is guaranteed by the user. Passing this parameter enables Paged Attention. Default value: None.
 
-- **`block_size`** (`int`, optional): Maximum number of tokens per block in PagedAttention, passed as a Python `int`. Q_S > 1: minimum 128, maximum 512, and must be a multiple of 128. Q_S = 1: non-zero value, maximum 512. `torch.float16`/`torch.bfloat16` requires 16-byte alignment, and `torch.int8` requires 32-byte alignment. The value 128 is recommended. Default value: 0 (PagedAttention is disabled).
+- **`block_size`** (`int`, optional): Maximum number of tokens per block in Paged Attention, passed as a Python `int`. Q_S > 1: minimum 128, maximum 512, and must be a multiple of 128. Q_S = 1: non-zero value, maximum 512. `torch.float16`/`torch.bfloat16` requires 16-byte alignment, and `torch.int8` requires 32-byte alignment. The value 128 is recommended. Default value: 0 (Paged Attention is disabled).
 
   <!-- npu="950" id16 -->
-  - <term>Ascend 950PR&950DT products</term>: Q_S = 1: when the input types of key and value are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.
+  - Ascend 950PR&950DT products: Q_S = 1: when the input types of key and value are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.
   <!-- end id16 -->
 
 #### Padding parameters
@@ -225,10 +225,10 @@ torch_npu.npu_fused_infer_attention_score(
 > [!NOTE]  
 >
 ><!-- npu="A3,910b" id47 -->
-> - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When Q_S >= 2, only 0 and 1 are supported; when Q_S = 1, 0 to 5 are supported.
+> - Atlas A2 products, Atlas A3 products: When Q_S >= 2, only 0 and 1 are supported; when Q_S = 1, 0 to 5 are supported.
 ><!-- end id47 -->
 ><!-- npu="950" id48 -->
-> - <term>Ascend 950PR&950DT products</term>: `key_antiquant_mode` supports the values 0, 1, 2, 3, 4, and 5. `value_antiquant_mode`: when Q_S >= 2, the values 0, 1, 2, 3, 4, and 5 are supported; when Q_S = 1, the values 0, 1, 2, 3, 4, and 5 are supported. Except in scenarios where `key_antiquant_mode` is 0 and `value_antiquant_mode` is 1, `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
+> - Ascend 950PR&950DT products: `key_antiquant_mode` supports the values 0, 1, 2, 3, 4, and 5. `value_antiquant_mode`: when Q_S >= 2, the values 0, 1, 2, 3, 4, and 5 are supported; when Q_S = 1, the values 0, 1, 2, 3, 4, and 5 are supported. Except in scenarios where `key_antiquant_mode` is 0 and `value_antiquant_mode` is 1, `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
 ><!-- end id48 -->
 
 #### Prefix (shared prefix) parameters
@@ -252,17 +252,17 @@ torch_npu.npu_fused_infer_attention_score(
 - **`num_heads`** (`int`, optional): Number of heads of `query`, passed as a Python `int`. Default value: 1.
 
   <!-- npu="A3,910b" id17 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: In BNSD scenarios, it must be consistent with the N axis of `query`.
+  - Atlas A2 products, Atlas A3 products: In BNSD scenarios, it must be consistent with the N axis of `query`.
   <!-- end id17 -->
   <!-- npu="950" id18 -->
-  - <term>Ascend 950PR&950DT products</term>: In BNSD, BSND, BNSD_BSND, and TND scenarios, it must be consistent with the N axis of `query`.
+  - Ascend 950PR&950DT products: In BNSD, BSND, BNSD_BSND, and TND scenarios, it must be consistent with the N axis of `query`.
   <!-- end id18 -->
 
 - **`input_layout`** (`str`, optional): Data layout format of the input `query/key/value`. **When the format contains an underscore**, the left side of the underscore is the input layout and the right side is the output layout, and the operator automatically converts the layout. For details, see the following table. Default value: "BSH".
 
   | `input_layout` | Input shape (`query`) | Input shape (`key/value`) | Output shape | Applicable scenario |
   | ------------ | ------------------- | ----------------------- | ---------- | -------- |
-  | "BSH" | (B, Q_S, H) | (B, KV_S, H) | (B, Q_S, H) | General, H = N x D |
+  | `"BSH"` | (B, Q_S, H) | (B, KV_S, H) | (B, Q_S, H) | General, H = N x D |
   | `"BSND"` | (B, Q_S, Q_N, D) | (B, KV_S, KV_N, D) | (B, Q_S, Q_N, D) | General, N/D separated |
   | `"BNSD"` | (B, Q_N, Q_S, D) | (B, KV_N, KV_S, D) | (B, Q_N, Q_S, D) | General, N axis first |
   | `"BNSD_BSND"` | (B, Q_N, Q_S, D) | (B, KV_N, KV_S, D) | (B, Q_S, Q_N, D) | Only when Q_S > 1 |
@@ -276,7 +276,7 @@ torch_npu.npu_fused_infer_attention_score(
 <!-- npu="950" id46 -->
 > [!NOTE]  
 >
-> - <term>Ascend 950PR&950DT products</term>: BSH, BSND, BNSD, BNSD_BSND, and TND are supported (left padding, tensorlist, and pse are not supported).
+> - Ascend 950PR&950DT products: BSH, BSND, BNSD, BNSD_BSND, and TND are supported (left padding, tensorlist, and pse are not supported).
 <!-- end id46 -->
 
 - **`scale`** (`float`, optional): Scaling factor, usually **1/sqrt(D)**. The default value is 1.0. **In most scenarios, it must be set manually; otherwise, the computation result will be incorrect.** Default value: 1.0.
@@ -288,10 +288,10 @@ torch_npu.npu_fused_infer_attention_score(
 - **`num_key_value_heads`** (`int`, optional): Number of heads in `key/value`, passed as a Python `int`, used for GQA. 0 indicates that it is equal to the number of heads of `query`. `num_heads` must be divisible by `num_key_value_heads` (that is, `num_heads` / `num_key_value_heads` must be an integer), and the ratio must be <= 64. Default value: 0.
 
   <!-- npu="A3,910b" id19 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: In BSND/BNSD/BNSD_BSND scenarios, it must be consistent with the N axis of `key/value`.
+  - Atlas A2 products, Atlas A3 products: In BSND/BNSD/BNSD_BSND scenarios, it must be consistent with the N axis of `key/value`.
   <!-- end id19 -->
   <!-- npu="950" id20 -->
-  - <term>Ascend 950PR&950DT products</term>: In BSND/BNSD/BNSD_BSND/TND scenarios, it must be consistent with the N axis of `key/value`.
+  - Ascend 950PR&950DT products: In BSND/BNSD/BNSD_BSND/TND scenarios, it must be consistent with the N axis of `key/value`.
   <!-- end id20 -->
 
 - **`sparse_mode`** (`int`, optional): Sparse mode. For details, see the following table. Default value: 0.
@@ -367,7 +367,7 @@ Constraints on the combination of parameters and input/output data types
 - `input_layout` supports only BSH, BNSD, BSND, and BNSD_BSND.
 
 <!-- npu="A3,910b" id21 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+- Atlas A2 products, Atlas A3 products:
   - When the output is `torch.int8` and the parameters `quant_scale2` and `quant_offset2` are in perchannel mode: left padding, Ring Attention, and non-32-byte-aligned D are not supported.
   - When the output is `torch.int8`, sparse=band with negative `pre_tokens`/`next_tokens` is not supported currently.
   - When the output is `torch.int8` and `quant_offset2` is not None, if the matrix contains rows that do not participate in computation, an interception is triggered (external post-quantization is recommended).
@@ -383,14 +383,14 @@ Constraints on the combination of parameters and input/output data types
 - The operator automatically determines the mode based on the shape dim (pertensor when dim=1; otherwise perchannel).
 - **The KV fake-quantization separation mode is recommended** (use `key_antiquant_scale` and `value_antiquant_scale` instead of `antiquant_scale` and `antiquant_offset`).
 
-### <a id="pa_constraints"></a>PagedAttention constraints
+### <a id="pa_constraints"></a>Paged Attention constraints
 
 **Enabling condition**: `block_table` exists and is valid. Once enabled, the `input_layout` parameter of `key/value` becomes invalid, and `key/value` are arranged in contiguous memory indexed by `block_table`.
 
 | Constraint | Q_S > 1 | Q_S = 1 |
 | ------ | ------- | ------- |
-| `block_size` | Minimum 128, maximum 512, and must be a multiple of 128 | <li><term>Atlas A2 products</term>, <term>Atlas A3 products</term>: non-zero, maximum 512, and 128 is recommended.</li><li><term>Ascend 950PR&950DT products</term>: when the input types of `key` and `value` are `torch.float16` or `torch.bfloat16`, alignment to 16 is required; when the input types of `key` and `value` are `torch.int8`, alignment to 32 is required, and 128 is recommended; when the input types of `key` and `value` are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.</li> |
-| kv dtype | `torch.float16`, `torch.bfloat16` | <li><term>Atlas A2 products</term>, <term>Atlas A3 products</term>: `torch.float16`, `torch.bfloat16`, `torch.int8`.</li><li><term>Ascend 950PR&950DT products</term>: `torch.float16`, `torch.bfloat16`, `torch.int8`, `torch_npu.int4` (`torch.int32`)</li> |
+| `block_size` | Minimum 128, maximum 512, and must be a multiple of 128 | <li>Atlas A2 products, Atlas A3 products: non-zero, maximum 512, and 128 is recommended.</li><li>Ascend 950PR&950DT products: when the input types of `key` and `value` are `torch.float16` or `torch.bfloat16`, alignment to 16 is required; when the input types of `key` and `value` are `torch.int8`, alignment to 32 is required, and 128 is recommended; when the input types of `key` and `value` are `torch_npu.int4 (torch.int32)`, alignment to 64 is required.</li> |
+| kv dtype | `torch.float16`, `torch.bfloat16` | <li>Atlas A2 products, Atlas A3 products: `torch.float16`, `torch.bfloat16`, `torch.int8`.</li><li>Ascend 950PR&950DT products: `torch.float16`, `torch.bfloat16`, `torch.int8`, `torch_npu.int4` (`torch.int32`)</li> |
 | `query` `torch.int8` | Not supported | Not supported |
 | kv cache layout | For BSH/BSND, only BnBsH; for BNSD/TND, both BnBsH and BnNBsD are supported | Same as the left |
 | `actual_seq_lengths_kv` must be passed | Yes | Yes |
@@ -402,18 +402,18 @@ Constraints on the combination of parameters and input/output data types
 | Performance tip | BnNBsD is better than BnBsH | BnNBsD is better than BnBsH |
 | When H exceeds 65535 | Enable GQA or use BnNBsD | Enable GQA or use BnNBsD |
 
-- When PagedAttention is enabled, the following scenarios require KV_S >= maxBlockNumPerSeq x `block_size`:
+- When Paged Attention is enabled, the following scenarios require KV_S >= maxBlockNumPerSeq x `block_size`:
   - `atten_mask` is passed (for example, shape (B, 1, Q_S, KV_S))
   - `pse_shift` is passed (for example, shape (B, Q_N, Q_S, KV_S))
 
   <!-- npu="A3,910b" id22 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - Atlas A2 products, Atlas A3 products:
     - When Q_S = 1 and `atten_mask` is enabled (`sparse_mode` is not 2/3/4): the last dimension of `atten_mask` >= the second dimension of `block_table` x `block_size`.
     - When Q_S = 1 and `pse_shift` is enabled: the last dimension of `pse_shift` >= the second dimension of `block_table` x `block_size`.
     - Q_S = 1 fake-quantization pertoken mode: the S of the shape of `antiquant_scale`/`antiquant_offset` >= this value.
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - When per-token combined with per-head mode is enabled: the shapes of the two parameters are both (B, N, S), the data type is fixed to `torch.float32`, and this is supported when the data types of key and value are `torch.int8` or `torch_npu.int4` (`torch.int32`).
   <!-- end id23 -->
 
@@ -428,17 +428,17 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 **When D = 512:**
 
 <!-- npu="A3,910b" id24 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+- Atlas A2 products, Atlas A3 products:
   - sparse supports 0/3/4.
   - `query_rope`: the N of `query` is required to be 1/2/4/8/16/32/64/128, D in the shape is 64, and the other dimensions are consistent with those of `query`.
   - `key_rope`: key is required to have N=1 and D=512, D in the shape is 64, and the other dimensions are consistent with those of `key`.
   - `key/value/key_rope` support $ND$ or $NZ$. In the $NZ$ format: the shape of `torch.float16`/`torch.bfloat16` is [blockNum, KV_N, D/16, blockSize, 16]; the shape of `torch.int8` is [blockNum, KV_N, D/32, blockSize, 32].
   - `input_layout`: BSH, BSND, BNSD, BNSD_NBSD, BSND_NBSD, BSH_NBSD, TND, TND_NTD.
-  - PagedAttention is supported (`block_size`: a multiple of 16 and <= 1024).
+  - Paged Attention is supported (`block_size`: a multiple of 16 and <= 1024).
   - Not supported: softmax_lse, left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
 <!-- end id24 -->
 <!-- npu="950" id25 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
   - sparse: when Q_S equals 1, only sparse=0 without mask passed is supported; when Q_S is greater than 1, sparse=0 without mask passed or sparse=3 with mask passed is supported;
   - The `input_layout` of `key, value` supports the $ND$ format.
   - `input_layout`: BNSD, BSND, BSH, TND.
@@ -448,14 +448,14 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 **When D = 128:**
 
 <!-- npu="A3,910b" id26 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+- Atlas A2 products, Atlas A3 products:
   - `input_layout`: BSH, BSND, TND, BNSD, NTD, BSH_BNSD, BSND_BNSD, BNSD_BSND, NTD_TND.
   - D in the shapes of `query_rope`/`key_rope` is 64, and the other dimensions are unchanged.
   - Left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization are not supported.
   - The other constraints are the same as those in TND/NTD_TND scenarios.
 <!-- end id26 -->
 <!-- npu="950" id27 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
   - When `query_rope` is configured, b, n, and s in the shape of `query_rope` must be consistent with those of `query`, and d is 64.
   - When `key_rope` is configured, b, n, and s in the shape of `key_rope` must be consistent with those of `key`, and d is 64.
   - `input_layout`: BSH, BSND, BNSD, BNSD_BSND, TND.
@@ -470,7 +470,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - The first dimension (batch) of the shape of `key_shared_prefix` is 1. In BNSD/BSND, the N and D axes are consistent with those of `key`; in BSH, H is consistent with that of `key`. The same applies to `value_shared_prefix`. The S values of the two must be equal.
 - When `actual_shared_prefix_len` exists: shape=[1], and the value <= the S of prefix.
 - The S of prefix + the S of `key/value` <= the original S limit of `key/value`.
-- Not supported: PagedAttention, left padding, tensorlist, and all-qkv `torch.int8`.
+- Not supported: Paged Attention, left padding, tensorlist, and all-qkv `torch.int8`.
 - When sparse=0/1 and `atten_mask` is passed: S2 >= `actual_shared_prefix_len` + the S of `key`.
 
 ### <a id="padding_constraints"></a>Padding constraints
@@ -481,17 +481,17 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - Transfer end = Q_S - `query_padding_size` (must be <= Q_S).
 - When `kv_padding_size` < 0, it is set to 0.
 - It must be enabled together with `actual_seq_lengths`.
-- PagedAttention is not supported.
+- Paged Attention is not supported.
 
 **kv left padding**:
 
 - Transfer start = KV_S - `kv_padding_size` - `actual_seq_lengths_kv` (must be >= 0 when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
 - Transfer end = KV_S - `kv_padding_size` (must be <= KV_S when Q_S > 1; when Q_S = 1, all 0s are returned if it is < 0).
 - It must be enabled together with `actual_seq_lengths_kv`.
-- PagedAttention is not supported.
+- Paged Attention is not supported.
 
 <!-- npu="A3,910b" id28 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+- Atlas A2 products, Atlas A3 products:
   - The scenario where Q is `torch.bfloat16`/`torch.float16` and KV is `torch_npu.int4` is not supported.
 <!-- end id28 -->
 
@@ -500,7 +500,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - `actual_seq_lengths` and `actual_seq_lengths_kv` must be passed. The number of elements is the batch value (<= 4096). Each element value is a cumulative sum (the latter value >= the former value).
 
 <!-- npu="A3,910b" id29 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+- Atlas A2 products, Atlas A3 products:
   
   Comprehensive restrictions when `input_layout` is TND, TND_NTD, or NTD_TND:
 
@@ -508,7 +508,7 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 
     - sparse: 0/3/4.
     - TND and TND_NTD are supported.
-    - PagedAttention is supported (the length of `actual_seq_lengths_kv` = the number of kv batches, and the value <= KV_S).
+    - Paged Attention is supported (the length of `actual_seq_lengths_kv` = the number of kv batches, and the value <= KV_S).
     - `query` N = 1/2/4/8/16/32/64/128, kv N = 1.
     - `query_rope` and `key_rope` are non-empty (D=64).
     - Not supported: left padding, tensorlist, pse, prefix, fake quantization, and full quantization.
@@ -516,11 +516,11 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
     - Without rope: Q_D, K_D, V_D = 128, or Q_D, K_D = 192 and V_D = 128 or 192 (NTD does not support V_D=192; NTD_TND requires Q_D, K_D = 128 or 192 and V_D = 128).
     - With rope: Q_D, K_D, V_D = 128.
     - TND, NTD, and NTD_TND are supported.
-    - For PagedAttention, only a `block_size` that is a multiple of 16 and <= 1024 is supported.
+    - For Paged Attention, only a `block_size` that is a multiple of 16 and <= 1024 is supported.
     - Not supported: left padding, tensorlist, pse, prefix, fake quantization, full quantization, and post-quantization.
 <!-- end id29 -->
 <!-- npu="950" id30 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
   - Left padding, tensorlist, pseType=0, and prefix are not supported.
 <!-- end id30 -->
 
@@ -529,10 +529,10 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - **B axis**: <= 65536.
 
   <!-- npu="A3,910b" id31 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When the D axis is not 32-byte aligned, <= 128.
+  - Atlas A2 products, Atlas A3 products: When the D axis is not 32-byte aligned, <= 128.
   <!-- end id31 -->
   <!-- npu="950" id32 -->
-  - <term>Ascend 950PR&950DT products</term>: A B axis of less than or equal to 65536 is supported.
+  - Ascend 950PR&950DT products: A B axis of less than or equal to 65536 is supported.
   <!-- end id32 -->
 
 - **N axis**: <= 256.
@@ -541,22 +541,22 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - **D alignment**:
 
   <!-- npu="A3,910b" id33 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: `torch.int8` must be 32-byte aligned, `torch_npu.int4` must be 64-byte aligned, and `torch.float16`/`torch.bfloat16` must be 16-byte aligned.
+  - Atlas A2 products, Atlas A3 products: `torch.int8` must be 32-byte aligned, `torch_npu.int4` must be 64-byte aligned, and `torch.float16`/`torch.bfloat16` must be 16-byte aligned.
   <!-- end id33 -->
   <!-- npu="950" id34 -->
-  - <term>Ascend 950PR&950DT products</term>: Non-quantization scenarios: the types of `query`, `key`, and `value` are all `torch.float16` or `torch.bfloat16`, and D axes from 1 to 512 are all supported. Fake-quantization scenarios: the type of `query` is `torch.float16` or `torch.bfloat16`, and the types of `key` and `value` are `torch.int8`/`torch_npu.int4` (`torch.int32`). When the types of `key` and `value` are `torch_npu.int4` (`torch.int32`), the D axis supports only 64 alignment (`torch.int32` supports only D aligned to 8).
+  - Ascend 950PR&950DT products: Non-quantization scenarios: the types of `query`, `key`, and `value` are all `torch.float16` or `torch.bfloat16`, and D axes from 1 to 512 are all supported. Fake-quantization scenarios: the type of `query` is `torch.float16` or `torch.bfloat16`, and the types of `key` and `value` are `torch.int8`/`torch_npu.int4` (`torch.int32`). When the types of `key` and `value` are `torch_npu.int4` (`torch.int32`), the D axis supports only 64 alignment (`torch.int32` supports only D aligned to 8).
   <!-- end id34 -->
 
 <!-- npu="950" id35 -->
 - **actual_seq_lengths**:
 
-  - <term>Ascend 950PR&950DT products</term>: This parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+  - Ascend 950PR&950DT products: This parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
 <!-- end id35 -->
 
 <!-- npu="950" id36 -->
 - **actual_seq_lengths_kv**:
 
-  - <term>Ascend 950PR&950DT products</term>: When passed in, this parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and the valid seqlenKv of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in `key/value`. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When the `input_layout` of `key/value` is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of `key/value`, it represents the actual length of each batch, and the values must not be greater than KV_S.
+  - Ascend 950PR&950DT products: When passed in, this parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and the valid seqlenKv of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in `key/value`. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When the `input_layout` of `key/value` is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of `key/value`, it represents the actual length of each batch, and the values must not be greater than KV_S.
 <!-- end id36 -->
 - **Long-sequence timeout risk**: When B x N x S x D is too large, a timeout may occur (AI Core timeout/trap error). Splitting S is recommended. Typical high-risk scenarios:
   - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
@@ -572,10 +572,10 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - **GQA fake quantization + KV NZ format**:
 
   <!-- npu="A3,910b" id37 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - Atlas A2 products, Atlas A3 products:
     - `query`: `torch.bfloat16`, `key/value`: `torch.int8`, D=128, Q_S=1~16.
     - `input_layout`: BSH/BSND/BNSD.
-    - Only PagedAttention is supported (`block_size`=128 or 512).
+    - Only Paged Attention is supported (`block_size`=128 or 512).
     - `key/value` NZ format: [blockNum, KV_N, D/32, blockSize, 32].
     - dtype of `key/value_antiquant_scale`: `torch.bfloat16` in perchannel mode and `torch.float32` in pertoken mode.
     - Only the KV separation mode is supported. offset, rope, left padding, tensorlist, pse, prefix, and post-quantization are not supported.
@@ -587,13 +587,12 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 <!-- npu="950" id38 -->
 - **kv fake-quantization parameter separation**:
 
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - When fake-quantization parameters and KV separation quantization parameters are passed at the same time, the KV separation quantization parameters take precedence.
     - Except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
     - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
     - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, their shapes must be consistent. When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, their shapes must be consistent.
     - When `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` do not need to be consistent. In all other scenarios, they must be consistent.
-    - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
     - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
     - When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
     - The quantization modes for managing scale/offset are as follows:
@@ -627,38 +626,38 @@ The MLA scenario is entered when `query_rope` and `key_rope` are input.
 - **actual_seq_lengths**:
 
   <!-- npu="A3,910b" id39 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: This parameter is invalid when the layout is not TND.
+  - Atlas A2 products, Atlas A3 products: This parameter is invalid when the layout is not TND.
   <!-- end id39 -->
   <!-- npu="950" id40 -->
-  - <term>Ascend 950PR&950DT products</term>: This parameter does not take effect when no rope parameter is input and the layout is not TND. It takes effect when a rope parameter is input. When passed in, it must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+  - Ascend 950PR&950DT products: This parameter does not take effect when no rope parameter is input and the layout is not TND. It takes effect when a rope parameter is input. When passed in, it must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and its length is 1 or greater than or equal to the Batch value of `query`. The value in this parameter represents the actual length of each batch and must not be greater than Q_S. When `input_layout` is TND, this parameter must be passed, and the number of elements of this parameter is used as the Batch value. The value of each element indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
   <!-- end id40 -->
 
 - **actual_seq_lengths_kv**:
 
   <!-- npu="A3,910b" id41 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: When the layout is not TND, the passed length is 1/>=batch; the passed value <= the corresponding KV_S.
+  - Atlas A2 products, Atlas A3 products: When the layout is not TND, the passed length is 1/>=batch; the passed value <= the corresponding KV_S.
   <!-- end id41 -->
   <!-- npu="950" id42 -->
-  - <term>Ascend 950PR&950DT products</term>: This parameter must be a non-negative number, and its meaning and interception conditions differ for different input_layout values. Generally, this parameter is optional, and the valid Sequence Length of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in key/value. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When input_layout is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of key/value, it represents the actual length of each batch, and the values must not be greater than KV_S.
+  - Ascend 950PR&950DT products: This parameter must be a non-negative number, and its meaning and interception conditions differ for different `input_layout` values. Generally, this parameter is optional, and the valid Sequence Length of each batch in this parameter must not be greater than the seqlenKv of the corresponding batch in `key/value`. When the passed length of this parameter is 1, each batch uses the same seqlenKv; when the passed length is greater than or equal to Batch, the first Batch values of seqlenKv are used. Other lengths are not supported. When `input_layout` is TND/TND_NTD, this parameter must be passed. In non-PA scenarios, the b-th value indicates the accumulated length of the S axes of the first b batches, and the values must be arranged in increasing order (greater than or equal to the previous value). The number of elements of this parameter represents the total number of batches. In PA scenarios, its length equals the Batch value of `key/value`, it represents the actual length of each batch, and the values must not be greater than KV_S.
   <!-- end id42 -->
 
 - **pse_shift**: the dtype is consistent with that of `query`.
 
   <!-- npu="A3,910b" id43 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: Only D-axis divisibility by 16 is supported.
+  - Atlas A2 products, Atlas A3 products: Only D-axis divisibility by 16 is supported.
   <!-- end id43 -->
 
 - **kv left padding**: When the transfer start/end is < 0, all 0s are returned. It must be enabled together with `actual_seq_lengths_kv`.
 - **`torch_npu.int4` kv**:
 
   <!-- npu="A3,910b" id44 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: Left padding and page attention are not supported (Q: `torch.bfloat16`/`torch.float16` + KV: `torch_npu.int4`).
+  - Atlas A2 products, Atlas A3 products: Left padding and page attention are not supported (Q: `torch.bfloat16`/`torch.float16` + KV: `torch_npu.int4`).
   <!-- end id44 -->
 
 <!-- npu="950" id45 -->
 - **kv fake-quantization parameter separation**:
 
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - Except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, the values of `key_antiquant_mode` and `value_antiquant_mode` must be consistent.
     - `key_antiquant_scale` and `value_antiquant_scale` must either both be empty or both be non-empty; `key_antiquant_offset` and `value_antiquant_offset` must either both be empty or both be non-empty.
     - When neither `key_antiquant_scale` nor `value_antiquant_scale` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent. When neither `key_antiquant_offset` nor `value_antiquant_offset` is empty, except in scenarios where `key_antiquant_mode`=0 and `value_antiquant_mode`=1, their shapes must be consistent.
@@ -735,9 +734,9 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - This scenario falls under Q_S > 1 and uses the PromptFlashAttention branch.
 
-### Example 2: GQA + Decode + PagedAttention
+### Example 2: GQA + Decode + Paged Attention
 
-Incremental inference scenario of grouped-query attention + KV cache + PagedAttention.
+Incremental inference scenario of grouped-query attention + KV cache + Paged Attention.
 
 ```python
 import torch
@@ -767,7 +766,7 @@ v = torch.randn(max_block_num, block_size, H_kv, dtype=torch.float16).npu()
 block_table = torch.arange(max_block_num, dtype=torch.int32).unsqueeze(0).npu()
 scale = 1.0 / math.sqrt(D)
 
-# In PagedAttention scenarios, actual_seq_lengths_kv must be passed
+# In Paged Attention scenarios, actual_seq_lengths_kv must be passed
 act_seq_len_kv = [KV_S]
 
 # ===== Call the operator =====
@@ -789,11 +788,11 @@ print(out.shape)  # torch.Size([1, 1, 1024])
 >
 > - `num_key_value_heads=2`: Enables GQA. num_heads / num_key_value_heads = 4. When this parameter is not passed, it defaults to 0 (that is, MHA). For details, see [Parameter description](#detailed-parameter-description).
 >
-> - `block_table` + `block_size`: Passing them enables PagedAttention. For the kv cache layout, see [PagedAttention constraints](#pa_constraints).
+> - `block_table` + `block_size`: Passing them enables Paged Attention. For the kv cache layout, see [Paged Attention constraints](#pa_constraints).
 >
 > - `input_layout="BSH"`: BSH must be used when the kv cache is in BnBsH format. If the kv cache is in BnNBsD format and query is BNSD, BNSD can be used.
 >
-> - `actual_seq_lengths_kv`: Must be passed in PagedAttention scenarios. For the corresponding constraints, see [PagedAttention constraints](#pa_constraints).
+> - `actual_seq_lengths_kv`: Must be passed in Paged Attention scenarios. For the corresponding constraints, see [Paged Attention constraints](#pa_constraints).
 >
 > - In this scenario, Q_S=1, and the IncreFlashAttention branch is used. For the constraints, see [Q_S = 1 constraints](#qs_eq_1).
 
@@ -883,7 +882,7 @@ print(out.shape)  # torch.Size([1, 16, 1, 512])
 >
 > - `query_rope` + `key_rope`: Passing them enters the MLA branch, and they must be passed together. The RoPE dimension is fixed at 64. Their dtype/format must be consistent with that of query/key.
 >
-> - D=512: The D of MLA prefill scenarios is 512 or 128. When D=512, PagedAttention can be enabled and the NZ format is supported. For details about the constraints, see [MLA constraints](#mla_constraints).
+> - D=512: The D of MLA prefill scenarios is 512 or 128. When D=512, Paged Attention can be enabled and the NZ format is supported. For details about the constraints, see [MLA constraints](#mla_constraints).
 >
 > - This scenario does not support: softmax_lse, left padding, pse, prefix, fake quantization, and full quantization.
 
@@ -1073,7 +1072,7 @@ print(out.shape)  # torch.Size([1, 8, 164, 128])
 >
 > - If S2 (KV_S + prefix_S) exceeds the original KV_S limit, an error is reported. If `atten_mask` is passed, S2 must be greater than prefix_S + KV_S.
 >
-> - PagedAttention, left padding, tensorlist, and all-qkv `torch.int8` are not supported.
+> - Paged Attention, left padding, tensorlist, and all-qkv `torch.int8` are not supported.
 
 ### Example 9: ACL Graph mode (torch_npu.npu.NPUGraph)
 

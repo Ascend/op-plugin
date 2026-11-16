@@ -1,7 +1,7 @@
 # torch_npu.npu_block_sparse_attention
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -38,7 +38,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
   - BNSD: the shape is `[batch, headNum, maxQSeqLength, headDim]`;
 
 - **`key`** (`Tensor`): Required. Key in the attention, $key$ in the formula. The data layout can be ND. The data type must be identical to that of `query`.
-  - TND: the shape is `[totalKTokens, numKeyValueHeads, headDim]`;
+  - TND: the shape is `[totalKvTokens, numKeyValueHeads, headDim]`;
   - BNSD: the shape is `[batch, numKeyValueHeads, maxKvSeqLength, headDim]`;
 
 - **`value`** (`Tensor`): Required. Value in the attention, $value$ in the formula. The shape and data type must be identical to those of `key`.
@@ -47,10 +47,10 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **`block_shape`** (`list[int]`): Required. Block shape for sparse computation. It must contain at least two elements, such as `[blockShapeX, blockShapeY]`, and all values must be greater than 0. `blockShapeX` represents the block size along the Q dimension, and `blockShapeY` represents the block size along the KV dimension. **`blockShapeY` must be a multiple of 128.**
   <!-- npu="A3,910b" id4 -->
-  - On <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: **blockShapeY must be a multiple of 128**.
+  - On Atlas A2 products and Atlas A3 products: **blockShapeY must be a multiple of 128**.
   <!-- end id4 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT products</term>: **blockShapeY must be a multiple of 16**.
+  - Ascend 950DT products: **blockShapeY must be a multiple of 16**.
   <!-- end id8 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
@@ -65,10 +65,10 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **`inner_precise`** (`int`): Optional. Softmax precision mode. The default value is `1`. Valid values are `0` (high accuracy mode using `torch.float32` intermediate results) or `1` (high performance mode using `torch.float16` intermediate results). **When `query`, `key`, or `value` uses the `torch.bfloat16` data type, only `0` is supported.**
   <!-- npu="950" id5 -->
-  - <term>Ascend 950DT products</term>: only `4` is supported.
+  - Ascend 950DT products: only `4` is supported.
   <!-- end id5 -->
   <!-- npu="A3,910b" id9 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only `0` or `1` is supported.
+  - Atlas A2 products and Atlas A3 products: only `0` or `1` is supported.
   <!-- end id9 -->
 - **`actual_seq_lengths`** (`list[int]`): Optional. Actual sequence lengths of `query` per batch, used in variable-length sequence scenarios.
   - **Required when `q_input_layout` is `"TND"`**: in TND, the shape of `query` is `[totalQTokens, headNum, headDim]`. If there is no batch dimension, the operator cannot infer the `query` length of each batch from the shape.

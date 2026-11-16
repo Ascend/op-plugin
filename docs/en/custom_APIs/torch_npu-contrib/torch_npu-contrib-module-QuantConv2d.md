@@ -75,7 +75,7 @@ Computation result of QuantConv2d.
 - This API supports only online inference in PyTorch static graph mode.
 
 <!-- npu="310p" id4 -->
-- <term>Atlas inference products</term>: Scenarios where the W axis of the output tensor is `1` are not supported.
+- Atlas inference products: Scenarios where the W axis of the output tensor is `1` are not supported.
 <!-- end id4 -->
 
 ## Example

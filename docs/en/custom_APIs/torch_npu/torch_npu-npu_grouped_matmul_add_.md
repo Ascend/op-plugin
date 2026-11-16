@@ -1,7 +1,7 @@
 # torch_npu.npu_grouped_matmul_add_
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -34,10 +34,10 @@ torch_npu.npu_grouped_matmul_add_(self, x, weight, group_list, *, transpose_x=Tr
   - When `group_list_type` is 0, `group_list` must be a non-negative monotonically non-decreasing sequence, and the last value must not be greater than the first dimension of `x`.
   - When `group_list_type` is 1, `group_list` must be a non-negative sequence, and the sum of its values must not be greater than the first dimension of `x`.
 - **`*`**: Variables before it are position-dependent and must be provided in order. Variables after it are optional and position-independent; they must be assigned by using key-value pairs. If not assigned, their default values are used.
-- **`transpose_x`** (`bool`): Optional. Indicates whether the `x` matrix is transposed. True indicates that `x` is transposed (default), and False indicates that `x` is not transposed. Currently, only True is supported.
-- **`transpose_weight`** (`bool`): Optional. Indicates whether the `weight` matrix is transposed. False indicates that `weight` is not transposed (currently the only supported value), and True indicates that `weight` is transposed.
-- **`group_type`** (`int`): Optional. Indicates the axis to be grouped. The data type can be `int64`. Only 2 (default) is supported.
-- **`group_list_type`** (`int`): Optional. Indicates the expression form of `group_list`. The data type can be `int64`.
+- **`transpose_x`** (`bool`): **Optional**. Indicates whether the `x` matrix is transposed. True indicates that `x` is transposed (default), and False indicates that `x` is not transposed. Currently, only True is supported.
+- **`transpose_weight`** (`bool`): **Optional**. Indicates whether the `weight` matrix is transposed. False indicates that `weight` is not transposed (currently the only supported value), and True indicates that `weight` is transposed.
+- **`group_type`** (`int`): **Optional**. Indicates the axis to be grouped. The data type can be `int64`. Only 2 (default) is supported.
+- **`group_list_type`** (`int`): **Optional**. Indicates the expression form of `group_list`. The data type can be `int64`.
   - 0 (default): The values in `group_list` are the cumulative sum (cumsum) of the group axis sizes.
   - 1: The values in `group_list` are the size of each group on the group axis.
 

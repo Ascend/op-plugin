@@ -1,7 +1,7 @@
 # torch\_npu.npu_dequant\_swiglu\_quant
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -113,8 +113,8 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - **`quant_offset`** (`Tensor`): Optional. Quantization offset. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`. The data layout can be ND. When `group_index` is provided (non-`None`), this parameter does not take effect and must be `None`.
 - **`group_index`** (`Tensor`): Optional. Number of tokens per specified group in `count` mode (values must be non-negative integers). Currently, only `count` mode is supported. This parameter must be 1D. The data type can be `torch.int64`. The data layout can be ND.
 - **`activate_left`** (`bool`): Optional. Applies the swish activation to the left or right half of the input after splitting it evenly along the last dimension. This parameter takes effect only when `swiglu_mode` is `0`, `2`, or `3`. The default value is `False`.
-    - When it is True, out=swish\(split[x, -1, 2][0]\)\*split[x, -1, 2][1]
-    - When it is False, out=swish\(split[x, -1, 2][1]\)\*split[x, -1, 2][0]
+    - When it is True, out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
+    - When it is False, out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
 - **`quant_mode`** (`int`): Optional. The quantization type. The default value is `0`. Valid values are `0` (static quantization) or `1` (dynamic quantization). When `group_index` is provided, this parameter supports dynamic quantization only, which requires setting `quant_mode` to `1`.
 - **`dst_type`** (`int`): Optional. Data type of the output `out`. `1` indicates `torch.int8`, `290` indicates `torch_npu.hifloat8`, `291` indicates `torch.float8_e5m2`, `292` indicates `torch.float8_e4m3fn`, `296` indicates `torch_npu.float4_e2m1fn_x2`, and `297` indicates `torch_npu.float4_e1m2fn_x2`. The default value is `None`, indicating that the output is `torch.int8`. When the output is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, the last dimension of `out` is half of the corresponding quantization result (two elements are packed into one byte for storage).

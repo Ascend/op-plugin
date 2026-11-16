@@ -75,7 +75,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
     <!-- npu="950" id7 -->
     - For Ascend 950PR&950DT products, N1 supports 1 to 128.
     <!-- end id7 -->
-- **`key`** (`Tensor`): Required. $\tilde{K}$ in the formula. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. When `layout_kv` is `PA_BSND`, the shape must be `[block_num, block_size, KV_N, D]`. The parameter `block_num` indicates the total number of blocks in PagedAttention. The parameter `block_size` indicates the number of tokens in one block. The value of `block_size` must be a multiple of `16` and must be less than or equal to `1024`. When `layout_kv` is `BSND`, the shape must be `[B, S2, KV_N, D]`. When `layout_kv` is `TND`, the shape must be `[T2, KV_N, D]`. The value of `KV_N` must be `1`.
+- **`key`** (`Tensor`): Required. $\tilde{K}$ in the formula. Non-contiguous tensors along axis 0 are supported when `layout_kv` is `PA_BSND`. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. When `layout_kv` is `PA_BSND`, the shape must be `[block_num, block_size, KV_N, D]`. The parameter `block_num` indicates the total number of blocks in Paged Attention. The parameter `block_size` indicates the number of tokens in one block. The value of `block_size` must be a multiple of `16` and must be less than or equal to `1024`. When `layout_kv` is `BSND`, the shape must be `[B, S2, KV_N, D]`. When `layout_kv` is `TND`, the shape must be `[T2, KV_N, D]`. The value of `KV_N` must be `1`.
 
 - **`value`** (`Tensor`): Required (nullable). $\tilde{V}$ in the formula. When a tensor is passed, non-contiguous values along axis 0 are supported when `layout_kv` is `PA_BSND`; dimension N supports only `1`; the data layout can be ND; the data type can be `torch.bfloat16` or `torch.float16`; and the shape must be identical to that of `key`. When `None` is passed, the underlying kernel processes D and V together to reduce redundant memory access and computation and improve performance; in this case, `d_value` in backward propagation is an empty tensor. `value=None` is supported only in CANN 9.2.0 or later. Earlier versions raise a `NOT_SUPPORT` error.
 
@@ -85,7 +85,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
-- **`block_table`** (`Tensor`): Optional. Block mapping table used for kvCache storage in PagedAttention. The data layout can be ND. The data type can be `torch.int32`. The shape of this parameter is 2D. The length of the first dimension must be identical to the batch size `B`, and the length of the second dimension must not be less than the block count corresponding to the maximum `S2` across all batches, computed through dividing `S2_max` by `block_size` and rounding the result up.
+- **`block_table`** (`Tensor`): Optional. Block mapping table used for kvCache storage in Paged Attention. The data layout can be ND. The data type can be `torch.int32`. The shape of this parameter is 2D. The length of the first dimension must be identical to the batch size `B`, and the length of the second dimension must not be less than the block count corresponding to the maximum `S2` across all batches, computed through dividing `S2_max` by `block_size` and rounding the result up.
 
 - **`actual_seq_lengths_query`** (`Tensor`): Optional. Valid token count of `query` in different batches. The data type can be `torch.int32`. If not specified, this parameter can be set to `None`, indicating that its length is identical to the size of the S dimension in the shape of `query`. The valid token count for each batch must not exceed the size of the S dimension in `query` and must be greater than or equal to 0. This parameter must be a 1D tensor of length `B`.<br>When `layout_query` is `TND`, this parameter must be provided, where its element count determines the batch size `B`, and each element indicates the cumulative token count of the current batch and all preceding batches, representing a prefix sum. Therefore, the value of each element must be greater than or equal to that of the preceding element.
 
@@ -101,7 +101,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **`layout_query`** (`str`): Optional. Data layout of the input `query`. Valid values are `BSND` or `TND`. If omitted, the default value `BSND` is used.
 
-- **`layout_kv`** (`str`): Optional. Data layout of the input `key`. Valid values are `TND`, `BSND`, or `PA_BSND`. If omitted, the default value `BSND` is used. `PA_BSND` is used when PagedAttention is enabled.
+- **`layout_kv`** (`str`): Optional. Data layout of the input `key`. Valid values are `TND`, `BSND`, or `PA_BSND`. If omitted, the default value `BSND` is used. `PA_BSND` is used when Paged Attention is enabled.
 
 - **`sparse_mode`** (`int`): Optional. Sparse mode. The data type can be `int64`.
     - When sparse\_mode is 0, all computations are performed.
@@ -142,7 +142,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 <!-- npu="A3,910b" id5 -->
 - Atlas A3 inference products/Atlas A2 inference products:
   - Q\_N supports 1/2/4/8/16/32/64/128.
-  - The parameter sparse\_block\_size supports [1,128] and must be a power of 2. In the PagedAttention scenario, sparse\_block\_size must divide block\_size.
+  - The parameter sparse\_block\_size supports [1,128] and must be a power of 2. In the Paged Attention scenario, sparse\_block\_size must divide block\_size.
   - sinks is not supported.
   - Non-contiguous key, value, and key_rope are not supported.
 <!-- end id5 -->

@@ -1,7 +1,7 @@
 # torch_npu.npu_attention_update
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -17,7 +17,7 @@
 
 ## Function
 
-- Updates the local intermediate variables `lse` and `local_out` output by the PagedAttention (PA) operator across each Sequence Parallelism (SP) domain into global results.
+- Updates the local intermediate variables `lse` and `local_out` output by the Paged Attention (PA) operator across each Sequence Parallelism (SP) domain into global results.
 
 - Formulas:
 

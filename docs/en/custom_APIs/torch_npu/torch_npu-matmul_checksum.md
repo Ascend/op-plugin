@@ -1,7 +1,7 @@
 # torch_npu.matmul_checksum
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -17,7 +17,7 @@
 
 ## Function
 
-Detects AI Core hardware faults based on native `torch.matmul` and `Tensor.matmul` APIs. This API internally verifies matrix computation results. It compares the verification error against a real-time computed verification threshold. If the verification error exceeds the threshold, this API raises an AI Core error.
+Detects AI Core hardware faults based on native `torch.matmul` and `Tensor.matmul` APIs. This API internally verifies matrix computation results. It compares the verification error against a real-time computed verification threshold. If the verification error exceeds the threshold, it is considered that an AI Core fault has occurred.
 
 ## Prototype
 

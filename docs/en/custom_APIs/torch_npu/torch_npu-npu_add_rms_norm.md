@@ -1,7 +1,7 @@
 # torch_npu.npu_add_rms_norm
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -48,7 +48,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 - **`yOut`** (`Tensor`): Final output, $RMSNorm(x)$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type and shape must be identical to those of the input `x1`.
 
-- **`rstdOut`** (`Tensor`): Reciprocal of the normalized root mean square, reciprocal of $RMS(x)$ in the formulas. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. The data type can be `torch.float32`. The shape must be identical to the leading dimensions of `x1`. The leading dimensions refer to the dimensions that do not require normalization. Examples of the relationship among the shapes of `rstdOut`, `x1`, and `gamma` are as follows:
+- **`rstdOut`** (`Tensor`): Reciprocal of the normalized root mean square, reciprocal of $RMS(x)$ in the formulas. The data layout can be ND. Empty tensors and non-contiguous tensors are supported. The data type can be `torch.float32`. The number of dimensions must be the same as that of `x1`. The dimensions that do not require normalization have the same sizes as the corresponding dimensions of `x1`, and the dimensions that require normalization have a size of `1`. Examples of the relationship among the shapes of `rstdOut`, `x1`, and `gamma` are as follows:
   - If `x1` has shape `(2, 3, 4, 8)` and `gamma` has shape `(8,)`, `rstdOut` has shape `(2, 3, 4, 1)`.
   - If `x1` has shape `(2, 3, 4, 8)` and `gamma` has shape `(4, 8)`, `rstdOut` has shape `(2, 3, 1, 1)`.
 
@@ -63,7 +63,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
   - When the input is `NaN`, the output is `NaN`.
 
 <!-- npu="310p" id5 -->
-- <term>Atlas inference products</term>:
+- Atlas inference products:
   - The input parameters `x1`, `x2`, and `gamma` do not support the `torch.bfloat16` data type.
   - The parameter `rstdOut` is invalid in current product usage scenarios.
 <!-- end id5 -->

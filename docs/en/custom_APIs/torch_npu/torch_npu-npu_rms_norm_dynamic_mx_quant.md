@@ -1,7 +1,7 @@
 # torch_npu.npu_rms_norm_dynamic_mx_quant
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -116,14 +116,14 @@ torch_npu.npu_rms_norm_dynamic_mx_quant(x, gamma, *, beta=None, epsilon=1e-06, s
 
 - This API supports training and inference scenarios.
 - This API supports single-operator mode and graph mode.
-- When the output `y` type is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, that is, when dst_type is 296 or 297, the last dimension of `x1` must be even.
+- When the output `y` type is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, that is, when `dst_type` is 296 or 297, the last dimension of `x` must be even.
 - The quantization axis and the norm axis are both the last dimension of the input x.
-- Shape constraints between the output `mxscale_out` and the input `x1`:
-  - rank(mxscale_out) = rank(x1) + 1
-  - mxscale_out.shape[-2] = (ceil(x1.shape[-1] / 32) + 2 - 1) / 2
+- Shape constraints between the output `mxscale_out` and the input `x`:
+  - `rank(mxscale_out) = rank(x) + 1`
+  - `mxscale_out.shape[-2] = (ceil(x.shape[-1] / 32) + 2 - 1) / 2`
   - mxscale_out.shape[-1] = 2
-  - Other dimensions are the same as those of the input x1.
-  - For example, if the input x1.shape = (100, 8, 64), mxscale_out.shape = (100, 8, 1, 2).
+  - Other dimensions are the same as those of the input `x`.
+  - For example, if the input `x.shape = (100, 8, 64)`, `mxscale_out.shape = (100, 8, 1, 2)`.
 
 - **In single-operator mode**, the operator determines whether to output a valid rstd by reading the requires_grad attribute of the input Tensor (x). requires_grad is a standard attribute of PyTorch Tensors, and its default value is False. When requires_grad=False, the operator does not write rstd, and the API returns an empty Tensor with shape[0]. In this case, rstd is an invalid placeholder output.
 - **The graph mode path** does not support backpropagation. rstd is fixed to a scalar Tensor with value 0 (shape[]), which does not contain valid data.

@@ -1,7 +1,7 @@
 # torch_npu.npu_weight_quant_preprocess
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -27,27 +27,27 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
 
 ## Parameters
 
-- **`weight`** (`Tensor`): Required. Weight matrix of the Matmul. Non-contiguous `Tensor` is supported.
+- **`weight`** (`Tensor`): **Required**. Weight matrix of the Matmul. Non-contiguous `Tensor` is supported.
   - The logical data type can be `torch_npu.int4` (carried by `torch.uint8`) or `torch_npu.float4_e2m1fn_x2` (carried by `torch.uint8`). The data layout can be ND. 2D or 3D input is supported, and the logical shapes are `(K, N)` and `(G, K, N)` respectively, where $G$ indicates the G axis of the GroupedMatmul operator. One `torch.uint8` element packs two 4-bit values, and the number of elements in the packed dimension must be even. When packing along the K dimension, the physical K dimension length of `weight` is $K/2$. When packing along the N dimension, the physical N dimension length is $N/2$.
-- **`weight_scale`** (`Tensor`): Required. Dequantization scale parameter of the weight. Non-contiguous `Tensor` is supported.
+- **`weight_scale`** (`Tensor`): **Required**. Dequantization scale parameter of the weight. Non-contiguous `Tensor` is supported.
   - The logical data type can be `torch.float8_e8m0fnu` (carried by `torch.uint8`), `torch.float16`, or `torch.bfloat16`. The data layout can be ND or NCL.
     - MX quantization scenario: The A8W4 data flow supports 3D or 4D input, with shapes `(ceil_div(K, 64), N, 2)` and `(G, ceil_div(K, 64), N, 2)` respectively, where $G$ indicates the G axis of the GroupedMatmul operator. The A16F4 data flow supports 2D input with shape `(ceil_div(K, 32), N)`.
     - pertensor quantization scenario: The shape is `(1)` or `(1, 1)`.
     - perchannel quantization scenario: The shape is `(N)` or `(1, N)`.
     - pergroup quantization scenario: The shape is `(G, N)`, where $G$ is the number of groups.
-- **`x_dtype`** (`int`): Required. Data type of the activation matrix of the Matmul.
+- **`x_dtype`** (`int`): **Required**. Data type of the activation matrix of the Matmul.
   - The A16S4/A16F4 data flow supports `torch.float16` and `torch.bfloat16`. The A8W4 data flow supports `torch.float8_e4m3fn`.
-- **`weight_dtype`** (`int`): Required. Specifies the data type actually carried in `weight`.
+- **`weight_dtype`** (`int`): **Required**. Specifies the data type actually carried in `weight`.
   - The value is `torch_npu.int4` for the A16S4 data flow and `torch_npu.float4_e2m1fn_x2` for the other data flows.
-- **`weight_scale_dtype`** (`int`): Required. Specifies the data type actually carried in `weight_scale`. The value must be consistent with the actual data type of `weight_scale`.
+- **`weight_scale_dtype`** (`int`): **Required**. Specifies the data type actually carried in `weight_scale`. The value must be consistent with the actual data type of `weight_scale`.
   - `torch.float8_e8m0fnu`, `torch.float16`, and `torch.bfloat16` are supported.
-- **`weight_offset`** (`Tensor`): Optional. Dequantization offset parameter of the weight. The default value is `None`.
+- **`weight_offset`** (`Tensor`): **Optional**. Dequantization offset parameter of the weight. The default value is `None`.
   - The A16S4 data flows support pass-through, and their shapes and data types must be consistent with those of `weight_scale`. For the other data flows, pass `None`.
-- **`bias`** (`Tensor`): Optional. Bias matrix of the Matmul. It must be a contiguous `Tensor`.
+- **`bias`** (`Tensor`): **Optional**. Bias matrix of the Matmul. It must be a contiguous `Tensor`.
   - The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. The data layout can be ND. 1D or 2D input is supported, with shape `(N)`, `(1, N)`, or `(G, N)`.
-- **`x_scale_dtype`** (`int`): Optional. Data type of the activation quantization scale parameter. The default value is `None`.
+- **`x_scale_dtype`** (`int`): **Optional**. Data type of the activation quantization scale parameter. The default value is `None`.
   - The A8W4 data flow supports only `torch.float8_e8m0fnu`. For the A16S4/A16F4 data flows, pass `None`.
-- **`k_group_size`** (`int`): Optional. Group size of the weight in the K dimension during pergroup quantization. The default value is `0`.
+- **`k_group_size`** (`int`): **Optional**. Group size of the weight in the K dimension during pergroup quantization. The default value is `0`.
   - The value is `32` in the MX quantization scenario of the A8W4/A16F4 data flows. The value is an integer greater than `0` in the pergroup quantization scenario of the A16S4/A16F4 data flows. In other scenarios, the default value `0` is used.
 
 ## Return Values

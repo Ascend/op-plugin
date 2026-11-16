@@ -48,17 +48,28 @@ The special Tensor generated.
 `npu_hans_decode`<br>
 
 - When the installed CANN version is 8.5.0 or later and the Ascend HDK version is 26.0.rc1 or later, the special Tensor allocated by this API can be printed directly.
-- When the installed CANN version is earlier than 8.5.0 or the Ascend HDK version is earlier than 26.0.rc1, the special Tensor allocated by this API cannot be printed directly. In this case, a warning is logged. To view the values, convert it to a normal Tensor by using `mul_` and then print it.
+- When the installed CANN version is earlier than 8.5.0 or the Ascend HDK version is earlier than 26.0.rc1, the special Tensor allocated by this API cannot be printed directly. In this case, a warning is logged. To view the values, create a regular NPU tensor with the same shape, dtype, and device, fill it with 1, call mul_ on it with the special tensor as the operand, and print the regular tensor.
 
 ## Examples
 
 ```cpp
+#include <iostream>
 #include <torch/extension.h>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
-
-// Create a special Tensor with the specified shape and dtype.
-at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
-
-// The special Tensor allocated by this API must be converted to a normal Tensor by using the mul_ operator before its values can be viewed.
-at::mul_(tensor, 1.0);
+ 
+int main() {
+    // Create a special tensor (swapped memory format) with the specified shape and dtype
+    at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
+    tensor.fill_(3.14);
+ 
+    // Create a regular NPU tensor with the same shape and dtype as the special tensor, and fill it with 1
+    auto out = at::empty(tensor.sizes(), tensor.options());
+    out.fill_(1.0);
+ 
+    // Perform an in-place multiplication with the special tensor as the operand; the result is written to the regular NPU tensor out
+    out.mul_(tensor);
+ 
+    std::cout << out << '\n';
+    return 0;
+}
 ```

@@ -1,7 +1,7 @@
 # torch_npu.npu_scatter_nd_update
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -36,38 +36,38 @@ torch_npu.npu_scatter_nd_update(input, indices, updates) -> Tensor
 - **`input`** (`Tensor`): Required. Source data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `updates`. The shape must have 1 to 8 dimensions.
 
   <!-- npu="310p" id6 -->
-  - <term>Atlas inference products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  - Atlas inference products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
   <!-- end id6 -->
   <!-- npu="910" id7 -->
-  - <term>Atlas training products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  - Atlas training products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
   <!-- end id7 -->
   <!-- npu="910b" id8 -->
-  - <term>Atlas A2 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  - Atlas A2 products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
   <!-- end id8 -->
   <!-- npu="A3" id9 -->
-  - <term>Atlas A3 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  - Atlas A3 products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
+  - Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
   <!-- end id10 -->
 
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `torch.int32` or `torch.int64`. The data layout can be ND. Non-contiguous tensors are supported. The index values in `indices` must not be out of bounds.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported. The data type must be identical to that of `input`.
 
   <!-- npu="310p" id11 -->
-  - <term>Atlas inference products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  - Atlas inference products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
   <!-- end id11 -->
   <!-- npu="910" id12 -->
-  - <term>Atlas training products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
+  - Atlas training products: The data type can be `torch.float32`, `torch.float16`, or `torch.bool`.
   <!-- end id12 -->
   <!-- npu="910b" id13 -->
-  - <term>Atlas A2 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  - Atlas A2 products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
   <!-- end id13 -->
   <!-- npu="A3" id14 -->
-  - <term>Atlas A3 products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
+  - Atlas A3 products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, or `torch.int8`.
   <!-- end id14 -->
   <!-- npu="950" id15 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
+  - Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.float16`, `torch.bool`, `torch.bfloat16`, `torch.int64`, `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8`.
   <!-- end id15 -->
 
 ## Return Values

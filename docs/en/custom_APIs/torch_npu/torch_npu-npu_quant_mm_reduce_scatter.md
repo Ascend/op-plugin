@@ -1,7 +1,7 @@
 # torch_npu.npu_quant_mm_reduce_scatter
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -20,10 +20,10 @@
 - API function: Fuses MatMul (matrix multiplication) and ReduceScatter collective communication. After performing matrix multiplication (with optional bias addition and dequantization) on the input parameters x1 (self) and x2, it splits the M axis by the number of NPUs and performs ReduceScatter communication. It is commonly used in distributed scenarios such as MoE (MC2).<br>
   This API is a functional extension of `torch_npu.npu_mm_reduce_scatter_base`. In addition to supporting `torch.float16`/`torch.bfloat16` for x1 and x2:
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT products</term> added support for the low-precision data types `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2` (pertensor, perblock, and MX quantization are supported, and MX quantization supports mxfp8 and mxfp4 scenarios).
+    - Ascend 950DT products added support for the low-precision data types `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2` (pertensor, perblock, and MX quantization are supported, and MX quantization supports mxfp8 and mxfp4 scenarios).
     <!-- end id4 -->
     <!-- npu="A3,910b" id23 -->
-    - <term>Atlas A3 products</term> and <term>Atlas A2 products</term> add support for `torch.int8` (pertoken and perchannel quantization are supported).
+    - Atlas A3 products and Atlas A2 products add support for `torch.int8` (pertoken and perchannel quantization are supported).
     <!-- end id23 -->
 
 - Formulas:
@@ -67,10 +67,10 @@
 >
 > When `comm_mode` is not passed, the default value depends on the platform:
 > <!-- npu="A3,910b" id24 -->
-> The default value for <term>Atlas A3 products</term> and <term>Atlas A2 products</term> is "aiv".
+> The default value for Atlas A3 products and Atlas A2 products is "aiv".
 > <!-- end id24 -->
 > <!-- npu="950" id25 -->
-> The default value for <term>Ascend 950DT products</term> is "ai_cpu".
+> The default value for Ascend 950DT products is "ai_cpu".
 > <!-- end id25 -->
 
 ## Prototype
@@ -88,29 +88,29 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **`self`** (`Tensor`): Required. Left MM matrix, $x1$ in the formulas. In the current version, only 2D input is supported, with shape [m, k], and only the non-transposed scenario is supported. m must be an integer multiple of the number of NPUs (world_size). The value range of the k axis is [256, 65535). The data layout can be ND. Non-contiguous Tensors are not supported. The supported data types are as follows:
 
   <!-- npu="A3,910b" id5 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
   <!-- end id5 -->
   <!-- npu="950" id6 -->
-  - <term>Ascend 950DT products</term>: Supports `torch.float16`, `torch.bfloat16`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, and `torch_npu.float4_e2m1fn_x2`.
+  - Ascend 950DT products: Supports `torch.float16`, `torch.bfloat16`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, and `torch_npu.float4_e2m1fn_x2`.
   <!-- end id6 -->
 
 - **`x2`** (`Tensor`): Required. Right MM matrix, $x2$ in the formulas. In the current version, only 2D input is supported. Both transposed and non-transposed scenarios are supported. For details about the shape requirements, see Constraints. Only non-contiguous Tensors caused by transposition are supported. The supported data types are as follows:
 
   <!-- npu="A3,910b" id7 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND or FRACTAL_NZ.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`. The data layout can be ND or FRACTAL_NZ.
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT products</term>: Supports `torch.float16`, `torch.bfloat16`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, and `torch_npu.float4_e2m1fn_x2`. The data layout can be ND only.
+  - Ascend 950DT products: Supports `torch.float16`, `torch.bfloat16`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, and `torch_npu.float4_e2m1fn_x2`. The data layout can be ND only.
   <!-- end id8 -->
 
 - **`hcom`** (`str`): Required. Communication domain name. It is obtained by using the get_hccl_comm_name API.
 - **`world_size`** (`int`): Required. Number of NPUs (rank_size).
 
   <!-- npu="A3,910b" id9 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: 2, 4, and 8 NPUs are supported.
+  - Atlas A3 products and Atlas A2 products: 2, 4, and 8 NPUs are supported.
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - <term>Ascend 950DT products</term>: 2, 4, 8, 16, 32, and 64 NPUs are supported.
+  - Ascend 950DT products: 2, 4, 8, 16, 32, and 64 NPUs are supported.
   <!-- end id10 -->
 
 - **`*`**: Variables before it are position-dependent and must be provided in order. Variables after it are optional and position-independent; they must be assigned by using key-value pairs. If not assigned, their default values are used.
@@ -118,28 +118,28 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **`bias`** (`Tensor`): Optional. $bias$ in the formulas. In the current version, only 1D input is supported, with shape (n,). None can be passed. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 
   <!-- npu="A3,910b" id11 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: When the data types of x1 and x2 are `torch.int8`, the data type of bias can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. When the data type of x1 and x2 is `torch.float16`, the data type of bias must be `torch.float16` or `torch.float32`. When the data type of x1 and x2 is `torch.bfloat16`, the data type of bias must be `torch.bfloat16` or `torch.float32`.
+  - Atlas A3 products and Atlas A2 products: When the data types of x1 and x2 are `torch.int8`, the data type of bias can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. When the data type of x1 and x2 is `torch.float16`, the data type of bias must be `torch.float16` or `torch.float32`. When the data type of x1 and x2 is `torch.bfloat16`, the data type of bias must be `torch.bfloat16` or `torch.float32`.
   <!-- end id11 -->
   <!-- npu="950" id12 -->
-  - <term>Ascend 950DT products</term>: If the data type of x1 is `torch.float16` or `torch.bfloat16`, the data type of bias must be `torch.float16` or `torch.bfloat16`. If the data type of x1 is `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, or `torch_npu.float4_e2m1fn_x2`, the data type of bias must be `torch.float32` in the pertensor and MX quantization scenarios. In the perblock scenario, only None is supported.
+  - Ascend 950DT products: If the data type of x1 is `torch.float16` or `torch.bfloat16`, the data type of bias must be `torch.float16` or `torch.bfloat16`. If the data type of x1 is `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, or `torch_npu.float4_e2m1fn_x2`, the data type of bias must be `torch.float32` in the pertensor and MX quantization scenarios. In the perblock scenario, only None is supported.
   <!-- end id12 -->
 
 - **`x1_scale`** (`Tensor`): Optional. Dequantization parameter of the left MM matrix. None can be passed. When the data types of x1 and x2 are `torch.float16`/`torch.bfloat16`, only None is supported.
 
   <!-- npu="A3,910b" id13 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: In the pertoken scenario, the shape is (m, 1). The data type can be `torch.float32`.
+  - Atlas A3 products and Atlas A2 products: In the pertoken scenario, the shape is (m, 1). The data type can be `torch.float32`.
   <!-- end id13 -->
   <!-- npu="950" id14 -->
-  - <term>Ascend 950DT products</term>: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(m, 128), ceildiv(k, 128)]. The data type can be `torch.float32`. In the MX quantization scenario (MXFP8 and MXFP4), the data type is `torch.float8_e8m0fnu`, and the shape is (m, ceilDiv(k, 64), 2).
+  - Ascend 950DT products: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(m, 128), ceildiv(k, 128)]. The data type can be `torch.float32`. In the MX quantization scenario (MXFP8 and MXFP4), the data type is `torch.float8_e8m0fnu`, and the shape is (m, ceilDiv(k, 64), 2).
   <!-- end id14 -->
 
 - **`x2_scale`** (`Tensor`): Optional. Dequantization parameter of the right MM matrix. None can be passed. When the data types of x1 and x2 are `torch.float16`/`torch.bfloat16`, only None is supported.
 
   <!-- npu="A3,910b" id15 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: In the perchannel scenario, the shape is (1, n). The data type can be `torch.float32` or `torch.int64` (supported only when the output data type is `torch.float16`).
+  - Atlas A3 products and Atlas A2 products: In the perchannel scenario, the shape is (1, n). The data type can be `torch.float32` or `torch.int64` (supported only when the output data type is `torch.float16`).
   <!-- end id15 -->
   <!-- npu="950" id16 -->
-  - <term>Ascend 950DT products</term>: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(k, 128), ceildiv(n, 128)]. The data type can be `torch.float32`. In the MX quantization scenario, the data type is `torch.float8_e8m0fnu`. The shape follows whether `x2` is transposed. For details about the shape requirements, see Constraints. Only non-contiguous Tensors caused by transposition are supported.
+  - Ascend 950DT products: In the pertensor scenario, the shape is [1]. In the perblock scenario, the shape is [ceildiv(k, 128), ceildiv(n, 128)]. The data type can be `torch.float32`. In the MX quantization scenario, the data type is `torch.float8_e8m0fnu`. The shape follows whether `x2` is transposed. For details about the shape requirements, see Constraints. Only non-contiguous Tensors caused by transposition are supported.
   <!-- end id16 -->
 
 - **`quant_scale`** (`Tensor`): Optional. Quantization scale of the output matrix. Currently, only None is supported. The default value is None.
@@ -148,10 +148,10 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **`group_sizes`** (`List[int]`): Optional. Indicates how many values in `x1`/`x2` in the corresponding dimension can be dequantized by one value in `x1_scale`/`x2_scale`. The length is 3, in the order [groupSizeM, groupSizeN, groupSizeK]. Each value ranges from [0, 65535]. The internal concatenation formula is groupSize = groupSizeK | groupSizeN << 16 | groupSizeM << 32. Passing None or all 0s indicates the default value. The default value is None.
 
   <!-- npu="950" id17 -->
-  - <term>Ascend 950DT products</term>: The value of groupSize is valid only when both x1Scale and x2Scale inputs are 2D or higher. In other scenarios, pass 0. When one or more of groupSizeM/groupSizeN/groupSizeK are 0, they are inferred again based on the input shapes of x1/x2/x1Scale/x2Scale: groupSizeM = m / scaleM (m must be divisible by scaleM), groupSizeK = k / scaleK, and groupSizeN = n / scaleN. Generally, when x1Scale and x2Scale inputs are both 2D and their data types are both `torch.float32`, the value combination [groupSizeM, groupSizeN, groupSizeK] is inferred as [128, 128, 128]. When x1Scale and x2Scale inputs are both 3D and their data types are both `torch.float8_e8m0fnu`, it is inferred as [1, 1, 32].
+  - Ascend 950DT products: The value of groupSize is valid only when both x1Scale and x2Scale inputs are 2D or higher. In other scenarios, pass 0. When one or more of groupSizeM/groupSizeN/groupSizeK are 0, they are inferred again based on the input shapes of x1/x2/x1Scale/x2Scale: groupSizeM = m / scaleM (m must be divisible by scaleM), groupSizeK = k / scaleK, and groupSizeN = n / scaleN. Generally, when x1Scale and x2Scale inputs are both 2D and their data types are both `torch.float32`, the value combination [groupSizeM, groupSizeN, groupSizeK] is inferred as [128, 128, 128]. When x1Scale and x2Scale inputs are both 3D and their data types are both `torch.float8_e8m0fnu`, it is inferred as [1, 1, 32].
   <!-- end id17 -->
   <!-- npu="A3,910b" id18 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: In the current version, only 0 is supported.
+  - Atlas A3 products and Atlas A2 products: In the current version, only 0 is supported.
   <!-- end id18 -->
 
 - **`amax_output`** (`bool`): Optional. Whether to output the maximum value of the MM computation. When True, the maximum value amax of the MM computation is returned. The default value is False.
@@ -163,10 +163,10 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 - **`comm_mode`** (`str`): Optional. Communication mode.
 
   <!-- npu="A3,910b" id19 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: In the current version, only "aiv" is supported. The default value is "aiv".
+  - Atlas A3 products and Atlas A2 products: In the current version, only "aiv" is supported. The default value is "aiv".
   <!-- end id19 -->
   <!-- npu="950" id20 -->
-  - <term>Ascend 950DT products</term>: In the current version, "ai_cpu" or "ccu" is supported. The default value is "ai_cpu".
+  - Ascend 950DT products: In the current version, "ai_cpu" or "ccu" is supported. The default value is "ai_cpu".
   <!-- end id20 -->
 
 ## Return Values
@@ -186,7 +186,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - The output is 2D with shape (m / rank_size, n), where rank_size is the number of NPUs.
 
 <!-- npu="950" id21 -->
-- <term>Ascend 950DT products</term> constraints:
+- Ascend 950DT products constraints:
   - Communication constraints: In the current version, only comm_mode `"ai_cpu"` or `"ccu"` is supported. CCU communication and AICPU communication are supported. CCU supports only intra-node UB-domain interconnection, while AICPU supports inter-node UB-domain interconnection.
   - When the data types of x1 and x2 are `torch.float16`/`torch.bfloat16`, x1/x2 support empty Tensor scenarios. m and n can be empty, but k cannot be empty. When the data types of x1 and x2 are `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`, empty Tensors are not supported.
   - When the data types of x1 and x2 are `torch.float16`/`torch.bfloat16`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`, the data types of x1 and x2 must be the same. When the data types of x1 and x2 are `torch.float8_e4m3fn`/`torch.float8_e5m2`, either of the two can be used.
@@ -197,7 +197,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
   - The total ReduceScatter collective communication data volume must not exceed 16 \* 256MB. The total collective communication data volume is calculated as m \* n \* sizeof(output_dtype). Because shapes differ, the internal implementation of the operator may vary, and the actual supported total communication volume may be slightly smaller than this value.
 <!-- end id21 -->
 <!-- npu="A3,910b" id22 -->
-- <term>Atlas A3 products</term> and <term>Atlas A2 products</term> constraints:
+- Atlas A3 products and Atlas A2 products constraints:
   - Only comm_mode `"aiv"` is supported, and the communication buffer must be greater than or equal to 200MB.
   - Empty Tensors are not supported.
   - The data types of x1 and x2 must be the same.
@@ -266,7 +266,7 @@ tensor([0.], device='npu:1')
 
 > [!NOTE]
 >
-> Scenario 2 with `torch.int8` in the perchannel and pertoken scenarios (<term>Atlas A3 products</term> and <term>Atlas A2 products</term>) is similar: the data types of x1 and x2 are `torch.int8`. In the pertoken scenario, the shape of `x1_scale` is (m, 1), and `x2_scale` is not passed. In the perchannel scenario, the shape of `x2_scale` is (1, n), and `x1_scale` is not passed. The data type of the scale can be `torch.float32` (`x2_scale` in the perchannel scenario also supports `torch.int64`).
+> Scenario 2 with `torch.int8` in the perchannel and pertoken scenarios (Atlas A3 products and Atlas A2 products) is similar: the data types of x1 and x2 are `torch.int8`. In the pertoken scenario, the shape of `x1_scale` is (m, 1), and `x2_scale` is not passed. In the perchannel scenario, the shape of `x2_scale` is (1, n), and `x1_scale` is not passed. The data type of the scale can be `torch.float32` (`x2_scale` in the perchannel scenario also supports `torch.int64`).
 
 ```python
 import torch

@@ -1,7 +1,7 @@
 # torch_npu.npu_moe_gating_top_k
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -155,10 +155,10 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 - **`norm_type`** (`int`): Optional. Type of the normalization function. Valid values: `1` (enables the Softmax function) or `0` (enables the Sigmoid function). The default value is `0`.
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the supported values are `0` and `1`. `0` indicates that the Softmax function is used, and `1` indicates that the Sigmoid function is used.
+    - Atlas A2 products and Atlas A3 products: the supported values are `0` and `1`. `0` indicates that the Softmax function is used, and `1` indicates that the Sigmoid function is used.
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR&950DT products</term>: the supported values are `0`, `1`, and `2`. `0` indicates that the Softmax function is used, `1` indicates that the Sigmoid function is used, and `2` indicates that the SqrtSoftplus function is used.
+    - Ascend 950PR&950DT products: the supported values are `0`, `1`, and `2`. `0` indicates that the Softmax function is used, `1` indicates that the Sigmoid function is used, and `2` indicates that the SqrtSoftplus function is used.
     <!-- end id5 -->
 
 - **`out_flag`** (`bool`): Optional. Specifies whether to output the intermediate result of the normalization operation. The default value is `False`.

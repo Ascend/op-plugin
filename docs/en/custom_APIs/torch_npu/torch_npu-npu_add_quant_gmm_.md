@@ -1,7 +1,7 @@
 # torch_npu.npu_add_quant_gmm_
 
 > [!NOTICE]  
-> This API is new in this version. For details about the dependency requirements, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API is new in this version. For details about the dependency requirements, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -52,35 +52,35 @@ torch_npu.npu_add_quant_gmm_(self, x1, x2, x2_scale, group_list, *, x1_scale=Non
 > - K: Size of the reduce axis of the matrix multiplication. The value range is 1 to 2147483647.
 > Note: When M, N, or K is the innermost axis of the input matrix, the value must be less than 2097152.
 
-- **`self`** (`Tensor`): Required. Matrix to be accumulated. The data type can be `torch.float32`. The Tensor can be 3D with shape `(g, M, N)`. The data layout can be ND.
-- **`x1`** (`Tensor`): Required. Left matrix in the matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. The Tensor can be 2D with shape `(K, M)`. For `torch_npu.hifloat8`, the optional parameter `x1_dtype` must be set to the corresponding type. In this case, the `dtype` of `x1` itself does not take effect, but the `dtype` of `x1` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
-- **`x2`** (`Tensor`): Required. Right matrix in the matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. The Tensor can be 2D with shape `(K, N)`. For `torch_npu.hifloat8`, the optional parameter `x2_dtype` must be set to the corresponding type. In this case, the `dtype` of `x2` itself does not take effect, but the `dtype` of `x2` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
-- **`x2_scale`** (`Tensor`): Required. Scaling factor of the right matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. The shape can have 1 to 3 dimensions. For `torch.float8_e8m0fnu`, the optional parameter `x2_scale_dtype` must be set to the corresponding type. In this case, the `dtype` of `x2_scale` itself does not take effect, but the `dtype` of `x2_scale` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
-- **`group_list`** (`Tensor`): Required. Distribution of matmul sizes along the input and output group axis. The data type can be `torch.int64`. The Tensor is 1D with shape `(g,)`. The data layout can be ND. When `group_list_type` is 0, `group_list` must be a non-negative monotonically non-decreasing sequence, and the last value must not be greater than the first dimension of the input Tensor. When `group_list_type` is 1, `group_list` must be a non-negative sequence, and the sum of the values must not be greater than the first dimension of the input Tensor. The values in `group_list` constrain the valid part of the output data. The part not specified in `group_list` does not participate in the update.
+- **`self`** (`Tensor`): **Required**. Matrix to be accumulated. The data type can be `torch.float32`. The Tensor can be 3D with shape `(g, M, N)`. The data layout can be ND.
+- **`x1`** (`Tensor`): **Required**. Left matrix in the matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. The Tensor can be 2D with shape `(K, M)`. For `torch_npu.hifloat8`, the optional parameter `x1_dtype` must be set to the corresponding type. In this case, the `dtype` of `x1` itself does not take effect, but the `dtype` of `x1` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
+- **`x2`** (`Tensor`): **Required**. Right matrix in the matrix multiplication. The data type can be `torch.float8_e5m2`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. The Tensor can be 2D with shape `(K, N)`. For `torch_npu.hifloat8`, the optional parameter `x2_dtype` must be set to the corresponding type. In this case, the `dtype` of `x2` itself does not take effect, but the `dtype` of `x2` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
+- **`x2_scale`** (`Tensor`): **Required**. Scaling factor of the right matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. The shape can have 1 to 3 dimensions. For `torch.float8_e8m0fnu`, the optional parameter `x2_scale_dtype` must be set to the corresponding type. In this case, the `dtype` of `x2_scale` itself does not take effect, but the `dtype` of `x2_scale` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
+- **`group_list`** (`Tensor`): **Required**. Distribution of matmul sizes along the input and output group axis. The data type can be `torch.int64`. The Tensor is 1D with shape `(g,)`. The data layout can be ND. When `group_list_type` is 0, `group_list` must be a non-negative monotonically non-decreasing sequence, and the last value must not be greater than the first dimension of the input Tensor. When `group_list_type` is 1, `group_list` must be a non-negative sequence, and the sum of the values must not be greater than the first dimension of the input Tensor. The values in `group_list` constrain the valid part of the output data. The part not specified in `group_list` does not participate in the update.
 - **`*`**: Variables before it are position-dependent and must be provided in order. Variables after it are optional and position-independent; they must be assigned by using key-value pairs. If not assigned, their default values are used.
-- **`x1_scale`** (`Tensor`): Optional. Scaling factor of the left matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. The shape can have 1, 2, or 3 dimensions. For `torch.float8_e8m0fnu`, the optional parameter `x1_scale_dtype` must be set to the corresponding type. In this case, the `dtype` of `x1_scale` itself does not take effect, but the `dtype` of `x1_scale` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
-- **`group_list_type`** (`int`): Optional. Expression form of `group_list`. The data type can be `int32`.
+- **`x1_scale`** (`Tensor`): **Optional**. Scaling factor of the left matrix in the matrix multiplication. The data type can be `torch.float8_e8m0fnu` or `torch.float32`. The shape can have 1, 2, or 3 dimensions. For `torch.float8_e8m0fnu`, the optional parameter `x1_scale_dtype` must be set to the corresponding type. In this case, the `dtype` of `x1_scale` itself does not take effect, but the `dtype` of `x1_scale` itself must still be an 8-bit data type to ensure the correct shape. The data layout can be ND.
+- **`group_list_type`** (`int`): **Optional**. Expression form of `group_list`. The data type can be `int32`.
 
   - 0: Default value. The values in `group_list` are the cumulative sum (cumsum) of the group axis sizes.
   - 1: The values in `group_list` are the size of each group on the group axis.
 
-- **`group_sizes`** (`List[int]`): Optional. The list size is 3, indicating how many parameters on the M, N, and K axes share one scaling factor. The data type can be `torch.int32`. Currently, only the default value None is supported.
-- **`x1_dtype`** (`int`): Optional. Used to explicitly specify the data type of `x1` when `x1` cannot be represented by a native torch data type.
+- **`group_sizes`** (`List[int]`): **Optional**. The list size is 3, indicating how many parameters on the M, N, and K axes share one scaling factor. The data type can be `torch.int32`. Currently, only the default value None is supported.
+- **`x1_dtype`** (`int`): **Optional**. Used to explicitly specify the data type of `x1` when `x1` cannot be represented by a native torch data type.
 
   - None: Default value. The actual data type of the input `x1` is the same as the `dtype` of the input `x1`.
   - The actual data type of the input `x1`. Currently, only `torch_npu.hifloat8` is supported.
 
-- **`x2_dtype`** (`int`): Optional. Used to explicitly specify the data type of `x2` when `x2` cannot be represented by a native torch data type.
+- **`x2_dtype`** (`int`): **Optional**. Used to explicitly specify the data type of `x2` when `x2` cannot be represented by a native torch data type.
 
   - None: Default value. The actual data type of the input `x2` is the same as the `dtype` of the input `x2`.
   - The actual data type of the input `x2`. Currently, only `torch_npu.hifloat8` is supported.
 
-- **`x1_scale_dtype`** (`int`): Optional. Used to explicitly specify the data type of `x1_scale` when `x1_scale` cannot be represented by a native torch data type.
+- **`x1_scale_dtype`** (`int`): **Optional**. Used to explicitly specify the data type of `x1_scale` when `x1_scale` cannot be represented by a native torch data type.
 
   - None: Default value. The actual data type of the input `x1_scale` is the same as the `dtype` of the input `x1_scale`.
   - The actual data type of the input `x1_scale`. Currently, only `torch.float8_e8m0fnu` is supported.
 
-- **`x2_scale_dtype`** (`int`): Optional. Used to explicitly specify the data type of `x2_scale` when `x2_scale` cannot be represented by a native torch data type.
+- **`x2_scale_dtype`** (`int`): **Optional**. Used to explicitly specify the data type of `x2_scale` when `x2_scale` cannot be represented by a native torch data type.
 
   - None: Default value. The actual data type of the input `x2_scale` is the same as the `dtype` of the input `x2_scale`.
   - The actual data type of the input `x2_scale`. Currently, only `torch.float8_e8m0fnu` is supported.

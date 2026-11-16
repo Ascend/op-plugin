@@ -1,7 +1,7 @@
 # (beta) torch_npu.npu.is_jit_compile_false
 
 > [!NOTICE]  
-> This API has changed in this version. For details about the changes, see "[API Change Description](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-change-description)" in the *Release Notes*.
+> This API has changed in this version. For details about the changes, see "[API Changes](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/en/release_notes.md#api-changes)" in the *Release Notes*.
 
 ## Supported Products
 
@@ -26,7 +26,7 @@
 Checks whether JIT compilation mode is disabled, returning `True` if it is disabled and `False` otherwise.
 
 <!-- npu="950" id6 -->
-For <term>Ascend 950DT products</term>, only `True` is returned, that is, the JIT compilation mode is disabled by default.
+For Ascend 950DT products, only `True` is returned, that is, the JIT compilation mode is disabled by default.
 <!-- end id6 -->
 
 ## Prototype
