@@ -436,7 +436,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
 <!-- npu="950" id34 -->
 - WeightNZ场景说明（仅适用于Ascend 950PR&950DT系列产品）：
-  - MXFP4、MXFP8场景支持静态图模式，不支持动态图模式。
+  - MXFP4、MXFP8、Pertoken量化场景支持静态图模式，不支持动态图模式。
   - 单多单MXFP4、MXFP8场景支持单算子模式，不支持图模式。
 <!-- end id34 -->
 
@@ -477,7 +477,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     | Pertoken量化 | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.int8` | `torch.float32` |
     | Pertoken量化 | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch_npu.hifloat8` | `torch.float32` |
     | Pertoken量化（ND格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` |
-    | Pertoken量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` |
+    | Pertoken量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float8_e4m3fn` | `torch.int64` | `torch.float32`/`torch.bfloat16` | `torch.float32` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float32` |
     | MxFP8FP4量化（FRACTAL_NZ格式） | `torch.float8_e4m3fn` | `torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2` | `torch.int64` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` | 暂不支持 | 暂不支持 | 暂不支持 | `torch.float8_e4m3fn` | `torch.float8_e8m0fnu`/`torch_npu.float8_e8m0fnu` |
 
     > **MxA8W4场景**：
@@ -507,7 +507,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
     | 单多单 | MXFP4量化（FRACTAL_NZ格式） | (m, k) | <li>非转置shape形如{e个(n/64, k/16, 16, 64)}</li><li>转置shape形如{e个(k/64, n/16,16, 64)}</li> | <li>非转置shape形如{e个(ceil(k / 64), n, 2)}</li><li>转置shape形如{e个(n, ceil(k / 64), 2)}</li> | (m, ceil(k / 64), 2) | (m, n / 2) | (m, ceil((n / 2) / 64), 2) |
 
     - MX量化、`weight`为ND格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为2对齐；当输入为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为4对齐。
-    - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`或`torch.float8_e5m2`数据类型时，需满足N为64对齐；当输入为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为128对齐。
+    - MX量化、`weight`为NZ格式场景下，当输入为`torch.float8_e4m3fn`数据类型时，需满足N为64对齐；当输入为`torch.float4_e2m1fn_x2`/`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`数据类型时，需满足N为128对齐。
     - MXFP4场景不支持k=2，MXFP4场景需满足K为偶数。
 <!-- end id46 -->
 
