@@ -6048,6 +6048,44 @@ class TestKLDivLoss(TestCase):
             self.assertEqual(pred.grad.shape, pred_fake_tensor.grad.shape)
             self.assertEqual(pred.grad.dtype, pred_fake_tensor.grad.dtype)
 
+
+class TestKLDivBackwardMeta(TestCase):
+    # Both KLDiv backward ops allocate a fresh contiguous output (their
+    # generated declarations are out {size: self/target}), so the Meta must
+    # not inherit a transposed input's stride nor alias an input as a view.
+    def test_kl_div_backward_meta_matches_native(self):
+        for backward, dtype, reduction, log_target, layout in itertools.product(
+            ["input", "target"],
+            [torch.float16, torch.float32],
+            [0, 1, 2],
+            [False, True],
+            ["scalar", "contiguous", "transpose"],
+        ):
+            with self.subTest(backward=backward, dtype=dtype, reduction=reduction,
+                              log_target=log_target, layout=layout):
+                target = torch.full(() if layout == "scalar" else (2, 3), 0.5,
+                                    device="npu", dtype=dtype)
+                if layout == "transpose":
+                    target = target.t()
+                input = torch.full_like(target, -0.5)
+                grad = torch.ones_like(target) if reduction == 0 else target.new_ones(())
+                op = (torch.ops.npu.kl_div_backward if backward == "input"
+                      else torch.ops.npu.kl_div_target_backward)
+                actual = op(grad, input, target, reduction, log_target=log_target)
+
+                with FakeTensorMode() as mode:
+                    # from_tensor keeps the real stride, so the transpose case
+                    # still probes whether the Meta copies that layout.
+                    fake = op(mode.from_tensor(grad), mode.from_tensor(input),
+                              mode.from_tensor(target), reduction, log_target=log_target)
+
+                self.assertEqual(fake.shape, actual.shape)
+                self.assertEqual(fake.dtype, actual.dtype)
+                self.assertEqual(fake.device, actual.device)
+                self.assertEqual(fake.stride(), actual.stride())
+                self.assertIsNone(fake._base)
+
+
 class TestNpuDropoutGenMaskMeta(TestCase):
     def test_npu_dropout_gen_mask(self):
         size = (2, 1024, 768)

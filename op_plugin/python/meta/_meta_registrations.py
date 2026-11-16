@@ -7003,8 +7003,12 @@ def batch_norm_reduce_meta(self, eps):
 
 @impl(m, "kl_div_backward")
 def kl_div_backward_meta(grad_out, x, target, reduction="mean", log_target=False):
-    result = torch.empty_like(x)
-    return result
+    return x.new_empty(x.shape)
+
+
+@impl(m, "kl_div_target_backward")
+def kl_div_target_backward_meta(grad_output, self, target, reduction=1, log_target=False):
+    return target.new_empty(target.shape)
 
 
 @impl(m, "npu_dropout_with_add_softmax")
