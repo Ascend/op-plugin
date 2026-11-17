@@ -16,13 +16,24 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "torch_npu/csrc/framework/contiguous/ContiguousOpt.h"
 
 namespace op_api {
 using npu_preparation = at_npu::native::OpPreparation;
 
-// A2/A3 等支持 acl_op 的老 SOC 保持原有 acl_op(GE AsStrided) 实现，行为不变；
-// 仅 Ascend950(A5) 等 aclnn-only 设备在 ATen 层用 as_strided 构造纯元数据视图，
-// 再通过 aclnnInplaceCopy 将其物化到连续输出上。
+namespace {
+// aclnn's storageOffset is view-relative (the GM address already carries the view offset),
+// so pass a storage-aligned view to keep npu_stride_copy's storage-relative semantics.
+at::Tensor alignToStorageBase(const at::Tensor& self) {
+  if (self.storage_offset() == 0) {
+    return self;
+  }
+  return at_npu::native::TransContiguous::view_tensor(self, 0, self.sizes(), self.strides());
+}
+} // namespace
+
+// acl_op-capable devices (A2/A3) keep the original GE AsStrided implementation;
+// aclnn-only devices (Ascend950) materialize the view with aclnnAsStrided.
 at::Tensor npu_stride_copy(
     const at::Tensor& self,
     at::IntArrayRef shape,
@@ -31,10 +42,10 @@ at::Tensor npu_stride_copy(
   if (!c10_npu::IsAclnnOnly()) {
     return acl_op::npu_stride_copy(self, shape, stride, storage_offset);
   }
-  DO_COMPATIBILITY(aclnnInplaceCopy, acl_op::npu_stride_copy(self, shape, stride, storage_offset));
-  at::Tensor view = self.as_strided(shape, stride, storage_offset.toLong());
+  const int64_t storage_offset_value = storage_offset.toLong();
+  at::Tensor x = alignToStorageBase(self);
   at::Tensor result = npu_preparation::apply_tensor_without_format(shape, self.options());
-  EXEC_NPU_CMD(aclnnInplaceCopy, result, view);
+  EXEC_NPU_CMD(aclnnAsStrided, x, shape, stride, storage_offset_value, result);
   return result;
 }
 
@@ -47,10 +58,10 @@ at::Tensor& npu_stride_copy_out(
   if (!c10_npu::IsAclnnOnly()) {
     return acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out);
   }
-  DO_COMPATIBILITY(aclnnInplaceCopy, acl_op::npu_stride_copy_out(self, shape, stride, storage_offset, out));
+  const int64_t storage_offset_value = storage_offset.toLong();
   npu_preparation::check_tensor({self}, out, shape);
-  at::Tensor view = self.as_strided(shape, stride, storage_offset.toLong());
-  EXEC_NPU_CMD(aclnnInplaceCopy, out, view);
+  at::Tensor x = alignToStorageBase(self);
+  EXEC_NPU_CMD(aclnnAsStrided, x, shape, stride, storage_offset_value, out);
   return out;
 }
 

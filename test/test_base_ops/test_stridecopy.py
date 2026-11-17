@@ -8,8 +8,8 @@ from torch_npu.testing.common_utils import create_common_tensor, SupportedDevice
 
 
 def _jit_modes():
-    # A2/A3 等支持 acl_op 的老 SOC 上两种模式都验证（op_api 入口内部回落到 acl_op）；
-    # Ascend950(A5) 等 aclnn-only 设备上 jit_compile=True 会被 dispatch 拒绝，只验证 op_api 路径。
+    # On socs that still support acl_op both modes run (the op_api entry falls back to
+    # acl_op); on aclnn-only devices jit_compile=True is rejected, so only op_api runs.
     device_name = torch_npu.npu.get_device_name(0)
     if device_name.startswith(("Ascend910", "Ascend310")):
         return (False, True)
@@ -18,7 +18,7 @@ def _jit_modes():
 
 class TestNpuStrideCopy(TestCase):
     def cpu_ref(self, input1, size, stride, storage_offset):
-        # 主参考值：CPU 上等价变换（as_strided 视图 -> 连续化）
+        # reference: the equivalent transform on CPU (as_strided view -> contiguous)
         return torch.as_strided(input1, size, stride, storage_offset).contiguous().numpy()
 
     def npu_exec(self, input1, size, stride, storage_offset):
@@ -26,18 +26,18 @@ class TestNpuStrideCopy(TestCase):
 
     def _check(self, item):
         # item: [[dtype, format, shape], size, stride, storage_offset]
-        # format 固定 0(ND)：非 base format 会静默走 acl_op，测不到 op_api 路径
+        # format is fixed to 0 (ND) to keep non-base formats out of the way
         cpu_input, npu_input = create_common_tensor(item[0], -100, 100)
         expected = self.cpu_ref(cpu_input, item[1], item[2], item[3])
-        for jit in _jit_modes():  # False -> op_api 路径；True -> acl_op 路径
+        for jit in _jit_modes():  # False -> op_api path; True -> acl_op path
             torch_npu.npu.set_compile_mode(jit_compile=jit)
             got = self.npu_exec(npu_input, item[1], item[2], item[3])
             with self.subTest(jit_compile=jit):
                 self.assertRtolEqual(expected, got)
 
     def _check_out(self, item, jit_modes=None):
-        # .out 版：预分配 out -> npu_stride_copy.out 原地填充 -> 与参考值比对
-        # jit_modes: False 走 op_api，True 走 acl_op；默认按设备能力选择
+        # .out variant: preallocate out, fill it in place, then compare with the reference
+        # jit_modes: False -> op_api, True -> acl_op; defaults to the device capability
         jit_modes = _jit_modes() if jit_modes is None else jit_modes
         cpu_input, npu_input = create_common_tensor(item[0], -100, 100)
         expected = self.cpu_ref(cpu_input, item[1], item[2], item[3])
@@ -53,11 +53,11 @@ class TestNpuStrideCopy(TestCase):
         self._check([[np.int32, 0, [5, 5]], (3, 3), (1, 2), 1])
 
     def test_stride_copy_small_bytes(self):
-        # 小张量（nbytes<32）：acl_op 会兜底到 ViewCopy，验证 op_api 无需兜底也正确
+        # small tensor (nbytes < 32): acl_op falls back to ViewCopy, op_api must match it
         self._check([[np.int8, 0, [5, 5]], (5, 5), (1, 5), 0])
 
     def test_stride_copy_small_bytes_bool(self):
-        # 1 字节 bool：acl_op 特意避开 ViewCopy 以防 bool 字节被规整
+        # 1-byte bool: acl_op deliberately avoids ViewCopy, which can normalize bool bytes
         cpu_input = torch.arange(25).reshape(5, 5) % 3 == 0
         npu_input = cpu_input.npu()
         size, stride, offset = (5, 5), (1, 5), 0
@@ -69,18 +69,18 @@ class TestNpuStrideCopy(TestCase):
                 self.assertRtolEqual(expected, got)
 
     def test_stride_copy_quant_int_repr(self):
-        # 量化 view/ravel 的真实调用场景（TensorFactories.cpp / TensorShape.cpp）
+        # real call sites of quantized view/ravel (TensorFactories.cpp / TensorShape.cpp)
         self._check([[np.int8, 0, [4, 4]], (4, 4), (1, 4), 0])
 
     def test_stride_copy_big_stride(self):
-        # 末维 stride >= 256：acl_op 走 “AsStrided + Transpose” 性能分支，老 SOC 上验证两条路径结果一致
+        # last-dim stride >= 256: covers the AsStrided + Transpose fast path in acl_op
         self._check([[np.float16, 0, [1, 300]], (2, 2), (1, 256), 0])
 
     def test_stride_copy_offset(self):
         self._check([[np.float16, 0, [13, 23]], (10, 15), (1, 2), 1])
 
     def test_stride_copy_broadcast(self):
-        # stride 含 0：广播式取数
+        # stride contains 0: broadcast-style gather
         self._check([[np.float32, 0, [4]], (3, 4), (0, 1), 0])
 
     def test_stride_copy_big_numel(self):
@@ -92,7 +92,7 @@ class TestNpuStrideCopy(TestCase):
         self._check([[np.float32, 0, [2, 3, 4, 5, 6]], (2, 3, 4, 5, 3), (360, 120, 30, 6, 2), 0])
 
     def test_stride_copy_numpy_ref(self):
-        # 独立参考值：numpy 手算，避免与算子用同一变换自证
+        # independent reference computed with numpy, so the op is not validated against itself
         cpu_input = torch.randn(1, 300)
         npu_input = cpu_input.npu()
         size, stride, offset = (2, 2), (1, 256), 0
@@ -106,20 +106,49 @@ class TestNpuStrideCopy(TestCase):
             with self.subTest(jit_compile=jit):
                 self.assertRtolEqual(expected, got)
 
+    def test_stride_copy_view_source(self):
+        # source is a non-contiguous view with a storage offset: storage_offset is
+        # storage-relative, not view-relative
+        base = torch.randn(4, 8)
+        npu_base = base.npu()
+        src = npu_base.t()[1:]           # shape (7,4), strides (1,8), storage_offset=1
+        size, stride, offset = (2, 3), (1, 8), 1
+        expected = torch.as_strided(base, size, stride, offset).numpy()
+        for jit in _jit_modes():
+            torch_npu.npu.set_compile_mode(jit_compile=jit)
+            got = torch_npu.npu_stride_copy(src, size, stride, offset).cpu().numpy()
+            with self.subTest(jit_compile=jit):
+                self.assertRtolEqual(expected, got)
+
+    def test_stride_copy_out_view_source(self):
+        # .out with a view source and a non-zero storage offset, the call shape used by
+        # copy_d2d_dtype_baseformat
+        base = torch.randn(4, 8)
+        npu_base = base.npu()
+        src = npu_base.t()[1:]           # shape (7,4), strides (1,8), storage_offset=1
+        size, stride, offset = (2, 3), (1, 8), 1
+        expected = torch.as_strided(base, size, stride, offset).numpy()
+        for jit in _jit_modes():
+            torch_npu.npu.set_compile_mode(jit_compile=jit)
+            out = torch.empty(size, dtype=npu_base.dtype, device=npu_base.device)
+            torch.ops.npu.npu_stride_copy.out(src, size, stride, offset, out=out)
+            with self.subTest(jit_compile=jit):
+                self.assertRtolEqual(expected, out.cpu().numpy())
+
     def test_stride_copy_out_variant(self):
-        # .out 版是框架热路径实际调用的入口（copy_d2d_dtype_baseformat）
+        # .out is the entry the framework hot path actually calls (copy_d2d_dtype_baseformat)
         self._check_out([[np.float32, 0, [3, 3]], (2, 2), (1, 2), 0])
         self._check_out([[np.int8, 0, [5, 5]], (5, 5), (1, 5), 0])
 
     @SupportedDevices(['Ascend950'])
     def test_stride_copy_out_big_stride(self):
-        # A5 走 op_api 路径，out 与返回值均正确；
-        # A2/A3 保持原有 acl_op 实现，其大 stride 分支重绑定 result 而不写入传入的 out，故仅在 A5 断言
+        # A5 goes through op_api, where both out and the return value are correct; acl_op's
+        # big-stride branch rebinds result instead of writing the passed-in out, so A5 only
         self._check_out([[np.float16, 0, [1, 300]], (2, 2), (1, 256), 0], jit_modes=(False,))
 
     def test_stride_copy_via_copy_of_noncontiguous(self):
-        # 端到端：非连续源(offset!=0).contiguous() -> npu_stride_copy_out
-        # 可能被 contiguous 优化器接管，仅作正确性检查
+        # end to end: contiguous() on a non-contiguous source (offset != 0) -> npu_stride_copy_out
+        # the contiguous optimizer may take over, so this only checks correctness
         cpu_input = torch.randn(6, 8)
         npu_input = cpu_input.npu()
         cpu_src = cpu_input.t()[1:]
