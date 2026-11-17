@@ -21,7 +21,7 @@
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 

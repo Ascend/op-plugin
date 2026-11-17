@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-通过设备ID获取当前NPU流，返回值类型为NPUStream，与c10::CUDA::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex _device_index_ = -1)相同。
+通过设备ID获取当前NPU流，返回值类型为NPUStream，其功能和使用方式与c10::cuda::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex _device_index_ = -1)相同。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUStream.h
+torch_npu/csrc/core/npu/NPUStream.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ c10_npu::NPUStream c10_npu::getCurrentNPUStream(c10::DeviceIndex device_index = 
 
 ## 参数说明
 
-device_index：DeviceIndex类型，获取流的NPU设备ID。
+device_index：DeviceIndex类型，获取流的NPU设备ID。默认值为-1，表示使用当前的NPU设备。

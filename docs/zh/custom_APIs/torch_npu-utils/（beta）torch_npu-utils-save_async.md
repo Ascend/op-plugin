@@ -30,13 +30,13 @@ torch_npu.utils.save_async(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT
 
 ## 参数说明
 
-- **obj** (`object`)：要保存的对象。
-- **f** \(Union\[str, PathLike, BinaryIO, IO\[bytes\]\]\)：保存的目标文件路径或文件句柄。
-- **pickle_module** (Any)：用于Pickle序列化的模块，默认值为pickle。
-- **pickle_protocol** (`int`)：Pickle协议版本，默认值为DEFAULT\_PROTOCOL。
-- **_use_new_zipfile_serialization** (`bool`)：是否使用新的Zip文件序列化，默认值为True。
-- **_disable_byteorder_record** (`bool`)：是否禁用字节顺序记录，默认值为False。
-- **model**：模型对象，需要对模型（torch.nn.Module）反向注册hook，默认值为None。
+- **obj** (`object`)：必选参数，要保存的对象。
+- **f** (`Union[str, PathLike, BinaryIO, IO[bytes]]`)：必选参数，保存的目标文件路径或文件句柄。
+- **pickle_module** (`Any`)：可选参数，用于Pickle序列化的模块，默认值为pickle。
+- **pickle_protocol** (`int`)：可选参数，Pickle协议版本，默认值为DEFAULT\_PROTOCOL。
+- **_use_new_zipfile_serialization** (`bool`)：可选参数，是否使用新的ZIP文件序列化，默认值为True。
+- **_disable_byteorder_record** (`bool`)：可选参数，是否禁用字节顺序记录，默认值为False。
+- **model** (`torch.nn.Module`)：可选参数，模型对象，默认值为None；传入torch.nn.Module时，接口会在首次为当前设备创建异步保存流时注册反向hook。
 
 ## 调用示例
 

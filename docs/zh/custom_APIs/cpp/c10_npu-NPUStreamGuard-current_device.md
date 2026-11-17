@@ -15,7 +15,7 @@
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 

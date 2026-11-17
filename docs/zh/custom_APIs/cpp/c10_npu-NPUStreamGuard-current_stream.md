@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-返回使用此设备guard设置的最新NPU流。
+返回使用此设备流Guard设置的最新NPU流。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 
@@ -31,7 +31,7 @@ c10_npu::NPUStream c10_npu::NPUStreamGuard::current_stream() const
 
 `c10_npu::NPUStream`
 
-表示当前保障的流。
+表示当前Guard设置的流。
 
 ## 约束说明
 

@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-OpCommand是一个封装下层算子调用的类，实现了NPU设备下层算子调用的相关功能。
+OpCommand是一个封装底层算子调用的类，实现了NPU设备底层算子调用的相关功能。
 
 ## 定义文件
 
-torch_npu\csrc\framework\OpCommand.h
+torch_npu/csrc/framework/OpCommand.h
 
 ## 成员函数
 
@@ -35,7 +35,7 @@ torch_npu\csrc\framework\OpCommand.h
 
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::Name(const string& name)**
 
-    OpCommand待执行算子名称，返回值类型为OpCommand。
+    OpCommand设置待执行算子名称，返回值类型为OpCommand。
 
     name：string类型，待执行的算子名称。
 
@@ -67,7 +67,7 @@ torch_npu\csrc\framework\OpCommand.h
 
     OpCommand输入Tensor，要求连续，返回值类型为OpCommand。
 
-    input：Tensor类型，输入tensor，要求是连续的。
+    input：Tensor类型，输入Tensor，要求是连续的。
 
     descName：string类型，名称描述。
 
@@ -97,7 +97,7 @@ torch_npu\csrc\framework\OpCommand.h
 
     compileType：CompileType类型，编译类型。
 
-    realDtype：string类型，实际dtype。
+    realDtype：string类型，实际数据类型。
 
     descName：string类型，名称描述。
 
@@ -111,7 +111,7 @@ torch_npu\csrc\framework\OpCommand.h
 
     compileType：CompileType类型，编译类型。
 
-    realDtype：string类型，实际dtype。
+    realDtype：string类型，实际数据类型。
 
     descName：string类型，名称描述。
 
@@ -127,7 +127,7 @@ torch_npu\csrc\framework\OpCommand.h
 
     compileType：CompileType类型，编译类型。
 
-    realDtype：string类型，实际dtype。
+    realDtype：string类型，实际数据类型。
 
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::Scalar& input, const at::ScalarType type, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_INDEPENDENT)**
 
@@ -141,7 +141,7 @@ torch_npu\csrc\framework\OpCommand.h
 
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::Inputs(const at::TensorList& inputs)**
 
-    OpCommand输入tensor list，返回值类型为OpCommand。
+    OpCommand输入Tensor List，返回值类型为OpCommand。
 
     inputs：TensorList类型引用，输入的tensor list。
 
@@ -155,9 +155,9 @@ torch_npu\csrc\framework\OpCommand.h
 
 - **at_npu::native::OpCommand& at_npu::native::OpCommand::Output(at::Tensor& output, const string& descName = "", const c10::optional& sensitive_format = c10::nullopt, const string& realType = "")**
 
-    OpCommand输出tensor，返回值类型为OpCommand。
+    OpCommand输出Tensor，返回值类型为OpCommand。
 
-    output：Tensor类型引用，输出tensor。
+    output：Tensor类型引用，输出Tensor。
 
     descName：string类型，名称描述。
 

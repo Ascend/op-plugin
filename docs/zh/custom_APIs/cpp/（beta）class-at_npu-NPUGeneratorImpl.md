@@ -21,7 +21,7 @@ NPUGeneratorImpl是一个随机数生成器类，实现了NPU设备随机数的�
 
 ## 定义文件
 
-torch_npu\csrc\aten\NPUGeneratorImpl.h
+torch_npu/csrc/aten/NPUGeneratorImpl.h
 
 ## 成员函数
 
@@ -29,7 +29,7 @@ torch_npu\csrc\aten\NPUGeneratorImpl.h
 
     NPUGeneratorImpl构造函数，指定NPU设备id构造生成器，与at::CUDAGeneratorImpl::CUDAGeneratorImpl(c10::DeviceIndex _device_index_)相同。
 
-    device_index：DeviceIndex类型，指定npu设备id。
+    device_index：DeviceIndex类型，指定NPU设备id。
 
 - **std::shared_ptr\<NPUGeneratorImpl> at_npu::NPUGeneratorImpl::clone()**
 
@@ -81,7 +81,7 @@ torch_npu\csrc\aten\NPUGeneratorImpl.h
 
 - **at_npu::PhiloxNpuState at_npu::NPUGeneratorImpl::philox_npu_state(uint64_t increment)**
 
-    NPUGeneratorImpl philox npu state捕获，返回值类型PhiloxNpuState，与at::PhiloxCudaState at::CUDAGeneratorImpl::philox_cuda_state(uint64_t _increment_)相同。
+    NPUGeneratorImpl philox NPU state捕获，返回值类型PhiloxNpuState，与at::PhiloxCudaState at::CUDAGeneratorImpl::philox_cuda_state(uint64_t _increment_)相同。
 
     increment：uint64_t类型，philox offset增量。
 
@@ -111,7 +111,7 @@ PyTorch2.5.1及以上版本，新增以下成员函数：
 
     在capture状态下为aclgraph设置期望的随机数生成状态，与at::CUDAGeneratorImpl::graphsafe_set_state(const c10::intrusive_ptr& state)功能相同。
     
-    state：随机数生成器状态。
+    state：c10::intrusive_ptr类型，待设置的随机数生成器状态。
 - **c10::intrusive_ptr\<c10::GeneratorImpl> graphsafe_get_state()**
 
     在capture状态下为aclgraph查询随机数生成对象，与c10::intrusive_ptr\<c10::GeneratorImpl> at::CUDAGeneratorImpl::graphsafe_get_state()功能相同。

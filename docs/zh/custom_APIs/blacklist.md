@@ -1,6 +1,6 @@
 # 添加二进制黑名单示例
 
-参见如下示例设置"NPU_FUZZY_COMPILE_BLACKLIST"选项，添加二进制黑名单。
+本文档以单个算子和多个算子两种场景为例，说明通过torch.npu.set_option设置“NPU_FUZZY_COMPILE_BLACKLIST”选项添加二进制黑名单的方法。
 
 单个算子使用示例：
 

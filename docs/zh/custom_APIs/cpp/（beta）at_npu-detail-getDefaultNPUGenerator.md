@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-NPU设备默认生成器获取，返回值类型Generator，与at::Generator& at::cuda::detail::getDefaultCUDAGenerator(c10::DeviceIndex device_index = -1)相同。
+获取NPU设备默认生成器，返回值类型为Generator，与at::Generator& at::cuda::detail::getDefaultCUDAGenerator(c10::DeviceIndex device_index = -1)相同。
 
 ## 定义文件
 
-torch_npu\csrc\aten\NPUGeneratorImpl.h
+torch_npu/csrc/aten/NPUGeneratorImpl.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ at::Generator& at_npu::detail::getDefaultNPUGenerator(c10::DeviceIndex device_in
 
 ## 参数说明
 
-device_index：DeviceIndex类型，指定获取生成器的NPU设备id。
+device_index：DeviceIndex类型，指定获取生成器的NPU设备ID。

@@ -10,7 +10,7 @@ TorchNPU项目采用C++和Python联合开发，当前正式对外接口仅包括
 
 当前有部分接口会被标记为beta类接口。beta类接口属于实验性接口，部分场景下可能出现异常，请谨慎使用此类接口。我们致力于将beta类接口纳入稳定接口中，但完成之前仍有可能会根据需要进行改动，包括但不限于参数变更、名称变更和移除。
 
-所有自定义API默认支持TorchNPU版本匹配的全量PyTorch版本，若非全量支持会在各API的约束说明进行标注。
+所有自定义API默认支持与TorchNPU版本匹配的全量PyTorch版本，若非全量支持会在各API的约束说明中进行标注。
 
-> [!NOTE]  
+> [!NOTE]
 > TorchNPU部分功能可以通过环境变量实现，具体可参考《[环境变量](https://gitcode.com/Ascend/pytorch/blob/master/docs/zh/api/environment_variable/env_variable_list.md)》。

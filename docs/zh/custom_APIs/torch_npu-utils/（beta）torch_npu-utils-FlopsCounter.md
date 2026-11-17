@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-Flops统计类，用于统计各个常见cube类算子的浮点计算Flops，采用单例模式。当前可统计Flops的算子包括：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
+FLOPS统计类，用于统计各个常见Cube类算子的浮点计算FLOPS，采用单例模式。当前可统计Flops的算子包括：MM、BMM、AllgatherMM、ReduceScatterMM、FA。
 
 ## 定义文件
 
-torch_npu\utils\flops_count.py
+torch_npu/utils/flops_count.py
 
 ## 函数原型
 
@@ -32,10 +32,10 @@ torch_npu.utils.FlopsCounter()
 - 含重计算的Flops（traversedCount）：默认不统计含重计算的Flops，且值为0。含重计算的Flops一般用于计算硬件算力利用率(Hardware FLOPs Utilization, HFU)。
 - 不含重计算的Flops（recordedCount）：默认不统计不含重计算的Flops，且值为0。不含重计算的Flops一般用于计算模型算力利用率(Model FLOPs Utilization, MFU)。
 
-首次创建（初始化）时参数状态，或通过成员函数对参数进行修改后，参数的状态如[图1](#fig1515653134316)所示。
+首次创建（初始化）时的参数状态，或通过成员函数对参数进行修改后，参数的状态如[图1](#fig1515653134316)所示。
 
-**图1** 参数状态<a name="fig1515653134316"></a>  
-![](../../figures/参数状态.png "参数状态")
+**图1** 参数状态<a name="fig1515653134316"></a>
+![参数状态示意图：首次创建后开关标志位和暂停标志位均为False，含重计算与不含重计算Flops计数均为0](../../figures/参数状态.png "参数状态")
 
 ## 成员函数
 
@@ -49,11 +49,11 @@ torch_npu.utils.FlopsCounter()
 
 - **torch_npu.utils.FlopsCounter.pause()**
 
-    暂停不含重计算Flops的统计。`FlopsCounter.pause()`设置暂停标志位（isPaused_）为True，不含重计算的Flops（recordedCount）将不会被统计。
+    暂停不含重计算的Flops的统计。`FlopsCounter.pause()`设置暂停标志位（isPaused_）为True，不含重计算的Flops（recordedCount）将不会被统计。
 
 - **torch_npu.utils.FlopsCounter.resume()**
 
-    恢复Flops不含重计算的统计。设置暂停标志位（isPaused_）为False。暂停标志位（isPaused_）为False且开关标志位（isEnabled_）为True时，不含重计算的Flops（recordedCount）将会被统计。
+    恢复不含重计算的Flops的统计。设置暂停标志位（isPaused_）为False。暂停标志位（isPaused_）为False且开关标志位（isEnabled_）为True时，不含重计算的Flops（recordedCount）将会被统计。
 
 - **torch_npu.utils.FlopsCounter.get_flops()**
 

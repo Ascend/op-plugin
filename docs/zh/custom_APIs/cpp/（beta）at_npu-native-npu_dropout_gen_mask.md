@@ -21,20 +21,20 @@
 
 ## 定义文件
 
-third_party\op-plugin\op_plugin\include\ops.h
+third_party/op-plugin/op_plugin/include/ops.h
 
 ## 函数原型
 
 ```cpp
-at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset, c10::optional<bool> parallel, c10::optional<bool> sync)
+at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, double p, int64_t seed, int64_t offset, c10::optional<bool> parallel, c10::optional<bool> sync);
 ```
 
 ## 参数说明
 
 - self：Tensor类型，输入的张量。
 - size：IntArrayRef类型，指定生成mask的size。
-- p：double类型，元素置0的概率。
+- p：double类型，元素置零的概率。
 - seed：int64_t类型，随机数的种子，影响生成的随机数序列。
-- offset：int64_t类型，随机数的偏移量，影响生成随机数序列的位置。
+- offset：int64_t类型，随机数的偏移量，影响生成的随机数序列的位置。
 - parallel：可选参数bool类型，是否并行计算。
 - sync：可选参数bool类型，是否同步。

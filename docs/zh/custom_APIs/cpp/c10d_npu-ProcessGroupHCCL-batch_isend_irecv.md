@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-发送或接收一批tensor，异步处理P2P操作序列中的每一个操作，并返回对应的请求。
+发送或接收一批Tensor，异步处理P2P操作序列中的每一个操作，并返回对应的请求。
 
 ## 定义文件
 
-torch_npu\csrc\distributed\ProcessGroupHCCL.hpp
+torch_npu/csrc/distributed/ProcessGroupHCCL.hpp
 
 ## 函数原型
 

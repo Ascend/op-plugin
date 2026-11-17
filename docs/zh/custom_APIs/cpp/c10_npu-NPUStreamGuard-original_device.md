@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-返回guard构造时的NPU设备。
+返回NPUStreamGuard构造时的NPU设备。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 
@@ -31,7 +31,7 @@ c10::Device c10_npu::NPUStreamGuard::original_device() const
 
 `c10::Device`
 
-表示guard构造时的设备。
+表示NPUStreamGuard构造时的设备。
 
 ## 约束说明
 

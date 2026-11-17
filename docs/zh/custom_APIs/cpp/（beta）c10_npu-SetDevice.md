@@ -21,7 +21,7 @@ NPU设备设置，用于指定当前线程使用的NPU设备，返回值类型ac
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ aclError c10_npu::SetDevice(c10::DeviceIndex device)
 
 ## 参数说明
 
-device：DeviceIndex类型，待设置的NPU设备ID。
+device：DeviceIndex类型，必选参数，待设置的NPU设备ID，取值范围为0~NPU设备总数-1；设备未初始化或传入非法设备ID时返回非零aclError。

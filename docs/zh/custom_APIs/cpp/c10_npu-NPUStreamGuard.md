@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-NPU设备流guard，保证作用域内的设备流，与`c10::cuda::CUDAStreamGuard`相同。
+NPU设备流Guard，保证作用域内的设备流，与`c10::cuda::CUDAStreamGuard`相同。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 

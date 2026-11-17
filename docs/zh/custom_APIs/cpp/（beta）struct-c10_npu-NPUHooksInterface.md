@@ -21,7 +21,7 @@ NPUHooksInterface是一个Hook接口类，提供了NPU Hook的相关接口。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUHooksInterface.h
+torch_npu/csrc/core/npu/NPUHooksInterface.h
 
 ## 成员函数
 

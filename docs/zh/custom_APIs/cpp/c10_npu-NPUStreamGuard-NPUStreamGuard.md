@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-构造函数，创建一个流guard。将当前的NPU设备设置为与传入流关联的设备，并将该设备上的当前NPU流设置为传入流。NPUStreamGuard在析构时会自动恢复构造前的NPU设备和流，以确保作用域结束后恢复原始上下文。
+构造函数，创建一个流Guard，将当前的NPU设备设置为与传入流关联的设备，并将该设备上的当前NPU流设置为传入流。NPUStreamGuard在析构时会自动恢复构造前的NPU设备和流，以确保作用域结束后恢复原始上下文。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 

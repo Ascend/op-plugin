@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-获取当前NPU设备，返回值类型DeviceIndex，与c10::DeviceIndex c10::cuda::current_device()相同。
+获取当前NPU设备ID，返回值类型为DeviceIndex，与c10::DeviceIndex c10::cuda::current_device()相同。
 
 ## 定义文件
 
-torch_npu\csrc\libs\init_npu.h
+torch_npu/csrc/libs/init_npu.h
 
 ## 函数原型
 

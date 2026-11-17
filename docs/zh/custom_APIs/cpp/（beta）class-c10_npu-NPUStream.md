@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-NPUStream是一个NPU流类，实现了NPU流管理的相关功能，是属于NPU设备的线性执行序列。
+NPUStream是一个NPU流类，实现了NPU流管理的相关功能，属于NPU设备的线性执行序列。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUStream.h
+torch_npu/csrc/core/npu/NPUStream.h
 
 ## 成员函数
 
@@ -111,7 +111,7 @@ torch_npu\csrc\core\npu\NPUStream.h
 
     设置NPUStream为数据预处理流。
 
-    is_data_preprocess_stream：bool类型，true表示将该流设置为数据预处理流。
+    is_data_preprocess_stream：bool类型，true表示将该流设置为数据预处理流，false表示将该流恢复为非数据预处理流。
 
 - **bool c10_npu::NPUStream::isDataPreprocessStream()**
 
@@ -121,4 +121,4 @@ torch_npu\csrc\core\npu\NPUStream.h
 
     NPUStream aclrtStream流查询，返回值类型aclrtStream，允许输入参数need_empty。
 
-    need_empty：bool类型。false表示直接返回当前stream；true表示确保当前stream关联的任务队列清空后，再返回当前stream。
+    need_empty：bool类型，false表示直接返回当前流；true表示确保当前stream关联的任务队列清空后，再返回当前stream。

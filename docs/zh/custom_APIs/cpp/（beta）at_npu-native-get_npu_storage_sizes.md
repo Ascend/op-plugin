@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-获取NPU tensor存储的各维度大小，返回值类型vector\<int64_t>，表示NPU tensor底层存储每一维的大小。
+获取NPU Tensor存储的各维度大小，返回值类型vector\<int64_t>，表示NPU Tensor底层存储每一维的大小。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFormat.h
+torch_npu/csrc/core/npu/NPUFormat.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ std::vector<int64_t> at_npu::native::get_npu_storage_sizes(const at::Tensor& sel
 
 ## 参数说明
 
-self：Tensor类型，待获取存储各维度大小的tensor。
+self(`Tensor`)必选参数，待获取存储各维度大小的Tensor，需为NPU侧Tensor，对dtype与shape无额外限制。

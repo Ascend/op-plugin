@@ -21,4 +21,4 @@ NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUHooksInterface.h
+torch_npu/csrc/core/npu/NPUHooksInterface.h

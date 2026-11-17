@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-NPU设备设置，与PyTorch的1.11.0版本中void c10::cuda::set_device(c10::DeviceIndex _device_)相同，与c10_npu::SetDevice主要区别是增加了错误检查。
+NPU设备设置，与PyTorch的1.11.0版本中void c10::cuda::set_device(c10::DeviceIndex device)相同，与c10_npu::SetDevice的主要区别是增加了错误检查。
 
 ## 定义文件
 

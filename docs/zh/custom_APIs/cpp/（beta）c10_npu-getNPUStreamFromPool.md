@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-从NPU流池中获得一条新流，流是从池中预先分配的，并以循环的方式获取。返回值类型NPUStream。
+从NPU流池中获取一条新流，流是从池中预先分配的，并以循环的方式获取。返回值类型NPUStream。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUStream.h
+torch_npu/csrc/core/npu/NPUStream.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ c10_npu::NPUStream c10_npu::getNPUStreamFromPool(c10::DeviceIndex device = -1)
 
 ## 参数说明
 
-device：DeviceIndex类型，获取流的NPU设备ID。
+device：DeviceIndex类型，可选参数，获取流的NPU设备ID，取值范围为有效的NPU设备编号，默认值为-1，取-1时表示使用当前NPU设备。

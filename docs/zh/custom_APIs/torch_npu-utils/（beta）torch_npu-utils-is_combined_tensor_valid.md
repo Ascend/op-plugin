@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-校验tensor列表中的tensor是否全部属于一个经过`torch_npu.utils.npu_combine_tensors`融合后的新融合tensor。
+校验Tensor列表中的Tensor是否全部属于同一个经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor。
 
 ## 函数原型
 
@@ -30,8 +30,8 @@ torch_npu.utils.is_combined_tensor_valid(combined_tensor, list_of_tensor) -> boo
 
 ## 参数说明
 
-- **combined_tensor** (`Tensor`)：经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor。
-- **list_of_tensor** (`List[Tensor]`)：需要进行校验的Tensor列表。
+- **combined_tensor** (`Tensor`)：必选参数，经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor。
+- **list_of_tensor** (`List[Tensor]`)：必选参数，需要进行校验的Tensor列表。
 
 ## 返回值说明
 

@@ -21,7 +21,7 @@
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFormat.h
+torch_npu/csrc/core/npu/NPUFormat.h
 
 ## 函数原型
 
@@ -31,10 +31,10 @@ at::Tensor at_npu::native::empty_with_format(c10::IntArrayRef sizes, const c10::
 
 ## 参数说明
 
-- sizes：IntArrayRef类型，指定tensor的维度。
+- sizes：IntArrayRef类型，指定Tensor的维度。
 
 - options：TensorOptions类型，指定tensor的可选信息，如dtype、device等。
 
-- acl_format：int64_t类型，指定tensor的内存格式。
+- acl_format：int64_t类型，指定Tensor的存储格式。
 
 - keep_format：bool类型，是否保持指定格式，true表示固定tensor的格式，false表示允许根据算子实际需求调整tensor的格式。

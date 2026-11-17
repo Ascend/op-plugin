@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-返回guard构造时设置的NPU流。
+返回Guard构造时设置的NPU流。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUGuard.h
+torch_npu/csrc/core/npu/NPUGuard.h
 
 ## 函数原型
 

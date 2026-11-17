@@ -33,7 +33,7 @@ torch_npu.utils.get_cann_version(module="CANN")
 
 - "CANN"：CANN(Compute Architecture for Neural Networks)是昇腾针对AI场景推出的异构计算架构。
 
-- "RUNTIME"：runtime组件。
+- "RUNTIME"：Runtime组件。
 
 - "COMPILER"：编译器。
 

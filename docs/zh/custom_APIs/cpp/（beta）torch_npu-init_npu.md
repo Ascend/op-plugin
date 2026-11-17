@@ -21,7 +21,7 @@
 
 ## 定义文件
 
-torch_npu\csrc\libs\init_npu.h
+torch_npu/csrc/libs/init_npu.h
 
 ## 函数原型
 

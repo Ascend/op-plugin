@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-NPU设备ID获取，返回值类型为DeviceIndex，表示获取到的设备ID，与PyTorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice主要区别是增加了错误检查。
+NPU设备ID获取，返回值类型为DeviceIndex，表示获取到的设备ID，与PyTorch的1.11.0版本中c10::DeviceIndex c10::cuda::current_device()相同，与c10_npu::GetDevice的主要区别是增加了错误检查。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 

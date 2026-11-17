@@ -26,7 +26,7 @@
 
 ## 功能说明
 
-恢复当前线程的绑核区间为主线程。
+恢复当前线程的绑核区间为主线程区间。
 
 ## 函数原型
 
@@ -53,7 +53,7 @@ torch_npu.utils.reset_thread_affinity()
 >>> import threading
 >>>
 >>> def run_thread():
-...   print("This is a child thread.")
+...     print("This is a child thread.")
 >>>
 >>> torch_npu.utils.set_thread_affinity([12, 19])
 >>> child_thread = threading.Thread(target=run_thread)

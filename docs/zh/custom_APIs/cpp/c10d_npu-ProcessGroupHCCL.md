@@ -15,7 +15,7 @@ ProcessGroupHCCL继承自`c10d::Backend`，实现`HCCL`后端的相关接口，�
 
 ## 定义文件
 
-torch_npu\csrc\distributed\ProcessGroupHCCL.hpp
+torch_npu/csrc/distributed/ProcessGroupHCCL.hpp
 
 ## 函数原型
 

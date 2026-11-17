@@ -318,7 +318,7 @@
       - [torch_npu.npu.mstx.range_pop](./torch_npu-npu/torch_npu-npu-mstx-range_pop.md)
       - [torch_npu.npu.mstx.range_start](./torch_npu-npu/torch_npu-npu-mstx-range_start.md)
       - [torch_npu.npu.mstx.range_end](./torch_npu-npu/torch_npu-npu-mstx-range_end.md)
-      - [torch_npu.npu.mstx.mstx.annotate](./torch_npu-npu/torch_npu-npu-mstx-annotate.md)
+      - [torch_npu.npu.mstx.annotate](./torch_npu-npu/torch_npu-npu-mstx-annotate.md)
       - [torch_npu.npu.mstx.mstx_range](./torch_npu-npu/torch_npu-npu-mstx-mstx_range.md)
             
     - [torch_npu Storage](./torch_npu-npu/torch_npu-Storage.md)

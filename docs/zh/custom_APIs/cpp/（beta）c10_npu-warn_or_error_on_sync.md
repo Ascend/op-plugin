@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-NPU同步时警告，无返回值，根据当前警告等级进行报错或警告，与void c10::cuda::warn_or_error_on_sync()相同。
+当NPU同步时，该接口根据当前警告等级决定报错还是仅告警，并且无返回值，其行为与void c10::cuda::warn_or_error_on_sync()相同。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 

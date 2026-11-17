@@ -11,11 +11,11 @@
 
 ## 功能说明
 
-申请一个device信息为NPU且实际内存在host侧的特殊Tensor。
+申请一个设备信息为NPU且实际内存在Host侧的特殊Tensor。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFormat.h
+torch_npu/csrc/core/npu/NPUFormat.h
 
 ## 函数原型
 
@@ -25,7 +25,7 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 
 ## 参数说明
 
-- **size** (`c10::IntArrayRef`)：必选参数，表示生成Tensor的shape。
+- **size** (`c10::IntArrayRef`)：必选参数，表示生成Tensor的shape，各维度取值须为非负整数，取值示例：`{2, 3}`。
 - **dtype_opt** (`c10::optional<at::ScalarType>`)：可选参数，表示生成Tensor的数据类型，若为`c10::nullopt`，则表示使用dtype全局默认值。
 - **device_opt** (`c10::optional<c10::Device>`)：可选参数，表示生成Tensor的设备信息，若为`c10::nullopt`，则表示使用当前默认device。
 

@@ -17,11 +17,11 @@
 
 ## 功能说明
 
-NPUEvent是一个事件类，实现了NPU设备事件管理的相关功能，可用于监视设备的进度、精确测量计时以及同步NPU流。
+NPUEvent是一个事件类，实现了NPU设备事件管理的相关功能，可用于监控设备的进度、精确测量计时以及同步NPU流。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUEvent.h
+torch_npu/csrc/core/npu/NPUEvent.h
 
 ## 成员函数
 

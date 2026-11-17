@@ -21,7 +21,7 @@ NPU设备ID获取，返回值类型为aclError，与PyTorch 1.11.0版本中c10::
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ aclError c10_npu::GetDevice(c10::DeviceIndex* device)
 
 ## 参数说明
 
-device：DeviceIndex类型，存储获取的设备ID。
+device：DeviceIndex类型的指针，输出参数，调用前需预分配用于存储设备ID的内存空间，返回获取到的设备ID。

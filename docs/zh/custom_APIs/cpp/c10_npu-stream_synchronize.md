@@ -3,10 +3,10 @@
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
-- <term> Atlas A3训练系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="910b" id2 -->
-- <term> Atlas A2训练系列产品</term>：支持
+- <term>Atlas A2训练系列产品</term>：支持
 <!-- end id2 -->
 
 ## 功能说明
@@ -15,7 +15,7 @@ NPU设备流同步，与`c10::cuda::stream_synchronize`相同。
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 

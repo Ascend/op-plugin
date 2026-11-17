@@ -21,7 +21,7 @@
 
 ## 定义文件
 
-torch_npu\csrc\aten\NPUGeneratorImpl.h
+torch_npu/csrc/aten/NPUGeneratorImpl.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ at::Generator at_npu::detail::createNPUGenerator(c10::DeviceIndex device_index =
 
 ## 参数说明
 
-device_index：DeviceIndex类型，指定创建生成器的NPU设备ID。
+device_index：DeviceIndex类型，可选参数，指定创建生成器的NPU设备ID，取值范围为[0, NPU设备数量-1]，默认值为-1（表示使用当前设备）。
