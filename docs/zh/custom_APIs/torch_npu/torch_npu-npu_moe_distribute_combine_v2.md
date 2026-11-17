@@ -17,6 +17,9 @@
 - **API功能**：需与[torch\_npu.npu\_moe\_distribute\_dispatch\_v2](torch_npu-npu_moe_distribute_dispatch_v2.md)配套使用，相当于按npu\_moe\_distribute\_dispatch\_v2算子收集数据的路径原路返回。
     - 支持数据整合功能，先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。
     - 支持特殊专家场景（零专家、拷贝专家、常量专家），配合dispatch\_v2的`assist_info_for_combine`实现更高效的全卡同步。
+    <!-- npu="950" id74 -->
+    - Ascend 950DT系列产品在非分层场景（`comm_alg`使用默认值）下支持topK最大为32。
+    <!-- end id74 -->
 
 - **计算公式**：
     - 数据整合功能：
@@ -360,6 +363,10 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
         <!-- end id60 -->
 
     - K：表示选取topK个专家，取值范围为0<K≤16，同时满足0 < K ≤ moe\_expert\_num + zero\_expert\_num + copy\_expert\_num + const\_expert\_num。
+
+        <!-- npu="950" id73 -->
+        - <term>Ascend 950DT系列产品</term>：在非分层场景（`comm_alg`使用默认值）下，取值范围为0<K≤32。
+        <!-- end id73 -->
     - server\_num：表示服务器的节点数，取值只支持2、4、8。
 
         <!-- npu="910b" id61 -->

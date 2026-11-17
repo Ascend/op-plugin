@@ -17,6 +17,9 @@
 - **API功能**：需与[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)或[torch\_npu.npu\_moe\_distribute\_combine\_add\_rms\_norm](torch_npu-npu_moe_distribute_combine_add_rms_norm.md)配套使用，完成MoE的并行部署下的token dispatch\_v2与combine\_v2。
     - 支持动态量化场景，对token数据先进行量化（可选），再进行EP（Expert Parallelism）域的alltoallv通信，再进行TP（Tensor Parallelism）域的allgatherv通信（可选）。
     - 支持特殊专家场景（零专家、拷贝专家、常量专家）。
+    <!-- npu="950" id78 -->
+    - Ascend 950DT系列产品在`comm_alg`配置为"fullmesh\_v2"时支持topK最大为32。
+    <!-- end id78 -->
 
 - 相较于npu\_moe\_distribute\_dispatch接口，该接口变更如下：
     - npu\_moe\_distribute\_dispatch中shape为\(BS \* K, \)的返回值`expand_idx`替换为shape为\(A \* 128, \)的`assist_info_for_combine`，以包含更详细的token信息辅助torch\_npu.npu\_moe\_distribute\_combine\_v2高效地进行全卡同步。
@@ -420,7 +423,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             - <term>Atlas A3系列产品</term>: 支持0<K≤12、0<BS≤256
             <!-- end id76 -->
             <!-- npu="950" id77 -->
-            - <term>Ascend 950DT系列产品</term>: 支持0<K≤16、0<BS≤512。
+            - <term>Ascend 950DT系列产品</term>: 支持0<K≤32、0<BS≤512。
             <!-- end id77 -->
     <!-- end id34 -->
 
@@ -563,7 +566,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         - <term>Atlas A2系列产品</term>：取值范围为0<BS≤256。
         <!-- end id60 -->
         <!-- npu="A3" id61 -->
-        - <term>Atlas A3系列产品</term>：取值范围为0<BS≤512；**`comm_alg`取值"fullmesh\_v2"或"hierarchy"时，取值范围为0<BS≤256。**
+        - <term>Atlas A3系列产品</term>：取值范围为0<BS≤512；`comm_alg`取值"fullmesh\_v2"或"hierarchy"时，取值范围为0<BS≤256。
         <!-- end id61 -->
         <!-- npu="950" id62 -->
         - <term>Ascend 950DT系列产品</term>：取值范围为0<BS≤512。
@@ -572,10 +575,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - K：表示选取topK个专家，`comm_alg`取值""或"fullmesh\_v1"时取值范围为0<K≤16。需同时满足0 < K ≤ moe\_expert\_num + zero\_expert\_num + copy\_expert\_num + const\_expert\_num。
 
         <!-- npu="A3" id74 -->
-        - **<term>Atlas A3系列产品</term>：`comm_alg`取值"fullmesh\_v2"时，K取值范围为0<K≤12。**
+        - <term>Atlas A3系列产品</term>：`comm_alg`取值"fullmesh\_v2"时，K取值范围为0<K≤12。
         <!-- end id74 -->
         <!-- npu="950" id75 -->
-        - **<term>Ascend 950DT系列产品</term>：`comm_alg`取值"fullmesh\_v2"时，K取值范围为0<K≤16。**
+        - <term>Ascend 950DT系列产品</term>：`comm_alg`取值"fullmesh\_v2"时，K取值范围为0<K≤32。
         <!-- end id75 -->
 
     - server\_num：表示服务器的节点数，取值只支持2、4、8。
