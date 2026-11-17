@@ -38,6 +38,10 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 
 ## 约束说明
 
+<!-- npu="950" id4 -->
+- 针对<term>Ascend 950DT系列产品</term>，`input`和`output`支持`torch.bfloat16`、`torch.float16`、`torch.float32`、`torch.int8`、`torch.int32`、`torch.bool`、`torch.float8_e8m0fnu`数据类型。
+<!-- end id4 -->
+
 - 此接口仅可在单机场景下使用。
 
 - `output_split_sizes`元素之和等于`output`的0维；`output_split_sizes`元素个数等于`group`的size。
