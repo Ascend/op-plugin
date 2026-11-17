@@ -6,9 +6,9 @@ You are advised to enable **address space layout randomization** (ASLR) (level 2
 
     echo 2 > /proc/sys/kernel/randomize_va_space
 
-## Recommended Running Users
+## User Account Recommendations
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Running User Recommendations](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#running-user-suggestions) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [User Account Recommendations](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#user-account-recommendations) in the TorchNPU repository.
 
 ## File Permission Control
 
@@ -38,27 +38,27 @@ The execution of OpPlugin depends on TorchNPU. For details, see [Running User Re
 |  Key components, private keys, certificates, and ciphertext files      |   600 (rw-------)    |
 |  APIs and scripts for encryption and decryption             |   500 (r-x------)     |
 
-## Debugging Tool Statement
+## Debugging Tool
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Debugging Tool Statement](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#debugging-tool-declaration) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Debugging Tool](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#debugging-tool) in the TorchNPU repository.
 
-## Data Security Statement
+## Data Security
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Data Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#data-security-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Data Security](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#data-security) in the TorchNPU repository.
 
-## Build Security Statement
+## Build Security
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Build Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#building-a-security-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Build Security](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#build-security) in the TorchNPU repository.
 
-## Runtime Security Statement
+## Runtime Security
 
-The execution of OpPlugin depends on TorchNPU. For details, see [Runtime Security Statement](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#operation-safety-statement) in the TorchNPU repository.
+The execution of OpPlugin depends on TorchNPU. For details, see [Runtime Security](https://gitcode.com/Ascend/pytorch/blob/master/SECURITYNOTE.en.md#runtime-security) in the TorchNPU repository.
 
-## Public IP Address Statement
+## Public Network Addresses
 
-Public IP addresses are used in the configuration files and scripts of OpPlugin. For details, see [Public IP Addresses](#public-ip-addresses).
+Public network addresses are used in the configuration files and scripts of OpPlugin. For details, see [Public Network Address](#public-network-address).
 
-### Public IP Addresses
+### Public Network Address
 
 |   Type  |   Open-Source Code Address  |   File  | Public IP Address/Public URL/Domain Name/Email Address                                                                                    |   Description  |
 |------------------------|-------------------------|-------------------------|------------------------------------------------------------------------------------------------------------|-------------------------|
@@ -66,7 +66,7 @@ Public IP addresses are used in the configuration files and scripts of OpPlugin.
 |   Development introduction |   N/A  |   ci\exec_ut.sh   | [https://gitcode.com/ascend/pytorch.git](https://gitcode.com/ascend/pytorch.git)                                                                     |   The `UT` script pulls code from the TorchNPU repository address to perform `UT` tests.  |
 | Open-source code introduction|pytorch\aten\src\ATen\native\TensorCompare.cpp  | op_plugin\ops\opapi\IsInKernelNpuOpApi.cpp | [https://github.com/numpy/numpy/blob/fb215c76967739268de71aa4bda55dd1b062bc2e/numpy/lib/arraysetops.py#L575](https://github.com/numpy/numpy/blob/fb215c76967739268de71aa4bda55dd1b062bc2e/numpy/lib/arraysetops.py#L575) | The algorithm implementation references this NumPy source code URL.|
 
-## Public API Statement
+## Public APIs
 
 The execution of OpPlugin depends on TorchNPU, and no public API is provided.
 

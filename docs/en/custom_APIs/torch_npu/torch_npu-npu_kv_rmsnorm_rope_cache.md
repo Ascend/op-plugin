@@ -69,19 +69,19 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - **`k_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized key vectors. The data type can be `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data layout can be ND. The shape depends on `cache_mode`.
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
+  - Atlas A2 products, Atlas A3 products: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
+  - Ascend 950PR&950DT products: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
   <!-- end id5 -->
 
 - **`ckv_cache`** (`Tensor`): Required. Storage tensor for quantized or non-quantized compressed KV vectors. The data type can be `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data layout can be ND. The shape depends on `cache_mode`.
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
+  - Atlas A2 products, Atlas A3 products: the data types `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are not supported.
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
+  - Ascend 950PR&950DT products: the data types `torch.bfloat16`, `torch.float16`, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn` are supported.
   <!-- end id7 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
@@ -90,19 +90,19 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - **`k_rope_offset`** (`Tensor`): Optional. The default value is `None`. Quantization offset for the key Rotary Position Embedding (RoPE). The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rope_size]`.
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
+  - Atlas A2 products, Atlas A3 products: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT products</term>: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
+  - Ascend 950PR&950DT products: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
   <!-- end id9 -->
 
 - **`c_kv_offset`** (`Tensor`): Optional. The default value is `None`. Quantization offset for the compressed KV. The data type can be `torch.float32`. The data layout can be ND. This parameter must be 1D with shape `[rms_size]`.
 
   <!-- npu="A3,910b" id10 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
+  - Atlas A2 products, Atlas A3 products: this parameter is required in symmetric quantization mode. Asymmetric quantization is not supported currently.
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR&950DT products</term>: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
+  - Ascend 950PR&950DT products: symmetric and asymmetric quantization modes are supported. In asymmetric quantization mode, this parameter is required.
   <!-- end id11 -->
 
 - **`epsilon`** (`float`): Optional. The default value is `1e-5`. Small constant used in RMS normalization to prevent division by zero.
@@ -111,10 +111,10 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
     | Value | Mode Name | Description |
     | --- | --- | --- |
     | Norm | KV cache update mode | The shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, and the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`. The shape of `index` is `[batch_size, seq_len]`, where the values inside `index` indicate the offset for each batch. |
-    | PA/PA_BNSD | PagedAttention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*seq_len]`, where the values inside `index` indicate the offset for each token. |
-    | PA_NZ | PagedAttention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * seq_len]`, where the values inside `index` indicate the offset for each token.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
-    | PA_BLK_BNSD | Special PagedAttention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*Ceil(seq_len/block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one. |
-    | PA_BLK_NZ | Special PagedAttention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * Ceil(seq_len / block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
+    | PA/PA_BNSD | Paged Attention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*seq_len]`, where the values inside `index` indicate the offset for each token. |
+    | PA_NZ | Paged Attention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * seq_len]`, where the values inside `index` indicate the offset for each token.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
+    | PA_BLK_BNSD | Special Paged Attention mode | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size*Ceil(seq_len/block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one. |
+    | PA_BLK_NZ | Special Paged Attention mode in which the cache data format is FRACTAL_NZ | The shape of `k_cache` is `[block_num, block_size, 1, rope_size]`, and the shape of `ckv_cache` is `[block_num, block_size, 1, rms_size]`. The shape of `index` is `[batch_size * Ceil(seq_len / block_size)]`, where the values inside `index` indicate the start offset of each block and no longer correspond to tokens one by one.<br>The data layout differs in different quantization modes:<br><li>In non-quantization mode: the data layout of `k_cache` is `[block_num, rope_size//16, block_size, 1, 16]`, and the data layout of `ckv_cache` is `[block_num, rms_size//16, block_size, 1, 16]`.</li><li>In quantization mode: the data layout of `k_cache` is `[block_num, rope_size//32, block_size, 1, 32]`, and the data layout of `ckv_cache` is `[block_num, rms_size//32, block_size, 1, 32]`.</li> |
 
 - **`is_output_kv`** (`bool`): Optional. Specifies whether to output the processed `k_embed_out` and `y_out` (unquantized original values). The default value is `False`, which means no output. This parameter is valid only when `cache_mode` is `(PA/PA_BNSD/PA_NZ/PA_BLK_BNSD/PA_BLK_NZ)`.
 
@@ -136,14 +136,14 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
   - `rms_size`: length of the RMSNorm branch vector.
   - `rope_size`: length of the RoPE branch vector.
   - `cache_length`: maximum KV cache length, which is valid only in `Norm` mode.
-  - `block_num`: number of blocks, which is valid only in PagedAttention mode.
-  - `block_size`: block size, which is valid only in PagedAttention mode.
+  - `block_num`: number of blocks, which is valid only in Paged Attention mode.
+  - `block_size`: block size, which is valid only in Paged Attention mode.
 
   <!-- npu="A3,910b" id12 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: only `576` is supported for `hidden_size`, only `512` for `rms_size`, and only `64` for `rope_size`.
+  - Atlas A2 products, Atlas A3 products: only `576` is supported for `hidden_size`, only `512` for `rms_size`, and only `64` for `rope_size`.
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR&950DT products</term>: `hidden_size`, `rms_size`, and `rope_size` are determined by the actual service scenario and can be set as required. `rope_size` must be an even number, and `rms_size` + `rope_size` = `hidden_size` must be satisfied.
+  - Ascend 950PR&950DT products: `hidden_size`, `rms_size`, and `rope_size` are determined by the actual service scenario and can be set as required. `rope_size` must be an even number, and `rms_size` + `rope_size` = `hidden_size` must be satisfied.
   <!-- end id13 -->
 
 - Quantization mode: When `k_rope_scale` and `c_kv_scale` are provided, the data type of `k_cache` and `ckv_cache` is `torch.int8`. The size of the last dimension of the cache shape must be `32` (applicable when the cache data layout is FRACTAL_NZ mode). `k_rope_scale` and `c_kv_scale` must both be provided.
@@ -156,7 +156,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 - Shape association rules: Different `cache_mode` configurations have different shape rules.
     - Norm: the shape of `k_cache` is `[batch_size, 1, cache_length, rope_size]`, the shape of `ckv_cache` is `[batch_size, 1, cache_length, rms_size]`, and the shape of `index` is `[batch_size, seq_len]`, where `cache_length` >= `seq_len`.
-    - Non-`Norm` modes (PagedAttention-related modes): The size of `block_num` must be greater than or equal to `Ceil(seq_len/block_size) * batch_size`.
+    - Non-`Norm` modes (Paged Attention-related modes): The size of `block_num` must be greater than or equal to `Ceil(seq_len/block_size) * batch_size`.
 
 ## Examples<a name="en-us_topic_0000002236535552_section3235105212365"></a>
 

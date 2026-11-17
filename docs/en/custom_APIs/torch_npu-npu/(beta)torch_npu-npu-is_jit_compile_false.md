@@ -23,7 +23,7 @@
 Checks whether JIT compilation mode is disabled, returning `True` if it is disabled and `False` otherwise.
 
 <!-- npu="950" id6 -->
-For <term>Ascend 950DT products</term>, only `True` is returned, that is, the JIT compilation mode is disabled by default.
+For Ascend 950DT products, only `True` is returned, that is, the JIT compilation mode is disabled by default.
 <!-- end id6 -->
 
 ## Prototype

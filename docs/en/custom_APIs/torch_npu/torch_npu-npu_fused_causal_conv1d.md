@@ -221,7 +221,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     - `conv_states` must be a 3D tensor with shape `[..., K-1, dim]`. The size of the first dimension is not fixed and must be greater than or equal to `batch` and the total number of elements of `cache_indices`.
     - `cache_indices` must be a 1D tensor with shape `[batch]` or a 2D tensor with shape `[batch, maxNumBlocks]`. The 1D form indicates that APC is disabled, and the 2D form indicates that APC is enabled.
     - `cu_seq_len` must be in the range `[batch, 1024*1024]`. `dim` must be in the range `[64, 16384]` and must be a multiple of `16`. The product of `cu_seq_len` and `dim` must be in the range `[64*batch, 4G]`. `batch` must be in the range `[1, 256]`.
-    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len, block_size)`.
+    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len / block_size)`.
 
   - Mixed prefill and decode scenario:
     - `x`: `[cu_seq_len, dim]`
@@ -253,7 +253,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     - `conv_states` must be a 3D tensor with shape `[..., K-1+m, dim]`. The size of the first dimension is not fixed and must be greater than or equal to `batch` and the total number of elements of `cache_indices`.
     - `cache_indices` must be a 1D tensor with shape `[batch]` or a 2D tensor with shape `[batch, maxNumBlocks]`. The 1D form indicates that APC is disabled, and the 2D form indicates that APC is enabled.
     - `cu_seq_len` must be in the range `[batch, 1024*1024]`. `dim` must be in the range `[64, 16384]` and must be a multiple of `16`. The product of `cu_seq_len` and `dim` must be in the range `[64*batch, 4G]`. `batch` must be in the range `[1, 256]`.
-    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len, block_size)`.
+    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len / block_size)`.
 
   - Decode scenario (variable-length sequences):
     - `x`: `[cu_seq_len, dim]`
@@ -285,7 +285,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     - `conv_states` must be a 3D tensor with shape `[..., K-1+m, dim]`. The size of the first dimension is not fixed and must be greater than or equal to `batch` and the total number of elements of `cache_indices`.
     - `cache_indices` must be a 1D tensor with shape `[batch]` or a 2D tensor with shape `[batch, maxNumBlocks]`. The 1D form indicates that APC is disabled, and the 2D form indicates that APC is enabled.
     - `cu_seq_len` must be in the range `[batch, batch*8]`, and the number of tokens in each batch must be in the range `[1, 8]`. `dim` must be in the range `[64, 16384]` and must be a multiple of `16`. `batch` must be in the range `[1, 256]`.
-    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len, block_size)`.
+    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len / block_size)`.
 
   - Decode scenario (fixed batch size):
     - `x`: `[batch, m+1, dim]`
@@ -315,7 +315,7 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     - `conv_states` must be a 3D tensor with shape `[..., K-1+m, dim]`. The size of the first dimension is not fixed and must be greater than or equal to `batch` and the total number of elements of `cache_indices`.
     - `cache_indices` must be a 1D tensor with shape `[batch]` or a 2D tensor with shape `[batch, maxNumBlocks]`. The 1D form indicates that APC is disabled, and the 2D form indicates that APC is enabled.
     - `m` must be in the range `[0, 7]`. `dim` must be in the range `[64, 16384]` and must be a multiple of `16`. `batch` must be in the range `[1, 256]`.
-    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len, block_size)`.
+    - `maxNumBlocks` must be greater than or equal to `ceil(max_query_len / block_size)`.
 
 - Input value range constraints:
   - `query_start_loc` contains cumulative offsets, with values in the range `[0, cu_seq_len]` and length `batch+1`. `query_start_loc[i]` represents the starting offset of the `i`-th sequence, and `query_start_loc[batch+1]` represents the ending position of the last sequence.

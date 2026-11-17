@@ -27,71 +27,71 @@ torch_npu.npu_quant_scatter_(self, indices, updates, quant_scales, quant_zero_po
 - **`self`** (`Tensor`): Required input. Source data tensor. The data layout can be $ND$, non-contiguous tensors are supported, and the number of dimensions can only be 3 to 8.
 
     <!-- npu="310p" id4 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int8`.
+    - Atlas inference products: The data type can be `torch.int8`.
     <!-- end id4 -->
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8`.
+    - Atlas A2 products: The data type can be `torch.int8`.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+    - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
     <!-- end id6 -->
 
 - **`indices`** (`Tensor`): Required. Index tensor. The data type can be `torch.int32`. The data layout can be ND. Non-contiguous tensors are supported.
 - **`updates`** (`Tensor`): Required. Update data tensor. The data layout can be ND. Non-contiguous tensors are supported.
 
     <!-- npu="310p" id7 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+    - Atlas inference products: The data type can be `torch.float16`.
     <!-- end id7 -->
     <!-- npu="910b" id8 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.float16`.
+    - Atlas A2 products: The data type can be `torch.bfloat16` or `torch.float16`.
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.float16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.bfloat16` or `torch.float16`.
     <!-- end id9 -->
 
 - **`quant_scales`** (`Tensor`): Required. Quantization scale tensor. The data layout can be ND. Non-contiguous tensors are supported.
 
     <!-- npu="310p" id10 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float32`.
+    - Atlas inference products: The data type can be `torch.float32`.
     <!-- end id10 -->
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.float32`.
+    - Atlas A2 products: The data type can be `torch.bfloat16` or `torch.float32`.
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.float32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.bfloat16` or `torch.float32`.
     <!-- end id12 -->
 
 - **`quant_zero_points`** (`Tensor`): Optional. Quantization offset tensor. The data layout can be ND. Non-contiguous tensors are supported.
 
     <!-- npu="310p" id13 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int32`.
+    - Atlas inference products: The data type can be `torch.int32`.
     <!-- end id13 -->
     <!-- npu="910b" id14 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.bfloat16` or `torch.int32`.
+    - Atlas A2 products: The data type can be `torch.bfloat16` or `torch.int32`.
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.bfloat16` or `torch.int32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.bfloat16` or `torch.int32`.
     <!-- end id15 -->
 
 - **`axis`** (`int`): Optional. Axis on `updates` used for updating. The default value is `-2`.
 - **`quant_axis`** (`int`): Optional. Axis on `updates` used for quantization. The default value is `-1`.
-- **`reduce`** (`str`): Optional. Data operation mode. The default value is `'update'`.
+- **`reduce`** (`str`): Optional. Data operation mode. Currently, only `update` (update operation) is supported.
 - **`dst_type`** (`int`): Optional. Data type of the output `self`. The default value is `None`, indicating `torch.int8`.
 
     <!-- npu="910b,310p" id16 -->
-    - <term>Atlas inference products</term> and <term>Atlas A2 products</term>: this parameter is not supported currently, and `torch.int8` is used by default.
+    - Atlas inference products and Atlas A2 products: this parameter is not supported currently, and `torch.int8` is used by default.
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR&950DT products</term>: the supported values are `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn`.
+    - Ascend 950PR&950DT products: the supported values are `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn`.
     <!-- end id17 -->
 
 - **`round_mode`** (`str`): Optional. Rounding mode used during quantization. The default value is `"rint"`.
 
     <!-- npu="910b,310p" id18 -->
-    - <term>Atlas inference products</term> and <term>Atlas A2 products</term>: this parameter is not supported currently, and `"rint"` is used by default.
+    - Atlas inference products and Atlas A2 products: this parameter is not supported currently, and `"rint"` is used by default.
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR&950DT products</term>: when `dst_type` is `torch.int8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`, `"rint"` is supported; when `dst_type` is `torch_npu.hifloat8`, `"round"` and `"hybrid"` are supported.
+    - Ascend 950PR&950DT products: when `dst_type` is `torch.int8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`, `"rint"` is supported; when `dst_type` is `torch_npu.hifloat8`, `"round"` and `"hybrid"` are supported.
     <!-- end id19 -->
 
 ## Return Values
@@ -112,8 +112,8 @@ Represents the result of updating `self`.
 - `quant_axis` can only be the last dimension of `updates`.
 <!-- npu="950,910b" id20 -->
 - The data type input combinations of `updates`, `quant_scales`, and `quant_zero_points` include (applicable to the following products):
-    - <term>Atlas A2 products</term>
-    - <term>Ascend 950PR&950DT products</term>
+    - Atlas A2 products
+    - Ascend 950PR&950DT products
 
     | updates | quant_scales | quant_zero_points |
     | --- | --- | --- |

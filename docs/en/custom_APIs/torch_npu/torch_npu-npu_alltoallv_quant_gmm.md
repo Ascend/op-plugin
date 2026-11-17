@@ -60,9 +60,9 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **`gmm_x_scale`** (`Tensor`): Required. Quantization scale of routed expert left matrix `gmm_x`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 3D tensor with shape $(BSK, \operatorname{ceil}(H1/64), 2)$. The data layout can be `ND`.
 - **`gmm_weight_scale`** (`Tensor`): Required. Quantization scale of routed expert right matrix `gmm_weight`. The data type can be `torch.float32` or `torch.float8_e8m0fnu`. In the per-tensor quantization scenario, this parameter must be a 1D tensor with shape $(1)$. In the MX quantization scenario, this parameter must be a 4D tensor with shape $(e, \operatorname{ceil}(H1/64), N1, 2)$. The data layout can be `ND`.
 - **`hcom`** (`str`): Required. String identifying the communication group on the host side, that is, the name of the communication domain, obtained through the `get_hccl_comm_name` API.
-- **`ep_world_size`** (`int`): Required. Total number of ranks in the communication domain. The value can be `2`, `4`, `8`, `16`, `32`, `64`, `128`, or `256`.
-- **`send_counts`** (`List[int]`): Required. Integer list with length `e * ep_world_size`, representing the number of tokens sent from the local device to each destination device. Assuming that the destination device ID is `i` ($0 \le i < ep\_world\_size$) and the expert ID is `j` ($0 \le j < e$), `send_counts[i][j]` represents the number of tokens sent from the local device to the `j`-th expert on device `i`. The length must be `e * ep_world_size`, and all elements must be non-negative integers.
-- **`recv_counts`** (`List[int]`): Required. Integer list with length `e * ep_world_size`, representing the number of tokens received by the local device from each source device. Assuming that the source device ID is `i` ($0 \le i < ep\_world\_size$) and the expert ID is `j` ($0 \le j < e$), `recv_counts[i][j]` represents the number of tokens received by the local device from the `j`-th expert on device `i`. The length must be `e * ep_world_size`, and all elements must be non-negative integers.
+- **`ep_world_size`** (`int`): Required. Total number of ranks in the communication domain. The value can be `2`, `4`, `8`, `16`, `32`, `64`, `128`, or `256`. CCU supports only intra-node UB-domain interconnection, whereas AICPU supports inter-node UB-domain interconnection.
+- **`send_counts`** (`List[int]`): Required. Integer list with length `e * ep_world_size`, representing the number of tokens sent from the local device to each destination device. Assuming that the destination device ID is `i` ($0 \le i < ep\_world\_size$) and the expert ID is `j` ($0 \le j < e$), `send_counts[i * e + j]` represents the number of tokens sent from the local device to the `j`-th expert on device `i`. The length must be `e * ep_world_size`, and all elements must be non-negative integers.
+- **`recv_counts`** (`List[int]`): Required. Integer list with length `e * ep_world_size`, representing the number of tokens received by the local device from each source device. Assuming that the source device ID is `i` ($0 \le i < ep\_world\_size$) and the expert ID is `j` ($0 \le j < e$), `recv_counts[i * e + j]` represents the number of tokens received by the local device from the `j`-th expert on device `i`. The length must be `e * ep_world_size`, and all elements must be non-negative integers.
 - **`gmm_y_dtype`** (`int`): Required. Data type of output tensor `gmm_y` of the routed expert `GroupedMatMul` computation. The data type can be `torch.float16` or `torch.bfloat16`.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 - **`send_counts_tensor`** (`Tensor`): Optional. Currently, only `None` is supported.
@@ -101,7 +101,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 
 - This API can be used in training and inference scenarios.
 - **Communication engine constraints**: CCU and AI_CPU communication are supported and can be configured through the `comm_mode` parameter. When `comm_mode` is `None`, AI_CPU communication is used.
-- This API supports single-operator calls and graph-mode calls in the T-T quantization scenario.
+- This API supports single-operator calls, graph-mode calls in the T-T quantization scenario, and graph-mode calls in the MX quantization scenario.
 - The variables used in the Shape descriptions are defined as follows:
     - `BS` represents the batch sequence size.
     - `K` represents the number of selected top-K experts. When shared expert computation is enabled, `K` must be in the range `[2, 8]`.
@@ -129,6 +129,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
     - Configuration principles are as follows: when `groupSizeM = 0`, the quantization grouping value along the `m` dimension is inferred by the API using `groupSizeM = m / scaleM`, where `m` must be divisible by `scaleM`. Here, `m` corresponds to the `m` dimension of `gmm_x` and `mm_x`, and `scaleM` corresponds to the `m` dimension of `gmm_x_scale` and `mm_x_scale`. When `groupSizeK = 0`, the quantization grouping value along the `k` dimension is inferred by the API using `groupSizeK = k / scaleK`, where `k` must be divisible by `scaleK`. Here, `k` corresponds to the `k` dimension of `gmm_x` and `mm_x`, and `scaleK` corresponds to the `k` dimension of `gmm_x_scale` and `mm_x_scale`. When `groupSizeN = 0`, the quantization grouping value along the `n` dimension is inferred by the API using `groupSizeN = n / scaleN`, where `n` must be divisible by `scaleN`. Here, `n` corresponds to the `n` dimension of `gmm_weight` and `mm_weight`, and `scaleN` corresponds to the `n` dimension of `gmm_weight_scale` and `mm_weight_scale`.
     - When the conditions for resetting the values are met, if `gmm_x_scale`, `mm_x_scale`, and `mm_weight_scale` are all 3D tensors, `gmm_weight_scale` is a 4D tensor, and all data types are `torch.float8_e8m0fnu`, the inferred combination of `[groupSizeM, groupSizeN, groupSizeK]` is `[1, 1, 32]`.
 - When all output tensors (`gmm_y`, `mm_y`, and `permute_out`) on a device are empty tensors, `torch.distributed.barrier()` must be called explicitly to ensure that the process on that device synchronizes and waits for other devices to complete communication and computation. If synchronization is not added, `AlltoAllv` communication will be blocked due to process desynchronization.
+- When CCU communication is used, the data volume of a single AlltoAllv collective communication cannot exceed 256 MB, and the total data volume cannot exceed 16 \* 256 MB. Because the shapes differ, the operator implementation may differ, and the actual supported total communication volume may be slightly less than this value.
 
 - Detailed input and output data type constraints for each quantization mode are provided in the following tables.
 
@@ -196,12 +197,12 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
             H2, N2 = 256, 128
             total_tokens = BS * K
             send_counts, recv_counts = generate_counts(world_size, e, total_tokens, seed=rank)
-            gmm_x = torch.randint(0, 255, (total_tokens, H1), dtype=torch.uint8).npu()
-            gmm_weight = torch.randint(0, 255, (e, H1, N1), dtype=torch.uint8).npu()
+            gmm_x = torch.randint(0, 20, (total_tokens, H1), dtype=torch.uint8).npu()
+            gmm_weight = torch.randint(0, 20, (e, H1, N1), dtype=torch.uint8).npu()
             gmm_x_scale = torch.tensor([0.5], dtype=None).npu()
             gmm_weight_scale = torch.tensor([0.3], dtype=None).npu()
-            mm_x = torch.randint(0, 255, (BS, H2), dtype=torch.uint8).npu()
-            mm_weight = torch.randint(0, 255, (H2, N2), dtype=torch.uint8).npu()
+            mm_x = torch.randint(0, 20, (BS, H2), dtype=torch.uint8).npu()
+            mm_weight = torch.randint(0, 20, (H2, N2), dtype=torch.uint8).npu()
             mm_x_scale = torch.tensor([0.4], dtype=None).npu()
             mm_weight_scale = torch.tensor([0.2], dtype=None).npu()
             quant_mode = 1
@@ -225,7 +226,7 @@ torch_npu.npu_alltoallv_quant_gmm(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
                 gmm_weight_quant_mode=quant_mode,
                 mm_x_quant_mode=quant_mode,
                 mm_weight_quant_mode=quant_mode,
-                permute_out_flag=True,
+                permute_out_flag=False,
                 gmm_x_dtype=torch_npu.hifloat8,
                 gmm_weight_dtype=torch_npu.hifloat8,
                 gmm_x_scale_dtype=None,

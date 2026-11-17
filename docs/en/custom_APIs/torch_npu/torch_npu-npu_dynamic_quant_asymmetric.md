@@ -28,7 +28,7 @@
     y = \text{round}(\frac{\mathbf{x}}{\text{scale}} + \text{offset})
     $$
 
-    - In the MoE and non-MoE scenarios, if smooth quant is used, the smooth_scales input is introduced in the non-MoE scenario, and its shape is the same as the size of the last dimension of x. Before quantization, x is multiplied by smooth_scales and then quantized according to the preceding formulas. In the MoE scenario, both smooth_scales and group_index are introduced. In this case, smooth_scales contains multiple groups of smooth vectors, which are applied to different rows of x according to the values in group_index. Specifically, if x contains m tokens and smooth_scales has n rows, smooth_scales[0] is applied to x[0:group_index[0]], and smooth_scales[i] is applied to x[group_index[i-1]: group_index[i]], where i=1,2, ...,n-1.
+    - If smooth quant is used, the `smooth_scales` input is introduced in non-MoE scenarios, and its shape is the same as the size of the last dimension of `x`. Before quantization, `x` is multiplied by `smooth_scales` and then quantized according to the preceding formulas. In MoE scenarios, both `smooth_scales` and `group_index` are introduced. In this case, `smooth_scales` contains multiple groups of smooth vectors, which are applied to different rows of `x` according to the values in `group_index`. Specifically, if `x` contains m tokens and `smooth_scales` has n rows, `smooth_scales[0]` is applied to `x[0:group_index[0]]`, and `smooth_scales[i]` is applied to `x[group_index[i-1]:group_index[i]]`, where i=1, 2, ..., n-1.
 
 ## Prototype
 
@@ -48,35 +48,35 @@ torch_npu.npu_dynamic_quant_asymmetric(input, *, smooth_scales=None, group_index
 - **`dst_type`** (`ScalarType`): Optional. Data type of the quantization output. Processed as `torch.int8` if `None` is provided.
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.int8` or `torch.quint4x2`.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.int8` or `torch.quint4x2`.
     <!-- end id4 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int8`, `torch.quint4x2`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+    - Ascend 950PR&950DT products: the data type can be `torch.int8`, `torch.quint4x2`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
     <!-- end id6 -->
 
 - **`quant_mode`** (`str`): Optional. Specifies the quantization mode. The default value is `"pertoken"`. If `group_index` is not `None`, only `"pertoken"` is supported.
 
     <!-- npu="A3,910b" id7 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: this parameter is not supported currently, and `"pertoken"` is used by default.
+    - Atlas A2 products and Atlas A3 products: this parameter is not supported currently, and `"pertoken"` is used by default.
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR&950DT products</term>: the supported values are `"pertoken"` (token granularity), `"perchannel"` (channel granularity), and `"pertensor"` (one scale shared by the entire tensor).
+    - Ascend 950PR&950DT products: the supported values are `"pertoken"` (token granularity), `"perchannel"` (channel granularity), and `"pertensor"` (one scale shared by the entire tensor).
     <!-- end id8 -->
 
 - **`dst_type_max`** (`float`): Optional. Maximum representable value of the target data type. The default value is 0.0.
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: this parameter is not supported currently.
+    - Atlas A2 products and Atlas A3 products: this parameter is not supported currently.
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR&950DT products</term>: it takes effect only when `dst_type` is `torch_npu.hifloat8`, and the supported values are 0.0 to 32768.0. When the value is 0.0, the maximum value representable by the target precision is used; when the value is not 0.0, the passed value is used as the maximum value of the target data type.
+    - Ascend 950PR&950DT products: it takes effect only when `dst_type` is `torch_npu.hifloat8`, and the supported values are 0.0 to 32768.0. When the value is 0.0, the maximum value representable by the target precision is used; when the value is not 0.0, the passed value is used as the maximum value of the target data type.
     <!-- end id10 -->
 
 ## Return Values
 
 - **`y`** (`Tensor`): Quantized output tensor whose data type is specified by `dst_type`. When `dst_type` is `torch.quint4x2`, the data type of `y` is `torch.int32`, the last dimension of its shape is the last dimension of `x` divided by 8, and its other dimensions must match those of `x`, where each `torch.int32` element contains eight `torch_npu.int4` results. In other scenarios, the shape of `y` must match that of the input `x`, and its data type is specified by `dst_type`.
     <!-- npu="950" id5 -->
-    - On <term>Ascend 950PR&950DT products</term>, when `dst_type` is `torch_npu.hifloat8`, the data type of `y` is `torch.uint8` (which actually carries the `torch_npu.hifloat8` type).
+    - On Ascend 950PR&950DT products, when `dst_type` is `torch_npu.hifloat8`, the data type of `y` is `torch.uint8` (which actually carries the `torch_npu.hifloat8` type).
     <!-- end id5 -->
 - **`scale`** (`Tensor`): Scaling factors calculated during the asymmetric dynamic quantization process. The data type is `torch.float32`. When `quant_mode` is `"pertoken"`, the shape is the shape of `input` with the last dimension removed. When `quant_mode` is `"perchannel"`, the shape is the shape of `input` with the second-to-last dimension removed and the last dimension kept identical to that of `input`. When `quant_mode` is `"pertensor"`, the shape is `(1,)`.
 - **`offset`** (`Tensor`): Offset factor calculated during the asymmetric dynamic quantization process. The data type can be `torch.float32`, and its shape must match that of `scale`.

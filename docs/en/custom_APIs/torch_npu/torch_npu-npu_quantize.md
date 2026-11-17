@@ -41,76 +41,76 @@ torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) 
 - **`self`** (`Tensor`): Required. Source data tensor to be quantized, corresponding to `self` in the formulas. The data layout can be $ND$. Empty tensors are supported. Non-contiguous tensors are supported. When `div_mode` is `False` and `dtype` is `torch.quint4x2`, the last dimension must be divisible by 8.
 
     <!-- npu="310p" id5 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float` or `torch.float16`.
+    - Atlas inference products: The data type can be `torch.float` or `torch.float16`.
     <!-- end id5 -->
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When `div_mode` is `False` and the data type is `torch.float`, the data layout can be NZ.
+    - Atlas A2 products and Atlas A3 products: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When `div_mode` is `False` and the data type is `torch.float`, the data layout can be NZ.
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`.
+    - Ascend 950PR&950DT products: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`.
     <!-- end id7 -->
 
 - **`scales`** (`Tensor`): Required. Scaling tensor, $scales$ in the formula. Empty tensors are supported. Non-contiguous tensors are supported.
     - When `div_mode` is `True`:
 
         <!-- npu="310p" id8 -->
-        - <term>Atlas inference products</term>: The data type can be `torch.float`.
+        - Atlas inference products: The data type can be `torch.float`.
         <!-- end id8 -->
         <!-- npu="A3,910b" id9 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.float` or `torch.bfloat16`.
+        - Atlas A2 products and Atlas A3 products: The data type can be `torch.float` or `torch.bfloat16`.
         <!-- end id9 -->
 
     - When `div_mode` is `False`, the data layout can be $ND$. 1D or multiple dimensions are supported (for 1D, the size of the corresponding axis must be equal to the `axis` dimension of `self` or equal to 1; for multiple dimensions, the shape of `scales` must have the same number of dimensions as the shape of `self`, all dimensions other than the one specified by `axis` must be 1, and the dimension specified by `axis` must be equal to the corresponding dimension of `self` or equal to 1). The data type and data layout must be the same as those of `self`.
 
         <!-- npu="310p" id10 -->
-        - <term>Atlas inference products</term>: The data type can be `torch.float` or `torch.float16`.
+        - Atlas inference products: The data type can be `torch.float` or `torch.float16`.
         <!-- end id10 -->
         <!-- npu="A3,910b" id11 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When the data layout is NZ, all elements in `scales` must be identical to `1`.
+        - Atlas A2 products and Atlas A3 products: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When the data layout is NZ, all elements in `scales` must be identical to `1`.
         <!-- end id11 -->
 
 - **`zero_points`** (`Tensor`): Required. Offset tensor for `input`, $zero_points$ in the formulas. This parameter can be set to `None`. Empty tensors are supported. Non-contiguous tensors are supported.
     - When `div_mode` is `True`:
 
         <!-- npu="310p" id12 -->
-        - <term>Atlas inference products</term>: The data type can be `torch.int8`, `torch.uint8`, or `torch.int32`.
+        - Atlas inference products: The data type can be `torch.int8`, `torch.uint8`, or `torch.int32`.
         <!-- end id12 -->
         <!-- npu="A3,910b" id13 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.int8`, `torch.uint8`, `torch.int32`, or `torch.bfloat16`.
+        - Atlas A2 products and Atlas A3 products: The data type can be `torch.int8`, `torch.uint8`, `torch.int32`, or `torch.bfloat16`.
         <!-- end id13 -->
 
     - When `div_mode` is `False`, the data layout can be $ND$. 1D or multiple dimensions are supported (for 1D, the size of the corresponding axis must be equal to the `axis` dimension of `self` or equal to 1; for multiple dimensions, the shape of `scales` must have the same number of dimensions as `self`, all dimensions other than the one specified by `axis` must be 1, and the dimension specified by `axis` must be equal to the corresponding dimension of `self`). The shape and dtype of `zero_points` must be the same as those of `scales`.
 
         <!-- npu="310p" id14 -->
-        - <term>Atlas inference products</term>: The data type can be `torch.float` or `torch.float16`.
+        - Atlas inference products: The data type can be `torch.float` or `torch.float16`.
         <!-- end id14 -->
         <!-- npu="A3,910b" id15 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When the data layout of `input` is NZ, this value is empty.
+        - Atlas A2 products and Atlas A3 products: The data type can be `torch.float`, `torch.float16`, or `torch.bfloat16`. When the data layout of `input` is NZ, this value is empty.
         <!-- end id15 -->
 
 - **`dtype`** (`int`): Required. Data type of the output parameter.
     - When `div_mode` is `True`:
 
         <!-- npu="310p" id16 -->
-        - <term>Atlas inference products</term>: The data type can be `torch.qint8`, `torch.quint8`, or `torch.int32`.
+        - Atlas inference products: The data type can be `torch.qint8`, `torch.quint8`, or `torch.int32`.
         <!-- end id16 -->
         <!-- npu="A3,910b" id17 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.qint8`, `torch.quint8`, or `torch.int32`.
+        - Atlas A2 products and Atlas A3 products: The data type can be `torch.qint8`, `torch.quint8`, or `torch.int32`.
         <!-- end id17 -->
         <!-- npu="950" id18 -->
-        - <term>Ascend 950PR&950DT products</term>: The supported types are `torch.qint8`, `torch.quint8`, `torch.int32`, `torch_npu.hifloat8`, `torch.float8_e4m3fn`, and `torch.float8_e5m2`.
+        - Ascend 950PR&950DT products: The supported types are `torch.qint8`, `torch.quint8`, `torch.int32`, `torch_npu.hifloat8`, `torch.float8_e4m3fn`, and `torch.float8_e5m2`.
         <!-- end id18 -->
 
     - When `div_mode` is `False`:
 
         <!-- npu="310p" id19 -->
-        - <term>Atlas inference products</term>: the supported types are `torch.qint8` and `torch.int8`.
+        - Atlas inference products: the supported types are `torch.qint8` and `torch.int8`.
         <!-- end id19 -->
         <!-- npu="A3,910b" id20 -->
-        - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the supported types are `torch.qint8`, `torch.int8`, and `torch.quint4x2`. When `dtype` is `torch.quint4x2`, the output tensor type is `torch.int32`, which is formed by concatenating eight `torch_npu.int4` values.
+        - Atlas A2 products and Atlas A3 products: the supported types are `torch.qint8`, `torch.int8`, and `torch.quint4x2`. When `dtype` is `torch.quint4x2`, the output tensor type is `torch.int32`, which is formed by concatenating eight `torch_npu.int4` values.
         <!-- end id20 -->
         <!-- npu="950" id21 -->
-        - <term>Ascend 950PR&950DT products</term>: the supported types are `torch.qint8`, `torch.int8`, `torch.quint4x2`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, and `torch_npu.hifloat8`. When `dtype` is `torch.quint4x2`, the output tensor type is `torch.int32`, which is formed by concatenating eight `torch_npu.int4` values.
+        - Ascend 950PR&950DT products: the supported types are `torch.qint8`, `torch.int8`, `torch.quint4x2`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, and `torch_npu.hifloat8`. When `dtype` is `torch.quint4x2`, the output tensor type is `torch.int32`, which is formed by concatenating eight `torch_npu.int4` values.
         <!-- end id21 -->
 
 - **`axis`** (`int`): Optional. Quantized element-wise axis. Other axes are broadcast. The default value is `1`.
@@ -128,7 +128,7 @@ torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) 
 Corresponds to `result` in the formulas. The data type is specified by the parameter `dtype`. If the parameter `dtype` is `torch.quint4x2`, the `dtype` of the output is `torch.int32`, the last dimension of the shape is 1/8 of the last dimension of the shape of `self`, and the other dimensions of the shape are the same as the other dimensions of the shape of `self`. If the parameter `dtype` is not `torch.quint4x2`, the shape is the same as the shape of the input `self`. The data layout of the output is the same as that of the input `self`, and when the data layout is $NZ$, the data type can only be `torch.int32`. Empty tensors are supported. Non-contiguous tensors are supported.
 
 <!-- npu="950" id22 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
   - Single-operator mode: when `dtype` is `torch_npu.hifloat8`, the data type of `result` is `torch.uint8` (which actually carries the `torch_npu.hifloat8` type).
   - Graph mode: when `dtype` is `torch_npu.hifloat8`, the data type of `result` is `torch.bits8` (which actually carries the `torch_npu.hifloat8` type).
 <!-- end id22 -->
@@ -141,10 +141,10 @@ Corresponds to `result` in the formulas. The data type is specified by the param
 - When `div_mode` is `False`:
 
     <!-- npu="910b" id23 -->
-    - <term>Atlas A2 products</term> is supported.
+    - Atlas A2 products is supported.
     <!-- end id23 -->
     <!-- npu="310p" id24 -->
-    - When `dtype` is `torch.quint4x2` or `axis` is -2, <term>Atlas inference products</term> is not supported.
+    - When `dtype` is `torch.quint4x2` or `axis` is -2, Atlas inference products is not supported.
     <!-- end id24 -->
 
 ## Example
@@ -152,7 +152,7 @@ Corresponds to `result` in the formulas. The data type is specified by the param
 - Single-operator call
 
     <!-- npu="910b" id25 -->
-    - <term>Atlas A2 products</term>
+    - Atlas A2 products
 
         ```python
         >>> import torch
@@ -171,7 +171,7 @@ Corresponds to `result` in the formulas. The data type is specified by the param
         ```
     <!-- end id25 -->
     <!-- npu="310p" id26 -->
-    - <term>Atlas inference products</term>
+    - Atlas inference products
 
         ```python
         >>> import torch

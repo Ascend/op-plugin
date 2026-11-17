@@ -33,19 +33,19 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 - **`input`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `torch.float32`, `torch.float16`, `torch.int32`, or `torch.int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch.int32` and `torch.int8` data types are not supported.
+  - Ascend 950PR&950DT products: The `torch.int32` and `torch.int8` data types are not supported.
   <!-- end id6 -->
 
 - **`weight`** (`Tensor`): Required. Matrix tensor. The shape must have 2 dimensions. The data type can be `torch.float32`, `torch.float16`, `torch.int32`, or `torch.int8`. The data layout can be ND, `NHWC`, or `FRACTAL_NZ`.
 
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch.int32` and `torch.int8` data types are not supported.
+  - Ascend 950PR&950DT products: The `torch.int32` and `torch.int8` data types are not supported.
   <!-- end id7 -->
 
-- **`bias`** (`Tensor`): Optional. This parameter must be a 1D tensor. The data type can be `torch.float32`, `torch.float16`, or `torch.int32`. The data layout can be ND or `NHWC`. The default value is `None`.
+- **`bias`** (`Tensor`): **Optional**. This parameter must be a 1D tensor. The data type can be `torch.float32`, `torch.float16`, or `torch.int32`. The data layout can be ND or `NHWC`. The default value is `None`.
 
   <!-- npu="950" id8 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch.int32` data type is not supported.
+  - Ascend 950PR&950DT products: The `torch.int32` data type is not supported.
   <!-- end id8 -->
 
 ## Return Values

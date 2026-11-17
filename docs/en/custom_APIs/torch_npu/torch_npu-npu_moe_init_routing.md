@@ -134,3 +134,4 @@ torch_npu.npu_moe_init_routing(x, row_idx, expert_idx, active_num) -> (Tensor, T
     print(expanded_row_idx)
     print(expanded_expert_idx)
     ```
+    

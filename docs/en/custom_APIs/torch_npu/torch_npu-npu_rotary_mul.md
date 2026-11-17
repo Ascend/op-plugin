@@ -44,7 +44,7 @@
          $$
 
      <!-- npu="950" id6 -->
-     - <term>Ascend 950PR&950DT products</term>: when `rotary_mode` is `quarter`, the input is divided into four parts $x_1,x_2,x_3,x_4$ along the last dimension:
+     - Ascend 950PR&950DT products: when `rotary_mode` is `quarter`, the input is divided into four parts $x_1,x_2,x_3,x_4$ along the last dimension:
          $$
          \begin{aligned}
          x_1 &= x[..., :D/4], & x_2 &= x[..., D/4:D/2], \\
@@ -55,7 +55,7 @@
          $$
      <!-- end id6 -->
      <!-- npu="950" id7 -->
-     - <term>Ascend 950PR&950DT products</term>: when `rotary_mode` is `interleave-half`, the elements at even and odd positions are first concatenated into `x_part1` and `x_part2` respectively:
+     - Ascend 950PR&950DT products: when `rotary_mode` is `interleave-half`, the elements at even and odd positions are first concatenated into `x_part1` and `x_part2` respectively:
          $$
          \begin{aligned}
          x_1 &= x[..., ::2], & x_2 &= x[..., 1::2], \\
@@ -108,15 +108,15 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 - **`r2`** (`Tensor`): Required. Sine rotation coefficient. The shape must have 3 or 4 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
 - **`rotary_mode`** (`str`): Optional. Computation mode. Valid values are `half` and `interleave`. The default value is `half`.
   <!-- npu="950" id8 -->
-  - <term>Ascend 950PR&950DT products</term> also support the `quarter` and `interleave-half` modes.
+  - Ascend 950PR&950DT products also support the `quarter` and `interleave-half` modes.
   <!-- end id8 -->
 - **`rotate`** (`Tensor`): Optional. Equivalent transformation matrix used to apply positional transformations to `input`. The shape must have 2 dimensions. The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`. For construction details, see the examples.
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term>: 2D inputs are supported, and the data types can be `torch.float16`, `torch.bfloat16`, and `torch.float32`.
+    - Atlas A2 training products and Atlas A3 training products: 2D inputs are supported, and the data types can be `torch.float16`, `torch.bfloat16`, and `torch.float32`.
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR&950DT products</term>: this parameter is not supported. Use the default value `None` or omit this parameter.
+    - Ascend 950PR&950DT products: this parameter is not supported. Use the default value `None` or omit this parameter.
     <!-- end id10 -->
 
 ## Return Values
@@ -128,7 +128,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
 ## Constraints
 
 <!-- npu="A3,910b" id11 -->
-- **`jit_compile=False` scenario** (applicable to <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term>):
+- **`jit_compile=False` scenario** (applicable to Atlas A2 training products and Atlas A3 training products):
     - half mode:
 
         `input`: supported layouts: $BNSD, BSND, SBND, TND; D < 896$ and D is a multiple of 2; $B, N < 1000$; when the backward gradient of $cos/sin$ must be computed, $B*N <= 1024$.
@@ -155,7 +155,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
         - x is $TND: T1D$.
 <!-- end id11 -->
 <!-- npu="910b,910,310p" id12 -->
-- **`jit_compile=True` scenario** (applicable to <term>Atlas training products</term>, <term>Atlas A2 training products</term>, and <term>Atlas inference products</term>):
+- **`jit_compile=True` scenario** (applicable to Atlas training products, Atlas A2 training products, and Atlas inference products):
 
      Only the half mode is supported for `rotary_mode`, and the `r1/r2` layouts are generally $11SD, 1S1D, S11D$.
 
@@ -164,7 +164,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
      In broadcast scenarios, the total data volume of the broadcast axes must not exceed 1024.
 <!-- end id12 -->
 <!-- npu="950" id13 -->
-- <term>Ascend 950PR&950DT products</term>: \(B, S, N, D\) is used to represent the shape of the 4D input `input`. The detailed constraints of each parameter are as follows.
+- Ascend 950PR&950DT products: \(B, S, N, D\) is used to represent the shape of the 4D input `input`. The detailed constraints of each parameter are as follows.
     - The size of the D dimension of the input tensors `input`, `r1`, and `r2` and the output tensor must be the same and must be less than or equal to 1024. In half, interleave, and interleave-half modes, D must be divisible by 2; in quarter mode, D must be divisible by 4.
     - The shapes of the input tensors `r1` and `r2` must be exactly the same and must satisfy one of the following conditions:
         - the shape is (1, 1, 1, D);
@@ -174,7 +174,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
     - When `input` is an empty Tensor, the output is also an empty Tensor and is not subject to the preceding shape constraints.
 <!-- end id13 -->
 <!-- npu="A3,910b" id14 -->
-- Recommended scenarios for rotate (applicable to <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term>):
+- Recommended scenarios for rotate (applicable to Atlas A2 training products and Atlas A3 training products):
   - interleave mode
   - The half mode is recommended only in the following scenario: when the input matrix x must be split into multiple parts along the last dimension, a rotation encoding matrix can be constructed to obtain a performance benefit with a single call. Taking the layout of x as BSND and splitting into 3 parts as an example:
      x is split into 3 parts, $x = [x1|x2|x3]_{(dim=4)} \in R^{B\times S\times N\times D}, x1 \in R^{B\times S\times N\times D1},x2 \in R^{B\times S\times N\times D2},x3 \in R^{B\times S\times N\times D3}$, where D = D1 + D2 + D3,
@@ -251,7 +251,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
     ```
 
 <!-- npu="950" id15 -->
-- <term>Ascend 950PR&950DT products</term> call example:
+- Ascend 950PR&950DT products call example:
 
     ```python
     >>> import torch
@@ -264,7 +264,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
     ```
 <!-- end id15 -->
 <!-- npu="A3,910b" id16 -->
-- rotate generation example (applicable only to <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term>):
+- rotate generation example (applicable only to Atlas A2 training products and Atlas A3 training products):
 
     ```python
     import torch
@@ -309,7 +309,7 @@ Output computation result. The shape and dtype must be the same as those of `inp
     ```
 <!-- end id16 -->
 <!-- npu="950" id17 -->
-- Graph mode call: Only applicable to <term>Ascend 950PR&950DT products</term>.
+- Graph mode call: Only applicable to Ascend 950PR&950DT products.
 
     ```python
     import torch

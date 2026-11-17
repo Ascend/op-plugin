@@ -56,10 +56,10 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 - **`round_mode`** (`str`): Optional. Rounding conversion mode used when casting to the output format. Currently, only `rint` is supported.
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only `"rint"` is supported.
+    - Atlas A2 products and Atlas A3 products: only `"rint"` is supported.
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR&950DT products</term>:
+    - Ascend 950PR&950DT products:
       - When `dst_type` is `torch.int8`, `torch.float8_e4m3fn`, or `torch.float8_e5m2`, only `"rint"` is supported.
       - When `dst_type` is `torch_npu.hifloat8`, only `"round"` is supported.
     <!-- end id5 -->
@@ -67,37 +67,37 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 - **`dst_type`** (`int`): Optional. Target data type of the output tensor `y`. Currently, only the value `1` is supported, indicating that the data type of the output `y` is `torch.int8`.
 
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.int8`.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.int8`.
     <!-- end id6 -->
     <!-- npu="950" id7 -->
-    - <term>Ascend 950PR&950DT products</term>: the data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+    - Ascend 950PR&950DT products: the data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
     <!-- end id7 -->
 
 - **`row_block_size`** (`int`): Optional. Row size of a single quantization data block. Currently, only `1` is supported.
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only 1 is supported.
+    - Atlas A2 products and Atlas A3 products: only 1 is supported.
     <!-- end id8 -->
     <!-- npu="950" id9 -->
-    - <term>Ascend 950PR&950DT products</term>: 1, 128, 256, and 512 are supported.
+    - Ascend 950PR&950DT products: 1, 128, 256, and 512 are supported.
     <!-- end id9 -->
 
 - **`col_block_size`** (`int`): Optional. Column size of a single quantization data block. Currently, only `128` is supported.
 
     <!-- npu="A3,910b" id10 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: only 1 or 128 is supported.
+    - Atlas A2 products and Atlas A3 products: only 1 or 128 is supported.
     <!-- end id10 -->
     <!-- npu="950" id11 -->
-    - <term>Ascend 950PR&950DT products</term>: 64, 128, 192, and 256 are supported.
+    - Ascend 950PR&950DT products: 64, 128, 192, and 256 are supported.
     <!-- end id11 -->
 
 - **`dst_type_max`** (`float`): Optional. Maximum value of the target data type. The default value is 0.0. When the value is 0.0, the original maximum value of the data type is used.
 
     <!-- npu="A3,910b" id12 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: this parameter is not supported currently.
+    - Atlas A2 products and Atlas A3 products: this parameter is not supported currently.
     <!-- end id12 -->
     <!-- npu="950" id13 -->
-    - <term>Ascend 950PR&950DT products</term>: it takes effect only when `dst_type` is `torch_npu.hifloat8`, and the supported values are 0.0, 15.0, 56.0, 224.0, and 32768.0.
+    - Ascend 950PR&950DT products: it takes effect only when `dst_type` is `torch_npu.hifloat8`, and the supported values are 0.0, 15.0, 56.0, 224.0, and 32768.0.
     <!-- end id13 -->
 
 ## Return Values
@@ -105,7 +105,7 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
 - **`y`** (`Tensor`): Quantization result. The data type is specified by the `dst_type` parameter, and the shape is the same as that of the input `x`.
 
     <!-- npu="950" id14 -->
-    - <term>Ascend 950PR&950DT products</term>:
+    - Ascend 950PR&950DT products:
         - Single-operator mode/static graph mode: when `dst_type` is `torch_npu.hifloat8`, the output data type of `y` is `torch.uint8` (which actually carries the `torch_npu.hifloat8` type).
         - Dynamic graph mode: when `dst_type` is `torch_npu.hifloat8`, the output data type of `y` is `torch.bits8` (which actually carries the `torch_npu.hifloat8` type).
     <!-- end id14 -->
@@ -143,7 +143,7 @@ torch_npu.npu_dynamic_block_quant(x, *, min_scale=0.0, round_mode="rint", dst_ty
   ```
 
 <!-- npu="950" id15 -->
-- Graph mode call: Only <term>Ascend 950PR&950DT products</term> are supported.
+- Graph mode call: Only Ascend 950PR&950DT products are supported.
 
     ```python
     import torch

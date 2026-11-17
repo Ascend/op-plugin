@@ -56,13 +56,13 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
 - **`tokens`** (`Tensor`): Required. Input token features. A 2D Tensor with shape (num_tokens, hidden_size), where the size of the first dimension is num_tokens. Empty Tensors are supported. The data layout can be ND. Non-contiguous Tensors are supported.
 
   <!-- npu="950" id4 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int8`. `torch.int8` is processed in a non-quantized manner.
+  - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int8`. `torch.int8` is processed in a non-quantized manner.
   <!-- end id4 -->
   <!-- npu="A3" id5 -->
-  - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
+  - Atlas A3 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
   <!-- end id5 -->
   <!-- npu="910b" id6 -->
-  - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
+  - Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.float32`.
   <!-- end id6 -->
 
 - **`indices`** (`Tensor`): Required. Input indices. A 1D or 2D Tensor. Empty Tensors are supported. The data type can be `torch.int32` or `torch.int64`. The data layout can be ND. Non-contiguous Tensors are supported.
@@ -71,7 +71,7 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
   - The number of elements must be less than 16777215, and element values must be greater than or equal to 0 and less than 16777215.
 
   <!-- npu="950" id7 -->
-  - When this API is called on <term>Ascend 950PR&950DT products</term> and the data type of `tokens` is `torch.int8`, the elements represent expert IDs. The value range is [0, 10240), the maximum value is 10239, and 10240 is not supported.
+  - When this API is called on Ascend 950PR&950DT products and the data type of `tokens` is `torch.int8`, the elements represent expert IDs. The value range is [0, 10240), the maximum value is 10239, and 10240 is not supported.
   <!-- end id7 -->
 
 - **`num_out_tokens`** (`int`): Optional. Number of valid output tokens. The default value is `None`, and the data type is `int64`.
@@ -95,7 +95,7 @@ torch_npu.npu_moe_token_permute(tokens, indices, num_out_tokens=None, padded_mod
 - This API uses deterministic computation.
 - The data types of `tokens` and `permuted_tokens` must be the same.
 <!-- npu="950" id8 -->
-- `tokens` and `permuted_tokens` of the `torch.int8` type are supported only on <term>Ascend 950PR&950DT products</term>.
+- `tokens` and `permuted_tokens` of the `torch.int8` type are supported only on Ascend 950PR&950DT products.
 <!-- end id8 -->
 
 ## Examples

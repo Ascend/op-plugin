@@ -49,35 +49,35 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 ## Parameters
 
-- **`gmm_x`** (`Tensor`): Required. Result of AlltoAllv communication and Permute operations, used as the left matrix for the GroupedMatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. This parameter must be 2D with shape `(BSK, H1)`. The data layout can be ND.
-- **`gmm_weight`** (`Tensor`): Required. Right matrix for GroupedMatMul. The data type must be identical to that of `gmm_x`. This parameter must be 3D with shape `(e, H1, N1)`. The data layout can be ND.
-- **`hcom`** (`str`): Required. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
-- **`ep_world_size`** (`int`): Required. Size of the EP communication domain. Valid values: `8`, `16`, `32`, `64`, or `128`.
+- **`gmm_x`** (`Tensor`): **Required**. Result of AlltoAllv communication and Permute operations, used as the left matrix for the GroupedMatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. This parameter must be 2D with shape `(BSK, H1)`. The data layout can be ND.
+- **`gmm_weight`** (`Tensor`): **Required**. Right matrix for GroupedMatMul. The data type must be identical to that of `gmm_x`. This parameter must be 3D with shape `(e, H1, N1)`. The data layout can be ND.
+- **`hcom`** (`str`): **Required**. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
+- **`ep_world_size`** (`int`): **Required**. Size of the EP communication domain. CCU supports only intra-node UB-domain interconnection, whereas AICPU supports inter-node UB-domain interconnection.
 
     <!-- npu="A3" id3 -->
-    - <term>Atlas A3 products</term>: the supported values are 8, 16, 32, 64, and 128.
+    - Atlas A3 products: the supported values are 8, 16, 32, 64, and 128.
     <!-- end id3 -->
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT products</term>: the supported values are 2, 4, 8, 16, 32, and 64.
+    - Ascend 950DT products: the supported values are 2, 4, 8, 16, 32, 64, 128, and 256.
     <!-- end id4 -->
 
-- **`send_counts`** (`List[int]`): Required. Number of tokens sent to other devices. The data type can be `int`. The list length is `e * ep_world_size`, and the maximum value is `256`.
-- **`recv_counts`** (`List[int]`): Required. Number of tokens received from other devices. The data type can be `int`. The list length is `e * ep_world_size`, and the maximum value is 256.
+- **`send_counts`** (`List[int]`): **Required**. Number of tokens sent to other devices. The data type can be `int`. The list length is `e * ep_world_size`, and the maximum value is `256`.
+- **`recv_counts`** (`List[int]`): **Required**. Number of tokens received from other devices. The data type can be `int`. The list length is `e * ep_world_size`, and the maximum value is 256.
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`send_counts_tensor`** (`Tensor`): Optional. The data type can be `torch.int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
-- **`recv_counts_tensor`** (`Tensor`): Optional. The data type can be `torch.int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
-- **`mm_x`** (`Tensor`): Optional. Left matrix for shared expert MatMul. This parameter must be provided when shared expert computation is fused. The data type can be `torch.float16` or `torch.bfloat16`. This parameter must be a 2D tensor, with shape `(BS, H2)`.
-- **`mm_weight`** (`Tensor`): Optional. Right matrix for shared expert MatMul. This parameter must be provided when shared expert computation is fused. The data type must be identical to that of `mm_x`. This parameter must be a 2D tensor, with shape `(H2, N2)`.
-- **`trans_gmm_weight`** (`bool`): Optional. Specifies whether to transpose the right matrix of GroupedMatMul. `True` enables transposition and `False` disables it (the default value).
-- **`trans_mm_weight`** (`bool`): Optional. Specifies whether to transpose the right matrix of shared expert MatMul. `True` enables transposition and `False` disables it (the default value).
-- **`permute_out_flag`** (`bool`): Optional. Specifies whether to output the result of the Permute operation. Valid values are `True` (outputs the Permute result) or `False` (does not output it, the default value).
-- **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`.
+- **`send_counts_tensor`** (`Tensor`): **Optional**. The data type can be `torch.int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
+- **`recv_counts_tensor`** (`Tensor`): **Optional**. The data type can be `torch.int`. The shape of this parameter is `(e * ep_world_size,)`. The data layout can be ND. **This parameter is not supported in the current version**. Retain the default value.
+- **`mm_x`** (`Tensor`): **Optional**. Left matrix for shared expert MatMul. This parameter must be provided when shared expert computation is fused. The data type can be `torch.float16` or `torch.bfloat16`. This parameter must be a 2D tensor, with shape `(BS, H2)`.
+- **`mm_weight`** (`Tensor`): **Optional**. Right matrix for shared expert MatMul. This parameter must be provided when shared expert computation is fused. The data type must be identical to that of `mm_x`. This parameter must be a 2D tensor, with shape `(H2, N2)`.
+- **`trans_gmm_weight`** (`bool`): **Optional**. Specifies whether to transpose the right matrix of GroupedMatMul. `True` enables transposition and `False` disables it (the default value).
+- **`trans_mm_weight`** (`bool`): **Optional**. Specifies whether to transpose the right matrix of shared expert MatMul. `True` enables transposition and `False` disables it (the default value).
+- **`permute_out_flag`** (`bool`): **Optional**. Specifies whether to output the result of the Permute operation. Valid values are `True` (outputs the Permute result) or `False` (does not output it, the default value).
+- **`comm_mode`** (`str`): **Optional**. Communication mode. The default value is `None`.
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
+    - Atlas A3 products: the default value is `None`. The supported values are `"ai_cpu"` and `None`. If any value is passed, AICPU communication is used.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
+    - Ascend 950DT products: the default value is `None`. The supported values are `"ai_cpu"`, `"ccu"`, and `None`. When the value is `None`, AICPU communication is used by default.
     <!-- end id6 -->
 
 ## Return Values
@@ -93,10 +93,10 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **Single-device communication volume requirement**:
 
   <!-- npu="A3" id7 -->
-  - <term>Atlas A3 products</term>: the single-device communication volume must be greater than or equal to 2 MB.
+  - Atlas A3 products: the single-device communication volume must be greater than or equal to 2 MB.
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT products</term>: there is no constraint on the single-device communication volume.
+  - Ascend 950DT products: there is no constraint on the single-device communication volume.
   <!-- end id8 -->
 
 - Description of the variables used in the shapes of the input parameter Tensors:
@@ -110,6 +110,8 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
   - K: number of topK experts selected. The value range of K is [2, 8].
   - A: number of tokens received by the current device, which is the accumulated sum of the recv\_counts parameters.
   - The accumulated sum of A on all devices in the EP communication domain is equal to the accumulated sum of BSK on all devices.
+
+- When CCU communication is used, the data volume of a single AlltoAllv collective communication cannot exceed 256 MB, and the total data volume cannot exceed 16 \* 256 MB. Because the shapes differ, the operator implementation may differ, and the actual supported total communication volume may be slightly less than this value.
 
 ## Example
 

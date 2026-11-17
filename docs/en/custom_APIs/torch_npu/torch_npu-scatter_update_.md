@@ -30,32 +30,32 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
 - **`data`** (`Tensor`): Required. Original data before the update. This parameter must be 2D to 8D, and the dimensions must match those of `updates`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported.
 
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A2 products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id5 -->
     <!-- npu="A3" id6 -->
-    - <term>Atlas A3 training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A3 training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id6 -->
     <!-- npu="910" id7 -->
-    - <term>Atlas training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
+    - Atlas training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id8 -->
 
-- **`indices`** (`Tensor`): Required. Indices used for the update. The data type can be `torch.int32` or `torch.int64`. This parameter must be 1D or 2D. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported.
+- **`indices`** (`Tensor`): Required. Indices used for the update. The data type can be `torch.int32` or `torch.int64`. This parameter must be 1D or 2D. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported. Only non-negative indices are supported, and out-of-range indices are not supported.
 - **`updates`** (`Tensor`): Required. Data used for the update. The dimensions of `updates` must match those of `data`. The data layout can be ND. Non-contiguous tensors are supported. Empty tensors are not supported.
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A2 products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id9 -->
     <!-- npu="A3" id10 -->
-    - <term>Atlas A3 training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A3 training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id10 -->
     <!-- npu="910" id11 -->
-    - <term>Atlas training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
+    - Atlas training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id12 -->
 
 - **`axis`** (`int`): Required. Axis that specifies the dimension on which the scatter update is performed. The data type is `int64`. The value range is (-`data_rank`, `data_rank`) (where `data_rank` is the number of dimensions of `data`), and `axis` cannot be 0.
@@ -67,16 +67,16 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
 Computes the output by reusing the input address. Only 2D to 8D tensors are supported, and the dimension sizes must be the same as those of `data`. Non-contiguous tensors are supported. The data layout can be $ND$. Empty tensors are not supported.
 
 <!-- npu="910b" id13 -->
-- <term>Atlas A2 products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+- Atlas A2 products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
 <!-- end id13 -->
 <!-- npu="A3" id14 -->
-- <term>Atlas A3 training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+- Atlas A3 training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
 <!-- end id14 -->
 <!-- npu="910" id15 -->
-- <term>Atlas training products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
+- Atlas training products: The data type can be `torch.int8`, `torch.float16`, `torch.float32`, or `torch.int32`.
 <!-- end id15 -->
 <!-- npu="950" id16 -->
-- <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
+- Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch.uint8`, `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int32`.
 <!-- end id16 -->
 
 ## Constraints

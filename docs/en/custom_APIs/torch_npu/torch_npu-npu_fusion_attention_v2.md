@@ -50,7 +50,7 @@
 
 <!-- npu="A3,910b" id12 -->
 > [!NOTE]
-> On <term>Atlas A3 products</term> and <term>Atlas A2 products</term>, query_rope/key_rope take effect only in varlen scenarios (input_layout is TND), and actual_seq_qlen and actual_seq_kvlen must be passed with valid values.
+> On Atlas A3 products and Atlas A2 products, query_rope/key_rope take effect only in varlen scenarios (input_layout is TND), and actual_seq_qlen and actual_seq_kvlen must be passed with valid values.
 <!-- end id12 -->
 
 ## Prototype
@@ -72,10 +72,10 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
   - If Sq is greater than 1024 in a non-varlen scenario, or in a varlen scenario where Sq and Skv of each batch have the same length and `sparse_mode` is 0, 2, or 3 in a lower-triangular mask scenario, alibi position encoding compression can be enabled. In this case, only the last 1024 rows of the original PSE need to be input for memory optimization, that is, alibi\_compress = ori\_pse[:, :, -1024:, :]. When the parameter differs for each batch, input BNHSkv (H=1024); when it is the same for each batch, input 1NHSkv (H=1024). The applicability of compression in varlen scenarios is as follows:
 
     <!-- npu="950" id4 -->
-    - <term>Ascend 950PR&950DT products</term>: Compression is also supported in varlen scenarios.
+    - Ascend 950PR&950DT products: Compression is also supported in varlen scenarios.
     <!-- end id4 -->
     <!-- npu="A3,910b" id13 -->
-    - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Compression is supported only in non-varlen scenarios, and Sq must be greater than 1024, Sq and Skv of each batch must have the same length, and the lower-triangular mask condition must be met.
+    - Atlas A3 products and Atlas A2 products: Compression is supported only in non-varlen scenarios, and Sq must be greater than 1024, Sq and Skv of each batch must have the same length, and the lower-triangular mask condition must be met.
     <!-- end id13 -->
   - In varlen scenarios, the BNHSkv (H=1024), 1NHSkv (H=1024), and pseTotalLen shapes are supported. pseTotalLen is the sum of the number of pse elements of all batch segments. The number of pse elements of the i-th batch segment is N \* Sq\_i \* Skv\_i.
   - When `pse_type` is 2 or 3, the data type must be `torch.float32`, and the corresponding supported shape range is [B, N] or [N].
@@ -84,10 +84,10 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - **`query_rope`** (`Tensor`): Optional. $query\_rope$ in the formula, that is, the RoPE extension input of query. It must be passed together with `key_rope`. The default value is None. It is supported only in varlen scenarios (input_layout is TND), and `atten_mask` must be passed. The data layout can be ND. The shape type [TND] is supported. The Head-Dim must satisfy (qRoPED == kRoPED), D must be a multiple of 8 and less than or equal to the D of query, key, and value. The supported data types are as follows:
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: The same as `query` (`torch.float16`, `torch.bfloat16`, `torch.float32`).
+  - Ascend 950PR&950DT products: The same as `query` (`torch.float16`, `torch.bfloat16`, `torch.float32`).
   <!-- end id5 -->
   <!-- npu="A3,910b" id14 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Only `torch.bfloat16` is supported.
+  - Atlas A3 products and Atlas A2 products: Only `torch.bfloat16` is supported.
   <!-- end id14 -->
 - **`key_rope`** (`Tensor`): Optional. $key\_rope$ in the formula, that is, the RoPE extension input of key. It must be passed together with `query_rope`. The default value is None. It is supported only in varlen scenarios (input_layout is TND), and `atten_mask` must be passed. The data type, data layout, shape, and Head-Dim constraints are the same as those of `query_rope`.
 - **`scale`** (`float`): Optional. Scaling coefficient, used as the scalar value of Muls in the computation flow. The default value is 1.
@@ -134,10 +134,10 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - **`softmax_layout`** (`str`): Optional. Controls the data layout of the softmax output (softmax_max and softmax_sum) in TND scenarios. The default value is "". Only "" and "TND" can be passed, and "TND" can be passed only when `input_layout` is TND. The output formats of softmax_max and softmax_sum in TND scenarios are as follows:
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT products</term>: When "TND" is passed, the softmax output layout is TN8; otherwise, it is BNS8.
+  - Ascend 950PR&950DT products: When "TND" is passed, the softmax output layout is TN8; otherwise, it is BNS8.
   <!-- end id6 -->
   <!-- npu="A3,910b" id15 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: When "TND" is passed, the softmax output layout is TND; otherwise, it is NTD.
+  - Atlas A3 products and Atlas A2 products: When "TND" is passed, the softmax output layout is TND; otherwise, it is NTD.
   <!-- end id18 -->
 - **`sink`** (`Tensor`): Optional. Bias of each attention head. The default value is None. The shape is [head\_num]. The data type can be `torch.float32` only.
 - **`dropout_mask`** (`Tensor`): Optional. Externally passed dropout mask. The default value is None. When it is not passed, it is automatically generated by the API according to `keep_prob`, `seed`, and `offset`.
@@ -166,34 +166,34 @@ There are 7 outputs in total, with types **Tensor, Tensor, Tensor, Tensor, int, 
 - The data types of the input `query`, `key`, and `value` must be the same. When query_rope/key_rope is passed:
 
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type is unchanged, and `torch.float16`, `torch.bfloat16`, and `torch.float32` are still supported.
+  - Ascend 950PR&950DT products: The data type is unchanged, and `torch.float16`, `torch.bfloat16`, and `torch.float32` are still supported.
   <!-- end id7 -->
   <!-- npu="A3,910b" id16 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Only `torch.bfloat16` is supported.
+  - Atlas A3 products and Atlas A2 products: Only `torch.bfloat16` is supported.
   <!-- end id15 -->
 - When `pse` is input, its data type must be the same as that of `query`, `key`, and `value`.
 - The shapes of the input `key` and `value` must be the same (except for Head-Dim). There is one exception: in the case of unequal D lengths, the D of `key` and the D of `value` can be different, but the D of `value` must be smaller than the D of `key`. The applicability is as follows:
 
   <!-- npu="950" id8 -->
-  - <term>Ascend 950PR&950DT products</term>: This exception is supported.
+  - Ascend 950PR&950DT products: This exception is supported.
   <!-- end id8 -->
   <!-- npu="A3,910b" id17 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Not supported. The shapes of `key` and `value` must be completely the same (including Head-Dim).
+  - Atlas A3 products and Atlas A2 products: Not supported. The shapes of `key` and `value` must be completely the same (including Head-Dim).
   <!-- end id16 -->
 - D: Head-Dim must satisfy (qD == kD && kD >= vD), and the value range is 1 to 768. The applicability of unequal D (kD > vD) is as follows:
 
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT products</term>: Supported.
+  - Ascend 950PR&950DT products: Supported.
   <!-- end id9 -->
   <!-- npu="A3,910b" id18 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: Not supported. qD == kD == vD must be satisfied.
+  - Atlas A3 products and Atlas A2 products: Not supported. qD == kD == vD must be satisfied.
   <!-- end id17 -->
 - Data shape constraints (B indicates batch size, N indicates the number of heads, S indicates sequence length, and T indicates B\*S)
   
   | Scenario | B | N | S | T |
   | --- | --- | --- | --- | --- |
   | Non-varlen | 1 to 2M (maximum 2K when prefix is used) | 1 to 256 | 1 to 1M | - |
-  | Varlen | 1 to 20000 (maximum 1K when prefix is used); for <term>Ascend 950PR&950DT products</term>, 1 to 2K | 1 to 256 | 1 to 1M | 1 to 1M |
+  | Varlen | 1 to 20000 (maximum 1K when prefix is used); for Ascend 950PR&950DT products, 1 to 2K | 1 to 256 | 1 to 1M | 1 to 1M |
 
 - Varlen scenarios (input_layout is TND):
   - `actual_seq_qlen` and `actual_seq_kvlen` must be passed, and their lengths must be equal and cannot be empty.
@@ -216,15 +216,15 @@ There are 7 outputs in total, with types **Tensor, Tensor, Tensor, Tensor, int, 
   - qRoPED must be equal to kRoPED, and D must be a multiple of 8 and less than or equal to the D of query, key, and value.
 
   <!-- npu="950" id10 -->
-  - <term>Ascend 950PR&950DT products</term>: The input shapes of `query_rope` and `query` differ only in the D dimension; other shape parameters must be the same. Currently, only the following scenario is supported: D of query is 128 and D of query_rope is 64.
+  - Ascend 950PR&950DT products: The input shapes of `query_rope` and `query` differ only in the D dimension; other shape parameters must be the same. Currently, only the following scenario is supported: D of query is 128 and D of query_rope is 64.
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR&950DT products</term>: The input shapes of `key_rope` and `key` differ only in the D dimension; other shape parameters must be the same. Currently, only the following scenario is supported: D of key is 128 and D of key_rope is 64.
+  - Ascend 950PR&950DT products: The input shapes of `key_rope` and `key` differ only in the D dimension; other shape parameters must be the same. Currently, only the following scenario is supported: D of key is 128 and D of key_rope is 64.
   <!-- end id11 -->
   - `pse` and dropout mask are not supported.
 - When `sink` is passed, the shape of sink must be [head\_num].
 - When `input_layout` is TND, the value range of `sparse_mode` is [0, 5) or (5, 8]. When `input_layout` has other values, the value range of `sparse_mode` is [0, 6].
-- In some scenarios, if the computation amount is too large, the operator execution may time out (AI Core error type error, with errorStr: timeout or trap error). In this case, axis splitting is recommended. Note: The computation amount here is affected by B, S, N, D, and other parameters. The larger the values, the larger the computation amount.
+- In some scenarios, if the computation amount is too large, the operator execution may time out (AI Core error type error, with errorStr: "timeout or trap error"). In this case, axis splitting is recommended. Note: The computation amount here is affected by B, S, N, D, and other parameters. The larger the values, the larger the computation amount.
 
 ## Examples
 

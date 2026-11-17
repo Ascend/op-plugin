@@ -16,7 +16,7 @@
 
 - API function: MoE permute computation. The token and expert labels are passed as routing_map, and tokens and optional probs are broadcast and sorted according to routing_map.
 
-- Formulas: tokens_num is the size of dimension 0 of routing_map, and expert_num is the size of dimension 1 of routing_map.
+- Formulas: tokens_num is the size of dimension 0 of routing_map, and experts_num is the size of dimension 1 of routing_map.
 
   When drop_and_pad is `False`:
 

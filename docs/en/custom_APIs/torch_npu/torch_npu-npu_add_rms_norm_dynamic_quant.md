@@ -92,10 +92,10 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 - **`y_dtype`** (`int`): Optional. Quantization output data type of y1 and y2. The supported values are None, `torch.int8`, `torch.quint4x2` or `torch_npu.int4`, `torch.float8_e5m2`, `torch.float8_e4m3fn`, and `torch_npu.hifloat8`. In the `torch.quint4x2` or `torch_npu.int4` scenario, the last dimension of `x1` must be divisible by 8. The default value is None.
 
   <!-- npu="A3,910b" id4 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The supported values are None, `torch.int8`, and `torch.quint4x2` or `torch_npu.int4`.
+  - Atlas A3 products and Atlas A2 products: The supported values are None, `torch.int8`, and `torch.quint4x2` or `torch_npu.int4`.
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT products</term>: The supported values are None, `torch.int8`, `torch.quint4x2` or `torch_npu.int4`, `torch.float8_e5m2`, `torch.float8_e4m3fn`, and `torch_npu.hifloat8`.
+  - Ascend 950PR&950DT products: The supported values are None, `torch.int8`, `torch.quint4x2` or `torch_npu.int4`, `torch.float8_e5m2`, `torch.float8_e4m3fn`, and `torch_npu.hifloat8`.
   <!-- end id5 -->
 
 ## Return Values
@@ -103,19 +103,19 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
 - **`y1`** (`Tensor`): Output Tensor after the first dynamic quantization, $y1Out$ in the formulas. It is a valid output when `output_mask` is None or output_mask[0] is True. The data type can be `torch.int8`, `torch_npu.int4`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`. The data type is specified by `y_dtype`. If `y_dtype` indicates `torch_npu.int4`, the output dtype is `torch.int32` and the last dimension of the shape is 1/8 of the last dimension of the input `x1`, while other dimensions are the same as those of the input `x1`. If `y_dtype` indicates `torch_npu.hifloat8`, the output dtype is `torch.uint8` and the shape is the same as that of the input `x1`. If `y_dtype` is neither `torch_npu.int4` nor `torch_npu.hifloat8`, the output dtype is the same as the data type indicated by `y_dtype` and the shape is the same as that of the input `x1`. When output_mask[0] is False, no output is produced and an empty Tensor is returned.
 
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.int8` or `torch_npu.int4`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.int8` or `torch_npu.int4`.
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch_npu.int4`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+  - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch_npu.int4`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
   <!-- end id7 -->
 
 - **`y2`** (`Tensor`): Output Tensor after the second dynamic quantization, $y2Out$ in the formulas. It is a valid output when `output_mask` is None and `smooth_scale2` is not None, or output_mask[1] is True. The data type and shape are the same as the valid output of `y1`. When output_mask[1] is False, no output is produced and an empty Tensor is returned.
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.int8` or `torch_npu.int4`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.int8` or `torch_npu.int4`.
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch_npu.int4`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+  - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch_npu.int4`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
   <!-- end id9 -->
 
 - **`x_out`** (`Tensor`): Result of the Add computation, $x$ in the formulas. The data type and shape are the same as those of the input `x1`.

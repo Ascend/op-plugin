@@ -27,12 +27,12 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## Parameters
 
-- **`x`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
-- **`weight`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`x`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`weight`** (`Tensor`): This parameter must be a 2D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be ND.
 - **`bias`** (`Tensor`): This parameter must be a 1D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be ND.
 - **`seqMask`** (`Tensor`): Only the `torch.float16` data type with the `FRACTAL_NZ` data layout and the `torch.int32` data type with the ND data layout are supported.
-- **`h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
-- **`c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`h`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`c`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
 - **`has_biases`** (`bool`): If set to `True`, biases exist.
 - **`num_layers`** (`int`): Number of recurrent layers. Currently, only a single layer is supported.
 - **`dropout`** (`float`): If the value is non-zero, a dropout layer is introduced on the output of each LSTM layer except the last one, and the dropout discard probability is equal to the value of the `dropout` parameter. Currently, this parameter is not supported.
@@ -44,11 +44,30 @@ torch_npu.npu_lstm(x, weight, bias, seqMask, h, c, has_biases, num_layers, dropo
 
 ## Output Description
 
-- **`y`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
-- **`output_h`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
-- **`output_c`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
-- **`i`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`j`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`f`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`o`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
-- **`tanhct`** (`Tensor`): This parameter must be a 4D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`y`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`output_h`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`output_c`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. The data layout can be `FRACTAL_NZ`.
+- **`i`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`j`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`f`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`o`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+- **`tanhct`** (`Tensor`): This parameter must be a 3D tensor. The data type can be `torch.float16` or `torch.float32`. When `train=True` (training mode), the data layout can be `FRACTAL_NZ`. When `train=False` (inference mode), the data layout can be ND.
+
+## Example
+
+```python
+>>> import torch
+>>> import torch_npu
+>>> input_size, hidden_size, batch_size, seq_length = 10, 5, 3, 5
+>>> x = torch_npu.npu_format_cast(torch.rand(seq_length, batch_size, input_size).npu(), 29).half()
+>>> weight_ih = torch_npu.npu_format_cast(torch.rand(input_size, 4 * hidden_size).npu(), 2).half()
+>>> weight_hh = torch_npu.npu_format_cast(torch.rand(hidden_size, 4 * hidden_size).npu(), 2).half()
+>>> weight = torch.cat((weight_ih, weight_hh), 0)
+>>> bias = torch_npu.npu_format_cast(torch.rand(4 * hidden_size).npu(), 2).half()
+>>> seq_mask = torch.tensor(seq_length, dtype=torch.int32).npu()
+>>> h = torch_npu.npu_format_cast(torch.rand(1, batch_size, hidden_size).npu(), 29).half()
+>>> c = torch_npu.npu_format_cast(torch.rand(1, batch_size, hidden_size).npu(), 29).half()
+>>> y, output_h, output_c, i, j, f, o, tanhct = torch_npu.npu_lstm(
+...     x, weight, bias, seq_mask, h, c, True, 1, 0.0, True, False, False, False, False)
+>>> print(y.shape, output_h.shape, output_c.shape)
+```

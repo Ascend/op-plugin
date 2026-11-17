@@ -23,7 +23,7 @@
        
    | Product Series | Product Model |
    |-----------------------|----------------------------------|
-   | Atlas 800I A2 products | Atlas 800I A2 |
+   | Atlas 800I A2 inference products | Atlas 800I A2 |
 
 2. Software compatibility
 
@@ -39,7 +39,7 @@
    | 2.12.0  | v2.12.0                      | master   | 3.10, 3.11, 3.12, 3.13      | 13.3 |
    | 2.13.0  | master                       | master   | 3.10, 3.11, 3.12, 3.13      | 13.3 |
 
-## Installation Dependencies
+## Installing Dependencies
 
 You are advised to use the development image provided by TorchNPU for compilation. There are two ways to obtain the image: pull an already built image directly from the Ascend image repository, or build one yourself using the Dockerfile.
 

@@ -38,13 +38,13 @@ torch_npu.npu.config.allow_internal_format = bool
 Input `bool` value.
 
 <!-- npu="A3,910b" id6 -->
-- <term>Atlas A2 training products</term>/<term>Atlas A3 training products</term>: the default value is `False`.
+- Atlas A2 training products/Atlas A3 training products: the default value is `False`.
 <!-- end id6 -->
 <!-- npu="910,310p" id7 -->
-- <term>Atlas inference products</term>/<term>Atlas training products</term>: the default value is `True`.
+- Atlas inference products/Atlas training products: the default value is `True`.
 <!-- end id7 -->
 <!-- npu="950" id8 -->
-- <term>Ascend 950DT products</term>: the default value is `False`, and only `False` is supported.
+- Ascend 950DT products: the default value is `False`, and only `False` is supported.
 <!-- end id8 -->
 
 ## Constraints

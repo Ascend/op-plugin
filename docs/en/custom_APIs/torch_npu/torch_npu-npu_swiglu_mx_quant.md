@@ -117,7 +117,7 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - **`group_index`** (`Tensor`): Optional. `group_index` required for MoE grouping. It must be a 1D Tensor with shape $[groupNum]$ ($groupNum$ ranges from 1 to 256). The data type can be `torch.int64`. The data layout is ND. The default value is `None`, indicating that no grouping is performed.
 - **`activate_dim`** (`int`): Optional. Splitting axis selected for the Swish computation. The value range is $[-1,-2,x.dim()-2,x.dim()-1]$. The default value is `-1`.
 - **`activate_left`** (`bool`): Optional. Whether to apply Swish activation to the left half after splitting. When the value is `True`, activation is applied to the left half. When the value is `False`, activation is applied to the right half. When `swiglu_mode=1`, activation is applied to the even block by default. The default value is `False`.
-- **`swiglu_mode`** (`int`): Optional. swiglu computation mode. The value range is [0, 3]: `0` indicates traditional swiglu; `1` indicates variant swiglu (GPT-OSS variant), which uses parity splitting and supports `clamp_limit`, `glu_alpha`, and `glu_bias`; `2` uses the same computation as `1` but uses front-to-back splitting (same as `0`); `3` indicates variant swiglu, with the same splitting method as `2`, except that activation is performed first (the sigmoid coefficient is fixed to 1) and then clipping is performed, and `glu_alpha` and `glu_bias` are not supported. The default value is `0`. When `activate_dim` is not the last axis, `swiglu_mode` must be `0`.
+- **`swiglu_mode`** (`int`): Optional. swiglu computation mode. The value range is [0, 3]: `0` indicates traditional swiglu; `1` indicates variant swiglu (GPT-OSS variant), which uses parity splitting and supports `clamp_limit`, `glu_alpha`, and `glu_bias`; `2` uses the same computation as `1` but uses front-to-back splitting (same as `0`); `3` indicates variant swiglu, with the same splitting method as `2`, except that activation is performed first (the sigmoid coefficient is fixed to 1) and then clipping is performed, and `glu_alpha` and `glu_bias` are not supported. The default value is `0`. When `activate_dim` is not the last axis, `swiglu_mode` must not be `1`.
 - **`clamp_limit`** (`float`): Optional. Input threshold for variant swiglu, used to clip the input. It must be greater than 0 and finite. The default value is `7.0`.
 - **`glu_alpha`** (`float`): Optional. Coefficient of the GLU activation function. The default value is `1.702`.
 - **`glu_bias`** (`float`): Optional. Bias in the swiglu computation. The default value is `1.0`.
@@ -138,7 +138,7 @@ torch_npu.npu_swiglu_mx_quant(x, *, group_index=None, activate_dim=-1, activate_
 - This API supports inference scenarios only.
 - This API supports Eager mode and graph mode.
 - The dimension of the input `x` corresponding to the `activate_dim` axis must be a multiple of 2, and the number of dimensions of `x` must be greater than 1.
-- When `activate_dim` is not the last axis, `swiglu_mode` must be `0`.
+- When `activate_dim` is not the last axis, `swiglu_mode` must not be `1`.
 - When `swiglu_mode` is `2` or `3`, `axis` must be `-1`.
 - When `dst_type` is `torch_npu.float4_e2m1fn_x2` or `torch_npu.float4_e1m2fn_x2`, the last dimension of `y` must be a multiple of 2, and `scale_alg` must be `0`.
 - When `dst_type` is `torch.float8_e4m3fn` or `torch.float8_e5m2`, `round_mode` must be `"rint"`.

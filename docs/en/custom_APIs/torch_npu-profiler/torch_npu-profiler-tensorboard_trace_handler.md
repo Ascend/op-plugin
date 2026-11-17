@@ -19,7 +19,7 @@ Provides a callback function executed after collection ends, used to control the
 ## Prototype
 
 ```python
-torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, analyse_flag=True, async_mode=False)
+torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, analyse_flag=True, async_mode=False, use_gzip=False)
 ```
 
 ## Parameters
@@ -43,6 +43,15 @@ torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, an
     - `False`: disables asynchronous parsing, which enables synchronous parsing.
 
     The default value is `False`.
+
+- **`use_gzip`** (`bool`): Optional. Specifies whether to generate a `.tar.gz` package for the collection directory. Valid values are:
+
+    - `True`: generates the package.
+    - `False`: does not generate the package.
+
+    The default value is `False`.
+
+    When enabled, the generated package is saved in the directory specified by `dir_name`, with the same name as the collection directory. The package is generated only after asynchronous parsing is complete. After the package is generated, the collection directory is deleted and only the package is retained.
 
 ## Return Values
 

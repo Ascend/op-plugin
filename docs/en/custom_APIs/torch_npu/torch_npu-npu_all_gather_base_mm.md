@@ -28,7 +28,7 @@
     $$
 
     <!-- npu="A3,910b" id22 -->
-    Quantization scenario (supported only by <term>Atlas A2 products</term> and <term>Atlas A3 products</term>):
+    Quantization scenario (supported only by Atlas A2 products and Atlas A3 products):
     $$
     output = (allgather(x1\_scale) * x2\_scale) * (allgather(x1) \mathbin{@} x2 + bias)
     $$
@@ -51,72 +51,72 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 ## Parameters
 
 - **`input`** (`Tensor`): **Required**. Left matrix in the matrix multiplication. The data type can be `torch.float16` or `torch.bfloat16`, the data layout can be $ND$, the input shape can be 2D in the form of (m, k) or (k, n), the axes meet the input parameter requirements of the matmul operator, the k axes are equal, and the value range of the k axis is [256, 65535).
-- **`x2`** (`Tensor`): Required. Right matrix in matrix multiplication. The data type must be identical to `x1`. The data layout can be ND or NZ. NZ is supported only when `comm_mode` is set to `'aiv'`. This parameter must be 2D with shape `(k, n)`. The axis dimensions must satisfy the matmul input requirements, where the first axis matches the second axis of `x1`, and the value range of `k` is [256, 65535).
+- **`x2`** (`Tensor`): **Required**. Right matrix in matrix multiplication. The data type must be identical to `x1`. The data layout can be ND or NZ. NZ is supported only when `comm_mode` is set to `'aiv'`. This parameter must be 2D with shape `(k, n)`. The axis dimensions must satisfy the matmul input requirements, where the first axis matches the second axis of `x1`, and the value range of `k` is [256, 65535).
 
     <!-- npu="A3,910b" id4 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data layout can be $ND$ or $NZ$. $NZ$ is supported only when `comm_mode` is `aiv`.
+    - Atlas A2 products and Atlas A3 products: the data layout can be $ND$ or $NZ$. $NZ$ is supported only when `comm_mode` is `aiv`.
     <!-- end id4 -->
     <!-- npu="950" id5 -->
-    - <term>Ascend 950PR&950DT products</term>: The data layout supports $ND$.
+    - Ascend 950PR&950DT products: The data layout supports $ND$.
     <!-- end id5 -->
 
-- **`hcom`** (`string`): Required. Name of the communication domain handle, which is obtained by calling the `get_hccl_comm_name` API.
-- **`world_size`** (`int`): Required. Total number of ranks within the communication domain.
+- **`hcom`** (`string`): **Required**. Name of the communication domain handle, which is obtained by calling the `get_hccl_comm_name` API.
+- **`world_size`** (`int`): **Required**. Total number of ranks within the communication domain.
 
     <!-- npu="910b" id6 -->
-    - <term>Atlas A2 products</term>: 2, 4, and 8 devices are supported, and all-mesh HCCS link networking is supported (each device is connected to every other device).
+    - Atlas A2 products: 2, 4, and 8 devices are supported, and all-mesh HCCS link networking is supported (each device is connected to every other device).
     <!-- end id6 -->
     <!-- npu="A3" id7 -->
-    - <term>Atlas A3 products</term>: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
+    - Atlas A3 products: Configurations of 2, 4, 8, 16, and 32 ranks are supported. Double-ring networking over HCCS links is supported, where multiple ranks form a ring sequentially and each rank connects only to its adjacent left and right ranks.
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR&950DT products</term>: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
+    - Ascend 950PR&950DT products: 2, 4, 8, 16, 32, and 64 devices are supported. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
     <!-- end id8 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`bias`** (`Tensor`): Optional. The data type can be `torch.float16` or `torch.bfloat16`. The data layout can be ND. The data type must be identical to `x1`. This parameter must be a 1D tensor, where the size must be identical to that of the 1st dimension of `output`. **The current version does not support non-zero bias inputs.**
+- **`bias`** (`Tensor`): **Optional**. Bias for the Matmul computation. The data type can be `torch.float16` or `torch.bfloat16`, and must be the same as that of `input`. The data layout can be ND. This parameter must be a 1D tensor, and its size must be identical to that of the 1st dimension of `output`.
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: **the scenario where the `bias` input is non-zero is not supported in the current version.**
+    - Atlas A2 products and Atlas A3 products: **the scenario where the `bias` input is non-zero is not supported in the current version.**
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR&950DT products</term>: the scenario where the `bias` input is non-zero is supported.
+    - Ascend 950PR&950DT products: the scenario where the `bias` input is non-zero is supported.
     <!-- end id10 -->
 
-- **`x1_scale`** (`Tensor`): Optional. Dequantization parameter for the left matrix. The data type can be `torch.float32`. The data layout is ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
+- **`x1_scale`** (`Tensor`): **Optional**. Dequantization parameter for the left matrix. The data type can be `torch.float32`. The data layout is ND. The shape of this parameter is `(m, 1)`. `pertoken` quantization is supported.
 
     <!-- npu="A3,910b" id11 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.float32`.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.float32`.
     <!-- end id11 -->
     <!-- npu="950" id12 -->
-    - <term>Ascend 950PR&950DT products</term>: **this parameter is not supported currently.**
+    - Ascend 950PR&950DT products: **this parameter is not supported currently.**
     <!-- end id12 -->
 
-- **`x2_scale`** (`Tensor`): Optional. Dequantization parameter for the right matrix. The data type can be `torch.float32` or `torch.int64`. The data layout is ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `torch.int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `torch.int64` `x2_scale`.
+- **`x2_scale`** (`Tensor`): **Optional**. Dequantization parameter for the right matrix. The data type can be `torch.float32` or `torch.int64`. The data layout is ND. The shape of this parameter is `(1, n)`. `perchannel` quantization is supported. If an `torch.int64` input is required, call `torch_npu.npu_trans_quant_param` in advance to obtain the `torch.int64` `x2_scale`.
 
     <!-- npu="A3,910b" id13 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: the data type can be `torch.float32` or `torch.int64`. To pass the `torch.int64` data type, call torch\_npu.npu\_trans\_quant\_param in advance to obtain an `x2_scale` of the `torch.int64` data type.
+    - Atlas A2 products and Atlas A3 products: the data type can be `torch.float32` or `torch.int64`. To pass the `torch.int64` data type, call torch\_npu.npu\_trans\_quant\_param in advance to obtain an `x2_scale` of the `torch.int64` data type.
     <!-- end id13 -->
     <!-- npu="950" id14 -->
-    - <term>Ascend 950PR&950DT products</term>: **this parameter is not supported currently.**
+    - Ascend 950PR&950DT products: **this parameter is not supported currently.**
     <!-- end id14 -->
 
-- **`gather_index`** (`int`): Optional. Target operand for the gather operation, where `0` indicates gathering `x1` and `1` indicates gathering `x2`. The default value is `0`. **The current version only supports an input value of 0.**
-- **`gather_output`** (`bool`): Optional. Specifies whether to return the gathered output. The default value is `True`. When `comm_mode` is `aiv`, `gather_output` can only be `True`.
-- **`comm_turn`** (`int`): Optional. Communication slicing granularity between ranks. The default value is `0`, indicating the default slicing method. **The current version only supports an input value of 0.**
-- **`output_dtype`** (`ScalarType`): Optional. Data type of the first output tensor. This parameter can be specified as `torch.bfloat16` or `torch.float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `torch.float32`. The default value is `torch.bfloat16`.
+- **`gather_index`** (`int`): **Optional**. Target operand for the gather operation, where `0` indicates gathering `x1` and `1` indicates gathering `x2`. The default value is `0`. **The current version only supports an input value of 0.**
+- **`gather_output`** (`bool`): **Optional**. Specifies whether to return the gathered output. The default value is `True`. When `comm_mode` is `aiv`, `gather_output` can only be `True`.
+- **`comm_turn`** (`int`): **Optional**. Communication slicing granularity between ranks. The default value is `0`, indicating the default slicing method. **The current version only supports an input value of 0.**
+- **`output_dtype`** (`ScalarType`): **Optional**. Data type of the first output tensor. This parameter can be specified as `torch.bfloat16` or `torch.float16` only in quantization scenarios where both `x1_scale` and `x2_scale` are `torch.float32`. The default value is `torch.bfloat16`.
 
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR&950DT products</term>: **this parameter is not supported currently.**
+    - Ascend 950PR&950DT products: **this parameter is not supported currently.**
     <!-- end id15 -->
 
-- **`comm_mode`** (`str`): Optional. Communication mode. The default value is `None`.
+- **`comm_mode`** (`str`): **Optional**. Communication mode. The default value is `None`.
 
     <!-- npu="A3,910b" id16 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `ai_cpu` and `aiv` are supported, and `None` indicates AICPU communication. The `ai_cpu` mode supports only the basic scenario, and the `aiv` mode supports the basic and quantization scenarios.
+    - Atlas A2 products and Atlas A3 products: `ai_cpu` and `aiv` are supported, and `None` indicates AICPU communication. The `ai_cpu` mode supports only the basic scenario, and the `aiv` mode supports the basic and quantization scenarios.
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR&950DT products</term>: `ai_cpu`, `ccu`, and `None` are supported. When the value is `None`, AICPU communication is used.
+    - Ascend 950PR&950DT products: `ai_cpu`, `ccu`, and `None` are supported. When the value is `None`, AICPU communication is used.
     <!-- end id17 -->
 
 ## Return Values
@@ -124,10 +124,10 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 - **`output`** (`Tensor`): The first output tensor, representing the result of `allgather` + `matmul`.
 
     <!-- npu="A3,910b" id18 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: in the basic scenario, the data type is the same as that of `input`. In the quantization scenario, when `x2_scale` is of the `torch.int64` data type, the output data type is `torch.float16`; when both `x1_scale` and `x2_scale` are `torch.float32`, the output data type is specified by `output_dtype` and defaults to `torch.bfloat16`.
+    - Atlas A2 products and Atlas A3 products: in the basic scenario, the data type is the same as that of `input`. In the quantization scenario, when `x2_scale` is of the `torch.int64` data type, the output data type is `torch.float16`; when both `x1_scale` and `x2_scale` are `torch.float32`, the output data type is specified by `output_dtype` and defaults to `torch.bfloat16`.
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR&950DT products</term>: only the basic scenario is supported, and the output data type is the same as that of `input`.
+    - Ascend 950PR&950DT products: only the basic scenario is supported, and the output data type is the same as that of `input`.
     <!-- end id19 -->
 
 - **`gather_out`** (`Tensor`): The second output tensor, representing the result of `allgather`. Whether this tensor is returned is controlled by the `gather_output` parameter. If `gather_output` is `False`, an empty tensor is returned.
@@ -142,13 +142,13 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
       - This API supports graph mode.
 
       <!-- npu="910b" id20 -->
-      - <term>Atlas A2 products</term>: the communication-computation fusion operators in a model (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) support only the same communication domain.
+      - Atlas A2 products: the communication-computation fusion operators in a model (AllGatherMatmul, MatmulReduceScatter, and MatmulAllReduce) support only the same communication domain.
       <!-- end id20 -->
 
   - When `comm_mode` is `aiv`, both training and inference scenarios can be used.
 
 <!-- npu="950" id21 -->
-- <term>Ascend 950PR&950DT products</term>: when the `"ccu"` communication engine is used, the total amount of allgather\(x1\) collective communication data must not exceed 63\*256MB. The total amount of collective communication data is calculated as: m \* k \* sizeof\(x1\_dtype\) \* number of devices. Because the shapes differ, the internal implementation of the operator may differ, and the actually supported total communication volume may be slightly less than this value.
+- Ascend 950PR&950DT products: when the `"ccu"` communication engine is used, the total amount of allgather\(x1\) collective communication data must not exceed 63\*256MB. The total amount of collective communication data is calculated as: m \* k \* sizeof\(x1\_dtype\) \* number of devices. Because the shapes differ, the internal implementation of the operator may differ, and the actually supported total communication volume may be slightly less than this value.
 <!-- end id21 -->
 
 ## Example

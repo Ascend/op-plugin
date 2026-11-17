@@ -116,7 +116,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
   > [!NOTE]
   >
-  > - `B` (Batch Size) indicates the input sample batch size.<br>`S` (Sequence Length) indicates the input sample sequence length.<br>`He` (Head Size) indicates the hidden layer size.<br>`N` (Head Num) indicates the attention head count.<br>`Hcq` indicates the dimension of the low-rank query matrix.<br>`Hckv` indicates the dimension of the low-rank KV matrix.<br>`Dtile` indicates the `kv_cache` D-axis dimension.<br>`D` indicates the query and key dimension excluding position embedding.<br>`Dr` indicates the query and key position embedding dimension.<br>`Nkv` indicates the attention head count for key and value.<br>`BlockNum` indicates the number of blocks in the PagedAttention scenario.<br>`BlockSize` indicates the block size in the PagedAttention scenario.<br>`T` indicates the size after the fusion of the `B` and `S` axes.
+  > - `B` (Batch Size) indicates the input sample batch size.<br>`S` (Sequence Length) indicates the input sample sequence length.<br>`He` (Head Size) indicates the hidden layer size.<br>`N` (Head Num) indicates the attention head count.<br>`Hcq` indicates the dimension of the low-rank query matrix.<br>`Hckv` indicates the dimension of the low-rank KV matrix.<br>`Dtile` indicates the `kv_cache` D-axis dimension.<br>`D` indicates the query and key dimension excluding position embedding.<br>`Dr` indicates the query and key position embedding dimension.<br>`Nkv` indicates the attention head count for key and value.<br>`BlockNum` indicates the number of blocks in the Paged Attention scenario.<br>`BlockSize` indicates the block size in the Paged Attention scenario.<br>`T` indicates the size after the fusion of the `B` and `S` axes.
 
 - **`token_x`** (`Tensor`): Required. Input tensor used to compute the query and key in the formulas. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16`, `torch.int8`, `torch.float8_e4m3fn`, or `torch_npu.hifloat8`. When `B` and `S` axes are fused, the shape of this parameter is `[T, He]`. When `B` and `S` axes are not fused, the shape is `[B, S, He]`.
 
@@ -199,7 +199,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   <!-- npu="A3,910b" id5 -->
   > [!NOTE]
   >
-  > <term>Atlas A3 products</term> and <term>Atlas A2 products</term>:
+  > Atlas A3 products and Atlas A2 products:
   >
   > - `token_x`, `weight_dq`, `weight_uq_qr`, `weight_dkv_kr`, and `kv_cache` do not support the `torch.float8_e4m3fn` or `torch_npu.hifloat8` data types.
   > - `dequant_scale_x`, `dequant_scale_w_dq`, `dequant_scale_w_uq_qr`, and `dequant_scale_w_dkv_kr` do not support the `torch.float8_e8m0fnu` data type.
@@ -220,7 +220,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   <!-- npu="A3,910b" id6 -->
   > [!NOTE]
   >
-  > <term>Atlas A3 products</term> and <term>Atlas A2 products</term>:
+  > Atlas A3 products and Atlas A2 products:
   >
   > - `query` and `query_norm` do not support the `torch.float8_e4m3fn` or `torch_npu.hifloat8` data types.
   > - `dequant_scale_q_norm` does not support the `torch.float8_e8m0fnu` data type.
@@ -246,8 +246,8 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
     | D            | QK dimension without position encoding           | Valid values: `128` or `192`.                                                            |
     | Dr           | QK position embedding dimension               | The value is fixed at `64`.                                                             |
     | Nkv          | Number of KV heads                 | The value is fixed at `1`.                                                              |
-    | BlockNum     | Number of `pertoken-pergroup` blocks in the PagedAttention scenario   | The value is rounded up to the nearest integer after the result of `B*Skv/BlockSize` is calculated. (`Skv` indicates the sequence length of KV, which can be `0`.)|
-    | BlockSize    | Block size in the PagedAttention scenario | Value range: a multiple of 16 ranging from 16 to 1024.                                                          |
+    | BlockNum     | Number of `pertoken-pergroup` blocks in the Paged Attention scenario   | The value is rounded up to the nearest integer after the result of `B*Skv/BlockSize` is calculated. (`Skv` indicates the sequence length of KV, which can be `0`.)|
+    | BlockSize    | Block size in the Paged Attention scenario | Value range: a multiple of 16 ranging from 16 to 1024.                                                          |
     | T            | Size after the fusion of the `B` and `S` axes               | Value range: not limited. Note: When the `B` and `S` axes are fused, `token_x`, `rope_sin`, `rope_cos`, and `query_norm` are 2D, `query_out` and `query_rope_out` are 3D, and `cache_index` is 1D.|
 
 - Supported scenarios:
@@ -255,7 +255,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
   <!-- npu="A3,910b" id4 -->
   > [!NOTE]
   >
-  > <term>Atlas A3 products</term> and <term>Atlas A2 products</term>:
+  > Atlas A3 products and Atlas A2 products:
   >
   > - Full FP8, HiF8, and MXFP8 quantization scenarios are currently not supported.
   <!-- end id4 -->

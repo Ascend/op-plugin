@@ -75,7 +75,7 @@
     $$
 
   <!-- npu="950" id5 -->
-  - Dynamic quantization (G-B, mx) scenarios (Formula 5): applicable only to <term>Ascend 950PR&950DT products</term>
+  - Dynamic quantization (G-B, mx) scenarios (Formula 5): applicable only to Ascend 950PR&950DT products
 
     $$
     \mathit{y}_i[m,n] = \sum_{j=0}^{\mathit{k}_{\mathit{loops}}-1}\left(\left(\sum_{k=0}^{\mathit{gsk}-1}\left(\mathit{x}_{\mathit{slice},i} \times \mathit{weight}_{\mathit{slice},i}\right)\right)\times\left(\mathit{pertokenscale}_i\left[\frac{m}{\mathit{gsm}},j\right] \times \mathit{scale}_i\left[j,\frac{n}{\mathit{gsn}}\right]\right)\right) + \mathit{bias}_i[n]
@@ -84,7 +84,7 @@
     where gsm, gsn, and gsk represent the quantization block sizes of the M, N, and K axes, respectively; K<sub>i</sub> is the K size of each group; x_slice<sub>i</sub> represents the vector of the mth row of x<sub>i</sub> with a length of gsk; weight_slice<sub>i</sub> represents the vector of the nth column of weight<sub>i</sub> with a length of gsk; the K axis is sliced starting from j*gsk, where j is in the range [0, k_loops), and k_loops=ceil(K<sub>i</sub>/gsk); a final slice whose length is less than gsk is supported.
   <!-- end id5 -->
   <!-- npu="950" id6 -->
-  - Fake-quantization (mx) scenarios (Formula 6): applicable only to <term>Ascend 950PR&950DT products</term>
+  - Fake-quantization (mx) scenarios (Formula 6): applicable only to Ascend 950PR&950DT products
     - `x` is `torch.float16` or `torch.bfloat16` and `weight` is `torch.float32` (`torch_npu.float4_e2m1fn_x2`) (Formula 6-1):
 
         $$
@@ -98,7 +98,7 @@
         $$
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - Fake-quantization (K-CG) scenarios (Formula 7): applicable only to <term>Ascend 950PR&950DT products</term>
+  - Fake-quantization (K-CG) scenarios (Formula 7): applicable only to Ascend 950PR&950DT products
 
     $$
     y_i = \left(x_i \text{@} (\mathit{weight}_i \times \mathit{antiquant\_scale}_i)\right) \times \mathit{scale}_i \times \mathit{pertokenscale}_i + \mathit{bias}_i
@@ -115,40 +115,40 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 
 ## Parameters<a name="en-us_topic_0000002262888689_section135561610204110"></a>
 
-- **`x`** (`List[Tensor]`): Required. Input matrix list representing the left matrices in MatMul.
+- **`x`** (`List[Tensor]`): **Required**. Input matrix list representing the left matrices in MatMul.
   - Valid data types:
 
     <!-- npu="A3,910b" id8 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `torch.float16`, `torch.float32`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4`.
+    - Atlas A2 products and Atlas A3 products: `torch.float16`, `torch.float32`, `torch.bfloat16`, `torch.int8`, or `torch_npu.int4`.
     <!-- end id8 -->
     <!-- npu="310p" id9 -->
-    - <term>Atlas inference products</term>: `torch.float16`.
+    - Atlas inference products: `torch.float16`.
     <!-- end id9 -->
     <!-- npu="950" id10 -->
-    - <term>Ascend 950PR&950DT products</term>: `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.float16`, `torch.bfloat16`, `torch.float32`, `torch.int8`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int8`, or `torch_npu.int4`. In practice, `torch_npu.int4` is carried by `torch.int8` or `torch.int32`, and the value range [-8,7] is retained. For `torch_npu.hifloat8` and the float4 series, the optional parameter `x_dtype` must be set to the corresponding type; in this case, the `dtype` of `x` itself no longer takes effect, but the `dtype` of `x` itself must still be an 8-bit data type to ensure the shape is correct. For the float4 series, the inner axis `K` must be an even number to ensure that 8 bits can be converted into two float4 values. In addition, the `torch_npu.float4_e1m2fn_x2` data type is supported only when `weight` is in NZ format.
+    - Ascend 950PR&950DT products: `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.float16`, `torch.bfloat16`, `torch.float32`, `torch.int8`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int8`, or `torch_npu.int4`. In practice, `torch_npu.int4` is carried by `torch.int8` or `torch.int32`, and the value range [-8,7] is retained. For `torch_npu.hifloat8` and the float4 series, the optional parameter `x_dtype` must be set to the corresponding type; in this case, the `dtype` of `x` itself no longer takes effect, but the `dtype` of `x` itself must still be an 8-bit data type to ensure the shape is correct. For the float4 series, the inner axis `K` must be an even number to ensure that 8 bits can be converted into two float4 values. In addition, the `torch_npu.float4_e1m2fn_x2` data type is supported only when `weight` is in NZ format.
     <!-- end id10 -->
 
   - The maximum list length is `128`.
 
     <!-- npu="950" id11 -->
-    - <term>Ascend 950PR&950DT products</term>: In non-quantization scenarios, the maximum list length is 1024.
+    - Ascend 950PR&950DT products: In non-quantization scenarios, the maximum list length is 1024.
     <!-- end id11 -->
 
   - When `split_item` is `0` or `1`, tensors support 2D to 6D inputs in some scenarios. In other cases, only 2D inputs are supported.
 
-- **`weight`** (`List[Tensor]`): Required. Weight matrix list representing the right matrices in MatMul.
+- **`weight`** (`List[Tensor]`): **Required**. Weight matrix list representing the right matrices in MatMul.
   - The data layout supports $ND$/`FRACTAL_NZ`. The supported data types are as follows:
 
     <!-- npu="A3,910b" id12 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>:
+    - Atlas A2 products and Atlas A3 products:
       - When `group_list` is of type `List[int]`, the data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
       - When `group_list` is of type `Tensor`, the data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, `torch_npu.int4`, or `torch.int8`.
     <!-- end id12 -->
     <!-- npu="310p" id13 -->
-    - <term>Atlas inference products</term>: `torch.float16`.
+    - Atlas inference products: `torch.float16`.
     <!-- end id13 -->
     <!-- npu="950" id14 -->
-    - <term>Ascend 950PR&950DT products</term>: `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.int8`, `torch_npu.hifloat8`, `torch.bfloat16`, `torch.float16`, `torch.float32`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int32`, or `torch_npu.int4`. In practice, `torch_npu.int4` is carried by `torch.int8` or `torch.int32`, and the value range [-8,7] is retained. For `torch_npu.hifloat8` and the float4 series, the optional parameter `weight_dtype` must be set to the corresponding type; in this case, the `dtype` of `weight` itself no longer takes effect, but the `dtype` of `weight` itself must still be an 8-bit data type to ensure the shape is correct. In addition, the `torch_npu.float4_e1m2fn_x2` data type is supported only when `weight` is in NZ format.
+    - Ascend 950PR&950DT products: `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch.int8`, `torch_npu.hifloat8`, `torch.bfloat16`, `torch.float16`, `torch.float32`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int32`, or `torch_npu.int4`. In practice, `torch_npu.int4` is carried by `torch.int8` or `torch.int32`, and the value range [-8,7] is retained. For `torch_npu.hifloat8` and the float4 series, the optional parameter `weight_dtype` must be set to the corresponding type; in this case, the `dtype` of `weight` itself no longer takes effect, but the `dtype` of `weight` itself must still be an 8-bit data type to ensure the shape is correct. In addition, the `torch_npu.float4_e1m2fn_x2` data type is supported only when `weight` is in NZ format.
       - In full quantization scenarios, when `x` is of the float4 series and `weight` is a float4 series input, only inference scenarios are supported. In this case, the `K` of the input `x` must be an even number, and when `weight` is not transposed, the inner axis `N` must be an even number to ensure that 8 bits can be converted into two float4 values. When the data type of the input `x`/`weight` is `torch.int8` or `torch.float8_e4m3fn` (with `scale_dtype` and `per_token_scale_dtype` being `torch.float8_e8m0fnu`) or `torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` (with `scale_dtype` and `per_token_scale_dtype` being `torch.float8_e8m0fnu`), the `weight` data format supports `FRACTAL_NZ`, and the `torch_npu.npu_format_cast` API can be used to convert ND to the `FRACTAL_NZ` format. When `x` is `torch_npu.int4` and `weight` is `torch_npu.int4`, the `K` of the input `x` must also be an even number, and when `weight` is not transposed, the inner axis `N` must be an even number. The `weight` data format supports `FRACTAL_NZ`, and the `torch_npu.npu_format_cast` API can be used to convert ND to the `FRACTAL_NZ` format.
       - In fake-quantization scenarios, when `weight` is of the `torch.float32`/`torch.int32` type, because PyTorch does not natively support some data types, [torch_npu.npu_convert_weight_to_int4pack](torch_npu-npu_convert_weight_to_int4pack.md) can be used to implement **one `torch.float32` value carrying eight `torch_npu.float4_e2m1fn_x2` inputs and one `torch.int32` value carrying eight `torch_npu.int4` inputs**. In this case, `weight_dtype` is not passed. Similarly, when `weight` is `torch_npu.int4`, a pack operation is also required.
       - In fake-quantization scenarios, the MxA8W4 data flow supports `weight` using `torch.uint8` to carry `torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` (one `torch.uint8` value carries two `torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` values). In this scenario, static graph mode and dynamic graph mode do not support E=1 or K=64, where E indicates the Group size.
@@ -158,23 +158,23 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - The maximum list length is `128`.
 
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR&950DT products</term>: In non-quantization scenarios, the maximum list length is 1024. In mx quantization full quantization scenarios where `w` is in the `FRACTAL_NZ` format, multiple `weight` tensors can be input, and the maximum tensorlist length is 128.
+    - Ascend 950PR&950DT products: In non-quantization scenarios, the maximum list length is 1024. In mx quantization full quantization scenarios where `w` is in the `FRACTAL_NZ` format, multiple `weight` tensors can be input, and the maximum tensorlist length is 128.
     <!-- end id15 -->
 
   - Each input tensor can be 2D or 3D.
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
-- **`bias`** (`List[Tensor]`): Optional. Independent bias term for each grouped MatMul output.
+- **`bias`** (`List[Tensor]`): **Optional**. Independent bias term for each grouped MatMul output.
   - Valid data types:
 
     <!-- npu="A3,910b" id16 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `torch.float16`, `torch.float32`, or `torch.int32`.
+    - Atlas A2 products and Atlas A3 products: `torch.float16`, `torch.float32`, or `torch.int32`.
     <!-- end id16 -->
     <!-- npu="310p" id17 -->
-    - <term>Atlas inference products</term>: `torch.float16`.
+    - Atlas inference products: `torch.float16`.
     <!-- end id17 -->
     <!-- npu="950" id18 -->
-    - <term>Ascend 950PR&950DT products</term>:
+    - Ascend 950PR&950DT products:
       - In quantization scenarios, when the input `x` is `torch.int8`, `torch.int32`, `torch.bfloat16`, `torch.float16`, and `torch.float32` are supported; when the input `x` is `torch_npu.float4_e2m1fn_x2`, only `torch.float32` is supported. For other input types, None must be passed.
       - In fake-quantization scenarios, when the input `x` is `torch.float16`, `bias` supports `torch.float16`; when the input `x` is `torch.bfloat16`, `bias` supports `torch.bfloat16` and `torch.float32`; when the input `x` is `torch.float8_e4m3fn` (in MXFP8 and other scenarios), `bias` supports `torch.float16` and `torch.bfloat16`. For other input types, None must be passed.
       - In non-quantization scenarios, when the input `x` is `torch.float16`, `torch.float16` and `torch.float32` are supported; when `x` is `torch.bfloat16`, `torch.bfloat16` and `torch.float32` are supported; when the input `x` is `torch.float32`, `torch.float32` is supported. For other input types, None must be passed.
@@ -183,19 +183,19 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - The list length must be identical to that of `weight`.
   - Each input tensor can be 1D or 2D.
 
-- **`scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, corresponding to Formula (2) and Formula (3).
+- **`scale`** (`List[Tensor]`): **Optional**. Scaling factor in quantization parameters, used to scale original values to match the quantized range, corresponding to Formula (2) and Formula (3).
   - Valid data types:
 
     <!-- npu="A3,910b" id19 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Only the $ND$ format is supported.
+    - Atlas A2 products and Atlas A3 products: Only the $ND$ format is supported.
       - When `group_list` is of type `List[int]`, the data type can be `torch.int64`.
       - When `group_list` is of type `Tensor`, the data type can be `torch.float32`, `torch.bfloat16`, or `torch.int64`.
     <!-- end id19 -->
     <!-- npu="310p" id20 -->
-    - <term>Atlas inference products</term>: Only `None` is supported.
+    - Atlas inference products: Only `None` is supported.
     <!-- end id20 -->
     <!-- npu="950" id21 -->
-    - <term>Ascend 950PR&950DT products</term>:
+    - Ascend 950PR&950DT products:
       - ND format: When the input type of `group_list` is `torch.Tensor` and `x` is not `torch.float16` or `torch.bfloat16`, `torch.int64`, `torch.bfloat16`, `torch.float32`, and `torch.float8_e8m0fnu` are supported. For `torch.float8_e8m0fnu`, `scale_dtype` must be set to the corresponding type; in this case, the `dtype` of `scale` itself no longer takes effect, but the `dtype` of `scale` itself must still be an 8-bit data type to ensure the shape is correct.
       - `FRACTAL_NZ` format: Only `torch.float8_e8m0fnu` is supported, and `scale_dtype` must be set to the corresponding type.
     <!-- end id21 -->
@@ -203,27 +203,27 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - The list length must be identical to that of `weight`.
 
   <!-- npu="A3,910b" id22 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Each input tensor must be 1D.
+  - Atlas A2 products and Atlas A3 products: Each input tensor must be 1D.
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT products</term>: In mx quantization M-axis grouping scenarios, each tensor must be 4D; when `weight` is input as multiple tensors, each tensor must be 3D and have the same transposition attribute as `weight`. In mx quantization K-axis grouping scenarios, each tensor must be 3D and have the same transposition attribute as `weight`. In K-CG fake-quantization M-axis grouping scenarios, each tensor must be 2D and have the same transposition attribute as `weight`.
+  - Ascend 950PR&950DT products: In mx quantization M-axis grouping scenarios, each tensor must be 4D; when `weight` is input as multiple tensors, each tensor must be 3D and have the same transposition attribute as `weight`. In mx quantization K-axis grouping scenarios, each tensor must be 3D and have the same transposition attribute as `weight`. In K-CG fake-quantization M-axis grouping scenarios, each tensor must be 2D and have the same transposition attribute as `weight`.
   <!-- end id23 -->
 
-- **`offset`** (`List[Tensor]`): Optional. Offset in quantization parameters, used to adjust quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (2). Currently, only `None` is supported.
+- **`offset`** (`List[Tensor]`): **Optional**. Offset in quantization parameters, used to adjust quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (2). Currently, only `None` is supported.
   <!-- npu="950" id88 -->
-  - <term>Ascend 950PR&950DT products</term>: The S8S4 K-C fake-quantization scenario supports `torch.float32`.
+  - Ascend 950PR&950DT products: The S8S4 K-C fake-quantization scenario supports `torch.float32`.
   <!-- end id88 -->
-- **`antiquant_scale`** (`List[Tensor]`): Optional. Scaling factor in fake-quantization parameters, used to scale original values to match the fake-quantized range, corresponding to Formula (4).
+- **`antiquant_scale`** (`List[Tensor]`): **Optional**. Scaling factor in fake-quantization parameters, used to scale original values to match the fake-quantized range, corresponding to Formula (4).
   - Valid data types:
 
     <!-- npu="A3,910b" id24 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `torch.float16` or `torch.bfloat16`.
+    - Atlas A2 products and Atlas A3 products: `torch.float16` or `torch.bfloat16`.
     <!-- end id24 -->
     <!-- npu="310p" id25 -->
-    - <term>Atlas inference products</term>: Only `None` is supported.
+    - Atlas inference products: Only `None` is supported.
     <!-- end id25 -->
     <!-- npu="950" id26 -->
-    - <term>Ascend 950PR&950DT products</term>: `torch.float16`, `torch.bfloat16`, `torch.float8_e8m0fnu`, where `torch.float8_e8m0fnu` must be passed as `torch.uint8`.
+    - Ascend 950PR&950DT products: `torch.float16`, `torch.bfloat16`, `torch.float8_e8m0fnu`, where `torch.float8_e8m0fnu` must be passed as `torch.uint8`.
     <!-- end id26 -->
 
   - The list length must be identical to that of `weight`.
@@ -232,51 +232,51 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - In pergroup fake-quantization scenarios, when `weight` is a single tensor, the shape is restricted to [g, G, n]; when weight is multiple tensors, the shape is restricted to [G<sub>i</sub>, n<sub>i</sub>].
     - In mx fake-quantization scenarios, when `weight` is a single tensor, the shape is restricted to `(g, n, G/2, 2)`
 
-- **`antiquant_offset`** (`List[Tensor]`): Optional. Offset in fake-quantization parameters, used to adjust fake-quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (4).
+- **`antiquant_offset`** (`List[Tensor]`): **Optional**. Offset in fake-quantization parameters, used to adjust fake-quantized numerical offsets to more accurately represent original floating-point values, corresponding to Formula (4).
   - Valid data types:
 
     <!-- npu="A3,910b" id27 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: `torch.float16` or `torch.bfloat16`.
+    - Atlas A2 products and Atlas A3 products: `torch.float16` or `torch.bfloat16`.
     <!-- end id27 -->
     <!-- npu="310p" id28 -->
-    - <term>Atlas inference products</term>: Only `None` is supported.
+    - Atlas inference products: Only `None` is supported.
     <!-- end id28 -->
     <!-- npu="950" id29 -->
-    - <term>Ascend 950PR&950DT products</term>: `torch.float16` or `torch.bfloat16`.
+    - Ascend 950PR&950DT products: `torch.float16` or `torch.bfloat16`.
     <!-- end id29 -->
 
   - The list length must be identical to that of `weight`.
   - Each tensor must have an identical input dimension to that of `antiquant_scale`.
 
-- **`per_token_scale`** (`List[Tensor]`): Optional. Scaling factor in quantization parameters, used to scale original values to match the quantized range, representing the scaling factor introduced by `x` quantization in `pertoken` quantization parameters, corresponding to Formula (3).
+- **`per_token_scale`** (`List[Tensor]`): **Optional**. Scaling factor in quantization parameters, used to scale original values to match the quantized range, representing the scaling factor introduced by `x` quantization in `pertoken` quantization parameters, corresponding to Formula (3).
   - When `group_list` is of type `List[int]`, only `None` can be provided.
   - When `group_list` is of type `Tensor`:
 
     <!-- npu="A3,910b" id30 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The data type can be `torch.float32`.
+    - Atlas A2 products and Atlas A3 products: The data type can be `torch.float32`.
     <!-- end id30 -->
     <!-- npu="950" id31 -->
-    - <term>Ascend 950PR&950DT products</term>: When the `group_list` input type is `Tensor`, the data type supports `torch.float32` and `torch.float8_e8m0fnu`. For `torch.float8_e8m0fnu`, `per_token_scale_dtype` must be set to the corresponding type; in this case, the `dtype` of `per_token_scale` itself no longer takes effect, but the `dtype` of `per_token_scale` itself must still be an 8-bit data type to ensure the shape is correct.
+    - Ascend 950PR&950DT products: When the `group_list` input type is `Tensor`, the data type supports `torch.float32` and `torch.float8_e8m0fnu`. For `torch.float8_e8m0fnu`, `per_token_scale_dtype` must be set to the corresponding type; in this case, the `dtype` of `per_token_scale` itself no longer takes effect, but the `dtype` of `per_token_scale` itself must still be an 8-bit data type to ensure the shape is correct.
     <!-- end id31 -->
     - The list length must be identical to that of `x`.
 
     <!-- npu="A3,910b" id32 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Each input tensor must be 1D.
+    - Atlas A2 products and Atlas A3 products: Each input tensor must be 1D.
     <!-- end id32 -->
     <!-- npu="950" id33 -->
-    - <term>Ascend 950PR&950DT products</term>: In mx quantization, each tensor must be 3D and have the same transposition attribute as `x`. In mx fake-quantization scenarios, the tensor must be 3D with the same transposition attribute as x, and the data type supports `torch.float8_e8m0fnu`. In K-CG fake-quantization scenarios, the tensor must be 1D, and the data type supports `torch.float32`.
+    - Ascend 950PR&950DT products: In mx quantization, each tensor must be 3D and have the same transposition attribute as `x`. In mx fake-quantization scenarios, the tensor must be 3D with the same transposition attribute as x, and the data type supports `torch.float8_e8m0fnu`. In K-CG fake-quantization scenarios, the tensor must be 1D, and the data type supports `torch.float32`.
     <!-- end id33 -->
 
 - **`group_list`** (`List[int]`/`torch.Tensor`): Optional. Grouping index indicating the index mapping of MatMul along dimension `0` of `x`. The data layout supports $ND$, and the data type supports `torch.int64`.
 
   <!-- npu="310p" id34 -->
-  - <term>Atlas inference products</term>: Only the `torch.Tensor` type is supported. Each input tensor must be 1D, and the length must be identical to that of `weight`.
+  - Atlas inference products: Only the `torch.Tensor` type is supported. Each input tensor must be 1D, and the length must be identical to that of `weight`.
   <!-- end id34 -->
   <!-- npu="A3,910b" id35 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Both `List[int]` and `torch.Tensor` types are supported. If the type is `torch.Tensor`, each input tensor must be 1D, and the length must be identical to that of `weight`.
+  - Atlas A2 products and Atlas A3 products: Both `List[int]` and `torch.Tensor` types are supported. If the type is `torch.Tensor`, each input tensor must be 1D, and the length must be identical to that of `weight`.
   <!-- end id35 -->
   <!-- npu="950" id36 -->
-  - <term>Ascend 950PR&950DT products</term>: Only the `torch.Tensor` type is supported. Only 1D input is supported. When `group_type` is 0, the length must be the same as the size of the highest axis E of `weight` (a single tensor, [[E, N, K]]). When `group_type` is 2, the length must be the same as the size of the highest axis E of the output (a single tensor, [[E, M, N]]).
+  - Ascend 950PR&950DT products: Only the `torch.Tensor` type is supported. Only 1D input is supported. When `group_type` is 0, the length must be the same as the size of the highest axis E of `weight` (a single tensor, [[E, N, K]]). When `group_type` is 2, the length must be the same as the size of the highest axis E of the output (a single tensor, [[E, M, N]]).
   <!-- end id36 -->
   - Configuration requirements:
     - When `group_list` is of type `List[int]`, the configuration must be a non-negative increasing sequence, and the length cannot be 0.
@@ -285,35 +285,35 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       - When `group_list_type` is set to `1`, `group_list` must be a non-negative sequence, and the length cannot be `1`.
       - When `group_list_type` is set to `2`, the shape of `group_list` must be `[E, 2]`, where `E` indicates the group size. The data layout must be `[[groupIdx0, groupSize0], [groupIdx1, groupSize1]...]`. `groupSize` indicates the size of each group along the grouping axis and must be non-negative.
 
-- **`activation_input`** (`List[Tensor]`): Optional. Backward input of the activation function. Currently, only `None` is supported.
-- **`activation_quant_scale`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
-- **`activation_quant_offset`** (`List[Tensor]`): Optional. Reserved parameter. Currently, only `None` is supported.
-- **`split_item`** (`int`): Optional. Specifies the split mode. The data type supports `int64`.
+- **`activation_input`** (`List[Tensor]`): **Optional**. Backward input of the activation function. Currently, only `None` is supported.
+- **`activation_quant_scale`** (`List[Tensor]`): **Optional**. Reserved parameter. Currently, only `None` is supported.
+- **`activation_quant_offset`** (`List[Tensor]`): **Optional**. Reserved parameter. Currently, only `None` is supported.
+- **`split_item`** (`int`): **Optional**. Specifies the split mode. The data type supports `int64`.
   - `0` or `1`: The output contains multiple tensors, and the number matches that of `weight`.
   - `2` or `3`: The output is a single tensor.
 
   <!-- npu="950" id37 -->
-  - <term>Ascend 950PR&950DT products</term>: In non-quantization and fake-quantization scenarios, the values 0/1/2/3 can be used, and in quantization scenarios, 2 and 3 are supported currently.
+  - Ascend 950PR&950DT products: In non-quantization and fake-quantization scenarios, the values 0/1/2/3 can be used, and in quantization scenarios, 2 and 3 are supported currently.
   <!-- end id37 -->
 
-- **`group_type`** (`int`): Optional. The grouping axis. The data type supports `int64`.
+- **`group_type`** (`int`): **Optional**. The grouping axis. The data type supports `int64`.
   - When `group_list` is of type `List[int]`, only `None` is supported.
   - When `group_list` is of type `Tensor`, and the matrix multiplication is $C[m,n]=A[m,k] \times B[k,n]$, the valid enum values are: `-1` (no grouping), `0` (grouping along the m-axis), and `2` (grouping along the k-axis).
 
     <!-- npu="A3,910b" id38 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: Currently, the value can be `-1`, `0`, or `2`.
+    - Atlas A2 products and Atlas A3 products: Currently, the value can be `-1`, `0`, or `2`.
     <!-- end id38 -->
     <!-- npu="310p" id39 -->
-    - <term>Atlas inference products</term>: Currently, only `0` is supported.
+    - Atlas inference products: Currently, only `0` is supported.
     <!-- end id39 -->
     <!-- npu="950" id40 -->
-    - <term>Ascend 950PR&950DT products</term>:
+    - Ascend 950PR&950DT products:
       - Non-quantization scenarios support the values -1, 0, and 2. The value 2 is not supported in weightNz scenarios.
       - Quantization scenarios support the values 0 and 2.
       - Fake-quantization scenarios support the values -1 and 0.
     <!-- end id40 -->
 
-- **`group_list_type`** (`int`): Optional. Representation format of `group_list`. The data type supports `int64`.
+- **`group_list_type`** (`int`): **Optional**. Representation format of `group_list`. The data type supports `int64`.
   - When `group_list` is of type `List[int]`, only `None` is supported.
   - When `group_list` is of type `Tensor`, valid values are `0`, `1`, or `2`.
     - `0`: Default value. The values in `group_list` indicate the cumulative sum (`cumsum`) results of group sizes along the grouping axis.
@@ -321,78 +321,78 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - `2`: The shape of `group_list` must be `[E, 2]`, where `E` indicates the group size. The data layout must be `[[groupIdx0, groupSize0], [groupIdx1, groupSize1]...]`. `groupSize` indicates the size of each group along the grouping axis.
 
     <!-- npu="A3,910b" id41 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The value `2` is supported only when the data type of `x` and `weight` is `torch.int8`, and `group_type` is set to `0` (m-axis grouping).
+    - Atlas A2 products and Atlas A3 products: The value `2` is supported only when the data type of `x` and `weight` is `torch.int8`, and `group_type` is set to `0` (m-axis grouping).
     <!-- end id41 -->
     <!-- npu="310p" id42 -->
-    - <term>Atlas inference products</term>: The value `2` is not supported.
+    - Atlas inference products: The value `2` is not supported.
     <!-- end id42 -->
     <!-- npu="950" id43 -->
-    - <term>Ascend 950PR&950DT products</term>: The value 2 is supported only in non-quantization, full-quantization, or MX A8W4 fake-quantization scenarios where `group_type` is 0 (m-axis grouping).
-    - <term>Ascend 950PR&950DT products</term>: In K-CG fake-quantization scenarios, `group_list_type` supports only the value 1.
+    - Ascend 950PR&950DT products: The value 2 is supported only in non-quantization, full-quantization, or MX A8W4 fake-quantization scenarios where `group_type` is 0 (m-axis grouping).
+    - Ascend 950PR&950DT products: In K-CG fake-quantization scenarios, `group_list_type` supports only the value 1.
     <!-- end id43 -->
 
-- **`act_type`** (`int`): Optional. Activation function type. The data type supports `int64`.
+- **`act_type`** (`int`): **Optional**. Activation function type. The data type supports `int64`.
   - When `group_list` is of type `List[int]`, only `None` is supported.
   - When `group_list` is of type `Tensor`, valid enum values are: `0` (no activation), `1` (`RELU` activation), `2` (`GELU_TANH` activation), `3` (not supported), `4` (`FAST_GELU` activation), or `5` (`SILU` activation).
 
     <!-- npu="A3,910b" id44 -->
-    - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The value ranges from 0 to 5.
+    - Atlas A2 products and Atlas A3 products: The value ranges from 0 to 5.
     <!-- end id44 -->
     <!-- npu="310p" id45 -->
-    - <term>Atlas inference products</term>: Currently, only `0` is supported.
+    - Atlas inference products: Currently, only `0` is supported.
     <!-- end id45 -->
     <!-- npu="950" id46 -->
-    - <term>Ascend 950PR&950DT products</term>: The values 0, 1, 2, 4, and 5 are supported currently.
+    - Ascend 950PR&950DT products: The values 0, 1, 2, 4, and 5 are supported currently.
     <!-- end id46 -->
 
-- **`output_dtype`** (`torch.dtype`): Optional. Output data type. Valid values are:
+- **`output_dtype`** (`torch.dtype`): **Optional**. Output data type. Valid values are:
   - `None`: Default value. The output data type is identical to that of `x`.
   - A type identical to that of output `y`. For details, see [Constraints](#en-us_topic_0000002262888689_section618392112366).
 
-- **`tuning_config`** (`List[int]`): Optional. The first element in this list specifies the expected number of tokens processed by each expert. During operator tiling, optimization is performed based on this element for higher performance. For details about the usage scenarios, see [Constraints](#en-us_topic_0000002262888689_section618392112366). Elements starting from the second element are reserved for future extensions and can be omitted. This parameter can be omitted if it is not used.
+- **`tuning_config`** (`List[int]`): **Optional**. The first element in this list specifies the expected number of tokens processed by each expert. During operator tiling, optimization is performed based on this element for higher performance. For details about the usage scenarios, see [Constraints](#en-us_topic_0000002262888689_section618392112366). Elements starting from the second element are reserved for future extensions and can be omitted. This parameter can be omitted if it is not used.
   <!-- npu="310p" id47 -->
-  - <term>Atlas inference products</term>: This parameter is not supported currently.
+  - Atlas inference products: This parameter is not supported currently.
   <!-- end id47 -->
   <!-- npu="950" id48 -->
-  - <term>Ascend 950PR&950DT products</term>: Currently supported only in the S8S4 K-C and S8S4 K-CG fake-quantization scenarios.
+  - Ascend 950PR&950DT products: Currently supported only in the S8S4 K-C and S8S4 K-CG fake-quantization scenarios.
     - The first element indicates the expected number of tokens processed by each expert. It supports 0 and positive integers, and the value range is [0, min(M, UINT32_MAX)], where M is the number of rows of the input `x`. The value 0 indicates that no expected value is specified; a positive integer indicates the expected number of tokens processed by each expert and must not be greater than M. Currently, this value is only validated and saved, and does not participate in actual tuning computation.
     - The second element supports only 0 or 1. When it is set to 0 or this element is not passed, the special `weight` format is not enabled, and `weight` is parsed according to the conventional [E, K, N] logical layout. When it is set to 1, the special `weight` format is enabled, and only perchannel scenarios where `offset` is not empty are supported. In this case, `weight` must be arranged as [E, N, K] and then converted to the `FRACTAL_NZ` format, and the `weight` list length must be 1. For example, passing `[0, 1]` indicates that no expected token count is specified and the special `weight` format is enabled.
   <!-- end id48 -->
 
-- **`x_dtype`** (`int`): Optional. Real data type of the input `x`. The default value is None, which means the real data type of the input `x` is the same as the `dtype` of the input `x`.
+- **`x_dtype`** (`int`): **Optional**. Real data type of the input `x`. The default value is None, which means the real data type of the input `x` is the same as the `dtype` of the input `x`.
 
   <!-- npu="A3,910b,310p" id49 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, <term>Atlas inference products</term>: This parameter is not supported currently.
+  - Atlas A2 products, Atlas A3 products, Atlas inference products: This parameter is not supported currently.
   <!-- end id49 -->
   <!-- npu="950" id50 -->
-  - <term>Ascend 950PR&950DT products</term>: `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, and `torch_npu.float4_e1m2fn_x2` are supported.
+  - Ascend 950PR&950DT products: `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, and `torch_npu.float4_e1m2fn_x2` are supported.
   <!-- end id50 -->
 
-- **`weight_dtype`** (`int`): Optional. Real data type of the input `weight`. The default value is None, which means the real data type of the input `weight` is the same as the `dtype` of the input `weight`. In fake-quantization scenarios where `torch.float32` is used to represent `torch_npu.float4_e2m1fn_x2`, this parameter does not need to be passed.
+- **`weight_dtype`** (`int`): **Optional**. Real data type of the input `weight`. The default value is None, which means the real data type of the input `weight` is the same as the `dtype` of the input `weight`. In fake-quantization scenarios where `torch.float32` is used to represent `torch_npu.float4_e2m1fn_x2`, this parameter does not need to be passed.
 
   <!-- npu="A3,910b,310p" id51 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, <term>Atlas inference products</term>: This parameter is not supported currently.
+  - Atlas A2 products, Atlas A3 products, Atlas inference products: This parameter is not supported currently.
   <!-- end id51 -->
   <!-- npu="950" id52 -->
-  - <term>Ascend 950PR&950DT products</term>: `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, and `torch_npu.float4_e1m2fn_x2` are supported.
+  - Ascend 950PR&950DT products: `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, and `torch_npu.float4_e1m2fn_x2` are supported.
   <!-- end id52 -->
 
-- **`scale_dtype`** (`int`): Optional. Real data type of the input `scale`. The default value is None, which means the real data type of the input `scale` is the same as the `dtype` of the input `scale`.
+- **`scale_dtype`** (`int`): **Optional**. Real data type of the input `scale`. The default value is None, which means the real data type of the input `scale` is the same as the `dtype` of the input `scale`.
 
   <!-- npu="A3,910b,310p" id53 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, <term>Atlas inference products</term>: This parameter is not supported currently.
+  - Atlas A2 products, Atlas A3 products, Atlas inference products: This parameter is not supported currently.
   <!-- end id53 -->
   <!-- npu="950" id54 -->
-  - <term>Ascend 950PR&950DT products</term>: Only `torch.float8_e8m0fnu` is supported currently.
+  - Ascend 950PR&950DT products: Only `torch.float8_e8m0fnu` is supported currently.
   <!-- end id54 -->
 
-- **`per_token_scale_dtype`** (`int`): Optional. Real data type of the input `per_token_scale`. The default value is None, which means the real data type of `per_token_scale` is the same as the `dtype` of the input `per_token_scale`.
+- **`per_token_scale_dtype`** (`int`): **Optional**. Real data type of the input `per_token_scale`. The default value is None, which means the real data type of `per_token_scale` is the same as the `dtype` of the input `per_token_scale`.
 
   <!-- npu="A3,910b,310p" id55 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, <term>Atlas inference products</term>: This parameter is not supported currently.
+  - Atlas A2 products, Atlas A3 products, Atlas inference products: This parameter is not supported currently.
   <!-- end id55 -->
   <!-- npu="950" id56 -->
-  - <term>Ascend 950PR&950DT products</term>: Only `torch.float8_e8m0fnu` is supported currently.
+  - Ascend 950PR&950DT products: Only `torch.float8_e8m0fnu` is supported currently.
   <!-- end id56 -->
 
 ## Return Values<a name="en-us_topic_0000002262888689_section1558311519405"></a>
@@ -408,7 +408,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - This API supports single-operator mode and TorchAir graph mode.
 
 <!-- npu="950" id57 -->
-- Constraints on parameter types and formats in graph mode scenarios (applicable only to <term>Ascend 950PR&950DT products</term>):
+- Constraints on parameter types and formats in graph mode scenarios (applicable only to Ascend 950PR&950DT products):
   - In fake-quantization scenarios, `offset`, `activation_input`, `activation_quant_scale`, and `activation_quant_offset` support only None.
   - In fake-quantization scenarios, `x_dtype` supports only None, and `weight_dtype` supports None or `torch_npu.hifloat8`.
   - In PerGroup quantization scenarios where `x_dtype` is `torch.float16`/`torch.bfloat16` and `weight_dtype` is `torch_npu.int4`, graph mode is not supported.
@@ -417,12 +417,12 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - In full quantization scenarios, if the output data type `y` is `torch.int8`, graph mode is not supported. In full quantization MX scenarios where the `weight` input format is FRACTAL_NZ, if multiple weight tensors are input, graph mode is not supported. If the input types of both `x` and `weight` are `torch_npu.int4`, graph mode is not supported currently.
 <!-- end id57 -->
 <!-- npu="950" id58 -->
-- WeightNZ scenario description (applicable only to <term>Ascend 950PR&950DT products</term>):
+- WeightNZ scenario description (applicable only to Ascend 950PR&950DT products):
   - `weight` supports the FRACTAL_NZ data format only in fake-quantization and full quantization scenarios (where the data types of the input `x`/`weight` are `torch.int8`, or the data types of `x`/`weight` are `torch.float8_e4m3fn`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` with scale_dtype and per_token_scale_dtype being `torch.float8_e8m0fnu`).
   - In full quantization scenarios, when the `weight` input is in the FRACTAL_NZ data format, neither the K axis nor the N axis may be 1. In MXFP4 scenarios, K must be greater than 2, and when weight is not transposed, N must be greater than 2. MXFP4 scenarios support static graph mode but not dynamic graph mode. In MXFP4 static graph mode scenarios, E must be greater than 1 and K must be greater than 64. When both x and weight are `torch_npu.int4`, graph mode is not supported, and K must be kept aligned to 8.
 <!-- end id58 -->
 <!-- npu="950" id59 -->
-- Constraints on the use of the scale NZ affinity format (applicable only to <term>Ascend 950PR&950DT products</term>):
+- Constraints on the use of the scale NZ affinity format (applicable only to Ascend 950PR&950DT products):
   - Only MX quantization scenarios are supported, where the `scale` data type is `torch.float8_e8m0fnu`.
   - When `scale` uses the NZ affinity format, `weight` must be in the `FRACTAL_NZ` format.
   - The data types of `x` and `weight` support only `torch.float8_e4m3fn`.
@@ -434,7 +434,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - This API supports graph mode.
 
   <!-- npu="A3,910b" id60 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: The inner dimension limit `InnerLimit` is fixed at `65536`.
+  - Atlas A2 products and Atlas A3 products: The inner dimension limit `InnerLimit` is fixed at `65536`.
   <!-- end id60 -->
 
 - For each tensor group in `x` and `weight`, the size of the last dimension must be less than `InnerLimit`. The last dimension of <code>x<sub>i</sub></code> indicates the K-axis of <code>x<sub>i</sub></code> when `x` is not transposed, or the M-axis of <code>x<sub>i</sub></code> when `x` is transposed. The last dimension of <code>weight<sub>i</sub></code> indicates the $N$ axis of <code>weight<sub>i</sub></code> when `weight` is not transposed, or the $K$ axis of <code>weight<sub>i</sub></code> when `weight` is transposed.
@@ -442,7 +442,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 <!-- npu="950" id61 -->
 - Usage scenario constraints for `tuning_config`:
 
-    - The S8S4 K-C and S8S4 K-CG fake-quantization scenarios are applicable only to <term>Ascend 950PR&950DT products</term>.
+    - The S8S4 K-C and S8S4 K-CG fake-quantization scenarios are applicable only to Ascend 950PR&950DT products.
     - Quantization scenarios: The input is `torch.int8`, the output is `torch.int32`/`torch.bfloat16`/`torch.float16`/`torch.int8`, and the scenario is single-tensor single-expert. The data types are as follows.
 
     | x | weight | output_dtype | y |
@@ -455,7 +455,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - Constraints on the input and output data types in different scenarios:
 
   <!-- npu="A3,910b" id62 -->
-  - **When the `group_list` input type is List[int]** (for <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
+  - **When the `group_list` input type is List[int]** (for Atlas A2 products and Atlas A3 products)
 
     **Table 1**  Data type constraints
 
@@ -469,7 +469,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | fake-quantization | `torch.bfloat16` | `torch.int8` | `torch.float32` | None | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` |
   <!-- end id62 -->
   <!-- npu="A3,910b" id63 -->
-  - **When the `group_list` input type is Tensor** (for <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
+  - **When the `group_list` input type is Tensor** (for Atlas A2 products and Atlas A3 products)
 
     **Table 2**  Data type constraints
 
@@ -493,7 +493,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     > - PyTorch currently does not support the `torch_npu.int4` type. When it is needed, the [torch_npu.npu_quantize](torch_npu-npu_quantize.md) API can be used to represent `torch_npu.int4` with `torch.int32` data.
   <!-- end id63 -->
   <!-- npu="310p" id64 -->
-  - **When the `group_list` input type is Tensor** (for <term>Atlas inference products</term>)
+  - **When the `group_list` input type is Tensor** (for Atlas inference products)
 
     **Table 3**  Data type constraints
 
@@ -502,7 +502,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | `torch.float16` | `torch.float16` | `torch.float16` | None | None | None | `torch.float32` | `torch.float16` | `torch.float16` |
   <!-- end id64 -->
   <!-- npu="950" id65 -->
-  - **When the `group_list` input type is Tensor** (for <term>Ascend 950PR&950DT products</term>)
+  - **When the `group_list` input type is Tensor** (for Ascend 950PR&950DT products)
 
     **Table 4** Data type constraints
 
@@ -541,7 +541,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 - The following scenarios are supported based on the variations in the tensor counts of input `x`, input `weight`, and output `y`. In these scenario descriptions, "single" indicates a single tensor, and "multiple" indicates multiple tensors. The naming sequence follows the order of `x`, `weight`, and `y`. For example, "single-multiple-single" indicates that `x` is a single tensor, `weight` is a list of tensors, and `y` is a single tensor.
 
   <!-- npu="A3,910b" id66 -->
-  - **Scenarios supported when the `group_list` input type is List[int]** (for <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
+  - **Scenarios supported when the `group_list` input type is List[int]** (for Atlas A2 products and Atlas A3 products)
 
     | Supported Scenario | Scenario Description | Scenario Restrictions |
     | --- | --- | --- |
@@ -551,7 +551,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     |Multiple–Multiple–Single|`x` and `weight` are lists of tensors, and `y` is a single tensor. The results of each matrix multiplication group are stored sequentially within the same continuous tensor.|1. `split_item` must be `2` or `3`.<br>2. The tensors in `x`, `weight`, and `y` must be 2D.<br>3. The N-axis size of each tensor in `weight` must be identical.<br>4. If `group_list` is provided, the differences between adjacent elements in `group_list` must correspond one-to-one to the first dimension of each tensor in `x`.|
   <!-- end id66 -->
   <!-- npu="A3,910b" id67 -->
-  - **Scenarios supported when the `group_list` input type is Tensor** (for <term>Atlas A2 products</term> and <term>Atlas A3 products</term>)
+  - **Scenarios supported when the `group_list` input type is Tensor** (for Atlas A2 products and Atlas A3 products)
 
     > [!NOTE]   
     >
@@ -567,7 +567,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     | 2 | single-single-single | x, weight, and y are all single tensors | 1. Only split_item of 2 or 3 is supported.<br>  2. The tensors in x and weight must be 2D, and the tensor in y must be 3D.<br>  3. group_list must be passed. When group_list_type is 0, the last value must be equal to the second dimension of the tensor in x; when group_list_type is 1, the sum of the values must be equal to the second dimension of the tensor in x; when group_list_type is 2, the sum of the values in the second column must be less than or equal to the second dimension of the tensor in x.<br>  4. The maximum length of the first dimension of group_list is 1024, that is, a maximum of 1024 groups is supported.<br>  5. x must be transposed, and weight must not be transposed. |
   <!-- end id67 -->
   <!-- npu="310p" id68 -->
-  - **Scenarios supported when the `group_list` input type is Tensor** (for <term>Atlas inference products</term>)
+  - **Scenarios supported when the `group_list` input type is Tensor** (for Atlas inference products)
 
     The inputs and outputs support only the `torch.float16` data type. The N-axis size of the output `y` must be a multiple of `16`.
 
@@ -576,7 +576,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     |0|Single-Single-Single|`x`, `weight`, and `y` are all single tensors.|1. `split_item` must be `2` or `3`.<br>2. The tensors in `weight` must be 3D, and the tensors in `x` and `y` must be 2D.<br>3. `group_list` must be provided. When `group_list_type` is set to `0`, its last value must be identical to the first dimension of the tensor in `x`. When `group_list_type` is set to `1`, the sum of its values must be identical to the first dimension of the tensor in `x`.<br>4. The maximum size of the first dimension of `group_list` is `1024`. That is, a maximum of `1024` groups are supported.<br>5. Transposition of `weight` is supported, but `x` does not support transposition.|
   <!-- end id68 -->
   <!-- npu="950" id69 -->
-  - **Scenarios supported when the `group_list` input type is Tensor** (<term>Ascend 950PR&950DT products</term>)
+  - **Scenarios supported when the `group_list` input type is Tensor** (Ascend 950PR&950DT products)
 
     > [!NOTE]
     >
@@ -654,7 +654,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
 
   <!-- npu="950" id70 -->
-  - <term>Ascend 950PR&950DT products</term>: `torch_npu.hifloat8` input, K-T dynamic quantization scenario
+  - Ascend 950PR&950DT products: `torch_npu.hifloat8` input, K-T dynamic quantization scenario
 
     ```python
     import torch
@@ -675,7 +675,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id70 -->
   <!-- npu="950" id71 -->
-  - <term>Ascend 950PR&950DT products</term>: mx quantization scenario example - mxfp8
+  - Ascend 950PR&950DT products: mx quantization scenario example - mxfp8
 
     ```python
     import math
@@ -696,7 +696,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id71 -->
   <!-- npu="950" id72 -->
-  - <term>Ascend 950PR&950DT products</term>: G-B dynamic quantization scenario example
+  - Ascend 950PR&950DT products: G-B dynamic quantization scenario example
 
     ```python
     # G-B
@@ -719,7 +719,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id72 -->
   <!-- npu="950" id73 -->
-  - <term>Ascend 950PR&950DT products</term>: full quantization weightNZ scenario example (x/weight are `torch.int8`)
+  - Ascend 950PR&950DT products: full quantization weightNZ scenario example (x/weight are `torch.int8`)
 
     ```python
     import torch
@@ -741,7 +741,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id73 -->
   <!-- npu="950" id74 -->
-  - <term>Ascend 950PR&950DT products</term>: non-quantization weightNZ scenario example
+  - Ascend 950PR&950DT products: non-quantization weightNZ scenario example
 
     ```python
     import torch
@@ -761,7 +761,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id74 -->
   <!-- npu="950" id75 -->
-  - <term>Ascend 950PR&950DT products</term>: mx (A4W4) full quantization scenario example - mxfp4
+  - Ascend 950PR&950DT products: mx (A4W4) full quantization scenario example - mxfp4
 
     ```python
     import math
@@ -787,7 +787,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id75 -->
   <!-- npu="950" id76 -->
-  - <term>Ascend 950PR&950DT products</term>: (A16W4) fake-quantization scenario example
+  - Ascend 950PR&950DT products: (A16W4) fake-quantization scenario example
 
     ```python
     import numpy as np
@@ -833,7 +833,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id76 -->
   <!-- npu="950" id77 -->
-  - <term>Ascend 950PR&950DT products</term>: mx fake-quantization scenario example (x is `torch.float8_e4m3fn`, weight uses `torch.uint8` to carry `torch_npu.float4_e2m1fn_x2` (one `torch.uint8` value carries two float4_e2m1 values), and antiquant_scale and per_token_scale use `torch.uint8` to carry `torch.float8_e8m0fnu`)
+  - Ascend 950PR&950DT products: mx fake-quantization scenario example (x is `torch.float8_e4m3fn`, weight uses `torch.uint8` to carry `torch_npu.float4_e2m1fn_x2` (one `torch.uint8` value carries two float4_e2m1 values), and antiquant_scale and per_token_scale use `torch.uint8` to carry `torch.float8_e8m0fnu`)
 
     ```python
     import torch
@@ -877,7 +877,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id77 -->
   <!-- npu="950" id78 -->
-  - <term>Ascend 950PR&950DT products</term>: pergroup fake-quantization scenario example (x is `torch.float16`/`torch.bfloat16`, and weight uses `torch.int32` to carry `torch_npu.int4`, that is, one `torch.int32` value carries eight `torch_npu.int4` values)
+  - Ascend 950PR&950DT products: pergroup fake-quantization scenario example (x is `torch.float16`/`torch.bfloat16`, and weight uses `torch.int32` to carry `torch_npu.int4`, that is, one `torch.int32` value carries eight `torch_npu.int4` values)
 
     ```python
     import torch
@@ -916,7 +916,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 
   <!-- end id78 -->
   <!-- npu="950" id79 -->
-  - <term>Ascend 950PR&950DT products</term>: S8S4 K-C fake-quantization example
+  - Ascend 950PR&950DT products: S8S4 K-C fake-quantization example
 
     ```python
     import os
@@ -978,7 +978,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id79 -->
   <!-- npu="950" id80 -->
-  - <term>Ascend 950PR&950DT products</term>: full quantization `torch_npu.int4`, perchannel example
+  - Ascend 950PR&950DT products: full quantization `torch_npu.int4`, perchannel example
 
     ```python
     import numpy as np
@@ -1039,7 +1039,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id80 -->
   <!-- npu="950" id81 -->
-  - <term>Ascend 950PR&950DT products</term>: full quantization `torch.int8`, dynamic K-C quantization with activation example
+  - Ascend 950PR&950DT products: full quantization `torch.int8`, dynamic K-C quantization with activation example
 
     ```python
     import torch
@@ -1056,7 +1056,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id81 -->
   <!-- npu="950" id82 -->
-  - <term>Ascend 950PR&950DT products</term>: fake-quantization MXA8W4, single-multi-single scenario
+  - Ascend 950PR&950DT products: fake-quantization MXA8W4, single-multi-single scenario
 
     ```python
     import torch
@@ -1154,7 +1154,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
 
   <!-- npu="950" id83 -->
-  - <term>Ascend 950PR&950DT products</term>: full quantization scenario example
+  - Ascend 950PR&950DT products: full quantization scenario example
 
       ```python
       import torch
@@ -1199,7 +1199,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       ```
   <!-- end id83 -->
   <!-- npu="950" id84 -->
-  - <term>Ascend 950PR&950DT products</term>: full quantization weightNz scenario example (x/weight are `torch.int8`)
+  - Ascend 950PR&950DT products: full quantization weightNz scenario example (x/weight are `torch.int8`)
 
       ```python
       import torch
@@ -1244,7 +1244,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       ```
   <!-- end id84 -->
   <!-- npu="950" id85 -->
-  - <term>Ascend 950PR&950DT products</term>: mx fake-quantization scenario example (x is `torch.float16`, weight is `torch.float32` (`torch_npu.float4_e2m1fn_x2`), and antiquant_scale uses `torch.uint8` to carry `torch.float8_e8m0fnu`)
+  - Ascend 950PR&950DT products: mx fake-quantization scenario example (x is `torch.float16`, weight is `torch.float32` (`torch_npu.float4_e2m1fn_x2`), and antiquant_scale uses `torch.uint8` to carry `torch.float8_e8m0fnu`)
 
       ```python
       import numpy as np
@@ -1298,7 +1298,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       ```
   <!-- end id85 -->
   <!-- npu="950" id86 -->
-  - <term>Ascend 950PR&950DT products</term>: G-B dynamic quantization scenario example
+  - Ascend 950PR&950DT products: G-B dynamic quantization scenario example
 
       ```python
       import math
@@ -1347,7 +1347,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       ```
   <!-- end id86 -->
   <!-- npu="950" id87 -->
-  - <term>Ascend 950PR&950DT products</term>: mx (A4W4) full quantization scenario example - mxfp4
+  - Ascend 950PR&950DT products: mx (A4W4) full quantization scenario example - mxfp4
 
       ```python
       import math

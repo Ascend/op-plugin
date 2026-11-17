@@ -32,17 +32,17 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - **`offset`** (`bool`): Specifies whether to include offset in the computation. If set to `False`, `offset` is excluded from the quantized matrix multiplication computation.
 - **`pertoken_scale`** (`bool`): Optional. Specifies whether to include `pertoken_scale` parameters in the computation. If set to `False`, `pertoken_scale` is excluded from the quantized matrix multiplication computation. Atlas inference products: Currently, this parameter is not supported.
     <!-- npu="310p" id4 -->
-    - <term>Atlas inference products</term>: pertoken_scale is not supported currently.
+    - Atlas inference products: pertoken_scale is not supported currently.
     <!-- end id4 -->
 - **`device`**: The default value is `None`. **Reserved parameter, currently not used.**
 - **`dtype`**: The default value is `None`. **Reserved parameter, currently not used.**
 - **`output_dtype`** (`ScalarType`): Data type of the output tensor. The default value is `None`, indicating that the data type of the output tensor is `torch.int8`.
 
     <!-- npu="310p" id5 -->
-    - <term>Atlas inference products</term>: the inputs `torch.int8` and `torch.float16` are supported.
+    - Atlas inference products: the inputs `torch.int8` and `torch.float16` are supported.
     <!-- end id5 -->
     <!-- npu="A3,910b" id6 -->
-    - <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: the inputs `torch.int8`, `torch.float16`, `torch.bfloat16`, and `torch.int32` are supported.
+    - Atlas A2 products/Atlas A3 products: the inputs `torch.int8`, `torch.float16`, `torch.bfloat16`, and `torch.int32` are supported.
     <!-- end id6 -->
 
 **Computation Inputs**
@@ -50,10 +50,10 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 **x1** (`Tensor`): The data layout can be $ND$, and the shape is at least 2D and at most 6D.
 
 <!-- npu="310p" id7 -->
-- <term>Atlas inference products</term>: the data type can be `torch.int8`.
+- Atlas inference products: the data type can be `torch.int8`.
 <!-- end id7 -->
 <!-- npu="A3,910b" id8 -->
-- <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: the data types can be `torch.int8` and `torch.int32`. `torch.int32` indicates that this API is used to perform `torch_npu.int4` type matrix multiplication computation. The `torch.int32` type carries `torch_npu.int4` data, and each `torch.int32` value stores eight `torch_npu.int4` values.
+- Atlas A2 products/Atlas A3 products: the data types can be `torch.int8` and `torch.int32`. `torch.int32` indicates that this API is used to perform `torch_npu.int4` type matrix multiplication computation. The `torch.int32` type carries `torch_npu.int4` data, and each `torch.int32` value stores eight `torch_npu.int4` values.
 <!-- end id8 -->
 
 ## Variable Description
@@ -61,43 +61,43 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - weight (`Tensor`): the data type must be the same as that of `x1`. The data layout can be $ND$, and the shape must be in the range of 2D to 6D. When the data type is `torch.int32`, the shape must be 2D.
 
     <!-- npu="310p" id9 -->
-    - <term>Atlas inference products</term>: the data type can be `torch.int8`. Call torchair.experimental.inference.use_internal_format_weight or torch_npu.npu_format_cast to implement the high-performance data layout of weight (batch, n, k).
+    - Atlas inference products: the data type can be `torch.int8`. Call torchair.experimental.inference.use_internal_format_weight or torch_npu.npu_format_cast to implement the high-performance data layout of weight (batch, n, k).
     <!-- end id9 -->
     <!-- npu="A3,910b" id10 -->
-    - <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: the data types can be `torch.int8` and `torch.int32` (the same as `x1`, indicating the computation of `torch_npu.int4` data). Call torch_npu.npu_format_cast to implement the high-performance data layout of weight (batch, n, k). However, using this module is not recommended; torch_npu.npu_quant_matmul is recommended.
+    - Atlas A2 products/Atlas A3 products: the data types can be `torch.int8` and `torch.int32` (the same as `x1`, indicating the computation of `torch_npu.int4` data). Call torch_npu.npu_format_cast to implement the high-performance data layout of weight (batch, n, k). However, using this module is not recommended; torch_npu.npu_quant_matmul is recommended.
     <!-- end id10 -->
 
 - scale (`Tensor`): scale of the quantization computation. The data layout can be $ND$, and the shape must be 1D (t,), where t=1 or n, and n is the same as the n of `weight`. To pass a scale of the `torch.int64` data type, call the torch_npu.npu_trans_quant_param API in advance to obtain a scale of the `torch.int64` data type.
 
     <!-- npu="310p" id11 -->
-    - <term>Atlas inference products</term>: the data types can be `torch.float32` and `torch.int64`.
+    - Atlas inference products: the data types can be `torch.float32` and `torch.int64`.
     <!-- end id11 -->
     <!-- npu="A3,910b" id12 -->
-    - <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: the data types can be `torch.float32`, `torch.int64`, and `torch.bfloat16`.
+    - Atlas A2 products/Atlas A3 products: the data types can be `torch.float32`, `torch.int64`, and `torch.bfloat16`.
     <!-- end id12 -->
 
 - offset (`Tensor`): offset of the quantization computation. Optional. The data type can be `torch.float32`, the data layout can be $ND$, and the shape must be 1D (t,), where t=1 or n, and n is the same as the n of `weight`.
 
 - pertoken_scale (`Tensor`): Optional. Pertoken of the quantization computation. The data type can be `torch.float32`, the data layout can be $ND$, and the shape must be 1D (m,), where m is the same as the m of `x1`.
     <!-- npu="310p" id13 -->
-    - <term>Atlas inference products</term>: pertoken_scale is not supported currently.
+    - Atlas inference products: pertoken_scale is not supported currently.
     <!-- end id13 -->
 - bias (`Tensor`): Optional. Bias in the matrix multiplication. The data layout can be $ND$, and the shape can be 1D (n,) or 3D (batch, 1, n), where n is the same as the n of `weight`, and the batch value must be equal to the batch value derived from broadcasting x1 and weight. When the output is 2D, 4D, 5D, or 6D, the bias shape is 1D; when the output is 3D, the bias shape is 1D or 3D.
 
     <!-- npu="310p" id14 -->
-    - <term>Atlas inference products</term>: the data type can be `torch.int32`.
+    - Atlas inference products: the data type can be `torch.int32`.
     <!-- end id14 -->
     <!-- npu="A3,910b" id15 -->
-    - <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
+    - Atlas A2 products/Atlas A3 products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
     <!-- end id15 -->
 
 - output_dtype (`ScalarType`): Optional. Data type of the output Tensor. The default value is None, indicating that the output Tensor data type is `torch.int8`.
 
     <!-- npu="310p" id16 -->
-    - <term>Atlas inference products</term>: the inputs `torch.int8` and `torch.float16` are supported.
+    - Atlas inference products: the inputs `torch.int8` and `torch.float16` are supported.
     <!-- end id16 -->
     <!-- npu="A3,910b" id17 -->
-    - <term>Atlas A2 products</term>/<term>Atlas A3 products</term>: the inputs `torch.int8`, `torch.float16`, `torch.bfloat16`, and `torch.int32` are supported.
+    - Atlas A2 products/Atlas A3 products: the inputs `torch.int8`, `torch.float16`, `torch.bfloat16`, and `torch.int32` are supported.
     <!-- end id17 -->
 
 ## Return Values
@@ -127,7 +127,7 @@ Represents the computation result of the quantized matmul:
 - The data type combinations supported between input parameters or variables are as follows:
 
     <!-- npu="310p" id20 -->
-    **Table 1** <term>Atlas inference products</term>
+    **Table 1** Atlas inference products
 
     <a name="zh-cn_topic_0000002021380113_table75025595916"></a>
     <table><thead align="left"><tr id="en-us_topic_0000002021380113_row13503185919911"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="en-us_topic_0000002021380113_p35036591098"><a name="en-us_topic_0000002021380113_p35036591098"></a><a name="en-us_topic_0000002021380113_p35036591098"></a><code>x1</code> (Input Parameter)</p>
@@ -184,7 +184,7 @@ Represents the computation result of the quantized matmul:
 
     <!-- end id20 -->
     <!-- npu="A3,910b" id21 -->
-    **Table 2** <term>Atlas A2 products</term> and <term>Atlas A3 products</term>
+    **Table 2** Atlas A2 products and Atlas A3 products
 
     <a name="zh-cn_topic_0000002021380113_table2504155910917"></a>
     <table><thead align="left"><tr id="en-us_topic_0000002021380113_row35048591395"><th class="cellrowborder" valign="top" width="11.32113211321132%" id="mcps1.2.8.1.1"><p id="en-us_topic_0000002021380113_p185044592912"><a name="en-us_topic_0000002021380113_p185044592912"></a><a name="en-us_topic_0000002021380113_p185044592912"></a><code>x1</code> (Input Parameter)</p>
@@ -331,8 +331,8 @@ Represents the computation result of the quantized matmul:
 
     <!-- npu="A3,910b" id18 -->
     - `torch.int32` type input scenario. The example code is as follows. Only the following products are supported:
-        - <term>Atlas A2 products</term>
-        - <term>Atlas A3 products</term>
+        - Atlas A2 products
+        - Atlas A3 products
 
         ```python
         import torch

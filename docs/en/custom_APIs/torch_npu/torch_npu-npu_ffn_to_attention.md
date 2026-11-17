@@ -35,7 +35,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 - The values of the `group`, `world_size`, `token_info_table_shape`, `token_data_shape`, and `HCCL_BUFFSIZE` parameters used during API execution must be identical across all ranks and across different layers in the network.
 
 <!-- npu="A3" id2 -->
-- <term>Atlas A3 products</term>: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
+- Atlas A3 products: In this scenario, a single rank contains dual dies. Therefore, "this rank" in the parameter description indicates a single die.
 <!-- end id2 -->
 - Variables used in input parameter tensor shapes:
     - `Y`: Maximum number of tokens to be distributed by the current rank.
@@ -48,7 +48,7 @@ torch_npu.npu_ffn_to_attention(x, session_ids, micro_batch_ids, token_ids, exper
 
     - `MicroBatchNum`: Size of the microBatch. Currently, only `MicroBatchNum = 1` is supported.
 
-    - `ExpertNumPerToken`: Number of experts sent corresponding to each token. The calculation formula is `ExpertNumPerToken` = `K` + `sharedExpertNum`.
+    - `ExpertNumPerToken`: Number of experts to be sent for each token. The calculation formula is `ExpertNumPerToken` = `K` + `sharedExpertNum`.
 
     - `K`: Number of top-K experts selected. The value range is 0 < `K` ≤ 16.
 

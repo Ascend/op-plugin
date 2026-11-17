@@ -93,9 +93,9 @@ torch_npu.npu_kronecker_quant(x, kronecker_p1, kronecker_p2, clip_ratio=None, ds
 - **`x`** (`Tensor`): Required. Source data Tensor to be quantized, `x` in the formulas. The data type can be `torch.float16` or `torch.bfloat16`. The shape is (K, M, N). The data layout can be ND.
 - **`kronecker_p1`** (`Tensor`): Required. Left multiplication matrix of `x`, `kroneckerP1` in the formulas. The data type is the same as that of `x`. The shape is (M, M). The data layout can be ND.
 - **`kronecker_p2`** (`Tensor`): Required. Right multiplication matrix of `x`, `kroneckerP2` in the formulas. The data type is the same as that of `x`. The shape is (N, N) (when `dst_dtype` is `torch_npu.float4_e2m1fn_x2`, the shape can be (0,0)). The data layout can be ND.
-- **`clip_ratio`** (`float`): Optional. Clipping ratio for quantization, `clipRatio` in the formulas. The data type can be `float`. The value range is (0, 1.0]. The default value is None, indicating clipping at a ratio of 1.0.
-- **`dst_dtype`** (`ScalarType`): Optional. Target output type of quantization. If the output type is `torch_npu.float4_e2m1fn_x2`, this value is `torch_npu.float4_e2m1fn_x2`. If the output type is `torch.int`, this parameter does not need to be filled.
-- **`dst_type_max`** (`float`): Optional. Maximum value of the quantized data target. The data type can be `float`. The value range is 0.0 or 6.0-12.0. The value 0.0 indicates that this parameter is not used. The value 6.0-12.0 indicates the maximum value of the target data type. This value can be set only when the data type is `torch_npu.float4_e2m1fn_x2`.
+- **`clip_ratio`** (`float`): **Optional**. Clipping ratio for quantization, `clipRatio` in the formulas. The data type can be `float`. The value range is (0, 1.0]. The default value is None, indicating clipping at a ratio of 1.0.
+- **`dst_dtype`** (`ScalarType`): **Optional**. Target output type of quantization. If the output type is `torch_npu.float4_e2m1fn_x2`, this value is `torch_npu.float4_e2m1fn_x2`. If the output type is `torch.int`, this parameter does not need to be filled.
+- **`dst_type_max`** (`float`): **Optional**. Maximum value of the quantized data target. The data type can be `float`. The value range is 0.0 or 6.0-12.0. The value 0.0 indicates that this parameter is not used. The value 6.0-12.0 indicates the maximum value of the target data type. This value can be set only when the data type is `torch_npu.float4_e2m1fn_x2`.
 
 ## Return Values
 

@@ -45,7 +45,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
 - This API supports single-operator mode.
 
 <!-- npu="950" id6 -->
-- On <term>Ascend 950PR&950DT products</term>, this API supports graph mode calls.
+- On Ascend 950PR&950DT products, this API supports graph mode calls.
 <!-- end id6 -->
 
 ## Example
@@ -61,7 +61,7 @@ torch_npu._npu_dropout(self, p) -> (Tensor, Tensor)
     ```
 
 <!-- npu="950" id7 -->
-- Graph mode call: (only for <term>Ascend 950PR&950DT products</term>)
+- Graph mode call: (only for Ascend 950PR&950DT products)
 
     ```python
     import torch

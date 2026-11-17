@@ -53,9 +53,9 @@ torch_npu.npu_mhc_sinkhorn(x, eps=1e-6, num_iters=20, out_flag=0) -> (Tensor, Te
 ## Return Values
 
 - **`y`** (`Tensor`): Required output. Final result of the MhcSinkhorn transformation. The data type can be `torch.float32`. The shape can be `[B, S, n, n]` or `[T, n, n]`. The data layout can be `ND`. Non-contiguous tensors are supported. The dimensions must be the same as those of input `x`. The value of `n` in the shape can only be `4`, `6`, or `8`.
-- **`norm_out`** (`Tensor`): Optional output. Intermediate normalization result of the iteration process. The data type can be `torch.float32`, and the shape is [2numIters, n, n, B, S] or [2numIters, n, n, T]. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1. During training and inference prefill, B\*S supports [512, 65536] and [1, 512]. In inference scenarios, B\*S supports [1, 512].
+- **`norm_out`** (`Tensor`): Optional output. Intermediate normalization result of the iteration process. The data type can be `torch.float32`. The shape is [2\*num_iters\*n\*n_align\*B\*S] or [2\*num_iters\*n\*n_align\*T], where `n_align` indicates that `n` is aligned to 8. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1.
 
-- **`sumOut`** (`Tensor`): Optional output. Intermediate sum result of the iteration process. The data type can be `torch.float32`, and the shape is [2numIters, n, B, S] or [2numIters, n, T]. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1.
+- **`sumOut`** (`Tensor`): Optional output. Intermediate sum result of the iteration process. The data type can be `torch.float32`. The shape is [2\*num_iters\*n_align\*B\*S] or [2\*num_iters\*n_align\*T], where `n_align` indicates that `n` is aligned to 8. The data layout can be ND. Non-contiguous tensors are supported. It is valid only when `out_flag` is 1.
 
 ## Constraints
 

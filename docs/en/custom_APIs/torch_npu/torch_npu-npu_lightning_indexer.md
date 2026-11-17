@@ -37,7 +37,7 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 
 - **`query`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. When `layout_query` is `BSND`, the shape of this parameter is `[B, S1, N1, D]`. When `layout_query` is `TND`, the shape of this parameter is `[T1, N1, D]`. The value of `N1` must be less than or equal to `64`.
     
-- **`key`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. When `layout_key` is `PA_BSND`, the shape of this parameter is `[block_count, block_size, N2, D]`, where `block_count` indicates the total number of blocks in PagedAttention, and `block_size` represents the token count per block, which must be an integer multiple of 16 and supports a maximum size of `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
+- **`key`** (`Tensor`): Required. Non-contiguous tensors along axis 0 are supported when `layout_key` is `PA_BSND`. The data layout can be ND. The data type can be `torch.bfloat16` or `torch.float16`. When `layout_key` is `PA_BSND`, the shape of this parameter is `[block_count, block_size, N2, D]`, where `block_count` indicates the total number of blocks in Paged Attention, and `block_size` represents the token count per block, which must be an integer multiple of 16 and supports a maximum size of `1024`. When `layout_key` is `BSND`, the shape of this parameter is `[B, S2, N2, D]`. When `layout_key` is `TND`, the shape of this parameter is `[T2, N2, D]`. The value of `N2` must be `1`.
     
 - **`weights`** (`Tensor`): Required. Non-contiguous tensors are not supported. The data layout can be ND. The data type can be `torch.bfloat16`, `torch.float16`, or `torch.float32`. The shape of this parameter can be `[B, S1, N1]` or `[T, N1]`.
     
@@ -49,12 +49,12 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - **`actual_seq_lengths_key`** (`Tensor`): Optional. Valid token count of `key` in different batches. The data type can be `torch.int32`. If this parameter is not specified or is set to `None`, its length is identical to the size of the `S` dimension in the shape of `key`.
     - The number of valid tokens of each batch in this parameter must not exceed the size of dimension S in `key` and must not be less than 0. A 1D tensor with the length B is supported. When `layout_key` is TND or PA_BSND, this input parameter must be passed. When `layout_key` is TND, the value of each element in this parameter indicates the total number of tokens of the current batch and all previous batches, that is, the prefix sum. Therefore, the value of the latter element must be greater than or equal to that of the former element.
 
-- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in PagedAttention. The data layout can be ND. The data type can be `torch.int32`.
-    - In the PagedAttention scenario, block\_table must be 2D, the length of the first dimension must be equal to B, and the length of the second dimension must not be less than maxBlockNumPerSeq (maxBlockNumPerSeq is the number of blocks corresponding to the maximum actual\_seq\_lengths\_key in each batch)
+- **`block_table`** (`Tensor`): Optional. Block mapping table used for KV storage in Paged Attention. The data layout can be ND. The data type can be `torch.int32`.
+    - In the Paged Attention scenario, block\_table must be 2D, the length of the first dimension must be equal to B, and the length of the second dimension must not be less than maxBlockNumPerSeq (maxBlockNumPerSeq is the number of blocks corresponding to the maximum actual\_seq\_lengths\_key in each batch)
 
 - **`layout_query`** (`str`): Optional. Data layout configuration of the input `query`. Valid values are `BSND` or `TND`. The default value is `BSND`.
 
-- **`layout_key`** (`str`): Optional. Data layout configuration of the input `key`. Valid values are `PA_BSND`, `BSND`, or `TND`. The default value is `"BSND"`. In non-PagedAttention scenarios, the value of this parameter must be identical to that of `layout_query`.
+- **`layout_key`** (`str`): Optional. Data layout configuration of the input `key`. Valid values are `PA_BSND`, `BSND`, or `TND`. The default value is `"BSND"`. In non-Paged Attention scenarios, the value of this parameter must be identical to that of `layout_query`.
 
 - **`sparse_count`** (`int`): Optional. Block count retained in the Top-K phase. Valid values are in the range `[1, 2048]`, or can be `3072`, `4096`, `5120`, `6144`, `7168`, or `8192`. The data type can be `int32`.
 
@@ -84,16 +84,16 @@ torch_npu.npu_lightning_indexer(query, key, weights, *, actual_seq_lengths_query
 - When the parameter weights is not `torch.float32`, the data types of the parameters query, key, and weights must be the same.
 
 <!-- npu="950" id4 -->
-- return_value supports graph mode only on <term>Ascend 950DT products</term>.
+- return_value supports graph mode only on Ascend 950DT products.
 <!-- end id4 -->
 <!-- npu="950" id5 -->
-- <term>Ascend 950DT products</term>:
+- Ascend 950DT products:
     - Only 8, 16, 24, 32, and 64 are supported for N in query.
     - The parameter weights does not support the `torch.float32` type.
     - Only when layout_key is PA_BSND does key support a non-contiguous 0th axis.
 <!-- end id5 -->
 <!-- npu="A3,910b" id6 -->
-- <term>Atlas A2 inference products</term> and <term>Atlas A3 inference products</term>:
+- Atlas A2 inference products and Atlas A3 inference products:
     - N in query must be less than or equal to 64.
     - Non-contiguous key is not supported.
 <!-- end id6 -->

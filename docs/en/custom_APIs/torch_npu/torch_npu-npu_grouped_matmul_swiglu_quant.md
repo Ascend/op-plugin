@@ -2,6 +2,10 @@
 
 ## Supported Products
 
+<!-- npu="950" id4 -->
+- <term>Ascend 950PR&950DT products</term>: Supported
+<!-- end id4 -->
+
 <!-- npu="A3" id1 -->
 - <term>Atlas A3 products</term>: Supported
 <!-- end id1 -->
@@ -11,15 +15,18 @@
 
 ## Function
 
-<!-- npu="A3,910b" id3 -->
-- API function: Fuses four computation stages: GroupedMatmul, dequant, swiglu (SwiGLU activation), and quant. It is used by the DeepSeek model to optimize performance compared with small operators. The weight must be passed in FRACTAL_NZ format. This API is a simplified version of `npu_grouped_matmul_swiglu_quant_v2` and supports only <term>Atlas A3 products</term> and <term>Atlas A2 products</term>.
+- API function: Fuses four computation stages: GroupedMatmul, dequant, swiglu (SwiGLU activation), and quant. It is used by the DeepSeek model to optimize performance compared with small operators. The weight must be passed in FRACTAL_NZ format.
   
   Multi-operator fusion computation order (executed in sequence):
   1. GroupedMatmul: Split tokens into groups according to group_list, and compute $X_{i}\cdot W_{i}$ for each group.
   2. dequant: Multiply the matrix multiplication result element-wise by the activation quantization factor $x\_scale$ and the weight quantization factor $w\_scale$ to complete dequantization.
   3. swiglu: Split the dequantization result in half along the N axis into $C_{i,act}$ and $gate_{i}$, and compute $S_{i}=Swish(C_{i,act})\odot gate_{i}$, where $Swish(x)=\frac{x}{1+e^{-x}}$.
   4. quant: $Q\_scale_{i} = \frac{max(|S_{i}|)}{127}$, $Q_{i} = \left\lfloor \frac{S_{i}}{Q\_scale_{i}} \right\rceil$ to obtain the quantized output Q and the quantization factor Q_scale.
+
+<!-- npu="950" id3 -->
+- Ascend 950PR&950DT products: The **A8W4** quantization scenario is not supported. Only the **A8W8** pertoken perchannel quantization scenario is supported.
 <!-- end id3 -->
+
 - Quantization scenario **A8W8** (A indicates the activation matrix, W indicates the weight matrix, and 8 indicates the `torch.int8` data type):
   - Input:
     - $X∈\mathbb{Z_8}^{M \times K}$ is the activation matrix (left matrix), where M is the total number of tokens and K is the feature dimension.
@@ -155,10 +162,31 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 
 ## Parameters
 
-- **`x`** (`Tensor`): Required. Left matrix, $X$ in the formulas. The shape can be 2D [M, K]. The data type can be `torch.int8`. The data layout can be ND. Non-contiguous Tensors are supported. In the A8W8 scenario, K must be less than 65536. In the A8W4 scenario, K must be less than 20000.
-- **`weight`** (`Tensor`): Required. Weight matrix, $W$ in the formulas. It must first be converted to FRACTAL_NZ format (5D storage shape) by using `torch_npu.npu_format_cast(weight, 29)`. The data type can be `torch.int8`, `torch_npu.int4`, or `torch.int32` (`torch.int32` is used for adaptation; actually, one `torch.int32` is interpreted as eight `torch_npu.int4` values). Non-contiguous Tensors are supported. This API ignores the data layout of the weight and forces it to be treated as FRACTAL_NZ format.
+- **`x`** (`Tensor`): Required. Left matrix, $X$ in the formulas. The shape can be 2D [M, K]. The data type can be `torch.int8`. The data layout can be ND. Non-contiguous Tensors are supported.
+
+  <!-- npu="A3,910b" id7 -->
+  - Atlas A2 products and Atlas A3 products: In the A8W8 scenario, K must be less than 65536. In the A8W4 scenario, K must be less than 20000.
+  <!-- end id7 -->
+
+- **`weight`** (`Tensor`): Required. Weight matrix, $W$ in the formulas. It must first be converted to FRACTAL_NZ format (5D storage shape) by using `torch_npu.npu_format_cast(weight, 29)`. Non-contiguous Tensors are supported. This API forces existing NZ data to be treated as FRACTAL_NZ format.
+
+  <!-- npu="A3,910b" id9 -->
+  - Atlas A2 products and Atlas A3 products: The data type can be `torch.int8`, `torch_npu.int4`, or `torch.int32` (`torch.int32` is used for adaptation; actually, one `torch.int32` is interpreted as eight `torch_npu.int4` values).
+  <!-- end id9 -->
+  <!-- npu="950" id10 -->
+  - Ascend 950PR&950DT products: Only the `torch.int8` data type is supported, and only 3D view shapes are supported.
+  <!-- end id10 -->
+
 - **`group_list`** (`Tensor`): Required. Indicates the number of tokens participating in the computation in each group, $groupList$ in the formulas. The shape is 1D, and the length must be equal to the first-axis dimension of the weight (the number of experts E). The data type can be `torch.int64`. The data layout can be ND. Non-contiguous Tensors are supported. It is a group index list in cumsum form, and the last value constrains the valid part of the output data.
 - **`weight_scale`** (`Tensor`): Required. Quantization factor of the right matrix, $w\_scale$ in the formulas. The shape can be 2D (perchannel) or 3D (pergroup). The first-axis length must be equal to the first-axis dimension of the weight, and the last-axis length must be the same as the last axis (N) after the weight is restored to ND format. The data type can be `torch.float32`, `torch.float16`, `torch.bfloat16`, or `torch.int64` (perchannel). The data layout can be ND. Non-contiguous Tensors are supported.
+
+  <!-- npu="A3,910b" id11 -->
+  - Atlas A2 products and Atlas A3 products: The shape can be 2D (perchannel) or 3D (pergroup). The first-axis length must be equal to the first-axis dimension of `weight`, and the last-axis length must be the same as the last axis (N) after `weight` is restored to the ND format. The data type can be `torch.float32`, `torch.float16`, `torch.bfloat16`, or `torch.int64` (perchannel).
+  <!-- end id11 -->
+  <!-- npu="950" id12 -->
+  - Ascend 950PR&950DT products: Only the 2D (perchannel) shape `[E, N]` is supported. The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+  <!-- end id12 -->
+
 - **`x_scale`** (`Tensor`): Required. Quantization factor of the left matrix, $x\_scale$ in the formulas. The shape is 1D, and the length must be equal to the first-axis dimension of x (M). The data type can be `torch.float32`. The data layout can be ND. Non-contiguous Tensors are supported.
 - **`*`**: Variables before it are position-dependent and must be provided in order. Variables after it are optional and position-independent; they must be assigned by using key-value pairs. If not assigned, their default values are used.
 - **`bias`** (`Tensor`): Optional. Auxiliary matrix during matrix multiplication, $weightAssistMatrix$ in the formulas. The shape can be 2D [E, N]. The data type can be `torch.float32`. The data layout can be ND. It takes effect only in A8W4 scenarios. In A8W8 scenarios, pass None. The default value is None.
@@ -172,22 +200,56 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 
 ## Constraints
 
-- This API supports training and inference scenarios.
-- Deterministic computation: The deterministic implementation is used by default.
-- **A8W8** scenario:
-  - The last-axis length (K) of x must not be greater than or equal to 65536.
-  - The N-axis length must not exceed 10240.
-  - bias must be passed as None.
-- **A8W4** scenario:
-  - The last-axis length (K) of x must not be greater than or equal to 20000.
-  - The N-axis length must not exceed 10240.
-  - bias (weightAssistMatrix) is required.
-- The weight must be stored in 5D FRACTAL_NZ format, and the first-axis length must be the number of experts E.
-- The length of group_list must be equal to the first-axis dimension of the weight. group_list is in cumsum form, and its last value constrains the valid data range of the output.
+  - Deterministic computation: The deterministic implementation is used by default.
+  - This API supports training and inference scenarios.
+  - This API supports single-operator mode.
+
+<!-- npu="A3,910b" id5 -->
+- Atlas A2 products and Atlas A3 products:
+
+  - **A8W8** scenario:
+    - The last-axis length (K) of `x` must not be greater than or equal to 65536.
+    - The N-axis length must not exceed 10240.
+    - `bias` must be passed as `None`.
+  - **A8W4** scenario:
+    - The last-axis length (K) of `x` must not be greater than or equal to 20000.
+    - The N-axis length must not exceed 10240.
+    - `bias` (`weightAssistMatrix`) is required.
+  - `weight` must be stored in 5D FRACTAL_NZ format, and the first-axis length must be the number of experts `E`.
+  - The length of `group_list` must be equal to the first-axis dimension of `weight`. `group_list` is in cumsum form, and its last value constrains the valid data range of the output.
+<!-- end id5 -->
+
+<!-- npu="950" id6 -->
+- Ascend 950PR&950DT products:
+
+  - The first dimension of `group_list` supports a maximum of `1024` elements, that is, a maximum of `1024` groups.
+  - The **A8W8** pertoken quantization scenario must meet the following constraints:
+    - The data type combinations of input and output Tensors are as follows. This API supports only the INT8 combinations in the table.
+
+      **Table 1** Data type combinations of input and output Tensors
+
+      | A8W8 pertoken quantization scenario | x | weight | group_list | weight_scale | x_scale | bias | offset | output | output_scale |
+      | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+      | INT8 | `torch.int8` | `torch.int8` | `torch.int64` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32` | None | None | `torch.int8` | `torch.float32` |
+
+    - The shape combinations of input and output Tensors are as follows. The physical storage format of `weight` must be FRACTAL_NZ.
+
+      **Table 2** Shape combinations of input and output Tensors
+
+      | Supported scenario | Quantization mode | x | weight | weight_scale | x_scale | output | output_scale |
+      | --- | --- | --- | --- | --- | --- | --- | --- |
+      | Single-single-single | Pertoken quantization | (M, K) | Shape in the form of {(E, K, N)} | Shape in the form of {(E, N)} | (M, ) | (M, N / 2) | (M, ) |
+
+    - `x` supports only non-transposed input. `weight` supports non-transposed and transposed input, and the view shape is `(E, K, N)` in both cases. For non-transposed input, contiguous strides are used, and the FRACTAL_NZ storage shape is `(E, ceil(N/32), ceil(K/16), 16, 32)`. For transposed input, the strides are `(K * N, 1, K)`, and the FRACTAL_NZ storage shape is `(E, ceil(K/32), ceil(N/16), 16, 32)`.
+    - N must be greater than `0` and a multiple of `64`. All inputs must be on the same device, and `bias` and `offset` must be `None`.
+    - `group_list` uses the cumsum form, and its last value must be less than or equal to M. Only the valid output region covered by `group_list` is compared or read.
+
+<!-- end id6 -->
 
 ## Examples
 
-- Single-operator call (A8W8 scenario)
+<!-- npu="A3,910b" id13 -->
+- Atlas A2 products and Atlas A3 products: Single-operator call (A8W8 scenario)
 
     ```python
     import torch
@@ -270,7 +332,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
         weight_pack = torch.randint(-128, 127, (E, K, N // 2), dtype=torch.int8).npu()
         # Convert to the 5D FRACTAL_NZ storage shape (E, N//64, K//16, 16, 8).
         weight_npu = torch_npu.npu_format_cast(weight_pack, 29).view(torch.int32).view(E, N // 64, K // 16, 16, 8)
-        # perchannel scenario: weight_scale is int64 with shape (E, N). pergroup scenario: the shape is (E, k_group_num, N).
+        # perchannel scenario: weight_scale is int64 with shape (E, N); pergroup scenario: the shape is (E, k_group_num, N).
         weight_scale = torch.randint(-100, 100, (E, N), dtype=torch.int64).npu()
         x_scale = torch.randn(M, dtype=torch.float32).npu()
         # In the A8W4 scenario, bias (weightAssistMatrix) is required, with shape (E, N) and data type float32.
@@ -297,3 +359,27 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
     torch.Size([512]) torch.float32
     torch.Size([])
     ```
+
+<!-- end id13 -->
+
+<!-- npu="950" id14 -->
+- Ascend 950PR&950DT products: Single-operator call (A8W8 pertoken perchannel scenario)
+
+    ```python
+    import torch
+    import torch_npu
+
+    torch.npu.config.allow_internal_format = True
+    E, M, K, N = 4, 17, 128, 256
+    x = torch.randint(-128, 128, (M, K), dtype=torch.int8, device="npu")
+    weight = torch.randint(-128, 128, (E, K, N), dtype=torch.int8, device="npu")
+    weight_nz = torch_npu.npu_format_cast(weight, 29)
+    weight_scale = torch.full((E, N), 0.01, dtype=torch.float32, device="npu")
+    x_scale = torch.full((M,), 0.01, dtype=torch.float32, device="npu")
+    group_list = torch.tensor([3, 7, 7, 17], dtype=torch.int64, device="npu")
+    output, output_scale, output_offset = torch_npu.npu_grouped_matmul_swiglu_quant(
+        x, weight_nz, group_list, weight_scale, x_scale, bias=None, offset=None)
+    # output: [17, 128], INT8；output_scale: [17], FLOAT32。
+    # output_offset is only a 0D FLOAT32 placeholder Tensor; its value is not read.
+    ```
+<!-- end id14 -->

@@ -46,7 +46,7 @@ For details about the usage and effects of deterministic computation, see the of
 ## API Lists
 
 <!-- npu="A3,910b" id1 -->
-When using <term>Atlas A2 products</term> or <term>Atlas A3 products</term>, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
+When using Atlas A2 products or Atlas A3 products, the APIs listed in [Table 1](#api-list-for-enabling-deterministic-computation-1) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 1** API list<a id="api-list-for-enabling-deterministic-computation-1"></a>
 
@@ -58,7 +58,7 @@ When using <term>Atlas A2 products</term> or <term>Atlas A3 products</term>, the
 <!-- end id1 -->
 
 <!-- npu="950" id2 -->
-When using <term>Ascend 950DT</term>, the APIs listed in [Table 2](#api-list-for-enabling-deterministic-computation-2) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
+When using Ascend 950DT, the APIs listed in [Table 2](#api-list-for-enabling-deterministic-computation-2) may produce non-deterministic results during computation. Enabling deterministic computation ensures that the computation results are deterministic.
 
 **Table 2** API list<a id="api-list-for-enabling-deterministic-computation-2"></a>
 

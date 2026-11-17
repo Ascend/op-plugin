@@ -167,10 +167,10 @@ Seven outputs are generated in the following types: `Tensor`, `Tensor`, `Tensor`
     - `D`: head dimension. `Dq` must equal `Dk` and `Dk` must be greater than or equal to `Dv`. The value ranges are as follows:
 
         <!-- npu="910b" id3 -->
-        - <term>Atlas A2 products</term>: The value ranges from 1 to 768.
+        - Atlas A2 products: The value ranges from 1 to 768.
         <!-- end id3 -->
         <!-- npu="950" id4 -->
-        - <term>Ascend 950PR&950DT products</term>: The value ranges from 1 to 512.
+        - Ascend 950PR&950DT products: The value ranges from 1 to 512.
         <!-- end id4 -->
 
     - `S`: sequence length. The value ranges from 1 to 1M.

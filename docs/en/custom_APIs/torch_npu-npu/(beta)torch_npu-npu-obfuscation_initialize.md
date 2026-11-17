@@ -45,15 +45,15 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
     * `3`: releases resources.
 - **`data_type`** (`torch.dtype`): Optional. Tensor data type. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
     <!-- npu="310p" id3 -->
-    * <term>Atlas inference products</term>: The Tensor data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
+    * Atlas inference products: The Tensor data type can be `torch.float16`, `torch.float32`, or `torch.int8`.
     <!-- end id3 -->
     <!-- npu="910b" id4 -->
-    * <term>Atlas A2 products</term>: The Tensor data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
+    * Atlas A2 products: The Tensor data type can be `torch.float16`, `torch.float32`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id4 -->
 - **`model_obf_seed_id`** (`int`): Optional. Model obfuscation factor ID used by the `TA` module to query the model obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
 - **`data_obf_seed_id`** (`int`): Optional. Data obfuscation factor ID used by the `TA` module to query the data obfuscation factor from the `TEE KMC`. The data type is `int32`. A registered and valid obfuscation factor ID is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
 - **`thread_num`** (`int`): Optional. Number of threads used by the `CA` and `TA` modules for obfuscation processing. The data type is `int32`. Valid values are `{1, 2, 3, 4, 5, 6}`. A valid value is required only when `cmd` is set to `1` or `2`. Otherwise, set this parameter to `0`.
-- **`obf_coefficient`** (`float`): Optional. Obfuscation coefficient. The value range is (0.0, 1.0]. The default value is `1.0`.
+- **`obf_coefficient`** (`float`): Optional. Obfuscation coefficient. The supported input range is `0` to `1`. The default value is `1.0`.
 
 ## Return Values
 

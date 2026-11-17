@@ -32,133 +32,133 @@ torch_npu.npu_prompt_flash_attention(query, key, value, *, pse_shift=None, paddi
 
 - **`query`** (`Tensor`): Required. Input $Q$ in the formulas. The data type must satisfy type deduction rules to remain identical to the data types of `key` and `value`. Non-contiguous tensors are not supported. The data layout can be ND.
     <!-- npu="310p" id20 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+    - Atlas inference products: The data type can be `torch.float16`.
     <!-- end id20 -->
 
     <!-- npu="910b" id3 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id3 -->
     <!-- npu="A3" id4 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A3 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id4 -->
 
 - **`key`** (`Tensor`): Required. Input $K$ in the formulas. The data type must satisfy type deduction rules to remain identical to the data types of `query` and `value`. Non-contiguous tensors are not supported. The data layout can be ND.
     <!-- npu="310p" id21 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+    - Atlas inference products: The data type can be `torch.float16`.
     <!-- end id21 -->
 
     <!-- npu="910b" id5 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id5 -->
     <!-- npu="A3" id6 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A3 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id6 -->
 
 - **`value`** (`Tensor`): Required. Input $V$ in the formulas. The data type must satisfy type deduction rules to remain identical to the data types of `query` and `key`. Non-contiguous tensors are not supported. The data layout can be ND.
     <!-- npu="310p" id22 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+    - Atlas inference products: The data type can be `torch.float16`.
     <!-- end id22 -->
 
     <!-- npu="910b" id7 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A2 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id7 -->
     <!-- npu="A3" id8 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
+    - Atlas A3 products: The data type can be `torch.float16`, `torch.bfloat16`, or `torch.int8`.
     <!-- end id8 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
 
 - **`pse_shift`** (`Tensor`): Optional. Non-contiguous tensors are not supported. The data layout can be ND. The input shape must be `(B, N, Q_S, KV_S)` or `(1, N, Q_S, KV_S)`, where `Q_S` represents `S` in the shape of `query`, and `KV_S` represents `S` in the shapes of `key` and `value`. If `KV_S` of `pse_shift` is not 32-byte aligned, padding to 32 bytes is recommended to improve performance. There are no specific requirements for the padding values of the padded portion. This parameter can be set to `None` if this feature is not used. For details about the overall constraints, see [Constraints](#section12345537164214).
     <!-- npu="310p" id23 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id23 -->
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float16` or `torch.bfloat16`. When `pse_shift` is `torch.float16`, `query` must be `torch.float16` or `torch.int8`; when `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. When `query`, `key`, and `value` are `torch.float16` and `pse_shift` exists, the high-precision mode is used by default.
+    - Atlas A2 products: The data type can be `torch.float16` or `torch.bfloat16`. When `pse_shift` is `torch.float16`, `query` must be `torch.float16` or `torch.int8`; when `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. When `query`, `key`, and `value` are `torch.float16` and `pse_shift` exists, the high-precision mode is used by default.
     <!-- end id9 -->
     <!-- npu="A3" id10 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float16` or `torch.bfloat16`. When `pse_shift` is `torch.float16`, `query` must be `torch.float16` or `torch.int8`; when `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. When `query`, `key`, and `value` are `torch.float16` and `pse_shift` exists, the high-precision mode is used by default.
+    - Atlas A3 products: The data type can be `torch.float16` or `torch.bfloat16`. When `pse_shift` is `torch.float16`, `query` must be `torch.float16` or `torch.int8`; when `pse_shift` is `torch.bfloat16`, `query` must be `torch.bfloat16`. When `query`, `key`, and `value` are `torch.float16` and `pse_shift` exists, the high-precision mode is used by default.
     <!-- end id10 -->
 
 - **`padding_mask`**: Reserved parameter, currently not used. Retain the default value.
 - **`atten_mask`** (`Tensor`): Optional. Inverse triangular mask matrix where the lower triangle is all zeros and the upper triangle is negative infinity, $atten\_mask$ in the formula. The data type can be `torch.bool`, `torch.int8`, or `torch.uint8`. The data layout can be ND. Non-contiguous tensors are not supported. This parameter can be set to `None` if this feature is not used. Recommended shapes are `(Q_S, KV_S)`, `(B, Q_S, KV_S)`, `(1, Q_S, KV_S)`, `(B, 1, Q_S, KV_S)`, or `(1, 1, Q_S, KV_S)`, where `Q_S` represents `S` in the shape of `query`, and `KV_S` represents `S` in the shapes of `key` and `value`. In scenarios where `KV_S` of `atten_mask` is not 32-byte aligned, padding to 32 bytes is recommended to improve performance. Redundant elements must be padded with `1`. For details about the overall constraints, see [Constraints](#section12345537164214).
 - **`actual_seq_lengths`** (`List[int]`): Optional. Valid sequence lengths of `query` across different batches. The data type can be `torch.int64`. If `seqlen` is not specified, set this parameter to `None`, indicating that the value is identical to the sequence length `S` in the `query` shape. Restriction: Valid sequence lengths in each batch must be less than or equal to the corresponding sequence length of that batch in `query`. When the input length of `seqlen` is `1`, each batch uses the same `seqlen`. When the input length of `seqlen` is greater than or equal to the batch count, the first batch number of elements in `seqlen` are selected. Other lengths are not supported.
     <!-- npu="310p" id24 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id24 -->
 
     <!-- npu="910b" id11 -->
-    - <term>Atlas A2 products</term>: the TND layout is supported. When the `input_layout` of `query` is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+    - Atlas A2 products: the TND layout is supported. When the `input_layout` of `query` is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
     <!-- end id11 -->
     <!-- npu="A3" id12 -->
-    - <term>Atlas A3 products</term>: the TND layout is supported. When the `input_layout` of `query` is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
+    - Atlas A3 products: the TND layout is supported. When the `input_layout` of `query` is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and negative values must not occur.
     <!-- end id12 -->
 
 - **`deq_scale1`** (`Tensor`): Optional. Dequantization factor after BMM1. `pertensor` mode is supported. The data type can be `torch.uint64` or `torch.float32`. The data layout can be ND. This parameter can be set to `None` if this feature is not used. Atlas inference accelerator cards: This parameter is not supported currently.
     <!-- npu="310p" id25 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id25 -->
 - **`quant_scale1`** (`Tensor`): Optional. Quantization factor before BMM2. `pertensor` mode is supported. The data type can be `torch.float32`. The data layout can be ND. This parameter can be set to `None` if this feature is not used. Atlas inference accelerator cards: This parameter is not supported currently.
     <!-- npu="310p" id26 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id26 -->
 - **`deq_scale2`** (`Tensor`): Optional. Dequantization factor after BMM2. `pertensor` mode is supported. The data type can be `torch.uint64` or `torch.float32`. The data layout can be ND. This parameter can be set to `None` if this feature is not used. Atlas inference accelerator cards: This parameter is not supported currently.
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
 - **`quant_scale2`** (`Tensor`): Optional. Output quantization factor. The data layout can be ND. `pertensor` and `perchannel` modes are supported. This parameter can be set to `None` if this feature is not used.
     <!-- npu="310p" id27 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id27 -->
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float32` or `torch.bfloat16`. When the input is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported; otherwise, only `torch.float32` is supported. In the perchannel format, when the output layout is $BSH$, the product of all dimensions of `quant_scale2` must be equal to $H$; for other layouts, the product must be equal to $N*D$. When the output layout is $BSH$, the shape of `quant_scale2` is recommended to be $(1, 1, H)$ or $(H,)$; when the output is $BNSD$, $(1, N, 1, D)$ or $(N, D)$ is recommended; when the output is $BSND$, $(1, 1, N, D)$ or $(N, D)$ is recommended.
+    - Atlas A2 products: The data type can be `torch.float32` or `torch.bfloat16`. When the input is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported; otherwise, only `torch.float32` is supported. In the perchannel format, when the output layout is $BSH$, the product of all dimensions of `quant_scale2` must be equal to $H$; for other layouts, the product must be equal to $N*D$. When the output layout is $BSH$, the shape of `quant_scale2` is recommended to be $(1, 1, H)$ or $(H,)$; when the output is $BNSD$, $(1, N, 1, D)$ or $(N, D)$ is recommended; when the output is $BSND$, $(1, 1, N, D)$ or $(N, D)$ is recommended.
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float32` or `torch.bfloat16`. When the input is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported; otherwise, only `torch.float32` is supported. In the perchannel format, when the output layout is $BSH$, the product of all dimensions of `quant_scale2` must be equal to $H$; for other layouts, the product must be equal to $N*D$. When the output layout is $BSH$, the shape of `quant_scale2` is recommended to be $(1, 1, H)$ or $(H,)$; when the output is $BNSD$, $(1, N, 1, D)$ or $(N, D)$ is recommended; when the output is $BSND$, $(1, 1, N, D)$ or $(N, D)$ is recommended.
+    - Atlas A3 products: The data type can be `torch.float32` or `torch.bfloat16`. When the input is `torch.bfloat16`, both `torch.float32` and `torch.bfloat16` are supported; otherwise, only `torch.float32` is supported. In the perchannel format, when the output layout is $BSH$, the product of all dimensions of `quant_scale2` must be equal to $H$; for other layouts, the product must be equal to $N*D$. When the output layout is $BSH$, the shape of `quant_scale2` is recommended to be $(1, 1, H)$ or $(H,)$; when the output is $BNSD$, $(1, N, 1, D)$ or $(N, D)$ is recommended; when the output is $BSND$, $(1, 1, N, D)$ or $(N, D)$ is recommended.
     <!-- end id14 -->
 
 - **`quant_offset2`** (`Tensor`): Optional. Output quantization offset. `pertensor` and `perchannel` modes are supported. The data layout can be ND. If `quant_offset2` is provided, its data type and shape must be identical to those of `quant_scale2`. This parameter can be set to `None` if this feature is not used.
     <!-- npu="310p" id28 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id28 -->
 
     <!-- npu="910b" id15 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float32` or `torch.bfloat16`.
+    - Atlas A2 products: The data type can be `torch.float32` or `torch.bfloat16`.
     <!-- end id15 -->
     <!-- npu="A3" id16 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float32` or `torch.bfloat16`.
+    - Atlas A3 products: The data type can be `torch.float32` or `torch.bfloat16`.
     <!-- end id16 -->
 
 - **`num_heads`** (`int`): Optional. Head count of `query`. Pass this value as a Python `int`.
 - **`scale_value`** (`float`): Optional. Scaling factor serving as the scalar value of Muls in the computation flow, $scale$ in the formula. The value is typically the reciprocal of the square root of $d$. The data type can be `float`. Its data type and the data type of `query` must meet the type deduction rules. The default value is `1.0`.
 - **`pre_tokens`** (`int`): Optional. Number of preceding tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `2147483647`. Only the default value `2147483647` is supported for Atlas inference accelerator cards.
     <!-- npu="310p" id29 -->
-    - <term>Atlas inference products</term>: only the default value 2147483647 is supported.
+    - Atlas inference products: only the default value 2147483647 is supported.
     <!-- end id29 -->
 - **`next_tokens`** (`int`): Optional. Number of subsequent tokens to associate in attention computation for sparse computation. The data type can be `int64`. The default value is `0`. Only `0` and `2147483647` are supported for Atlas inference accelerator cards.
     <!-- npu="310p" id30 -->
-    - <term>Atlas inference products</term>: only 0 and 2147483647 are supported.
+    - Atlas inference products: only 0 and 2147483647 are supported.
     <!-- end id30 -->
 - **`input_layout`** (`str`): Optional. Data layout configuration for the input `query`, `key`, and `value`. Supported values are `"BSH"`, `"BSND"`, `"BNSD"`, or `"BNSD_BSND"`. When the input layout is `"BNSD"`, the output layout is `"BSND"`. The default value is `"BSH"`.
 - **`num_key_value_heads`** (`int`): Optional. Number of heads for `key` and `value`, used to support Grouped-Query Attention (GQA) scenarios. GQA is a compromise between Multi-Head Attention (MHA) and Multi-Query Attention (MQA): multiple query heads share the same set of key/value heads, thereby significantly reducing KV Cache memory usage and memory access overhead while maintaining model performance close to that of MHA. Pass this value as a Python `int`. The default value is `0`, indicating that the head counts of `key`, `value`, and `query` are identical. Restrictions: `num_heads` must be divisible by `num_key_value_heads`. The ratio of `num_heads` to `num_key_value_heads` must be less than or equal to `64`. In `"BSND"`, `"BNSD"`, or `"BNSD_BSND"` layouts, this value must be identical to the shape value of the n-axis in `key`/`value`. If this condition is not satisfied, the system raises an error. Only the default value `0` is supported for Atlas inference accelerator cards.
     <!-- npu="310p" id32 -->
-    - <term>Atlas inference products</term>: only the default value `0` is supported.
+    - Atlas inference products: only the default value `0` is supported.
     <!-- end id32 -->
 - **`actual_seq_lengths_kv`** (`List[int]`): Optional. Valid sequence lengths of `key`/`value` across different batches. The data type can be `torch.int64`. Restrictions: Valid sequence lengths in each batch within this parameter must be less than or equal to the sequence length of the corresponding batch in `key`/`value`. When the input length of `seqlenKV` is `1`, each batch uses the same `seqlenKV`. When the input length is greater than or equal to the batch count, the first batch number of elements are selected. Other lengths are not supported.
     <!-- npu="310p" id31 -->
-    - <term>Atlas inference products</term>: this parameter is not supported currently.
+    - Atlas inference products: this parameter is not supported currently.
     <!-- end id31 -->
 
     <!-- npu="910b" id17 -->
-    - <term>Atlas A2 products</term>: the TND layout is supported. When the input_layout of key/value is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and no negative values are allowed.
+    - Atlas A2 products: the TND layout is supported. When the input_layout of key/value is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and no negative values are allowed.
     <!-- end id17 -->
     <!-- npu="A3" id18 -->
-    - <term>Atlas A3 products</term>: the TND layout is supported. When the input_layout of key/value is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and no negative values are allowed.
+    - Atlas A3 products: the TND layout is supported. When the input_layout of key/value is TND, this input parameter must be passed, and the number of its elements is used as the Batch value. The value of each element in this input parameter indicates the sum of the seqlens of the current batch and all preceding batches. Therefore, the value of the latter element must be greater than or equal to that of the former element, and no negative values are allowed.
     <!-- end id18 -->
 
 - **`sparse_mode`** (`int`): Optional. Sparsification mode. The data type can be `int64`. The default value is `0`. For details about overall constraints, see [Constraints](#section12345537164214). Only the default value `0` is supported for Atlas inference accelerator cards.
 
     <!-- npu="310p" id33 -->
-    - <term>Atlas inference products</term>: only the default value `0` is supported.
+    - Atlas inference products: only the default value `0` is supported.
     <!-- end id33 -->
     - When `sparse_mode` is 0, it indicates the `defaultMask` mode. If `atten_mask` is not passed, no mask operation is performed, and `pre_tokens` and `next_tokens` are ignored (set to `INT_MAX` internally); if it is passed, the complete `atten_mask` matrix $(S1 * S2)$ must be passed, indicating that the part between `pre_tokens` and `next_tokens` must be computed. The case where an entire row of the part of the input mask matrix participating in the computation is 1 is not supported.
     - When `sparse_mode` is 1, it indicates `allMask`. The case where an entire row of the part of the input mask matrix participating in the computation is 1 is not supported.
@@ -188,13 +188,13 @@ $atten\_out$ in the formulas, representing the final computation result. When `i
     </th>
     </tr>
     </thead>
-    <tbody><tr id="en-us_topic_0000001798619409_row88221926155613"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="en-us_topic_0000001798619409_p282310268569"><a name="en-us_topic_0000001798619409_p282310268569"></a><a name="en-us_topic_0000001798619409_p282310268569"></a><span id="en-us_topic_0000001798619409_ph999933035615"><a name="en-us_topic_0000001798619409_ph999933035615"></a><a name="en-us_topic_0000001798619409_ph999933035615"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term15651172142210_16"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term15651172142210_16"></a><term>Atlas inference products</term></span></p>
+    <tbody><tr id="en-us_topic_0000001798619409_row88221926155613"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="en-us_topic_0000001798619409_p282310268569"><a name="en-us_topic_0000001798619409_p282310268569"></a><a name="en-us_topic_0000001798619409_p282310268569"></a><span id="en-us_topic_0000001798619409_ph999933035615"><a name="en-us_topic_0000001798619409_ph999933035615"></a><a name="en-us_topic_0000001798619409_ph999933035615"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term15651172142210_16"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term15651172142210_16"></a>Atlas inference products</span></p>
     </td>
     <td class="cellrowborder" valign="top" width="69.43%" headers="mcps1.1.3.1.2 "><a name="en-us_topic_0000001798619409_ul849244711561"></a><a name="en-us_topic_0000001798619409_ul849244711561"></a><ul id="en-us_topic_0000001798619409_ul849244711561"><li>The B-axis value can be less than or equal to 128. </li><li>The N-axis value can be less than or equal to 256. </li><li>The S-axis value can be less than or equal to 65535. </li><li>The D-axis value can be less than or equal to 512.</li></ul>
     </td>
     </tr>
-    <tr id="en-us_topic_0000001798619409_row1782312260569"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="en-us_topic_0000001798619409_p128231426175620"><a name="en-us_topic_0000001798619409_p128231426175620"></a><a name="en-us_topic_0000001798619409_p128231426175620"></a><span id="en-us_topic_0000001798619409_ph12807852115620"><a name="en-us_topic_0000001798619409_ph12807852115620"></a><a name="en-us_topic_0000001798619409_ph12807852115620"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term11962195213215_7"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term11962195213215_7"></a><term>Atlas A2 products</term></span></p>
-    <p id="en-us_topic_0000001798619409_p16629103195810"><a name="en-us_topic_0000001798619409_p16629103195810"></a><a name="en-us_topic_0000001798619409_p16629103195810"></a><span id="en-us_topic_0000001798619409_ph1464135665612"><a name="en-us_topic_0000001798619409_ph1464135665612"></a><a name="en-us_topic_0000001798619409_ph1464135665612"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term1253731311225_7"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term1253731311225_7"></a><term>Atlas A3 products</term></span></p>
+    <tr id="en-us_topic_0000001798619409_row1782312260569"><td class="cellrowborder" valign="top" width="30.570000000000004%" headers="mcps1.1.3.1.1 "><p id="en-us_topic_0000001798619409_p128231426175620"><a name="en-us_topic_0000001798619409_p128231426175620"></a><a name="en-us_topic_0000001798619409_p128231426175620"></a><span id="en-us_topic_0000001798619409_ph12807852115620"><a name="en-us_topic_0000001798619409_ph12807852115620"></a><a name="en-us_topic_0000001798619409_ph12807852115620"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term11962195213215_7"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term11962195213215_7"></a>Atlas A2 products</span></p>
+    <p id="en-us_topic_0000001798619409_p16629103195810"><a name="en-us_topic_0000001798619409_p16629103195810"></a><a name="en-us_topic_0000001798619409_p16629103195810"></a><span id="en-us_topic_0000001798619409_ph1464135665612"><a name="en-us_topic_0000001798619409_ph1464135665612"></a><a name="en-us_topic_0000001798619409_ph1464135665612"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term1253731311225_7"></a><a name="en-us_topic_0000001798619409_en-us_topic_0000001312391781_term1253731311225_7"></a>Atlas A3 products</span></p>
     </td>
     <td class="cellrowborder" valign="top" width="69.43%" headers="mcps1.1.3.1.2 "><a name="en-us_topic_0000001798619409_ul103175710575"></a><a name="en-us_topic_0000001798619409_ul103175710575"></a><ul id="en-us_topic_0000001798619409_ul103175710575"><li>The B-axis value must be less than or equal to 65536 (64K). When the D-axis is not 32-byte aligned, only values less than or equal to 128 are supported. </li><li>The N-axis value can be less than or equal to 256. </li><li>The S-axis value can be less than or equal to 20971520 (20M). In long-sequence scenarios, an excessive computation workload can cause the PFA operator execution to time out, which raises an AI Core error (errorStr: "timeout or trap error"). In this configuration, S-axis splitting is recommended. The computation workload is affected by the B, S, N, and D axes. Larger values cause a higher computation workload. Typical long-sequence scenarios that can cause a timeout (scenarios where the product of B, S, N, and D is large) include:<a name="en-us_topic_0000001798619409_ul103175718575"></a><a name="en-us_topic_0000001798619409_ul103175718575"></a><ul id="en-us_topic_0000001798619409_ul103175718575"><li>B=1, Q<sub>N</sub>=20, Q<sub>S</sub>=1048576, D = 256, KV<sub>N</sub>=1, KV<sub>S</sub>=1048576. </li><li>B=1, Q<sub>N</sub>=2, Q<sub>S</sub>=10485760, D = 256, KV<sub>N</sub>=2, KV<sub>S</sub>=10485760. </li><li>B=20, Q<sub>N</sub>=1, Q<sub>S</sub>=1048576, D = 256, KV<sub>N</sub>=1, KV<sub>S</sub>=1048576. </li><li>B=1, Q<sub>N</sub>=10, Q<sub>S</sub>=1048576, D = 512, KV<sub>N</sub>=1, KV<sub>S</sub>=1048576.</li></ul>
     </li><li>The D axis must be less than or equal to 512. When <code>input_layout</code> is BSH or BSND, N*D must be less than 65535.</li></ul>

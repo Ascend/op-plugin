@@ -50,7 +50,7 @@ Corresponds to $outputs$ in the formulas. The data type is the same as that of t
   ```
 
 <!-- npu="950" id3 -->
-- Graph mode call: Applicable only to <term>Ascend 950PR&950DT products</term>.
+- Graph mode call: Applicable only to Ascend 950PR&950DT products.
 
     ```python
     import torch

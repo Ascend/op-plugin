@@ -33,13 +33,13 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **`input`** (`Tensor`): Required. Input tensor to be processed.
 
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT products</term>: 2 to 6 dimensions are supported, and the data types can be `torch.int8`, `torch.uint8`, `torch.float8_e4m3fn`, `torch.float8_e8m0fnu`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int32`, `torch.float16`, and `torch.bfloat16`.
+  - Ascend 950PR&950DT products: 2 to 6 dimensions are supported, and the data types can be `torch.int8`, `torch.uint8`, `torch.float8_e4m3fn`, `torch.float8_e8m0fnu`, `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, `torch.int32`, `torch.float16`, and `torch.bfloat16`.
   <!-- end id6 -->
 
 - **`acl_format`** (`int`/`Format`): Required. Target format. An integer or a `torch_npu.Format` type can be provided. The `torch_npu.Format` type will be automatically converted to the corresponding integer value. For example, when modifying the data layout format of `input` to the ND layout format, provide either `2` or `torch_npu.Format.ND`. `torch_npu.Format` indicates the data layout format of TorchNPU. The following table describes the data formats supported by TorchNPU.
 
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: currently, only 29 (ACL\_FORMAT\_FRACTAL\_NZ) and 2 (ACL\_FORMAT\_ND) are supported.
+  - Ascend 950PR&950DT products: currently, only 29 (ACL\_FORMAT\_FRACTAL\_NZ) and 2 (ACL\_FORMAT\_ND) are supported.
   <!-- end id7 -->
   - torch_npu supports the following data layouts.
 
@@ -68,10 +68,10 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **`customize_dtype`** (`int`): Optional. Target data type for the layout conversion. This parameter can control the C0 value. The default value is `None`. The default C0 value of the `torch.float32` and `torch.int32` data types is 16, and the default C0 value of the `torch.int8` data type is 32.
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term>: when `3` (corresponding to int(`torch.int32`)) is passed, the C0 value in the FRACTAL_NZ format is 8.
+  - Atlas A2 training products and Atlas A3 training products: when `3` (corresponding to int(`torch.int32`)) is passed, the C0 value in the FRACTAL_NZ format is 8.
   <!-- end id8 -->
   <!-- npu="950" id9 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
     - For MatMul scenarios where only the weight is quantized, when converting the weight W to a private format, the data type of matrix A must be passed to infer the C0 axis size of W. The data types can be `torch.int8`, `torch.float8_e4m3fn`, `torch.float16`, and `torch.bfloat16`. If the default value `None` is used, the dtype of A is the same as the dtype of W, and the C0 axis size of W is inferred accordingly.
     - For MX scale scenarios, `torch.float8_e8m0fnu` is supported. The default value `None` uses the actual data type specified by `input_dtype`.
   <!-- end id9 -->
@@ -80,10 +80,10 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 - **`input_dtype`** (`int`): Optional. Actual data type of `input`. `torch_npu.float4_e2m1fn_x2`, `torch_npu.float4_e1m2fn_x2`, and `torch.float8_e8m0fnu` are supported.
 
   <!-- npu="A3,910b,910,310p" id10 -->
-  - <term>Atlas inference products</term>, <term>Atlas training products</term>, <term>Atlas A2 training products</term>, and <term>Atlas A3 training products</term>: this parameter is not supported currently. Use the default value `None`.
+  - Atlas inference products, Atlas training products, Atlas A2 training products, and Atlas A3 training products: this parameter is not supported currently. Use the default value `None`.
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR&950DT products</term>: this parameter is supported. The default value `None` indicates that the actual type of `input` is the same as the tensor data type.
+  - Ascend 950PR&950DT products: this parameter is supported. The default value `None` indicates that the actual type of `input` is the same as the tensor data type.
   <!-- end id11 -->
 
 ## Return Values
@@ -99,7 +99,7 @@ The `customize_dtype` parameter is supported only on Atlas A2 training products/
 <!-- end id16 -->
 
 <!-- npu="950" id12 -->
-- <term>Ascend 950PR&950DT products</term>:
+- Ascend 950PR&950DT products:
 
   Currently, the following combinations of input parameters are supported. When the third combination is passed, the converted format is 50 (ACL\_FORMAT\_FRACTAL\_NZ\_C0\_16).
 
@@ -174,7 +174,7 @@ The `customize_dtype` parameter is supported only on Atlas A2 training products/
     ```
 
 <!-- npu="A3,910b" id13 -->
-- Using customize_dtype to specify C0=8 (only for <term>Atlas A2 training products</term> and <term>Atlas A3 training products</term> with CANN >= 9.1.0):
+- Using customize_dtype to specify C0=8 (only for Atlas A2 training products and Atlas A3 training products with CANN >= 9.1.0):
 
     ```python
     >>> import torch
@@ -189,7 +189,7 @@ The `customize_dtype` parameter is supported only on Atlas A2 training products/
     ```
 <!-- end id13 -->
 <!-- npu="950" id14 -->
-- Using `input_dtype` (only for <term>Ascend 950PR&950DT products</term>):
+- Using `input_dtype` (only for Ascend 950PR&950DT products):
 
     ```python
     >>> import torch

@@ -34,10 +34,10 @@
 >
 > The forward computation is deterministic by default.<br>
 > <!-- npu="A3,910b" id4 -->
-> The backward gradient is non-deterministic by default on <term>Atlas A3 training products</term> and <term>Atlas A2 training products</term>.
+> The backward gradient is non-deterministic by default on Atlas A3 training products and Atlas A2 training products.
 > <!-- end id4 -->
 > <!-- npu="950" id5 -->
-> The backward gradient is deterministic by default on <term>Ascend 950DT products</term>.
+> The backward gradient is deterministic by default on Ascend 950DT products.
 > <!-- end id5 -->
 > When the backward gradient must be computed and randomness must be excluded from the output, [enable the deterministic computation switch](../determin_API_list.md).
 

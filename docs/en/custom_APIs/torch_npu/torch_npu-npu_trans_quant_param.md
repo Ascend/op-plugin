@@ -76,10 +76,10 @@ Represents the computation result of `trans_quant_param`, $out$ in the formulas.
 - API combination:
 
   <!-- npu="A3,910b,310p" id5 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, and <term>Atlas inference products</term>: can be used together with `matmul` APIs (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)).
+  - Atlas A2 products, Atlas A3 products, and Atlas inference products: can be used together with `matmul` APIs (such as [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)).
   <!-- end id5 -->
   <!-- npu="950" id6 -->
-  - <term>Ascend 950PR&950DT products</term>: can be used together with both [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md) and [torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md).
+  - Ascend 950PR&950DT products: can be used together with both [torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md) and [torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md).
   <!-- end id6 -->
 
 - When `offset` is not passed, the output shape is the same as the `scale` shape.

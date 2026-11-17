@@ -62,13 +62,13 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **`x1`** (`Tensor`): Required. Source data Tensor in the normalization process, $x1$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape can have 1 to 8 dimensions.
 
   <!-- npu="310p" id5 -->
-  - <term>Atlas inference products</term>: The data type can be `torch.float16`.
+  - Atlas inference products: The data type can be `torch.float16`.
   <!-- end id5 -->
   <!-- npu="A3,910b" id6 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.float16` or `torch.bfloat16`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.float16` or `torch.bfloat16`.
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+  - Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
   <!-- end id7 -->
 
 - **`x2`** (`Tensor`): Required. Source data Tensor in the normalization process, $x2$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape can have 1 to 8 dimensions, and the shape and data type must be the same as those of `x1`.
@@ -76,25 +76,25 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **`scales1`** (`Tensor`): Required. Scales Tensor used to obtain `y1` in the quantization process, $scales1$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape must be the same as that of `gamma`. When the value of `div_mode` is True, the value of this parameter cannot be 0.
 
   <!-- npu="310p" id8 -->
-  - <term>Atlas inference products</term>: The data type can be `torch.float32`.
+  - Atlas inference products: The data type can be `torch.float32`.
   <!-- end id8 -->
   <!-- npu="A3,910b" id9 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.float32` or `torch.bfloat16`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.float32` or `torch.bfloat16`.
   <!-- end id9 -->
   <!-- npu="950" id10 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+  - Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.float16`, or `torch.bfloat16`.
   <!-- end id10 -->
 
 - **`zero_points1`** (`Tensor`): Optional. Offset Tensor used to obtain `y1` in the quantization process, $zero\_points1$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape must be the same as that of `gamma`.
 
   <!-- npu="310p" id11 -->
-  - <term>Atlas inference products</term>: The data type can be `torch.int32`.
+  - Atlas inference products: The data type can be `torch.int32`.
   <!-- end id11 -->
   <!-- npu="A3,910b" id12 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>: The data type can be `torch.int32` or `torch.bfloat16`.
+  - Atlas A3 products and Atlas A2 products: The data type can be `torch.int32` or `torch.bfloat16`.
   <!-- end id12 -->
   <!-- npu="950" id13 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int32`, `torch.float32`, `torch.float16`, or `torch.bfloat16`.
+  - Ascend 950PR&950DT products: The data type can be `torch.int32`, `torch.float32`, `torch.float16`, or `torch.bfloat16`.
   <!-- end id13 -->
 
 - **`beta`** (`Tensor`): Optional. Bias term in the normalization process, $beta$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape and data type must be the same as those of `gamma`.
@@ -106,10 +106,10 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **`dst_type`** (`int`): Optional. Specifies the data type of the quantization outputs `y1` and `y2`. The default value is `torch.int8`. When None is passed, it is processed as `torch.int8`.
 
   <!-- npu="A3,910b,310p" id14 -->
-  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Atlas inference products</term>: The supported values are None and `torch.int8`.
+  - Atlas A3 products, Atlas A2 products, and Atlas inference products: The supported values are None and `torch.int8`.
   <!-- end id14 -->
   <!-- npu="950" id15 -->
-  - <term>Ascend 950PR&950DT products</term>: The supported values are None, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn`.
+  - Ascend 950PR&950DT products: The supported values are None, `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, and `torch.float8_e4m3fn`.
   <!-- end id15 -->
 
 ## Return Values
@@ -117,10 +117,10 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - **`y1`** (`Tensor`): Quantization output Tensor, $y1$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape is the same as that of the input `x1`.
 
   <!-- npu="A3,910b,310p" id16 -->
-  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Atlas inference products</term>: The data type can be `torch.int8`.
+  - Atlas A3 products, Atlas A2 products, and Atlas inference products: The data type can be `torch.int8`.
   <!-- end id16 -->
   <!-- npu="950" id17 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
+  - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch_npu.hifloat8`, `torch.float8_e5m2`, or `torch.float8_e4m3fn`.
   <!-- end id17 -->
 
 - **`y2`** (`Tensor`): Quantization output Tensor, $y2$ in the formulas. The data layout can be ND. Non-contiguous Tensors are supported. The shape and data type are the same as those of the output `y1`.
@@ -131,15 +131,15 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - This API supports only single-operator mode.
 
 <!-- npu="310p" id18 -->
-- <term>Atlas inference products</term>: The number of elements in the last dimension of `x1` and `x2` cannot be less than 32. The number of elements in `gamma`, `beta`, `scales1`, `zero_points1`, `scales2`, and `zero_points2` cannot be less than 32.
+- Atlas inference products: The number of elements in the last dimension of `x1` and `x2` cannot be less than 32. The number of elements in `gamma`, `beta`, `scales1`, `zero_points1`, `scales2`, and `zero_points2` cannot be less than 32.
 <!-- end id18 -->
 - Boundary value scenarios:
 
   <!-- npu="310p" id19 -->
-  - <term>Atlas inference products</term>: The input cannot contain inf or nan.
+  - Atlas inference products: The input cannot contain inf or nan.
   <!-- end id19 -->
   <!-- npu="A3,910b" id20 -->
-  - <term>Atlas A2 products</term> and <term>Atlas A3 products</term>: When the input is inf, the output is inf. When the input is nan, the output is nan.
+  - Atlas A2 products and Atlas A3 products: When the input is inf, the output is inf. When the input is nan, the output is nan.
   <!-- end id20 -->
 
 - Dimension boundaries:
@@ -148,7 +148,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
 - Data type support for each product:
 
   <!-- npu="950" id21 -->
-  - <term>Ascend 950PR&950DT products</term>
+  - Ascend 950PR&950DT products
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -161,7 +161,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.int8`/`torch_npu.hifloat8`/`torch.float8_e5m2`/`torch.float8_e4m3fn` | `torch.bfloat16` |
   <!-- end id21 -->
   <!-- npu="A3,910b" id22 -->
-  - <term>Atlas A3 products</term> and <term>Atlas A2 products</term>
+  - Atlas A3 products and Atlas A2 products
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -169,7 +169,7 @@ torch_npu.npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1, beta=None
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.int8` | `torch.int8` | `torch.bfloat16` |
   <!-- end id22 -->
   <!-- npu="310p" id23 -->
-  - <term>Atlas inference products</term>
+  - Atlas inference products
 
     | x1 | x2 | gamma | scales1 | scales2 | zero_points1 | zero_points2 | beta | y1 | y2 | x |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

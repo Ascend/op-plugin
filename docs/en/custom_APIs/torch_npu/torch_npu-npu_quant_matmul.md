@@ -24,7 +24,7 @@
   In the formula, x1Scale, x2Scale, and yScale correspond to the parameters `pertoken_scale`, `scale`, and `y_scale`, respectively. x2Offset and yOffset are both provided by the parameter `offset`, and the specific meaning is determined by the quantization scenario. For details about quantization modes, see [Quantization Introduction](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/en/context/quant_mode_introduction.md) in the *CANN Operator Library*.
 
   <!-- npu="A3,910b" id5 -->
-  - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>:
+  - Atlas A2 products, Atlas A3 products:
 
     The K-C, K-T, T-C, T-T, G-B, and K-G quantization modes are supported. For the input and output data type combinations of different quantization modes, see [Constraints](#constraints).
 
@@ -107,7 +107,7 @@
     </details>
   <!-- end id5 -->
   <!-- npu="310p" id6 -->
-  - <term>Atlas inference products</term>:
+  - Atlas inference products:
 
     The K-C quantization mode is supported. For the input and output data type combinations of different quantization modes, see [Constraints](#constraints).
 
@@ -130,7 +130,7 @@
     </details>
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT products</term>:
+  - Ascend 950PR&950DT products:
 
     The T-C, T-T, K-C, K-T, G-B, B-B, MX, T-CG, and K-G quantization modes are supported. For the input and output data type combinations of different quantization modes, see [Constraints](#constraints).
 
@@ -240,16 +240,16 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - **`x1`** (`Tensor`): Required. Input tensor representing the left matrix in matrix multiplication. The data layout can be $ND$. The shape must have 2 to 6 dimensions.
 
     <!-- npu="310p" id8 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int8`.
+    - Atlas inference products: The data type can be `torch.int8`.
     <!-- end id8 -->
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8` or `torch.int32`. The `torch.int32` type indicates `torch_npu.int4` matrix multiplication, and each `torch.int32` value stores eight `torch_npu.int4` values.
+    - Atlas A2 products: The data type can be `torch.int8` or `torch.int32`. The `torch.int32` type indicates `torch_npu.int4` matrix multiplication, and each `torch.int32` value stores eight `torch_npu.int4` values.
     <!-- end id9 -->
     <!-- npu="A3" id10 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.int8` or `torch.int32`. The `torch.int32` type indicates `torch_npu.int4` matrix multiplication, and each `torch.int32` value stores eight `torch_npu.int4` values.
+    - Atlas A3 products: The data type can be `torch.int8` or `torch.int32`. The `torch.int32` type indicates `torch_npu.int4` matrix multiplication, and each `torch.int32` value stores eight `torch_npu.int4` values.
     <!-- end id10 -->
     <!-- npu="950" id11 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, or `torch.int32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, or `torch.int32`.
       - `torch.int32` indicates `torch_npu.int4` matrix multiplication, where each `torch.int32` value stores eight `torch_npu.int4` values.
       - For `torch_npu.hifloat8` and `torch_npu.float4_e2m1fn_x2`, the optional parameter `x1_dtype` must be set to the corresponding type; in this case, the dtype of x1 itself no longer takes effect, but the dtype of x1 must still be an 8-bit data type to ensure the shape is correct.
       - When the data type is `torch_npu.float4_e2m1fn_x2`, two float4 values are packed into one 8-bit value.
@@ -258,16 +258,16 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - **`x2`** (`Tensor`): Required. Input tensor representing the right matrix in matrix multiplication. The data layout can be $ND$. The shape must have 2 to 6 dimensions.
 
     <!-- npu="310p" id12 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int8`.
+    - Atlas inference products: The data type can be `torch.int8`.
     <!-- end id12 -->
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8` or `torch.int32` and must be identical to that of `x1` (`torch.int32` has the same meaning as in `x1`, indicating `torch_npu.int4` computation).
+    - Atlas A2 products: The data type can be `torch.int8` or `torch.int32` and must be identical to that of `x1` (`torch.int32` has the same meaning as in `x1`, indicating `torch_npu.int4` computation).
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.int8` or `torch.int32` and must be identical to that of `x1` (`torch.int32` has the same meaning as in `x1`, indicating `torch_npu.int4` computation).
+    - Atlas A3 products: The data type can be `torch.int8` or `torch.int32` and must be identical to that of `x1` (`torch.int32` has the same meaning as in `x1`, indicating `torch_npu.int4` computation).
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, `torch.float32`, or `torch.int32`.
+    - Ascend 950PR&950DT products: The data type can be `torch.int8`, `torch.float8_e4m3fn`, `torch.float8_e5m2`, `torch_npu.hifloat8`, `torch_npu.float4_e2m1fn_x2`, `torch.float32`, or `torch.int32`.
         - For `torch_npu.hifloat8` and `torch_npu.float4_e2m1fn_x2`, the optional parameter `x2_dtype` must be set to the corresponding type; in this case, the dtype of x2 itself no longer takes effect, but the dtype of x2 must still be an 8-bit data type to ensure the shape is correct.
         - When the data type is `torch_npu.float4_e2m1fn_x2`, two float4 values are packed into one 8-bit value.
         - When the data type is `torch.float32`, `torch.float32` carries `torch_npu.float4_e2m1fn_x2` inputs. For details, see the call example of [torch_npu.npu_convert_weight_to_int4pack](torch_npu-npu_convert_weight_to_int4pack.md). This is supported only in FRACTAL_NZ scenarios.
@@ -277,16 +277,17 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - **`scale`** (`Tensor`): Required. Quantization scale factor. The data layout can be $ND$. To pass a `scale` of type `torch.int64`, call `torch_npu.npu_trans_quant_param` in advance to obtain an `torch.int64` `scale`.
 
     <!-- npu="310p" id16 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.float32` or `torch.int64`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
+    - Atlas inference products: The data type can be `torch.float32` or `torch.int64`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
     <!-- end id16 -->
     <!-- npu="910b" id17 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
+    - Atlas A2 products: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
     <!-- end id17 -->
     <!-- npu="A3" id18 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
+    - Atlas A3 products: The data type can be `torch.float32`, `torch.int64`, or `torch.bfloat16`. The shape must be 1D `(t,)`, where `t=1` or `n`, and `n` indicates the last dimension of `x2`.
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32`, `torch.int64`, `torch.float16`, `torch.bfloat16`, or `torch.float8_e8m0fnu` (the optional parameter scale_dtype must be set to the corresponding type; in this case, the dtype of scale itself no longer takes effect, but the dtype of scale must still be an 8-bit data type to ensure the shape is correct). The shape can be 1D or multi-dimensional. In 1D scenarios, the shape must be `(t,)`, where t=1 or n, and n is the same as the n of x2. For the shape and dtype constraints in multi-dimensional scenarios, see [Constraints](#constraints).
+    - Ascend 950PR&950DT products: The data type can be `torch.float32`, `torch.int64`, `torch.float16`, `torch.bfloat16`, or `torch.float8_e8m0fnu` (the optional parameter scale_dtype must be set to the corresponding type; in this case, the dtype of scale itself no longer takes effect, but the dtype of scale must still be an 8-bit data type to ensure the shape is correct). The shape can be 1D or multi-dimensional. In 1D scenarios, the shape must be `(t,)`, where t=1 or n, and n is the same as the n of x2. For the shape and dtype constraints in multi-dimensional scenarios, see [Constraints](#constraints).
+        - In mx full quantization scenarios, when `x2` is in FRACTAL_NZ format (WeightNZ) and the data types of both `x1` and `x2` are `torch.float8_e4m3fn` or both are `torch_npu.float4_e2m1fn_x2`, `scale` whose actual data type is FLOAT8_E8M0 also supports FRACTAL_NZ format (ScaleNZ), and can be converted by using the `torch_npu.npu_format_cast` API. For the shape, transpose, and call mode requirements of ScaleNZ, see [Constraints](#constraints).
     <!-- end id19 -->
 
 - **`*`**: Position delimiter used to distinguish positional arguments from keyword arguments. Variables before it are position-dependent and must be passed in order; variables after it are optional keyword arguments and can be passed in any order using key-value pairs. If not specified, their default values are used.
@@ -296,104 +297,104 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - **`pertoken_scale`** (`Tensor`): Optional. Used to scale the original values to match the quantized range. The data type can be `torch.float32`. The data layout supports ND. The shape must be 1D `(m,)`, where `m` is the same as the `m` of `x1` and indicates the second-to-last dimension of `x1`.
 
   <!-- npu="310p" id20 -->
-  - <term>Atlas inference products</term> does not support `pertoken_scale` currently.
+  - Atlas inference products does not support `pertoken_scale` currently.
   <!-- end id20 -->
   <!-- npu="910b" id21 -->
-  - <term>Atlas A2 products</term>: The data type can be `torch.float32`. The shape must be 1D `(m,)`, where `m` is the same as the `m` of `x1`.
+  - Atlas A2 products: The data type can be `torch.float32`. The shape must be 1D `(m,)`, where `m` is the same as the `m` of `x1`.
   <!-- end id21 -->
   <!-- npu="A3" id22 -->
-  - <term>Atlas A3 products</term>: The data type can be `torch.float32`. The shape must be 1D `(m,)`, where `m` is the same as the `m` of `x1`.
+  - Atlas A3 products: The data type can be `torch.float32`. The shape must be 1D `(m,)`, where `m` is the same as the `m` of `x1`.
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float32` or `torch.float8_e8m0fnu` (the optional parameter `pertoken_scale_dtype` must be set to the corresponding type; in this case, the dtype of `pertoken_scale` itself no longer takes effect, but the dtype of `pertoken_scale` itself must still be an 8-bit data type to ensure the shape is correct). The shape can be 1D or multi-dimensional. In 1D scenarios, the shape must be `(m,)` or `(1,)`. For the shape and dtype constraints in multi-dimensional scenarios, see [Constraints](#constraints).
+  - Ascend 950PR&950DT products: The data type can be `torch.float32` or `torch.float8_e8m0fnu` (the optional parameter `pertoken_scale_dtype` must be set to the corresponding type; in this case, the dtype of `pertoken_scale` itself no longer takes effect, but the dtype of `pertoken_scale` itself must still be an 8-bit data type to ensure the shape is correct). The shape can be 1D or multi-dimensional. In 1D scenarios, the shape must be `(m,)` or `(1,)`. For the shape and dtype constraints in multi-dimensional scenarios, see [Constraints](#constraints).
   <!-- end id23 -->
 
-- **`bias`** (`Tensor`): Optional. Bias term. The data layout supports ND. `n` is the same as the `n` of `x2`, and the `batch` value must be equal to the `batch` value derived after broadcasting `x1` and `x2`. When the output is 4D, 5D, or 6D, the shape of `bias` must be 1D `(n,)`. When the output is 3D, the shape of `bias` can be 1D `(n,)` or 3D `(batch, 1, n)`. When the output is 2D, `bias` of <term>Ascend 950PR&950DT products</term> supports 1D `(n,)` or 2D `(1, n)`, and other products support only 1D `(n,)`.
+- **`bias`** (`Tensor`): Optional. Bias term. The data layout supports ND. `n` is the same as the `n` of `x2`, and the `batch` value must be equal to the `batch` value derived after broadcasting `x1` and `x2`. When the output is 4D, 5D, or 6D, the shape of `bias` must be 1D `(n,)`. When the output is 3D, the shape of `bias` can be 1D `(n,)` or 3D `(batch, 1, n)`. When the output is 2D, `bias` of Ascend 950PR&950DT products supports 1D `(n,)` or 2D `(1, n)`, and other products support only 1D `(n,)`.
     <!-- npu="310p" id24 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int32`.
+    - Atlas inference products: The data type can be `torch.int32`.
     <!-- end id24 -->
     <!-- npu="910b" id71 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
+    - Atlas A2 products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
     <!-- end id71 -->
     <!-- npu="A3" id72 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
+    - Atlas A3 products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`.
     <!-- end id72 -->
     <!-- npu="950" id73 -->
-    - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`. The shape supports 1D `(n,)`, 2D `(1, n)`, or 3D `(batch, 1, n)`. Note that when the output is 2D, the shape of bias can be 1D or 2D.
+    - Ascend 950PR&950DT products: The data type can be `torch.int32`, `torch.bfloat16`, `torch.float16`, or `torch.float32`. The shape supports 1D `(n,)`, 2D `(1, n)`, or 3D `(batch, 1, n)`. Note that when the output is 2D, the shape of bias can be 1D or 2D.
     <!-- end id73 -->
 - **`output_dtype`** (`int`): Optional. Data type of the output Tensor. The default value is `None`, which means the data type of the output Tensor is `torch.int8`.
 
     <!-- npu="310p" id25 -->
-    - <term>Atlas inference products</term>: The data type can be `torch.int8` or `torch.float16`.
+    - Atlas inference products: The data type can be `torch.int8` or `torch.float16`.
     <!-- end id25 -->
     <!-- npu="910b" id26 -->
-    - <term>Atlas A2 products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A2 products: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id26 -->
     <!-- npu="A3" id27 -->
-    - <term>Atlas A3 products</term>: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
+    - Atlas A3 products: The data type can be `torch.int8`, `torch.float16`, `torch.bfloat16`, or `torch.int32`.
     <!-- end id27 -->
     <!-- npu="950" id28 -->
-    - <term>Ascend 950PR&950DT products</term>: The input can be `torch.int8`, `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int32`.
+    - Ascend 950PR&950DT products: The input can be `torch.int8`, `torch.float16`, `torch.bfloat16`, `torch.float32`, or `torch.int32`.
     <!-- end id28 -->
 
 - **`x1_dtype`** (`int`): Optional. Actual data type of `x1`. When a value is passed, the dtype of x1 itself is ignored and the data in x1 is treated as the type passed in for `x1_dtype` for computation. When no value is passed, the dtype of x1 is used directly for computation.
 
   <!-- npu="310p" id29 -->
-  - <term>Atlas inference products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas inference products: Reserved parameter, which cannot be set currently.
   <!-- end id29 -->
   <!-- npu="910b" id30 -->
-  - <term>Atlas A2 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A2 products: Reserved parameter, which cannot be set currently.
   <!-- end id30 -->
   <!-- npu="A3" id31 -->
-  - <term>Atlas A3 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A3 products: Reserved parameter, which cannot be set currently.
   <!-- end id31 -->
   <!-- npu="950" id32 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch_npu.float4_e2m1fn_x2` and `torch_npu.hifloat8` types are supported.
+  - Ascend 950PR&950DT products: The `torch_npu.float4_e2m1fn_x2` and `torch_npu.hifloat8` types are supported.
   <!-- end id32 -->
 
 - **`x2_dtype`** (`int`): Optional. Actual data type of `x2`. When a value is passed, the dtype of x2 itself is ignored and the data in x2 is treated as the type passed in for `x2_dtype` for computation. When no value is passed, the dtype of x2 is used directly for computation.
 
   <!-- npu="310p" id33 -->
-  - <term>Atlas inference products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas inference products: Reserved parameter, which cannot be set currently.
   <!-- end id33 -->
   <!-- npu="910b" id34 -->
-  - <term>Atlas A2 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A2 products: Reserved parameter, which cannot be set currently.
   <!-- end id34 -->
   <!-- npu="A3" id35 -->
-  - <term>Atlas A3 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A3 products: Reserved parameter, which cannot be set currently.
   <!-- end id35 -->
   <!-- npu="950" id36 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch_npu.float4_e2m1fn_x2` and `torch_npu.hifloat8` types are supported.
+  - Ascend 950PR&950DT products: The `torch_npu.float4_e2m1fn_x2` and `torch_npu.hifloat8` types are supported.
   <!-- end id36 -->
 
 - **`pertoken_scale_dtype`** (`int`): Optional. Actual data type of `pertoken_scale`. When a value is passed, the dtype of pertoken_scale itself is ignored and the data in pertoken_scale is treated as the type passed in for `pertoken_scale_dtype` for computation. When no value is passed, the dtype of pertoken_scale is used directly for computation.
 
   <!-- npu="310p" id37 -->
-  - <term>Atlas inference products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas inference products: Reserved parameter, which cannot be set currently.
   <!-- end id37 -->
   <!-- npu="910b" id38 -->
-  - <term>Atlas A2 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A2 products: Reserved parameter, which cannot be set currently.
   <!-- end id38 -->
   <!-- npu="A3" id39 -->
-  - <term>Atlas A3 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A3 products: Reserved parameter, which cannot be set currently.
   <!-- end id39 -->
   <!-- npu="950" id40 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch.float8_e8m0fnu` type is supported.
+  - Ascend 950PR&950DT products: The `torch.float8_e8m0fnu` type is supported.
   <!-- end id40 -->
 
 - **`scale_dtype`** (`int`): Optional. Actual data type of `scale`. When a value is passed, the dtype of scale itself is ignored and the data in scale is treated as the type passed in for `scale_dtype` for computation. When no value is passed, the dtype of scale is used directly for computation.
 
   <!-- npu="310p" id41 -->
-  - <term>Atlas inference products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas inference products: Reserved parameter, which cannot be set currently.
   <!-- end id41 -->
   <!-- npu="910b" id42 -->
-  - <term>Atlas A2 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A2 products: Reserved parameter, which cannot be set currently.
   <!-- end id42 -->
   <!-- npu="A3" id43 -->
-  - <term>Atlas A3 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A3 products: Reserved parameter, which cannot be set currently.
   <!-- end id43 -->
   <!-- npu="950" id44 -->
-  - <term>Ascend 950PR&950DT products</term>: The `torch.float8_e8m0fnu` type is supported.
+  - Ascend 950PR&950DT products: The `torch.float8_e8m0fnu` type is supported.
   <!-- end id44 -->
 
 - **`group_sizes`** (`list[int]`): Optional. Group quantization granularity, used for the quantization group size in the $m$ (`x1` second-to-last dimension), $n$ (`x2` last dimension), and $k$ (`x1` last dimension/`x2` second-to-last dimension) directions. The format is [group_m, group_n, group_k]. The list must contain 3 elements, and each element must be 0 or a positive integer.
@@ -401,16 +402,16 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 - **`y_scale`** (`Tensor`): Optional. Dequantizes the output result.
 
   <!-- npu="310p" id45 -->
-  - <term>Atlas inference products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas inference products: Reserved parameter, which cannot be set currently.
   <!-- end id45 -->
   <!-- npu="910b" id46 -->
-  - <term>Atlas A2 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A2 products: Reserved parameter, which cannot be set currently.
   <!-- end id46 -->
   <!-- npu="A3" id47 -->
-  - <term>Atlas A3 products</term>: Reserved parameter, which cannot be set currently.
+  - Atlas A3 products: Reserved parameter, which cannot be set currently.
   <!-- end id47 -->
   <!-- npu="950" id48 -->
-  - <term>Ascend 950PR&950DT products</term>: This parameter is supported only when x1 is `torch.float8_e4m3fn` and x2 is `torch_npu.float4_e2m1fn_x2`. The shape is 2D `(1, n)`, where n is the same as the n of `x2`. The data type can be `torch.int64`. To pass `torch.int64` data, use torch_npu.npu_trans_quant_param to obtain a scale of the `torch.int64` data type. For parameter constraints, see [Constraints](#constraints).
+  - Ascend 950PR&950DT products: This parameter is supported only when x1 is `torch.float8_e4m3fn` and x2 is `torch_npu.float4_e2m1fn_x2`. The shape is 2D `(1, n)`, where n is the same as the n of `x2`. The data type can be `torch.int64`. To pass `torch.int64` data, use torch_npu.npu_trans_quant_param to obtain a scale of the `torch.int64` data type. For parameter constraints, see [Constraints](#constraints).
   <!-- end id48 -->
 
 ## Return Values
@@ -423,43 +424,49 @@ Represents the computation result of the quantized matmul. The shape supports 2 
 - If `output_dtype` is `torch.int8` or None, the output data type is `torch.int8`.
 
 <!-- npu="950,A3,910b" id49 -->
-- <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, <term>Ascend 950PR&950DT products</term>:
+- Atlas A2 products, Atlas A3 products, Ascend 950PR&950DT products:
   - If `output_dtype` is `torch.bfloat16`, the output data type is `torch.bfloat16`.
   - If `output_dtype` is `torch.int32`, the output data type is `torch.int32`.
 <!-- end id49 -->
 <!-- npu="950" id50 -->
-- <term>Ascend 950PR&950DT products</term>: If `output_dtype` is `torch.float32`, the output data type is `torch.float32`.
+- Ascend 950PR&950DT products: If `output_dtype` is `torch.float32`, the output data type is `torch.float32`.
 <!-- end id50 -->
 
 ## Constraints
 
-- This API supports single-operator mode and TorchAir graph mode.
+- This API supports single-operator mode and TorchAir graph mode. For details about the restrictions, see the description of each scenario.
 - **Common constraints**:
   - When the data format of `x2` needs to be FRACTAL_NZ, the ND format is usually converted to the FRACTAL_NZ format through `torch_npu.npu_format_cast`.
   - When the data type of the output `out` is `torch.int8` or `torch.float16` and there is no `pertoken_scale`, graph mode does not support passing `torch.float32` directly for `scale`.
 
 <!-- npu="950" id51 -->
-- Constraints for <term>Ascend 950PR&950DT products</term>:
+- Constraints for Ascend 950PR&950DT products:
   - **Empty Tensor description**: `x1`, `x2`, and `scale` usually cannot be empty Tensors. In special cases, if `x2` is in ND format, an empty Tensor is returned as the output for an empty Tensor with m or n = 0; if `x2` is in FRACTAL_NZ format, an empty Tensor is returned as the output for an empty Tensor with m = 0.
   - **Constraints related to x1 and x2**:
     - `x2` data format (full quantization): When the scenario is T-C, T-T, K-C, or K-T quantization (and the data type of `x2` is `torch.int8`, `torch_npu.hifloat8`, or `torch.float8_e4m3fn`), mx quantization (and the data type of `x2` is `torch.float8_e4m3fn` or `torch_npu.float4_e2m1fn_x2`), or G-B or B-B quantization (and the data type of `x2` is `torch.float8_e4m3fn` or `torch_npu.hifloat8`), converting `x2` to the FRACTAL_NZ format is supported. To convert `x2` to FRACTAL_NZ, none of the dimensions of the shapes of `x2` and `scale` may be 1 (in some special scenarios, 1 can work properly, but the FRACTAL_NZ feature is not guaranteed to be enabled).
     - `x2` data format (fake quantization): The scenarios in which `x2` supports the ND format include the eager mode of mx fake quantization and the eager mode, static graph mode, and dynamic graph mode of T-CG fake quantization. In the ND format, the data type of `x2` is `torch_npu.float4_e2m1fn_x2` (one `torch.uint8` or `torch.int8` value carries two `torch_npu.float4_e2m1fn_x2` values). The scenarios in which `x2` supports the FRACTAL_NZ format include the eager mode, static graph mode, and dynamic graph mode of mx fake quantization and T-CG fake quantization. In the FRACTAL_NZ format, `x2` supports `torch.float32` or `torch_npu.float4_e2m1fn_x2`: all FRACTAL_NZ scenarios support `torch.float32`, where one `torch.float32` value carries eight `torch_npu.float4_e2m1fn_x2` values; `torch_npu.float4_e2m1fn_x2` is supported only in mx fake-quantization scenarios.
   - **Constraints related to scale and pertoken_scale**:
-    - In mx, G-B, and B-B quantization, the transposition of `scale` must be consistent with that of `x2`, and the transposition of `pertoken_scale` must be consistent with that of `x1`. In mx quantization, the transposition node must be written in the graph, the batch dimension of `scale` must be consistent with the batch dimension of `x2`, and the batch dimension of `pertoken_scale` must be consistent with the batch dimension of `x1`.
+    - In mx, G-B, and B-B quantization, when `scale` is in ND format, its transposition must be consistent with that of `x2`; the transposition of `pertoken_scale` must be consistent with that of `x1`. In mx quantization, the batch dimension of `scale` must be consistent with the batch dimension of `x2`, and the batch dimension of `pertoken_scale` must be consistent with the batch dimension of `x1`. When graph mode is used, the transposition node must be written in the graph.
     - When the data types of the input `x1` and `x2` are `torch.float8_e4m3fn`, `torch.float8_e5m2`, or `torch_npu.hifloat8` and there is no `pertoken_scale`, graph mode does not support passing `torch.float32` directly for `scale`.
+  - **ScaleNZ constraints**:
+    - Only single-operator calls (eager mode) in mx full quantization are supported. TorchAir graph mode is not supported. `x2` must be in FRACTAL_NZ format, and the data types of both `x1` and `x2` must be `torch.float8_e4m3fn` or both be `torch_npu.float4_e2m1fn_x2`. The actual data types of `scale` and `pertoken_scale` are both FLOAT8_E8M0. `pertoken_scale` remains in ND format, and other parameters follow the mx full quantization constraints.
+    - The logical shape of `scale` before and after conversion is `(batch, ceil(k/64), n, 2)` and does not change with the transposition state of `x2`. After conversion, the underlying storage shape is `(batch, ceil(n/16), ceil(k/64), 16, 2)`. `k` and `n` are the logical dimensions of matrix multiplication, and `batch` is consistent with the batch dimension of `x2`. The E8M0 conversion of `npu_format_cast` supports 3D or 4D input, that is, no batch axis or one batch axis.
+    - Before calling `npu_format_cast`, arrange the scale data in the logical axis order described above and keep it contiguous. For example, when the original shape is `(batch, n, ceil(k/64), 2)`, run `transpose(-3, -2).contiguous()` in ND format to adjust the data before format conversion. Do not change only the shape by using `reshape`. The converted ScaleNZ must maintain contiguous logical strides and a `storage_offset()` of `0`, and must not be transposed again with `x2`. The API validates parameters such as the shape, and the caller must ensure that the scale data correctly corresponds to the K groups and N channels of the weight.
+    - When `torch.uint8` or `torch.int8` is used to carry E8M0 encoding, specify `customize_dtype=torch_npu.float8_e8m0fnu` and `input_dtype=torch_npu.float8_e8m0fnu` for format conversion. For matrix multiplication, declare the actual scale types through `scale_dtype` and `pertoken_scale_dtype`. These parameters do not convert ordinary integer values into E8M0 encoding. A native `torch.float8_e8m0fnu` Tensor can use its own dtype.
+    - The MXFP4 shape is calculated by using the logical `k` and `n`, and the axis length of the packed 8-bit Tensor cannot be used instead. For example, when non-transposed `x2` is carried by an 8-bit Tensor, its shape is `(batch, k, n/2)`, while the corresponding ScaleNZ logical shape is still `(batch, ceil(k/64), n, 2)`. `x1` supports only non-transposed input, and other restrictions are the same as those in the existing WeightNZ scenarios.
   - **Constraints related to batch consistency**:
     - B-B quantization scenarios do not support batch consistency. Even if the batch consistency switch is enabled, the output is not guaranteed to meet the batch consistency requirement.
     - In T-T and T-C quantization scenarios, if batch consistency must be satisfied, when inputs with different m values are compared and `pertoken_scale` is not empty, the input value of `pertoken_scale` must not change dynamically with the input value of `x1` and must remain unchanged.
 <!-- end id51 -->
 <!-- npu="A3,910b,310p" id52 -->
-- <term>Atlas inference products</term>, <term>Atlas A2 products</term>, <term>Atlas A3 products</term> constraints:
+- Atlas inference products, Atlas A2 products, Atlas A3 products constraints:
   - Empty Tensor description: The input `x1`, `x2`, and `scale` cannot be empty Tensors.
   - Constraints related to `x2`:
-    - <term>Atlas inference products</term>: `x2` must be transposed first and then converted to FRACTAL_NZ.
-    - <term>Atlas A2 products</term>, <term>Atlas A3 products</term>: It is recommended to convert `x2` to FRACTAL_NZ without transposing it.
+    - Atlas inference products: `x2` must be transposed first and then converted to FRACTAL_NZ.
+    - Atlas A2 products, Atlas A3 products: It is recommended to convert `x2` to FRACTAL_NZ without transposing it.
 <!-- end id52 -->
 <!-- npu="310p" id53 -->
-- Data type constraints on parameters in <term>Atlas inference products</term> scenarios:
+- Data type constraints on parameters in Atlas inference products scenarios:
 
     **Table 1** Atlas inference accelerator cards
 
@@ -469,9 +476,9 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     | `torch.int8` | `torch.int8` | `torch.int64`/`torch.float32` | `torch.float32`/None | `torch.int32`/None | None | `torch.int8` |
 <!-- end id53 -->
 <!-- npu="A3,910b" id54 -->
-- Data type constraints on parameters in <term>Atlas A2 products</term> and <term>Atlas A3 products</term> scenarios:
+- Data type constraints on parameters in Atlas A2 products and Atlas A3 products scenarios:
 
-    **Table 2** Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products
+    **Table 2** Atlas A2 training products/Atlas A2 inference products and Atlas A3 training products/Atlas A3 inference products<a id="table2"></a>
 
     | x1 | x2 | scale | offset | bias | pertoken_scale | output_dtype |
     | --- | --- | --- | --- | --- | --- | --- |
@@ -483,7 +490,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     | `torch.int8` | `torch.int8` | `torch.float32`/`torch.bfloat16` | None | `torch.int32`/None | None | `torch.int32` |
 <!-- end id54 -->
 <!-- npu="950" id55 -->
-- Data type constraints on parameters in each quantization scenario for <term>Ascend 950PR&950DT products</term>:
+- Data type constraints on parameters in each quantization scenario for Ascend 950PR&950DT products:
 
     The dtype, shape, and value of the `x1`, `x2`, `scale`, `pertoken_scale`, and `group_sizes` parameters affect each other in different quantization scenarios. Taking non-transposed `x1` and non-transposed `x2` as an example, the relationships are as follows.
 
@@ -568,10 +575,10 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     > **mx quantization scenario description**:
     > - In mx full quantization scenarios, when the input types of both `x1` and `x2` are `torch_npu.float4_e2m1fn_x2`, the inner axis must be an even number, and k must be greater than 2.
     > - In mx full quantization scenarios, when the input types of both `x1` and `x2` are `torch_npu.float4_e2m1fn_x2` and the data format of `x2` is FRACTAL_NZ, only non-transposed `x1` is supported, and k or n must not be 1.
-    > - In mx full quantization scenarios, when the input types of both `x1` and `x2` are `torch_npu.float4_e2m1fn_x2`, static graph mode and dynamic graph mode are supported when the data format of `x2` is ND; when the data format of `x2` is FRACTAL_NZ, only static graph mode is supported, and dynamic graph mode is not supported.
-    > - In mx full quantization dynamic graph mode, when `x2` is `torch.float8_e4m3fn`/`torch.float8_e5m2` (ND format), `torch.float8_e4m3fn` (FRACTAL_NZ format), or `torch_npu.float4_e2m1fn_x2` (ND format), both of the following conditions must be satisfied: k is greater than 64, and neither the batch axis dimension of `x1` nor that of `x2` is 1.
+    > - In mx full quantization scenarios, when `scale` is in ND format and the input types of both `x1` and `x2` are `torch_npu.float4_e2m1fn_x2`, static graph mode and dynamic graph mode are supported when the data format of `x2` is ND; when the data format of `x2` is FRACTAL_NZ, only static graph mode is supported, and dynamic graph mode is not supported.
+    > - In mx full quantization dynamic graph mode, `scale` must be in ND format. When `x2` is `torch.float8_e4m3fn`/`torch.float8_e5m2` (ND format), `torch.float8_e4m3fn` (FRACTAL_NZ format), or `torch_npu.float4_e2m1fn_x2` (ND format), both of the following conditions must be satisfied: k is greater than 64, and neither the batch axis dimension of `x1` nor that of `x2` is 1.
     > - In mx full quantization scenarios, when `x2` is in FRACTAL_NZ format, the data types of `x1` and `x2` must both be `torch_npu.float4_e2m1fn_x2` or both be `torch.float8_e4m3fn`.
-    > - In mx full quantization scenarios, only the last three axes of `scale` and `pertoken_scale` support non-contiguous Tensors.
+    > - In mx full quantization scenarios, only the last three axes of `scale` and `pertoken_scale` in ND format support non-contiguous Tensors. ScaleNZ must meet the continuity requirements described above.
     > - In mx fake-quantization scenarios, when the data type of `x1` is `torch.float8_e4m3fn` and the data type of `x2` is `torch_npu.float4_e2m1fn_x2`, only non-transposed `x1` and transposed `x2` are supported. If the data format of `x2` is ND, k must be a multiple of 8, and the values of k and n must not exceed 2<sup>31</sup>-1. Graph mode is not supported in this scenario. If the data format of `x2` is FRACTAL_NZ, k and n must be multiples of 8 and their values must not exceed 2<sup>31</sup>-1. Graph mode is supported in this scenario, but k must be greater than 64.
     > - In mx fake-quantization scenarios, when the data type of `x1` is `torch.float8_e4m3fn` and `x2_dtype` is `torch.float32`, only non-transposed `x1` and transposed `x2` are supported, and `x2` must be in FRACTAL_NZ format. The k values of `x1` and `x2` must be multiples of 8 and their values must not exceed 2<sup>31</sup>-1, and the n value of `x2` must be a multiple of 8 and must not exceed 2<sup>31</sup>-1. Graph mode is supported in this scenario, but k must be greater than 64.
     > - In mx fake-quantization scenarios, `bias` is optional. The data type can be `torch.bfloat16` or `torch.float16`, which must be the same as the output data type. The data layout supports ND, and the shape supports 2 dimensions in the form `(1, n)`.
@@ -600,7 +607,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
 <!-- npu="A3,910b,310p" id74 -->
 - **Additional constraints for `torch_npu.int4` computation**:
 
-  Applies only to <term>Atlas inference products</term>, <term>Atlas A2 products</term>, and <term>Atlas A3 products</term>.
+  Applies only to Atlas inference products, Atlas A2 products, and Atlas A3 products.
 
   - When the data types of both `x1` and `x2` are `torch.int32`, each `torch.int32` value stores eight `torch_npu.int4` values. For the input `torch.int32` shape, the last dimension must be reduced by a factor of 8 relative to the shape when the data is of the `torch_npu.int4` type. The last dimension of the shape of `torch_npu.int4` data must be a multiple of 8. For example, to perform an (m, k) x (k, n) matrix multiplication of the `torch_npu.int4` type, data of the `torch.int32` type with shapes (m, k//8) and (k, n//8) must be passed in, where both k and n must be multiples of 8. `x1` can accept only data with the shape (m, k//8) whose data layout is contiguous, and `x2` can accept either data with the shape (k, n//8) whose data layout is contiguous or data with the shape (k//8, n) transposed from contiguous data with the shape (n, k//8).
   - If this API is used in PyTorch graph mode and the environment variable `ENABLE_ACLNN=false`, the `x2` data with the shape (n, k//8) must be transposed before the API is called, and the transposition process must be written in the graph.
@@ -637,7 +644,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
 
   <!-- npu="950" id56 -->
-  - `torch_npu.hifloat8` type + dual scale scenario. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - `torch_npu.hifloat8` type + dual scale scenario. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -656,7 +663,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id56 -->
   <!-- npu="950" id57 -->
-  - `torch.float8_e4m3fn` type + pertoken_scale scenario. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - `torch.float8_e4m3fn` type + pertoken_scale scenario. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -675,7 +682,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id57 -->
   <!-- npu="950" id58 -->
-  - `torch.float8_e4m3fn` type + `torch_npu.float4_e2m1fn_x2` type + dual scale scenario. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - `torch.float8_e4m3fn` type + `torch_npu.float4_e2m1fn_x2` type + dual scale scenario. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import math
@@ -697,7 +704,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id58 -->
   <!-- npu="950" id59 -->
-  - `torch.float8_e4m3fn` type + `torch_npu.float4_e2m1fn_x2` type + dual scale scenario + weightNZ scenario. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - `torch.float8_e4m3fn` type + `torch_npu.float4_e2m1fn_x2` type + dual scale scenario + weightNZ scenario. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -718,7 +725,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id59 -->
   <!-- npu="950" id60 -->
-  - `torch.float8_e4m3fn` + `torch_npu.float4_e2m1fn_x2` + FRACTAL_NZ scenario. The following is a code example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - `torch.float8_e4m3fn` + `torch_npu.float4_e2m1fn_x2` + FRACTAL_NZ scenario. The following is a code example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -748,7 +755,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     npu_x2 = cpu_x2.npu()
     npu_x2 = torch_npu.npu_format_cast(npu_x2, 29, customize_dtype=torch.float8_e4m3fn)
     npu_x2 = torch_npu.npu_convert_weight_to_int4pack(npu_x2)
-    # In per-group scenarios, convert `y_scale` from float32 to int64
+    # In pergroup scenarios, convert `y_scale` from float32 to int64
     if (pertoken_scale == None) :
         y_scale = torch_npu.npu_trans_quant_param(y_scale)
 
@@ -767,7 +774,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id60 -->
   <!-- npu="950" id61 -->
-  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightNZ type. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightNZ type. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import math
@@ -803,8 +810,48 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     print('npu_out is ', npu_out.cpu())
     ```
   <!-- end id61 -->
+  <!-- npu="950" id78 -->
+  - MX full quantization: `torch.float8_e4m3fn` + `torch.float8_e4m3fn` WeightNZ and ScaleNZ scenario. The following is an example. Supported only by Ascend 950PR&950DT products.
+
+    ```python
+    import torch
+    import torch_npu
+
+    M, K, N = 32, 128, 64
+    Kg = (K + 63) // 64
+    x1 = torch.ones((M, K), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+    x2_nd = torch.ones((K, N), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+
+    # uint8 stores the original E8M0 code. 127 indicates a scale value of 1.
+    pertoken_scale = torch.full((M, Kg, 2), 127, dtype=torch.uint8).npu()
+    scale_nk = torch.full((N, Kg, 2), 127, dtype=torch.uint8)
+    # Before format conversion, arrange the scale from (N, Kg, 2) to (Kg, N, 2).
+    scale_kn = scale_nk.transpose(-3, -2).contiguous().npu()
+    scale_nz = torch_npu.npu_format_cast(
+        scale_kn, 29,
+        customize_dtype=torch_npu.float8_e8m0fnu,
+        input_dtype=torch_npu.float8_e8m0fnu,
+    )
+
+    # Both transpose states of x2 use the same ScaleNZ in the fixed KN layout.
+    for transpose_x2 in (False, True):
+        weight = x2_nd.t().contiguous() if transpose_x2 else x2_nd
+        weight_nz = torch_npu.npu_format_cast(weight, 29)
+        x2 = weight_nz.t() if transpose_x2 else weight_nz
+        out = torch_npu.npu_quant_matmul(
+            x1, x2, scale_nz,
+            pertoken_scale=pertoken_scale,
+            pertoken_scale_dtype=torch_npu.float8_e8m0fnu,
+            scale_dtype=torch_npu.float8_e8m0fnu,
+            output_dtype=torch.float32,
+            group_sizes=[1, 1, 32],
+        )
+        expected = torch.full((M, N), float(K), dtype=torch.float32)
+        torch.testing.assert_close(out.cpu(), expected, rtol=0, atol=0)
+    ```
+  <!-- end id78 -->
   <!-- npu="950" id62 -->
-  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightND type. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightND type. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import math
@@ -882,13 +929,13 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
 
   <!-- npu="A3,910b" id75 -->
-  - Code sample for scenarios with `torch.bfloat16` outputs (supported on the following products):
+  - Code sample for `torch.bfloat16` outputs. This example applies only to the following products.
 
     <!-- npu="910b" id63 -->
-    - <term>Atlas A2 products</term>
+    - Atlas A2 products
     <!-- end id63 -->
     <!-- npu="A3" id64 -->
-    - <term>Atlas A3 products</term>
+    - Atlas A3 products
     <!-- end id64 -->
 
     ```python
@@ -934,7 +981,7 @@ Represents the computation result of the quantized matmul. The shape supports 2 
 - Graph mode call (FRACTAL_NZ)
 
   <!-- npu="950" id65 -->
-  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightNZ type. The following is an example. Supported only by <term>Ascend 950PR&950DT products</term>
+  - mx full quantization: `torch_npu.float4_e2m1fn_x2` + `torch_npu.float4_e2m1fn_x2` weightNZ type. The following is an example. Supported only by Ascend 950PR&950DT products
 
     ```python
     import torch
@@ -978,13 +1025,13 @@ Represents the computation result of the quantized matmul. The shape supports 2 
     ```
   <!-- end id65 -->
   <!-- npu="950,310p" id76 -->
-  - Transpose x2 to \(batch, **n, k**\) and then convert its format. The following example code is provided and supports only the following products:
+  - Transpose x2 to \(batch, **n, k**\) and then convert its format. The following example applies only to the following products.
 
     <!-- npu="310p" id66 -->
-    - <term>Atlas inference products</term>
+    - Atlas inference products
     <!-- end id66 -->
     <!-- npu="950" id67 -->
-    - <term>Ascend 950PR&950DT products</term>
+    - Ascend 950PR&950DT products
     <!-- end id67 -->
 
     ```python
@@ -1027,16 +1074,16 @@ Represents the computation result of the quantized matmul. The shape supports 2 
   <!-- end id76 -->
 
   <!-- npu="950,A3,910b" id77 -->
-  - Atlas A2 training products/Atlas A2 inference products
+  - Convert the non-transposed x2 `(batch, **k, n**)` to the target format. The following code example applies only to the following products.
 
     <!-- npu="910b" id68 -->
-    - <term>Atlas A2 products</term>
+    - Atlas A2 products
     <!-- end id68 -->
     <!-- npu="A3" id69 -->
-    - <term>Atlas A3 products</term>
+    - Atlas A3 products
     <!-- end id69 -->
     <!-- npu="950" id70 -->
-    - <term>Ascend 950PR&950DT products</term>
+    - Ascend 950PR&950DT products
     <!-- end id70 -->
 
     ```python

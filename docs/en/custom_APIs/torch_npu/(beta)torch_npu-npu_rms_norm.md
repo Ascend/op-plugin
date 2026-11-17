@@ -53,24 +53,24 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 - This API supports single-operator mode.
 
 <!-- npu="950" id6 -->
-- <term>Ascend 950PR&950DT products</term>: This API also supports TorchAir graph mode.
+- Ascend 950PR&950DT products: This API also supports TorchAir graph mode.
 <!-- end id6 -->
 <!-- npu="310p" id7 -->
-- <term>Atlas inference products</term>: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 Bytes.
+- Atlas inference products: The tail axis length of the `self` and `gamma` inputs must be greater than or equal to 32 Bytes.
 <!-- end id7 -->
 - Boundary value scenarios:
 
   <!-- npu="310p" id8 -->
-  - <term>Atlas inference products</term>: The input cannot contain Inf or NaN.
+  - Atlas inference products: The input cannot contain Inf or NaN.
   <!-- end id8 -->
   <!-- npu="950,A3,910b" id9 -->
-  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>: When the input is Inf, the output is Inf. When the input is NaN, the output is NaN.
+  - Atlas A3 products, Atlas A2 products, and Ascend 950PR&950DT products: When the input is Inf, the output is Inf. When the input is NaN, the output is NaN.
   <!-- end id9 -->
 
 - Data types supported by each product and their mappings:
 
   <!-- npu="950,A3,910b" id10 -->
-  - <term>Atlas A3 products</term>, <term>Atlas A2 products</term>, and <term>Ascend 950PR&950DT products</term>
+  - Atlas A3 products, Atlas A2 products, and Ascend 950PR&950DT products
 
     | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
     | -------- | -------- | -------- | -------- |
@@ -81,7 +81,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     | `torch.float32` | `torch.float32`  | `torch.float32` | `torch.float32` |
   <!-- end id10 -->
   <!-- npu="910,310p" id11 -->
-  - <term>Atlas inference products</term> and <term>Atlas training products</term>
+  - Atlas inference products and Atlas training products
 
     | `self` Data Type | `gamma` Data Type | `yOut` Data Type | `rstdOut` Data Type |
     | -------- | -------- | -------- | -------- |
@@ -103,7 +103,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     ```
 
 <!-- npu="950" id12 -->
-- Graph mode call: This example is supported only on <term>Ascend 950PR&950DT products</term>.
+- Graph mode call: This example is supported only on Ascend 950PR&950DT products.
 
     ```python
     import torch

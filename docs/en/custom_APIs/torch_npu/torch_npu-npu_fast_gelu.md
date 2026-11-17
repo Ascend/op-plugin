@@ -24,14 +24,14 @@
 - Formulas:
 
   <!-- npu="910,310p" id6 -->
-  - The formula for <term>Atlas inference products</term> and <term>Atlas training products</term> is as follows:
+  - The formula for Atlas inference products and Atlas training products is as follows:
 
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702 \mid x\mid}} e^{0.851 x(x- \mid x\mid)}
   $$
   <!-- end id6 -->
   <!-- npu="950,A3,910b" id7 -->
-  - The formula for <term>Atlas A2 products</term>, <term>Atlas A3 products</term>, and <term>Ascend 950PR&950DT products</term> is as follows:
+  - The formula for Atlas A2 products, Atlas A3 products, and Ascend 950PR&950DT products is as follows:
 
   $$
   fast\_gelu(x)=\frac{x}{1+e^{-1.702x}}
@@ -49,19 +49,19 @@ torch_npu.npu_fast_gelu(self) -> Tensor
 - **`self`** (`Tensor`): Required. $x$ in the formulas. The data layout can be $ND$. Non-contiguous tensors are supported. Up to 8 dimensions are supported. Empty tensors are supported.
 
   <!-- npu="910" id8 -->
-  - <term>Atlas training products</term>: The data type can be `torch.float16` or `torch.float32`.
+  - Atlas training products: The data type can be `torch.float16` or `torch.float32`.
   <!-- end id8 -->
   <!-- npu="910b" id9 -->
-  - <term>Atlas A2 products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  - Atlas A2 products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
   <!-- end id9 -->
   <!-- npu="A3" id10 -->
-  - <term>Atlas A3 products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  - Atlas A3 products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
   <!-- end id10 -->
   <!-- npu="310p" id11 -->
-  - <term>Atlas inference products</term>: The data type must be `torch.float16` or `torch.float32`.
+  - Atlas inference products: The data type must be `torch.float16` or `torch.float32`.
   <!-- end id11 -->
   <!-- npu="950" id12 -->
-  - <term>Ascend 950PR&950DT products</term>: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
+  - Ascend 950PR&950DT products: The data type can be `torch.float16`, `torch.float32`, or `torch.bfloat16`.
   <!-- end id12 -->
 
 ## Return Values

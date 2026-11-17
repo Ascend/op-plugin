@@ -105,7 +105,7 @@ Represents the computation result of quantized matrix multiplication fused with 
 <!-- npu="A3,910b" id3 -->
 - The supported data type combinations of the input parameters are as follows:
 
-    **Table 1** <term>Atlas A2 products</term> and <term>Atlas A3 products</term>
+    **Table 1** Atlas A2 products and Atlas A3 products
 
     | x1 | x2 | x1_scale | x2_scale | bias | Output data type |
     |-------|-------|----------|-----------|-------------------------------------|-----------|

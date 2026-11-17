@@ -52,14 +52,14 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 
 - **`gmm_x`** (`Tensor`): **Required**. Left matrix of the GroupedMatMul computation. The data type can be `torch.float16` or `torch.bfloat16`. Two dimensions are supported, the shape is (A, H1), and the data layout can be $ND$.
 - **`gmm_weight`** (`Tensor`): **Required**. Right matrix of the GroupedMatMul computation. The data type must be the same as that of `gmm_x`. Three dimensions are supported, the shape is (e, H1, N1), and the data layout can be $ND$.
-- **`hcom`** (`str`): Required. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
+- **`hcom`** (`str`): **Required**. Communicator name for expert parallelism. The string length must fall within the range of (0, 128).
 - **`ep_world_size`** (`int`): **Required**. Size of the EP communication domain. CCU supports only intra-node UB domain interconnection, while the AICPU supports inter-node UB domain interconnection.
 
     <!-- npu="A3" id3 -->
-    - <term>Atlas A3 products</term>: the supported values are 8, 16, 32, 64, and 128.
+    - Atlas A3 products: the supported values are 8, 16, 32, 64, and 128.
     <!-- end id3 -->
     <!-- npu="950" id4 -->
-    - <term>Ascend 950DT products</term>: the supported values are 2, 4, 8, 16, 32, and 64.
+    - Ascend 950DT products: the supported values are 2, 4, 8, 16, 32, 64, 128, and 256.
     <!-- end id4 -->
 
 - **`send_counts`** (`List[int]`): **Required**. Number of tokens sent to other devices. The data type can be int. The value size is e\*`ep_world_size` and the maximum is 256. The input type must be list.
@@ -74,10 +74,10 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **`comm_mode`** (`str`): **Optional**. Communication engine mode. The default value is `None`.
 
     <!-- npu="A3" id5 -->
-    - <term>Atlas A3 products</term>: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
+    - Atlas A3 products: the supported values are `None` and `ai_cpu`. If any value is passed, AICPU communication is used.
     <!-- end id5 -->
     <!-- npu="950" id6 -->
-    - <term>Ascend 950DT products</term>: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
+    - Ascend 950DT products: the supported values are `None`, `ai_cpu`, and `ccu`. When the value is `None`, AICPU communication is used.
     <!-- end id6 -->
 
 ## Return Values
@@ -92,10 +92,10 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - **Single-device communication volume requirement**:
 
   <!-- npu="A3" id7 -->
-  - <term>Atlas A3 products</term>: the single-device communication volume must be greater than or equal to 2 MB.
+  - Atlas A3 products: the single-device communication volume must be greater than or equal to 2 MB.
   <!-- end id7 -->
   <!-- npu="950" id8 -->
-  - <term>Ascend 950DT products</term>: there is no constraint on the single-device communication volume.
+  - Ascend 950DT products: there is no constraint on the single-device communication volume.
   <!-- end id8 -->
 
 - Description of the variables used in the shapes of the input parameter Tensors:
@@ -109,6 +109,8 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
   - K: number of top\_k experts selected. The value range of K is [2, 8].
   - A: number of tokens sent by the current device, which is the accumulated sum of the send\_counts parameters.
   - The accumulated sum of the A parameters on all devices in the EP communication domain is equal to the accumulated sum of the BSK parameters on all devices.
+
+- When CCU communication is used, the data volume of a single AlltoAllv collective communication cannot exceed 256 MB, and the total data volume cannot exceed 16 \* 256 MB. Because the shapes differ, the operator implementation may differ, and the actual supported total communication volume may be slightly less than this value.
 
 ## Example
 

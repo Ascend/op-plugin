@@ -12,7 +12,7 @@ This directory contains all samples for building custom operator libraries by us
 ├── cpp_extension_base                 // Basic sample
 ├── cpp_extension_full                 // Complete sample
 │   ├── module                         // Forward and backward bindings implemented in Python
-│   └── torch_library_impl             // Forward and backward bindings implemented in C++
+│   └── torch_lib_impl                 // Forward and backward bindings implemented in C++
 ├── cpp_extension_structured           // Structured adaptation
 ├── cpp_extension_asc                  // Ascend C-based operator implementation
 └── cpp_extension_pybind               // Interface binding implemented using pybind

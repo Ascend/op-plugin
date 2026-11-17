@@ -49,7 +49,7 @@
 >
 > - This API uses deterministic computation.
 > <!-- npu="950" id5 -->
-> - When this API is called on <term>Ascend 950PR&950DT products</term>, the framework internally calls the aclnnMoeFinalizeRoutingV2 API. The parameter mapping is as follows: `permuted_tokens` is equivalent to the `expandedX` input, `sorted_indices` is equivalent to the `expandedRowIdx` input, `probs` is equivalent to the `scalesOptional` input, `padded_mode` is equivalent to the `dropPadMode` input, and the output `out` is equivalent to the `out` output of aclnnMoeFinalizeRoutingV2. If a parameter error occurs, refer to this mapping.
+> - When this API is called on Ascend 950PR&950DT products, the framework internally calls the aclnnMoeFinalizeRoutingV2 API. The parameter mapping is as follows: `permuted_tokens` is equivalent to the `expandedX` input, `sorted_indices` is equivalent to the `expandedRowIdx` input, `probs` is equivalent to the `scalesOptional` input, `padded_mode` is equivalent to the `dropPadMode` input, and the output `out` is equivalent to the `out` output of aclnnMoeFinalizeRoutingV2. If a parameter error occurs, refer to this mapping.
 > <!-- end id5 -->
 
 ## Prototype
@@ -79,7 +79,7 @@ Output result after the unpermute computation. A 2D Tensor. When padded_mode is 
 - This API uses deterministic computation.
 
 <!-- npu="A3,910b" id4 -->
-- For <term>Atlas A2 products</term> and <term>Atlas A3 products</term>, topK_num must be less than or equal to 512.
+- For Atlas A2 products and Atlas A3 products, topK_num must be less than or equal to 512.
 <!-- end id4 -->
 
 ## Examples

@@ -33,3 +33,19 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 ## Constraints
 
 Dynamic shapes are not supported.
+
+## Example
+
+```python
+>>> import torch
+>>> import torch.nn as nn
+>>> import torch_npu
+>>> from torch_npu.contrib import NpuFairseqDropout
+>>> dropout = NpuFairseqDropout(0.5)
+>>> model = nn.Sequential(dropout).npu()
+>>> NpuFairseqDropout.enable_dropout_ensemble(model)
+>>> x = torch.randn(2, 3, 4, 4).npu()
+>>> _ = model(x)
+>>> output = model(x)
+>>> print(output.shape)
+```
