@@ -5,6 +5,8 @@ import unittest
 import numpy as np
 import torch
 import torch_npu
+from torch._subclasses.fake_tensor import FakeTensorMode
+from torch.fx.passes.shape_prop import _extract_tensor_metadata
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 
@@ -97,6 +99,24 @@ class TestNPUSwigluQuantV2(TestCase):
         self.assertRtolEqual(cpu_out[0].numpy(), result[0].cpu().numpy())
         if quant_mode == 1:
             self.assertRtolEqual(cpu_out[1].numpy(), result[1].cpu().numpy())
+
+    def test_npu_swiglu_quant_meta_dtype(self):
+        cases = (
+            (torch.int8, 4),
+            (torch.quint4x2, 2),
+        )
+        for dst_type, expect_last in cases:
+            with FakeTensorMode():
+                x = torch.empty(2, 8, device="npu")
+                y, scale = torch.ops.npu.npu_swiglu_quant(
+                    x, quant_mode=1, dst_type=dst_type
+                )
+                meta = _extract_tensor_metadata(y)
+                self.assertEqual(meta.dtype, torch.int8)
+                self.assertFalse(meta.is_quantized)
+                self.assertEqual(tuple(meta.shape), (2, expect_last))
+                self.assertEqual(scale.dtype, torch.float32)
+                self.assertEqual(tuple(scale.shape), (2,))
 
 if __name__ == "__main__":
     run_tests()

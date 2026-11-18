@@ -5877,13 +5877,17 @@ def rope_quant_kvcache(x, cos, k_cache, v_cache, size_splits, kv_output=False):
 @impl(m, "npu_swiglu_quant")
 def npu_swiglu_quant_meta(x, smooth_scales=None, offsets=None, group_index=None, activate_left=False, quant_mode=0,
                           group_list_type=0, dst_type=torch.int8):
+    if dst_type is None:
+        dst_type = torch.int8
     y_size = []
     scale_size = []
     for i in range(x.dim() - 1):
         y_size.append(x.size(i))
         scale_size.append(x.size(i))
-    y_size.append(math.floor(x.size(x.dim() - 1) / 2))
-    return (torch.empty(y_size, dtype=dst_type, device=x.device),
+    last = x.size(x.dim() - 1)
+    y_last = math.floor(last / 2) if dst_type == torch.int8 else math.floor(last / 2 / 2)
+    y_size.append(y_last)
+    return (torch.empty(y_size, dtype=torch.int8, device=x.device),
             torch.empty(scale_size, dtype=torch.float32, device=x.device))
 
 
