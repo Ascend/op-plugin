@@ -1411,6 +1411,38 @@ def npu_mhc_post(x, h_res, h_out, h_post):
     return torch.empty(y_size, dtype=x.dtype, device='meta')
 
 
+@impl(m, "npu_mhc_post_backward")
+def npu_mhc_post_backward_meta(grad_y, x, h_res, h_out, h_post):
+    for name, tensor in (
+        ("grad_y", grad_y), ("x", x), ("h_out", h_out), ("h_post", h_post),
+    ):
+        torch._check(
+            tensor.numel() > 0,
+            lambda name=name: f"Tensor {name} is empty." + ops_error(ErrCode.VALUE),
+        )
+
+    torch._check(
+        x.dim() in (3, 4),
+        lambda: f"Input x must be 3D or 4D, but got {x.dim()}D." + ops_error(ErrCode.VALUE),
+    )
+
+    if h_res is not None:
+        torch._check(
+            h_res.numel() > 0,
+            lambda: "Tensor h_res is empty." + ops_error(ErrCode.VALUE),
+        )
+
+    x_shape = list(x.shape)
+    num_residual = x_shape[-2]
+    grad_h_res_shape = x_shape[:-2] + [num_residual, num_residual]
+    return (
+        torch.empty(tuple(x_shape), dtype=x.dtype, device='meta'),
+        torch.empty(tuple(grad_h_res_shape), dtype=torch.float32, device='meta'),
+        torch.empty(tuple(h_out.shape), dtype=h_out.dtype, device='meta'),
+        torch.empty(tuple(h_post.shape), dtype=h_post.dtype, device='meta'),
+    )
+
+
 @impl(m, "npu_moe_init_routing")
 def npu_moe_init_routing_meta(x, row_idx, expert_idx, active_num=99):
     n = x.size(0)

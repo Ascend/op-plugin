@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import unittest
+
 import numpy as np
 import torch
 import torch_npu
@@ -237,6 +239,58 @@ class TestNpuMhcPostBackward(TestCase):
         h_post = torch.rand((4, 4), dtype=torch.float32)
         with self.assertRaisesRegex(RuntimeError, "h_res shape must be"):
             torch_npu.npu_mhc_post_backward(grad_output.npu(), x.npu(), h_res.npu(), h_out.npu(), h_post.npu())
+
+
+    @unittest.skipIf(torch.__version__ < '2.5.1', "This compile ut needs torch version >=2.5.1")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_post_backward_compile_aclgraph_tnd_fp16(self, device="npu"):
+        """torch.compile(eager) + NPUGraph capture/replay (aclgraph path), h_res given."""
+        self.run_aclgraph_case(with_h_res=True)
+
+    @unittest.skipIf(torch.__version__ < '2.5.1', "This compile ut needs torch version >=2.5.1")
+    @SupportedDevices(['Ascend950'])
+    def test_npu_mhc_post_backward_compile_aclgraph_tnd_fp16_no_h_res(self, device="npu"):
+        """torch.compile(eager) + NPUGraph capture/replay (aclgraph path), h_res=None."""
+        self.run_aclgraph_case(with_h_res=False)
+
+    def run_aclgraph_case(self, with_h_res):
+        class MhcPostBackwardModel(torch.nn.Module):
+            @torch.inference_mode()
+            def forward(self, grad_output, x, h_res, h_out, h_post):
+                return torch_npu.npu_mhc_post_backward(grad_output, x, h_res, h_out, h_post)
+
+        def gen_inputs():
+            grad_output = torch.rand((4, 4, 1024), dtype=torch.float16).npu()
+            x = torch.rand((4, 4, 1024), dtype=torch.float16).npu()
+            h_res = torch.rand((4, 4, 4), dtype=torch.float32).npu() if with_h_res else None
+            h_out = torch.rand((4, 1024), dtype=torch.float16).npu()
+            h_post = torch.rand((4, 4), dtype=torch.float32).npu()
+            return grad_output, x, h_res, h_out, h_post
+
+        model = MhcPostBackwardModel()
+        compiled_model = torch.compile(model, backend="eager", fullgraph=True, dynamic=False)
+
+        rounds = [gen_inputs(), gen_inputs()]
+        goldens = [tuple(out.cpu() for out in model(*inputs)) for inputs in rounds]
+
+        static_inputs = list(rounds[0])
+        compiled_model(*static_inputs)
+        torch.npu.synchronize()
+
+        graph = torch_npu.npu.NPUGraph()
+        with torch.npu.graph(graph):
+            static_outputs = compiled_model(*static_inputs)
+        torch.npu.synchronize()
+
+        names = ("grad_x", "grad_h_res", "grad_h_out", "grad_h_post")
+        for inputs, golden in zip(rounds, goldens):
+            for src, dst in zip(inputs, static_inputs):
+                if src is not None:
+                    dst.copy_(src)
+            graph.replay()
+            torch.npu.synchronize()
+            for name, out, ref in zip(names, static_outputs, golden):
+                self.assertRtolEqual(out.float().cpu().numpy(), ref.float().numpy(), prec=1e-4)
 
 
 if __name__ == "__main__":
