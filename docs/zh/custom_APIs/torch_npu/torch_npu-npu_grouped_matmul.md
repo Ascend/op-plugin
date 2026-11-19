@@ -610,7 +610,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - 列表支持的最大长度为1024。
     - `weight`输入为`torch.float16`或`torch.bfloat16`且shape后两维对32B对齐时，数据格式支持$FRACTAL\_NZ$。
     - `group_type`支持取-1、0、2，`weight`为$FRACTAL\_NZ$格式时不支持取2。
-    - `x`、`weight`、`y`数据类型为`torch.float16`/`torch.bfloat16`、数据格式为$ND$且`group_type`为0/-1时，`act_type`支持传入0/2；其余场景`act_type`仅支持传入0。
+    - `x`、`weight`、`y`数据类型为`torch.float16`/`torch.bfloat16`、数据格式为$ND$且`group_type`为0/-1时，`act_type`支持传入0/1/2；其余场景`act_type`仅支持传入0。
     - `split_item`支持取0/1/2/3，`x`输入多tensor且`y`输出多tensor时仅支持0，`x`单tensor且`y`多tensor时仅支持1，`y`单tensor时支持2/3。
     - 示例：[非量化场景示例](#非量化场景示例)、[非量化weightNZ示例](#非量化weightnz示例)
     - 图模式场景约束：
