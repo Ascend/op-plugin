@@ -33,10 +33,19 @@ std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
   outputSize.erase(outputSize.end() - 2, outputSize.end());
   // construct the output tensor of the NPU
   at::Tensor sign = npu_preparation::apply_tensor(self, outputSize);
+  // aclnnSlogdet requires logOut to keep the input dtype for complex input,
+  // while torch.slogdet returns a real-valued logabsdet, so compute in the
+  // input dtype first and take the real part afterwards.
   at::Tensor log = npu_preparation::apply_tensor(self, outputSize);
   // calculate the output result of the NPU
   EXEC_NPU_CMD(aclnnSlogdet, self, sign, log);
 
-  return std::tie(sign, log);
+  if (!self.is_complex()) {
+    return std::tie(sign, log);
+  }
+  at::Tensor logabsdet = npu_preparation::apply_tensor_without_format(
+      outputSize, self.options().dtype(c10::toRealValueType(self.scalar_type())));
+  logabsdet.copy_(at::real(log));
+  return std::tie(sign, logabsdet);
 }
 } // namespace op_api

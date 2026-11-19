@@ -34,10 +34,19 @@ std::tuple<at::Tensor, at::Tensor> slogdet(const at::Tensor& self) {
   auto output_size = op_infer::array_to_small_vector(self.sizes());
   output_size.erase(output_size.end() - 2, output_size.end());
   at::Tensor sign = npu_preparation::apply_tensor(self, output_size);
+  // LogMatrixDeterminant keeps the input dtype for complex input, while
+  // torch.slogdet returns a real-valued logabsdet, so compute in the input
+  // dtype first and take the real part afterwards.
   at::Tensor y = npu_preparation::apply_tensor(self, output_size);
 
   slogdet_out_nocheck(sign, y, self);
 
-  return std::tie(sign, y);
+  if (!self.is_complex()) {
+    return std::tie(sign, y);
+  }
+  at::Tensor logabsdet = npu_preparation::apply_tensor_without_format(
+      output_size, self.options().dtype(c10::toRealValueType(self.scalar_type())));
+  logabsdet.copy_(at::real(y));
+  return std::tie(sign, logabsdet);
 }
 } // namespace acl_op
