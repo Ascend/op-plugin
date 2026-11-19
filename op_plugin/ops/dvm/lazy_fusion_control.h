@@ -14,11 +14,13 @@
 #ifndef DVM_LAZY_FUSION_CONTROL_H
 #define DVM_LAZY_FUSION_CONTROL_H
 
+#include "torch_npu/csrc/core/npu/NPUMacros.h"
+
 namespace lazy_fusion {
 // Update a process-wide script-side gate, flushing at state transitions.
 // Return the previous state so callers can restore it on context exit.
-bool SetLazyFusionDisabled(bool disabled);
-bool SetLazyFusionDumpEnabled(bool enabled);
+TORCH_NPU_API bool SetLazyFusionDisabled(bool disabled);
+TORCH_NPU_API bool SetLazyFusionDumpEnabled(bool enabled);
 }  // namespace lazy_fusion
 
 #endif  // DVM_LAZY_FUSION_CONTROL_H

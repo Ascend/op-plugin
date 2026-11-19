@@ -17,16 +17,17 @@
 #define __TORCH_NPU_OP_PLUGIN_UTILS_FFT_COMMON_OP_API__
 
 #include <mutex>
+#include "torch_npu/csrc/core/npu/NPUMacros.h"
 #include "op_plugin/utils/op_api_common.h"
 #include "fft_plan_op_api.h"
 #include "AsdSipNpuOpApi.h"
 
 namespace op_api {
 // For torch_npu._C
-void setFFTPlanCapacity(int64_t maxSize);
-int64_t getFFTPlanCapacity();
-int64_t getFFTPlanSize();
-void clearFFTPlanCache();
+TORCH_NPU_API void setFFTPlanCapacity(int64_t maxSize);
+TORCH_NPU_API int64_t getFFTPlanCapacity();
+TORCH_NPU_API int64_t getFFTPlanSize();
+TORCH_NPU_API void clearFFTPlanCache();
 
 // For FFTc2cKernelNpuOpApi.cpp
 FFTPlanItem get_plan(int64_t prb_size, bool is_forward, PlanMode plan_mode, at::ScalarType scalar_dtype);
