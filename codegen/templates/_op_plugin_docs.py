@@ -17179,22 +17179,23 @@ input(torch.Tensor)：必选输入，支持1-7维，数据类型支持float16、
 axis(int, optional)：可选输入，量化发生的轴，默认值为-1，取值范围为[-D, D-1]，D为input的维数。
 round_mode(str, optional)：可选输入，数据转换模式，默认值为"rint"。dst_type为FP4类时支持{"rint", "floor", "round"}，dst_type为FP8类时仅支持{"rint"}。
 dst_type(ScalarType, optional)：可选输入，指定y的数据类型，默认值为torch_npu.float4_e2m1fn_x2(296)，支持torch_npu.float8_e5m2(291)、torch_npu.float8_e4m3fn(292)、torch_npu.float4_e2m1fn_x2(296)、torch_npu.float4_e1m2fn_x2(297)。
-block_size(int, optional)：可选输入，每次量化的元素个数，默认值为32。仅支持32的倍数，不能为0，且不能超过1024。scale_alg为2时或input的数据类型为float32时，block_size必须为32。
-scale_alg(int, optional)：可选输入，mxscale的计算方法，默认值为0。0代表场景1(OCP Mx Specification)，1代表场景2(CuBALS Scale算法，仅FP8)，2代表场景3(仅FP4_E2M1)。dst_type为float4_e1m2fn_x2时仅支持0，为float4_e2m1fn_x2时支持0和2，为FP8类时支持0和1。
+block_size(int, optional)：可选输入，每次量化的元素个数，默认值为32。scale_alg不为3时仅支持32的倍数，不能为0，且不能超过1024；scale_alg为3时必须显式设置为16。scale_alg为2时或input的数据类型为float32时，block_size必须为32。
+scale_alg(int, optional)：可选输入，mxscale的计算方法，默认值为0。0代表场景1(OCP Mx Specification)，1代表场景2(CuBALS Scale算法，仅FP8)，2代表场景3(仅FP4_E2M1)，3代表NVFP4(仅FP4_E2M1，FP16/BF16输入，尾轴量化)。dst_type为float4_e1m2fn_x2时仅支持0，为float4_e2m1fn_x2时支持0、2和3，为FP8类时支持0和1。
 dst_type_max(float, optional)：可选输入，Amax(DType)的取值，默认值为0.0。支持0.0和6.0-12.0，0.0表示Amax(DType)为量化结果数据类型的最大值。仅支持在dst_type为float4_e2m1fn_x2且block_size为32时设置。
-max_low_bound(float, optional)：可选输入，每个block计算出的最大绝对值的下界钳位值，默认值为0.0。仅当scale_alg为1时生效，scale_alg不为1时必须为0.0；取值为非负数，大于0时Amax = max(Amax, max_low_bound)。
+max_low_bound(float, optional)：可选输入，每个block计算出的最大绝对值的下界钳位值，默认值为0.0。仅当scale_alg为1或3时生效，其他模式必须为0.0；取值为非负数，大于0时Amax = max(Amax, max_low_bound)。
 
 输出说明:
-y(torch.Tensor)：输入x量化后的结果，shape和input一致。dst_type为FP8类时数据类型支持float8_e4m3fn、float8_e5m2；dst_type为FP4类时实际返回uint8，y的最后一维为input最后一维的一半，查看具体值需自行解包。
-mxscale(torch.Tensor)：每个分组对应的量化尺度，数据类型支持float8_e8m0fnu，实际返回uint8。shape的秩为input的秩加1，最后一维固定为2，量化轴axis上的值为ceil(input.shape[axis]/block_size)偶数对齐后除以2，axis为非尾轴时需要对每两行数据进行交织处理。
+y(torch.Tensor)：输入x量化后的结果，shape和input一致。dst_type为FP8类时数据类型支持float8_e4m3fn、float8_e5m2；dst_type为FP4类时实际返回torch.uint8，y的最后一维为input最后一维的一半，查看具体值需自行解包。
+mxscale(torch.Tensor)：每个分组对应的量化尺度，scale_alg为3时逻辑类型为torch.float8_e4m3fn，其他模式为torch.float8_e8m0fnu，实际返回torch.uint8。shape的秩为input的秩加1，最后一维固定为2，量化轴axis上的值为ceil(input.shape[axis]/block_size)偶数对齐后除以2，axis为非尾轴时需要对每两行数据进行交织处理。
 
 约束说明:
 该接口支持训练、推理场景下使用。
 该接口支持单算子模式和图模式调用。
 该接口为确定性计算。
 rank(mxscale) = rank(input) + 1，mxscale.shape[-1] = 2。
-优先调用aclnnDynamicMxQuantV3内核，运行环境不支持时自动回退到aclnnDynamicMxQuantV2内核，此时max_low_bound参数不生效、scale_alg不支持取值2。
-max_low_bound仅当scale_alg为1时生效，scale_alg不为1时必须为0.0，且必须为非负数。
+NVFP4要求block_size=16、rank 1-7、FP16/BF16输入、尾轴、dst_type=296、dst_type_max=0.0，max_low_bound转换为FP32后必须为有限非负数。scale以E4M3FN原始位返回，y每两个E2M1编码打包为uint8。NVFP4模式调用aclnnDynamicMxQuantV3；该接口不可用时报不支持错误，不回退到V2。
+其他模式优先调用aclnnDynamicMxQuantV3接口，运行环境不支持时自动回退到aclnnDynamicMxQuantV2接口，此时max_low_bound参数不生效、scale_alg不支持取值2。
+max_low_bound仅当scale_alg为1或3时生效，其他模式必须为0.0，且必须为非负数。
 
 支持版本:
 PyTorch 2.1

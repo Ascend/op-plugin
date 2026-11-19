@@ -6185,6 +6185,37 @@ class TestNpuReshapeMeta(TestCase):
             self.assertEqual(out_fake_tensor.shape, out.shape)
             self.assertEqual(out_fake_tensor.dtype, out.dtype)
 
+
+class TestNpuDynamicMxQuantFakeTensor(TestCase):
+    def test_nvfp4(self):
+        with FakeTensorMode():
+            for shape, dtype in (((16,), torch.float16), ((2, 18), torch.bfloat16),
+                                 ((2, 3, 34), torch.float16)):
+                with self.subTest(shape=shape, dtype=dtype):
+                    x = torch.empty(shape, dtype=dtype, device="npu")
+                    y, scale = torch_npu.npu_dynamic_mx_quant(x, scale_alg=3, block_size=16)
+                    self.assertIsInstance(y, FakeTensor)
+                    self.assertIsInstance(scale, FakeTensor)
+                    self.assertEqual(y.device, x.device)
+                    self.assertEqual(scale.device, x.device)
+                    self.assertEqual(y.shape, (*shape[:-1], shape[-1] // 2))
+                    groups = (shape[-1] + 15) // 16
+                    self.assertEqual(scale.shape, (*shape[:-1], (groups + 1) // 2, 2))
+                    self.assertEqual(y.dtype, torch.uint8)
+                    self.assertEqual(scale.dtype, torch.uint8)
+
+    def test_nvfp4_invalid_rank_and_axis(self):
+        with FakeTensorMode():
+            for shape in ((), (2,) * 7 + (16,)):
+                with self.subTest(shape=shape):
+                    with self.assertRaisesRegex(RuntimeError, r"NVFP4 requires input rank 1\.\.7"):
+                        x = torch.empty(shape, dtype=torch.float16, device="npu")
+                        torch_npu.npu_dynamic_mx_quant(x, scale_alg=3, block_size=16)
+            x = torch.empty((2, 18), dtype=torch.float16, device="npu")
+            with self.assertRaisesRegex(RuntimeError, "NVFP4 requires the last axis"):
+                torch_npu.npu_dynamic_mx_quant(x, scale_alg=3, block_size=16, axis=0)
+
+
 class TestSwigluMxQuant(TestCase):
     def test_npu_swiglu_mx_quant_meta(self):
         with FakeTensorMode():

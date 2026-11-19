@@ -88,6 +88,13 @@
       - 计算块转换因子：$R_{fp32}^b=\frac{1}{fp32(S_{ue8m0}^b)}$
       - 应用到量化的最终步骤，对于每个块内元素，$d^i = DType(d_{fp32}^i \cdot R_{fp32}^b)$，最终输出的量化结果是$\left(S^b, [d^i]_{i=1}^k\right)$，其中$S^b$代表块的缩放因子（即$S_{ue8m0}^b$），$[d^i]_{i=1}^k$代表块内量化后的数据。
 
+  - 场景4，当`scale_alg`为3时，使用NVFP4量化：
+    - 输入仅支持FP16或BF16，沿尾轴每16个元素为一组；尾块不足16个元素时按NaN补齐，补齐值不参与有效数据的最大绝对值归约。
+    - 在输入数据类型上计算绝对值和最大值，再将最大值转换为FP32。组内NaN不参与最大值计算；全NaN组的scale编码为`0x7f`。
+    - 先应用`max_low_bound`，再乘FP32系数`float.fromhex("0x1.555556p-3")`，将结果饱和到E4M3FN有限范围并按最近偶数舍入为scale。
+    - 将scale还原为FP32，计算其倒数并乘原始输入，再根据`round_mode`量化为E2M1。零最大值组使用零scale和零倒数。
+    - y每两个E2M1编码打包为一个uint8，前一个元素放低4位；scale每两个组存为一对，不足一对时补零。
+
 ## 函数原型
 
 ```python
@@ -103,23 +110,24 @@ torch_npu.npu_dynamic_mx_quant(input, *, axis=-1, round_mode="rint", dst_type=to
   - 当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，支持取值`"rint"`、`"floor"`、`"round"`。
   - 当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时，仅支持取值`"rint"`。
 - **dst_type** (`int`)：可选参数，指定量化后输出y的数据类型。支持的类型为`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`，默认值为`torch_npu.float4_e2m1fn_x2`。
-- **block_size** (`int`)：可选参数，指定每次量化的元素个数，必须是32的倍数，取值范围为(0, 1024]，默认值为32。当`scale_alg`为2时，仅支持取值32。当`input`的数据类型为`torch.float32`时，仅支持取值32，且`axis`对应的维度大小不能小于32。
-- **scale_alg** (`int`)：可选参数，指定计算`mxscale`的算法，默认值为0。取值范围：0代表场景1、1代表场景2、2代表场景3。
+- **block_size** (`int`)：可选参数，指定每次量化的元素个数，当`scale_alg`不为3时必须是32的倍数，取值范围为(0, 1024]，默认值为32。当`scale_alg`为3时必须显式设置为16。当`scale_alg`为2时，仅支持取值32。当`input`的数据类型为`torch.float32`时，仅支持取值32，且`axis`对应的维度大小不能小于32。
+- **scale_alg** (`int`)：可选参数，指定计算`mxscale`的算法，默认值为0。取值范围：0代表场景1、1代表场景2、2代表场景3、3代表场景4（NVFP4）。
   - 当`dst_type`为`torch_npu.float4_e1m2fn_x2`时仅支持取值为0。
-  - 当`dst_type`为`torch_npu.float4_e2m1fn_x2`时仅支持取值为0和2。
+  - 当`dst_type`为`torch_npu.float4_e2m1fn_x2`时支持取值为0、2和3。
   - 当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时仅支持取值为0和1。
-- **dst_type_max** (`float`)：可选参数，指定目标数据类型的最大表示值。支持取值0.0和6.0-12.0，取值为0.0时使用目标精度能表示的最大值，取值为6.0-12.0时使用传入值，默认值为0.0。仅支持在`dst_type`为`torch_npu.float4_e2m1fn_x2`且`block_size`为32时设置该值。
-- **max_low_bound** (`float`)：可选参数，每个block计算出的最大绝对值的下界钳位值，默认值为0.0表示不进行钳位。仅当`scale_alg`为1时生效，`scale_alg`不为1时必须为0.0。取值为非负数，当取值大于0时，每个block的最大绝对值将与`max_low_bound`取较大值后用于scale计算。
+- **dst_type_max** (`float`)：可选参数，指定目标数据类型的最大表示值。支持取值0.0和6.0-12.0，取值为0.0时使用目标精度能表示的最大值，取值为6.0-12.0时使用传入值，默认值为0.0。仅支持在`dst_type`为`torch_npu.float4_e2m1fn_x2`且`block_size`为32时设置该值；NVFP4模式下必须为0.0。
+- **max_low_bound** (`float`)：可选参数，每个block计算出的最大绝对值的下界钳位值，默认值为0.0表示不进行钳位。仅当`scale_alg`为1或3时生效，其他模式必须为0.0。NVFP4模式要求该值转换为FP32后为有限非负数。取值为非负数，当取值大于0时，每个block的最大绝对值将与`max_low_bound`取较大值后用于scale计算。
 
 ## 返回值说明
 
 - **y** (`Tensor`)：量化后的输出张量。当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时，y的数据类型与`dst_type`对应，shape与输入`input`一致。当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，y的实际数据类型为`torch.uint8`，shape的最后一维为`input`最后一维的一半（每两个FP4数据打包为一个`torch.uint8`），查看具体值需自行解包。
-- **mxscale** (`Tensor`)：每个分组对应的量化尺度，逻辑数据类型为`torch.float8_e8m0fnu`，实际返回的数据类型为`torch.uint8`。`mxscale`的shape比输入`input`多一维，最后一维为2，`axis`轴的大小为`input`对应轴的值除以`block_size`向上取整并偶数pad（pad填充值为0），当`axis`为非尾轴时，`mxscale`输出需要对每两行数据进行交织处理。
+- **mxscale** (`Tensor`)：每个分组对应的量化尺度，当`scale_alg`为3时逻辑数据类型为`torch.float8_e4m3fn`，其他模式为`torch.float8_e8m0fnu`，实际返回的数据类型均为`torch.uint8`。`mxscale`的shape比输入`input`多一维，最后一维为2，`axis`轴的大小为`input`对应轴的值除以`block_size`向上取整并偶数pad（pad填充值为0），当`axis`为非尾轴时，`mxscale`输出需要对每两行数据进行交织处理。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
+- NVFP4模式调用`aclnnDynamicMxQuantV3`；该接口不可用时报不支持错误，不回退到V2。底层需提供包含NVFP4实现的CANN算子包，输入为FP16/BF16、rank为1-7，`axis`只能为-1或最后一维的正索引，`dst_type`只能为`torch_npu.float4_e2m1fn_x2`。
 - 当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，`input`的最后一维必须是偶数。
 - 输入`input`和输出`mxscale`的shape约束关系：
   - rank(mxscale) = rank(x) + 1
@@ -180,4 +188,17 @@ torch_npu.npu_dynamic_mx_quant(input, *, axis=-1, round_mode="rint", dst_type=to
         print("mxscale:\n", mxscale)
     if __name__ == "__main__":
         dynamic_mx_quant_test(torch.float16, torch.float8_e5m2)
+    ```
+
+- NVFP4调用
+
+    ```python
+    import torch
+    import torch_npu
+
+    x = torch.randn((2, 18), dtype=torch.bfloat16, device="npu")
+    y, mxscale = torch_npu.npu_dynamic_mx_quant(
+        x, scale_alg=3, block_size=16, round_mode="rint", max_low_bound=0.0
+    )
+    # y: uint8, shape (2, 9); mxscale: E4M3FN原始位，以uint8返回，shape (2, 1, 2)。
     ```

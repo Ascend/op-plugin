@@ -13,6 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <cmath>
+
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
@@ -25,6 +27,9 @@ constexpr int64_t BLOCK_SIZE_MAX_NUM = 1024;
 constexpr int64_t ALIGN_NUM = 2;
 constexpr int64_t FP4_IN_UINT8_NUM = 2;
 constexpr int64_t DEFAULT_SCALE_ALG = 0;
+constexpr int64_t NVFP4_SCALE_ALG = 3;
+constexpr int64_t NVFP4_BLOCK_SIZE = 16;
+constexpr int64_t NVFP4_MAX_RANK = 7;
 }; // namespace
 
 std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
@@ -42,14 +47,36 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
   auto mxscale_shape = op_infer::array_to_small_vector(input.sizes());
   mxscale_shape.emplace_back(ALIGN_NUM);
 
+  int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
+  bool is_nvfp4 = scale_alg_optional == NVFP4_SCALE_ALG;
+  if (is_nvfp4) {
+    TORCH_CHECK(input.dim() >= 1 && input.dim() <= NVFP4_MAX_RANK,
+                "NVFP4 requires input rank 1..7, got ", input.dim(), OPS_ERROR(ErrCode::PARAM));
+  }
   TORCH_CHECK(
       axis >= -1 * input.dim() && axis < input.dim(),
       "Param (axis) is out of input dimension range" + OPS_ERROR(ErrCode::PARAM));
   int64_t axis_change = axis < 0 ? axis + input.dim() : axis;
-  TORCH_CHECK(
-      block_size % BLOCK_SIZE_BASE_NUM == 0 && block_size > 0 && block_size <= BLOCK_SIZE_MAX_NUM,
-      "Param (block_size) must be divisible by 32 and no greater than 1024, greater than 0" +
-          OPS_ERROR(ErrCode::PARAM));
+  if (is_nvfp4) {
+    TORCH_CHECK(block_size == NVFP4_BLOCK_SIZE,
+                "NVFP4 requires block_size=16" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(axis_change == input.dim() - 1,
+                "NVFP4 requires the last axis (axis=-1 or axis=", input.dim() - 1,
+                "), got axis=", axis, OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dst_type == static_cast<int64_t>(c10_npu::DType::FLOAT4_E2M1),
+                "NVFP4 requires FLOAT4_E2M1 output" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(dst_type_max == 0.0,
+                "NVFP4 requires dst_type_max=0" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(std::isfinite(static_cast<float>(max_low_bound)) && max_low_bound >= 0.0,
+                "NVFP4 requires finite non-negative max_low_bound" + OPS_ERROR(ErrCode::PARAM));
+    TORCH_CHECK(round_mode == "rint" || round_mode == "round" || round_mode == "floor",
+                "NVFP4 supports rint, round or floor" + OPS_ERROR(ErrCode::PARAM));
+  } else {
+    TORCH_CHECK(
+        block_size % BLOCK_SIZE_BASE_NUM == 0 && block_size > 0 && block_size <= BLOCK_SIZE_MAX_NUM,
+        "Param (block_size) must be divisible by 32 and no greater than 1024, greater than 0" +
+            OPS_ERROR(ErrCode::PARAM));
+  }
   int64_t dim_size = op_infer::CeilDiv(mxscale_shape[axis_change], block_size);
   dim_size = (dim_size + ALIGN_NUM - 1) / ALIGN_NUM;
   mxscale_shape[axis_change] = dim_size;
@@ -82,10 +109,12 @@ std::tuple<at::Tensor, at::Tensor> npu_dynamic_mx_quant(
 
   mxscale = npu_preparation::apply_tensor_without_format(mxscale_shape, c10::dtype(at::ScalarType::Byte));
   TensorWrapper y_wrapper = {y, y_acltype};
-  TensorWrapper mxscale_wrapper = {mxscale, aclDataType::ACL_FLOAT8_E8M0};
-  int64_t scale_alg_optional = scale_alg.has_value() ? scale_alg.value() : DEFAULT_SCALE_ALG;
+  TensorWrapper mxscale_wrapper = {
+      mxscale, is_nvfp4 ? aclDataType::ACL_FLOAT8_E4M3FN : aclDataType::ACL_FLOAT8_E8M0};
   static const bool npu_support_v3 = check_aclnn_kernel_available("aclnnDynamicMxQuantV3");
   static const bool npu_support_v2 = check_aclnn_kernel_available("aclnnDynamicMxQuantV2");
+  TORCH_CHECK(!is_nvfp4 || npu_support_v3,
+              "NVFP4 requires aclnnDynamicMxQuantV3" + OPS_ERROR(ErrCode::NOT_SUPPORT));
   if (npu_support_v3) {
     EXEC_NPU_CMD(
         aclnnDynamicMxQuantV3,

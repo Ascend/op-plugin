@@ -5231,13 +5231,31 @@ def npu_dynamic_mx_quant(input_dummy, *, axis=-1, round_mode="rint", dst_type=29
                          scale_alg=0, dst_type_max=0.0, max_low_bound=0.0):
     dim_num = input_dummy.dim()
     mxscale_shape = []
+    if scale_alg == 3 and not (1 <= dim_num <= 7):
+        raise RuntimeError("NVFP4 requires input rank 1..7, got {0}".format(dim_num) + ops_error(ErrCode.PARAM))
     if axis < -dim_num or axis >= dim_num:
         raise RuntimeError("Parameter axis is out of input dimension range [{0}, {1}]".format(-dim_num, dim_num - 1) +
                            ops_error(ErrCode.PARAM))
-    if not (block_size % 32 == 0 and block_size > 0 and block_size <= 1024):
+    if scale_alg == 3:
+        if block_size != 16:
+            raise RuntimeError("NVFP4 requires block_size=16" + ops_error(ErrCode.PARAM))
+        if axis not in (-1, dim_num - 1):
+            raise RuntimeError("NVFP4 requires the last axis (axis=-1 or axis={0}), got axis={1}".format(
+                dim_num - 1, axis) + ops_error(ErrCode.PARAM))
+        if input_dummy.dtype not in (torch.float16, torch.bfloat16):
+            raise RuntimeError("NVFP4 requires FP16 or BF16 input" + ops_error(ErrCode.PARAM))
+        if dst_type != 296:
+            raise RuntimeError("NVFP4 requires FLOAT4_E2M1 output" + ops_error(ErrCode.PARAM))
+        if dst_type_max != 0.0:
+            raise RuntimeError("NVFP4 requires dst_type_max=0" + ops_error(ErrCode.PARAM))
+        if not math.isfinite(max_low_bound) or max_low_bound < 0.0 or max_low_bound > torch.finfo(torch.float32).max:
+            raise RuntimeError("NVFP4 requires finite non-negative max_low_bound" + ops_error(ErrCode.PARAM))
+        if round_mode not in ("rint", "round", "floor"):
+            raise RuntimeError("NVFP4 supports rint, round or floor" + ops_error(ErrCode.PARAM))
+    elif not (block_size % 32 == 0 and block_size > 0 and block_size <= 1024):
         raise RuntimeError("Parameter block_size must be divisible by 32 and no greater than 1024, greater than 0" +
                            ops_error(ErrCode.PARAM))
-    if scale_alg not in [0, 1, 2]:
+    if scale_alg not in [0, 1, 2, 3]:
         raise RuntimeError("Invalid scale_alg value: {scale_alg}. Expected 0 or 1." +
                             ops_error(ErrCode.PARAM))
     axis_change = axis if axis >= 0 else axis + dim_num
