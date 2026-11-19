@@ -385,6 +385,7 @@
     - [（beta）torch_npu.distributed.reduce_scatter_tensor_uneven](./distributed/torch_npu-distributed-reduce_scatter_tensor_uneven.md)
     - [（beta）torch_npu.distributed.all_gather_into_tensor_uneven](./distributed/（beta）torch_npu-distributed-all_gather_into_tensor_uneven.md)
     - [（beta）torch_npu.distributed.all_to_all_vc](./distributed/torch_npu-distributed-all_to_all_vc.md)
+    - [（beta）torch_npu.distributed.functional_all_reduce](./distributed/torch_npu-distributed-functional_all_reduce.md)
 - [C++接口<a npu_parse_enabled="true"></a>](./cpp/C_interface.md)
   - [C++接口列表](./cpp/C_list.md)
   - [（beta）torch_npu::init_npu](./cpp/（beta）torch_npu-init_npu.md)
