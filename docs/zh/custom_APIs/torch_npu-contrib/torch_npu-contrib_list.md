@@ -1,6 +1,6 @@
 # torch_npu.contrib接口列表
 
-本章节包含常用亲和库接口，提供模型中常用的组合类接口，无需自行完成接口或导入第三方库。
+本文档汇总torch_npu.contrib提供的高频亲和接口列表，覆盖融合注意力、IoU系列计算、量化模块与bbox编码等场景，可直接替换模型中对应的原生写法，无需自行实现接口或引入第三方库，适用于在NPU上进行模型适配的开发者。
 
 **表1** torch_npu.contrib API
 
@@ -59,7 +59,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p1543413272524"><a name="p1543413272524"></a><a name="p1543413272524"></a>-</p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p529945916559"><a name="p529945916559"></a><a name="p529945916559"></a>提供NPU版本的IoU计算操作。计算时会为重叠区域添加极小值，避免除零问题。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p529945916559"><a name="p529945916559"></a><a name="p529945916559"></a>提供NPU版本的IoU计算操作。计算时会在并集面积（分母）上添加极小值0.001以避免除零，mode取"iou"时重叠面积同样添加0.001。</p>
 </td>
 </tr>
 <tr id="row1299155912553"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p162992059135511"><a name="p162992059135511"></a><a name="p162992059135511"></a><a href="（beta）torch_npu-contrib-function-fuse_add_softmax_dropout.md">（beta）torch_npu.contrib.function.fuse_add_softmax_dropout</a></p>
@@ -94,14 +94,14 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p19759312016"></a><a href="https://gitee.com/link?target=https://github.com/facebookresearch/fairseq/blob/e0884db9a7ce83670e21af39bf785b616ce5e3e3/fairseq/modules/multihead_attention.py#L64" target="_blank" rel="noopener noreferrer">class MultiheadAttention()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1981213335616"><a name="p1981213335616"></a><a name="p1981213335616"></a>Multi-head attention。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1981213335616"><a name="p1981213335616"></a><a name="p1981213335616"></a>Multi-head attention（多头注意力），将输入映射到多个注意力子空间并行计算注意力后拼接输出，本接口为torch_npu.contrib提供的多头注意力模块适配版本。</p>
 </td>
 </tr>
 <tr id="row178121437561"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p18127335610"><a name="p18127335610"></a><a name="p18127335610"></a><a href="（beta）torch_npu-contrib-function-npu_single_level_responsible_flags.md">（beta）torch_npu.contrib.function.npu_single_level_responsible_flags</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="p16435027155218"><a name="p16435027155218"></a><a name="p16435027155218"></a><a href="https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/anchor/anchor_generator.py#L831" target="_blank" rel="noopener noreferrer">def single_level_responsible_flags()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p148121365612"><a name="p148121365612"></a><a name="p148121365612"></a>使用NPU OP在单个特征图中生成锚点的responsible flags。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p148121365612"><a name="p148121365612"></a><a name="p148121365612"></a>使用NPU算子在单个特征图中生成锚点的responsible flags（有效标志）。</p>
 </td>
 </tr>
 <tr id="row188123355615"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p4812163185612"><a name="p4812163185612"></a><a name="p4812163185612"></a><a href="（beta）torch_npu-contrib-function-npu_bbox_coder_encode_xyxy2xywh.md">（beta）torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh</a></p>
@@ -129,7 +129,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p176431206"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p176431206"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p176431206"></a><a href="https://gitee.com/link?target=https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/post_processing/bbox_nms.py#L7" target="_blank" rel="noopener noreferrer">def multiclass_nms()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1681263145612"><a name="p1681263145612"></a><a name="p1681263145612"></a>使用NPU API的多类bbox NMS。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p1681263145612"><a name="p1681263145612"></a><a name="p1681263145612"></a>执行多类别的非极大值抑制（NMS）计算。</p>
 </td>
 </tr>
 <tr id="row381217310561"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p981215315617"><a name="p981215315617"></a><a name="p981215315617"></a><a href="（beta）torch_npu-contrib-function-npu_batched_multiclass_nms.md">（beta）torch_npu.contrib.function.npu_batched_multiclass_nms</a></p>
@@ -143,14 +143,14 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p9771132201"><a name="zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p9771132201"></a><a name="zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p9771132201"></a><a href="https://gitee.com/link?target=https://pytorch.org/docs/stable/generated/torch.roll.html" target="_blank" rel="noopener noreferrer">torch.roll()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p178121939569"><a name="p178121939569"></a><a name="p178121939569"></a>使用NPU亲和写法替换swin-transformer中的原生roll。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p178121939569"><a name="p178121939569"></a><a name="p178121939569"></a>使用NPU亲和写法替换Swin Transformer中的原生roll。</p>
 </td>
 </tr>
 <tr id="row1781253125616"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p381217319561"><a name="p381217319561"></a><a name="p381217319561"></a><a href="（beta）torch_npu-contrib-module-ChannelShuffle.md">（beta）torch_npu.contrib.module.ChannelShuffle</a></p>
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197893102017"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197893102017"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p197893102017"></a><a href="https://github.com/pytorch/vision/blob/main/torchvision/models/shufflenetv2.py#L28" target="_blank" rel="noopener noreferrer">def channel_shuffle()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p2812113175617"><a name="p2812113175617"></a><a name="p2812113175617"></a>应用NPU兼容的通道shuffle操作。为避免NPU上效率不高的连续操作，我们用相同语义重写替换原始操作。以下两个不连续操作已被替换：transpose和chunk。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p2812113175617"><a name="p2812113175617"></a><a name="p2812113175617"></a>应用NPU兼容的通道Shuffle操作。</p>
 </td>
 </tr>
 <tr id="row681318325610"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p13813173125620"><a name="p13813173125620"></a><a name="p13813173125620"></a><a href="（beta）torch_npu-contrib-module-LabelSmoothingCrossEntropy.md">（beta）torch_npu.contrib.module.LabelSmoothingCrossEntropy</a></p>
@@ -171,7 +171,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p27923102016"><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p27923102016"></a><a name="zh-cn_topic_0000001678826450_zh-cn_topic_0000001606524122_zh-cn_topic_0000001390596206_zh-cn_topic_0000001385999112_p27923102016"></a><a href="https://gitee.com/link?target=https://github.com/rwightman/pytorch-image-models/blob/e7f0db866412b9ae61332c205270c9fc0ef5083c/timm/models/layers/drop.py#L160" target="_blank" rel="noopener noreferrer">class DropPath()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p38132325610"><a name="p38132325610"></a><a name="p38132325610"></a>使用NPU亲和写法替换swin_transformer.py中的原生DropPath。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p38132325610"><a name="p38132325610"></a><a name="p38132325610"></a>使用NPU亲和写法替换swin_transformer.py中的原生DropPath，丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。</p>
 </td>
 </tr>
 <tr id="row148133312561"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p181317318564"><a name="p181317318564"></a><a name="p181317318564"></a><a href="（beta）torch_npu-contrib-module-Focus.md">（beta）torch_npu.contrib.module.Focus</a></p>
@@ -206,7 +206,7 @@
 </td>
 <td class="cellrowborder" valign="top" width="18.38%" headers="mcps1.2.4.1.2 "><p id="zh-cn_topic_0000001606524122_p1676145873611"><a name="zh-cn_topic_0000001606524122_p1676145873611"></a><a name="zh-cn_topic_0000001606524122_p1676145873611"></a><a href="https://github.com/open-mmlab/mmdetection/blob/master/mmdet/core/bbox/coder/delta_xywh_bbox_coder.py#L118" target="_blank" rel="noopener noreferrer">def npu_bbox_coder_encode_yolo()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p62992059175515"><a name="p62992059175515"></a><a name="p62992059175515"></a>使用NPU OP获取将bbox转换为gt_bbox的框回归转换deltas。</p>
+<td class="cellrowborder" valign="top" width="58.78%" headers="mcps1.2.4.1.3 "><p id="p62992059175515"><a name="p62992059175515"></a><a name="p62992059175515"></a>通过NPU算子来计算从源框（bbox）到目标框（gt_bbox）的YOLO风格框回归转换deltas。</p>
 </td>
 </tr>
 <tr id="row1249411377551"><td class="cellrowborder" valign="top" width="22.84%" headers="mcps1.2.4.1.1 "><p id="p154944378551"><a name="p154944378551"></a><a name="p154944378551"></a><a href="（beta）torch_npu-contrib-module-npu_modules-DropoutWithByteMask.md">（beta）torch_npu.contrib.module.npu_modules.DropoutWithByteMask</a></p>

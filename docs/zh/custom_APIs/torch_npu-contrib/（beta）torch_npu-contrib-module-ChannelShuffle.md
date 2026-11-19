@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-- API功能：应用NPU兼容的通道shuffle操作。
+- API功能：应用NPU兼容的通道Shuffle操作。
 
 - 等价计算逻辑：
   
@@ -51,23 +51,26 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 
 **计算参数**
 
-- **in_channels** (`int`)：必选参数。输入张量中的通道总数。
-- **groups** (`int`)：可选参数。shuffle组数。默认值为2。
-- **split_shuffle** (`bool`)：可选参数。shuffle后是否执行chunk操作。默认值为True。
+- **in_channels** (`int`)：必选参数。输入张量中的通道总数，取值为正整数，需可被groups整除，且等于计算输入x1与x2的通道数之和。
+- **groups** (`int`)：可选参数。Shuffle组数。默认值为2。
+- **split_shuffle** (`bool`)：可选参数。Shuffle后是否执行chunk操作。默认值为True。
 
 **计算输入**
 
-- **x1** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
-- **x2** (`Tensor`)：输入张量。 shape为$(N, C_{in}, *)$。
+- **x1** (`Tensor`)：必选参数。输入张量。shape为$(N, C_{in}, *)$，其中N为批处理大小，$C_{in}$为单路输入的通道数，需与x2的shape保持一致。
+- **x2** (`Tensor`)：输入张量。shape为$(N, C_{in}, *)$。
 
 ## 返回值说明
 
-- **out1** (`Tensor`)：输出张量。 shape为$(N, C_{out}, *)$。
-- **out2** (`Tensor`)：输出张量。 shape为$(N, C_{out}, *)$。
+- **out1** (`Tensor`)：输出张量。
+  - 当`split_shuffle=True`（默认值）时，返回由两个Tensor组成的元组`(out1, out2)`，每个Tensor的shape为`(N, in_channels / 2, *)`。
+  - 当`split_shuffle=False`时，返回一个Tensor，其shape为`(N, in_channels, *)`。
+
+- **out2** (`Tensor`)：输出张量。shape为$(N, C_{out}, *)$。
 
 ## 约束说明
 
-只实现了groups为2场景，请自行修改其他groups场景。
+只实现了groups为2的场景，请自行修改其他groups场景。
 
 ## 调用示例
 

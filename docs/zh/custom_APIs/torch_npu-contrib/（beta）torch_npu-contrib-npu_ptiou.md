@@ -30,14 +30,15 @@ torch_npu.contrib.npu_ptiou(boxes1, boxes2, mode="ptiou", is_normalized=False, n
 
 ## 参数说明
 
-- **boxes1**（`Tensor`）：shape为(n, 4)的预测检测框。
-- **boxes2**（`Tensor`）：shape为(m, 4)的Anchor框。
-- **is_normalized**（`bool`）：坐标值是否已经标准化。默认值为False。
-- **normalized_scale**（`float`）：设置恢复坐标的标准化比例，默认值为100。
+- **boxes1**（`Tensor`）：必选参数，shape为(n, 4)的预测检测框。
+- **boxes2**（`Tensor`）：必选参数，shape为(m, 4)的Anchor框。
+- **mode**（`str`）：可选参数，默认值为`"ptiou"`。`"ptiou"`表示使用PTIoU计算，`"iou"`表示使用IoU计算，其他值会抛出`ValueError`。
+- **is_normalized**（`bool`）：可选参数，坐标值是否已经标准化。默认值为False。
+- **normalized_scale**（`float`）：可选参数，设置恢复坐标的标准化比例，默认值为100。
 
 ## 约束说明
 
-该函数常用于bbox和anchor匹配。当前无对应的后向运算符，因此不能用于IOU_Loss。此外，计算公式中分母加上了0.001以避免除以0，若输入框为归一化数据，0.001的分量会太重，建议放大输入值，避免0.001影响过大。
+该函数常用于预测检测框和Anchor框匹配。当前无对应的后向运算符，因此不能用于IOU_Loss。此外，计算公式中分母加上了0.001以避免除以0，若输入框为标准化数据，0.001的分量会太重，建议放大输入值，避免0.001影响过大。
 
 ## 调用示例
 

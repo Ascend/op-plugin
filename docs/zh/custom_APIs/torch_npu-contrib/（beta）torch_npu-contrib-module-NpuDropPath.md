@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-使用NPU亲和写法替换swin_transformer.py中的原生DropPath。丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
+使用NPU亲和写法替换swin_transformer.py中的原生DropPath，丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
 
 ## 函数原型
 
@@ -29,7 +29,7 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 
 **计算参数**
 
-- **drop_prob** (`float`)：DropPath概率（路径丢弃概率）。
+- **drop_prob** (`float`)：可选参数，DropPath概率（路径丢弃概率），取值范围为[0, 1]，默认值为None，取0时不丢弃任何路径。
 
 **计算输入**
 

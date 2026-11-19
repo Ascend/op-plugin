@@ -33,11 +33,11 @@ torch_npu.distributed.all_to_all_vc(output, input, send_count_matrix, group=None
     - 本rank发送行之和与`input`元素个数不一致时报错：`RuntimeError: input numel (...) must equal send row sum (...)`。
     - 本rank接收列之和与`output`元素个数不一致时报错：`RuntimeError: output numel (...) must equal recv col sum (...)`。
 - **group** (`torch.distributed.distributed_c10d.ProcessGroup`)：可选参数，分布式进程组，默认值None，表示使用默认进程组（即包含所有进程的全局进程组）。
-- **async_op** (`bool`)：可选参数，是否异步调用，默认值False。取值为True表示异步调用，接口立即返回，通信在后台进行，调用方可通过返回的工作句柄调用wait()等待通信完成；取值为False表示同步调用，接口阻塞直至通信完成后返回。
+- **async_op** (`bool`)：可选参数，是否异步调用，默认值False。取值为True表示异步调用，接口立即返回，通信在后台进行，调用方可通过返回的工作句柄调用`wait()`等待通信完成；取值为False表示同步调用，接口阻塞直至通信完成后返回。
 
 ## 返回值说明
 
-`async_op=True`时返回进行计算的工作句柄，实际计算结果写入output；`async_op=False`时阻塞至通信完成后返回None。
+`async_op=True`时返回进行计算时的工作句柄，实际计算结果写入output；`async_op=False`时阻塞至通信完成后返回None。
 
 ## 约束说明
 

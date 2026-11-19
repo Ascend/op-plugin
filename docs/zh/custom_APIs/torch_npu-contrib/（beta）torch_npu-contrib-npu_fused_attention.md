@@ -32,9 +32,9 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 - **query_kernel** (`Tensor`)：必选参数，query的权重矩阵。数据格式支持FRACTAL_NZ。shape为2维，第0维支持768或1024。
 - **key_kernel** (`Tensor`)：必选参数，key的权重矩阵。数据格式支持FRACTAL_NZ。shape为2维，第0维支持768或1024。
 - **value_kernel** (`Tensor`)：必选参数，value的权重矩阵。数据格式支持FRACTAL_NZ。shape为2维，第0维支持768或1024。
-- **query_bias** (`Tensor`)：必选参数，query的偏差值。数据格式支持ND。
-- **key_bias** (`Tensor`)：必选参数，key的偏差值。数据格式支持ND。
-- **value_bias** (`Tensor`)：必选参数，value的偏差值。数据格式支持ND。
+- **query_bias** (`Tensor`)：必选参数，query的偏置值。数据格式支持ND。
+- **key_bias** (`Tensor`)：必选参数，key的偏置值。数据格式支持ND。
+- **value_bias** (`Tensor`)：必选参数，value的偏置值。数据格式支持ND。
 - **scale** (`double`)：可选参数，计算score的缩放系数，默认值为1。
 - **keep_prob** (`float`)：可选参数，计算中保留数据的概率，值等于1 - drop rate，默认值为0。
 
@@ -42,4 +42,4 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 
 `Tensor`
 
-self attention的结果。
+自注意力的结果。

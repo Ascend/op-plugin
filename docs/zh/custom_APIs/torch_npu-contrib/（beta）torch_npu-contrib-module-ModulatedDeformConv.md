@@ -29,20 +29,20 @@ torch_npu.contrib.module.ModulatedDeformConv(in_channels, out_channels, kernel_s
 
 **计算参数**
 
-- **in_channels** (`int`)：输入图像中的通道数。
-- **out_channels** (`int`)：卷积产生的通道数。
-- **kernel_size**(`int`或`Tuple`)：卷积核大小。
-- **stride**(`int`或`Tuple`)：卷积步长。默认值为1。
-- **padding** (`int`或`Tuple`)：添加到输入两侧的零填充。默认值为0。
-- **dilation** (`int`或`Tuple`)：内核元素间距。默认值为1。
-- **groups** (`int`)：从输入通道到输出通道的阻塞连接数。默认值为1。
-- **deformable_groups** (`int`)：可变形分组的数量。
-- **bias** (`bool`)：如果值为True，则向输出添加可学习偏差。默认值为True。
-- **pack** (`bool`)：如果值为True，此模块将包括conv_offset和掩码。默认值为True。
+- **in_channels** (`int`)：必选参数，输入图像中的通道数。
+- **out_channels** (`int`)：必选参数，卷积产生的通道数。
+- **kernel_size** (`int`或`Tuple`)：必选参数，卷积核大小。
+- **stride** (`int`或`Tuple`)：可选参数，卷积步长。默认值为1。
+- **padding** (`int`或`Tuple`)：可选参数，添加到输入两侧的零填充。默认值为0。
+- **dilation** (`int`或`Tuple`)：可选参数，内核元素间距。默认值为1。
+- **groups** (`int`)：可选参数，从输入通道到输出通道的阻塞连接数。默认值为1。
+- **deformable_groups** (`int`)：可选参数，可变形分组的数量。默认值为1。
+- **bias** (`bool`)：可选参数，如果值为True，则向输出添加可学习偏置。默认值为True。
+- **pack** (`bool`)：可选参数，如果值为True，此模块将包括conv_offset和掩码；如果值为False，则调用时需额外传入offset和mask。默认值为True。
 
 **计算输入**
 
-- **x**(`Tensor`)：输入张量。
+- **x** (`Tensor`)：输入张量。
 
 ## 返回值说明
 

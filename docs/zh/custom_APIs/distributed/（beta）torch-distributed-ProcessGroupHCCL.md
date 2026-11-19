@@ -25,15 +25,15 @@
 ## 函数原型
 
 ```python
-torch.distributed.ProcessGroupHCCL(store, rank, size, timeout) -> ProcessGroup
+torch.distributed.ProcessGroupHCCL(store, rank, size, timeout=1800) -> ProcessGroup
 ```
 
 ## 参数说明
 
-- **store**：`torch.distributed.distributed_c10d.PrefixStore`对象，可以通过构造函数构造。
-- **rank**：当前节点的rank序号。
-- **size**：全部通信节点的数量。
-- **timeout**：超时时间，用于判断节点断连，默认值为1800s。
+- **store**：必选参数，`torch.distributed.distributed_c10d.PrefixStore`对象，可以通过构造函数构造。
+- **rank**：必选参数，当前节点的rank序号。
+- **size**：必选参数，全部通信节点的数量。
+- **timeout**：可选参数，超时时间，用于判断节点断连，默认值为1800s。
 
 ## 返回值说明
 

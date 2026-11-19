@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-通过 NPU OP来计算从源框（bbox）到目标框（gt_bbox）的 YOLO 风格框回归转换 deltas。
+通过NPU算子来计算从源框（bbox）到目标框（gt_bbox）的YOLO风格框回归转换deltas。
 
 ## 函数原型
 
@@ -28,7 +28,7 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 ## 参数说明
 
 - **bboxes** (`Tensor`)：源框，例如锚点框。支持的数据类型为`torch.float`、`torch.half`。
-- **gt_bboxes** (`Tensor`)：转换目标框，例如真值框。支持的数据类型为`torch.float`、`torch.half`。
+- **gt_bboxes** (`Tensor`)：目标框，例如真值框。支持的数据类型为`torch.float`、`torch.half`。
 - **stride** (`Tensor`)：bbox步长。仅支持`torch.int`张量。
 
 ## 返回值说明

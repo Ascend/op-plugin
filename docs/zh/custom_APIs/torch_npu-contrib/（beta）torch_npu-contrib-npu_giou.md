@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.npu_giou
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -32,7 +32,7 @@ torch_npu.contrib.npu_giou(boxes1, boxes2, is_permuted=True)
 
 - **boxes1**（`Tensor`）：格式为xywh、shape为(n, 4)的预测检测框。
 - **boxes2**（`Tensor`）：相应的gt检测框，shape为(n, 4)。
-- **is_permuted**（`bool`）：坐标值是否已经标准化。默认为True。
+- **is_permuted**（`bool`）：坐标值是否已经置换。默认为True。
 
 ## 调用示例
 

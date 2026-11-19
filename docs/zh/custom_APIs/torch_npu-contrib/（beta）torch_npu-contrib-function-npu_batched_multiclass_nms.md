@@ -29,7 +29,7 @@ torch_npu.contrib.function.npu_batched_multiclass_nms(multi_bboxes, multi_scores
 
 - **multi_bboxes** (`Tensor`): 必选参数。候选框（bbox）张量，shape为(bs, n, class, 4)或(bs, n, 4)。
 - **multi_scores** (`Tensor`): 必选参数。每个候选框的类别得分，shape为(bs, n, class+1)，其中最后一列包含background class分数，可忽略。
-- **score_thr** (`float`): 可选参数，默认值为0.05。候选框分数阈值，分数低于它的候选框将不被考虑。
+- **score_thr** (`float`): 可选参数，默认值为0.05。候选框得分阈值，得分低于它的候选框将不被考虑。
 - **nms_thr** (`float`): 可选参数，默认值为0.45。NMS IoU阈值。
 - **max_num** (`int`): 可选参数，默认值为50。如果NMS后的bbox数超过max_num值，则只保留max_num个bbox；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值。
 - **score_factors** (`Tensor`): 可选参数，默认值为None。NMS应用前用来乘分数的因子。

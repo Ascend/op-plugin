@@ -27,7 +27,7 @@ torch_npu.contrib.module.NpuCachedDropout(p, module_name=None)
 
 ## 参数说明
 
-- **p** (`float`)：元素归零的概率。
+- **p** (`float`)：元素归零的概率，取值范围为[0, 1)，无默认值（必填）。例如p=0.5表示每个元素以50%的概率被置零。
 - **module_name** (`str`)：可选参数，模块名称，用于标识当前Dropout所属的模块，默认为`None`。该参数仅作标识用途，不参与实际计算逻辑。
 
 ## 约束说明

@@ -61,7 +61,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 - weight（`Tensor`）：与`x1`的数据类型须保持一致。数据格式支持$ND$，shape需要在2-6维范围。当数据类型为`torch.int32`时，shape必须为2维。
 
     <!-- npu="310p" id9 -->
-    - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`，需要调用torchair.experimental.inference.use_internal_format_weight或torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`，需要调用`torchair.experimental.inference.use_internal_format_weight`或`torch_npu.npu_format_cast`完成weight（batch, n, k）高性能数据排布功能。
     <!-- end id9 -->
     <!-- npu="A3,910b" id10 -->
     - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`和`torch.int32`（同`x1`，表示`torch_npu.int4`的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
@@ -115,11 +115,11 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- `x1`、`weight`、`scale`不能是空。
+- `x1`、`weight`、`scale`不能是空Tensor。
 - `x1`与`weight`最后一维的shape大小不能超过65535。
 - **`torch_npu.int4`**类型计算的额外约束：
 
-    当`x1`、`weight`的数据类型均为`torch.int32`，每个`torch.int32`类型的数据存放8个`torch_npu.int4`数据。输入shape需要将数据原本`torch_npu.int4`类型时的最后一维shape缩小8倍。`torch_npu.int4`数据的最后一维shape应为8的倍数，例如：进行(m, k)乘(k, n)的`torch_npu.int4`类型矩阵乘计算时，需要输入`torch.int32`类型，shape为(m, k//8)、(n, k//8)的数据，其中k与n都应是8的倍数。`x1`只能接受shape为(m, k//8)且数据排布连续的数据，`weight`只能接受shape为(n, k//8)且数据排布连续的数据。
+    当`x1`、`weight`的数据类型均为`torch.int32`，每个`torch.int32`类型的数据存放8个`torch_npu.int4`数据。输入shape需要将数据原本为`torch_npu.int4`类型时的最后一维shape缩小8倍。`torch_npu.int4`数据的最后一维shape应为8的倍数，例如：进行(m, k)乘(k, n)的`torch_npu.int4`类型矩阵乘计算时，需要输入`torch.int32`类型，shape为(m, k//8)、(n, k//8)的数据，其中k与n都应是8的倍数。`x1`只能接受shape为(m, k//8)且数据排布连续的数据，`weight`只能接受shape为(n, k//8)且数据排布连续的数据。
 
     > [!NOTE]  
     > 数据排布连续是指数组中所有相邻的数，包括换行时内存地址连续，使用Tensor.is_contiguous返回值为true则表明tensor数据排布连续。

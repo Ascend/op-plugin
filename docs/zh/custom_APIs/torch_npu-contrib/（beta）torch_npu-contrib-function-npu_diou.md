@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.function.npu_diou
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -31,9 +31,9 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 ## 参数说明
 
 - **boxes1**（`Tensor`）：格式为xywh、shape为(4, n)的预测检测框。
-- **boxes2**（`Tensor`）：相应的gt检测框，shape为(4, n)。
+- **boxes2**（`Tensor`）：相应的真实框，shape为(4, n)。
 - **trans**（`bool`）：是否有偏移，默认值为True。
-- **is_cross**（`bool`）：box1和box2之间是否有交叉操作，默认值为False。
+- **is_cross**（`bool`）：boxes1和boxes2之间是否有交叉操作，默认值为False。
 - **mode**（`int`）：选择DIoU的计算方式，默认值为0。
 
 ## 返回值说明

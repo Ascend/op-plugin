@@ -27,8 +27,8 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 
 ## 参数说明
 
-- **tensor1** (`Tensor`)：第一个要乘的张量。
-- **tensor2** (`Tensor`)：第二个要乘的张量。
+- **tensor1** (`Tensor`)：必选参数，第一个要乘的张量，最后一维大小需与`tensor2`相同。
+- **tensor2** (`Tensor`)：必选参数，第二个要乘的张量，计算时先交换其最后两个维度，再与`tensor1`相乘。
 
 ## 返回值说明
 
@@ -38,7 +38,7 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 
 ## 约束说明
 
-在动态shape场景中，由于算子限制，不支持Box transformation deltas。
+动态shape场景下不支持广播，两个输入张量的批次维度需一致。
 
 ## 调用示例
 

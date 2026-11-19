@@ -46,7 +46,7 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 
 **计算输入**
 
-**x**（`Tensor`）：Tensor类型，即矩阵乘中的x。数据格式支持$ND$，支持输入维度为两维(M, K) 。
+**x**（`Tensor`）：Tensor类型，即矩阵乘中的x。数据格式支持$ND$，支持输入维度为两维(M, K)。
 
 <!-- npu="A3,910b" id5 -->
 - <term>Atlas A2系列产品</term>/<term>Atlas A3训练系列产品</term>  ：数据类型支持`torch.float16`、`torch.bfloat16`。
@@ -74,27 +74,27 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
          - 若数据类型为`torch.int64`，则`x`的数据类型必须为`torch.float16`且不带transpose输入，同时`weight`的数据类型必须为`torch.int8`、数据格式为$ND$、带transpose输入，可参考[调用示例](#section00001)。此时只支持perchannel场景，M范围为[1, 96]，且K和N要求64对齐。
     <!-- end id9 -->
     <!-- npu="310p" id10 -->
-    - <term>Atlas推理系列产品</term> ：数据类型支持`torch.float16`，其数据类型需要和`x`保持一致。
+    - <term>Atlas推理系列产品</term>：数据类型支持`torch.float16`，其数据类型需要和`x`保持一致。
     <!-- end id10 -->
 
 - **antiquant_offset**（`Tensor`）：反量化的offset，用于weight矩阵反量化。数据格式支持$ND$。支持非连续的Tensor，支持输入维度为两维(N, 1)或一维(N,)、(1,)。
 
     <!-- npu="A3,910b" id11 -->
-    - <term>Atlas A2系列产品</term>/<term>Atlas A3训练系列产品</term>  ：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int32`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3训练系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int32`。pergroup场景shape要求为(N, ceil_div(K, antiquant_group_size))。
         - 若数据类型为`torch.float16`、`torch.bfloat16`，其数据类型需要和`antiquant_scale`保持一致。
         - 若数据类型为`torch.int32`，则`antiquant_scale`的数据类型必须为`torch.int64`。
     <!-- end id11 -->
     <!-- npu="310p" id12 -->
-    - <term>Atlas推理系列产品</term> ：数据类型仅支持`torch.float16`，其数据类型需要和`antiquant_scale`保持一致。
+    - <term>Atlas推理系列产品</term>：数据类型仅支持`torch.float16`，其数据类型需要和`antiquant_scale`保持一致。
     <!-- end id12 -->
 
 - **quant_scale**（`Tensor`）：量化的scale，用于输出矩阵的量化。仅在weight格式为$ND$时支持，数据格式支持$ND$，数据类型支持`torch.float32`、`torch.int64`，支持输入维度为两维(1, N)或一维(N,)、(1,)。当`antiquant_scale`的数据类型为`torch.int64`时，此参数必须为空。
     <!-- npu="310p" id13 -->
     - <term>Atlas推理系列产品</term> ：暂不支持此参数。
     <!-- end id13 -->
-- **quant_offset**（`Tensor`）：量化的offset，用于输出矩阵的量化。仅在weight格式为$ND$时支持，数据格式支持$ND$，数据类型支持`torch.float32`，支持输入维度为两维(1, N)或一维(N,)、(1, )。当`antiquant_scale`的数据类型为`torch.int64`时，此参数必须为空。
+- **quant_offset**（`Tensor`）：量化的offset，用于输出矩阵的量化。仅在weight格式为$ND$时支持，数据格式支持$ND$，数据类型支持`torch.float32`，支持输入维度为两维(1, N)或一维(N,)、(1,)。当`antiquant_scale`的数据类型为`torch.int64`时，此参数必须为空。
     <!-- npu="310p" id14 -->
-    - <term>Atlas推理系列产品</term> ：暂不支持此参数。
+    - <term>Atlas推理系列产品</term>：暂不支持此参数。
     <!-- end id14 -->
 - **bias**（`Tensor`）：即矩阵乘中的bias，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.float32`，支持非连续的Tensor，支持输入维度为两维(1, N)或一维(N,)、(1,)。
 

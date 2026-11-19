@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-Multi-head attention。
+Multi-head attention（多头注意力），将输入映射到多个注意力子空间并行计算注意力后拼接输出，本接口为torch_npu.contrib提供的多头注意力模块适配版本。
 
 ## 函数原型
 
@@ -27,18 +27,18 @@ torch_npu.contrib.module.MultiheadAttention(embed_dim, num_heads, kdim=None, vdi
 
 ## 参数说明
 
-- **embed_dim** (`int`)：模型总维度。
-- **num_heads** (`int`)：并行attention head。
-- **kdim**(`int`)：key的特征总数。默认值为None。
-- **vdim**(`int`)：value的特征总数。默认值为None。
-- **dropout** (`float`)：Dropout概率。
-- **bias** (`bool`)：如果指定此参数，则向输入/输出投影层添加偏置。默认值为True。
-- **add_bias_kv** (`bool`)：如果指定此参数，则在dim=0处向键值序列添加偏置。默认值为False。
-- **add_zero_attn** (`bool`)：如果指定此参数，则在dim=1处向键值序列新加一批零。默认值为False。
-- **self_attention**(`bool`)：表示是否为自注意力层，若取值为True，要求`embed_dim`、`kdim`、`vdim`取值相等。默认值为False。
-- **encoder_decoder_attention** (`bool`)：输入为编码器输出和解码器self-attention输出，其中编码器self-attention用作key和value，解码器self-attention用作查询。默认值为False。
-- **q_noise**(`float`)：量化噪声量。
-- **qn_block_size**(`int`)：用于后续iPQ量化的块大小。
+- **embed_dim** (`int`)：必选参数，模型总维度。
+- **num_heads** (`int`)：必选参数，多头注意力中并行计算的注意力头数量。
+- **kdim** (`int`)：可选参数，key的特征总数。默认值为None。
+- **vdim** (`int`)：可选参数，value的特征总数。默认值为None。
+- **dropout** (`float`)：可选参数，Dropout概率。
+- **bias** (`bool`)：可选参数，如果指定此参数，则向输入/输出投影层添加偏置。默认值为True。
+- **add_bias_kv** (`bool`)：可选参数，如果指定此参数，则在dim=0处向键值序列添加偏置。默认值为False。
+- **add_zero_attn** (`bool`)：可选参数，如果指定此参数，则在dim=1处向键值序列新加一批零。默认值为False。
+- **self_attention** (`bool`)：可选参数，表示是否为自注意力层，若取值为True，要求`embed_dim`、`kdim`、`vdim`取值相等。默认值为False。
+- **encoder_decoder_attention** (`bool`)：可选参数，输入为编码器输出和解码器自注意力输出，其中编码器self-attention用作key和value，解码器self-attention用作查询。默认值为False。
+- **q_noise** (`float`)：可选参数，量化噪声量。
+- **qn_block_size** (`int`)：可选参数，用于后续iPQ量化的块大小。
 
 ## 返回值说明
 

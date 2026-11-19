@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-使用NPU OP在单个特征图中生成锚点的responsible flags。
+使用NPU算子在单个特征图中生成锚点的responsible flags（有效标志）。
 
 ## 函数原型
 

@@ -28,11 +28,11 @@ torch_npu.contrib.function.npu_bbox_coder_decode_xywh2xyxy(bboxes, pred_bboxes, 
 ## 参数说明
 
 - **bboxes** (`Tensor`)：基础框，shape为(N, 4)。支持的数据类型为`torch.float`，`torch.half`。
-- **pred_bboxes** (`Tensor`)：编码框，shape为(N, 4)。支持的数据类型为`torch.float`，`torch.half`。
+- **pred_bboxes** (`Tensor`)：编码框，shape为(N, 4)。支持的数据类型为`torch.float`、`torch.half`。
 - **means** (`List[float]`)：对delta坐标的目标去归一化的均值参数，默认值为None。该参数需要与编码参数对齐。
 - **stds** (`List[float]`)：对delta坐标的目标去归一化的标准差，默认值为None。该参数需要与编码参数对齐。
 - **max_shape** (`Tuple[int]`)：可选参数，最大框shape(H, W)，一般对应bbox所在的真实图片的大小，默认为[9999,9999]，不受限制。
-- **wh_ratio_clip** (`float`)：可选参数，可允许的宽高比，默认值为16/1000。
+- **wh_ratio_clip** (`float`)：可选参数，可允许的宽高比裁剪阈值，用于限制解码后框宽高的变化幅度，取值需大于0，默认值为16/1000（即0.016）。
 
 ## 返回值说明
 

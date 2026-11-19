@@ -30,7 +30,7 @@ torch_npu.jit.optimize(jit_mod)
 
 ## 参数说明
 
-**jit_mod**：必选参数。用于被优化的ScriptFunction或ScriptModule。
+**jit_mod**：必选参数。类型为ScriptFunction或ScriptModule，用于被优化的ScriptFunction或ScriptModule。
 
 ## 调用示例
 

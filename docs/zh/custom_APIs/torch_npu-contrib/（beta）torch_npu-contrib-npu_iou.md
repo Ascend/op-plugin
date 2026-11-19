@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-提供NPU版本的IoU计算操作。计算时会为重叠区域添加极小值，避免除零问题。
+提供NPU版本的IoU计算操作。计算时会在并集面积（分母）上添加极小值0.001以避免除零，mode取"iou"时重叠面积同样添加0.001。
 
 ## 函数原型
 
@@ -33,8 +33,8 @@ torch_npu.contrib.npu_iou(boxes1, boxes2, mode="ptiou", is_normalized=False, nor
 - **boxes1**（`Tensor`）：shape为(n, 4)的预测检测框。
 - **boxes2**（`Tensor`）：shape为(m, 4)的预测检测框。
 - **mode**（`str`）：选择IoU的计算方式，取值为"iou"、"ptiou"。"iou"=（重叠面积+0.001）/（并集面积+0.001），"ptiou"=重叠面积/（并集面积+0.001）。默认值为"ptiou"。
-- **is_normalized**（`bool`）：坐标值是否已经标准化。默认为False。
-- **normalized_scale**（`float`）：设置恢复坐标的标准化比例，默认100。
+- **is_normalized**（`bool`）：坐标值是否已经归一化。默认为False。
+- **normalized_scale**（`float`）：设置恢复坐标的标准化比例，坐标恢复方式为归一化坐标乘以该比例，取值需大于0，需与is_normalized配合使用，默认为100。
 
 ## 约束说明
 

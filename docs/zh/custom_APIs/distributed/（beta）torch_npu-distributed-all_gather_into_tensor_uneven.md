@@ -25,8 +25,8 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 ## 参数说明
 
 - **output** (`Tensor`)：输出Tensor，用于接收计算数据。
-- **input** (`Tensor`)：输入Tensor，用于提供计算数据，`input`的shape无特殊约束。
-- **output_split_sizes** (`List[int]`)：输出tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与output的0维大小一致。
+- **input** (`Tensor`)：输入Tensor，用于提供计算数据，`input`的0维大小需要等于`output_split_sizes`中当前rank对应位置的元素值（指定`output_split_sizes`时），其他维度无特殊约束。
+- **output_split_sizes** (`List[int]`)：输出Tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与output的0维大小一致。
     - `output_split_sizes`元素之和与`output`的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
     - `output_split_sizes`元素个数与`group`的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
 - **group** (`torch.distributed.distributed_c10d.ProcessGroup`)：分布式进程组，默认值None。
@@ -34,7 +34,7 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 
 ## 返回值说明
 
-`output`的shape为所有卡上`input`拼接后的shape。
+异步调用时返回`torch.distributed.distributed_c10d.Work`句柄，同步调用时返回`None`；`output`的shape为所有卡上`input`拼接后的shape。
 
 ## 约束说明
 

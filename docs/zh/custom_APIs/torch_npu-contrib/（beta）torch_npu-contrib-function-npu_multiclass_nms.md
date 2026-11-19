@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-执行多类别的非极大抑制（NMS）计算。
+执行多类别的非极大值抑制（NMS）计算。
 
 ## 函数原型
 
@@ -30,19 +30,19 @@ torch_npu.contrib.function.npu_multiclass_nms(multi_bboxes, multi_scores, score_
 - **multi_bboxes** (`Tensor`): 必选参数。候选框（bbox）张量，shape为(n, class, 4)或(n, 4)。
 - **multi_scores** (`Tensor`): 必选参数。每个候选框的类别得分，shape为(n, class+1)，其中最后一列包含background class分数，可忽略。
 - **score_thr** (`float`): 可选参数，默认值为0.05。候选框分数阈值，分数低于它的候选框将不被考虑。
-- **nms_thr** (`float`): 可选参数，默认值为0.45。NMS IoU阈值。
-- **max_num** (`int`): 可选参数，默认值为50。如果NMS后的bbox数超过max_num值，则只保留最大max_num；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值。
+- **nms_thr** (`float`): 可选参数，默认值为0.45。NMS IoU阈值，取值范围为0到1；两个候选框的IoU大于该阈值时，保留分数较高的候选框。
+- **max_num** (`int`): 可选参数，默认值为50。如果NMS后的bbox数超过max_num值，则只保留max_num个；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值，其中无效框的bboxes全为0、labels为0，可通过bboxes全0识别。
 - **score_factors** (`Tensor`): 可选参数，默认值为None。NMS应用前用来乘分数的因子。
 
 ## 返回值说明
 
 `Tuple`
 
-表示候选框和标签(bboxes, labels)，shape为(k, 5)和(k)的张量。标签以0为基础。
+表示候选框和标签（bboxes, labels），其中bboxes的shape为(k, 5)，labels的shape为(k)。标签以0为基础。
 
 ## 约束说明
 
-在动态shape条件下，由于NPU op的限制，最多支持20个类别（nmsed_classes）和10000个框（nmsed_boxes）。
+在动态shape条件下，由于NPU算子的限制，最多支持20个类别（multi_scores的class维度不超过20）和10000个框（multi_bboxes的n维不超过10000）。
 
 ## 调用示例
 

@@ -19,13 +19,13 @@
 ## 函数原型
 
 ```python
-torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_sizes =None, op=dist.ReduceOp.SUM, group=None, async_op=False) -> torch.distributed.distributed_c10d.Work
+torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_sizes=None, op=dist.ReduceOp.SUM, group=None, async_op=False) -> Optional[torch.distributed.distributed_c10d.Work]
 ```
 
 ## 参数说明
 
 - **output** (`Tensor`)：必选参数，输出Tensor，用于接收计算数据。
-- **input** (`Tensor`)：必选参数，输入Tensor，用于提供计算数据，`input`的shape为所有卡上`output`的shape拼接大小。
+- **input** (`Tensor`)：必选参数，输入Tensor，用于提供计算数据，`input`的shape为所有卡上`output`的shape拼接后的大小。
 - **input_split_sizes** (`List[int]`)：可选参数，输入Tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
     - `input_split_sizes`元素之和与`input`的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
     - `input_split_sizes`元素个数与`group`的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
@@ -35,8 +35,11 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 
 ## 返回值说明
 
-该函数直接返回进行计算时的工作句柄，实际计算结果传给output。
-`output`：类型为Tensor，其shape无特殊约束。
+- 当`async_op=True`时，返回`torch.distributed.distributed_c10d.Work`句柄，可调用其`wait()`方法等待通信完成。
+- 当`async_op=False`（默认值）时，等待通信完成后返回`None`。
+
+计算结果写入传入的`output`张量。`output`的shape与`input`除第0维外的各维大小一致；指定`input_split_sizes`时，第0维大小为当前进程在通信组中的rank对应的`input_split_sizes`元素值；未指定时，第0维大小为`input`第0维大小除以通信组内的进程数，且需能够整除。
+
 
 ## 约束说明
 

@@ -18,7 +18,7 @@
 
 - 计算公式：
 
-  ![](../../figures/zh-cn_formulaimage_0000001855947305.png)
+  ![QuantConv2d量化卷积计算公式，说明量化参数参与卷积运算的数学表达](../../figures/zh-cn_formulaimage_0000001855947305.png)
 
 ## 函数原型
 
@@ -44,11 +44,11 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
      示例：如果`padding`为[1,1]，`offset_x`为1，fmap变化如图所示：
 
-    ![](../../figures/zh-cn_image_0000001809304238.png)
+    ![padding取1且offset_x为1时fmap在补pad边界填入实际值的示意图](../../figures/zh-cn_image_0000001809304238.png)
 
 - **round_mode**（`string`）：可选参数，默认值为"rint"。**预留参数，暂未使用**。
-- **device**：可选参数，默认值为None。**预留参数，暂未使用**。
-- **dtype**：可选参数，默认值为None。**预留参数，暂未使用**。
+- **device**（`torch.device`）：可选参数，默认值为None。**预留参数，暂未使用**。
+- **dtype**（`torch.dtype`）：可选参数，默认值为None。**预留参数，暂未使用**。
 
 **计算输入**
 
@@ -75,7 +75,7 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 - 该接口仅支持PyTorch静态图模式在线推理。
 
 <!-- npu="310p" id4 -->
-- <term>Atlas推理系列产品</term>：不支持output中w轴为1的场景。
+- <term>Atlas推理系列产品</term>：不支持输出中w轴为1的场景。
 <!-- end id4 -->
 
 ## 调用示例

@@ -30,7 +30,7 @@ torch_npu.contrib.BiLSTM(input_size, hidden_size)
 
 ## 参数说明
 
-- **input_size**：对输入期望的特征数量。
+- **input_size**：输入期望的特征数量。
 - **hidden_size**：hidden state中的特征数量。
 
 ## 调用示例

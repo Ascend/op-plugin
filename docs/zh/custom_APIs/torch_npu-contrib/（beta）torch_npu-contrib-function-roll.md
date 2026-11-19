@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-使用NPU亲和写法替换swin-transformer中的原生roll。
+使用NPU亲和写法替换Swin Transformer中的原生roll。
 
 ## 函数原型
 
