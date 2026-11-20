@@ -78,6 +78,10 @@ static bool is_transpose_certain_two_dims(const at::Tensor& tensor, int64_t firs
   return tensor.stride(first_dim + 1) == tensor.stride(first_dim) * tensor.size(first_dim);
 }
 
+static bool is_nd_format(const at::Tensor& tensor) {
+  return torch_npu::NPUBridge::GetNpuStorageImpl(tensor)->npu_desc_.npu_format_ == ACL_FORMAT_ND;
+}
+
 // A16W4（INT4 / FP4 E2M1，含 MX）weight 载体校验：uint8 物理打包（每字节 2 个 4-bit 元素），
 // 与 aclnnWeightQuantBatchMatmulV2 的 uint8 packed 输入约定一致；其他载体直接拒绝
 static void check_a16w4_uint8_carrier(const QuantContext& ctx) {
@@ -118,24 +122,32 @@ bool judge_mm_mx_a8w4(QuantContext& ctx) {
 
   bool dtype_match = (x_acl_dtype == ACL_FLOAT8_E4M3FN) && (weight_acl_dtype == ACL_FLOAT4_E2M1) &&
       (x_scale_acl_dtype == ACL_FLOAT8_E8M0) && (weight_scale_acl_dtype == ACL_FLOAT8_E8M0);
-  if (dtype_match && ctx.weight.dim() == DIMS_2) {
-    TORCH_CHECK(
-        ctx.weight_scale.dim() == DIMS_3,
-        "Input weight scale tensor should be 3D, but got ",
-        ctx.weight_scale.dim(),
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(
-        is_transpose_certain_two_dims(ctx.weight, 0),
-        "Input weight tensor should be transposed, please check input.",
-        OPS_ERROR(ErrCode::PARAM));
-    TORCH_CHECK(
-        is_transpose_certain_two_dims(ctx.weight_scale, 0),
-        "Input weight scale tensor should be transposed, please check input.",
-        OPS_ERROR(ErrCode::PARAM));
-    ctx.is_weight_trans = true;
-    return true;
+  if (!dtype_match || ctx.weight.dim() != DIMS_2) {
+    return false;
   }
-  return false;
+  TORCH_CHECK(
+      ctx.weight_scale.dim() == DIMS_3,
+      "Input weight scale tensor should be 3D, but got ",
+      ctx.weight_scale.dim(),
+      OPS_ERROR(ErrCode::PARAM));
+  TORCH_CHECK(
+      is_nd_format(ctx.weight),
+      "Input weight tensor must be ND for MM MX A8W4 preprocess.",
+      OPS_ERROR(ErrCode::PARAM));
+  TORCH_CHECK(
+      is_transpose_certain_two_dims(ctx.weight, 0),
+      "Input weight tensor should be transposed, please check input.",
+      OPS_ERROR(ErrCode::PARAM));
+  TORCH_CHECK(
+      is_nd_format(ctx.weight_scale),
+      "Input weight scale tensor must be ND for MM MX A8W4 preprocess.",
+      OPS_ERROR(ErrCode::PARAM));
+  TORCH_CHECK(
+      is_transpose_certain_two_dims(ctx.weight_scale, 0),
+      "Input weight scale tensor should be transposed, please check input.",
+      OPS_ERROR(ErrCode::PARAM));
+  ctx.is_weight_trans = true;
+  return true;
 }
 
 bool judge_gmm_mx_a8w4(QuantContext& ctx) {
@@ -506,23 +518,43 @@ static void prepare_out_weight_scale_mx(QuantContext& ctx) {
       OPS_ERROR(ErrCode::PARAM));
 
   auto scale_view_shape = op_infer::array_to_small_vector(ctx.weight_scale.sizes());
-  ctx.out_weight_scale = npu_preparation::apply_tensor_without_format(scale_view_shape, ctx.weight_scale.options());
 
-  if (ctx.is_weight_trans) {
-    int64_t scale_dim = ctx.weight_scale.dim();
-    int64_t k_scale = scale_view_shape[scale_dim - IDX_3];
-    int64_t n = scale_view_shape[scale_dim - IDX_2];
-    c10::SmallVector<int64_t, DIMS_MAX> trans_stride; // 对应内存转置存储
-    if constexpr (IsGmm) {
+  int64_t scale_dim = ctx.weight_scale.dim();
+  int64_t k_scale = scale_view_shape[scale_dim - IDX_3];
+  int64_t n = scale_view_shape[scale_dim - IDX_2];
+
+  c10::SmallVector<int64_t, DIMS_MAX> trans_stride; // 对应内存转置存储
+  if constexpr (IsGmm) {
+    ctx.out_weight_scale = npu_preparation::apply_tensor_without_format(scale_view_shape, ctx.weight_scale.options());
+    if (ctx.is_weight_trans) {
       trans_stride = {
           MX_SCALE_LAST_DIM * k_scale * n,
           MX_SCALE_LAST_DIM,
           MX_SCALE_LAST_DIM * k_scale,
           1}; // 对应内存中的 [group_num, n, k_scale, 2]
-    } else {
-      trans_stride = {MX_SCALE_LAST_DIM, MX_SCALE_LAST_DIM * k_scale, 1}; // 对应内存中的 [n, k_scale, 2]
+      ctx.out_weight_scale = ctx.out_weight_scale.as_strided_(scale_view_shape, trans_stride);
     }
-    ctx.out_weight_scale = ctx.out_weight_scale.as_strided_(scale_view_shape, trans_stride);
+  } else {
+    if (ctx.is_weight_trans) {
+      c10::SmallVector<int64_t, DIMS_MAX> storage_shape;
+      storage_shape = {ceil_div(n, NZ_16), k_scale, NZ_16, MX_SCALE_LAST_DIM};
+      int64_t storage_size = 1;
+      for (auto dim : storage_shape) {
+        storage_size *= dim;
+      }
+
+      ctx.out_weight_scale = npu_preparation::apply_tensor_without_format({storage_size}, ctx.weight_scale.options());
+      ctx.out_weight_scale.unsafeGetTensorImpl()->set_sizes_contiguous(scale_view_shape);
+
+      at_npu::native::StorageDescHelper::SetDesc(
+          ctx.out_weight_scale,
+          ctx.out_weight_scale.sizes(),
+          storage_shape,
+          ctx.out_weight_scale.strides(),
+          ACL_FORMAT_FRACTAL_NZ_C0_2);
+    } else {
+      ctx.out_weight_scale = npu_preparation::apply_tensor_without_format(scale_view_shape, ctx.weight_scale.options());
+    }
   }
 }
 

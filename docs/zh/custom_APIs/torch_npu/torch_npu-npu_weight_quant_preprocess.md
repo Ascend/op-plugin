@@ -10,7 +10,7 @@
 
 该接口针对Matmul类算子的伪量化参数进行预处理，目前支持处理的数据流如下：
 
-- MM_MX_A8W4数据流：表示QuantBatchMatmulV4算子的MX量化场景，A8W4表示左矩阵为`torch.float8_e4m3fn`，右矩阵为`torch_npu.float4_e2m1fn_x2`。
+- MM_MX_A8W4数据流：表示QuantBatchMatmulV4算子的MX量化场景，A8W4表示左矩阵为`torch.float8_e4m3fn`，右矩阵为`torch_npu.float4_e2m1fn_x2`。预处理后`weight`转换为FRACTAL\_NZ格式，`weight_scale`转换为FRACTAL\_NZ\_C0\_2格式（ScaleNZ）。
 - GMM_MX_A8W4数据流：表示GroupedMatmul算子的MX量化场景，A8W4表示左矩阵为`torch.float8_e4m3fn`，右矩阵为`torch_npu.float4_e2m1fn_x2`。
 - MM_A16S4数据流：表示WeightQuantBatchMatmulV2算子的pertensor/perchannel/pergroup量化场景，A16S4表示左矩阵为`torch.float16`/`torch.bfloat16`，右矩阵为`torch_npu.int4`。
 - MM_A16F4数据流：表示WeightQuantBatchMatmulV2算子的pergroup量化场景，A16F4表示左矩阵为`torch.float16`/`torch.bfloat16`，右矩阵为`torch_npu.float4_e2m1fn_x2`（使用`torch.uint8`承载）。
@@ -61,11 +61,11 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
   - A16S4数据流下perchannel（`weight`非转置）、pergroup（`weight`非转置）量化场景：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_8$。
   - A16INT8数据流下所有场景（pertensor/perchannel/pergroup，`weight`转置/非转置）：`weight`的数据格式仍为$ND$（直拷透传）。
   - A16FP8HIF8数据流下所有场景：`weight`的数据格式仍为$ND$（转置/非转置均直拷透传）。
-  - A8W4数据流下MX量化场景：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_16$。
+  - A8W4数据流下MX量化场景：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_16$。该格式按Torch层uint8字节口径标记，16字节对应32个FP4数据，转换到ACL侧对应逻辑$FRACTAL\_NZ\_C0\_32$格式；view shape为$\{K/2, N\}$，stride为$[1, K/2]$，storage shape为$\{ceil\_div(K, 32), ceil\_div(N, 16), 16, 16\}$（字节口径）。
   - A16F4数据流下pergroup量化场景（仅支持`weight`非转置）：`weight`的数据格式由$ND$转为$FRACTAL\_NZ\_C0\_8$。
   - A16F4数据流下MX量化场景：`weight`转置输入时输出为$ND$直拷，与输入保持相同的sizes/strides；非转置输入时由$ND$转为$FRACTAL\_NZ\_C0\_8$。
   - A8F4数据流下T-CG伪量化场景：`weight`转置输入时输出为$ND$直拷，与输入保持相同的sizes/strides；非转置输入时由$ND$转为$FRACTAL\_NZ\_C0\_32$，storage shape为$\{ceil\_div(N, 32), ceil\_div(K, 16), 16, 32\}$（N块在前）。
-- **out\_weight\_scale**（`Tensor`）：预处理后的`weight_scale`，数据类型与输入`weight_scale`相同。
+- **out\_weight\_scale**（`Tensor`）：预处理后的`weight_scale`，数据类型与输入`weight_scale`相同。A8W4数据流下MX量化场景转换为$FRACTAL\_NZ\_C0\_2$格式（ScaleNZ），view shape与输入`weight_scale`相同，storage shape为$\{ceil\_div(N, 16), ceil\_div(K, 64), 16, 2\}$，可作为`torch_npu.npu_quant_matmul`的ScaleNZ输入。
 - **out\_weight\_offset**（`Tensor`）：预处理后的`weight_offset`，未传入`weight_offset`时返回空`Tensor`；A16S4数据流传入时透传，与输入保持相同的sizes/strides。
 - **out\_bias**（`Tensor`）：预处理后的`bias`，数据类型与输入`bias`相同（若提供了`bias`）。
 
@@ -82,6 +82,8 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
   - `x_dtype`必须为`torch.float8_e4m3fn`。
   - `x_scale_dtype`必须为`torch.float8_e8m0fnu`。
   - 当前不支持`weight_offset`，必须传入`None`。
+  - `out_weight`的输出格式、view shape、stride和storage shape参见[返回值说明](#返回值说明)。
+  - `out_weight_scale`输出为$FRACTAL\_NZ\_C0\_2$格式，view shape为$\{ceil\_div(K, 64), N, 2\}$，storage shape为$\{ceil\_div(N, 16), ceil\_div(K, 64), 16, 2\}$，可作为`torch_npu.npu_quant_matmul`的ScaleNZ输入。
 - **GMM_MX_A8W4数据流**：
   - `weight`数据类型必须为`torch_npu.float4_e2m1fn_x2`，数据格式为$ND$，K必须满足$K \% k\_group\_size = 0$。
   - `weight`的逻辑shape为$\{G, K, N\}$；使用`torch.uint8`承载fp4数据时，view shape为$\{G, K/2, N\}$，storage shape为$\{G, N, K/2\}$（transposed），stride为$[K * N/2, 1, K/2]$。
@@ -159,6 +161,7 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
   # MM_MX_A8W4 数据流示例
   k = 64  # 逻辑K维长度
   n = 128
+  m = 32
   packed_k = k // 2
   k_scale = (k + 63) // 64
 
@@ -182,6 +185,21 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
       bias=None,
       x_scale_dtype=torch.float8_e8m0fnu,
       k_group_size=32
+  )
+  # out_weight：Torch层format为FRACTAL_NZ_C0_16（字节口径），对应ACL侧FP4逻辑FRACTAL_NZ_C0_32。
+  # out_weight_scale：ScaleNZ，format为FRACTAL_NZ_C0_2，可直接传给npu_quant_matmul。
+
+  # 下游MX伪量化A8W4矩阵乘示例。
+  x1 = torch.ones((m, k), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+  pertoken_scale = torch.full((m, k_scale, 2), 127, dtype=torch.uint8).npu()
+  npu_out = torch_npu.npu_quant_matmul(
+      x1, out_weight, out_weight_scale,
+      pertoken_scale=pertoken_scale,
+      x2_dtype=torch_npu.float4_e2m1fn_x2,
+      pertoken_scale_dtype=torch_npu.float8_e8m0fnu,
+      scale_dtype=torch_npu.float8_e8m0fnu,
+      output_dtype=torch.float16,
+      group_sizes=[1, 1, 32],
   )
   ```
 

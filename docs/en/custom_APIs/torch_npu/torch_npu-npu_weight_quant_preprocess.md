@@ -10,7 +10,7 @@
 
 This API preprocesses the fake quantization parameters of Matmul operators. The following data flows are supported:
 
-- MM_MX_A8W4 data flow: MX quantization scenario of the QuantBatchMatmulV4 operator. A8W4 indicates that the left matrix is `torch.float8_e4m3fn` and the right matrix is `torch_npu.float4_e2m1fn_x2`.
+- MM_MX_A8W4 data flow: MX quantization scenario of the QuantBatchMatmulV4 operator. A8W4 indicates that the left matrix is `torch.float8_e4m3fn` and the right matrix is `torch_npu.float4_e2m1fn_x2`. After preprocessing, `weight` is converted to FRACTAL_NZ format, and `weight_scale` is converted to FRACTAL_NZ_C0_2 format (ScaleNZ).
 - GMM_MX_A8W4 data flow: MX quantization scenario of the GroupedMatmul operator. A8W4 indicates that the left matrix is `torch.float8_e4m3fn` and the right matrix is `torch_npu.float4_e2m1fn_x2`.
 - MM_A16S4 data flow: pertensor/perchannel/pergroup quantization scenario of the WeightQuantBatchMatmulV2 operator. A16S4 indicates that the left matrix is `torch.float16`/`torch.bfloat16` and the right matrix is `torch_npu.int4`.
 - MM_A16F4 data flow: pergroup quantization scenario of the WeightQuantBatchMatmulV2 operator. A16F4 indicates that the left matrix is `torch.float16`/`torch.bfloat16` and the right matrix is `torch_npu.float4_e2m1fn_x2` (carried by `torch.uint8`).
@@ -61,11 +61,11 @@ Four `Tensor` values are returned:
   - In the A16S4 data flow, for the perchannel (`weight` non-transposed) and pergroup (`weight` non-transposed) quantization scenarios, the data layout of `weight` changes from ND to FRACTAL_NZ_C0_8.
   - In the A16INT8 data flow, in all scenarios (pertensor/perchannel/pergroup, with `weight` transposed/non-transposed), the data layout of `weight` remains ND (direct copy and pass-through).
   - In the A16FP8HIF8 data flow, in all scenarios, the data layout of `weight` remains ND (direct copy and pass-through for both transposed and non-transposed inputs).
-  - In the A8W4 data flow, for the MX quantization scenario, the data layout of `weight` changes from ND to FRACTAL_NZ_C0_16.
+  - In the A8W4 data flow, for the MX quantization scenario, the data layout of `weight` changes from ND to FRACTAL_NZ_C0_16. This layout is labeled in uint8 bytes at the Torch level, where 16 bytes correspond to 32 FP4 values, and the converted ACL-side logical layout is FRACTAL_NZ_C0_32. The view shape is `{K/2, N}`, the stride is `[1, K/2]`, and the storage shape is `{ceil_div(K, 32), ceil_div(N, 16), 16, 16}` (in bytes).
   - In the A16F4 data flow, for the pergroup quantization scenario (only `weight` non-transposed is supported), the data layout of `weight` changes from ND to FRACTAL_NZ_C0_8.
   - In the A16F4 data flow, for the MX quantization scenario, when `weight` is a transposed input, the output is a direct copy in ND format and keeps the same sizes/strides as the input. When the input is non-transposed, the layout changes from ND to FRACTAL_NZ_C0_8.
   - In the A8F4 data flow, for the T-CG fake-quantization scenario, when `weight` is a transposed input, the output is a direct copy in ND format and keeps the same sizes/strides as the input. When the input is non-transposed, the layout changes from ND to $FRACTAL\_NZ\_C0\_32$, and the storage shape is $\{ceil\_div(N, 32), ceil\_div(K, 16), 16, 32\}$ (N blocks first).
-- **`out_weight_scale`** (`Tensor`): Preprocessed `weight_scale`. The data type is the same as that of the input `weight_scale`.
+- **`out_weight_scale`** (`Tensor`): Preprocessed `weight_scale`. The data type is the same as that of the input `weight_scale`. In the MX quantization scenario of the A8W4 data flow, it is converted to FRACTAL_NZ_C0_2 format (ScaleNZ); its view shape is the same as that of the input `weight_scale`, its storage shape is `{ceil_div(N, 16), ceil_div(K, 64), 16, 2}`, and it can be passed to `torch_npu.npu_quant_matmul` as ScaleNZ input.
 - **`out_weight_offset`** (`Tensor`): Preprocessed `weight_offset`. When `weight_offset` is not passed, an empty `Tensor` is returned. For the A16S4 data flow, when it is passed, it is passed through and keeps the same sizes/strides as the input.
 - **`out_bias`** (`Tensor`): Preprocessed `bias`. The data type is the same as that of the input `bias` (if `bias` is provided).
 
@@ -82,6 +82,8 @@ The following parameter combinations are currently supported:
   - `x_dtype` must be `torch.float8_e4m3fn`.
   - `x_scale_dtype` must be `torch.float8_e8m0fnu`.
   - `weight_offset` is not supported currently and must be passed as `None`.
+  - For the output format, view shape, stride, and storage shape of `out_weight`, see [Return Values](#return-values).
+  - `out_weight_scale` is output in FRACTAL_NZ_C0_2 format, with view shape `{ceil_div(K, 64), N, 2}` and storage shape `{ceil_div(N, 16), ceil_div(K, 64), 16, 2}`. It can be passed to `torch_npu.npu_quant_matmul` as ScaleNZ input.
 - **GMM_MX_A8W4 data flow**:
   - The data type of `weight` must be `torch_npu.float4_e2m1fn_x2`, the data layout must be ND, and K must satisfy $K \% k\_group\_size = 0$.
   - The logical shape of `weight` is `{G, K, N}`. When `torch.uint8` is used to carry fp4 data, the view shape is `{G, K/2, N}` and the storage shape is `{G, N, K/2}` (transposed), with stride `[K * N/2, 1, K/2]`.
@@ -159,6 +161,7 @@ The following parameter combinations are currently supported:
   # MM_MX_A8W4 data flow example
   k = 64  # Logical K dimension length
   n = 128
+  m = 32
   packed_k = k // 2
   k_scale = (k + 63) // 64
 
@@ -182,6 +185,22 @@ The following parameter combinations are currently supported:
       bias=None,
       x_scale_dtype=torch.float8_e8m0fnu,
       k_group_size=32
+  )
+  # out_weight: At the Torch level, the format is FRACTAL_NZ_C0_16 (in bytes), which corresponds to
+  # the ACL-side logical FRACTAL_NZ_C0_32 format for FP4.
+  # out_weight_scale: ScaleNZ in FRACTAL_NZ_C0_2 format, which can be passed to npu_quant_matmul directly.
+
+  # Downstream MX fake-quantization A8W4 matrix multiplication example.
+  x1 = torch.ones((m, k), dtype=torch.float32).to(torch.float8_e4m3fn).npu()
+  pertoken_scale = torch.full((m, k_scale, 2), 127, dtype=torch.uint8).npu()
+  npu_out = torch_npu.npu_quant_matmul(
+      x1, out_weight, out_weight_scale,
+      pertoken_scale=pertoken_scale,
+      x2_dtype=torch_npu.float4_e2m1fn_x2,
+      pertoken_scale_dtype=torch_npu.float8_e8m0fnu,
+      scale_dtype=torch_npu.float8_e8m0fnu,
+      output_dtype=torch.float16,
+      group_sizes=[1, 1, 32],
   )
   ```
 

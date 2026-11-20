@@ -17,6 +17,9 @@ NPU_TENSOR_DIM_LIMIT = 8
 INPUTS_DIM_LIMIT_QUANTCONV2D = 4
 ATTR_DIM_LIMIT_QUANTCONV2D = 2
 FP8_E4M3_BLOCK_SIZE = 32
+MX_A8W4_K_GROUP_SIZE = 32
+# PyTorch converts a native dtype argument passed through a custom-op schema to its scalar enum.
+TORCH_NATIVE_FP4_SCALAR = 45
 #meta register implementation
 m = Library("npu", "IMPL", "Meta")
 m_aten = Library("aten", "IMPL", "Meta")
@@ -7373,8 +7376,21 @@ def npu_ciou_meta(self, gtboxes, trans=False, is_cross=True, mode=0, atan_sub_fl
 @impl(m, "npu_weight_quant_preprocess")
 def npu_weight_quant_preprocess_meta(weight, weight_scale, x_dtype, weight_dtype, weight_scale_dtype,
                                      weight_offset=None, bias=None, x_scale_dtype=None, k_group_size=0):
+    native_fp4_dtype = hasattr(torch, "float4_e2m1fn_x2") and weight_dtype == torch.float4_e2m1fn_x2
+    is_fp4_dtype = (
+        weight_dtype == torch_npu.float4_e2m1fn_x2 or
+        weight_dtype == TORCH_NATIVE_FP4_SCALAR or
+        native_fp4_dtype)
+    is_mm_mx_a8w4 = (
+        x_dtype in (torch.float8_e4m3fn, TORCH_DTYPE_MAP[torch.float8_e4m3fn]) and
+        is_fp4_dtype and
+        weight_scale_dtype == torch_npu.float8_e8m0fnu and
+        x_scale_dtype == torch_npu.float8_e8m0fnu and
+        weight.dim() == 2 and weight_scale.dim() == 3 and
+        k_group_size == MX_A8W4_K_GROUP_SIZE)
     out_weight = torch.empty_like(weight)
-    out_weight_scale = torch.empty_like(weight_scale)
+    scale_memory_format = torch.contiguous_format if is_mm_mx_a8w4 else torch.preserve_format
+    out_weight_scale = torch.empty_like(weight_scale, memory_format=scale_memory_format)
     if weight_offset is not None:
         out_weight_offset = torch.empty_like(weight_offset)
     else:
