@@ -16,6 +16,7 @@
 #include "op_plugin/AclOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/utils/op_api_common.h"
+#include "op_plugin/utils/RandomUtil.h"
 #include "torch_npu/csrc/framework/utils/RandomOpAdapter.h"
 
 namespace op_api {
@@ -30,11 +31,20 @@ at::Tensor rrelu_with_noise(
     c10::optional<at::Generator> generator) {
   DO_COMPATIBILITY(aclnnRReluWithNoise, acl_op::rrelu_with_noise(self, noise, lower, upper, training, generator));
   at::Tensor result = npu_preparation::apply_tensor_without_format(self);
+  static const bool is_a5 = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950);
+  if (is_a5 && (self.numel() == 0 || noise.numel() == 0)) {
+    return result;
+  }
+  int64_t seed = 0;
+  int64_t offset = 0;
   auto gen_ =
       at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
+  const uint64_t counter_offset = is_a5
+      ? static_cast<uint64_t>(op_plugin::utils::calc_final_counter_offset(result))
+      : (1 << 28);
+  auto pair = gen_->philox_engine_inputs(counter_offset);
+  seed = static_cast<int64_t>(pair.first);
+  offset = static_cast<int64_t>(pair.second);
 
   EXEC_NPU_CMD(aclnnRReluWithNoise, self, noise, lower, upper, training, seed, offset, result);
 
@@ -48,13 +58,22 @@ at::Tensor& rrelu_with_noise_(
     const at::Scalar& upper,
     bool training,
     c10::optional<at::Generator> generator) {
+  static const bool is_a5 = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950);
+  if (is_a5 && (self.numel() == 0 || noise.numel() == 0)) {
+    return self;
+  }
   DO_COMPATIBILITY(
       aclnnInplaceRReluWithNoise, acl_op::rrelu_with_noise_(self, noise, lower, upper, training, generator));
+  int64_t seed = 0;
+  int64_t offset = 0;
   auto gen_ =
       at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
+  const uint64_t counter_offset = is_a5
+      ? static_cast<uint64_t>(op_plugin::utils::calc_final_counter_offset(self))
+      : (1 << 28);
+  auto pair = gen_->philox_engine_inputs(counter_offset);
+  seed = static_cast<int64_t>(pair.first);
+  offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnInplaceRReluWithNoise, self, noise, lower, upper, training, seed, offset);
 
   return self;
@@ -71,11 +90,20 @@ at::Tensor& rrelu_with_noise_out(
   DO_COMPATIBILITY(
       aclnnRReluWithNoise, acl_op::rrelu_with_noise_out(self, noise, lower, upper, training, generator, output));
   npu_preparation::check_tensor({self, noise}, output, self);
+  static const bool is_a5 = (c10_npu::GetSocVersion() >= c10_npu::SocVersion::Ascend950);
+  if (is_a5 && (self.numel() == 0 || noise.numel() == 0)) {
+    return output;
+  }
+  int64_t seed = 0;
+  int64_t offset = 0;
   auto gen_ =
       at::get_generator_or_default<at_npu::NPUGeneratorImpl>(generator, at_npu::detail::getDefaultNPUGenerator());
-  auto pair = gen_->philox_engine_inputs(1 << 28);
-  const int64_t seed = static_cast<int64_t>(pair.first);
-  const int64_t offset = static_cast<int64_t>(pair.second);
+  const uint64_t counter_offset = is_a5
+      ? static_cast<uint64_t>(op_plugin::utils::calc_final_counter_offset(output))
+      : (1 << 28);
+  auto pair = gen_->philox_engine_inputs(counter_offset);
+  seed = static_cast<int64_t>(pair.first);
+  offset = static_cast<int64_t>(pair.second);
   EXEC_NPU_CMD(aclnnRReluWithNoise, self, noise, lower, upper, training, seed, offset, output);
 
   return output;
