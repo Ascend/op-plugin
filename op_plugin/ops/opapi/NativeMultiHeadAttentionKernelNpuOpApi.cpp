@@ -113,8 +113,17 @@ std::tuple<at::Tensor, at::Tensor> _native_multi_head_attention(
     // semantics only in the composite reference implementation below.
     const bool mask_fusable = !mask.has_value() ||
         (mask_type.has_value() && mask.value().scalar_type() == at::kBool);
+    // npu_fusion_attention internally dispatches to different aclnnFlashAttention* interfaces
+    // according to the SoC type: < Ascend950 uses aclnnFlashAttentionScore, >= Ascend950 uses
+    // aclnnFlashAttentionScoreV4 (_native_multi_head_attention passes empty seq lens, so the
+    // non-VarLen branch is always hit). The fusion guard must therefore check the corresponding
+    // symbol per SoC type as well; otherwise on Ascend950+ the actual call goes to
+    // aclnnFlashAttentionScoreV4 while only aclnnFlashAttentionScore is checked, which would
+    // make the guard always false.
     static const bool fusion_attention_available =
-        check_aclnn_kernel_available("aclnnFusionAttention");
+        c10_npu::GetSocVersion() < c10_npu::SocVersion::Ascend950
+            ? check_aclnn_kernel_available("aclnnFlashAttentionScore")
+            : check_aclnn_kernel_available("aclnnFlashAttentionScoreV4");
 
     // Boundary guard: only fuse plain self-attention without attention weights.
     if (fusion_attention_available && !need_weights && is_self_attn && query.numel() != 0 &&
