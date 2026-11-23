@@ -1,5 +1,7 @@
 # NPU Device
 
+本文档介绍NPU设备相关接口，列出TorchNPU提供的torch_npu.npu设备类接口及其说明，适用于使用PyTorch进行NPU设备管理的开发者。
+
 **表1** NPU device API
 
 <a name="table13377193418547"></a>

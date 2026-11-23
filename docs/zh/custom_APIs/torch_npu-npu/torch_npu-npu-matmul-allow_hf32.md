@@ -22,7 +22,7 @@
 
 matmul类算子开启对hf32类型的支持。
 
-`torch_npu.npu.matmul.allow_hf32`功能和调用方式与`torch.backends.cuda.matmul.allow_tf32`类似，`torch.backends.cuda.matmul.allow_tf32`的功能具体请参考[https://pytorch.org/docs/stable/backends.html\#torch.backends.cuda.matmul.allow_tf32](https://pytorch.org/docs/stable/backends.html#torch.backends.cuda.matmul.allow_tf32)。
+`torch_npu.npu.matmul.allow_hf32`功能和调用方式与`torch.backends.cuda.matmul.allow_tf32`类似，`torch.backends.cuda.matmul.allow_tf32`的功能具体请参考[PyTorch的allow_tf32功能说明](https://pytorch.org/docs/stable/backends.html#torch.backends.cuda.matmul.allow_tf32)。
 
 ## 函数原型
 
@@ -32,7 +32,7 @@ torch_npu.npu.matmul.allow_hf32 = bool
 
 ## 参数说明
 
-输入为bool值，默认值为False。
+`allow_hf32`参数类型为bool，取值范围为True或False（True表示开启matmul类算子对hf32类型的支持，False表示不开启），默认值为False。
 
 ## 返回值说明
 

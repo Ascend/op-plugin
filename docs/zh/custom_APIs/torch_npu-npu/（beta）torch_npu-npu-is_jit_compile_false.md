@@ -34,7 +34,7 @@ torch_npu.npu.is_jit_compile_false()
 
 ## 返回值说明
 
-bool型。
+bool类型。JIT编译模式已被禁用时返回True，未被禁用时返回False。
 
 ## 调用示例
 

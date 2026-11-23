@@ -53,7 +53,7 @@ torch_npu.npu_softmax_cross_entropy_with_logits(features, labels) -> Tensor
 
 `Tensor`
 
-对应公式中$loss$，表示softmax和cross entropy的交叉熵损失计算结果。
+对应公式中的$loss$，表示softmax交叉熵损失的计算结果。
 
 ## 调用示例
 

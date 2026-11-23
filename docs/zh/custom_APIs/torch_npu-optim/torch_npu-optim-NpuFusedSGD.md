@@ -30,11 +30,11 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 ## 参数说明
 
 - **params** (`iterable`)：必选参数，模型参数或模型参数组。
-- **lr** (`float`)：必选参数，学习率。`lr`不配置或值小于0时，系统会抛出“ValueError”异常信息。
+- **lr** (`float`)：学习率。可用此参数为所有参数组设置默认学习率，也可在参数组中分别指定。若某个参数组未指定学习率且未传入`lr`，或传入的`lr`小于0，将抛出`ValueError`。
 - **momentum** (`float`)：可选参数，动量系数，默认值为0。`momentum`小于0时，系统会抛出“ValueError”异常信息。
 - **dampening** (`float`)：可选参数，动量的抑制系数，默认值为0。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0。`weight_decay`小于0时，系统会抛出“ValueError”异常信息。
-- **nesterov** (`bool`)：可选参数，是否使用Nesterov动量，默认值为False。`nesterov`为True，同时`momentum`小于0或者`dampening`不等于0，系统会抛出“ValueError”异常信息。
+- **nesterov** (`bool`)：可选参数，是否使用Nesterov动量，默认值为False。`nesterov`为True，同时`momentum`小于等于0或者`dampening`不等于0，系统会抛出“ValueError”异常信息。
 
 ## 返回值说明
 

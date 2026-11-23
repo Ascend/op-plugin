@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- **API功能**：完成量化的Matmul计算、Permute（保证通信后地址连续）和AlltoAll通信的融合，先通信后计算。支持K-C动态量化模式（即pertoken动态-perchannel量化模式）和mx量化模式（即特殊的pergroup-pergroup量化模式）。
+- **API功能**：完成量化的Matmul计算、Permute（保证通信后地址连续）和AlltoAll通信的融合，先通信后计算。支持K-C动态量化模式（即pertoken动态-perchannel量化模式）和MX量化模式（即特殊的pergroup-pergroup量化模式）。
 
 - **计算公式**：
 
@@ -32,7 +32,7 @@
     output = (dynQuantX1@x2 + bias) * dynQuantX1Scale * x2Scale
     $$
 
-  - mx量化模式：
+  - MX量化模式：
 
     $$
     commOut = AlltoAll(x1.view(rankSize, BS/rankSize, H))
@@ -84,7 +84,7 @@ torch_npu.npu_all_to_all_quant_matmul(x1, x2, hcom, world_size, *, all2all_out_f
 
 - **all2all\_axes**（`List[int]`）：**可选参数**，AlltoAll和Permute数据交换的方向，支持为空或者\[-2, -1\]，表示将输入`x1`由\(BS, H\)转为\(BS/rankSize, rankSize\*H\)。
 - **comm\_quant\_dtype**（`int`）：**可选参数**，表示低比特通信的量化数据类型。预留参数，当前版本传默认值即可。
-- **x1\_quant\_dtype**（`int`）：**可选参数**，表示量化Matmul左矩阵的量化类型，AlltoAll通信与Permute操作后结果，按照该参数配置量化后作为MatMul计算的左矩阵输入。该参数目前只在K-C动态量化场景下生效，支持取值为23（`torch.float8_e5m2`）或者24（`torch.float8_e4m3fn`）。mx量化场景下该参数配置不生效，使用默认值即可。
+- **x1\_quant\_dtype**（`int`）：**可选参数**，表示量化Matmul左矩阵的量化类型，AlltoAll通信与Permute操作后的结果，按照该参数配置量化后作为MatMul计算的左矩阵输入。该参数目前只在K-C动态量化场景下生效，支持取值为23（`torch.float8_e5m2`）或者24（`torch.float8_e4m3fn`）。mx量化场景下该参数配置不生效，使用默认值即可。
 - **x1\_dtype**（`int`）：**可选参数**，表示输入的左矩阵的数据类型，对于PyTorch原生不支持的数据类型（如`torch_npu.float4_e2m1fn_x2`）需要通过本参数配置数据类型。
 - **x2\_dtype**（`int`）：**可选参数**，表示输入的右矩阵的数据类型，对于PyTorch原生不支持的数据类型（如`torch_npu.float4_e2m1fn_x2`）需要通过本参数配置数据类型。
 - **x1\_scale\_dtype**（`int`）：**可选参数**，表示输入左矩阵量化系数的数据类型，MX量化场景下，可传入`torch.float8_e8m0fnu`显式指定量化系数的逻辑数据类型。
@@ -125,9 +125,9 @@ torch_npu.npu_all_to_all_quant_matmul(x1, x2, hcom, world_size, *, all2all_out_f
 - 当前两种量化场景下`x2_scale`都必须传入，不允许为None。
 - `x1_dtype`和`x2_dtype`在mx量化模式下，当数据类型为`torch_npu.float4_e2m1fn_x2`时，需要设置为296，其它场景传默认值即可。
 - `x1_scale_dtype`和`x2_scale_dtype`在mx量化模式下需要设置为`torch.float8_e8m0fnu`，其它场景传默认值即可。
-- 各量化模式输入输出数据类型详细约束如下表
+- 各量化模式输入输出数据类型详细约束如下表：
 
-    **表 1**  K-C动态量化数据类型约束
+    **表 1** K-C动态量化数据类型约束
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -144,7 +144,7 @@ torch_npu.npu_all_to_all_quant_matmul(x1, x2, hcom, world_size, *, all2all_out_f
     | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float32` | - | `torch.float32` | `torch.bfloat16` | 7 | 2 |
     | `torch.bfloat16` | `torch.float8_e5m2` | `torch.float32` | - | `torch.float32` | `torch.float32` | 7 | 2 |
 
-    **表 2**  mx量化数据类型约束
+    **表 2** mx量化数据类型约束
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |

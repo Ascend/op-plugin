@@ -16,7 +16,7 @@
 
 - **API功能**：
 
-    RMSNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。DynamicQuant算子则是为输入张量进行对称动态量化的算子。AddRmsNormDynamicQuant算子将RMSNorm前的Add算子和RMSNorm归一化输出给到的1个或2个DynamicQuant算子融合起来，减少搬入搬出操作。
+    RMSNorm算子是大模型常用的归一化操作，相比LayerNorm算子，其去掉了减去均值的部分。DynamicQuant算子则是为输入张量进行对称动态量化的算子。AddRmsNormDynamicQuant算子将RMSNorm前的Add算子和RMSNorm归一化输出后的1个或2个DynamicQuant算子融合起来，减少搬入搬出操作。
 
 - **计算公式**：
 
@@ -109,7 +109,7 @@ torch_npu.npu_add_rms_norm_dynamic_quant(x1, x2, gamma, *, smooth_scale1=None, s
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id7 -->
 
-- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask`为None并且`smooth_scale2`不为None，或者output_mask[1]为True时有效输出，数据类型和shape与`y1`的有效输出一致。当output_mask[1]为False时则不输出，返回空Tensor。
+- **y2**(`Tensor`)：第二路动态量化后的输出Tensor，对应公式中的$y2Out$。当`output_mask`为None并且`smooth_scale2`不为None，或者`output_mask[1]`为True时有效输出，数据类型和shape与`y1`的有效输出一致。当output_mask[1]为False时则不输出，返回空Tensor。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch_npu.int4`。

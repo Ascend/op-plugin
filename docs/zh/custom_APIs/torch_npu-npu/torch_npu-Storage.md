@@ -1,5 +1,7 @@
 # torch_npu Storage
 
+本文档介绍torch_npu Storage系列API，其功能和调用方式与torch.Storage相同，适用于需要在NPU上进行张量存储管理的开发者。
+
 **表1** torch_npu Storage API
 
 <a name="table13485145255617"></a>
@@ -11,7 +13,7 @@
 </thead>
 <tbody><tr id="row16495752115611"><td class="cellrowborder" valign="top" width="55.25%" headers="mcps1.2.3.1.1 "><p id="p7524101655810"><a name="p7524101655810"></a><a name="p7524101655810"></a>torch_npu.npu.BoolStorage</p>
 </td>
-<td class="cellrowborder" rowspan="9" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="p8060118"><a name="p8060118"></a><a name="p8060118"></a>功能和调用方式与torch.Storage相同，具体请参考<a href="https://pytorch.org/docs/stable/storage.html#" target="_blank" rel="noopener noreferrer">https://pytorch.org/docs/stable/storage.html#</a>。</p>
+<td class="cellrowborder" rowspan="9" valign="top" width="44.75%" headers="mcps1.2.3.1.2 "><p id="p8060118"><a name="p8060118"></a><a name="p8060118"></a>功能和调用方式与torch.Storage相同，具体请参考<a href="https://pytorch.org/docs/stable/storage.html#" target="_blank" rel="noopener noreferrer">PyTorch Storage文档</a>。</p>
 </td>
 </tr>
 <tr id="row134951052155613"><td class="cellrowborder" valign="top" headers="mcps1.2.3.1.1 "><p id="p16191172114583"><a name="p16191172114583"></a><a name="p16191172114583"></a>torch_npu.npu.ByteStorage</p>

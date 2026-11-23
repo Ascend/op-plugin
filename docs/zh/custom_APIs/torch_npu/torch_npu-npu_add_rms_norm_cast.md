@@ -34,15 +34,15 @@ torch_npu.npu_add_rms_norm_cast(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor
 
 - **x1**（`Tensor`）：必选参数，表示需要归一化的原始数据输入，公式中的$x1$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型支持`torch.float16`、`torch.bfloat16`。shape支持1-8维。
 - **x2**（`Tensor`）：必选参数，表示需要归一化的原始数据输入，公式中的$x2$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。shape和数据类型需要与`x1`一致。
-- **gamma**（`Tensor`）：必选参数，表示标准化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型需要与`x1`一致。shape支持1-8维，shape与`x1`需要norm的维度一致。
+- **gamma**（`Tensor`）：必选参数，表示归一化过程中的权重张量，公式中的$gamma$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型需要与`x1`一致。shape支持1-8维，shape与`x1`需要norm的维度一致。
 - **epsilon**（`float`）：可选参数，公式中的输入$epsilon$，用于防止除0错误，数据类型为`double`。建议传较小的正数，默认值为1e-6。
 
 ## 返回值说明
 
-- **y1**（`Tensor`）：表示归一化后经过类型转换的输出Tensor，公式中的$y1$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型支持`torch.float32`，shape与输入`x1`一致。
-- **y2**（`Tensor`）：表示归一化后的输出Tensor，公式中的$y2$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。shape和数据类型需要与计算输入`x1`保持一致。
-- **rstd**（`Tensor`）：表示x的标准差，对应公式中的$RMS(x)$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型支持`torch.float32`，维度数与`x1`保持一致，不需要norm的维度与`x1`对应维度保持一致，需要norm的维度为1。当输入`x1`为空Tensor时，`rstd`也必须为空Tensor。`rstd`shape与`x1`shape，`gamma`shape关系举例：
-  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstd`shape:(2,3,4,1)；
+- **y1**（`Tensor`）：表示归一化后的输出Tensor，公式中的$y1$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。数据类型支持`torch.float32`，shape与输入`x1`一致。
+- **y2**（`Tensor`）：表示归一化后经过类型转换的输出Tensor，公式中的$y2$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。shape和数据类型需要与计算输入`x1`保持一致。
+- **rstd**（`Tensor`）：相加结果`x = x1 + x2`的逆均方根，对应公式中的$1/RMS(x)$。数据格式支持$ND$，支持空Tensor和非连续Tensor，数据类型为`torch.float32`。维数与`x1`相同，归一化的维度长度为1，其余维度长度与`x1`一致。`x1`为空Tensor时，`rstd`也为空Tensor。`rstd`的形状示例如下：
+  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstd`shape:(2,3,4,1)。
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(4,8)，`rstd`shape:(2,3,1,1)。
 - **x**（`Tensor`）：表示`x1`和`x2`的和，公式中的$x$。数据格式支持$ND$，支持空Tensor，支持非连续的Tensor。shape和数据类型需要与计算输入`x1`一致。
 
@@ -51,10 +51,10 @@ torch_npu.npu_add_rms_norm_cast(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor
 - 该接口支持训练、推理场景下使用。
 - 该接口支持单算子模式和图模式调用。
 - 维度的边界说明：
-  参数`x1`、`x2`、`gamma`、`y1`、`y2`、 `rstd`、 `x`的shape中每一维大小都不大于`torch.int32`的最大值2147483647。
+  参数`x1`、`x2`、`gamma`、`y1`、`y2`、`rstd`、`x`的shape中每一维大小都不大于`torch.int32`的最大值2147483647。
 - 边界值场景说明：
-  - 当输入是Inf时， 输出为Inf。
-  - 当输入是NaN，输出为NaN。
+  - 当输入是Inf时，输出为Inf。
+  - 当输入是NaN时，输出为NaN。
 
 ## 调用示例
 

@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-返回原始张量视图，其维度已permute，结果连续。支持FakeTensor模式。
+返回维度已permute的张量，结果连续。支持FakeTensor模式。
 
 ## 函数原型
 
@@ -32,7 +32,7 @@ torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
 
 - **self** (`Tensor`)：输入张量。
 - **perm** (`List[int]`)：对应维度排列。
-- **require_contiguous** (`bool`)：用户是否需要在调用函数前对输入Tensor做转连续，默认值为True。设置为False时，表示在调用函数前无需对输入Tensor做转连续。当用户明确输入Tensor为连续Tensor或转置Tensor时，才能设置为True。
+- **require_contiguous** (`bool`)：可选参数，默认值为`True`，由算子按需将输入转为连续张量。确认输入是连续张量或转置视图时，可设置为`False`，跳过输入连续化。
 
 ## 调用示例
 

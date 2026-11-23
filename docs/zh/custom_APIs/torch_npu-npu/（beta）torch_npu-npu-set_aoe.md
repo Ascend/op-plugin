@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-启用AOE调优。
+启用AOE（Ascend Optimization Engine，昇腾调优引擎）调优。
 
 ## 函数原型
 
@@ -30,7 +30,7 @@ torch_npu.npu.set_aoe(dump_path)
 
 ## 参数说明
 
-**dump_path**：dump算子图保存路径。
+**dump_path**（`str`）：必填参数，指定保存Dump算子图的目录，如`./aoe_dump`。目录不存在时，接口尝试创建目录。请确保具备相应的创建和写入权限。
 
 ## 调用示例
 

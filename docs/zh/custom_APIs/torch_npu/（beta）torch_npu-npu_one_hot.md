@@ -30,9 +30,9 @@ torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，类别索引张量，shape无限制。各元素的值作为one_hot维度的索引，建议传入整数张量。
-- **num_classes** (`int`)：指定one_hot维度插入的轴位置，默认值为-1，表示将one_hot维度追加到输入最后一维之后。
-- **depth** (`int`)：one_hot维度的深度（类别数量），默认值为1；取值为-1时自动推断为input最大值加1。
+- **input** (`Tensor`)：必选参数，类别索引张量，建议传入整数类型。接口会先将其转换为`torch.int32`。转换后的索引落在`[0, depth)`内时，对应位置填`on_value`，其余位置填`off_value`。索引越界时，对应的整段编码均填`off_value`。
+- **num_classes** (`int`)：编码轴参数，默认值为`-1`，表示在输入末尾追加一维。使用本页所列产品时建议保留默认值。编码维度的长度由`depth`指定。
+- **depth** (`int`)：one_hot编码的长度，默认值为`1`。需要其他长度时请直接传入类别数量。
 - **on_value** (`Scalar`)：当输出one_hot维的索引i等于input对应位置的值时，输出在该位置填充的值，默认值为1。
 - **off_value** (`Scalar`)：当输出one_hot维的索引i不等于input对应位置的值时，输出在该位置填充的值，默认值为0。
 

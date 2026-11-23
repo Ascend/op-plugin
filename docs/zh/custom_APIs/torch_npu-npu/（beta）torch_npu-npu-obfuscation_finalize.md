@@ -22,7 +22,7 @@ PMCC特性的部署流程如下：
 1. 环境中存在NPU驱动和固件。
 2. 安装AI混淆SDK，执行一键式部署脚本，该脚本会自动完成以下任务：
    * 配置kmsAgent。
-   * 下发npu证书。
+   * 下发NPU证书。
    * 生成obf_sdk客户端证书。
    * 生成混淆因子绑定的psk私钥。
 3. 执行混淆因子注册脚本。
@@ -37,13 +37,13 @@ torch_npu.npu.obfuscation_finalize(fd_to_close) -> Tensor
 
 ## 参数说明
 
-**fd_to_close**（`Tensor`）：填写调用[obfuscation_initialize](（beta）torch_npu-npu-obfuscation_initialize.md)接口的返回值，数据类型为`torch.int32`。
+**fd_to_close**（`Tensor`）：必选参数，填写调用[obfuscation_initialize](（beta）torch_npu-npu-obfuscation_initialize.md)接口返回的socket连接符，数据类型为`torch.int32`，仅支持该接口的返回值，不支持自定义数值。
 
 ## 返回值说明
 
 `Tensor`
 
-代表关闭socket连接后的结果，1D，shape为(1)，数据类型为`torch.int32`。
+代表关闭socket连接后的结果，1D、shape为(1)、数据类型为`torch.int32`。
 
 ## 调用示例
 

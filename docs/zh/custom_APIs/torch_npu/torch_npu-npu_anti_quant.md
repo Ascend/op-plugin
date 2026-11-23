@@ -69,7 +69,7 @@ torch_npu.npu_anti_quant(x, scale, *, offset=None, dst_dtype=None, src_dtype=Non
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **offset** (`Tensor`)：可选参数，反量化中的`offset`值。数据类型和shape必须与`scale`一致。数据格式支持$ND$，支持非连续的Tensor。
+- **offset** (`Tensor`)：可选参数，反量化中的`offset`值。数据类型和形状必须与`scale`一致。数据格式支持$ND$，支持非连续的Tensor。
 
 - **dst_dtype** (`int`)：可选参数，指定输出的数据类型，默认值为`torch.float16`。
 

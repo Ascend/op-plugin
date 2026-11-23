@@ -1,5 +1,7 @@
 # Random Number Generator
 
+本文档介绍TorchNPU提供的Random Number Generator随机数相关接口，涵盖随机数状态读取与随机种子设置等API，适用于需要使用随机数功能的用户。
+
 **表1** Random Number Generator API
 
 <a name="table859713546477"></a>

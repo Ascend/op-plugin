@@ -17,11 +17,11 @@
   \sum_{ij}^{level1GroupSize} ((x1Level1Scale @ x1_{ij}) @ (x2Level1Scale @ x2_{ij})) + bias
   $$
 
-  - $x1_{ij}$、$x2_{ij}$表示输入的左矩阵和右矩阵，$i$、$j$表示第$i$、$j$个分组；
-  - $x1Level1Scale$为$x1$的第一级反量化参数，为MX量化，$level1GroupSize$为32；
-  - $x2Level1Scale$为$x2$的第一级反量化参数，为MX量化，$level1GroupSize$为32；
-  - $x1Level0Scale$为$x1$的第零级反量化参数，为pergroup量化，$level0GroupSize$为512；
-  - $x2Level0Scale$为$x2$的第零级反量化参数，为pergroup量化，$level0GroupSize$为512；
+  - $x1_{ij}$、$x2_{ij}$表示输入的左矩阵和右矩阵，$i$、$j$表示第$i$、$j$个分组。
+  - $x1Level1Scale$为$x1$的第一级反量化参数，为MX量化，$level1GroupSize$为32。
+  - $x2Level1Scale$为$x2$的第一级反量化参数，为MX量化，$level1GroupSize$为32。
+  - $x1Level0Scale$为$x1$的第零级反量化参数，为pergroup量化，$level0GroupSize$为512。
+  - $x2Level0Scale$为$x2$的第零级反量化参数，为pergroup量化，$level0GroupSize$为512。
   - $bias$为偏置矩阵。
 
 ## 函数原型
@@ -50,7 +50,7 @@ torch_npu.npu_dual_level_quant_matmul(x1, x2, x1_level0_scale, x2_level0_scale, 
 - 该接口支持训练、推理场景下使用。
 - 该接口仅支持单算子模式调用。
 - 所有输入和输出张量不支持空Tensor，不支持非连续的Tensor。
-- 第一级反量化（level1，对应参数`x1_level1_scale`和`x2_level1_scale`）的量化类型仅支持MX量化，level1GroupSize=32。
+- 第一级反量化（level1，对应参数`x1_level1_scale`和`x2_level1_scale`）的量化类型仅支持MX量化，level1GroupSize = 32。
 - 第零级反量化（level0，对应参数`x1_level0_scale`和`x2_level0_scale`）的量化类型仅支持pergroup量化，level0GroupSize仅支持512。
 
 ## 调用示例

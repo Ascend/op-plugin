@@ -8,8 +8,8 @@
 
 ## 功能说明
 
-- API功能：在输入张量的-1轴和-2轴上同时进行目标数据类型为`float4`（`torch_npu.float4_e1m2fn_x2`，`torch_npu.float4_e2m1fn_x2`）、`float8`（`torch.float8_e4m3fn`，`torch.float8_e5m2`）的MX量化。在-1轴和-2轴上，每32个数计算出对应的量化尺度mxscale1、mxscale2作为输出mxscale1、mxscale2的对应部分，然后分别将两组数所有元素除以对应的量化尺度，根据round\_mode转换到对应的dst\_type，得到量化结果y1和y2。
-  - 合轴说明：算子实现时，会对-2轴（不包含）之前的所有轴进行合轴处理。即对于输入shape为$(d_0, d_1, ..., d_{n-3}, d_{n-2}, d_{n-1})$的张量，-2轴之前的维度$(d_0, d_1, ..., d_{n-3})$会被合并为一个维度，等效于将输入reshape为$(d_0 \times d_1 \times ... \times d_{n-3}, d_{n-2}, d_{n-1})$后再进行量化计算。
+- API功能：在输入张量的-1轴和-2轴上同时进行目标数据类型为`float4`（`torch_npu.float4_e1m2fn_x2`、`torch_npu.float4_e2m1fn_x2`）、`float8`（`torch.float8_e4m3fn`、`torch.float8_e5m2`）的MX量化。在-1轴和-2轴上，每32个数计算出对应的量化尺度mxscale1、mxscale2作为输出mxscale1、mxscale2的对应部分，然后分别将两组数所有元素除以对应的量化尺度，根据round\_mode转换到对应的dst\_type，得到量化结果y1和y2。
+  - 合轴说明：算子实现时，会对-2轴（不包含）之前的所有轴进行合轴处理，即对于输入shape为$(d_0, d_1, ..., d_{n-3}, d_{n-2}, d_{n-1})$的张量，-2轴之前的维度$(d_0, d_1, ..., d_{n-3})$会被合并为一个维度，等效于将输入reshape为$(d_0 \times d_1 \times ... \times d_{n-3}, d_{n-2}, d_{n-1})$后再进行量化计算。
 - 计算公式：
   - 场景1，当scale\_alg为0时，即OCP Microscaling Formats (Mx) Specification实现：
     - 将输入x在-1轴上按照32个数进行分组，一组32个数$\{\{V_i\}_{i=1}^{32}\}$量化为$\{mxscale1, \{P_i\}_{i=1}^{32}\}$：
@@ -109,7 +109,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
 ## 参数说明
 
 - **input**（`Tensor`）：必选参数，表示输入x。维度支持2-7维，数据格式支持ND，数据类型支持`torch.float16`、`torch.bfloat16`。支持非连续Tensor。当dst\_type为float4（即296、297对应的类型）时，input的最后一维必须是偶数。
-- \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- **\***：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **round\_mode**（`str`）：可选参数，表示数据转换的模式，对应公式中的$round\_mode$。默认值为"rint"。
   - 当dst\_type为`torch.float8_e5m2`、`torch.float8_e4m3fn`时，仅支持"rint"。
   - 当dst\_type为`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`时，支持"rint"、"floor"、"round"。
@@ -126,7 +126,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
 
 ## 返回值说明
 
-- **y1**（`Tensor`）：表示输入x量化-1轴后的对应结果。shape和输入x一致。当dst\_type为float8（23，24）时，数据类型为`torch.float8_e5m2`或`torch.float8_e4m3fn`；当dst\_type为float4（296，297）时，实际返回的数据类型为`torch.uint8`，最后一维为输入x最后一维的一半（每个`torch.uint8`元素打包2个float4数据），查看具体值需自行解包，如`y1.view(torch_npu.float4_e2m1fn_x2)`。不支持非连续Tensor。
+- **y1**（`Tensor`）：输入`x`沿-1轴量化后的结果。当`dst_type`为Float8（23、24）时，形状与`x`一致，数据类型为`torch.float8_e5m2`或`torch.float8_e4m3fn`。当`dst_type`为Float4（296、297）时，返回`torch.uint8`张量，最后一维为`x`最后一维的一半，其余维度不变。每个`torch.uint8`元素打包两个Float4值。不支持非连续Tensor。
 - **mxscale1**（`Tensor`）：表示-1轴每个分组对应的量化尺度，对应公式中的$mxscale1$。逻辑数据类型为`torch.float8_e8m0fnu`，实际返回的数据类型为`torch.uint8`，查看具体值需自行转换，如`mxscale1.view(torch.float8_e8m0fnu)`。shape为输入x的-1轴的值除以32向上取整，并对其进行偶数pad（pad填充值为0），最后追加一维大小为2。不支持非连续Tensor。
 - **y2**（`Tensor`）：表示输入x量化-2轴后的对应结果。shape和输入x一致。数据类型与y1相同（float4时实际返回的数据类型为`torch.uint8`，最后一维为输入x最后一维的一半）。不支持非连续Tensor。
 - **mxscale2**（`Tensor`）：表示-2轴每个分组对应的量化尺度，对应公式中的$mxscale2$。逻辑数据类型为`torch.float8_e8m0fnu`，实际返回的数据类型为`torch.uint8`，查看具体值需自行转换。shape为输入x的-2轴的值除以32向上取整，并对其进行偶数pad（pad填充值为0），最后追加一维大小为2，且输出需要对每两行数据进行交织处理。不支持非连续Tensor。
@@ -237,7 +237,7 @@ torch_npu.npu_dynamic_mx_quant_with_dual_axis(input, *, round_mode="rint", dst_t
     print(mxscale2.shape)
     ```
 
-    输出如下所示
+    输出如下所示：
 
     ```text
     torch.Size([64, 256]) torch.float8_e4m3fn

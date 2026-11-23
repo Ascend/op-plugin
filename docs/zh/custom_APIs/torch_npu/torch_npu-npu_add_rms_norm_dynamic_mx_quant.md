@@ -66,14 +66,14 @@
                 Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
                 $$
 
-            - 将FP32映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值
+            - 将FP32映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值。
 
                 $$
                 S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
                 $$
 
-            - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$；
-            - 从块的浮点缩放因子$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$；
+            - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$。
+            - 从块的浮点缩放因子$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$。
             - 为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
                 $$
@@ -104,7 +104,7 @@ torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilon
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **beta**（`Tensor`）：可选参数，表示添加到RmsNorm结果上的偏置张量，公式中的$beta$。若存在，shape、数据类型和数据格式需要与`gamma`保持一致，支持空Tensor，支持非连续Tensor。
 - **epsilon**（`float`）：可选参数，表示添加到分母中的值，以确保数值稳定，公式中的$epsilon$，数据类型为`double`，默认值为1e-06。
-- **scale_alg**（`int`）：可选参数，int类型，表示`mxscale_out`的计算方法，仅支持取值0(表示场景1，OCP实现)和1（表示场景2，cuBLAS实现）。当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch_npu.float4_e1m2fn_x2`)时仅支持取值为0，当`dst_type`为291(`torch.float8_e5m2`)、292(`torch.float8_e4m3fn`)时支持取值为0和1，默认值为0。
+- **scale_alg**（`int`）：可选参数，int类型，表示`mxscale_out`的计算方法，仅支持取值0（表示场景1，OCP实现）和1（表示场景2，cuBLAS实现）。当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch_npu.float4_e1m2fn_x2`)时仅支持取值为0，当`dst_type`为291(`torch.float8_e5m2`)、292(`torch.float8_e4m3fn`)时支持取值为0和1，默认值为0。
 - **round_mode**（`str`）：可选参数，string类型，表示指定量化结果cast到输出y的数据类型模式；当`dst_type`为296(`torch.float4_e2m1fn_x2`)、297(`torch_npu.float4_e1m2fn_x2`)时，模式支持"rint"、"floor"、"round"；当`dst_type`为291(`torch.float8_e5m2`)、292(`torch.float8_e4m3fn`)时，模式仅支持"rint"，默认值为"rint"。
 - **dst_type**（`int`）：可选参数，int类型，指定输出`y`的数据类型，输入范围为{291、292、296、297}，分别对应输出y的数据类型为{291：`torch.float8_e5m2`，292：`torch.float8_e4m3fn`，296：`torch.float4_e2m1fn_x2`，297：`torch_npu.float4_e1m2fn_x2`}。默认值为296（`torch.float4_e2m1fn_x2`）。
 
@@ -122,26 +122,26 @@ torch_npu.npu_add_rms_norm_dynamic_mx_quant(x1, x2, gamma, *, beta=None, epsilon
 - 输出`y`的类型为`torch_npu.float4_e2m1fn_x2`和`torch_npu.float4_e1m2fn_x2`，即dst_type为296和297时，`x1`的最后一维必须是偶数。
 - 量化轴和norm轴都是输入`x1`的最后1维。
 - 输出`mxscale_out`和输入`x1`的shape约束关系：
-  - rank(mxscale_out)  = rank(x1) + 1
+  - rank(mxscale_out) = rank(x1) + 1
   - mxscale_out.shape[-2] = (ceil(x1.shape[-1] / 32) + 2 - 1) / 2
-  - mxscale_out.shape[-1]  = 2
+  - mxscale_out.shape[-1] = 2
   - 其他维度与输入x1一致
   - 例如，输入x1.shape = (100, 8, 64)，mxscale_out.shape = (100, 8, 1, 2)
 
-- **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是Pytorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
-- **图模式通路**不支持反向传播，rstd固定为值为0的标量Tensor(shape[])，不含有效数据。
+- **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是PyTorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
+- **图模式通路**不支持反向传播，rstd固定为0的标量Tensor(shape[])，不含有效数据。
 
 - **边界值场景说明**
   - 当输入是Inf时：
-    - 输出y为0;
-    - 输出x_out为Inf;
-    - 输出mxscale_out为255，偶数pad填充值为0;
+    - 输出y为0。
+    - 输出x_out为Inf。
+    - 输出mxscale_out为255，偶数pad填充值为0。
     - 输出rstd_out为0。
 
   - 当输入是NaN时：
-    - 输出y为0;
-    - 输出x_out为Nan;
-    - 输出mxscale_out为255，偶数pad填充值为0;
+    - 输出y为0。
+    - 输出x_out为Nan。
+    - 输出mxscale_out为255，偶数pad填充值为0。
     - 输出rstd_out为NaN。
 
 ## 调用示例

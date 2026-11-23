@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-融合reshape和transpose运算。
+融合`reshape`和`transpose`运算。
 
 ## 函数原型
 
@@ -32,7 +32,7 @@ torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 
 - **self**（`Tensor`）：数据类型支持`torch.float16`、`torch.float32`、`torch.int8`、`torch.int16`、`torch.int32`、`torch.int64`、`torch.uint8`、`torch.uint16`、`torch.uint32`、`torch.uint64`。
 - **perm**（`List[int]`）：`self`张量的维度排列。
-- **shape**（`List[int]`）：reshape操作后的目标shape。
+- **shape**（`List[int]`）：reshape操作后的目标shape，各元素乘积需与`self`的元素总数一致。
 - **transpose_first**（`bool`）：如果值为`True`，首先执行transpose，否则先执行reshape。
 
 ## 调用示例

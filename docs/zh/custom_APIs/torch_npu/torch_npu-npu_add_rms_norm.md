@@ -38,15 +38,15 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 - **x1**(`Tensor`)：必选参数，表示用于Add计算的第一个输入，对应公式中的$x1$。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。支持1-8维张量。
 - **x2**(`Tensor`)：必选参数，表示用于Add计算的第二个输入，对应公式中的$x2$。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型支持`torch.float32`、`torch.float16`、`torch.bfloat16`。支持1-8维张量，shape和`x1`保持一致。
-- **gamma**(`Tensor`)：必选参数，表示RMSNorm的缩放因子（权重）。对应公式中的$gamma$。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型与`x1`的数据类型保持一致，shape要与`x1`需要norm的维度保持一致。
+- **gamma**(`Tensor`)：必选参数，表示RMSNorm的缩放因子（权重），对应公式中的$gamma$。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型与`x1`的数据类型保持一致，shape要与`x1`需要norm的维度保持一致。
 - **epsilon**(`float`)：可选参数，表示添加到分母中的值，以确保数值稳定，对应公式中的$epsilon$。默认值为`1e-6`。
 
 ## 返回值说明
 
 - **yOut**(`Tensor`)：对应公式中的$RMSNorm(x)$，表示最后的输出。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
 
-- **rstdOut**(`Tensor`)：对应公式中$RMS(x)$的倒数，表示归一化后均方根的倒数。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型仅支持`torch.float32`。维度数与`x1`保持一致，不需要norm的维度与`x1`对应维度保持一致，需要norm的维度为1。`rstdOut`shape与`x1`shape，`gamma`shape关系举例：
-  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstdOut`shape:(2,3,4,1)；
+- **rstdOut**(`Tensor`)：相加结果`x = x1 + x2`的逆均方根，对应公式中的$1/RMS(x)$。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型仅支持`torch.float32`。维度数与`x1`保持一致，不需要norm的维度与`x1`对应维度保持一致，需要norm的维度为1。`rstdOut`shape与`x1`shape、`gamma`shape关系举例：
+  - 若`x1`shape:(2,3,4,8)，`gamma`shape:(8)，`rstdOut`shape:(2,3,4,1)。
   - 若`x1`shape:(2,3,4,8)，`gamma`shape:(4,8)，`rstdOut`shape:(2,3,1,1)。
 
 - **xOut**(`Tensor`)：对应公式中的$x$，表示`x1`与`x2`相加的计算结果。数据格式支持$ND$，支持空Tensor，支持非连续Tensor。数据类型和shape与输入`x1`的数据类型和shape保持一致。
@@ -61,7 +61,7 @@ torch_npu.npu_add_rms_norm(x1, x2, gamma, epsilon=1e-06) -> (Tensor, Tensor, Ten
 
 <!-- npu="310p" id5 -->
 - <term>Atlas推理系列产品</term>：
-  - 输入参数`x1`、`x2`、`gamma`、`yOut`、`xOut`的数据类型不支持`torch.bfloat16`。
+  - 输入参数`x1`、`x2`、`gamma`及返回值`yOut`、`xOut`的数据类型不支持`torch.bfloat16`。
   - 参数`rstdOut`在当前产品使用场景下无效。
 <!-- end id5 -->
 

@@ -44,7 +44,7 @@ DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时
 
 ## 约束说明
 
-到目前为止，DIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0。如果需要反向传播，确保参数正确。
+到目前为止，DIoU反向只支持当前版本中的`trans==True`、`is_cross==False`、`mode==0`。如果需要反向传播，确保参数正确。
 
 ## 调用示例
 

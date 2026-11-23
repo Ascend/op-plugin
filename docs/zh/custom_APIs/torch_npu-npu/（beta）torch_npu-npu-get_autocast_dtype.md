@@ -30,7 +30,7 @@ torch_npu.npu.get_autocast_dtype()
 
 ## 返回值说明
 
-`torch.dtype`
+`torch.dtype`：当前AMP的目标数据类型，默认为`torch.float16`。
 
 ## 调用示例
 

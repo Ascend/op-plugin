@@ -41,11 +41,11 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 `Tensor`
 
-注意力计算后的输出张量，数据类型为`torch.float16`。在默认参数下，输出张量的形状与query_layer相同。
+返回注意力输出，数据类型为`torch.float16`。默认参数下，若`query_layer`形状为`[batch_size, num_heads, q_seq_len, head_dim]`，输出形状为`[batch_size * q_seq_len, num_heads * head_dim]`。
 
 ## 约束说明
 
-输入tensor的格式编号必须均为29，数据类型为`torch.float16`。query_layer、key_layer以及value_layer的num_heads维度必须相同，query_layer和key_layer的head_dim维度必须相同，用于计算注意力分数。value_layer的head_dim可以不同，决定了输出特征维度。
+输入张量的格式编号均为29，数据类型为`torch.float16`。`query_layer`、`key_layer`和`value_layer`使用相同的`num_heads`和`head_dim`。
 
 ## 调用示例
 

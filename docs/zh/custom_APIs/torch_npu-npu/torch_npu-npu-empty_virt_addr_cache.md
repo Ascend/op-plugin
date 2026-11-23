@@ -36,7 +36,7 @@ torch_npu.npu.empty_virt_addr_cache() -> None
 
 ## 约束说明
 
-该接口需要环境变量`PYTORCH_NPU_ALLOC_CONF`的值设置为`expandable_segments:True`时才生效，否则会runtime报错。
+该接口需要将环境变量`PYTORCH_NPU_ALLOC_CONF`的值设置为`expandable_segments:True`时才生效，否则会runtime报错。
 
 ## 调用示例
 

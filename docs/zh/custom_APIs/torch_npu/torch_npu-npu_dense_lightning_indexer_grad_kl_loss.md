@@ -14,8 +14,8 @@
 
 ## 功能说明
 
-- API功能：该接口实现了Lightning Indexer组件warmup阶段训练的反向梯度计算，并融合了Loss的计算。
-     - 相比较于`npu_sparse_lightning_indexer_grad_kl_loss`接口，此API适用于稠密场景，其输入`key`、`key_index`不用做稀疏化处理。
+- API功能：计算Lightning Indexer训练预热阶段的反向梯度，并融合KL散度损失的计算。
+     - 相比于`npu_sparse_lightning_indexer_grad_kl_loss`接口，此API适用于稠密场景，其输入`key`、`key_index`不用做稀疏化处理。
      - 与`npu_dense_lightning_indexer_softmax_lse`配合使用，`npu_dense_lightning_indexer_softmax_lse`计算出来的`softmax_max_index`与`softmax_sum_index`作为本接口的输入，通过两个接口配合使用可以优化显存占用。
 
 - 计算公式：
@@ -25,8 +25,8 @@
         I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
         $$
     
-        - $W_{t,:}$是$W$矩阵中第$t$个token对应的$weights$；
-        - $\tilde{q}_{t,:}$是$\tilde{Q}$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+        - $W_{t,:}$是$W$矩阵中第$t$个token对应的$weights$。
+        - $\tilde{q}_{t,:}$是$\tilde{Q}$矩阵第$t$个token对应的$G$个query头合轴后的结果。
         - $\tilde{K}_{:t,:}$为$t$行$\tilde{K}$矩阵。
   
     2. 正向的Softmax对应公式：
@@ -35,8 +35,8 @@
         p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
         $$
         
-        - $p_{t,:}$是第$t$个token对应的Softmax结果；
-        - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+        - $p_{t,:}$是第$t$个token对应的Softmax结果。
+        - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果。
         - $K_{:t,:}$为$t$行$K$矩阵。
 
     3. Lightning Indexer会单独训练，对应的loss function为：
@@ -44,7 +44,7 @@
         Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
         $$
 
-        其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
+        其中，$p_{t,:}$是目标分布，通过对main attention score进行所有的head的求和，然后把求和结果沿着上下文方向进行L1正则化得到。$D_{KL}$为KL散度，其表达式为：
 
         $$
         D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
@@ -98,9 +98,9 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 - **scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`float32`。
 
-- **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的rope信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
+- **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的RoPE信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
 
-- **key_rope**(`Tensor`)：可选参数，表示MLA结构中的key的rope信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S2, N2, Dr)$、$(T2, N2, Dr)$。
+- **key_rope**(`Tensor`)：可选参数，表示MLA结构中的key的RoPE信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S2, N2, Dr)$、$(T2, N2, Dr)$。
 
 - **actual_seq_qlen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$，默认值为`None`。
 
@@ -140,7 +140,7 @@ npu_dense_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, wei
 
 ## 调用示例
 
-- 单算子模式调用
+- 单算子模式调用：
 
     ```python
     import torch

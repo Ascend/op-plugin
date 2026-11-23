@@ -34,7 +34,7 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 - **grad** (`Tensor`)：必选参数，数据类型和shape与`var`相同。
 - **max\_grad\_norm** (`Scalar`)：必选参数，数据类型与`var`相同。
 - **global\_grad\_norm** (`Scalar`)：必选参数，数据类型与`var`相同。
-- **weight\_decay**(`Scalar`)：必选参数，数据类型与`var`相同。
+- **weight\_decay** (`Scalar`)：必选参数，数据类型与`var`相同。
 - **step\_size** (`Scalar`)：可选参数，默认值为None，数据类型与`var`相同。
 - **adam\_mode** (`int`)：可选参数，默认值为0，选择adam模式。0表示“adam”，1表示“mbert\_adam”。
 - **out** (`tuple[Tensor, Tensor, Tensor]`)：必选关键字参数，包含`var`、`m`、`v`三个输出张量的元组。其中`var`为`torch.float16`或`torch.float32`类型张量；`m`、`v`的数据类型和shape与`var`相同。

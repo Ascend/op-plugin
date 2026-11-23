@@ -39,14 +39,14 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 ## 参数说明
 
-- **self**（`Tensor`）：必选参数，表示进行归一化计算的输入。对应计算公式中的$x$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持2-8维度，数据格式支持$ND$。支持非连续Tensor，支持空Tensor。
+- **self**（`Tensor`）：必选参数，表示进行归一化计算的输入，对应计算公式中的$x$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持2-8维度，数据格式支持$ND$。支持非连续Tensor，支持空Tensor。
 - **gamma**（`Tensor`）：必选参数，表示进行归一化计算的缩放因子（权重），对应计算公式中的$g$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持2-8维度，数据格式支持$ND$。shape需要满足gamma_shape = self_shape\[n:\], n < self_shape.dims()，通常为`self`的最后一维。支持非连续Tensor，支持空Tensor。
-- **epsilon**（`float`）：可选参数，用于防止除0错误，对应计算公式中的`eps`。数据类型为`double`，默认值为1e-6。
+- **epsilon**（`float`）：可选参数，用于防止除0错误，对应计算公式中的`eps`。数据类型为`float`，默认值为1e-6，取值范围为大于0的浮点数。
 
 ## 返回值说明
 
 - **yOut**（`Tensor`）：表示进行归一化后的最终输出，对应计算公式的最终输出$RmsNorm(x)$。数据类型和shape与输入`self`一致。支持非连续Tensor，支持空Tensor。
-- **rstdOut**（`Tensor`）：表示归一化后的标准差的倒数，rms_norm的中间结果，对应计算公式中的$Rms(x)$的倒数，用于反向计算。数据类型为`torch.float32`。shape与入参`self`的shape前几维一致，前几维指`self`的维度减去`gamma`的维度，表示不需要norm的维度。支持非连续Tensor，支持空Tensor。
+- **rstdOut**（`Tensor`）：均方根的倒数，对应公式中的$1/Rms(x)$，用于反向计算。数据类型为`torch.float32`。维数与`self`相同，末尾`gamma.ndim`个维度的长度为1，其余维度的长度与`self`一致。
 
 ## 约束说明
 
@@ -56,7 +56,7 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 - <term>Ascend 950PR&950DT系列产品</term>：该接口还支持TorchAir图模式调用。
 <!-- end id6 -->
 <!-- npu="310p" id7 -->
-- <term>Atlas推理系列产品</term>：`self`、`gamma`输入的尾轴长度必须大于等于32 Bytes。
+- <term>Atlas推理系列产品</term>：`self`、`gamma`输入的尾轴长度必须大于等于32字节。
 <!-- end id7 -->
 - 边界值场景说明：
 

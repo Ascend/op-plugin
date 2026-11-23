@@ -1,7 +1,7 @@
 # （beta）torch\_npu.npu\_sign\_bits\_unpack
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-- API功能：将`torch.uint8`类型的输入拆包为`float`类型。将`torch.uint8`数值中的8个二进制位解码为8个浮点数，0解码为-1.0，1解码为1.0，并以小端序返回。
+- API功能：将`torch.uint8`输入按低位到高位的顺序拆包，每个字节解码为8个浮点数，0解码为-1.0，1解码为1.0。输出类型由`dtype`指定，支持`torch.float16`和`torch.float32`。
 
 - 等价计算逻辑：
     
@@ -57,7 +57,7 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 ## 约束说明
 
-`size`应能被`x`的`torch.uint8`拆包输出大小整除。`x`的`torch.uint8`拆包输出大小为(size of x) * 8。
+`x`的`torch.uint8`拆包输出大小应能被`size`整除。`x`的`torch.uint8`拆包输出大小为(size of x) * 8。
 
 ## 调用示例
 

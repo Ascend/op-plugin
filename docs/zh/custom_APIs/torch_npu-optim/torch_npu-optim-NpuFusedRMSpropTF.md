@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-通过张量融合实现的高性能RMSpropTF优化器，RMSpropTF是timm库（pytorch-image-models）中提供的RMSprop变体，其实现对齐TensorFlow版RMSprop的行为（故后缀为"TF"），与torch.optim.RMSprop在初始化方式、epsilon加入位置、动量更新顺序等细节上存在差异，核心功能和torch.optim.RMSprop兼容。RMSpropTF的功能和原理可参考[https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py#L14](https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py#L14)。
+通过张量融合实现的高性能RMSpropTF优化器，RMSpropTF是timm库（pytorch-image-models）中提供的RMSprop变体，其实现对齐TensorFlow版RMSprop的行为（故后缀为“TF”），与torch.optim.RMSprop在初始化方式、epsilon加入位置、动量更新顺序等细节上存在差异，核心功能和torch.optim.RMSprop兼容。RMSpropTF的功能和原理可参考[timm库中RMSpropTF的实现](https://github.com/huggingface/pytorch-image-models/blob/main/timm/optim/rmsprop_tf.py#L14)。
 
 ## 函数原型
 
@@ -45,9 +45,9 @@ class torch_npu.optim.NpuFusedRMSpropTF(params, lr=1e-2, alpha=0.9, eps=1e-10, w
 
 `NpuFusedRMSpropTF`的实现机制要求`params`中的每一个模型参数对象在使用过程中不能被重新申请，否则将导致无法预料的结果。引起模型参数对象被重新申请的操作包括但不限于：
 
-- 将模型或其子Module执行.cpu()操作
-- 将模型参数对象指向新的对象
-- 将模型参数对象置为None
+- 将模型或其子Module执行`.cpu()`操作。
+- 将模型参数对象指向新的对象。
+- 将模型参数对象置为`None`。
 
 对模型参数对象进行inplace计算或读取参数的值时，`NpuFusedRMSpropTF`可正常工作。
 

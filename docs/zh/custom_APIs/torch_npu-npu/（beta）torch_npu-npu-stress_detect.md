@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-提供精度在线检测接口，供模型调用。主要通过`StressDetect`接口实现，该接口会对硬件做压力测试检测是否存在静默精度问题。
+提供在线精度检测接口，供模型调用。主要通过`torch_npu.npu.stress_detect`接口实现，该接口会对硬件做压力测试检测是否存在静默精度问题。
 
 ## 函数原型
 
@@ -24,7 +24,7 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 ## 参数说明
 
-**detect_type** (`str`)：可选参数，可配置为`aic`或`hccs`，分别表示硬件在线精度检测和HCCS链路在线精度检测。配置其他值时直接返回1（表示执行失败），默认值为`aic`。
+**detect_type**（`str`）：可选参数，可配置为`aic`或`hccs`，分别表示硬件在线精度检测和HCCS链路在线精度检测。配置其他值时直接返回1（表示执行失败），默认值为`aic`。
 
 > [!NOTE]  
 > 当`detect_type`配置为`hccs`时，首先基于全局通信域创建本机所有卡的子通信域，然后对该子通信域进行HCCS链路压测。
@@ -41,15 +41,15 @@ torch_npu.npu.stress_detect(detect_type="aic")
 
 - 若出现如下异常，则表示电压恢复失败，需参见《CANN 故障处理》中的[“综合检测”](https://gitcode.com/cann/oam-tools/blob/9.2.0/docs/zh/asys/comprehensive_detection.md)章节手动恢复电压或reboot。
 
-    ```shell
+    ```output
     Stress detect error. Error code is 574007. Error message is Voltage recovery failed.
     ```
 
 ## 约束说明
 
-- 精度在线检测的使用需要修改用户的模型训练脚本，建议在训练开始前、结束后以及两个step之间调用，同时需要预留10GB大小的内存供压测接口使用。
+- 在线精度检测接口的使用需要修改用户的模型训练脚本，建议在训练开始前、结束后以及两个step之间调用，同时需要预留10GB大小的内存供压测接口使用。
 - HCCS链路在线检测（`detect_type="hccs"`）需要初始化全局通信域后才能进行调用。
-- 精度在线检测用例，不支持在同一节点运行多个训练作业场景下使用，同时调压功能不支持算力切分场景。
+- 在线精度检测接口用例，不支持在同一节点运行多个训练作业场景下使用，同时调压功能不支持算力切分场景。
 - 不建议使用多线程运行在线精度检测用例。
 
 ## 调用示例

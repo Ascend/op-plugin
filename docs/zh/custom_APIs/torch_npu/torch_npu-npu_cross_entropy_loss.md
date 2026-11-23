@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：计算输入`input`和标签`target`之间的交叉熵损失。此API将原生`CrossEntropyLoss`中的log_softmax和nll_loss融合，降低计算时使用的内存。
+- API功能：计算输入`input`和标签`target`之间的交叉熵损失。此API将原生`CrossEntropyLoss`中的`log_softmax`和`nll_loss`融合，降低计算时使用的内存。
 - 计算公式：
 
     公式中*x*是输入`input`，*y* 是标签`target`，*weight*是权重，*C* 是标签数，*N* 是批处理大小。
@@ -53,19 +53,19 @@ torch_npu.npu_cross_entropy_loss(input, target, weight=None, reduction="mean", i
 - **ignore_index**（`int`）: 可选参数，表示指定忽略的标签；数值必须小于C，当小于0时表示不指定忽略标签；默认值为-100。
 - **label_smoothing**（`float`）: 可选参数，表示计算loss时的平滑量；取值范围[0.0, 1.0)；默认值为0.0。
 - **lse_square_scale_for_zloss**（`float`）: 可选参数，表示计算zloss所需要的scale；取值范围[0.0, 1.0)；默认值为0.0；当前暂不支持。
-- **return_zloss**（`bool`）: 可选参数，控制是否返回zloss；设置为`True`时返回zloss，设置为`False`时不返回zloss；默认值为`False`；当前暂不支持。
+- **return_zloss**（`bool`）: 可选参数，控制是否输出zloss；设置为`True`时输出zloss，设置为`False`时输出空tensor；默认值为`False`；当前暂不支持。
 
 ## 返回值说明
 
-- **loss**（`Tensor`）：表示输出损失；数据类型与`input`相同；`reduction`为`none`时shape为[N]，与`input`第零维一致，否则shape为[1]。
+- **loss**（`Tensor`）: 表示输出损失；数据类型与`input`相同；`reduction`为`none`时shape为[N]，与`input`第零维一致，否则shape为[1]。
 - **log_prob**（`Tensor`）: 用于反向计算的输出；数据类型与`input`相同；shape为[N, C]，与`input`一致。
-- **zloss**（`Tensor`）: 表示辅助损失；数据类型与`input`相同；shape与`loss`一致；当`return_zloss`为`True`时输出zloss，否则将返回空tensor；当前暂不支持。
-- **lse_for_zloss**（`Tensor`）:在zloss场景下给反向计算的输出；数据类型与`input`相同；shape为[N]，与`input`第零维一致；`lse_square_scale_for_zloss`不为`0.0`时将返回该输出，否则将返回空tensor；当前暂不支持。
+- **zloss**（`Tensor`）: 表示辅助损失；数据类型与`input`相同；shape与`loss`一致；当`return_zloss`为`True`时输出zloss，否则将返回空Tensor；当前暂不支持。
+- **lse_for_zloss**（`Tensor`）: 在zloss场景下用于反向计算的输出；数据类型与`input`相同；shape为[N]，与`input`第零维一致；`lse_square_scale_for_zloss`不为`0.0`时将返回该输出，否则将返回空Tensor；当前暂不支持。
 
 ## 约束说明
 
 - 输入shape中N取值范围(0, 200000]。
-- 当input.requires_grad=True时，`sum`/`none`模式下不支持修改`label_smoothing`的默认值；`mean`模式下只支持传入可选参数的默认值，包括`weight`，`ignore_index`和`label_smoothing`。
+- 当`input.requires_grad=True`时，`sum`/`none`模式下不支持修改`label_smoothing`的默认值；`mean`模式下只支持传入可选参数的默认值，包括`weight`、`ignore_index`和`label_smoothing`。
 - 输入`lse_square_scale_for_zloss`与`return_zloss`暂不支持。
 - 输出`zloss`与`lse_for_zloss`暂不支持。
 - 输出中仅`loss`支持梯度计算。

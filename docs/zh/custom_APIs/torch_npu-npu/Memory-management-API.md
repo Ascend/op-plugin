@@ -1,5 +1,7 @@
 # Memory management API
 
+本文档介绍TorchNPU提供的内存管理相关接口，涵盖内存申请与释放、内存统计查询、显存缓存清理等能力，适用于使用torch_npu.npu接口进行显存管理的开发者。
+
 **表1** Memory management API
 
 <a name="table683971665519"></a>
@@ -82,7 +84,7 @@
 </tr>
 <tr id="row10860101635514"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="p681913541225"><a name="p681913541225"></a><a name="p681913541225"></a><a href="torch_npu-npu-host_empty_cache.md">torch_npu.npu.host_empty_cache</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>释放当前由缓存持有的所有未占用的host物理内存。</p>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>释放当前由缓存持有的所有未占用的Host物理内存。</p>
 </td>
 </tr>
 </tbody>

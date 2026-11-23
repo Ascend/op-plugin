@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_slice
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，建议使用torch.slice。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障。建议使用PyTorch张量切片或`torch.narrow`。
 
 ## 产品支持情况
 
@@ -34,8 +34,8 @@ torch_npu.npu_slice(self, offsets, size) -> Tensor
 ## 参数说明
 
 - **self** (`Tensor`)：输入张量。
-- **offsets** (`List[int]`)：支持的数据类型为`torch.int32`，`torch.int64`。
-- **size** (`List[int]`)：支持的数据类型为`torch.int32`，`torch.int64`。
+- **offsets** (`List[int]`)：切片在各维度上的起始位置，取值类型为`torch.int32`或`torch.int64`，列表长度需与输入张量的维度数一致。
+- **size** (`List[int]`)：切片在各维度上的长度，取值类型为`torch.int32`或`torch.int64`，列表长度需与`offsets`一致，且`offsets`与`size`之和不能超过张量对应维度的长度。
 
 ## 调用示例
 

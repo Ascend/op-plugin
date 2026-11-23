@@ -42,7 +42,7 @@ torch_npu.npu.are_compatible_impl_enabled()
 
 `bool`
 
-True为已开启，False为未开启。
+`True`为已开启，`False`为未开启。
 
 ## 约束说明
 

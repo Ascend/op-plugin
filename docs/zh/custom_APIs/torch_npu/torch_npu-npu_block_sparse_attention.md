@@ -30,13 +30,13 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 ## 参数说明
 
-- **query** (`Tensor`)：必选参数，表示Attention中的query，对应公式中的$query$。数据格式为$ND$；数据类型支持`torch.float16`、`torch.bfloat16`。
-  - TND：shape为`[totalQTokens, headNum, headDim]`；
-  - BNSD：shape为`[batch, headNum, maxQSeqLength, headDim]`；
+- **query** (`Tensor`)：必选参数，表示注意力中的query，对应公式中的$query$。数据格式为$ND$；数据类型支持`torch.float16`、`torch.bfloat16`。
+  - TND：shape为`[totalQTokens, headNum, headDim]`。
+  - BNSD：shape为`[batch, headNum, maxQSeqLength, headDim]`。
 
 - **key** (`Tensor`)：必选参数，表示Attention中的key，对应公式中的$key$。数据格式为$ND$；数据类型与`query`一致。
-  - TND：shape为`[totalKvTokens, numKeyValueHeads, headDim]`；
-  - BNSD：shape为`[batch, numKeyValueHeads, maxKvSeqLength, headDim]`；
+  - TND：shape为`[totalKvTokens, numKeyValueHeads, headDim]`。
+  - BNSD：shape为`[batch, numKeyValueHeads, maxKvSeqLength, headDim]`。
 
 - **value** (`Tensor`)：必选参数，表示Attention中的value，对应公式中的$value$。shape和数据类型与`key`一致。
 
@@ -44,7 +44,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **block_shape** (`list[int]`)：必选参数，稀疏块shape。至少需要包含两个元素，如`[blockShapeX, blockShapeY]`，且均大于0。blockShapeX：Q方向块大小；blockShapeY：KV方向块大小。
   <!-- npu="A3,910b" id4 -->
-  - 在<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term> ：**blockShapeY必须为128的倍数**。
+  - 在<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：**blockShapeY必须为128的倍数**。
   <!-- end id4 -->
   <!-- npu="950" id8 -->
   - <term>Ascend 950DT系列产品</term>：**blockShapeY必须为16的倍数**。
@@ -69,7 +69,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
   <!-- end id9 -->
 - **actual_seq_lengths** (`list[int]`)：可选参数，代表每个batch的`query`实际序列长度，用于变长序列场景。
   - **当`q_input_layout`为`"TND"`时必选**：TND下`query`的shape为`[totalQTokens, headNum, headDim]`，若无batch维度，算子无法从shape推断各batch的`query`长度。
-  - **当`q_input_layout`为`"BNSD"`时可选**：BNSD下`query`的 shape为`[batch, headNum, maxQSeqLength, headDim]`，不传时算子按shape中的S（maxQSeqLength）作为序列长度处理；传入时按本参数指定的实际长度处理。
+  - **当`q_input_layout`为`"BNSD"`时可选**：BNSD下`query`的shape为`[batch, headNum, maxQSeqLength, headDim]`，不传时算子按shape中的S（maxQSeqLength）作为序列长度处理；传入时按本参数指定的实际长度处理。
 
 - **actual_seq_lengths_kv** (`list[int]`)：可选参数，代表每个batch的`key`/`value`实际序列长度，用于变长序列场景。
   - **当`kv_input_layout`为`"TND"`时必选**：TND下`key`/`value`的shape为`[totalKvTokens, numKeyValueHeads, headDim]`，若无batch维度，算子无法从shape推断各batch的kv长度。
@@ -81,7 +81,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 - **attention_out** (`Tensor`)：公式中的$attentionOut$，与`query`的数据类型和排布一致，最后一维与`value`的headDim一致。
 - **softmax_lse** (`Tensor`)：Softmax计算的log-sum-exp中间结果，当`softmax_lse_flag=1`时有效；**数据类型为`torch.float32`**。
-  - TND时，shape为`[totalQTokens, headNum, 1]`；
+  - TND时，shape为`[totalQTokens, headNum, 1]`。
   - BNSD时，shape为`[batch, headNum, maxQSeqLength, 1]`。
 
 ## 约束说明
@@ -97,7 +97,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 
 单算子模式调用：
 
-- BNSD 布局
+- BNSD布局
 
     ```python
     import torch
@@ -123,7 +123,7 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
     print(attention_out.shape)  # (B, N, S, D)
     ```
 
-- TND 布局
+- TND布局
 
     ```python
     import torch

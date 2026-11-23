@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_pad
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，建议使用torch.nn.functional.pad。
+> 该接口计划废弃，底层算子实现不再维护，性能、精度等指标无法保障，建议使用torch.nn.functional.pad。
 
 ## 产品支持情况
 
@@ -31,7 +31,7 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 ## 参数说明
 
 - **input** (`Tensor`)：输入张量。
-- **paddings** (`List[int]`)：数据类型为`torch.int32`、`torch.int64`。
+- **paddings** (`List[int]`)：整数列表，从第0维起依次给出各维度前后两侧的填充量。例如，二维输入的列表顺序为`[top, bottom, left, right]`。
 
 ## 调用示例
 

@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu.stop_device
 
 > [!NOTICE]  
-> 本接口为预留接口，暂不支持。
+> 本接口为beta接口，具体支持情况请参见下方产品支持情况表。
 
 ## 产品支持情况
 
@@ -27,7 +27,7 @@ torch_npu.npu.stop_device(device_id: int) -> int
 
 ## 参数说明
 
-**device_id**（`int`）：需要处理的device id，确保是一个有效的device。
+**device_id**（`int`）：必选参数，需要处理的device ID，取值范围为0~当前环境可用device总数减1，需确保是有效的device。
 
 ## 返回值说明
 

@@ -20,7 +20,7 @@
 
     其中gsk代表K轴的mx量化的block size即32，x1\_slice<sub>i</sub>代表x1<sub>i</sub>第m行长度为gsk的向量，x2\_slice<sub>i</sub>代表x2<sub>i</sub>第n列长度为gsk的向量，K轴均从j\*gsk起始切片，j的取值范围\[0, k\_loops\)，k\_loops=ceil\(K<sub>i</sub>/gsk\)，支持最后的切片长度不足gsk。
 
-    T-T量化场景计算公式如下。
+    T-T量化场景计算公式如下：
 
     ![](../../figures/zh-cn_formulaimage_0000002594063675.png)
 
@@ -33,11 +33,11 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，待累加矩阵，数据类型支持`torch.float32`，tensor支持2维，shape为\(M, N\)，数据格式支持ND。
-- **x1**（`Tensor`）：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，tensor支持2维，shape为\(K, M\) ，数据格式支持ND。
+- **x1**（`Tensor`）：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，tensor支持2维，shape为\(K, M\)，数据格式支持ND。
 - **x2**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，tensor支持2维，shape为\(K, N\)，数据格式支持ND。
-- **x2\_scale**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x2_scale_dtype`为对应类型，此时`x2_scale`本身的dtype不再生效，但仍需保证`x2_scale`本身的dtype为8bit位的数据类型，以保证shape正确。数据格式支持ND。
+- **x2\_scale**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x2_scale_dtype`为对应类型，此时`x2_scale`本身的dtype不再生效，但仍需保证`x2_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **x1\_scale**（`Tensor`）：可选参数，表示矩阵乘法中的左矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x1_scale_dtype`为对应类型，此时`x1_scale`本身的dtype不再生效，但仍需保证`x1_scale`本身的dtype为8bit位的数据类型，以保证shape正确。数据格式支持ND。
+- **x1\_scale**（`Tensor`）：可选参数，表示矩阵乘法中的左矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x1_scale_dtype`为对应类型，此时`x1_scale`本身的dtype不再生效，但仍需保证`x1_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
 - **group\_sizes**（`List[int]`）：可选参数。默认值为None。
   - 非None时，仅支持三维列表，形如\[group\_m, group\_n, group\_k\]，分别表示在m、n、k维度上的量化分组情况。以group\_m为例，表示在m维度上group\_m个数对应一个量化参数。
   - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与x1 shape中的m一致，scale\_m与x1\_scale shape中的m一致。

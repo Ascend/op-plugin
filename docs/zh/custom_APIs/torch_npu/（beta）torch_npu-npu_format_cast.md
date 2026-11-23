@@ -49,9 +49,9 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     |torch_npu.Format.NCHW|0|NCHW格式。对应的AscendCL数据格式为ACL_FORMAT_NCHW。|
     |torch_npu.Format.NHWC|1|NHWC格式。对应的AscendCL数据格式为ACL_FORMAT_NHWC。|
     |torch_npu.Format.ND|2|表示支持任意格式，除了Square、Tanh等这些单输入对自身处理的算子外，其他算子需谨慎使用。对应的AscendCL数据格式为ACL_FORMAT_ND。|
-    |torch_npu.Format.NC1HWC0|3|5维数据格式。其中，C0与微架构强相关，该值等于cube单元的size，例如16；C1是将C维度按照C0切分：C1=C/C0，若结果不整除，最后一份数据需要填充到C0。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0。|
+    |torch_npu.Format.NC1HWC0|3|5维数据格式。其中，C0与微架构强相关，该值等于Cube单元的大小，例如16；C1是将C维度按照C0切分：C1=C/C0，若结果不整除，最后一份数据需要填充到C0。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0。|
     |torch_npu.Format.FRACTAL_Z|4|卷积权重的格式。对应的AscendCL数据格式为ACL_FORMAT_FRACTAL_Z。|
-    |torch_npu.Format.NC1HWC0_C04|12|5维数据格式。其中，C0固定为4，C1是将C维度按照C0切分：C1=C/C0， 若结果不整除，最后一份数据需要padding到C0。当前版本不支持。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0_C04。|
+    |torch_npu.Format.NC1HWC0_C04|12|5维数据格式。其中，C0固定为4，C1是将C维度按照C0切分：C1=C/C0， 若结果不整除，最后一份数据需要填充到C0。当前版本不支持。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0_C04。|
     |torch_npu.Format.HWCN|16|HWCN格式。对应的AscendCL数据格式为ACL_FORMAT_HWCN。|
     |torch_npu.Format.NDHWC|27|NDHWC格式。对于3维图像就需要使用带D（Depth）维度的格式。对应的AscendCL数据格式为ACL_FORMAT_NDHWC。|
     |torch_npu.Format.FRACTAL_NZ|29|内部格式，用户目前无需使用。对应的AscendCL数据格式为ACL_FORMAT_FRACTAL_NZ。|
@@ -83,14 +83,14 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
   - <term>Atlas推理系列产品</term>、<term>Atlas训练系列产品</term>、<term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：暂不支持该参数，使用默认值`None`即可。
   <!-- end id10 -->
   <!-- npu="950" id11 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：支持该参数。默认值`None`表示`input`的真实类型和tensor的数据类型一致。
+  - <term>Ascend 950PR&950DT系列产品</term>：支持该参数。默认值`None`表示`input`的真实类型和Tensor的数据类型一致。
   <!-- end id11 -->
 
 ## 返回值说明
 
 `Tensor`
 
-返回修改数据格式后的输出Tensor。
+返回修改数据格式后的输出张量。
 
 ## 约束说明
 
@@ -101,7 +101,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
 <!-- npu="950" id12 -->
 - <term>Ascend 950PR&950DT系列产品</term>：
 
-  目前输入参数支持如下组合，当传入为第三种组合时，转换出来的format为50（ACL\_FORMAT\_FRACTAL\_NZ\_C0\_16）。
+  目前输入参数支持如下组合，当传入为第三种组合时，转换出来的格式为50（ACL\_FORMAT\_FRACTAL\_NZ\_C0\_16）。
 
     | `input`数据类型 | `input` format | `acl_format`取值 | `customize_dtype`取值 | `input_dtype`取值 |
     | --- | --- | --- | --- | --- |

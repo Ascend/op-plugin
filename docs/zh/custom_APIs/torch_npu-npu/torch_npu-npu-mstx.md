@@ -26,7 +26,7 @@
 
 ## 功能说明
 
-打点接口。
+获取MSTX打点接口对象，用于在Profiler性能分析中标记自定义打点事件，支持标记瞬时事件与区间事件。
 
 用于为[torch_npu.profiler._ExperimentalConfig](../torch_npu-profiler/torch_npu-profiler-_ExperimentalConfig.md)的mstx提供打点接口调用。
 
@@ -42,7 +42,7 @@ torch_npu.npu.mstx()
 
 ## 返回值说明
 
-返回`mstx`类的实例。该实例本身不保存上下文状态，用于访问 MSTX 打点相关接口。
+返回`mstx`类的实例。该实例本身不保存上下文状态，用于访问MSTX打点相关接口。
 
 ## 调用示例
 

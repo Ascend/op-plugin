@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-设置或查询conv类算子是否支持hf32。
+设置或查询Conv类算子是否支持hf32。
 
 ## 函数原型
 
@@ -30,7 +30,7 @@ torch_npu.npu.aclnn.allow_hf32:bool
 
 ## 参数说明
 
-**bool**：用于开启或关闭hf32属性的支持。
+`bool`：用于开启或关闭hf32属性的支持，取值范围为True/False，默认值为True。
 
 ## 返回值说明
 

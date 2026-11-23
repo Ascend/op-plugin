@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_giou
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -31,9 +31,9 @@ torch_npu.npu_giou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 ## 参数说明
 
 - **self** (`Tensor`)：必选参数，标注框，shape为(N, 4)，数据类型为`torch.float16`或`torch.float32`的2D张量。“N”表示标注框的数量，值“4”表示[x1, y1, x2, y2]或[x, y, w, h]。
-- **gtboxes** (`Tensor`)：必选参数，真值框，shape为(M, 4)，数据类型为`torch.float16`或`torch.float32`的2D张量。“M”表示真值框的数量，值“4”表示[x1, y1, x2, y2]或[x, y, w, h]。
+- **gtboxes** (`Tensor`)必选参数，真值框，shape为(M, 4)，数据类型为`torch.float16`或`torch.float32`的2D张量。“M”表示真值框的数量，值“4”表示[x1, y1, x2, y2]或[x, y, w, h]。
 - **trans** (`bool`)：可选参数，值为True代表“xywh”，值为False代表“xyxy”，默认值为False。
-- **is_cross** (`bool`)：可选参数，控制输出shape是[M, N]还是[1,N]。如果值为True，则输出shape为[M,N]。如果为False，则输出shape为[1,N]。默认值为False。
+- **is_cross** (`bool`)：可选参数，控制输出shape是[M, N]还是[1, N]。如果值为True，则输出shape为[M, N]。如果为False，则输出shape为[1, N]。默认值为False。
 - **mode** (`int`)：可选参数，计算模式，取值为0或1。0表示IoU，1表示IoF。默认值为0。
 
 ## 调用示例

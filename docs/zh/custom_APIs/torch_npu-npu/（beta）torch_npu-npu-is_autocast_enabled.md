@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-确认autocast是否可用。
+确认autocast是否已启用。
 
 ## 函数原型
 
@@ -34,7 +34,7 @@ torch_npu.npu.is_autocast_enabled()
 
 ## 调用示例
 
-``` python
+```python
 import torch
 import torch_npu
 torch_npu.npu.is_autocast_enabled()

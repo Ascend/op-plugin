@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-本接口用于注册自定义算子处理器，使自定义算子支持NPU Graph的动态Shape更新与重放功能。在NPU Graph模式下，用户调用 `g.update()` 传入新的参数时，TorchNPU框架通过注册的处理器将数据映射到算子输入位置。
+本接口用于注册自定义算子处理器，使自定义算子支持NPUGraph的动态Shape更新与回放功能。在NPUGraph模式下，用户调用 `g.update()` 传入新的参数时，TorchNPU框架通过注册的处理器将数据映射到算子输入位置。
 
 核心机制：
 
@@ -93,11 +93,11 @@ def register_npu_graph_handler(op_names: str | list[str]): ...
 
 #### 1. prepare_capture
 
-返回处理后的 `func, args, kwargs`。用于output预分配或算子变体替换。默认透传。源码中常用于切换`.default`到`.out`并预分配workspace。
+返回处理后的 `func, args, kwargs`。用于输出预分配或算子变体替换。默认透传。源码中常用于切换`.default`到`.out`并预分配workspace。
 
 #### 2. postprocess_result
 
-返回处理后的结果。用于调整返回值格式。默认返回result。源码中常用于将C++ TensorList转为 Python list。
+返回处理后的结果。用于调整返回值格式。默认返回result。源码中常用于将C++ TensorList转为Python list。
 
 #### 3. update_args
 
@@ -141,7 +141,7 @@ class ComprehensiveOpHandler(NpuGraphOpHandler):
 
     @classmethod
     def postprocess_result(cls, result, kwargs):
-        # 2. 调整返回值格式，将底层 TensorList 转为 Python list
+        # 2. 调整返回值格式，将底层 TensorList 转为Python list
         return kwargs["out"]
 
     @classmethod

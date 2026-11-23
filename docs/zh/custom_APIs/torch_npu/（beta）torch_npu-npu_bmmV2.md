@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-将矩阵“a”乘以矩阵“b”，生成“a*b”。支持FakeTensor模式。
+计算`self`与`mat2`的矩阵乘积，支持FakeTensor模式。
 
 ## 函数原型
 
@@ -30,9 +30,9 @@ torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 
 ## 参数说明
 
-- **self**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
-- **mat2**（`Tensor`）：2D或更高维度矩阵张量。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
-- **output_sizes**（`List[int]`）：默认值为[]，输出的shape，用于matmul的反向传播。
+- **self**（`Tensor`）：必选参数，维数至少为1。一维输入按行向量`(1, K)`参与计算。矩阵乘法的内积维度需相等，批次维度按广播规则对齐。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
+- **mat2**（`Tensor`）：必选参数，维数至少为1。一维输入按列向量`(K, 1)`参与计算。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$
+- **output_sizes**（`List[int]`）：默认值为[]，输出的形状，用于matmul的反向传播。
 
 ## 调用示例
 

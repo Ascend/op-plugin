@@ -1,6 +1,6 @@
 # torch_npu.npu接口列表
 
-本章节包含各种子模块接口，如随机数、内存管理等。npu模块支持torch.npu和torch_npu.npu两种调用方式，功能一致。
+本文档列出torch_npu.npu各子模块接口（如随机数、内存管理等）及其功能说明。npu模块支持torch.npu和torch_npu.npu两种调用方式，功能一致。
 
 **表1** torch_npu.npu API
 
@@ -78,7 +78,7 @@
 </tr>
 <tr id="row1154664011216"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p11546040142118"><a name="p11546040142118"></a><a name="p11546040142118"></a><a href="torch_npu-npu-SyncLaunchStream.md">torch_npu.npu.SyncLaunchStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p12548340152110"><a name="p12548340152110"></a><a name="p12548340152110"></a>创建一条同步下发NPUStream，在该流上下发的任务不再使用taskqueue异步下发。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p12548340152110"><a name="p12548340152110"></a><a name="p12548340152110"></a>创建一条同步下发NPUStream，在该流上下发的任务不再使用TaskQueue异步下发。</p>
 </td>
 </tr>
 <tr id="row41388371065"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p3139203712613"><a name="p3139203712613"></a><a name="p3139203712613"></a><a href="（beta）torch_npu-npu-utils-is_support_inf_nan.md">（beta）torch_npu.npu.utils.is_support_inf_nan</a></p>
@@ -88,7 +88,7 @@
 </tr>
 <tr id="row10736640964"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p107361340869"><a name="p107361340869"></a><a name="p107361340869"></a><a href="（beta）torch_npu-npu-utils-npu_check_overflow.md">（beta）torch_npu.npu.utils.npu_check_overflow</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p47368401662"><a name="p47368401662"></a><a name="p47368401662"></a>检测梯度是否溢出，INF_NAN模式下检测输入tensor是否溢出；饱和模式检查硬件溢出标志位判断。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p47368401662"><a name="p47368401662"></a><a name="p47368401662"></a>检测梯度是否溢出，INF_NAN模式下检测输入tensor是否溢出；饱和模式检查硬件溢出标志位进行判断。</p>
 </td>
 </tr>
 <tr id="row7615177121914"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p961514711913"><a name="p961514711913"></a><a name="p961514711913"></a><a href="torch_npu-npu-Event()-recorded_time-().md">（beta）torch_npu.npu.Event().recorded_time()</a></p>
@@ -118,7 +118,7 @@
 </tr>
 <tr id="row2027910351793"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p16367343112416"><a name="p16367343112416"></a><a name="p16367343112416"></a><a href="（beta）torch_npu-npu-is_jit_compile_false.md">（beta）torch_npu.npu.is_jit_compile_false</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1934652175911"><a name="p1934652175911"></a><a name="p1934652175911"></a>确认算子计算是否采用的二进制，如果是二进制计算，返回True，否则返回False。</p>
+<td class="cellrowborder" valign="top" width="62.6%" headers="mcps1.2.3.1.2 "><p id="p1934652175911"><a name="p1934652175911"></a><a name="p1934652175911"></a>确认算子计算是否采用二进制，如果是二进制计算，返回True，否则返回False。</p>
 </td>
 </tr>
 <tr id="row102805356916"><td class="cellrowborder" valign="top" width="37.4%" headers="mcps1.2.3.1.1 "><p id="p163671443142413"><a name="p163671443142413"></a><a name="p163671443142413"></a><a href="（beta）torch_npu-npu-set_mm_bmm_format_nd.md">（beta）torch_npu.npu.set_mm_bmm_format_nd</a></p>
@@ -230,7 +230,7 @@
 </tbody>
 </table>
 
-**表2** amp API
+**表2** AMP API
 
 <a name="table746424818186"></a>
 <table><thead align="left"><tr id="row946484816186"><th class="cellrowborder" valign="top" width="37.669999999999995%" id="mcps1.2.3.1.1"><p id="p34041727199"><a name="p34041727199"></a><a name="p34041727199"></a>API名称</p>
@@ -448,7 +448,7 @@
 </tbody>
 </table>
 
-**表6** aoe API
+**表6** AOE API
 
 <a name="table225713163012"></a>
 <table><thead align="left"><tr id="row192578383010"><th class="cellrowborder" valign="top" width="37.730000000000004%" id="mcps1.2.3.1.1"><p id="p141019192305"><a name="p141019192305"></a><a name="p141019192305"></a>API名称</p>
@@ -559,7 +559,7 @@
 </tbody>
 </table>
 
-**表9** NPU Tensor API(beta)
+**表9** NPU Tensor API（beta）
 
 <a name="table1576442216332"></a>
 <table><thead align="left"><tr id="zh-cn_topic_0000001835257345_row74720376177"><th class="cellrowborder" valign="top" width="26.75%" id="mcps1.2.5.1.1"><p id="zh-cn_topic_0000001835257345_p18161141918211"><a name="zh-cn_topic_0000001835257345_p18161141918211"></a><a name="zh-cn_topic_0000001835257345_p18161141918211"></a>PyTorch原生API名称</p>

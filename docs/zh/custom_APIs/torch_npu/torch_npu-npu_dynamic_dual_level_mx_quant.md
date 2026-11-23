@@ -24,7 +24,7 @@
         temp_i = cast\_to\_x\_type(x_i / level0\_scale_i), \space i\space from\space 1\space to\space 512
         $$
 
-    2. 然后将temp在尾轴上按k<sub>1</sub>  =32个数分组，一组k<sub>1</sub>个数$temp_{i=1}^{k_1}$，对每个数据块进行二级动态量化，每个分组量化尺度如下，最终合并输出得到量化尺度level1\_scale。
+    2. 然后将temp在尾轴上按k<sub>1</sub> =32个数分组，一组k<sub>1</sub>个数$temp_{i=1}^{k_1}$，对每个数据块进行二级动态量化，每个分组量化尺度如下，最终合并输出得到量化尺度level1\_scale。
 
         $$
         shared\_exp_i = floor(log_2(max_i(|temp_i|))) - emax
@@ -59,7 +59,7 @@ torch_npu.npu_dynamic_dual_level_mx_quant(input, *, smooth_scale=None, round_mod
 - **input**（`Tensor`）：必选参数，表示待量化的数据，对应公式中的$x_{i}$，支持1-7维，最后一维必须是偶数。支持非连续Tensor。数据格式支持ND。数据类型支持`torch.bfloat16`、`torch.float16`。不支持空Tensor。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **smooth\_scale**（`Tensor`）：可选参数，当前该功能暂不支持，传入默认值即可。
-- **round\_mode**（`str`）：可选参数，表示数据转换模式，对应公式中的$round\_mode$，支持\{"rint", "round", 'floor'\}，默认值为"rint"。
+- **round\_mode**（`str`）：可选参数，表示数据转换模式，对应公式中的$round\_mode$，支持\{"rint", "round", "floor"\}，默认值为"rint"。
 
 ## 返回值说明
 

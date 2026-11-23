@@ -17,7 +17,7 @@
 将`torch.int32`类型的输入Tensor打包为`torch_npu.int4`存放，每8个`torch_npu.int4`数据通过一个`torch.int32`数据承载，并进行交叠排放。
 
 <!-- npu="950" id11 -->
-<term>Ascend 950PR&950DT系列产品</term>：除了上述能力，还支持将`torch.float32`类型输入Tensor打包为`torch_npu.float4_e2m1fn_x2`存放，每8个`torch_npu.float4_e2m1fn_x2`数据通过一个`torch.float32`数据承载，并进行交叠排放。
+<term>Ascend 950PR&950DT系列产品</term>：除了上述能力，还支持将`torch.float32`类型的输入Tensor打包为`torch_npu.float4_e2m1fn_x2`存放，每8个`torch_npu.float4_e2m1fn_x2`数据通过一个`torch.float32`数据承载，并进行交叠排放。
 <!-- end id11 -->
 
 ## 函数原型
@@ -34,7 +34,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.int32`，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。维度支持2维，shape支持$(k, n)$、$(n, k)$，最后一维需要8个元素对齐。
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`表示的范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维需要8个元素对齐。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float32`。当输入的数据类型为`torch.int32`时，要求`weight`中元素取值在`torch_npu.int4`的表示范围内，即$[-8, 7]$。当输入的数据类型为`torch.float32`时，要求`weight`中元素取值在`torch_npu.float4_e2m1fn_x2`的表示范围内，即$[-6.0, 6.0]$。维度支持2维或3维，shape支持$(k, n)$、$(n, k)$、$(g, k, n)$、$(g, n, k)$，最后一维需要8个元素对齐。
 
     > [!NOTE]
     >
@@ -97,7 +97,7 @@ torch_npu.npu_convert_weight_to_int4pack(weight, inner_k_tiles=0) -> Tensor
     ```
 
   <!-- npu="950" id8 -->
-  - 输入为`torch.float32`场景：该示例仅<term>Ascend 950PR&950DT系列产品</term>支持。
+  - 输入为`torch.float32`场景：该示例仅<term>Ascend 950PR&950DT系列产品</term>支持
 
     ```python
     import torch

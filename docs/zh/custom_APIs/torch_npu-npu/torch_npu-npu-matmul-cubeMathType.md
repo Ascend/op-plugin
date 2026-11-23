@@ -20,9 +20,9 @@
 
 ## 功能说明
 
-设置或查询matmul类算子的cube计算类型。
+设置或查询matmul类算子的Cube计算类型。
 
-`torch_npu.npu.matmul.cube_math_type` 用于设置或查询matmul算子的计算精度类型。通过设置不同的CubeMathType枚举值，控制算子的数学计算模式。
+通过设置不同的`CubeMathType`枚举值，可切换matmul类算子的cube计算类型。
 
 ## 函数原型
 
@@ -30,11 +30,11 @@
 torch_npu.npu.matmul.cube_math_type = CubeMathType
 ```
 
-`CubeMathType` 是枚举类，可通过 `torch_npu.npu.CubeMathType` 或者`from torch_npu.npu import CubeMathType`导入来查询和设置。
+`CubeMathType`是枚举类，可通过`torch_npu.npu.CubeMathType`或者`from torch_npu.npu import CubeMathType`导入来查询和设置。
 
 ## 参数说明
 
-**CubeMathType**：设置cube计算类型，可选值如下：
+**CubeMathType**：设置Cube计算类型，可选值如下：
 
 | 枚举值                      | 值   | 说明                               |
 | --------------------------- | ---- | ---------------------------------- |
@@ -48,7 +48,7 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 
 ## 返回值说明
 
-返回`CubeMathType`枚举类型。
+未设置时返回`None`，设置后返回`CubeMathType`枚举类型。
 
 ## 调用示例
 

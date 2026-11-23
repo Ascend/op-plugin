@@ -73,4 +73,4 @@ torch_npu.npu.mstx.annotate(message: str, stream=None, domain: str = 'default')
       print("my_code end")
   ```
   
-  如上示例中，默认使用装饰的函数名作为该打点任务的message。
+  如上示例中，默认使用被装饰的函数名作为该打点任务的message。

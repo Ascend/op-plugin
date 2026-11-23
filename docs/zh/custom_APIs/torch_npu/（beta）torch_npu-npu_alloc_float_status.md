@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-申请一个专门用于存储浮点运算状态标志的tensor。该tensor用于后续记录计算过程中的溢出状态。
+申请一个专门用于存储浮点运算状态标志的Tensor。该Tensor用于后续记录计算过程中的溢出状态。
 
 ## 函数原型
 
@@ -30,7 +30,7 @@ torch_npu.npu_alloc_float_status(input) -> Tensor
 
 ## 参数说明
 
-**input** (`Tensor`)：必选参数，任意构建的一个NPU张量（主要用于确定device信息）。
+**input** (`Tensor`)：必选参数，任意构造的一个NPU张量（主要用于确定设备信息）。
 
 ## 返回值说明
 

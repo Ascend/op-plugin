@@ -1,7 +1,7 @@
 # （beta）torch\_npu.npu\_batch\_nms
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -24,20 +24,20 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 
 ## 参数说明
 
-- **self** \(`Tensor`)：必选参数，输入框的tensor，包含batch大小，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
-- **scores** \(`Tensor`)：必选参数，输入tensor，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
+- **self** \(`Tensor`)：必选参数，输入框的Tensor，包含batch大小，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
+- **scores** \(`Tensor`)：必选参数，输入分数tensor，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
 - **score\_threshold** \(`float`)：必选参数，指定评分过滤器的阈值，用于筛选框，去除得分较低的框，数据类型为`float32`。
 - **iou\_threshold** \(`float`)：必选参数，指定nms的iou\_threshold，用于设定阈值，去除高于阈值的框，数据类型为`float32`。
 - **max\_size\_per\_class** \(`int`)：必选参数，指定每个类别的最大可选的框数。
 - **max\_total\_size** \(`int`)：必选参数，指定每个batch最大可选的框数。
 - **change\_coordinate\_frame** \(`bool`)：可选参数，是否归一化输出框坐标矩阵，默认值为False。
-- **transpose\_box** \(`bool`)：可选参数，确定是否在此op之前插入转置，默认值为False。True表示boxes使用(4, N)排布。False表示boxes使用(N, 4)排布。
+- **transpose\_box** \(`bool`)：可选参数，确定是否在此OP之前插入转置，默认值为False。True表示boxes使用(4, N)排布。False表示boxes使用(N, 4)排布。
 
 ## 返回值说明
 
 - **nmsed_boxes** (`Tensor`)：shape为\(batch, max\_total\_size, 4\)的3D张量，指定每批次输出的nms框，数据类型`torch.float16`。
-- **nmsed_scores** (`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms分数，数据类型`torch.float16`，batch和参数`nmsed_boxes`的 batch保持一致。
-- **nmsed_classes**(`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms类，数据类型`torch.float16`。
+- **nmsed_scores** (`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms分数，数据类型`torch.float16`，batch和参数`nmsed_boxes`的batch保持一致。
+- **nmsed_classes** (`Tensor`)：shape为\(batch, max\_total\_size\)的2D张量，指定每批次输出的nms类别，数据类型`torch.float16`。
 - **nmsed_num**(`Tensor`)：shape为\(batch\)的1D张量，指定nmsed\_boxes的有效数量，数据类型为`torch.int32`。
 
 ## 调用示例

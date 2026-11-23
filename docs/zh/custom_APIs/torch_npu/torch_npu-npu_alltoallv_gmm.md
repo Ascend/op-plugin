@@ -102,7 +102,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
 - 输入参数Tensor中shape使用的变量说明：
   - BSK：本卡发送的token数（BS\*K=BSK），是send\_counts参数累加之和，取值范围\(0, 52428800\)。
   - H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
-  - H2：表示共享专家hidden size隐藏层大小，取值范围\(0, 12288\]。
+  - H2：共享专家的隐藏维度，取值满足$0 < H2 \le 12288$。
   - e：表示单卡上专家个数，e<=32，e\*ep\_world\_size最大支持256。
   - N1：表示路由专家的head\_num，取值范围\(0, 65536\)。
   - N2：表示共享专家的head\_num，取值范围\(0, 65536\)。
@@ -111,7 +111,7 @@ torch_npu.npu_alltoallv_gmm(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
   - A：本卡收到的token数，是recv\_counts参数累加之和。
   - EP通信域内所有卡上的A累加和等于所有卡上的BSK累加和。
 
-- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256M，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256MB，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 ## 调用示例
 

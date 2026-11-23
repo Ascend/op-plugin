@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-将矩阵“a”乘以矩阵“b”，生成“a\*b”。
+对输入执行线性变换，计算公式为`out = input @ weight.T + bias`。当`bias`为`None`时，计算`out = input @ weight.T`。
 
 ## 函数原型
 

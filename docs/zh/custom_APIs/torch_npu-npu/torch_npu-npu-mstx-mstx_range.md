@@ -38,13 +38,13 @@ torch_npu.npu.mstx.mstx_range(msg: str, stream=None, domain: str='default')
 
 - **msg** (`str`)：必选参数，打点携带信息的字符串。
 - **stream** (`torch_npu.npu.Stream`)：可选参数，用于执行打点任务的stream，默认为None。
-  - 配置为None时，只标记Host侧的瞬时事件。
-  - 配置为有效的stream时，标记Host侧和对应Device侧的瞬时事件。
+  - 配置为None时，只标记Host侧的时间段事件。
+  - 配置为有效的stream时，标记Host侧和对应Device侧的时间段事件。
 - **domain** (`str`)：可选参数，指定的domain名称，表示在指定的domain内，标识时间段事件。默认为'default'，表示默认domain，不设置也为默认domain。
 
 ## 返回值说明
 
-无
+返回一个装饰器。调用装饰后的函数时，会记录该次调用的时间段事件，并返回原函数的结果。
 
 ## 调用示例
 

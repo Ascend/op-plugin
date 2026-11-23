@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_sign_bits_pack
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-- API功能：将`torch.float`类型的输入打包为`torch.uint8`类型。每8个浮点数打包为一个`torch.uint8`数值，-1.0编码为二进制位0，1.0编码为二进制位1，并按小端序进行打包。
+- API功能：将一维`torch.float16`或`torch.float32`张量按符号位打包为`torch.uint8`。每8个浮点数打包成1个字节，负数编码为0，零和正数编码为1，按低位到高位的顺序写入。
 
 - 等价计算逻辑：
     
@@ -46,8 +46,8 @@ torch_npu.npu_sign_bits_pack(self, size) -> Tensor
 
 ## 参数说明
 
-- **self** (`Tensor`): 必选参数，1D `torch.float`张量。 支持`torch.float32`和`torch.float16`类型输入。
-- **size**(`int`): 必选参数，用于reshape输出张量的第一个维度。
+- **self** (`Tensor`)：必选参数，一维张量，支持`torch.float16`和`torch.float32`。
+- **size** (`int`)：必选参数，为正整数，指定输出张量的第一维长度，需满足约束说明中的整除要求。
 
 ## 返回值说明
 
@@ -57,7 +57,7 @@ torch_npu.npu_sign_bits_pack(self, size) -> Tensor
 
 ## 约束说明
 
-`size`可被`torch.float`打包的输出整除。如果`self`的size可被8整除，则输出的size为(size of self)/8；否则，输出的size为(size of self // 8) + 1。将在小端位置添加-1浮点值以填充可整除性。
+`size`必须能整除打包后的输出长度（即打包后的输出长度可被`size`整除）。设打包后的字节数为`L = (self.numel() + 7) // 8`。`size`必须整除`L`。当最后一组不足8个元素时，将最后一个字节的剩余高位补0。
 
 ## 调用示例
 

@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_multi_head_attention
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -43,11 +43,11 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 - **value_bias**（`Tensor`）：仅支持`torch.float16`。
 - **out_proj_bias**（`Tensor`）：仅支持`torch.float16`。
 - **dropout_mask**（`Tensor`）：仅支持`torch.float16`。
-- **attn_head_num**（`int`）： Attention Head numbers。
+- **attn_head_num**（`int`）：Attention Head numbers。
 - **attn_dim_per_head**（`int`）：Attention dim of a Head。
 - **src_len**（`int`）：source length。
 - **tgt_len**（`int`）：target length。
-- **dropout_prob**（`float`）：dropout keep probability。
+- **dropout_prob**（`float`）：dropout probability。
 - **softmax_use_float**（`bool`）：SoftMax Use `torch.float32` to keep precision。
 
 ## 返回值说明

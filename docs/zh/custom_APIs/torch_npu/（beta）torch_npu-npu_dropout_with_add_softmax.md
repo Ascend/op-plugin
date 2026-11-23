@@ -20,13 +20,13 @@
 
 ## 功能说明
 
-实现axpy_v2、softmax_v2、drop_out_domask_v3功能。即：
+实现axpy_v2、softmax_v2、drop_out_domask_v3功能，即：
 
 y=x1+ self \*alpha
 
 Softmax(xi)= exp(xi)/∑jexp(xj)
 
-output = 根据mask舍弃self中的元素，留下来的元素乘(1/prob)
+对加权和`y = x1 + alpha * self`做Softmax，得到`result_softmax`。按`mask`将其中被丢弃的元素置为0，保留的元素乘以`1 / (1 - prob)`，得到`result_dropout`。
 
 ## 函数原型
 
@@ -36,17 +36,17 @@ torch_npu.npu_dropout_with_add_softmax(self, x1, alpha, prob, dim) -> (Tensor, T
 
 ## 参数说明
 
-- **self**（`Tensor`）：4维张量，shape为(N, C, H, W)。
-- **x1**（`Tensor`）：4维张量，shape为(N, C, H, W)。
+- **self**（`Tensor`）：加权加法中乘以`alpha`的输入张量，形状为`(N, C, H, W)`。
+- **x1**（`Tensor`）：参与加权加法运算的输入张量，4维张量，shape为(N, C, H, W)。
 - **alpha**（`Float`）：缩放系数，支持正负浮点值。
 - **prob**（`Float`）：Dropout 丢弃概率，控制 Dropout 操作中元素被随机丢弃的概率，prob=0.0时无元素丢弃（等价于不执行 Dropout），prob越大丢弃元素越多。若prob ≥ 1.0会触发参数非法异常。
 - **dim**（`int`）：Softmax 计算的维度。当前仅支持dim=-1。
 
 ## 返回值说明
 
-- **mask** (`Tensor`)：输出张量。shape为(N, C, H, W)。记录 Dropout 操作中元素的保留 / 丢弃状态，是dropout_genmask根据丢弃概率prob随机生成的二进制掩码：掩码值为1：对应位置的self张量元素保留，参与后续加权加法计算；掩码值为0：对应位置的self张量元素被丢弃，后续计算中该位置值为 0。
-- **result_softmax** (`Tensor`)：输出张量，shape为(N, C, H, W)。融合计算的最终 Softmax 结果。指定维度dim上的所有元素求和结果为 1。
-- **result_dropout** (`Tensor`)：输出张量，shape为(N, C, H, W)。输入self张量经过 Dropout 掩码后的结果。
+- **mask**（`Tensor`）：一维`torch.uint8`张量，长度为`x1.numel()`向上对齐到128的倍数。掩码作用于`result_softmax`，0表示丢弃，1表示保留。
+- **result_softmax** (`Tensor`)：输出张量，shape为(N, C, H, W)。融合计算的最终 Softmax 结果。指定维度dim上的所有元素求和结果为1。
+- **result_dropout** (`Tensor`)：输出张量，shape为(N, C, H, W)。对result_softmax执行Dropout后的结果
 
 ## 约束说明
 

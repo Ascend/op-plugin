@@ -16,7 +16,7 @@
 
 - API功能：在TP切分场景下，对输入的MM左矩阵x1执行AllGather集合通信后，与右矩阵x2进行MatMul计算，支持量化场景下的反量化计算，并可同时输出AllGather通信结果gatherOut与MatMul计算结果的最大值amaxOut。该接口是`torch_npu.npu_all_gather_base_mm`接口的功能扩展：
   <!-- npu="950" id4 -->
-  - <term>Ascend 950DT系列产品</term> 新增了对低精度数据类型`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`的支持（支持pertensor、perblock、mx量化方式，其中mx量化支持mxfp8和mxfp4场景）；
+  - <term>Ascend 950DT系列产品</term> 新增了对低精度数据类型`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`/`torch_npu.float4_e2m1fn_x2`的支持（支持pertensor、perblock、MX量化方式，其中MX量化支持mxfp8和mxfp4场景）。
   <!-- end id4 -->
   <!-- npu="A3,910b" id21 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>新增了对`torch.int8`的支持（支持pertoken/perchannel量化方式）。
@@ -34,7 +34,7 @@
     gatherOut=AllGather(x1)
     $$
 
-  - 场景2：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`的pertensor场景，或x1和x2数据类型为`torch.int8`/`torch_npu.int4`的perchannel、pertoken场景，且不输出amaxOut时，对入参x1进行AllGather后，对x1、x2进行MatMul计算，然后进行dequant操作：
+  - 场景2：当x1和x2数据类型为`torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.hifloat8`的pertensor场景，或x1和x2数据类型为`torch.int8`/`torch_npu.int4`的perchannel、pertoken场景，且不输出amaxOut时，对入参x1进行AllGather后，对x1、x2进行MatMul计算，然后进行反量化操作：
 
     $$
     output=(x1Scale*x2Scale)*(AllGather(x1)@x2 + bias)
@@ -93,7 +93,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   <!-- end id6 -->
 
 - **x2** (`Tensor`)：必选参数，MM右矩阵，即计算公式中的$x2$。shape为2维，转置时为$(n, k)$，非转置时为$(k, n)$，支持转置/不转置场景，仅转置场景支持非连续Tensor，数据格式支持$ND$。数据类型支持范围与`self`一致，且x1和x2的数据类型需保持一致（`torch.float8_e4m3fn`与`torch.float8_e5m2`可混用）。
-- **hcom** (`str`)：必选参数，通信域名称。可通过`group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)`获取，其中`group`为`torch.distributed`的进程组。
+- **hcom** (`str`)：必选参数，通信域名称，可通过`group._get_backend(torch.device('npu')).get_hccl_comm_name(rank)`获取，其中`group`为`torch.distributed`的进程组。
 - **world_size** (`int`)：必选参数，通信域内的rank总数，必须为2的幂。
 
   <!-- npu="950" id7 -->
@@ -132,7 +132,7 @@ torch_npu.npu_all_gather_quant_mm(self, x2, hcom, world_size, *, bias=None, x1_s
   <!-- end id14 -->
 
 - **quant_scale** (`Tensor`)：可选参数，量化参数，默认值为`None`。当前版本仅支持传入`None`。
-- **block_size** (`int`)：可选参数，用于表示MM输出矩阵在M轴方向和N轴方向上可用于对应方向上的多少个数的量化，默认值为`0`。block_size由blockSizeM、blockSizeN、blockSizeK三个值拼接而成，每个值占16位，计算公式为block_size = blockSizeK | blockSizeN << 16 | blockSizeM << 32，MM输出矩阵不涉及K轴，blockSizeK固定为0。当前版本仅支持blockSizeM=blockSizeN=0，即仅支持传入0。
+- **block_size** (`int`)：可选参数，用于表示MM输出矩阵在M轴方向和N轴方向上可用于对应方向上的多少个数的量化，默认值为`0`。block_size由blockSizeM、blockSizeN、blockSizeK三个值拼接而成，每个值占16位，计算公式为block_size = blockSizeK | blockSizeN << 16 | blockSizeM << 32，MM输出矩阵不涉及K轴，blockSizeK固定为0。当前版本仅支持blockSizeM = blockSizeN = 0，即仅支持传入0。
 - **gather_index** (`int`)：可选参数，标识gather目标，默认值为`0`。`0`表示目标为x1，`1`表示目标为x2。当前版本仅支持输入`0`。
 - **gather_output** (`bool`)：可选参数，是否需要输出AllGather通信结果gatherOut，默认值为`True`。为`True`时输出gatherOut；为`False`时gatherOut返回空Tensor。
 - **comm_turn** (`int`)：可选参数，通信数据切分数，即总数据量/单次通信量，默认值为`0`。当前版本仅支持输入`0`。

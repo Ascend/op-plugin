@@ -109,7 +109,7 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
   > **注意：**静态量化下，quant\_scale仅支持`torch.float32`类型。
 - **quant\_offset** (`Tensor`)：可选参数，表示量化中的偏移项。数据类型支持`torch.float32`、`torch.float16`和`torch.bfloat16`，数据格式为$ND$。`group_index`场景下（非None），该参数不生效，需为None。
 - **group\_index** (`Tensor`)：可选参数，当前只支持count模式，表示该模式下指定分组的Tokens数（要求非负整数）。要求为1维张量，数据类型支持`torch.int64`，数据格式$ND$。
-- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做 swish 激活，仅在 swiglu_mode=0/2/3 时生效，默认值为 False。
+- **activate\_left** (`bool`)：可选参数，用于控制对输入沿最后一维等分后的左半部分还是右半部分做swish激活，仅在swiglu_mode=0/2/3时生效，默认值为False。
     - 取True时，out=swish\(split\[x, -1, 2\]\[0\]\)\*split\[x, -1, 2\]\[1\]
     - 取False时，out=swish\(split\[x, -1, 2\]\[1\]\)\*split\[x, -1, 2\]\[0\]
 
@@ -117,14 +117,14 @@ torch_npu.npu_dequant_swiglu_quant(x, *, weight_scale=None, activation_scale=Non
 - **dst\_type**(`int`)：可选参数，输出`out`的数据类型。`1`表示`torch.int8`，`290`表示`torch_npu.hifloat8`，`291`表示`torch.float8_e5m2`，`292`表示`torch.float8_e4m3fn`，`296`表示`torch_npu.float4_e2m1fn_x2`，`297`表示`torch_npu.float4_e1m2fn_x2`。默认值为`None`，表示输出为`torch.int8`。当输出为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，`out`的最后一维为对应量化结果的一半（两个元素打包为一个字节存储）。
 - **round\_mode**(`int`)：可选参数，输出`out`的舍入模式。取值范围为$[0,4]$：`0`表示`"rint"`，`1`表示`"round"`，`2`表示`"floor"`，`3`表示`"ceil"`，`4`表示`"trunc"`。当输出数据类型为`torch.int8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`时仅支持`0`；为`torch_npu.hifloat8`时仅支持`1`。默认值为`0`。
 - **activate\_dim**(`int`)：可选参数，进行swish计算时选择的切分轴。取值范围为$[-x.dim(),\ x.dim()-1]$，负数表示从末尾开始计数。当`activate_dim`为非尾轴时，`group_index`必须为`None`，且`quant_mode`仅支持静态量化（`0`）。默认值为`-1`，表示尾轴。
-- **swiglu\_mode**（`int`）：可选参数，swiglu计算模式，默认值为0。0表示传统swiglu，1表示变种swiglu（支持clamp、alpha、bias），2表示传统swiglu的拆分方式+变种swiglu的计算方式，3表示传统swiglu的拆分方式+变种swiglu的计算方式（clamp在swish之后，不支持alpha、bias）。
-- **clamp\_limit**（`float`）：可选参数，swiglu输入门限，默认7.0。
-- **glu\_alpha**（`float`）：可选参数，glu激活函数系数，默认1.702。
-- **glu\_bias**（`float`）：可选参数，swiglu计算中的偏差，默认1.0。
+- **swiglu\_mode**(`int`)：可选参数，SwiGLU计算模式，默认值为0。0表示标准SwiGLU，1表示变种swiglu（支持clamp、alpha、bias），2表示传统swiglu的拆分方式+变种swiglu的计算方式，3表示传统swiglu的拆分方式+变种swiglu的计算方式（clamp在swish之后，不支持alpha、bias）。
+- **clamp\_limit**(`float`)：可选参数，swiglu输入门限，默认7.0。
+- **glu\_alpha**(`float`)：可选参数，glu激活函数系数，默认1.702。
+- **glu\_bias**(`float`)：可选参数，swiglu计算中的偏差，默认1.0。
 
 ## 返回值说明
 
-- **out** (`Tensor`)：表示量化后的输出tensor。要求是2D的Tensor，shape=\[TokensNum, H\]，数据类型由`dst_type`决定，默认为`torch.int8`，数据格式为$ND$。当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`类型时，尾轴为H的一半。
+- **out** (`Tensor`)：表示量化后的输出tensor。要求是2维张量，shape=\[TokensNum, H\]，数据类型由`dst_type`决定，默认为`torch.int8`，数据格式为$ND$。当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`类型时，尾轴为H的一半。
 - **scale** (`Tensor`)：表示量化的scale参数。要求是1D的Tensor，shape=\[TokensNum\]，数据类型支持`torch.float32`，数据格式为$ND$。
 
 ## 约束说明

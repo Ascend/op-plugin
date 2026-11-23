@@ -135,7 +135,7 @@ torch_npu.npu_all_gather_base_mm(input, x2, hcom, world_size, *, bias=None, x1_s
 ## 约束说明
 
 - 该接口支持单算子模式和TorchAir图模式。
-- `input`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
+- `input`不支持输入转置后的Tensor，`x2`转置后输入，需要满足shape的第一维大小与`input`的最后一维相同，满足matmul的计算条件。
 - **通信模式约束**：
   - `comm_mode`为`ai_cpu/ccu`时：
       - 该接口支持训练场景下使用。

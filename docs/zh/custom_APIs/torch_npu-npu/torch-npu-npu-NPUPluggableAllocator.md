@@ -34,7 +34,7 @@ torch_npu.npu.memory.NPUPluggableAllocator(path_to_so_file, alloc_fn_name, free_
 
 ## 参数说明
 
-- **path_to_so_file**（`str`）：so文件路径。
+- **path_to_so_file**（`str`，必填）：so文件路径。
 - **alloc_fn_name**（`str`）：内存申请函数名（与C/C++文件中函数名一致）。
 - **free_fn_name**（`str`）：内存释放函数名（与C/C++文件中函数名一致）。
 

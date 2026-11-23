@@ -31,7 +31,7 @@ torch.npu.get_device_limit(device) ->Dict
 
 `Dict`
 
-代表`Device`的Cube和Vector核数。
+代表`Device`上Cube Core和Vector Core的核数。
 
 ## 约束说明
 

@@ -1,7 +1,7 @@
 # （beta）torch\_npu.npu\_nms\_with\_mask
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -35,13 +35,13 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 
 ## 返回值说明
 
-- **selected\_boxes**\(`Tensor`\)：shape为\[N,5\]的2D张量，表示filtered box，包括proposal box和相应的置信度分数。
+- **selected\_boxes**\(`Tensor`\)：shape为\[N,5\]的2D张量，表示filtered box，包括建议框和相应的置信度分数。
 - **selected\_idx** \(`Tensor`\)：shape为\[N\]的1D张量，表示输入建议框的index。
 - **selected\_mask** \(`Tensor`\)：shape为\[N\]的1D张量，判断输出建议框是否有效。
 
 ## 约束说明
 
-输入input的2nd-dim必须等于8。
+输入input的第2维必须等于8。
 
 ## 调用示例
 

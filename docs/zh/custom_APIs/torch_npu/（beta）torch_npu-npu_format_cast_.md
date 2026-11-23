@@ -53,9 +53,9 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     |torch_npu.Format.NCHW|0|NCHW格式。对应的AscendCL数据格式为ACL_FORMAT_NCHW。|
     |torch_npu.Format.NHWC|1|NHWC格式。对应的AscendCL数据格式为ACL_FORMAT_NHWC。|
     |torch_npu.Format.ND|2|表示支持任意格式，除了Square、Tanh等这些单输入对自身处理的算子外，其他算子需谨慎使用。对应的AscendCL数据格式为ACL_FORMAT_ND。|
-    |torch_npu.Format.NC1HWC0|3|5维数据格式。其中，C0与微架构强相关，该值等于cube单元的size，例如16；C1是将C维度按照C0切分：C1=C/C0， 若结果不整除，最后一份数据需要填充到C0。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0。|
+    |torch_npu.Format.NC1HWC0|3|5维数据格式。其中，C0与微架构强相关，该值等于cube单元的size，例如16；C1是将C维度按照C0切分：C1=C/C0，若结果不整除，最后一份数据需要填充到C0。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0。|
     |torch_npu.Format.FRACTAL_Z|4|卷积权重的格式。对应的AscendCL数据格式为ACL_FORMAT_FRACTAL_Z。|
-    |torch_npu.Format.NC1HWC0_C04|12|5维数据格式。其中，C0固定为4，C1是将C维度按照C0切分：C1=C/C0， 若结果不整除，最后一份数据需要padding到C0。当前版本不支持。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0_C04。|
+    |torch_npu.Format.NC1HWC0_C04|12|5维数据格式。其中，C0固定为4，C1是将C维度按照C0切分：C1=C/C0，若结果不整除，最后一份数据需要padding到C0。当前版本不支持。对应的AscendCL数据格式为ACL_FORMAT_NC1HWC0_C04。|
     |torch_npu.Format.HWCN|16|HWCN格式。对应的AscendCL数据格式为ACL_FORMAT_HWCN。|
     |torch_npu.Format.NDHWC|27|NDHWC格式。对于3维图像就需要使用带D（Depth）维度的格式。对应的AscendCL数据格式为ACL_FORMAT_NDHWC。|
     |torch_npu.Format.FRACTAL_NZ|29|内部格式，用户目前无需使用。对应的AscendCL数据格式为ACL_FORMAT_FRACTAL_NZ。|
@@ -116,7 +116,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $ND$ | 29 | `torch.float8_e4m3fn` | `torch_npu.float4_e2m1fn_x2` |
     | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $FRACTAL\_NZ$ | 2 | NA | `torch_npu.float4_e2m1fn_x2` |
     | `torch_npu.float4_e2m1fn_x2`（`torch.uint8`/`torch.int8`承载） | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | `torch_npu.float4_e2m1fn_x2` |
-    | `torch_npu.float4_e1m2fn_x2`（`torch.uint8`/`torch.int8` 承载） | $ND$ | 29 | NA | `torch_npu.float4_e1m2fn_x2` |
+    | `torch_npu.float4_e1m2fn_x2`（`torch.uint8`/`torch.int8`承载） | $ND$ | 29 | NA | `torch_npu.float4_e1m2fn_x2` |
     | `torch.uint8` | $FRACTAL\_NZ$ | 2 | NA | NA |
     | `torch.uint8` | $FRACTAL\_NZ\_C0\_16$ | 2 | NA | NA |
     | `torch.uint8` | $FRACTAL\_NZ\_C0\_32$ | 2 | NA | NA |
@@ -137,7 +137,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
 
   当前不支持的特殊场景：
 
-  - $ND$转$FRACTAL\_NZ$场景，当`srcTensor.dtype`和`additionalDtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若维度表示为\[k, n\]，则k为1场景暂不支持。
+  - $ND$转$FRACTAL\_NZ$时，若`input`的数据类型与`customize_dtype`指定的类型一致且为`torch.float16`或`torch.bfloat16`，则在`input`形状为`[k, n]`时暂不支持`k=1`。
   - 调用本接口转为$FRACTAL\_NZ$格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
   - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
   - $FRACTAL\_NZ$转$ND$场景，不支持输入`srcTensor`非连续。
@@ -169,7 +169,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     ```
 
 <!-- npu="950" id13 -->
-- 使用 `input_dtype` （仅<term>Ascend 950PR&950DT系列产品</term>）：
+- 使用`input_dtype`（仅<term>Ascend 950PR&950DT系列产品</term>）：
 
     ```python
     >>> import torch

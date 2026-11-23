@@ -33,8 +33,8 @@ torch_npu.npu_ciou(boxes1, boxes2, trans=False, is_cross=True, mode=0, atan_sub_
 
 ## 参数说明
 
-- **boxes1** (`Tensor`)：必选参数，格式为xywh、shape为(4, n)的预测检测框。
-- **boxes2** (`Tensor`)：必选参数，相应的gt检测框，shape为(4, n)。
+- **boxes1** (`Tensor`)：必选参数，预测边界框，形状为`(4, N)`，`N`为预测框数量。当`is_cross=False`时，`N`须与`boxes2`的框数量一致。
+- **boxes2** (`Tensor`)：必选参数，真实边界框，形状为`(4, M)`，`M`为真实框数量。
 - **trans** (`bool`)：可选参数，是否有偏移。默认值为False。
 - **is_cross** (`bool`)：可选参数，boxes1和boxes2之间是否有交叉操作。默认值为True。
 - **mode** (`int`)：可选参数，选择CIoU的计算方式。0表示IoU，1表示IoF。默认值为0。

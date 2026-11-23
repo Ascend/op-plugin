@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-将Attention节点上数据发往FFN节点。
+将Attention节点上的数据发往FFN节点。
 
 ## 函数原型
 
@@ -22,10 +22,10 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 - **session\_id** (`Tensor`)：必选参数，Attention域本卡ID，要求为1维张量，shape为\(X, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
 - **micro\_batch\_id** (`Tensor`)：必选参数，当前microBatch组的ID，要求为1维张量，shape为\(X, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
 - **layer\_id** (`Tensor`)：必选参数，模型层数ID，要求为1维张量，shape为\(X, \)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
-- **expert\_ids** (`Tensor`)：必选参数，每个micro batch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行（同一个token）中的K个value不能重复。
-- **expert\_rank\_table** (`Tensor`)：必选参数，每个micro batch组中专家ID到FFN卡专家部署的映射表，外部需保证值正确。要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, M\)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
+- **expert\_ids** (`Tensor`)：必选参数，每个microBatch组中每个token的topK个专家索引，决定每个token要发给哪些专家。要求为3维张量，shape为\(X, BS, K\)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。张量里value取值范围为\[0, moe\_expert\_num\)，且同一行（同一个token）中的K个value不能重复。
+- **expert\_rank\_table** (`Tensor`)：必选参数，每个microBatch组中专家ID到FFN卡专家部署的映射表，外部需保证值正确。要求为3维张量，shape为\(L, shared\_expert\_num + moe\_expert\_num, M\)，数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。
 - **group** (`str`)：必选参数，通信域名称，专家并行的通信域。字符串长度范围为\[1,128\)。
-- **world\_size**(`int`)：必选参数，通信域size。取值支持\[2, 768\]。
+- **world\_size** (`int`)：必选参数，通信域size。取值支持\[2, 768\]。
 - **ffn\_token\_info\_table\_shape** (`List[int]`)：必选参数，表示FFN卡上token信息表格shape大小，长度为3，包括Attention节点的数量、microBatchSize的大小以及每个token对应的相关发送状态信息shape的大小。
 - **ffn\_token\_data\_shape** (`List[int]`)：必选参数，表示FFN卡上token数据表格shape大小，长度为5，包括Attention节点的数量、microBatchSize的大小、batchSize的大小、每个token需发送的专家数量（包括共享专家）、单个token的长度。
 - **attn\_token\_info\_table\_shape** (`List[int]`)：必选参数，表示Attention卡上token信息表格shape大小，长度为3，包括microBatchSize的大小、batchSize的大小、每个token需发送的专家数量（包括共享专家）。
@@ -51,7 +51,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 - Atlas A3系列产品：该场景下单卡包含双DIE（简称为“晶粒”或“裸片”），因此参数说明里的“本卡”均表示单DIE。
 <!-- end id2 -->
 - 参数里Shape使用的变量如下：
-    - X：表示micro batch sequence size，即token组数，当前版本仅支持 X = 1。
+    - X：表示microBatch sequence size，即token组数，当前版本仅支持X = 1。
 
     - H：表示hidden size隐藏层大小，取值为\[1024, 8192\]。
 
@@ -59,7 +59,7 @@ torch_npu.npu_attention_to_ffn(x, session_id, micro_batch_id, layer_id, expert_i
 
     - K：表示选取topK个专家，取值范围为0 < K ≤ 16，同时满足0 < K ≤ moe\_expert\_num。
 
-    - L：表示模型层数，当前版本仅支持 L = 1。
+    - L：表示模型层数，当前版本仅支持L = 1。
 
     - shared_expert_num：表示共享专家数量（一个共享专家可以复制部署到多个FFN节点上），取值范围为\[0, 4\]。
 

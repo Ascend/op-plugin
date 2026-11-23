@@ -30,7 +30,7 @@ torch_npu.npu.set_autocast_enabled(bool)
 
 ## 参数说明
 
-**bool**：入参为True时，在设备上开启AMP，否则，不开启AMP。
+**bool**：必填参数，取值为True或False。入参为True时，在设备上开启AMP，否则，不开启AMP。
 
 ## 调用示例
 

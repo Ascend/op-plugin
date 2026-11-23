@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：该接口实现了chunk版本的 Gated Delta Rule（GDR）的计算逻辑，是Transformer线性注意力机制的关键算子之一。
+- API功能：该接口实现了chunk版本的Gated Delta Rule（GDR）的计算逻辑，是Transformer线性注意力机制的关键算子之一。
 
 - 计算公式：
 
@@ -43,7 +43,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 > $N_k$ 表示key的头数，$N_v$ 表示value的头数。<br>
 > $D_k$ 表示key的hidden size，$D_v$ 表示value的hidden size。
 
-- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
+- **query** (`Tensor`)：必选参数，对应公式中的$q$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空Tensor。
 
 - **key** (`Tensor`)：必选参数，对应公式中的$k$，数据类型支持`torch.bfloat16`，数据格式支持ND，shape为（$T$, $N_k$, $D_k$），不支持空tensor。
 
@@ -61,13 +61,13 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
 
 ## 返回值说明
 
-- **out** (`Tensor`)：公式中的$o_t$，注意力计算结果。数据类型为`torch.bfloat16`，数据格式为ND，shape为($T$, $N_v$, $D_v$)。
+- **out** (`Tensor`)：公式中的$o_t$，注意力计算结果。数据类型为`torch.bfloat16`，数据格式为ND，shape为（$T$, $N_v$, $D_v$）。
 
 - **final_state** (`Tensor`)：最终的状态矩阵$S_L$，数据类型为`torch.bfloat16`、`torch.float32`，数据格式为ND，shape为（$B$, $N_v$, $D_v$, $D_k$）。
 
 ## 约束说明
 
-- 该接口仅支持推理场景下使用，当前TND场景，beta、initial_state、actual_seq_lengths必传。
+- 该接口仅支持推理场景下使用，当前TND场景下，可选参数beta、initial_state、actual_seq_lengths必须显式传入。
 <!-- npu="950" id4 -->
 - initial_state、final_state `torch.float32`数据类型仅在Ascend 950PR&950DT系列产品支持。
 <!-- end id4 -->
@@ -164,7 +164,7 @@ torch_npu.npu_chunk_gated_delta_rule(query, key, value, *, beta=None, initial_st
         bs: 一个批量中的语句个数;
         seqlen: 语句的Token数量, 即长度;
         nk, nv: QK和V对应的attention头数;
-        dk, dv: QK和V对应的词和位置空间嵌入维度。
+        dk, dv: QK和V对应的词和位置空间嵌入维度
         """
         bs, seqlen = 2, 100
         nk, nv = 4, 4

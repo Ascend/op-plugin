@@ -30,7 +30,7 @@ $$
 sumIndex=\text{ReduceSum}\left(\text{exp}\left(res-maxIndex\right)\right)
 $$
 
-$maxIndex$，$sumIndex$作为输出传递给接口npu_dense_lightning_indexer_grad_kl_loss，作为输入用于计算Softmax。
+$maxIndex$、$sumIndex$作为输出传递给接口`npu_dense_lightning_indexer_grad_kl_loss`，作为输入用于计算Softmax。
 
 ## 函数原型
 
@@ -52,7 +52,7 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 - **layout**(`str`)：可选参数，用于标识输入`query_index`的数据排布格式。当前支持$BSND$、$TND$，默认值为$BSND$。
 
-- **sparse_mode**(`int`)：可选参数，表示sparse的模式，数据类型支持`int32`，默认值为`3`。当前仅支持模式`3`。
+- **sparse_mode**(`int`)：可选参数，表示稀疏的模式，数据类型支持`int32`，默认值为`3`。当前仅支持模式`3`。
 
 - **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值为$2^{63}-1$。
 
@@ -60,8 +60,8 @@ npu_dense_lightning_indexer_softmax_lse(query_index, key_index, weights, *, actu
 
 ## 返回值说明
 
-- **softmax_max_index**(`Tensor`)：表示softmax计算使用的max值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`torch.float32`。
-- **softmax_sum_index**(`Tensor`)：表示softmax计算使用的sum值，对应公式中的$sumIndex$，数据格式支持$ND$，数据类型支持`torch.float32`。
+- **softmax_max_index**(`Tensor`)：表示softmax计算使用的最大值，对应公式中的$maxIndex$，数据格式支持$ND$，数据类型支持`torch.float32`。
+- **softmax_sum_index**(`Tensor`)：表示softmax计算使用的求和值，对应公式中的$sumIndex$，数据格式支持$ND$，数据类型支持`torch.float32`。
 
 ## 约束说明
 

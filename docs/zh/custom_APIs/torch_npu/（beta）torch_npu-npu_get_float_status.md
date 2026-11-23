@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_get_float_status
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -30,7 +30,7 @@ torch_npu.npu_get_float_status(self) -> Tensor
 
 ## 参数说明
 
-**self** (`Tensor`)：数据内存地址张量，数据类型为`torch.float32`。
+**self** (`Tensor`)：输入张量，数据类型为`torch.float32`。
 
 ## 返回值说明
 

@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：对输入变量，以数据块（32\*32）为基本块进行MX量化并转换为目标数据类型。
+- API功能：对输入变量，以基本块（32\*32）为单位进行MX量化并转换为目标数据类型。
 
     在每个基本块中，根据`scale_alg`的取值采取不同的scale算法计算出当前块对应的量化参数`scale`（1\*1），将其广播为`scale1`（32\*1）和`scale2`（1\*32）输出。同时对基本块中的每一个数除以`scale`，根据`round_mode`转换到对应的`dst_type`，得到量化结果`y`。
 
@@ -81,7 +81,7 @@ torch_npu.npu_dynamic_block_mx_quant(input, *, round_mode="rint", dst_type=torch
 
 - **y** (`Tensor`)：表示input量化后的对应结果，数据类型由参数`dst_type`指定，shape与输入`input`一致。当`dst_type`为`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`时，y的数据类型实际为`torch.uint8`，查看具体值需自行解包。
 - **scale1_out** (`Tensor`)：表示-1轴每个分组对应的量化尺度。逻辑数据类型为`torch.float8_e8m0fnu`，实际数据类型为`torch.uint8`，查看具体值需要自行转换。Shape为input的-1轴的值除以32向上取整，并对其进行偶数pad，pad填充值为0。
-- **scale2_out** (`Tensor`)：表示-2轴每个分组对应的量化尺度。逻辑数据类型为`torch.float8_e8m0fnu`，实际数据类型为`torch.uint8`，查看具体值需要自行转换。Shape在input的-2轴的值除以32向上取整，并对其进行偶数pad，pad填充值为0，scale2_out输出需要对每两行数据交织处理。
+- **scale2_out** (`Tensor`)：表示-2轴各分组的缩放因子，逻辑数据类型为`torch.float8_e8m0fnu`，实际存储类型为`torch.uint8`。若输入形状为`(..., M, N)`，则输出形状为`(..., ceil(M / 64), N, 2)`。沿-2轴每32个元素对应一个缩放因子，每两个分组交织存放，分组数为奇数时补0。
 
 ## 约束说明
 
@@ -96,7 +96,7 @@ torch_npu.npu_dynamic_block_mx_quant(input, *, round_mode="rint", dst_type=torch
   - scale1_out.shape[-1] = 2
   - scale2_out.shape[-1] = 2
   - 其他维度与输入input一致
-  - 举例：输入input的shape为[B, M, N]，对应的y的shape为[B, M, N]，scale1_out的shape为[B, M, (ceil(N/32)+2-1)/2, 2]，scale2_out的shape为[B, (ceil(M/32)+2-1)/2, N, 2]。
+  - 举例：输入input的shape为[B, M, N]，对应的y的shape为[B, M, N]，scale1_out的shape为[B, M, (ceil(N/32)+2-1)/2, 2]，scale2_out的shape为[B, (ceil(M/32)+2-1)/2, N, 2]
 
 ## 调用示例
 

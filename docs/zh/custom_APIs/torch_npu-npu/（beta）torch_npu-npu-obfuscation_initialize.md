@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-该接口用于完成PMCC（Privacy and Model Confidential Computing）模型混淆引擎的资源初始化，即与PMCC混淆引擎CA（普通OS中的Client Application）建立socket连接、对CA、TA（TEE OS中的Trusted Application）进行初始化，并返回socket连接符。
+该接口用于完成PMCC（Privacy and Model Confidential Computing）模型混淆引擎的资源初始化，即与PMCC混淆引擎CA（普通OS中的Client Application）建立socket连接，对CA、TA（TEE OS中的Trusted Application）进行初始化，并返回socket连接符。
 该接口针对PMCC业务，如下两种结果均符合预期：
 
 * 如果部署PMCC特性，该接口返回响应结果。
@@ -22,7 +22,7 @@ PMCC特性的部署流程如下：
 1. 环境中存在NPU驱动和固件。
 2. 安装AI混淆SDK，执行一键式部署脚本，该脚本会自动完成以下任务：
    * 配置kmsAgent。
-   * 下发npu证书。
+   * 下发NPU证书。
    * 生成obf_sdk客户端证书。
    * 生成混淆因子绑定的psk私钥。
 3. 执行混淆因子注册脚本。
@@ -43,7 +43,7 @@ torch_npu.npu.obfuscation_initialize(hidden_size, tp_rank, cmd, data_type, model
     * 1：进行浮点推理模式资源初始化。
     * 2：进行量化推理模式资源初始化。
     * 3：进行资源释放。
-- **data_type**（`torch.dtype`）：可选参数，指定Tensor的数据类型，仅在`cmd`设置为1或2时需要填写有效值，否则填0。
+- **data_type**（`torch.dtype`）：可选参数，指定Tensor的数据类型，仅在`cmd`设置为1或2时需要填写有效值，`cmd`为3时该参数取值无意义。
     <!-- npu="310p" id3 -->
     * <term>Atlas推理系列产品</term>：Tensor数据类型支持`torch.float16`、`torch.float32`、`torch.int8`。
     <!-- end id3 -->

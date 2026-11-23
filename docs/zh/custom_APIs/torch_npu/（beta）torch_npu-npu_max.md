@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-使用dim对最大结果进行计算。类似于torch.max，优化NPU设备实现。
+沿dim指定的维度计算最大值，语义与torch.max类似，并针对NPU设备做了优化实现。
 
 ## 函数原型
 
@@ -28,7 +28,7 @@ torch_npu.npu_max(self, dim, keepdim=False) -> (Tensor, Tensor)
 ## 参数说明
 
 - **self** (`Tensor`)：必选参数，输入张量。
-- **dim** (`int`)：必选参数，待降低维度。
+- **dim** (`int`)：必选参数，沿此维度取最大值。
 - **keepdim** (`bool`)：可选参数，输出张量是否保留dim。默认值为False。
 
 ## 返回值说明

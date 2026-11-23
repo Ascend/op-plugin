@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_indexing
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。
 
 ## 产品支持情况
 
@@ -31,14 +31,14 @@ torch_npu.npu_indexing(self, begin, end, strides, begin_mask=0, end_mask=0, elli
 ## 参数说明
 
 - **self** (`Tensor`)：必选参数，输入张量。
-- **begin** (`List[int]`)：必选参数，待选择的第一个值的index。
+- **begin** (`List[int]`)：必选参数，待选择的第一个值的索引。
 - **end** (`List[int]`)：必选参数，结束索引（不包含该位置），即索引区间为左闭右开`[begin, end)`。
-- **strides** (`List[int]`)：必选参数，index增量。
-- **begin_mask** (`int`)：可选参数，位掩码（bitmask），其中位“i”为“1”意味着忽略开始值，尽可能使用最大间隔。默认值为0。
-- **end_mask** (`int`)：可选参数，类似于“begin_mask”。默认值为0。
+- **strides** (`List[int]`)：必选参数，索引增量。
+- **begin_mask** (`int`)：可选参数，位掩码（bitmask），其中位“i”为“1”意味着忽略begin中第“i”个元素的取值，该维度从起始位置开始取到最大范围。默认值为0。
+- **end_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着忽略end中第“i”个元素的取值，该维度取到最大范围。默认值为0。
 - **ellipsis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着第“i”个位置实际上是省略号。默认值为0。
 - **new_axis_mask** (`int`)：可选参数，位掩码，其中位“i”为“1”意味着在第“i”位创建新的1D shape。默认值为0。
-- **shrink_axis_mask** (`int`)：可选参数，位掩码，其中位“i”意味着第“i”位应缩小维数。默认值为0。
+- **shrink_axis_mask** (`int`)：可选参数，位掩码。第`i`位为`1`时，在对应维度选取单个元素，并从输出中移除该维度。默认值为`0`。
 
 ## 调用示例
 

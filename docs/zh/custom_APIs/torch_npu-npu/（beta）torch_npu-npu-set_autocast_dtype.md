@@ -30,7 +30,7 @@ torch_npu.npu.set_autocast_dtype(dtype)
 
 ## 参数说明
 
-**dtype**：数据类型。
+**dtype**（`torch.dtype`）：必填参数，指定AMP的目标数据类型，例如`torch.float16`。
 
 ## 调用示例
 

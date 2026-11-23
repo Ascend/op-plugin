@@ -30,7 +30,7 @@ torch_npu.npu.get_mm_bmm_format_nd()
 
 ## 返回值说明
 
-`bool`
+`bool`：返回True表示线性module中的mm和bmm算子已启用ND格式，返回False表示未启用。
 
 ## 调用示例
 

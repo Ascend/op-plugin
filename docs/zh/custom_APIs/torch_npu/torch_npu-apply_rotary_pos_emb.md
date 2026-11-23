@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-为提升推理网络性能，将query和key两路算子融合为单路，在旋转位置编码计算中直接对结果执行原地更新。
+为提升推理网络性能，将`query`和`key`两路算子融合为单路，在旋转位置编码计算中直接对结果执行原地更新。
 
 ## 函数原型
 
@@ -60,7 +60,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：不支持空Tensor，shape中B维度与`query`、`key`的B维度一致，shape第3维（N）必须等于1，shape最后一维（D）必须等于128或者64。
   <!-- end id11 -->
   <!-- npu="950" id12 -->
-  - Ascend 950DT系列产品：支持空Tensor，shape中B维度与`query`、`key`的B维度一致，或者等于1，shape最后一维（D）小于等于1024。
+  - Ascend 950DT系列产品：支持空Tensor，shape中B维度与`query`、`key`的B维度一致，或者等于1，shape中N维度必须等于1，shape最后一维（D）小于等于1024。
   <!-- end id12 -->
 
 - **layout**（`str`）：可选参数，张量布局格式，支持"BSND"、"SBND"、"BNSD"、"TND"。默认值为"BSND"。
@@ -72,7 +72,7 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
   - Ascend 950DT系列产品：支持BSND、SBND、BNSD的4维Tensor，TND的3维Tensor。
   <!-- end id14 -->
 
-- **rotary_mode**（`str`）：可选参数，旋转编码模式，支持"half"、"quarter"、"interleave"，默认值为"half"。
+- **rotary_mode**（`str`）：可选参数，旋转位置编码模式，支持"half"、"quarter"、"interleave"，默认值为"half"。
 
   <!-- npu="A3,910b,310p" id15 -->
   - Atlas推理系列产品、Atlas A2系列产品、Atlas A3系列产品：支持"half"模式。
@@ -90,10 +90,10 @@ torch_npu.npu_apply_rotary_pos_emb(query, key,  cos, sin, *, layout='BSND', rota
 
 <!-- npu="A3,910b,310p" id17 -->
 - <term>Atlas推理系列产品</term>、<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
-  - `layout`为"BSND"，`query`、`key`、`cos`、`sin`输入shape的前2维（B、S）必须相等；`layout`为"TND"时，第1维（T）必须相等。
+  - `layout`为"BSND"时，`query`、`key`、`cos`、`sin`输入shape的前2维（B、S）必须相等；`layout`为"TND"时，第1维（T）必须相等。
   - `query`、`key`输入shape的最后一维（D）必须相等，`cos`、`sin`输入shape的最后一维（D）必须相等。
   - 输入张量`query`、`key`、`cos`、`sin`的数据类型必须相同。
-  - `layout`为"BSND"时，输入`query`的shape用（q_b, q_s, q_n, q_d）表示，`key_out`的shape用（q_b, q_s, k_n, q_d）表示，`cos`和`sin`的shape用（q_b, q_s, 1, cos_d）表示。其中，b表示batch_size，s表示seq_length，n表示head_num，d表示head_dim。`layout`为"TND"时，输入query的shape用（q_t, q_n, q_d）表示，`key`的shape用（q_t, k_n, q_d）表示，`cos`和`sin`的shape用（q_t, 1, cos_d）表示。其中，t表示b和s合轴，n表示head_num，d表示head_dim。
+  - `layout`为"BSND"时，输入`query`的shape用（q_b, q_s, q_n, q_d）表示，`key`的shape用（q_b, q_s, k_n, q_d）表示，`cos`和`sin`的shape用（q_b, q_s, 1, cos_d）表示，其中，b表示batch_size，s表示seq_length，n表示head_num，d表示head_dim。`layout`为"TND"时，输入`query`的shape用（q_t, q_n, q_d）表示，`key`的shape用（q_t, k_n, q_d）表示，`cos`和`sin`的shape用（q_t, 1, cos_d）表示，其中，t表示b和s合轴，n表示head_num，d表示head_dim。
 <!-- end id17 -->
 <!-- npu="950" id18 -->
 - <term>Ascend 950DT系列产品</term>：

@@ -30,7 +30,7 @@ torch_npu.npu.graph_task_update_end(stream) -> None
 
 ## 参数说明
 
- **stream** (`torch_npu.npu.Stream`)：必选参数，指定图更新状态的Stream。
+- **stream** (`torch_npu.npu.Stream`)：必选参数，指定图更新状态的Stream。
 
 ## 返回值说明
 

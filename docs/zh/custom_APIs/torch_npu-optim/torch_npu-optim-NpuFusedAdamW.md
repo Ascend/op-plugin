@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-通过张量融合实现的高性能AdamW（Adam with decoupled Weight decay，解耦权重衰减的Adam）优化器，是Adam（Adaptive Moment Estimation，自适应矩估计优化器）的改进版本。它将权重衰减项从梯度计算中解耦出来，直接作用于参数更新步，修正了原始Adam中L2正则与自适应学习率相互干扰的问题。核心功能和`torch.optim.AdamW`兼容。
+通过张量融合实现的高性能AdamW（Adam with decoupled Weight decay，解耦权重衰减的Adam）优化器，是Adam（Adaptive Moment Estimation，自适应矩估计优化器）的改进版本。它将权重衰减项从梯度计算中解耦出来，直接作用于参数更新步骤，修正了原始Adam中L2正则与自适应学习率相互干扰的问题。核心功能和`torch.optim.AdamW`兼容。
 
 AdamW的功能和原理可参考[AdamW](https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#adamw)。
 
@@ -44,9 +44,9 @@ class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 
 `NpuFusedAdamW`的实现机制要求`params`中的每一个模型参数对象在使用过程中不能被重新申请，否则将导致无法预料的结果。引起模型参数对象被重新申请的操作包括但不限于：
 
-- 将模型或其子Module执行.cpu()操作
-- 将模型参数对象指向新的对象
-- 将模型参数对象置为None
+- 将模型或其子Module执行`.cpu()`操作。
+- 将模型参数对象指向新的对象。
+- 将模型参数对象置为`None`。
 
 对模型参数对象进行inplace计算，或者读取参数的值，`NpuFusedAdamW`可正常工作。
 
