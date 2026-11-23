@@ -96,9 +96,16 @@ function main() {
         else
             torch_install_master
         fi
+        torch_npu_install
         pip"${py_version}" install -r ${WORKSPACE}/tmp_pytorch/test/requirements.txt
+    else
+        torch_install_other "${pytorch_version:1}" "${py_version//./}"
     fi
-    torch_npu_install
+
+    if [ "${pytorch_version}" != "master" ]; then
+        torch_npu_install
+    fi
+
     pip${py_version} install einops
     pip${py_version} install tlparse==0.3.18
     pip${py_version} install tabulate==0.9.0
