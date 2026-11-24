@@ -33,8 +33,8 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，待累加矩阵，数据类型支持`torch.float32`，tensor支持2维，shape为\(M, N\)，数据格式支持ND。
-- **x1**（`Tensor`）：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，tensor支持2维，shape为\(K, M\)，数据格式支持ND。
-- **x2**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，tensor支持2维，shape为\(K, N\)，数据格式支持ND。
+- **x1**（`Tensor`）：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，tensor支持2维，具体shape约束参见“约束说明”，数据格式支持ND。
+- **x2**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，tensor支持2维，具体shape约束参见“约束说明”，数据格式支持ND。
 - **x2\_scale**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x2_scale_dtype`为对应类型，此时`x2_scale`本身的dtype不再生效，但仍需保证`x2_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **x1\_scale**（`Tensor`）：可选参数，表示矩阵乘法中的左矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x1_scale_dtype`为对应类型，此时`x1_scale`本身的dtype不再生效，但仍需保证`x1_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
@@ -43,9 +43,18 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
   - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与x1 shape中的m一致，scale\_m与x1\_scale shape中的m一致。
   - 目前\[group\_m, group\_n, group\_k\]mx量化支持的取值仅为\[1,1,32\]，T-T量化仅支持取值\[0,0,0\]。
 
+- **x1\_dtype**（`int`）：可选参数，用于显式指定`x1`的逻辑数据类型。默认值为`None`，表示使用`x1`自身的dtype。支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
+
+- **x2\_dtype**（`int`）：可选参数，用于显式指定`x2`的逻辑数据类型。默认值为`None`，表示使用`x2`自身的dtype。支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
+
 - **x1\_scale\_dtype**（`int`）：可选参数，用于显式指定`x1_scale`的逻辑数据类型。None：默认值，表示输入真实数据类型与输入`x1_scale`的dtype相同。当前仅支持`torch.float8_e8m0fnu`。
 
 - **x2\_scale\_dtype**（`int`）：可选参数，用于显式指定`x2_scale`的逻辑数据类型。None：默认值，表示输入真实数据类型与输入`x2_scale`的dtype相同。当前仅支持`torch.float8_e8m0fnu`。
+
+> [!NOTE]
+>
+> - PyTorch 2.7及之前版本：使用8bit Tensor存储已打包的FP4数据，并通过`x1_dtype`、`x2_dtype`指定逻辑数据类型为`torch_npu.float4_e2m1fn_x2`。
+> - PyTorch 2.8及以上版本：还可使用原生数据类型`torch.float4_e2m1fn_x2`构造输入Tensor，此时`x1_dtype`、`x2_dtype`可使用默认值`None`。
 
 ## 返回值说明
 
@@ -59,20 +68,26 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
 
     | 场景 | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
-    | mx量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
+    | MXFP8量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
+    | MXFP4量化 | `torch.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
     | T-T量化 | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | `torch.float32` |
 
 - shape约束：
 
     | 场景 | x1 | x2 | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
-    | mx量化 | (K,M) | (K,N) | (ceil(K/64),N,2) | (ceil(K/64),M, 2) | (M,N) |
+    | MX量化 | (K,M) | (K,N) | (ceil(K/64),N,2) | (ceil(K/64),M, 2) | (M,N) |
     | T-T量化 | (K,M) | (K,N) | (1) | (1) | (M,N) |
+
+- MXFP4量化约束：
+  - MXFP4量化场景下，每个字节存放两个FP4编码，`x1`、`x2`打包后的原始存储shape会变为(K,M/2)、(K,N/2)。
+  - 每个字节的低4 bit对应原始存储最后一轴的偶数索引元素，高4 bit对应奇数索引元素。M、N必须为偶数。
+  - 当M、N、K均大于0时，必须同时满足M × K > 2、N × K > 2。
 
 ## 调用示例
 
 - 单算子模式调用
-  - mx量化单算子模式调用
+  - MXFP8量化单算子模式调用
 
     ```python
     import math
@@ -87,6 +102,38 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
     x2_scale = torch.randint(-1, 1, (math.ceil(K/64), N, 2), dtype=torch.int8).npu()
     x1_scale = torch.randint(-1, 1, (math.ceil(K/64), M, 2), dtype=torch.int8).npu().transpose(0,1)
     y = torch_npu.npu_add_quant_matmul_(y, x1, x2, x2_scale,x1_scale = x1_scale, x1_scale_dtype=torch_npu.float8_e8m0fnu, x2_scale_dtype=torch_npu.float8_e8m0fnu, group_sizes = [1,1,32])
+    ```
+
+  - MXFP4量化单算子模式调用
+
+    本示例使用原生数据类型`torch.float4_e2m1fn_x2`，要求PyTorch 2.8及以上版本，并安装配套且支持该数据类型的torch_npu版本。
+
+    ```python
+    import torch
+    import torch_npu
+
+    M = 576
+    N = 7168
+    K = 512
+    R = (K + 63) // 64
+    y = torch.ones((M, N), dtype=torch.float32).npu()
+    x1 = torch.full((K, M // 2), 0x22, dtype=torch.uint8)
+    x1 = x1.view(torch.float4_e2m1fn_x2).npu().transpose(0, 1)
+    x2 = torch.full((K, N // 2), 0x22, dtype=torch.uint8)
+    x2 = x2.view(torch.float4_e2m1fn_x2).npu()
+    x1_scale = torch.full((R, M, 2), 127, dtype=torch.uint8).npu()
+    x2_scale = torch.full((R, N, 2), 127, dtype=torch.uint8).npu()
+    y = torch_npu.npu_add_quant_matmul_(
+        y, x1, x2, x2_scale,
+        x1_scale=x1_scale,
+        group_sizes=[1, 1, 32],
+        x1_dtype=torch.float4_e2m1fn_x2,
+        x2_dtype=torch.float4_e2m1fn_x2,
+        x1_scale_dtype=torch_npu.float8_e8m0fnu,
+        x2_scale_dtype=torch_npu.float8_e8m0fnu,
+    )
+    torch.testing.assert_close(y, torch.full_like(y, K + 1), rtol=0, atol=0)
+    print(y.cpu())
     ```
 
   - T-T量化单算子模式调用
@@ -107,7 +154,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
     ```
 
 - 图模式调用
-  - mx量化图模式调用
+  - MXFP8量化图模式调用
 
     ```python
     import math
