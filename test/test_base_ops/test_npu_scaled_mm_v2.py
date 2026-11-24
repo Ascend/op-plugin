@@ -473,5 +473,46 @@ class TestScaledMmV2(TestCase):
         self.assertTrue(output.device.type == 'npu')
 
 
+    @SupportedDevices(['Ascend950'])
+    def test_npu_scaled_mm_bias_converted_to_fp32(self):
+        """Test bf16 bias is internally converted to fp32 and matches the reference."""
+        M, K, N = 16, 32, 64
+        torch.manual_seed(7)
+        x_fp8 = torch.rand(M, K, dtype=torch.bfloat16).to(torch.float8_e4m3fn).npu()
+        w_fp8 = torch.rand(N, K, dtype=torch.bfloat16).to(torch.float8_e4m3fn).t().npu()
+        scale_a = torch.rand(1, dtype=torch.float32).npu()
+        scale_b = torch.rand(1, dtype=torch.float32).npu()
+        bias = torch.rand(N, dtype=torch.bfloat16).npu()
+
+        output = torch._scaled_mm(
+            x_fp8, w_fp8, scale_a, scale_b, bias=bias, out_dtype=torch.bfloat16)
+
+        # Reference: dequantized fp32 matmul + fp32 bias, then truncated to bf16.
+        x_ref = x_fp8.float().cpu() * scale_a.cpu().item()
+        w_ref = w_fp8.float().cpu() * scale_b.cpu().item()
+        ref = (x_ref @ w_ref + bias.float().cpu()).to(torch.bfloat16)
+        self.assertRtolEqual(output.cpu(), ref, prec=1e-2)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_scaled_mm_bias_half_converted_to_fp32(self):
+        """Test half bias is internally converted to fp32 and matches the reference."""
+        M, K, N = 16, 32, 64
+        torch.manual_seed(8)
+        x_fp8 = torch.rand(M, K, dtype=torch.bfloat16).to(torch.float8_e4m3fn).npu()
+        w_fp8 = torch.rand(N, K, dtype=torch.bfloat16).to(torch.float8_e4m3fn).t().npu()
+        scale_a = torch.rand(1, dtype=torch.float32).npu()
+        scale_b = torch.rand(1, dtype=torch.float32).npu()
+        bias = torch.rand(N, dtype=torch.float16).npu()
+
+        output = torch._scaled_mm(
+            x_fp8, w_fp8, scale_a, scale_b, bias=bias, out_dtype=torch.float16)
+
+        # Reference: dequantized fp32 matmul + fp32 bias, then truncated to fp16.
+        x_ref = x_fp8.float().cpu() * scale_a.cpu().item()
+        w_ref = w_fp8.float().cpu() * scale_b.cpu().item()
+        ref = (x_ref @ w_ref + bias.float().cpu()).to(torch.float16)
+        self.assertRtolEqual(output.cpu(), ref, prec=1e-2)
+
+
 if __name__ == "__main__":
     run_tests()

@@ -400,6 +400,15 @@ at::Tensor _scaled_mm(
   const at::Tensor& offset_real = offset.value_or(at::Tensor());
   const at::Tensor& pertoken_scale_real = pertoken_scale.value_or(at::Tensor());
   const at::Tensor& bias_real = bias.value_or(at::Tensor());
+  // aclnnQuantMatmul requires a float32 bias, while torch._scaled_mm semantics
+  // accept bf16/half bias (validated above). Convert non-fp32 bias to fp32
+  // before calling aclnn; the bias participates in fp32 accumulation with no
+  // precision loss, and the output is still truncated to out_dtype.
+  at::Tensor bias_real_fp32;
+  if (bias.has_value() && bias->scalar_type() != c10::ScalarType::Float) {
+    bias_real_fp32 = bias->to(c10::ScalarType::Float);
+  }
+  const at::Tensor& bias_arg = bias_real_fp32.defined() ? bias_real_fp32 : bias_real;
   bool transpose1 = false;
   bool transpose2 = false;
 
@@ -463,7 +472,7 @@ at::Tensor _scaled_mm(
           x1_offset,
           x2_offset,
           y_offset,
-          bias_real,
+          bias_arg,
           transpose1,
           transpose2,
           group_size,
@@ -479,7 +488,7 @@ at::Tensor _scaled_mm(
           x1_offset,
           x2_offset,
           y_offset,
-          bias_real,
+          bias_arg,
           transpose1,
           transpose2,
           group_size,
@@ -497,7 +506,7 @@ at::Tensor _scaled_mm(
           x1_offset,
           x2_offset,
           y_offset,
-          bias_real,
+          bias_arg,
           transpose1,
           transpose2,
           group_size,
@@ -513,7 +522,7 @@ at::Tensor _scaled_mm(
           x1_offset,
           x2_offset,
           y_offset,
-          bias_real,
+          bias_arg,
           transpose1,
           transpose2,
           group_size,
