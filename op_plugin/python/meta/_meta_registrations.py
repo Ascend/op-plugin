@@ -6294,9 +6294,28 @@ def npu_add_rms_norm_quant(x1, x2, gamma, scales1, zero_points1=None, beta=None,
 def npu_attention_update_meta(lse, local_out, update_type):
     ref = local_out[0]
     ref_lse = lse[0]
-    sp = len(lse)
-    return (torch.empty(ref.size(), dtype=ref.dtype, device=ref.device),
-            torch.empty(ref_lse.size(), dtype=ref_lse.dtype, device=ref_lse.device))
+    is_packed_input = (len(local_out) == 1 and len(lse) == 1
+                       and ref.dim() == 3 and ref_lse.dim() == 2)
+    if is_packed_input:
+        torch._check(
+            torch_npu.npu.utils._is_gte_cann_version("9.3.0", "CANN"),
+            lambda: "Packed input for npu_attention_update requires CANN 9.3.0 or later." + ops_error(ErrCode.NOT_SUPPORT),
+        )
+        torch._check(
+            ref.size(0) == ref_lse.size(0),
+            lambda: "Packed local_out and lse must have matching P and T dimensions." + ops_error(ErrCode.VALUE),
+        )
+        torch._check(
+            ref.size(1) == ref_lse.size(1),
+            lambda: "Packed local_out and lse must have matching P and T dimensions." + ops_error(ErrCode.VALUE),
+        )
+    out_size = ref.shape[1:] if is_packed_input else ref.shape
+    out = torch.empty(out_size, dtype=ref.dtype, device=ref.device)
+    lse_out = None
+    if update_type == 1:
+        lse_out_size = ref_lse.shape[1:] if is_packed_input else ref_lse.shape
+        lse_out = torch.empty(lse_out_size, dtype=ref_lse.dtype, device=ref_lse.device)
+    return out, lse_out
 
 
 @impl(m, "npu_ring_attention_update")

@@ -1,4 +1,6 @@
 import unittest
+from unittest.mock import patch
+from itertools import product
 import math
 import torch
 import torch_npu
@@ -168,6 +170,114 @@ class TestNpuAttentionUpdate(TestCase):
         for (N, H, K) in cases:
             for dtype, atol, rtol in dtype_configs:
                 self._run_and_check(N=N, H=H, K=K, update_type=0, dtype=dtype, atol=atol, rtol=rtol)
+
+class TestNpuAttentionUpdatePackedInput(TestCase):
+    def setUp(self):
+        super().setUp()
+        torch.manual_seed(0)
+
+    def _run_cases(self, device, check_values=False):
+        # Padded inputs require a CANN/custom package supporting packed row strides.
+        # name, packed input, update_type, [P,T,D], row padding
+        scenarios = (
+            ("packed_single_shard", True, 0, (1, 3, 8), False),
+            ("packed_padded", True, 1, (2, 7, 24), True),
+            ("legacy_single_shard", False, 1, (1, 3, 8), False),
+            ("legacy_padded", False, 0, (2, 7, 24), True),
+            ("packed_empty", True, 1, (2, 0, 8), False),
+            ("legacy_empty", False, 0, (2, 0, 8), False),
+        )
+        dtypes = (torch.float32, torch.float16, torch.bfloat16)
+        for scenario, dtype in product(scenarios, dtypes):
+            with self.subTest(scenario=scenario[0], dtype=dtype, device=device):
+                self._check_case(scenario, dtype, device, check_values)
+
+    def _check_case(self, scenario, dtype, device, check_values):
+        _, packed, update_type, (p, rows, dim), padded = scenario
+        lse = torch.randn((p, rows), dtype=torch.float32, device=device)
+        width = dim + 4 if padded else dim
+        local_out = torch.randn((p, rows, width), dtype=dtype, device=device)[..., :dim]
+        if padded:
+            self.assertFalse(local_out.is_contiguous())
+        lse_args = [lse] if packed else list(lse.unbind(0))
+        local_args = [local_out] if packed else list(local_out.unbind(0))
+        if packed and not torch_npu.npu.utils._is_gte_cann_version("9.3.0", "CANN"):
+            with self.assertRaisesRegex(RuntimeError, "requires CANN 9.3.0 or later"):
+                torch_npu.npu_attention_update(lse_args, local_args, update_type)
+            return
+        out, lse_out = torch_npu.npu_attention_update(lse_args, local_args, update_type)
+        self.assertEqual(tuple(out.shape), (rows, dim))
+        self.assertEqual(out.dtype, dtype)
+        self.assertEqual(out.device, local_out.device)
+        if update_type == 1:
+            self.assertEqual(tuple(lse_out.shape), (rows,))
+            self.assertEqual(lse_out.dtype, torch.float32)
+            self.assertEqual(lse_out.device, lse.device)
+        else:
+            self.assertIsNone(lse_out)
+        if not check_values:
+            return
+
+        expected, expected_lse = npu_attention_update_golden(
+            list(lse.cpu().unbind(0)), list(local_out.cpu().unbind(0)), update_type)
+        tolerance = {torch.float32: 1e-4, torch.float16: 2e-3, torch.bfloat16: 2e-2}[dtype]
+        torch.testing.assert_close(out.cpu(), expected, atol=tolerance, rtol=tolerance)
+        if update_type == 1:
+            torch.testing.assert_close(lse_out.cpu(), expected_lse, atol=1e-5, rtol=1e-5)
+
+    @unittest.skip("skip until CANN is updated to support aclnnAttentionUpdate")
+    @SupportedDevices(['Ascend910B', 'Ascend910_93', 'Ascend950'])
+    def test_forward(self):
+        self._run_cases("npu", check_values=True)
+
+    def _check_invalid_packed_shapes(self, device):
+        mismatches = ((3, 7), (2, 8))  # Wrong P, then wrong T.
+        for lse_shape, update_type in product(mismatches, (0, 1)):
+            with self.subTest(lse_shape=lse_shape, update_type=update_type, device=device):
+                lse = torch.empty(lse_shape, dtype=torch.float32, device=device)
+                local_out = torch.empty((2, 7, 24), dtype=torch.float32, device=device)
+                with self.assertRaisesRegex(RuntimeError, "matching P and T dimensions"):
+                    torch_npu.npu_attention_update([lse], [local_out], update_type)
+
+    @unittest.skip("skip until CANN is updated to support aclnnAttentionUpdate")
+    @SupportedDevices(['Ascend910B', 'Ascend910_93', 'Ascend950'])
+    def test_forward_invalid_packed_shapes(self):
+        self._check_invalid_packed_shapes("npu")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=True)
+    def test_meta_invalid_packed_shapes(self, _version_check):
+        self._check_invalid_packed_shapes("meta")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=True)
+    def test_fake_tensor_invalid_packed_shapes(self, _version_check):
+        from torch._subclasses.fake_tensor import FakeTensorMode
+
+        with FakeTensorMode():
+            self._check_invalid_packed_shapes("npu")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=False)
+    def test_meta_unsupported_cann(self, _version_check):
+        self._run_cases("meta")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=False)
+    def test_fake_tensor_unsupported_cann(self, _version_check):
+        from torch._subclasses.fake_tensor import FakeTensorMode
+
+        with FakeTensorMode():
+            self._run_cases("npu")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=True)
+    def test_meta(self, _version_check):
+        self._run_cases("meta")
+
+    @patch("torch_npu.npu.utils._is_gte_cann_version", return_value=True)
+    def test_fake_tensor(self, _version_check):
+        from torch._subclasses.fake_tensor import FakeTensorMode
+
+        with FakeTensorMode():
+            self._run_cases("npu")
+
+
 
 if __name__ == "__main__":
     run_tests()
