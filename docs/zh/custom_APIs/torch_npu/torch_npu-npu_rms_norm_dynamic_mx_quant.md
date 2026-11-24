@@ -59,14 +59,14 @@
                 Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
                 $$
 
-            - 将FP32映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值
+            - 将FP32映射到目标数据类型fp8可表示的范围内，其中Amax\(DType\)是目标精度能表示的最大值。
 
                 $$
                 S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
                 $$
 
-            - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$；
-            - 从块的浮点缩放因子$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$；
+            - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$。
+            - 从块的浮点缩放因子$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$。
             - 为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
                 $$
@@ -116,25 +116,25 @@ torch_npu.npu_rms_norm_dynamic_mx_quant(x, gamma, *, beta=None, epsilon=1e-06, s
 - 输出`y`的类型为`torch_npu.float4_e2m1fn_x2`和`torch_npu.float4_e1m2fn_x2`，即dst_type为296和297时，`x`的最后一维必须是偶数。
 - 量化轴和norm轴都是输入x的最后1维。
 - 输出`mxscale_out`和输入`x`的shape约束关系：
-  - rank(mxscale_out)  = rank(x) + 1
+  - rank(mxscale_out) = rank(x) + 1
   - mxscale_out.shape[-2] = (ceil(x.shape[-1] / 32) + 2 - 1) / 2
-  - mxscale_out.shape[-1]  = 2
+  - mxscale_out.shape[-1] = 2
   - 其他维度与输入x一致
   - 例如，输入x.shape = (100, 8, 64)，mxscale_out.shape = (100, 8, 1, 2)
 
-- **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是Pytorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
+- **单算子模式下**，算子通过读取输入Tensor(x)的requires_grad属性来决定是否输出有效的rstd。requires_grad是PyTorch Tensor的标准属性，默认值为False，当requires_grad=False时，算子不写出rstd，接口返回shape[0]的空Tensor，此时rstd为无效占位输出。
 - **图模式通路**不支持反向传播，rstd固定为0的标量Tensor(shape[])，不含有效数据。
 
 - **边界值场景说明**
 
   - 当输入是Inf时：
-    - 输出y为0;
-    - 输出mxscale_out为255，偶数pad填充值为0;
+    - 输出y为0。
+    - 输出mxscale_out为255，偶数pad填充值为0。
     - 输出rstd_out为0。
 
   - 当输入是NaN时：
-    - 输出y为0;
-    - 输出mxscale_out为255，偶数pad填充值为0;
+    - 输出y为0。
+    - 输出mxscale_out为255，偶数pad填充值为0。
     - 输出rstd_out为NaN。
 
 ## 调用示例

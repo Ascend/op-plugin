@@ -58,7 +58,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 ## 参数说明
 
 - **scale** (`Tensor`)：必选参数。对应公式中的`scale`。数据类型支持`torch.float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
-- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`torch.float32`，数据格式支持$ND$，shape支持1维或者2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
+- **offset** (`Tensor`)：可选参数。对应公式中的`offset`。数据类型支持`torch.float32`，数据格式支持$ND$，shape支持1维或2维，具体约束参见[约束说明](#约束说明)。不支持非连续的Tensor，不支持空Tensor。
 - **round_mode** (`int`)：可选参数，指定`scale`从`torch.float32`转换为FP19的模式，默认值为0。支持以下选项：
   - 0：截断填充模式，直接将`scale`截断为FP19后打包。
   - 1：R_INT模式，先将`scale`按R_INT规则舍入为FP19，再截断打包，可提升计算精度。
@@ -83,9 +83,9 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
   <!-- end id6 -->
 
 - 当不传入`offset`时，输出shape与`scale` shape一致。
-  - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵(`weight`，对应参数x2)的shape $n$一致。
+  - 若该输出作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)），shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
   - 若输出作为`grouped matmul`类算子输入（如[torch_npu.npu_grouped_matmul](torch_npu-npu_grouped_matmul.md)），仅在分组模式为m轴分组时使用（对应参数`group_type`为0），shape支持1维$(g,)$或2维$(g, 1)$、$(g, n)$，其中$n$与`grouped matmul`计算中右矩阵（对应参数weight）的shape $n$一致，$g$与`grouped matmul`计算中分组数（对应参数`group_list`的shape大小）一致。
-- 当传入`offset`时，仅作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）:
+- 当传入`offset`时，仅作为`matmul`类算子输入（如[torch_npu.npu_quant_matmul](torch_npu-npu_quant_matmul.md)）：
   - `scale`、`offset`、`out`的shape支持1维$(1,)$、$(n,)$或2维$(1, n)$，其中$n$与`matmul`计算中右矩阵（`weight`，对应参数x2）的shape $n$一致。
   - 当输入`scale`的shape为1维，`out`的shape也为1维，且shape大小为`scale`与`offset`单维shape大小的最大值。
   - 当输入`scale`的shape为2维时，`scale`和`offset`的shape需要保持一致，且`out`的shape为$(1, n)$。
@@ -117,7 +117,7 @@ torch_npu.npu_trans_quant_param(scale, offset=None, round_mode=0) -> Tensor
 
 - 图模式调用
 
-    图模式下，`npu_trans_quant_param`计算出的结果tensor为`torch.uint64`数据类型。由于PyTorch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
+    图模式下，`npu_trans_quant_param`计算出的结果Tensor为`torch.uint64`数据类型。由于PyTorch不支持该数据类型，需要搭配其他接口使用，如示例代码中的`npu_quant_matmul`。
 
     ```python
     import torch

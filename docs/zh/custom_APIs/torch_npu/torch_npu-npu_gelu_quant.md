@@ -66,7 +66,7 @@ torch_npu.npu_gelu_quant(self, *, input_scale=None, input_offset=None, approxima
 - **\***：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **input_scale** (`Tensor`)：可选参数，表示输入的量化尺度（静态场景）或平滑缩放尺度（动态场景）。数据类型需与`self`保持一致或采用精度更高的数据类型（例如`self`为`torch.bfloat16`，`input_scale`为`torch.float32`），shape仅支持1维，大小只能是`self`的尾轴维度大小或1，支持非连续的Tensor，数据格式支持$ND$。当`quant_mode`为`"static"`时为必选参数且不能为`None`，为`"dynamic"`时为可选输入。
 - **input_offset** (`Tensor`)：可选参数，表示静态量化场景下量化输入的偏置。数据类型和shape需与`input_scale`保持一致，shape仅支持1维。当`quant_mode`为`"dynamic"`且`input_scale`为`None`时，`input_offset`也需要为`None`。
-- **approximate** (`str`)：可选参数，Gelu激活函数的模式，支持取值`"none"`、`"tanh"`，分别对应erf和tanh模式，默认值为`"none"`。
+- **approximate** (`str`)：可选参数，GELU激活函数的模式，支持取值`"none"`、`"tanh"`，分别对应erf和tanh模式，默认值为`"none"`。
 - **quant_mode** (`str`)：可选参数，量化的模式，支持取值`"static"`（静态量化）、`"dynamic"`（动态量化），默认值为`"dynamic"`。
 - **dst_type** (`int`)：可选参数，指定量化后输出y的数据类型。数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，默认值为`None`，表示`torch.int8`。
 - **round_mode** (`str`)：可选参数，数据转换的模式，默认值为`"rint"`。

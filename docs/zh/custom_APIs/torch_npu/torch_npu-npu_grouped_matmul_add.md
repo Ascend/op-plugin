@@ -49,12 +49,12 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 - **transpose\_weight**（`bool`）：可选参数，表示weight矩阵是否转置，当前仅支持False。默认值为False。
 - **group\_type**（`int`）：可选参数，表示分组类型。当前仅支持2（K轴分组），即$x_i$与$weight_i$的K轴（$k_i$）按组切分，每组$m_i/n_i$相同。默认值为2。
 - **group\_list\_type**（`int`）：可选参数，表示group\_list中数值的解读方式。目前仅支持两个取值，默认值为0。
-  - 0：group\_list中的数值为分组轴大小的cumsum结果（累积和），group\_list须为非负单调非递减数列，最后一个值不大于x中tensor的第一维。以K=256、E=4（各组大小依次为64、0、128、64）为例：`[64, 64, 192, 256]`。
+  - 0：group\_list中的数值为分组轴大小的cumsum结果（累积和），group\_list须为非负单调非递减数列，最后一个值不大于x中Tensor的第一维。以K=256、g=4（各组大小依次为64、0、128、64）为例：`[64, 64, 192, 256]`。
   - 1：group\_list中的数值为分组轴上每组大小，group\_list须为非负数列，数值总和不大于x中tensor的第一维。以K=256、E=4为例：`[64, 0, 128, 64]`。
 
 ## 返回值说明
 
-**output**(`Tensor`)：表示分组矩阵乘累加的结果，公式中的$yRef^{out}$。shape为[g, M, N]，与输入self的shape一致，数据类型为`torch.float32`。
+**output**（`Tensor`）：表示分组矩阵乘累加的结果，公式中的$yRef^{out}$。shape为[g, M, N]，与输入self的shape一致，数据类型为`torch.float32`。
 
 ## 约束说明
 
@@ -65,7 +65,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
   - x为`torch.float16`、weight为`torch.float16`、self为`torch.float32`。
   - x为`torch.bfloat16`、weight为`torch.bfloat16`、self为`torch.float32`。
 - x与weight的数据类型必须一致。
-- x和weight中每一组tensor的每一维大小在32字节对齐后都应小于`torch.int32`的最大值2147483647。
+- x和weight中每一组Tensor的每一维大小在32字节对齐后都应小于`torch.int32`的最大值2147483647。
 - x和weight中每一组tensor的最后一维大小都应小于65536。x的最后一维指转置后的M轴；weight的最后一维指不转置时的N轴。
 
 ## 调用示例
@@ -90,7 +90,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 
     输出为
 
-    ```text
+    ```output
     torch.Size([2, 256, 256]), torch.float32
     tensor([-14.8446,  -4.4171,   7.6527,  10.9340, -22.6788, -15.8647], device='npu:0')
     tensor([5.2137, 8.1306, 1.2067, 2.9381], device='npu:0')
@@ -113,7 +113,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 
     输出为
 
-    ```text
+    ```output
     tensor([-14.3446,  -3.9171,   8.1527], device='npu:0')
     ```
 
@@ -133,9 +133,9 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
     print(out[0, 0, :3]) # tensor([-14.8446,  -4.4171,   7.6527], device='npu:0')
     ```
 
-    输出为
+    输出为：
 
-    ```text
+    ```output
     True
     tensor([-14.8446,  -4.4171,   7.6527], device='npu:0')
     ```

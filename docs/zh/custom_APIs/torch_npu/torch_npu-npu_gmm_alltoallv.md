@@ -110,7 +110,7 @@ torch_npu.npu_gmm_alltoallv(gmm_x, gmm_weight, hcom, ep_world_size, send_counts,
   - A：本卡发送的token数，是send\_counts参数累加之和。
   - EP通信域内所有卡上的A参数的累加和等于所有卡上的BSK参数的累加和。
 
-- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256M，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256MB，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 ## 调用示例
 

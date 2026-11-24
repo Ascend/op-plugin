@@ -43,17 +43,17 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **weights**（`Tensor`）：必选参数，表示权重系数，对应公式中的$W$。不支持非连续，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.bfloat16`，支持输入shape[B,S1,N1]、[T,N1]。
 
-- **query_dequant_scale**（`Tensor`）：必选参数，表示Index Query的反量化系数$Scale_Q$ 。不支持非连续，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.float32`，支持输入shape[B,S1,N1]、[T,N1]。
+- **query_dequant_scale**（`Tensor`）：必选参数，表示Index Query的反量化系数$Scale_Q$。不支持非连续，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.float32`，支持输入shape[B,S1,N1]、[T,N1]。
 
 - **key_dequant_scale**（`Tensor`）：必选参数，表示Index Key的反量化系数，对应公式中的$Scale_K^T$。在`layout_key`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.float16`、`torch.float32`，layout\_key为PA_BSND时shape为[block\_count, block\_size, N2]，其中block\_count为PagedAttention时block总数，block\_size为一个block的token数。
 
-- **query\_quant\_mode**（`int`）：可选参数，用于标识输入`query`的量化模式，当前仅支持Per-Token-Head量化模式，且仅支持传入0。
+- **query\_quant\_mode**（`int`）：必选参数，用于标识输入`query`的量化模式，当前仅支持Per-Token-Head量化模式，且仅支持传入0。
 
-- **key\_quant\_mode**（`int`）：可选参数，用于标识输入`key`的量化模式，当前仅支持Per-Token-Head量化模式，且仅支持传入0。
+- **key\_quant\_mode**（`int`）：必选参数，用于标识输入`key`的量化模式，当前仅支持Per-Token-Head量化模式，且仅支持传入0。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。不能出现负值。
+- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同batch中`query`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。不能出现负值。
 
 - **actual\_seq\_lengths\_key**（`Tensor`）：可选参数，表示不同Batch中`key`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key`中的维度S大小且不小于0。支持长度为B的一维tensor。当`layout_key`为TND或PA_BSND时，该入参必须传入，`layout_key`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
@@ -65,7 +65,7 @@ query_dtype=None, key_dtype=None) -> Tensor
 
 - **sparse\_count**（`int`）：可选参数，代表topK阶段需要保留的token索引数量，支持[1, 2048]，数据类型支持`int32`。
 
-- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`int32`。 sparse\_mode为0时，代表defaultMask模式。sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
+- **sparse\_mode**（`int`）：可选参数，表示sparse的模式，支持0/3，数据类型支持`int32`。sparse\_mode为0时，代表defaultMask模式。sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右顶点为划分的下三角场景。
 
 - **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
 
@@ -97,8 +97,8 @@ query_dtype=None, key_dtype=None) -> Tensor
 - Ascend 950PR&950DT系列产品：
     - query N1仅支持8、16、24、32、64。
     - query和key的数据类型支持`torch.float8_e4m3fn、torch_npu.hifloat8、torch.int8`。
-    - 当query和key的数据类型为`torch.float8_e4m3fn`时，支持weights、query_dequant_scale、key_dequant_scale的数据类型为`torch.bfloat16、torch.float、torch.float`或`torch.float16、torch.float16、torch.float16`；
-    - 当query和key的数据类型为`torch_npu.hifloat8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`torch.bfloat16、torch.float、torch.float`；
+    - 当query和key的数据类型为`torch.float8_e4m3fn`时，支持weights、query_dequant_scale、key_dequant_scale的数据类型为`torch.bfloat16、torch.float、torch.float`或`torch.float16、torch.float16、torch.float16`。
+    - 当query和key的数据类型为`torch_npu.hifloat8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`torch.bfloat16、torch.float、torch.float`。
     - 当query和key的数据类型为`torch.int8`时，仅支持weights、query_dequant_scale、key_dequant_scale数据类型为`torch.float16、torch.float16、torch.float16`。
 <!-- end id5 -->
 

@@ -88,8 +88,8 @@ torch_npu.npu_moe_update_expert(expert_ids, eplb_table, *, expert_scales=None, p
     - `log_expert_num`：表示逻辑专家数量，即`eplb_table`的行数，每个逻辑专家对应映射表中的一行，取值范围\(0, 1024\)。
     - `moe_expert_num`：表示物理专家数，取值范围\(0, 1024\]。
     - `F`：表示输入映射表`eplb_table`的列数，取值范围为\[2, `world_size` + 1\]，第一列为各行号对应逻辑专家部署的实例个数（值>0），后F-1列为该逻辑专家部署的物理卡号。
-    - 每个专家部署副本个数（即`eplb_table`第一列的count），最小为1，最大为`world_size`。
-    - 所有专家部署的副本个数和（即`eplb_table`第一列count之和）需小于等于1024，且整除`world_size`。
+    - 每个专家部署实例个数（即`eplb_table`第一列的count），最小为1，最大为`world_size`。
+    - 所有专家部署的副本个数之和（即`eplb_table`第一列count之和）需小于等于1024，且整除`world_size`。
 
 - 该接口必须与`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`接口配合使用。
 - 调用接口过程中使用的`world_size`、`moe_expert_num`参数取值所有卡须保持一致，网络中不同层也需保持一致，本接口中参数和`torch_npu.npu_moe_distribute_dispatch`或`torch_npu.npu_moe_distribute_dispatch_v2`有如下对应关系：

@@ -23,7 +23,7 @@
         $$
         qbmmout = x1 \mathbin{@} x2 * x2Scale * x1Scale + \text{bias}
         $$
-        - 当`bias`为None时:
+        - 当`bias`为None时：
         $$
         qbmmout = x1@x2 * x2Scale * x1Scale
         $$
@@ -46,7 +46,7 @@ torch_npu.npu_quant_matmul_gelu(x1, x2, x1_scale, x2_scale, *, bias=None, approx
 
 ## 参数说明
 
-- **x1** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的左矩阵（激活值），数据格式支持$ND$，shape需要在2-6维范围。数据类型支持`torch.int8`（A8W8量化）、`torch.int32`（A4W4量化，每个`torch.int32`数据存放8个`torch_npu.int4`数据）和`torch_npu.int4`（A4W4量化，直接`torch_npu.int4`类型）。
+- **x1** (`Tensor`)：必选参数，输入张量，表示矩阵乘中的左矩阵（激活值），数据格式支持$ND$，shape需要在2-6维范围。数据类型支持`torch.int8`（A8W8量化）、`torch.int32`（A4W4量化，每个`torch.int32`数据存放8个`torch_npu.int4`数据）和`torch_npu.int4`（A4W4量化，直接`torch_npu.int4`类型）。
 
 - **x2** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的右矩阵（权重），其与`x1`的数据类型须保持一致。数据格式支持$ND$或$NZ$（昇腾亲和排布格式），shape需要在2-6维范围。数据类型支持`torch.int8`（A8W8量化）、`torch.int32`（A4W4量化，每个`torch.int32`数据存放8个`torch_npu.int4`数据）和`torch_npu.int4`（A4W4量化，直接`torch_npu.int4`类型）。<br>
 A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`torch_npu.npu_format_cast`转换为$NZ$格式以提升性能。
@@ -88,18 +88,18 @@ A8W8量化场景下，支持昇腾亲和的$NZ$数据排布格式，可通过`to
     - **`torch_npu.int4`类型**：直接使用`torch_npu.int4`数据类型。
     - **`torch.int32`类型**：每个`torch.int32`数据存放8个`torch_npu.int4`数据。
     
-    当使用`torch.int32`类型时，输入的`torch.int32` shape需要将数据原本`torch_npu.int4`类型时shape的最后一维缩小8倍。`torch_npu.int4`数据的shape最后一维应为8的倍数。
+    当使用`torch.int32`类型时，输入的`torch.int32` shape需要将数据原本为`torch_npu.int4`类型时shape的最后一维缩小8倍。`torch_npu.int4`数据的shape最后一维应为8的倍数。
 
     - `x1`和`x2`的内轴（k轴）必须为偶数。
     - 当`x2`为`torch.int32`类型时，`x2`的shape为$(k, n//8)$，$n$必须是8的倍数。
     - 当`x2`为`torch_npu.int4`类型时，`x2`的shape为$(k, n)$，$n$必须是8的倍数。
     - A4W4量化仅支持$ND$格式，不支持$NZ$格式。
-    - 转置信息由算子内部根据tensor的stride自动推导，无需手动指定。
+    - 转置信息由算子内部根据Tensor的stride自动推导，无需手动指定。
 
 - **A8W8量化的约束**：
 
     - 支持$ND$格式和$NZ$格式。
-    - 如果需要使用$NZ$格式以提升性能，可以手动调用`torch_npu.npu_format_cast`完成输入`x2`（weight）的$NZ$格式转换。
+    - 如果需要使用$NZ$格式以提升性能，可以手动调用`torch_npu.npu_format_cast`完成输入`x2`（权重）的$NZ$格式转换。
     - 转置信息由算子内部根据tensor的stride自动推导，无需手动指定。
 
 <!-- npu="A3,910b" id3 -->

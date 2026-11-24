@@ -39,7 +39,7 @@ torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, *, offset, beta, epsilon=1e-06,
 
 - **x** (`Tensor`)：必选参数，输入张量，表示标准化过程中的源数据张量，对应公式中的$x$，数据格式支持$ND$，shape支持1-8维，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，支持非连续的Tensor，不支持空Tensor。
 
-- **gamma** (`Tensor`)：必选参数，表示标准化过程中的缩放张量，对应公式中的$gamma$，数据格式支持$ND$，shape支持1-2维，若shape为1维，则需与`x`最后一维维度一致；若shape为2维，则第一维必须为1，第二维需与`x`最后一维维度一致。数据类型需与`x`保持一致，支持非连续Tensor，不支持空Tensor。
+- **gamma** (`Tensor`)：必选参数，表示标准化过程中的缩放张量，对应公式中的$gamma$，数据格式支持$ND$，shape支持1-2维，若shape为1维，则需与`x`最后一维维度一致；若shape为2维，则第一维必须为1，第二维需与`x`最后一维维度一致。数据类型需与`x`保持一致，支持非连续的Tensor，不支持空Tensor。
 
 - **scale** (`Tensor`)：必选参数，表示量化过程中得到`y`的scale张量，对应公式中的$scale$。数据格式支持$ND$，shape为1，维度为1。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
 
@@ -57,7 +57,7 @@ torch_npu.npu_rms_norm_quant_v2(x, gamma, scale, *, offset, beta, epsilon=1e-06,
 
 - **y** (`Tensor`)：返回结果，对应公式中的$y$，即最终量化输出张量，数据类型由`dst_dtype`指定。当`dst_dtype`是`torch.quint4x2`时，`y`的数据类型为`torch.int32`，形状最后一维为`x`最后一维除以8，其余维度与`x`一致，每个`torch.int32`元素包含8个`torch_npu.int4`结果。其他场景下`y`形状与输入`x`一致。
 
-- **rstd** (`Tensor`)：返回结果，对应公式中$Rms(x)$的倒数，表示归一化后均方根的倒数。数据类型仅支持`torch.float32`。维度数与`x`保持一致，不需要norm的维度与`x`对应维度保持一致，需要norm的维度为1。`rstd`shape与`x`shape、`gamma`shape关系举例：若`x`shape=(2,3,4,8)，`gamma`shape=(8,)，`rstd`shape=(2,3,4,1)。
+- **rstd** (`Tensor`)：返回结果，对应公式中$Rms(x)$的倒数，表示标准化后均方根的倒数。数据类型仅支持`torch.float32`。维度数与`x`保持一致，不需要norm的维度与`x`对应维度保持一致，需要norm的维度为1。`rstd`shape与`x`shape、`gamma`shape关系举例：若`x`shape=(2,3,4,8)，`gamma`shape=(8,)，`rstd`shape=(2,3,4,1)。
 
 ## 约束说明
 

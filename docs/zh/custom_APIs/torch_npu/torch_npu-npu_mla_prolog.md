@@ -18,8 +18,8 @@
 
   主要计算过程分为四路：
 
-  - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路：第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>；第二路乘以W<sup>QR</sup>后经过旋转位置编码（ROPE）得到q<sup>R</sup>。
-  - 第三路是将输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>；
+  - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路：第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>；第二路乘以W<sup>QR</sup>后经过旋转位置编码（RoPE）得到q<sup>R</sup>。
+  - 第三路是将输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>。
   - 第四路是输入x乘以W<sup>KR</sup>后经过旋转位置编码后传入另一个Cache中得到k<sup>R</sup>。
   
 - 计算公式：
@@ -31,13 +31,13 @@
         $$q^C = c^Q \cdot W^{UQ}$$
         $$q^N = q^C \cdot W^{UK}$$
 
-    - Query ROPE旋转位置编码:
+    - Query RoPE旋转位置编码：
         $$q^R = ROPE(c^Q \cdot W^{QR})$$
 
-    - Key计算公式:
+    - Key计算公式：
         $$k^C = Cache(RmsNorm(x \cdot W^{DKV}))$$
 
-    - Key ROPE旋转位置编码:
+    - Key RoPE旋转位置编码：
         $$k^R = Cache(ROPE(x \cdot W^{KR}))$$
 
 ## 函数原型
@@ -55,7 +55,7 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
         - 若`kv_cache`、`kr_cache`为`torch.bfloat16`类型，对应`kv_cache_out`、`kr_cache_out`为非量化输出，此时`dequant_scale_w_uq_qr`字段必须传入，`smooth_scales_cq`字段可选传入。
         - 若`kv_cache`、`kr_cache`为`torch.int8`类型，对应`kv_cache_out`、`kr_cache_out`为量化输出，此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`字段必须传入，`smooth_scales_cq`字段可选传入。
     - 当`weight_uq_qr`为`torch.bfloat16`类型时，表示当前为非量化场景。
-        此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`、`smooth_scales_cq`字段不能传入（即为none）。
+        此时`dequant_scale_w_uq_qr`、`quant_scale_ckv`、`quant_scale_ckr`、`smooth_scales_cq`字段不能传入（即为None）。
   
 - **weight\_uk**（`Tensor`）：必选参数，表示计算Key的上采样权重，即公式中W<sup>UK</sup>。shape支持3维，格式为\(N, D, Hckv\)，dtype支持`torch.bfloat16`，数据格式支持ND。
 - **weight\_dkv\_kr**（`Tensor`）：必选参数，表示计算Key的下采样权重矩阵和Key的位置编码权重矩阵，即公式中W<sup>DKV</sup>和W<sup>KR</sup>。shape支持2维，格式为\(He, Hckv+Dr\)，dtype支持`torch.bfloat16`，数据格式支持FRACTAL\_NZ。
@@ -103,8 +103,8 @@ torch_npu.npu_mla_prolog(token_x, weight_dq, weight_uq_qr, weight_uk, weight_dkv
     - Nkv：kv的head数，取值为1。
     - BlockNum：PagedAttention场景下的块数，取值为计算B\*Skv/BlockSize的值后再向上取整，其中Skv表示kv的序列长度，该值允许取0。
     - BlockSize：PagedAttention场景下的块大小，取值范围为16、128。
-    - T：BS合轴后的大小，取值范围：0\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
-- shape约束
+    - T：BS合轴后的大小，取值范围为0\~1048576。注：若采用BS合轴，此时token\_x、rope\_sin、rope\_cos均为2维，cache\_index为1维，query、query\_rope为3维。
+- shape约束：
     - B、S、T、Skv值允许一个或多个取0，即Shape与B、S、T、Skv值相关的入参允许传入空Tensor，其余入参不支持传入空Tensor。
         - 如果B、S、T取值为0，则query、query_rope输出空Tensor，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新。
         - 如果Skv取值为0，则query、query_rope正常计算，kv_cache、kr_cache、kv_cache_out、kr_cache_out不更新，即输出空Tensor。

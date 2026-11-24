@@ -33,17 +33,17 @@
      $$
      subRes[b][n] = vocabParallelLogitsOutOptional[b][n] - logitsMaxLocalOut[b]
      $$
-  4. 计算$subRes$经过指数运算后每行的和
+  4. 计算$subRes$经过指数运算后每行的和：
 
      $$
      sumExpLogitsLocalOut = sum(exp(subRes), dim=-1)
      $$
-  5. 计算$target$小于$vocabStartIndex$或$target$大于$vocabEndIndex$的mask
+  5. 计算$target$小于$vocabStartIndex$或$target$大于$vocabEndIndex$的mask：
 
      $$
      targetMask = (target < vocabStartIndex) | (target > vocabEndIndex)
      $$
-  6. 计算$maskedTargetOut$
+  6. 计算$maskedTargetOut$：
 
      $$
      maskedTargetOut[b] =
@@ -52,7 +52,7 @@
      target[b] - vocabStartIndex & \text{targetMask[b]=false}
      \end{cases}
      $$
-  7. 计算$predictedLogitsLocalOut$
+  7. 计算$predictedLogitsLocalOut$：
 
      $$
      predictedLogitsLocalOut[b] =
@@ -61,7 +61,7 @@
      subRes[b][maskedTargetOut[b]] & \text{targetMask[b]=false}
      \end{cases}
      $$
-  8. 计算$targetMaskOut$
+  8. 计算$targetMaskOut$：
 
      $$
      alignNum = (input.size(0) + 7) / 8 * 8\\
@@ -87,13 +87,13 @@ torch_npu.npu_fused_linear_online_max_sum(input, weight, target, vocab_start_ind
 - **target**（`Tensor`）：必选参数，目标索引，1维Tensor。数据类型支持`torch.int32`、`torch.int64`，数据格式支持ND。`target.size(0)`需与`input.size(0)`一致。支持空Tensor。
 - **vocab\_start\_index**（`int`）：必选参数，本卡分配的词汇表起始索引。取值范围`[0, max(target) - 1]`。
 - **vocab\_end\_index**（`int`）：必选参数，本卡分配的词汇表结束索引。取值范围`[vocab_start_index, min(vocab_start_index + weight.size(0) - 1, max(target) - 1)]`。
-- **return\_logits**（`bool`）：可选参数，是否返回MatMul结果`vocabParallelLogits`，默认值为`False`。`True`时走高性能分支，`False`时走省显存分支。
+- **return\_logits**（`bool`）：可选参数，是否返回MatMul结果`vocab_parallel_logits`，默认值为`False`。`True`时走高性能分支，`False`时走省显存分支。
 
 ## 返回值说明
 
 - **logits\_max**（`Tensor`）：MatMul计算后各行的最大值，数据类型支持`torch.float32`，shape为`[input.size(0)]`。
 - **sum\_exp\_logits**（`Tensor`）：`subRes`经exp后各行累加结果，数据类型支持`torch.float32`，shape为`[input.size(0)]`。
-- **predicted\_logits**（`Tensor`）：`subRes`经`maskedTarget`筛选后的结果，数据类型支持`torch.float32`，shape为`[input.size(0)]`。
+- **predicted\_logits**（`Tensor`）：`subRes`经`masked_target`筛选后的结果，数据类型支持`torch.float32`，shape为`[input.size(0)]`。
 - **target\_mask**（`Tensor`）：词汇表mask的packed bit表示，数据类型支持`torch.uint8`，shape为`[(input.size(0) + 7) // 8]`。
 - **masked\_target**（`Tensor`）：target经mask过滤后的结果，数据类型与`target`一致，shape为`[input.size(0)]`。
 - **vocab\_parallel\_logits**（`Tensor`）：MatMul计算结果。`return_logits`为`True`时，数据类型与`input`一致，shape为`[input.size(0), weight.size(0)]`；`return_logits`为`False`时，返回空Tensor。

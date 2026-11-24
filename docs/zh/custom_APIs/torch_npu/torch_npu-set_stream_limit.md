@@ -83,7 +83,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 
    当显示如下打印信息时，代表采集正常，“Start parsing profiling data”信息表示采集结果路径。
 
-     ```shell
+     ```output
      2025-07-01 08:50:41 [INFO] [367681] profiler.py: Start parsing profiling data: /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt
      2025-07-01 08:50:44 [INFO] [367725] profiler.py: CANN profiling data parsed in a total time of 0:00:03.169691
      2025-07-01 08:50:45 [INFO] [367681] profiler.py: All profiling data parsed in a total time of 0:00:04.654659
@@ -92,7 +92,7 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 
    关键产物如下：
 
-     ```shell
+     ```output
      |-- /home/prof/${hostname}_${pid}_${timestamp}_ascend_pt   
        |-- ASCEND_PROFILER_OUTPUT           // 采集并解析的性能数据目录
          |-- api_statistic.csv             // profiler_level配置为Level1或Level2级别时生成，统计CANN层API执行耗时信息
@@ -110,4 +110,4 @@ torch.npu.set_stream_limit(stream, cube_num=-1, vector_num=-1) -> None
 2. 查看采集结果文件（json、csv等格式）。 
 
    单算子控核可以查看**kernel_details.csv**文件，查看算子的**BlockDim**列（算子计算所用核数），BlockDim小于等于用户设置的控核数即可认为控核成功。
-   示例的SwiGlu算子的BlockDim分别为22和23，符合控核逻辑。
+   示例的SwiGLU算子的BlockDim分别为22和23，符合控核逻辑。

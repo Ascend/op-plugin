@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- **API功能**：TP切分场景下，完成Matmul计算和ReduceScatter通信的融合，先计算后通信。融合算子内部实现计算和通信流水并行。
+- **API功能**：TP切分（Tensor Parallelism，张量并行）场景下，完成Matmul计算和ReduceScatter通信的融合，先计算后通信。融合算子内部实现计算和通信流水并行。
     <!-- npu="A3,910b" id4 -->
     - 支持如下两种量化方式（量化场景仅<term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>支持）：
       - perchannel量化：针对权重（Weight）张量，沿输出特征维度（Output Channel）为每个通道维护独立的缩放因子与零点。
@@ -82,7 +82,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
     - <term>Ascend 950PR&950DT系列产品</term>：数据格式仅支持$ND$。
     <!-- end id10 -->
 
-- **hcom**（`str`）：**必选参数**，Host侧标识列组的字符串，即通信域handle名，通过get\_hccl\_comm\_name接口获取。
+- **hcom**（`str`）：**必选参数**，Host侧标识通信组的字符串，即通信域handle名，通过get\_hccl\_comm\_name接口获取。
 - **world\_size**（`int`）：**必选参数**，通信域内的rank总数。
 
     <!-- npu="910b" id11 -->
@@ -97,7 +97,7 @@ torch_npu.npu_mm_reduce_scatter_base(input, x2, hcom, world_size, *, reduce_op='
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **reduce\_op**（`str`）：**可选参数**，reduce操作类型，当前仅支持'sum'，默认值为'sum'。
-- **bias**（`Tensor`）：**可选参数**，表示Matmul计算的偏置。数据类型支持`torch.float16`、`torch.bfloat16`，需要和`input`保持一致。数据格式支持$ND$。`bias`仅支持一维，且维度大小与`output`的第1维大小相同。
+- **bias**（`Tensor`）：**可选参数**，表示Matmul计算的偏置。数据类型支持`torch.float16`、`torch.bfloat16`，需要和`input`保持一致。数据格式支持$ND$。`bias`仅支持一维，且维度大小与`output`的最后一维大小相同。
 
     <!-- npu="A3,910b" id14 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：**当前版本暂不支持`bias`输入为非0的场景。**

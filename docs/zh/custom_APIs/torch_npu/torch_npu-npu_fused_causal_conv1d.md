@@ -10,7 +10,7 @@
 
 - **API功能：**
 
-    对序列执行因果一维卷积，沿序列维度使用缓存数据（长度为卷积核宽减1）对各序列头部进行padding，确保输出依赖当前及历史输入；卷积完成后，将当前序列部分数据更新到缓存；在因果一维卷积输出的基础上，将原始输入加到输出上以实现残差连接。支持 APC（Automatic Prefix Caching）、MTP（投机解码）、残差连接等特性。
+    对序列执行因果1维卷积，沿序列维度使用缓存数据（长度为卷积核宽度减1）对各序列头部进行padding，确保输出依赖当前及历史输入；卷积完成后，将当前序列部分数据更新到缓存；在因果一维卷积输出的基础上，将原始输入加到输出上以实现残差连接。支持APC（Automatic Prefix Caching）、MTP（Multi-Token Prediction）、残差连接等特性。
 
 - **计算公式**：
 
@@ -95,7 +95,7 @@
       x'[i, dim] = paddedInput[i + offset, dim], \quad 0 \leq i < K - 1 + L
       $$
 
-  - APC 缓存填充（可选，APC 模式下）
+  - APC缓存填充（可选，APC 模式下）
 
       $$
       seqCompletedOffsetToken = numComputedTokens[batchId] \mod B
@@ -216,12 +216,12 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     其中cu_seq_len为batch内所有变长序列拼接后的总长度。
 
     输入shape限制：
-    - x支持2维[cu_seq_len, dim]。
-    - weight必须是2维[K, dim]，其中K固定为3。
-    - conv_states必须是3维[..., K-1, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小。
-    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC。
-    - cu_seq_len范围[batch, 1024\*1024]，dim范围[64, 16384]且是16的倍数，且两者乘积需满足[64\*batch, 4G]，batch范围[1, 256]。
-    - maxNumBlocks >= ceil(max_query_len / block_size)。
+    - x支持2维[cu_seq_len, dim]
+    - weight必须是2维[K, dim]，其中K固定为3
+    - conv_states必须是3维[..., K-1, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小
+    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC
+    - cu_seq_len范围[batch, 1024\*1024]，dim范围[64, 16384]且是16的倍数，且两者乘积需满足[64\*batch, 4GB]，batch范围[1, 256]
+    - maxNumBlocks >= ceil(max_query_len / block_size)
 
   - prefill和decode混合场景：
     - x: [cu_seq_len, dim]
@@ -248,12 +248,12 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     其中cu_seq_len为batch内所有变长序列拼接后的总长度。
 
     输入shape限制：
-    - x支持2维[cu_seq_len, dim]。
-    - weight必须是2维[K, dim]，其中K固定为3。
-    - conv_states必须是3维[..., K-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小。
-    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC。
-    - cu_seq_len范围[batch, 1024\*1024]，dim范围[64, 16384]且是16的倍数，且两者乘积需满足[64\*batch, 4G]，batch范围[1, 256]。
-    - maxNumBlocks >= ceil(max_query_len / block_size)。
+    - x支持2维[cu_seq_len, dim]
+    - weight必须是2维[K, dim]，其中K固定为3
+    - conv_states必须是3维[..., K-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小
+    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC
+    - cu_seq_len范围[batch, 1024\*1024]，dim范围[64, 16384]且是16的倍数，且两者乘积需满足[64\*batch, 4G]，batch范围[1, 256]
+    - maxNumBlocks >= ceil(max_query_len / block_size)
 
   - decode场景（变长序列）：
     - x: [cu_seq_len, dim]
@@ -280,12 +280,12 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     其中state_len必须大于所有batch中最大的token个数加1。
 
     输入shape限制：
-    - x支持2维[cu_seq_len, dim]。
-    - weight必须是2维[K, dim]，其中K固定为3。
-    - conv_states必须是3维[..., k-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小。
-    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC。
-    - cu_seq_len范围[batch, batch*8]，每个batch的token个数范围为[1, 8]。dim范围[64, 16384]且是16的倍数，batch范围[1, 256]。
-    - maxNumBlocks >= ceil(max_query_len / block_size)。
+    - x支持2维[cu_seq_len, dim]
+    - weight必须是2维[K, dim]，其中K固定为3
+    - conv_states必须是3维[..., K-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小
+    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC
+    - cu_seq_len范围[batch, batch*8]，每个batch的token个数范围为[1, 8]。dim范围[64, 16384]且是16的倍数，batch范围[1, 256]
+    - maxNumBlocks >= ceil(max_query_len / block_size)
 
   - decode场景（固定batch）：
     - x: [batch, m+1, dim]
@@ -303,30 +303,30 @@ torch_npu.npu_fused_causal_conv1d(x, weight, conv_states, *, query_start_loc=Non
     - activation: （无作用）
     - pad_slot_id: 默认值 -1
     - run_mode: （无作用）
-    - max_query_len:默认值 1
+    - max_query_len: 默认值 1
     - residual_connection: 不做残差: 0, 做残差：1
     - block_size: 典型值 128/256
     - conv_mode：Qwen3-Next模式: "default", Pangu V2: "pangu"
     - y: [batch, m+1, dim]
 
     输入shape限制：
-    - x支持3维[batch, m+1, dim]。
+    - x支持3维[batch, m+1, dim]
     - weight必须是2维[K, dim]，其中K固定为3。
-    - conv_states必须是3维[..., K-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小。
-    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC。
-    - m范围[0, 7]，dim范围[64, 16384]且是16的倍数，batch范围[1, 256]。
-    - maxNumBlocks >= ceil(max_query_len / block_size)。
+    - conv_states必须是3维[..., K-1+m, dim]，第0维大小不固定且大于等于batch，同时大于等于cache_indices总维度大小
+    - cache_indices为1维[batch, ]或2维[batch, maxNumBlocks]，其中1维表示未开启APC，2维表示开启APC
+    - m范围[0, 7]，dim范围[64, 16384]且是16的倍数，batch范围[1, 256]
+    - maxNumBlocks >= ceil(max_query_len / block_size)
 
 - 输入值域限制：
   - query_start_loc是累计偏移量，取值范围[0, cu_seq_len]，长度为batch+1，query_start_loc[i]表示第i个序列的起始偏移，query_start_loc[batch+1]表示最后一个序列的结束位置。
-  - blockSize 必须大于等于 2。
-  - APC 开启时，必须提供 blockIdxFirstScheduledToken、blockIdxLastScheduledToken 、initialStateIdx和num_computed_tokens，且满足如下需求，i为batch的索引：
-      - initialStateIdx[i] <= blockIdxFirstScheduledToken[i]+1
-      - initialStateIdx[i] <= blockIdxLastScheduledToken[i]
-      - blockIdxFirstScheduledToken[i] <= blockIdxLastScheduledToken[i]
-      - blockIdxLastScheduledToken[i] < maxNumBlocks
+  - block_size 必须大于等于2。
+  - APC开启时，必须提供 block_idx_first_scheduled_token、block_idx_last_scheduled_token、initial_state_idx和num_computed_tokens，且满足如下需求，i为batch的索引：
+      - initial_state_idx[i] <= block_idx_first_scheduled_token[i]+1
+      - initial_state_idx[i] <= block_idx_last_scheduled_token[i]
+      - block_idx_first_scheduled_token[i] <= block_idx_last_scheduled_token[i]
+      - block_idx_last_scheduled_token[i] < maxNumBlocks
   - num_accepted_tokens分为None和非None，非None情况下长度为batch，每个元素取值不超过当前batch的token数-1且大于0。
-  - cache_indices的取值范围为[0, conv_states.dim[0]-1],且元素均不能相等。
+  - cache_indices的取值范围为[0, conv_states.dim[0]-1]，且元素均不能相等。
   - Pangu V2 模式（conv_mode = "pangu"）下，num_computed_tokens不能为None。
   - 算子入参与中间计算结果，在对应数据类型（`torch.float16`/`torch.bfloat16`）下，数值均不会超出该类型值域范围。
   - 算子输入不支持有±inf和nan的情况。

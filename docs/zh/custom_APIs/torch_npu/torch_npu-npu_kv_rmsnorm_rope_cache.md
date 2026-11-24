@@ -16,10 +16,10 @@
 
 - API功能：融合了MLA（Multi-head Latent Attention）结构中RMSNorm归一化计算与RoPE（Rotary Position Embedding）位置编码以及更新KVCache的ScatterUpdate操作。
     - **MLA（Multi-head Latent Attention）**：
-      一种DeepSeek-V2提出的高效注意力机制，通过低秩潜在表示压缩 Key/Value，减少 KV Cache 和计算开销，同时保持长序列建模能力。
+      一种DeepSeek-V2提出的高效注意力机制，通过低秩潜在表示压缩Key/Value，减少KVCache和计算开销，同时保持长序列建模能力。
 
     - **RoPE（Rotary Position Embedding）**：
-      一种位置编码方法，通过对向量施加旋转变换注入位置信息，能够建模相对位置关系，适用于长上下文场景，其中通过 RotateHalf 操作实现向量旋转。
+      一种位置编码方法，通过对向量施加旋转变换注入位置信息，能够建模相对位置关系，适用于长上下文场景，其中通过RotateHalf操作实现向量旋转。
 
     - **RMSNorm（Root Mean Square Normalization）**：
       一种归一化方法，通过均方根对输入进行缩放，计算简单、开销较低，常用于大模型训练。
@@ -27,7 +27,7 @@
 - 计算公式：
     - **输入张量kv拆分**：拆分为两部分，其中B为批次大小，T为序列长度。以kv为576为例，拆分出512进行RMSNorm运算，拆分出64进行RoPE运算。
 
-        $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$， $rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
+        $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$，$rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
 
     - **RMS归一化**：对rms\_in，应用RMS归一化。
 
@@ -63,7 +63,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
 - **kv** (`Tensor`)：必选参数，表示输入的特征张量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$BNSD$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, hidden\_size\]，其中hidden\_size=rms\_size\(RMS\)+rope\_size\(RoPE\)。
 - **gamma** (`Tensor`)：必选参数，表示RMS归一化的缩放参数。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为1维张量，形状为\[rms\_size\]。
-- **cos** (`Tensor`)：必选参数，表示RoPE旋转位置编码的余弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
+- **cos** (`Tensor`)：必选参数，表示RoPE位置编码的余弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 - **sin** (`Tensor`)：必选参数，表示RoPE旋转位置编码的正弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4维张量，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 - **index** (`Tensor`)：必选参数，表示缓存索引张量，用于定位`k_cache`和`ckv_cache`的写入位置。数据类型支持`torch.int64`，数据格式为$ND$。shape取决于`cache_mode`。
 - **k\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的k向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。
@@ -72,7 +72,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id4 -->
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT系列产品</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
   <!-- end id5 -->
 
 - **ckv\_cache** (`Tensor`)：必选参数，用于存储量化/非量化的压缩后的kv向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。
@@ -81,7 +81,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型不支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id6 -->
   <!-- npu="950" id7 -->
-  - <term>Ascend 950PR&950DT系列产品</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`
+  - <term>Ascend 950PR&950DT系列产品</term>: 数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`。
   <!-- end id7 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -110,13 +110,13 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 
     | 枚举值 | 模式名 | 说明 |
     | --- | --- | --- |
-    | Norm | KV-Cache更新模式 | k_cache形状为[batch_size, 1, cache_length, rope_size]，ckv_cache形状为[batch_size, 1, cache_length, rms_size]。index形状为[batch_size, seq_len]，index里的值表示每个Batch下的偏移。 |
+    | Norm | KVCache更新模式 | k_cache形状为[batch_size, 1, cache_length, rope_size]，ckv_cache形状为[batch_size, 1, cache_length, rms_size]。index形状为[batch_size, seq_len]，index里的值表示每个Batch下的偏移。 |
     | PA/PA_BNSD | PagedAttention模式 | k_cache形状为[block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size*seq_len]，index里的值表示每个token的偏移。 |
     | PA_NZ | Cache数据格式为FRACTAL_NZ的PagedAttention模式 | k_cache形状为 [block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size * seq_len]，index里的值表示每个token的偏移。<br>不同量化模式下数据排布不同：<br><li>非量化模式下：k_cache数据排布为[block_num, rope_size//16, block_size, 1, 16]，ckv_cache数据排布为[block_num, rms_size//16, block_size, 1, 16]</li><li>量化模式下：k_cache数据排布为[block_num, rope_size//32, block_size, 1, 32]，ckv_cache数据排布为[block_num, rms_size//32, block_size, 1, 32]</li> |
     | PA_BLK_BNSD | 特殊的PagedAttention模式 | k_cache形状为[block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size*Ceil(seq_len/block_size)]，index里的值表示每个block的起始偏移，不再和token一一对应。 |
     | PA_BLK_NZ | Cache数据格式为FRACTAL_NZ的特殊的PagedAttention模式 | k_cache形状为 [block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size * Ceil(seq_len / block_size)]，index里的值表示每个block的起始偏移，不再和token一一对应。<br>不同量化模式下数据排布不同：<br><li>非量化模式下：k_cache数据排布为[block_num, rope_size//16, block_size, 1, 16]，ckv_cache数据排布为[block_num, rms_size//16, block_size, 1, 16]</li><li>量化模式下：k_cache数据排布为[block_num, rope_size//32, block_size, 1, 32]，ckv_cache数据排布为[block_num, rms_size//32, block_size, 1, 32]</li> |
 
-- **is\_output\_kv** (`bool`)：可选参数，表示是否输出处理后的`k_embed_out`和`y_out`（未量化的原始值），默认值False不输出，仅`cache_mode`在\(PA/PA\_BNSD/PA\_NZ/PA\_BLK\_BNSD/PA\_BLK\_NZ\)模式下有效。
+- **is\_output\_kv** (`bool`)：可选参数，表示是否输出处理后的`k_embed_out`和`y_out`（未量化的原始值），默认值False表示不输出，仅`cache_mode`在\(PA/PA\_BNSD/PA\_NZ/PA\_BLK\_BNSD/PA\_BLK\_NZ\)模式下有效。
 
 ## 返回值说明<a name="zh-cn_topic_0000002236535552_section3234185215368"></a>
 
@@ -150,7 +150,7 @@ torch_npu.npu_kv_rmsnorm_rope_cache(kv, gamma, cos, sin, index, k_cache, ckv_cac
 - 非量化模式：当`k_rope_scale`和`c_kv_scale`为空时，`k_cache`和`ckv_cache`的dtype为`torch.bfloat16`或`torch.float16`。
 - 非对称量化参数：`k_rope_offset`和`c_kv_offset`暂不支持配置。
 - 索引映射：所有`cache_mode`缓存模式下，index的值不可以重复，如果传入的index值存在重复，算子的行为是未定义的且不可预知的。
-    - Norm：index的值表示每个Batch下的偏移。
+    - Norm：index的值表示每个batch下的偏移。
     - PA/PA\_BNSD/PA\_NZ：index的值表示全局的偏移。
     - PA\_BLK\_BNSD/PA\_BLK\_NZ：index的值表示每个页的全局偏移；这个场景假设cache更新是连续的，不支持非连续更新的cache。
 

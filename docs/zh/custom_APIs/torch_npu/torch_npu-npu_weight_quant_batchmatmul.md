@@ -23,11 +23,11 @@
      $$
      y = x @ ANTIQUANT(weight) + bias
      $$
-     公式中的$weight$为伪量化场景的输入，其反量化公式$ANTIQUANT(weight)$ 为:
+     公式中的$weight$为伪量化场景的输入，其反量化公式$ANTIQUANT(weight)$为：
      $$
      ANTIQUANT(weight) = (weight + antiquantOffset) * antiquantScale
      $$
-     当配置了`quant_scale`时，会对输出进行量化处理，其量化公式为:
+     当配置了`quant_scale`时，会对输出进行量化处理，其量化公式为：
      $$
      y = QUANT(x @ ANTIQUANT(weight) + bias) \\
      = (x @ ANTIQUANT(weight) + bias) * quantScale + quantOffset
@@ -98,7 +98,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 
     - pertensor模式：输入shape为\(1,\)或\(1, 1\)。
     - perchannel模式：输入shape为\(1, N\)或\(N,\)。
-    - pergroup模式：输入shape为\(ceil\(K, antiquant\_group\_size\),  N\)。
+    - pergroup模式：输入shape为\(ceil\(K, antiquant\_group\_size\), N\)。
     - MX模式：输入shape为\(⌈K/antiquant\_group\_size⌉, N\)，其中`antiquant_group_size`表示k被分组的每组大小，仅支持32。
 
     `antiquant_scale`支持的dtype如下：
@@ -177,7 +177,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
   - pergroup场景下要求传入值的范围为\[32, K-1\]且必须是32的倍数。
   - MX场景下要求`antiquant_group_size`取值为32。
 - **inner\_precise** (`int`)：可选参数。计算模式选择，默认为0。0表示高精度模式，1表示高性能模式，可能会影响精度。当`weight`以`torch.int32`类型且以$FRACTAL\_NZ$格式输入，M不大于16的pergroup场景下可以设置为1，提升性能。其他场景不建议使用高性能模式。
-- **weight\_dtype**（`int`）：可选参数，表示torch\_npu对`weight`的扩展数据类型。
+- **weight\_dtype** (`int`)：可选参数，表示torch\_npu对`weight`的扩展数据类型。
 
   <!-- npu="310p" id25 -->
   - <term>Atlas推理系列产品</term>：暂不支持此参数。
@@ -237,7 +237,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
 - <term>Ascend 950PR&950DT系列产品</term>：
   - 当`x`是`torch.float16`、`torch.bfloat16`，同时`weight`是`torch.float32`、`torch_npu.float4_e2m1fn_x2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`时，不支持`antiquant_offset`参数。
   - 当`x`是`torch.float16`、`torch.bfloat16`，同时`weight`是`torch.float32`时，此时为MX场景，要求`antiquant_scale`类型为`torch.uint8`，`antiquant_offset`必须为None，`antiquant_group_size`为32。可参考[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)调用示例。
-  - 当`weight`数据类型为`torch_npu.hifloat8`，使用8bits数据类型进行承载，`weight_dtype`传入`torch_npu.hifloat8`。
+  - 当`weight`数据类型为`torch_npu.hifloat8`，使用8bit数据类型进行承载，`weight_dtype`传入`torch_npu.hifloat8`。
   - 当`x`是`torch.float16`、`torch.bfloat16`，同时`weight`是`torch.int8`，数据格式为$FRACTAL\_NZ$格式时，仅支持图模式。K、N的范围是\[2, 65535\]。pergroup场景需满足`x`为转置输入，`weight`为非转置输入，`antiquant_group_size`为64或128，K为`antiquant_group_size`对齐，N为64对齐。
 <!-- end id34 -->
 
@@ -339,7 +339,7 @@ torch_npu.npu_weight_quant_batchmatmul(x, weight, antiquant_scale, antiquant_off
     <!-- end id42 -->
 
 - 图模式调用
-    - weight输入为ND格式
+    - weight输入为ND格式。
 
         ```python
         # 图模式

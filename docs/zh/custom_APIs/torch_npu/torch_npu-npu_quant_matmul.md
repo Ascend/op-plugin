@@ -224,7 +224,7 @@
       out = (x1 \mathbin{@} (x2 * \text{x2Scale})) * \text{yScale}
       $$
 
-      其中，x1为`torch.float8_e4m3fn`，x2为`torch_npu.float4_e2m1fn_x2`，x2Scale为`torch.float16`/`torch.bfloat16`，yScale为`torch.int64`/`torch.uint64`，out类型与x2Scale类型一致。x2为pergroup量化，对输出进行perchannel反量化。
+      其中，x1为`torch.float8_e4m3fn`，x2为`torch_npu.float4_e2m1fn_x2`，x2Scale为`torch.float16`/`torch.bfloat16`，yScale为`torch.int64`/`torch.uint64`，out类型与x2Scale类型一致。x2为分组量化（pergroup），对输出进行逐通道反量化（perchannel）。
 
     </details>
   <!-- end id7 -->
@@ -237,7 +237,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
 
 ## 参数说明
 
-- **x1** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的左矩阵，数据格式支持$ND$，shape需要在2-6维范围。
+- **x1**（`Tensor`）：必选参数，输入张量，表示矩阵乘法中的左矩阵，数据格式支持$ND$，shape需要在2-6维范围。
 
     <!-- npu="310p" id8 -->
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`。
@@ -255,7 +255,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
       - 当数据类型为`torch_npu.float4_e2m1fn_x2`时，用两个float4的数拼成一个8bit类型的数。
     <!-- end id11 -->
 
-- **x2** (`Tensor`)：必选参数，输入张量，表示矩阵乘法中的右矩阵，数据格式支持$ND$，shape需要在2-6维范围。
+- **x2**（`Tensor`）：必选参数，输入张量，表示矩阵乘法中的右矩阵，数据格式支持$ND$，shape需要在2-6维范围。
 
     <!-- npu="310p" id12 -->
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`。
@@ -274,7 +274,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
         - 全量化场景且数据类型为`torch.int8`（仅T-C量化、T-T量化、K-C量化或K-T量化）、`torch_npu.hifloat8`\(T-C量化、T-T量化、K-C量化、K-T量化、G-B量化或B-B量化\)、`torch.float8_e4m3fn`（mx全量化、T-C量化、T-T量化、K-C量化、K-T量化、G-B量化或B-B量化）、`torch_npu.float4_e2m1fn_x2`\(mx全量化\)，或mx伪量化场景、T-CG伪量化场景，且数据类型为`torch.float32`时，数据格式还支持FRACTAL\_NZ，可通过torch\_npu.npu\_format\_cast接口实现ND转FRACTAL\_NZ格式。
     <!-- end id15 -->
 
-- **scale** (`Tensor`)：必选参数，量化缩放因子，数据格式支持$ND$。如需传入`torch.int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`torch.int64`数据类型的`scale`。
+- **scale**（`Tensor`）：必选参数，量化缩放因子，数据格式支持$ND$。如需传入`torch.int64`数据类型的`scale`，需要提前调用`torch_npu.npu_trans_quant_param`来获取`torch.int64`数据类型的`scale`。
 
     <!-- npu="310p" id16 -->
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.float32`、`torch.int64`。shape需要是1维$(t, )$，其中$t=1$或$n$，$n$表示`x2`的最后一维。
@@ -286,15 +286,15 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.bfloat16`。shape需要是1维$(t, )$，其中$t=1$或$n$，$n$表示`x2`的最后一维。
     <!-- end id18 -->
     <!-- npu="950" id19 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.float16`、`torch.bfloat16`、`torch.float8_e8m0fnu`（需配置可选参数scale\_dtype为对应类型，此时scale本身dtype不再生效，但仍需保证scale dtype为8bit位数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(t, \)，t=1或n，其中n与x2的n一致；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.int64`、`torch.float16`、`torch.bfloat16`、`torch.float8_e8m0fnu`（需配置可选参数scale\_dtype为对应类型，此时scale本身dtype不再生效，但仍需保证scale dtype为8bit数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(t, \)，t=1或n，其中n与x2的n一致；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
         - mx全量化场景下，当`x2`为FRACTAL\_NZ格式（WeightNZ），且`x1`、`x2`的数据类型均为`torch.float8_e4m3fn`或均为`torch_npu.float4_e2m1fn_x2`时，实际数据类型为FLOAT8\_E8M0的`scale`还支持FRACTAL\_NZ格式（ScaleNZ），可通过`torch_npu.npu_format_cast`接口转换；mx伪量化A8W4场景下，当`x1`为`torch.float8_e4m3fn`、`x2_dtype`为`torch_npu.float4_e2m1fn_x2`且`x2`为FRACTAL\_NZ格式时，`scale`同样支持ScaleNZ。ScaleNZ的shape、转置及调用模式要求参见[约束说明](#约束说明)。
     <!-- end id19 -->
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **offset** (`Tensor`)：仅当`scale`为2维时为必选参数，并且数据类型仅支持`torch.float16`，shape需要是2维且与`scale`相同；其他场景下为可选参数，用于调整量化后的数值偏移量。数据类型支持`torch.float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
+- **offset**（`Tensor`）：仅当`scale`为2维时为必选参数，并且数据类型仅支持`torch.float16`，shape需要是2维且与`scale`相同；其他场景下为可选参数，用于调整量化后的数值偏移量。此时数据类型支持`torch.float32`，数据格式支持$ND$，shape需要是1维$(t,)$，$t=1$或$n$，其中$n$与`x2`的$n$一致。
 
-- **pertoken_scale** (`Tensor`)：可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`torch.float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致，表示`x1`的倒数第二维。
+- **pertoken_scale**（`Tensor`）：可选参数，用于缩放原数值以匹配量化后的范围值。数据类型支持`torch.float32`，数据格式支持$ND$，shape需要是1维$(m,)$，其中$m$与`x1`的$m$一致，表示`x1`的倒数第二维。
 
   <!-- npu="310p" id20 -->
   - <term>Atlas推理系列产品</term>当前不支持`pertoken_scale`。
@@ -306,10 +306,10 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   - <term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。shape需要是1维\(m,\)，其中m与`x1`的m一致。
   <!-- end id22 -->
   <!-- npu="950" id23 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`（需配置可选参数`pertoken_scale_dtype`为对应类型，此时`pertoken_scale`本身的dtype不再生效，但仍需保证`pertoken_scale`本身的dtype为8bit位的数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(m,\)或\(1,\)；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`（需配置可选参数`pertoken_scale_dtype`为对应类型，此时`pertoken_scale`本身的dtype不再生效，但仍需保证`pertoken_scale`本身的dtype为8bit的数据类型，以保证shape正确）。shape支持1维或多维，1维场景要求shape为\(m,\)或\(1,\)；多维场景的shape和dtype约束参见[约束说明](#约束说明)。
   <!-- end id23 -->
 
-- **bias** (`Tensor`)：可选参数，偏置项，数据格式支持$ND$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是4、5、6维时，`bias`的shape必须为1维$(n,)$；当输出是3维时，`bias`的shape可以为1维$(n,)$或3维$(batch, 1, n)$；当输出是2维时，<term>Ascend 950PR&950DT系列产品</term>的`bias`支持1维$(n,)$或2维$(1, n)$，其他产品仅支持1维$(n,)$。
+- **bias**（`Tensor`）：可选参数，偏置项，数据格式支持$ND$，$n$与`x2`的$n$一致，同时$batch$值需要等于`x1`和`x2` broadcast后推导出的$batch$值。当输出是4、5、6维时，`bias`的shape必须为1维$(n,)$；当输出是3维时，`bias`的shape可以为1维$(n,)$或3维$(batch, 1, n)$；当输出是2维时，<term>Ascend 950PR&950DT系列产品</term>的`bias`支持1维$(n,)$或2维$(1, n)$，其他产品仅支持1维$(n,)$。
     <!-- npu="310p" id24 -->
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.int32`。
     <!-- end id24 -->
@@ -322,7 +322,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     <!-- npu="950" id73 -->
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.bfloat16`、`torch.float16`、`torch.float32`。shape支持1维\(n,\)、2维\(1, n\)或3维（batch, 1, n）。需注意的是，当输出是2维，bias的shape可为1维或2维。
     <!-- end id73 -->
-- **output_dtype** (`int`)：可选参数，表示输出Tensor的数据类型。默认值为`None`，代表输出Tensor数据类型为`torch.int8`。
+- **output_dtype**（`int`）：可选参数，表示输出Tensor的数据类型。默认值为`None`，代表输出Tensor数据类型为`torch.int8`。
 
     <!-- npu="310p" id25 -->
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`、`torch.float16`。
@@ -334,7 +334,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     - <term>Atlas A3系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.bfloat16`、`torch.int32`。
     <!-- end id27 -->
     <!-- npu="950" id28 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持输入`torch.int8`、`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int32`。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int32`。
     <!-- end id28 -->
 
 - **x1\_dtype**（`int`）：可选参数，表示`x1`实际数据类型，传入值时表示忽略x1本身的dtype，将x1中的数据视为x1\_dtype传入的类型进行计算，不传入时则直接取x1的dtype进行计算。
@@ -397,7 +397,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   - <term>Ascend 950PR&950DT系列产品</term>：支持`torch.float8_e8m0fnu`类型。
   <!-- end id44 -->
 
-- **group_sizes** (`list[int]`)：可选参数，表示分组量化粒度，用于输入$m$（`x1`倒数第二维）、$n$（`x2`最后一维）、$k$（`x1`最后一维/`x2`倒数第二维）方向上的量化分组大小，格式为 [group_m, group_n, group_k]，列表必须包含3个元素，且每个元素须为0或正整数。
+- **group_sizes**（`list[int]`）：可选参数，表示分组量化粒度，用于输入$m$（`x1`倒数第二维）、$n$（`x2`最后一维）、$k$（`x1`最后一维/`x2`倒数第二维）方向上的量化分组大小，格式为 [group_m, group_n, group_k]，列表必须包含3个元素，且每个元素须为0或正整数。
 
 - **y\_scale**（`Tensor`）：可选参数，表示对输出结果做反量化。
 
@@ -1026,7 +1026,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
     ```
   <!-- end id65 -->
   <!-- npu="950,310p" id76 -->
-  - 将x2转置\(batch,  **n, k**\)后转format，示例代码如下，仅支持如下产品：
+  - 将x2转置\(batch, **n, k**\)后转format，示例代码如下，仅支持如下产品：
 
     <!-- npu="310p" id66 -->
     - <term>Atlas推理系列产品</term>
@@ -1075,7 +1075,7 @@ torch_npu.npu_quant_matmul(x1, x2, scale, *, offset=None, pertoken_scale=None, b
   <!-- end id76 -->
 
   <!-- npu="950,A3,910b" id77 -->
-  - 将x2非转置\(batch,  **k, n**\)后转format，示例代码如下，仅支持如下产品：
+  - 将x2非转置\(batch, **k, n**\)后转format，示例代码如下，仅支持如下产品：
 
     <!-- npu="910b" id68 -->
     - <term>Atlas A2系列产品</term>

@@ -60,7 +60,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 
 - \*：代表其之前的变量支持按位置输入，也可使用键值对赋值；之后的变量仅支持使用键值对赋值，其中带默认值的变量不赋值时使用默认值，不带默认值的变量必须赋值。
 - **bias**(`Tensor`)：**可选参数**，表示矩阵乘的偏置矩阵，当前版本暂不支持该参数，使用默认值即可。
-- **scale**(`Tensor`)：**可选参数**，表示量化输入。数据格式支持$ND$，数据类型支持`torch.int64`、`torch.uint64`，shape维度支持1维(B*N)。支持非连续的Tensor。
+- **scale**(`Tensor`)：**可选参数**，表示量化系数。数据格式支持$ND$，数据类型支持`torch.int64`、`torch.uint64`，shape维度支持1维(B*N)。支持非连续的Tensor。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：B*N的取值范围为[1, 65536)。
@@ -77,7 +77,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
   <!-- end id10 -->
 
 - **perm_y**(`List[int]`)：**可选参数**，表示矩阵乘输出矩阵的转置序列，size为3，数据类型为`torch.int64`，数据格式支持$ND$，只支持[1, 0, 2]。
-- **batch_split_factor**(`int`)：**可选参数**，用于指定矩阵乘输出矩阵中B维的切分大小。数据类型支持`int32`。取值范围为[1, B]且能被B整除，默认值为1。注：当`scale`有值时，`batch_split_factor`只能为1。
+- **batch_split_factor**(`int`)：**可选参数**，用于指定矩阵乘输出矩阵中B维的切分大小。数据类型支持`int32`。取值范围为[1, B]且能整除B（即B能被batch_split_factor整除），默认值为1。注：当`scale`有值时，`batch_split_factor`只能为1。
 
 ## 返回值说明
 
@@ -93,7 +93,7 @@ torch_npu.npu_transpose_batchmatmul(input, weight, *, bias=None, scale=None, per
 
 <!-- npu="A3,910b" id11 -->
 - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：
-  - 当`perm_x1`为[1, 0, 2]时，即`input`矩阵需要转置时，K*B的取值范围[1, 65536)；当`perm_x1`为[0, 1, 2]时，K需要小于65536。
+  - 当`perm_x1`为[1, 0, 2]时，即`input`矩阵需要转置时，K*B的取值范围为[1, 65536)；当`perm_x1`为[0, 1, 2]时，K需要小于65536。
   - K和N需要能被16整除。
 <!-- end id11 -->
 

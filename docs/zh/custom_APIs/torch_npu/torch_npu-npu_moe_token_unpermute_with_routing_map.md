@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回unpermuted_tokens，支持drop_and_pad填充模式。
+- API功能：对经过permute计算处理的permuted_tokens，根据sorted_indices和routing_map累加回原unpermuted_tokens，支持drop_and_pad填充模式。
 
 - 计算公式：
 
@@ -107,7 +107,7 @@ torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indic
 ## 参数说明
 
 - **permuted_tokens**（`Tensor`）：必选参数，表示经过permute计算后的输入tokens。要求是一个2D的Tensor：drop_and_pad为`False`时shape为(tokens_num \* topK_num, hidden_size)，drop_and_pad为`True`时shape为(experts_num \* capacity, hidden_size)，其中capacity表示每个专家能够处理的token个数。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据格式支持$ND$，支持非连续Tensor。
-- **sorted_indices**（`Tensor`）：必选参数，表示输入输出梯度的映射关系。要求是一个1D的Tensor：drop_and_pad为`False`时shape为(tokens_num \* topK_num)，索引取值范围[0, tokens_num \* topK_num - 1]，允许使用`-1`表示无效槽位，计算时跳过该槽位；drop_and_pad为`True`时shape为(experts_num \* capacity)，索引取值范围[0, tokens_num - 1]。数据类型支持`torch.int32`，数据格式支持$ND$，支持非连续Tensor。
+- **sorted_indices**（`Tensor`）：必选参数，表示permuted_tokens中每个元素对应的token索引及专家槽位映射关系。要求是一个1D的Tensor：drop_and_pad为`False`时shape为(tokens_num \* topK_num)，索引取值范围[0, tokens_num \* topK_num - 1]，允许使用`-1`表示无效槽位，计算时跳过该槽位；drop_and_pad为`True`时shape为(experts_num \* capacity)，索引取值范围[0, tokens_num - 1]。数据类型支持`torch.int32`，数据格式支持$ND$，支持非连续Tensor。
 - **restore_shape**（`int[]`）：必选参数，表示输出unpermuted_tokens的shape。size为2，即(tokens_num, hidden_size)。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
@@ -127,14 +127,14 @@ torch_npu.npu_moe_token_unpermute_with_routing_map(permuted_tokens, sorted_indic
 ## 约束说明
 
 - 该接口支持推理、训练场景下使用。
-- 该接口仅支持图模式。
+- 该接口支持单算子模式和图模式。
 - 该接口默认非确定性实现，支持通过aclrtCtxSetSysParamOpt开启确定性。
 - topK_num要求小于等于512。drop_and_pad为`False`时，每个token最多预留topK_num个专家槽位，routing_map中每行为1或true的个数小于等于topK_num；sorted_indices中允许使用`-1`表示无效槽位。
 - 以下场景后续版本会拦截，如果提示warning，建议整改：
   - drop_and_pad为`True`，且topK_num大于experts_num。
   - drop_and_pad为`True`，且capacity大于tokens_num。
   - routing_map的数据类型或shape不符合要求。
-  - 输入tensor的数据格式不为ND。
+  - 输入Tensor的数据格式不为ND。
 
 ## 调用示例
 

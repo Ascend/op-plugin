@@ -44,8 +44,8 @@
     本次公布的`sparse_flash_attention`是面向Sparse Attention的全新算子，针对离散访存进行了指令缩减及搬运聚合的细致优化。
 
     典型使用流程如下：
-    1. 使用选择算法（如`lightning_indexer`）根据Query和Key计算出重要token的索引；
-    2. 将索引填充为`sparse_indices`参数所要求的格式；
+    1. 使用选择算法（如`lightning_indexer`）根据Query和Key计算出重要token的索引。
+    2. 将索引填充为`sparse_indices`参数所要求的格式。
     3. 将`sparse_indices`传入本API，完成稀疏注意力计算。
     > [!NOTE]
     >
@@ -59,7 +59,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 > [!NOTE]
 >
-> `value`参数为位置参数（必填），类型为`Tensor`（可空），支持传入`None`。`value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
+> `value`参数为位置参数（必选），类型为`Tensor`（可空），支持传入`None`。`value=None`仅在CANN >= 9.2.0时支持，更低版本会抛出`NOT_SUPPORT`错误。
 
 ## 参数说明
 
@@ -87,7 +87,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **block\_table**（`Tensor`）：可选参数，表示Paged Attention中kvCache存储使用的block映射表。数据格式支持ND，数据类型支持`torch.int32`，shape为2维，其中第一维长度为B，第二维长度不小于所有batch中最大的S2对应的block数量，即S2\_max / block\_size向上取整。
 
-- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
+- **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该入参中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维张量。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
 - **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`torch.int32`。如果不指定，可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，`layout_kv`为TND时，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
@@ -121,7 +121,7 @@ torch_npu.npu_sparse_flash_attention(query, key, value, sparse_indices, scale_va
 
 - **attention\_out**（`Tensor`）：公式中的输出。数据格式支持ND，数据类型支持`torch.bfloat16`和`torch.float16`。当layout\_query为BSND时shape为[B,S1,N1,D]，当layout\_query为TND时shape为[T1,N1,D]。
 - **softmax\_max**（`Tensor`）：可选输出，Attention算法对query乘key的结果，取max得到softmax_max，数据类型支持`torch.float`。当layout\_query为BSND时shape为[B,N2,S1,N1/N2]，当layout\_query为TND时shape为[N2,T1,N1/N2]。
-- **softmax\_sum**（`Tensor`）：可选输出，Attention算法query乘key的结果减去softmax_max, 再取exp，接着求sum，得到softmax_sum，数据类型支持`torch.float`。当layout\_query为BSND时shape为[B,N2,S1,N1/N2]，当layout\_query为TND时shape为[N2,T1,N1/N2]。
+- **softmax\_sum**（`Tensor`）：可选输出，Attention算法query乘key的结果减去softmax_max，再取exp，接着求sum，得到softmax_sum，数据类型支持`torch.float`。当layout\_query为BSND时shape为[B,N2,S1,N1/N2]，当layout\_query为TND时shape为[N2,T1,N1/N2]。
 
 ## 约束说明
 

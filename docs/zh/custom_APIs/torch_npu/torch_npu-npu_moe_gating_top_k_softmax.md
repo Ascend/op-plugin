@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：在MoE（混合专家模型，Mixture of Experts）架构的门控机制中，用于专家路由计算。对输入`x`做Softmax计算，再做topk操作，以挑选出权重最高的前K个专家。
+- API功能：在MoE（Mixture-of-Experts，混合专家模型）架构的门控机制中，用于专家路由计算。对输入`x`做Softmax计算，再做topk操作，以挑选出权重最高的前K个专家。
 
 - 计算公式：
 
@@ -46,7 +46,7 @@ torch_npu.npu_moe_gating_top_k_softmax(x, finished=None, k=1) -> (Tensor, Tensor
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
+- 该接口支持单算子模式和图模式。
 <!-- npu="950" id4 -->
 - 该接口在Ascend 950PR&950DT系列产品上性能较差，建议使用`torch_npu.npu_moe_gating_top_k_softmax_v2`接口以获得更优性能。
 <!-- end id4 -->

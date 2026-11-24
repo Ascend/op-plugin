@@ -15,7 +15,7 @@
 
 ## 功能说明
 
-- API功能：融合GroupedMatmul（分组矩阵乘）、dequant（反量化）、swiglu（SwiGLU激活）和quant（量化）四个计算环节，deepseek模型使用，对比小算子做性能优化，weight需以FRACTAL\_NZ格式传入。
+- API功能：融合GroupedMatmul（分组矩阵乘）、dequant（反量化）、SwiGLU（SwiGLU激活）和quant（量化）四个计算环节，deepseek模型使用，对比小算子做性能优化，weight需以FRACTAL\_NZ格式传入。
   
   多算子融合计算顺序（依次执行）：
   1. GroupedMatmul：根据group\_list对token按组切分，各组计算$X_{i}\cdot W_{i}$；
@@ -80,7 +80,7 @@
           weightAssistMatrix_{i} = 8 × w\_scale × Σ_{k=0}^{K-1} weight[:,k,:]
           $$
 
-        - pergroup量化（$w\_scale$为3维）:
+        - pergroup量化（$w\_scale$为3维）：
   
           $$
           weightAssistMatrix_{i} = 8 × Σ_{k=0}^{K-1} (weight[:,k,:] × w\_scale[:, \lfloor\frac{k}{num\_per\_group}\rfloor, :])
@@ -111,14 +111,14 @@
           C\_low_{i} = (X\_low\_4bits_{i} \cdot W_{i}) \odot w\_scale_{i}
           $$
 
-        - pergroup量化:
+        - pergroup量化：
 
           $$
           C\_high_{i} = \\ Σ_{k=0}^{K-1}((X\_high\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
           $$
 
           $$
-          C\_low_{i} = \\ Σ_{k=0}^{K-1}((X\_low\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k *   num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
+          C\_low_{i} = \\ Σ_{k=0}^{K-1}((X\_low\_4bits_{i}[:, k * num\_per\_group : (k+1) * num\_per\_group] \cdot W_{i}[k * num\_per\_group : (k+1) * num\_per\_group, :]) \odot w\_scale_{i}[k, :] )
           $$
 
     4. 将高低位的矩阵乘结果还原为整体的结果：
@@ -135,7 +135,7 @@
         S_{i}=Swish(C_{i,act})\odot gate_{i}
         $$
 
-        其中 $Swish(x)=\frac{x}{1+e^{-x}}$ 。
+        其中 $Swish(x)=\frac{x}{1+e^{-x}}$。
 
   - 量化输出结果：
 
@@ -292,7 +292,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 
     输出为
 
-    ```text
+    ```output
     torch.Size([512, 2048]) torch.int8
     torch.Size([512]) torch.float32
     torch.Size([])

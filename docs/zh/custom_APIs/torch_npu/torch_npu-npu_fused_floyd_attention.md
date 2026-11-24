@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-- API功能：训练场景下，npu_fused_floyd_attention相较于传统FA(npu_fusion_attention)主要是计算QK/PV注意力时，会额外将维度(seq)作为batch轴处理，从而将注意力计算转换为批量矩阵乘法(batchMatmul)。
+- API功能：训练场景下，npu_fused_floyd_attention相较于传统Flash Attention(npu_fusion_attention)主要是计算QK/PV注意力时，会额外将维度(seq)作为batch轴处理，从而将注意力计算转换为批量矩阵乘法(batchMatmul)。
 - 计算公式：
 
 $$
@@ -34,7 +34,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 - **key_ij** (`Tensor`)：必选参数，输入张量，对应公式中的$key_1$，代表从节点i到其直接邻居j的关系或特征，数据类型支持`torch.bfloat16`、`torch.float16`。数据格式支持$ND$，输入shape支持[B,H,N,K,D]。
 - **value_ij** (`Tensor`)：必选参数，输入张量，对应公式中的$value_1$，代表从节点i到其直接邻居j的信息内容，数据类型支持`torch.bfloat16`、`torch.float16`。数据格式支持$ND$，输入shape支持[B,H,N,K,D]。
 - **key_jk** (`Tensor`)：必选参数，输入张量，对应公式中的$key_2$，代表从直接邻居j到支点k的关系或特征，数据类型支持`torch.bfloat16`、`torch.float16`，数据格式支持$ND$，输入shape支持[B,H,K,M,D]。
-- **value_jk** (`Tensor`)：必选参数，输入张量，对应公式中的$value_2$，代表从节点j到其直接邻居k的信息内容，数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$，输入shape支持[B,H,K,M,D]。
+- **value_jk** (`Tensor`)：必选参数，输入张量，对应公式中的$value_2$，代表从直接邻居j到支点k的信息内容，数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，数据格式支持$ND$，输入shape支持[B,H,K,M,D]。
 - **atten_mask** (`Tensor`)：可选参数，输入张量，对应公式中的$atten\_mask$，数据类型支持`torch.bool`、`torch.uint8`，数据格式支持$ND$，输入shape类型需为[B,1,N,1,K]，取值为1代表该位不参与计算，为0代表该位参与计算。默认值为None。
 - **scale_value** (`float`)：可选参数，代表缩放系数，对应公式中的$scale\_value$，数据类型支持`float`。默认值为1。
 
@@ -48,7 +48,7 @@ torch_npu.npu_fused_floyd_attention(query_ik, key_ij, value_ij, key_jk, value_jk
 
 - 关于数据shape的约束，其中：
 
-    B：取值范围为1~2K。
+    B：取值范围为1~2k。
 
     H：取值范围为1~256。
 

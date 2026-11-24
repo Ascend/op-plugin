@@ -14,7 +14,7 @@
 
   - **输入张量kv拆分**：拆分为两部分，其中B为批次大小，T为序列长度。以kv为576为例，拆分出512进行RMSNorm运算，拆分出64进行RoPE运算。
 
-    $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$， $rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
+    $rms\_in \in \mathbb{R}^{B \times 1 \times T \times 512}$，$rope\_in \in \mathbb{R}^{B \times 1 \times T \times 64}$
 
   - **RMS归一化**：对rms\_in，应用RMS归一化。
 
@@ -36,7 +36,7 @@
       $k_{embed}=k \odot cos + RotateHalf(k) \odot sin$
 
     - cos⁡和sin⁡为预计算的旋转角度参数。
-    - RotateHalf\(k\)将k的后半部分元素移至前半部分并取反，后半部分用前半部分的值。具体来说，对于维度d=64：
+    - RotateHalf\(k\)将k的后半部分元素移至前半部分并取反，后半部分用前半部分的值填充。具体来说，对于维度d=64：
 
       $RotateHalf(k)_i=-k_{i+32},\ if\ i < 32\ else\ k_{i-32}$
 
@@ -50,10 +50,10 @@ torch_npu.npu_kv_rmsnorm_rope_cache_v2(kv, gamma, cos, sin, index, k_cache, ckv_
 
 - **kv**（`Tensor`）：必选参数，表示输入的特征张量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$BNSD$，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, hidden\_size\]，其中hidden\_size=rms\_size\(RMS\)+rope\_size\(RoPE\)。
 - **gamma**（`Tensor`）：必选参数，表示RMS归一化的缩放参数。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为1D的Tensor，形状为\[rms\_size\]。
-- **cos**（`Tensor`）：必选参数，表示RoPE旋转位置编码的余弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
+- **cos**（`Tensor`）：必选参数，表示RoPE位置编码的余弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 - **sin**（`Tensor`）：必选参数，表示RoPE旋转位置编码的正弦分量。数据类型支持`torch.bfloat16`、`torch.float16`，数据格式为$ND$，要求为4D的Tensor，形状为\[batch\_size, 1, seq\_len, rope\_size\]。
 - **index**（`Tensor`）：必选参数，表示缓存索引张量，用于定位`k_cache`和`ckv_cache`的写入位置。数据类型支持`torch.int64`，数据格式为$ND$。shape取决于`cache_mode`。
-- **k\_cache**（`Tensor`）：必选参数，用于存储量化/非量化的k向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、 `torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。输入输出同地址复用。
+- **k\_cache**（`Tensor`）：必选参数，用于存储量化/非量化的k向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。输入输出同地址复用。
 - **ckv\_cache**（`Tensor`）：必选参数，用于存储量化/非量化的压缩后的kv向量。数据类型支持`torch.bfloat16`、`torch.float16`、`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`，数据格式为$ND$。shape取决于`cache_mode`。输入输出同地址复用。
 - \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
@@ -61,22 +61,22 @@ torch_npu.npu_kv_rmsnorm_rope_cache_v2(kv, gamma, cos, sin, index, k_cache, ckv_
 - **c\_kv\_scale**（`Tensor`）：可选参数，默认值None，表示压缩后kv的量化缩放因子。数据类型支持`torch.float32`，数据格式为$ND$，要求为1D的Tensor，形状为\[rms\_size\]。量化模式下必填。
 - **k\_rope\_offset**（`Tensor`）：可选参数，默认值None，表示k旋转位置编码量化偏移量。数据类型支持`torch.float32`，数据格式为$ND$，要求为1D的Tensor，形状为\[rope\_size\]。支持对称和非对称量化模式，非对称量化下该参数必填。
 
-- **c\_kv\_offset**（`Tensor`）：可选参数，默认值None，表示压缩后kv的量化偏移量。数据类型支持`torch.float32`，数据格式为ND，要求为1D的Tensor，形状为\[rms\_size\]。支持对称和非对称量化模式，非对称量化下该参数必填。
+- **c\_kv\_offset**（`Tensor`）：可选参数，默认值None，表示压缩后kv的量化偏移量。数据类型支持`torch.float32`，数据格式为$ND$，要求为1D的Tensor，形状为\[rms\_size\]。支持对称和非对称量化模式，非对称量化下该参数必填。
 
 - **epsilon**（`float`）：可选参数，默认值1e-5，表示RMS归一化中的极小值，防止除以零。
 - **cache\_mode**（`str`）：可选参数，默认值'Norm'，表示缓存模式，支持的模式如下：
 
     | 枚举值 | 模式名 | 说明 |
     | --- | --- | --- |
-    | Norm | KV-Cache更新模式 | k_cache形状为[batch_size, 1, cache_length, rope_size]，ckv_cache形状为[batch_size, 1, cache_length, rms_size]。index形状为[batch_size, seq_len]，index里的值表示每个Batch下的偏移。 |
+    | Norm | KV-Cache更新模式 | k_cache形状为[batch_size, 1, cache_length, rope_size]，ckv_cache形状为[batch_size, 1, cache_length, rms_size]。index形状为[batch_size, seq_len]，index里的值表示每个batch下的偏移。 |
     | PA/PA_BNSD | PagedAttention模式 | k_cache形状为[block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size*seq_len]，index里的值表示每个token的偏移。 |
     | PA_NZ | Cache数据格式为FRACTAL_NZ的PagedAttention模式 | k_cache形状为 [block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size * seq_len]，index里的值表示每个token的偏移。<br>不同量化模式下数据排布不同：<br><li>非量化模式下：k_cache数据排布为[block_num, rope_size//16, block_size, 1, 16]，ckv_cache数据排布为[block_num, rms_size//16, block_size, 1, 16]</li><li>量化模式下：k_cache数据排布为[block_num, rope_size//32, block_size, 1, 32]，ckv_cache数据排布为[block_num, rms_size//32, block_size, 1, 32]</li> |
     | PA_BLK_BNSD | 特殊的PagedAttention模式 | k_cache形状为[block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size*Ceil(seq_len/block_size)]，index里的值表示每个block的起始偏移，不再和token一一对应。 |
     | PA_BLK_NZ | Cache数据格式为FRACTAL_NZ的特殊的PagedAttention模式 | k_cache形状为 [block_num, block_size, 1, rope_size]，ckv_cache形状为[block_num, block_size, 1, rms_size]。index形状为[batch_size * Ceil(seq_len / block_size)]，index里的值表示每个block的起始偏移，不再和token一一对应。<br>不同量化模式下数据排布不同：<br><li>非量化模式下：k_cache数据排布为[block_num, rope_size//16, block_size, 1, 16]，ckv_cache数据排布为[block_num, rms_size//16, block_size, 1, 16]</li><li>量化模式下：k_cache数据排布为[block_num, rope_size//32, block_size, 1, 32]，ckv_cache数据排布为[block_num, rms_size//32, block_size, 1, 32]</li> |
 
 - **is\_output\_kv**（`bool`）：可选参数，表示是否输出处理后的`k_embed_out`和`y_out`（未量化的原始值），默认值False表示不输出，仅`cache_mode`在\(PA/PA\_BNSD/PA\_NZ/PA\_BLK\_BNSD/PA\_BLK\_NZ\)模式下有效。
-- **k\_cache\_dtype**（`int`）：可选参数，表示`k_cache`的输出的数据类型。
-- **ckv\_cache\_dtype**（`int`）：可选参数，表示`ckv_cache`的输出的数据类型。
+- **k\_cache\_dtype**（`int`）：可选参数，表示`k_cache`输出的数据类型。
+- **ckv\_cache\_dtype**（`int`）：可选参数，表示`ckv_cache`输出的数据类型。
 
 ## 返回值说明
 

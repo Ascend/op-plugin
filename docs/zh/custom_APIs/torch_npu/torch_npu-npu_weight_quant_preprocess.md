@@ -28,7 +28,7 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
 ## 参数说明
 
 - **weight**（`Tensor`）：**必选参数**，Matmul的权重矩阵，支持非连续`Tensor`。
-  - 逻辑数据类型支持`torch_npu.int4`（使用`torch.uint8`承载）、`torch_npu.float4_e2m1fn_x2`（使用`uint8`承载）、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`（使用`torch.uint8`承载），数据格式支持$ND$。支持2维或3维输入，逻辑shape分别为$(K, N)$、$(G, K, N)$，其中$G$表示GroupedMatmul算子的G轴。1个`torch.uint8`元素打包2个4-bit数据（仅4-bit类型），要求打包维度的元素个数为偶数：沿K维打包时`weight`的物理K维长度为$K/2$，沿N维打包时物理N维长度为$N/2$；`torch.int8`/`torch.float8_e4m3fn`/`torch_npu.hifloat8`为1字节元素，无打包约束。
+  - 逻辑数据类型支持`torch_npu.int4`（使用`torch.uint8`承载）、`torch_npu.float4_e2m1fn_x2`（使用`uint8`承载）、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`（使用`torch.uint8`承载），数据格式支持$ND$。支持2维或3维输入，逻辑shape分别为$(K, N)$、$(G, K, N)$，其中$G$表示GroupedMatmul算子的G轴。1个`torch.uint8`元素打包2个4比特数据（仅4比特类型），要求打包维度的元素个数为偶数：沿K维打包时`weight`的物理K维长度为$K/2$，沿N维打包时物理N维长度为$N/2$；`torch.int8`/`torch.float8_e4m3fn`/`torch_npu.hifloat8`为1字节元素，无打包约束。
 - **weight\_scale**（`Tensor`）：**必选参数**，权重的反量化scale参数，支持非连续`Tensor`。
   - 逻辑数据类型支持`torch.float8_e8m0fnu`（使用`torch.uint8`承载）、`torch.float16`、`torch.bfloat16`，数据格式支持$ND$、$NCL$。
     - MX量化场景：A8W4数据流支持3维或4维输入，shape分别为$(ceil\_div(K, 64), N, 2)$、$(G, ceil\_div(K, 64), N, 2)$，其中$G$表示GroupedMatmul算子的G轴；A16F4数据流支持2维输入，shape为$(ceil\_div(K, 32), N)$。
@@ -123,7 +123,7 @@ torch_npu.npu_weight_quant_preprocess(weight, weight_scale, x_dtype, weight_dtyp
 - **MM_A16INT8数据流**：
   - `weight`数据类型必须为`int8`，数据格式为$ND$，支持2维输入，转置与非转置均支持。
   - `weight`的shape为$\{K, N\}$，`int8`为1字节元素，无打包约束。
-  - `weight_scale`数据类型为`float16`或`bfloat16`（须与`x_dtype`一致），其shape决定量化粒度。
+  - `weight_scale`数据类型为`torch.float16`或`torch.bfloat16`（须与`x_dtype`一致），其shape决定量化粒度。
   - `x_dtype`必须为`float16`或`bfloat16`。
   - `x_scale_dtype`必须传入`None`。
   - `weight_offset`支持透传，shape和数据类型需与`weight_scale`保持一致。

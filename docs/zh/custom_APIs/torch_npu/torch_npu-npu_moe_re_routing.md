@@ -11,8 +11,8 @@
 
 ## 功能说明
 
-- API功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要算的token后，将token按照专家顺序重新排列。
-    - MoE 网络：混合专家（Mixture of Experts）网络，每层包含多个并行“专家”子网络，由路由（Routing）模块决定每个token由哪个或哪些专家处理。
+- API功能：MoE网络中，进行AlltoAll操作从其他卡上拿到需要计算的token后，将token按照专家顺序重新排列。
+    - MoE网络：混合专家（Mixture of Experts）网络，每层包含多个并行“专家”子网络，由路由（Routing）模块决定每个token由哪个或哪些专家处理。
     - token：模型处理的最小数据单元，通常为词或子词经过嵌入（embedding）后得到的特征向量。
     - 专家（Expert）：MoE网络中的子网络。在多卡部署时，专家被切分到不同卡上，每张卡承载若干个专家。
     - AlltoAll操作：集合通信原语。每张卡将本地数据按目的卡切分后发送给所有其他卡，同时接收来自所有其他卡的数据。
@@ -25,7 +25,7 @@
 
     - SrcOffset指当前需要移动的token源偏移，根据输入`expert_token_num_per_rank`的值进行计算。
     - DstOffset指当前需要移动的token目的偏移。
-    - cur\_rank是`expert_token_num_per_rank`的纵轴索引，表示该token原本在的卡。
+    - cur\_rank是`expert_token_num_per_rank`的纵轴索引，表示该token原本所在的卡。
     - cur\_expert是`expert_token_num_per_rank`的横轴索引，表示该token由卡上专家cur\_expert计算。
 
 - 流程说明
@@ -71,9 +71,9 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 > - E：表示卡上的专家数，取值无限制。
 
 - **tokens** (`Tensor`)：必选参数，表示待重新排布的token。要求为2维，shape为\[A, H\]，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式为$ND$。
-- **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，二维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`torch.int32`、`torch.int64`，数据格式为$ND$。取值必须大于0。
+- **expert\_token\_num\_per\_rank** (`Tensor`)：必选参数，2维矩阵，矩阵中元素[i, j]表示当前卡上从卡i获取到的专家j处理的token数。要求为2维，shape为\[N, E\]，数据类型支持`torch.int32`、`torch.int64`，数据格式为$ND$。取值必须大于0。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **per\_token\_scales** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token同样进行重新排布。要求为1维，shape为\[A\]，数据类型支持`torch.float32`，数据格式为$ND$。
+- **per\_token\_scales** (`Tensor`)：可选参数，表示每个token对应的scale，需要随token一起进行重新排布。要求为1维，shape为\[A\]，数据类型支持`torch.float32`，数据格式为$ND$。
 - **expert\_token\_num\_type** (`int`)：可选参数，表示输出`expert_token_num`的模式。0为cumsum模式，1为count模式，默认值为1。当前只支持为1。
 - **idx\_type** (`int`)：可选参数，表示输出`permute_token_idx`的索引类型。0为gather索引，1为scatter索引，默认值为0。当前只支持为0。
 
@@ -81,13 +81,13 @@ torch_npu.npu_moe_re_routing(tokens, expert_token_num_per_rank, *, per_token_sca
 
 - **permute\_tokens** (`Tensor`)：表示重新排布后的token。要求为2维，shape为\[A, H\]，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.int8`，数据格式为$ND$。
 - **permute\_per\_token\_scales** (`Tensor`)：表示重新排布后的`per_token_scales`，输入不携带`per_token_scales`的情况下，该输出无效。要求为1维，shape为\[A\]，数据类型支持`torch.float32`，数据格式为$ND$。
-- **permute\_token\_idx** (`Tensor`)：表示每个token在原排布方式的索引。要求为1维，shape为\[A\]，数据类型支持`torch.int32`，数据格式为$ND$。
+- **permute\_token\_idx** (`Tensor`)：表示每个token在原排布方式中的索引。要求为1维，shape为\[A\]，数据类型支持`torch.int32`，数据格式为$ND$。
 - **expert\_token\_num** (`Tensor`)：表示每个专家处理的token数。要求为1维，shape为\[E\]，数据类型支持`torch.int32`、`torch.int64`，数据格式为$ND$。
 
 ## 约束说明
 
 - 该接口支持推理场景下使用。
-- 该接口支持图模式。
+- 该接口支持单算子模式和图模式。
 
 ## 调用示例
 

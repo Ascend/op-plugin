@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：根据传入的分组索引的起始值（`group_index`）对输入x按组进行分组，以基本块（`blocksize`）为粒度，对数据执行目标数据类型为`float8`（`torch.float8_e4m3fn`，`torch.float8_e5m2`）或`float4`（`torch_npu.float4_e2m1fn_x2`，`torch_npu.float4_e1m2fn_x2`）的动态MX量化，并输出量化尺度`mxscale`（`torch.float8_e8m0fnu`）。
+- API功能：根据传入的分组索引的起始值（`group_index`）对输入x按组进行分组，以基本块（`blocksize`）为粒度，对数据执行目标数据类型为`float8`（`torch.float8_e4m3fn`、`torch.float8_e5m2`）或`float4`（`torch_npu.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`）的动态MX量化，并输出量化尺度`mxscale`（`torch.float8_e8m0fnu`）。
 
 - 计算公式：
   - 场景1，当scale\_alg为0时：
@@ -46,13 +46,13 @@
     Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
     $$
 
-    - 将fp32映射到目标数据类型float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
+    - 将FP32映射到目标数据类型float8可表示的范围内，其中$Amax(DType)$是目标精度能表示的最大值：
 
     $$
     S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
     $$
 
-    - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，即从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
+    - 将块缩放因子$S_{fp32}^b$转换为FP8格式下可表示的缩放值$S_{ue8m0}^b$，即从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
     $$
     E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为非正规数，且} M_{fixp}^b > 0.5 \\ E_{int}^b, & \text{否则} \end{cases}
@@ -87,7 +87,7 @@
       S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
       $$
 
-      - 将块缩放因子$S_{fp32}^b$转换为fp8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
+      - 将块缩放因子$S_{fp32}^b$转换为FP8格式下可表示的缩放值$S_{ue8m0}^b$，从$S_{fp32}^b$中提取无偏指数$E_{int}^b$和尾数$M_{fixp}^b$，为保证量化时不溢出，对指数进行向上取整，且在fp8可表示的范围内：
 
       $$
       E_{int}^b = \begin{cases} E_{int}^b + 1, & \text{如果} S_{fp32}^b \text{为正规数，且} E_{int}^b < 254 \text{且} M_{fixp}^b > 0 \\ E_{int}^b, & \text{否则} \end{cases}
@@ -119,7 +119,7 @@ torch_npu.npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst
 - **scale\_alg**（`int`）：可选参数，表示mxscale计算时采用的算法。支持取值为0、1、2，默认值为0。
   - 0：场景1（共享指数MX量化），float8、float4均支持。
   - 1：场景2（逐块缩放），仅float8支持。
-  - 2：场景3（fp4动态量化），仅float4支持。
+  - 2：场景3（FP4动态量化），仅float4支持。
 - **dst\_type\_max**（`float`）：可选参数，表示maxType的取值，对应公式中的$Amax(DType)$，仅dst\_type为float4时生效。默认值为0.0。
   - 0.0：Amax(DType)为量化结果数据类型的最大值。
   - `torch_npu.float4_e2m1fn_x2`：支持0.0和6.0-12.0。
@@ -166,9 +166,9 @@ torch_npu.npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst
     print(mxscale.cpu().view(torch.float8_e8m0fnu))
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     tensor([[  0.],
             [  4.],
             [ 32.],
@@ -209,9 +209,9 @@ torch_npu.npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst
     print(mxscale)
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     tensor([[-128.0000,  208.0000, -160.0000,  ...,  -32.0000, -112.0000,
               128.0000],
             [-144.0000,  104.0000, -208.0000,  ...,  112.0000,  288.0000,

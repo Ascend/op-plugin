@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：`torch_npu.npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLU激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGLU激活函数激活的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
+- API功能：`torch_npu.npu_grouped_matmul_swiglu_quant_v2`是一种融合分组矩阵乘法（GroupedMatmul）、SwiGLU激活函数、量化（quant）的计算方法。该方法适用于需要对矩阵乘法结果进行SwiGLU激活的场景，融合算子在底层能够对部分过程并行，达到性能优化的效果。
 
 - 计算公式：
 
@@ -420,7 +420,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 - **`output_scale`**（`Tensor`）：输出的量化因子。数据格式支持$ND$，支持非连续的`Tensor`。
 
   <!-- npu="A3,910b" id32 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float`，`shape`支持1维\[m\]。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`，`shape`支持1维\[m\]。
   <!-- end id32 -->
   <!-- npu="950" id33 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
@@ -489,7 +489,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
 
     | 支持场景 | 场景说明 | 场景限制 |
     | --- | --- | --- |
-    | 单多单 | x为单张量，weight为多张量，y为单张量。 | 1. 必须传group_list，且最后一个值与x中tensor的第一维相等。<br>2. x、weight、y中tensor需为2维。<br>3. weight中每个tensor的N轴必须相等。<br>4. 必须传group_list，且当group_list_type为0时，最后一个值与x中tensor的第一维相等，当group_list_type为1时，数值的总和需与x中tensor的第一维一一对应且长度最大为128 |
+    | 单多单 | x为单张量，weight为多张量，y为单张量。 | 1. 必须传group_list，且最后一个值与x中tensor的第一维相等。<br>2. x、weight、y中Tensor需为2维。<br>3. weight中每个tensor的N轴必须相等。<br>4. 必须传group_list，且当group_list_type为0时，最后一个值与x中tensor的第一维相等，当group_list_type为1时，数值的总和需与x中tensor的第一维一一对应且长度最大为128 |
 
 <!-- npu="950" id46 -->
 - 输入和输出Tensor支持的shape组合如下：
@@ -714,7 +714,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant_v2(x, weight, weight_scale, x_scale, g
         g, m, k, n, is_dynamic = 4, 128, 32, 512, True
 
         groupType = 0
-        group_list_type = 1  # 0: cumsun 1: count
+        group_list_type = 1  # 0: cumsum 1: count
         dequant_mode = 2  # mx量化
         dequant_dtype = torch.float32
         quant_mode = 2  # mx量化

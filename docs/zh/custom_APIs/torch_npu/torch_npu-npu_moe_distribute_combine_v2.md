@@ -98,7 +98,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 - **ep\_world\_size**（`int`）：**必选参数**，EP通信域size。
 
     <!-- npu="910b" id9 -->
-    - <term>Atlas A2系列产品</term>：`ep_world_size`的取值范围如下所示。
+    - <term>Atlas A2系列产品</term>：`ep_world_size`的取值范围如下所示：
         - `comm_alg`设置为"fullmesh"时，`ep_world_size`取值范围为16、32、64、128、256。
         - `comm_alg`设置为"hierarchy"时，`ep_world_size`取值范围为16、32、64。
     <!-- end id9 -->
@@ -199,7 +199,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     <!-- end id28 -->
 
 - **performance\_info**（`Tensor`）：**可选参数**，表示本卡等待各卡数据的通信时间，单位为us（微秒）。单次算子调用各卡通信耗时会累加到该Tensor上，算子内部不进行自动清零，因此每次启用此Tensor开始记录耗时前需对Tensor清零。当传入None时表示不开启记录通信耗时功能；当传入有效数据时，要求是一个1维张量，shape为\(ep\_world\_size, \)，数据类型支持`torch.int64`，数据格式为$ND$，支持非连续的Tensor。
-- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
+- **group\_tp**（`str`）：**可选参数**，TP通信域名称，张量并行（Tensor Parallelism）的通信域。有TP域通信才需要传参，若无TP域通信，使用默认值""即可。
 
     <!-- npu="910b" id29 -->
     - <term>Atlas A2系列产品</term>：eager模式使用默认值即可，图模式传入与`group_ep`相同。
@@ -279,7 +279,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
     <!-- npu="910b" id47 -->
     - <term>Atlas A2系列产品</term>：当前版本支持""、"fullmesh"、"hierarchy"三种输入方式。推荐配置"hierarchy"并搭配25.0.RC1.1及以上版本驱动使用。
-        - "": 配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
+        - ""：配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
         - "fullmesh"：Token数据直接通过RDMA方式发回目标卡。
         - "hierarchy"：Token数据经过机内、跨机两次发送，先在server内将同一个token数据汇总求和，再跨机发送，以减少跨机数据量。
     <!-- end id47 -->
@@ -345,7 +345,7 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
     - H：表示hidden size隐藏层大小。
 
         <!-- npu="910b" id57 -->
-        - <term>Atlas A2系列产品</term>：`H`的取值范围如下所示。
+        - <term>Atlas A2系列产品</term>：`H`的取值范围如下所示：
             - `comm_alg`设置为"fullmesh"时，`H`的取值范围\(0, 7168\]，且保证是32的整数倍。
             - `comm_alg`设置为"hierarchy"且驱动版本不低于25.0.RC1.1时，`H`的取值范围\(0, 10 \* 1024\]，且保证是32的整数倍。
         <!-- end id57 -->
@@ -390,12 +390,12 @@ torch_npu.npu_moe_distribute_combine_v2(expand_x, expert_ids, assist_info_for_co
 
     <!-- npu="910b" id63 -->
     - <term>Atlas A2系列产品</term>：该场景支持通过环境变量HCCL\_BUFFSIZE配置。
-        - `comm_alg`配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
+        - `comm_alg`配置为""：仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
         - `comm_alg`配置为"fullmesh"：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(`torch.uint16`\)+2MB\)。
         - `comm_alg`配置为"hierarchy"：设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype\_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
     <!-- end id63 -->
     <!-- npu="A3" id64 -->
-    - <term>Atlas A3系列产品</term>：该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
+    - <term>Atlas A3系列产品</term>：该场景不仅支持通过环境变量HCCL\_BUFFSIZE配置，还支持通过hccl\_buffer\_size配置（参考《[PyTorch训练模型迁移调优](https://hiascend.com/document/redirect/canncommercial-ptmigr)》中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
         - ep通信域内：设置大小要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)。
         - tp通信域内：设置大小要求\>=(A \* Align512(Align32(H \* 2) + 44) + A \* Align512(H \* 2)) \* 2。
         - 其中480Align512(x) = ((x+480-1)/480)\*512，Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。

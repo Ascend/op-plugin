@@ -38,7 +38,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.bfloat16`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
     <!-- end id4 -->
 
-- **x2**（`Tensor`）：**必选参数**，数据类型需要和`x1`保持一致，输入shape维度第0维和`x1`的最后一维保持一致。
+- **x2**（`Tensor`）：**必选参数**，数据类型需要和`x1`保持一致，输入shape第0维度和`x1`的最后一维保持一致。
 
     <!-- npu="910b" id5 -->
     - <term>Atlas A2系列产品</term>：数据格式支持$NZ$（昇腾亲和排布格式）、$ND$。
@@ -56,7 +56,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     - <term>Atlas A2系列产品</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`。
     <!-- end id7 -->
     <!-- npu="950" id8 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`、`torch.float32`。perblock场景，仅支持bias输入空。
+    - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int32`、`torch.float16`、`torch.bfloat16`、`torch.float32`。perblock场景，仅支持bias输入为空。
     <!-- end id8 -->
 
 - **antiquant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，伪量化场景对`x2`进行去量化的系数，数据类型支持`torch.float16`、`torch.bfloat16`，数据格式支持$ND$。伪量化场景数据类型需要和`x1`保持一致。
@@ -173,7 +173,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
   <!-- end id25 -->
 
 - 该接口支持单算子模式和TorchAir图模式。
-- 输入`x1`可为2维或者3维、`x2`必须是2维，分别为\(b, s, k\)/\(m, k\), \(k, n\)，k轴满足mm算子入参要求，k轴相等。bias当前仅支持一维，且维度大小与output的最后一维大小相同。x3的shape与output的shape相同。
+- 输入`x1`可为2维或者3维、`x2`必须是2维，分别为\(b, s, k\)/\(m, k\), \(k, n\)，k轴满足mm算子入参要求，k轴相等。`bias`当前仅支持一维，且维度大小与`output`的最后一维大小相同。`x3`的shape与`output`的shape相同。
 - `x1`不支持输入转置后的tensor，`x2`转置后输入，需要满足shape的第一维大小与`x1`的最后一维相同，满足matmul的计算条件。
 - `antiquant_group_size`中k值的范围与matmul一致，为\[1,65535\]，INT\_MAX大于\(k-1\)。
 
@@ -182,7 +182,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
   - 数据类型支持`torch.bfloat16`。
   - `x1`、`x2`不支持为空tensor。
   - 支持1、2、4、8卡，并且仅支持HCCS链路all mesh组网。
-  - `comm_quant_scale_1`，`comm_quant_scale_2`的shape应保持一致，dtype与输出的dtype保持一致，且只在全量化场景支持。
+  - `comm_quant_scale_1`、`comm_quant_scale_2`的shape应保持一致，dtype与输出的dtype保持一致，且只在全量化场景支持。
 <!-- end id26 -->
 <!-- npu="950" id27 -->
 - <term>Ascend 950PR&950DT系列产品</term>：
@@ -202,7 +202,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
 - 在长序列场景，随着b/s或者m的增大，可能出现内存不足或者计算超时。
 - 不同量化场景下参数支持的数据类型组合：
 
-    **表 1**  非量化场景
+    **表 1** 非量化场景
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -210,7 +210,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | `torch.bfloat16` | None | None | None | None | None |
 
     <!-- npu="910b" id29 -->
-    **表 2**  伪量化场景(针对<term>Atlas A2系列产品</term>)
+    **表 2** 伪量化场景（针对<term>Atlas A2系列产品</term>）
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -219,7 +219,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     <!-- end id29 -->
 
     <!-- npu="950" id30 -->
-    **表 3**  伪量化场景(针对<term>Ascend 950PR&950DT系列产品</term>)
+    **表 3** 伪量化场景（针对<term>Ascend 950PR&950DT系列产品</term>）
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -228,7 +228,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     <!-- end id30 -->
 
     <!-- npu="910b" id31 -->
-    **表 4**  全量化场景(针对<term>Atlas A2系列产品</term>)
+    **表 4** 全量化场景（针对<term>Atlas A2系列产品</term>）
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | pertoken_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -237,7 +237,7 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     <!-- end id31 -->
 
     <!-- npu="950" id32 -->
-    **表 5**  全量化场景(针对<term>Ascend 950PR&950DT系列产品</term>)
+    **表 5** 全量化场景（针对<term>Ascend 950PR&950DT系列产品</term>）
 
     | x1 | x2 | bias | x3 | output（输出） | antiquant_scale | antiquant_offset | dequant_scale | pertoken_scale | comm_quant_scale_1 | comm_quant_scale_2 |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -250,10 +250,10 @@ torch_npu.npu_mm_all_reduce_base(x1, x2, hcom, *, reduce_op='sum', bias=None, an
     | `torch_npu.float4_e2m1fn_x2` | `torch_npu.float4_e2m1fn_x2` | `torch.float32` | `torch.float32`/`torch.float16`/`torch.bfloat16` | `torch.float32`/`torch.float16`/`torch.bfloat16` | None | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | None | None |
 
     > [!NOTE]
-    > 全量化场景：若`dequant_scale`需要以`torch.float32`类型传入，在调用torch\_npu.npu\_mm\_all\_reduce\_base前，需通过torch\_npu.npu\_trans\_quant\_param接口对`dequant_scale`进行处理为`torch.int64`类型（处理方法见对应的接口使用说明）。
+    > 全量化场景：若`dequant_scale`需要以`torch.float32`类型传入，在调用torch\_npu.npu\_mm\_all\_reduce\_base前，需通过torch\_npu.npu\_trans\_quant\_param接口将`dequant_scale`处理为`torch.int64`类型（处理方法见对应的接口使用说明）。
     <!-- end id32 -->
 
-- 全量化场景中，`x1`、`x2`、`dequant_scale`、`pertoken_scale`、groupSize在不同量化场景下的dtype与shape取值关系如下表。
+- 全量化场景中，`x1`、`x2`、`dequant_scale`、`pertoken_scale`、groupSize在不同量化场景下的dtype与shape取值关系如下表：
 
     | 量化类型 | x1 | x2 | dequant_scale | pertoken_scale | [groupSizeM,groupSizeN,groupSizeK] | 约束 |
     | --- | --- | --- | --- | --- | --- | --- |

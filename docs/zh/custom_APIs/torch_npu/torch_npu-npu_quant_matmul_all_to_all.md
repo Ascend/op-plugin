@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- **API功能**：完成量化的Matmul计算、Permute（保证通信后地址连续）和AlltoAll通信的融合，先计算后通信。支持K-C量化模式（即pertoken-perchannel量化模式）和mx量化模式（即特殊的pergroup-pergroup量化模式）。
+- **API功能**：完成量化的Matmul计算、Permute（保证通信后地址连续）和AlltoAll通信的融合，先计算后通信。支持K-C量化模式（即pertoken-perchannel量化模式）和MX量化模式（即特殊的pergroup-pergroup量化模式）。
 
 - **计算公式**：假设输入`x1`的shape为\(BS, H1\)，输入`x2`的shape为\(H1, H2\)，rankSize为NPU卡数。
   - K-C量化模式：
@@ -25,7 +25,7 @@
     output = AlltoAll(permutedOut).view(rankSize*BS, H2/rankSize)
     $$
 
-  - mx量化模式：
+  - MX量化模式：
 
     $$
     computeOut = \sum_{0}^{\frac{k}{blockSize}=32}(x1@x2*(x1Scale*x2Scale)) + bias
@@ -50,20 +50,20 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 - **x1**（`Tensor`）：**必选参数**，表示融合算子的左矩阵输入，也是Matmul计算的左矩阵，对应公式中的x1。数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，维度只能为2D，shape为\(BS, H1\)，数据格式支持$ND$，**不支持非连续Tensor**。
 - **x2**（`Tensor`）：**必选参数**，表示融合算子的右矩阵输入，也是Matmul计算的右矩阵，对应公式中的x2。数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，维度只能为2D，shape为\(H1, H2\)，数据格式支持$ND$，支持转置非连续Tensor。
 - **hcom**（`str`）：**必选参数**，Host侧标识列组的字符串，即通信域名称，通过get\_hccl\_comm\_name接口获取。
-- **world\_size**（`int`）：**必选参数**，通信域内的rank总数，对应公式中的rankSize，支持范围\[2，4，8，16\]，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
+- **world\_size**（`int`）：**必选参数**，通信域内的rank总数，对应公式中的rankSize，支持范围\[2, 4, 8, 16\]，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
 - **bias**（`Tensor`）：**可选参数**，矩阵乘运算后累加的偏置，对应公式中的bias。数据类型支持`torch.float32`，维度只能为1D，shape为\(H2\)，数据格式支持$ND$。
-- **x1\_scale**（`Tensor`）：**可选参数**，表示左矩阵的量化系数，对应公式中的x1Scale。K-C量化场景下，数据类型支持`torch.float32`，维度为1D，shape为\(BS\)，数据格式支持$ND$。mx量化场景下，数据类型支持`torch.float8_e8m0fnu`，维度为3D，shape为\(BS, ceil\(H1/64\), 2\)，数据格式支持$ND$。
-- **x2\_scale**（`Tensor`）：**可选参数**，表示右矩阵的量化系数，对应公式中的x2Scale。K-C量化场景下，数据类型支持`torch.float32`，维度为1D，shape为\(H2\)，数据格式支持$ND$。mx量化场景下，数据类型支持`torch.float8_e8m0fnu`，维度为3D，shape为\(H2, ceil\(H1/64\), 2\)，数据格式支持$ND$。
+- **x1\_scale**（`Tensor`）：**可选参数**，表示左矩阵的量化系数，对应公式中的x1Scale。K-C量化场景下，数据类型支持`torch.float32`，维度为1D，shape为\(BS\)，数据格式支持$ND$。MX量化场景下，数据类型支持`torch.float8_e8m0fnu`，维度为3D，shape为\(BS, ceil\(H1/64\), 2\)，数据格式支持$ND$。
+- **x2\_scale**（`Tensor`）：**可选参数**，表示右矩阵的量化系数，对应公式中的x2Scale。K-C量化场景下，数据类型支持`torch.float32`，维度为1D，shape为\(H2\)，数据格式支持$ND$。MX量化场景下，数据类型支持`torch.float8_e8m0fnu`，维度为3D，shape为\(H2, ceil\(H1/64\), 2\)，数据格式支持$ND$。
 - **common\_scale**（`Tensor`）：**可选参数**，表示低比特通信的量化系数。预留参数，当前版本传默认值即可。
 - **x1\_offset**（`Tensor`）：**可选参数**，表示左矩阵的量化偏置。预留参数，当前版本传默认值即可。
 - **x2\_offset**（`Tensor`）：**可选参数**，表示右矩阵的量化偏置。预留参数，当前版本传默认值即可。
-- **x1\_quant\_mode**（`int`）：**可选参数**，表示左矩阵的量化方式。当前版本支持配置为3和6，分别表示pertoken量化和mx量化。
-- **x2\_quant\_mode**（`int`）：**可选参数**，表示右矩阵的量化方式。当前版本支持配置为2和6，表示perchannel量化和mx量化。
+- **x1\_quant\_mode**（`int`）：**可选参数**，表示左矩阵的量化方式。当前版本支持配置为3和6，分别表示pertoken量化和MX量化。
+- **x2\_quant\_mode**（`int`）：**可选参数**，表示右矩阵的量化方式。当前版本支持配置为2和6，表示perchannel量化和MX量化。
 - **common\_quant\_mode**（`int`）：**可选参数**，表示低比特通信的量化方式。预留参数，当前版本传默认值即可。
-- **group\_sizes**（`List[int]`）：**可选参数**，用于Matmul计算三个方向上的量化分组大小。mx量化场景下需要配置，K-C量化场景下使用默认值即可，配置也不生效。
+- **group\_sizes**（`List[int]`）：**可选参数**，用于Matmul计算三个方向上的量化分组大小。MX量化场景下需要配置，K-C量化场景下使用默认值即可，配置也不生效。
     - 非None时，仅支持三维列表，形如\[group\_m, group\_n, group\_k\]，分别表示在m、n、k维度上的量化分组情况。以group\_m为例，表示在m维度上group\_m个数对应一个量化参数。
     - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与`x1` shape中的m一致，scale\_m与pertoken\_scale shape中的m一致，n和k方向同理。
-    - **mx量化场景下需要配置该值为\[1, 1, 32\]**，或者保证在能够推导的情况下，确保推导后的值为\[1, 1, 32\]。
+    - **MX量化场景下需要配置该值为\[1, 1, 32\]**，或者保证在能够推导的情况下，确保推导后的值为\[1, 1, 32\]。
 
 - **all2all\_axes**（`List[int]`）：**可选参数**，AlltoAll和Permute数据交换的方向，支持为空或者\[-1, -2\]，表示将Matmul结果由\(BS, H2\)转为\(BS\*rankSize, H2/rankSize\)。
 - **comm\_quant\_dtype**（`int`）：**可选参数**，表示低比特通信的量化数据类型。预留参数，当前版本传默认值即可。
@@ -89,9 +89,9 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
 - 输入与输出参数均不支持空Tensor。
 - 通信域名称`hcom`不支持传入空字符串，长度取值范围为\[1, 127\]。
 - 参数里Shape使用的变量如下：
-  - BS：输入左矩阵的第一维度大小，表示输入序列sequence的条数，BS\*rankSize取值范围为\[1, 2147483647\]。
-  - H1：输入左矩阵的第二维度大小和输入右矩阵第一维度大小，表示隐藏层维度，取值范围为\[1, 65535\]。
-  - H2：输入右矩阵第二维度大小，表示输出序列sequence的长度，取值范围为\[2, 2147483647\]，必须整除rankSize。
+  - BS：输入左矩阵的第一维度大小，表示输入序列sequence的条数，BS\*rankSize取值范围为\[1, 2147483647\]
+  - H1：输入左矩阵的第二维度大小和输入右矩阵第一维度大小，表示隐藏层维度，取值范围为\[1, 65535\]
+  - H2：输入右矩阵第二维度大小，表示输出序列sequence的长度，取值范围为\[2, 2147483647\]，必须整除rankSize
 
 - `x1_quant_mode`、`x2_quant_mode`、`common_quant_mode`的枚举值与量化模式关系如下：
   - 0：不量化
@@ -100,18 +100,18 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
   - 3：pertoken
   - 4：pergroup
   - 5：perblock
-  - 6：mx量化
+  - 6：MX量化
   - 7：pertoken动态量化
 
-- 当前`x1_quant_mode`和`x2_quant_mode`的组合仅支持\[3, 2\]和\[6, 6\]，分别表示K-C量化和mx量化。
-- mx量化场景下，`x2`必须转置（即需要使用.t\(\)方法），转置后的shape需满足\(H1, H2\)。
-- mx量化场景下，`x1`和`x2`的输入为`torch_npu.float4_e2m1fn_x2`时，需要满足ceil\(H1/32\)为偶数，且H1为偶数。
+- 当前`x1_quant_mode`和`x2_quant_mode`的组合仅支持\[3, 2\]和\[6, 6\]，分别表示K-C量化和MX量化。
+- MX量化场景下，`x2`必须转置（即需要使用.t\(\)方法），转置后的shape需满足\(H1, H2\)。
+- MX量化场景下，`x1`和`x2`的输入为`torch_npu.float4_e2m1fn_x2`时，需要满足ceil\(H1/32\)为偶数，且H1为偶数。
 - 当前场景`x1_scale`和`x2_scale`必须传入，不允许为None。
-- `x1_dtype`和`x2_dtype`在mx量化模式下，当数据类型为`torch_npu.float4_e2m1fn_x2`时，需要设置为296，其它场景传默认值即可。
-- `x1_scale_dtype`和`x2_scale_dtype`在mx量化模式下需要设置为`torch.float8_e8m0fnu`，其它场景传默认值即可。
-- 各量化模式输入输出数据类型详细约束如下表。
+- `x1_dtype`和`x2_dtype`在MX量化模式下，当数据类型为`torch_npu.float4_e2m1fn_x2`时，需要设置为296，其它场景传默认值即可。
+- `x1_scale_dtype`和`x2_scale_dtype`在MX量化模式下需要设置为`torch.float8_e8m0fnu`，其它场景传默认值即可。
+- 各量化模式输入输出数据类型详细约束如下表：
 
-    **表 1**  K-C量化模式数据类型约束
+    **表 1** K-C量化模式数据类型约束
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -128,7 +128,7 @@ torch_npu.npu_quant_matmul_all_to_all(x1, x2, hcom, world_size, bias=None, x1_sc
     | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.bfloat16` | 3 | 2 |
     | `torch.float8_e5m2` | `torch.float8_e5m2` | `torch.float32` | `torch.float32` | `torch.float32` | `torch.float32` | 3 | 2 |
 
-    **表 2**  mx量化模式数据类型约束
+    **表 2** MX量化模式数据类型约束
 
     | x1 | x2 | bias | x1_scale | x2_scale | output | x1_quant_mode | x2_quant_mode |
     | --- | --- | --- | --- | --- | --- | --- | --- |

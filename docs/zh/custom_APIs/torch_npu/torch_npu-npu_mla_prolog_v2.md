@@ -14,9 +14,9 @@
 
 ## 功能说明
 
-- API功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算操作。主要计算过程分为五路：
-    - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路，第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>；
-    - 第二路乘以W<sup>QR</sup>后经过旋转位置编码（ROPE）得到q<sup>R</sup>。
+- API功能：推理场景下，Multi-head Latent Attention（MLA）前处理的计算操作。主要计算过程分为五路：
+    - 首先对输入x乘以W<sup>DQ</sup>进行下采样和RmsNorm后分成两路，第一路乘以W<sup>UQ</sup>和W<sup>UK</sup>经过两次上采样后得到q<sup>N</sup>。
+    - 第二路乘以W<sup>QR</sup>后经过旋转式位置嵌入（RoPE）得到q<sup>R</sup>。
     - 第三路是输入x乘以W<sup>DKV</sup>进行下采样和RmsNorm后传入Cache中得到k<sup>C</sup>。
     - 第四路是输入x乘以W<sup>KR</sup>后经过旋转位置编码后传入另一个Cache中得到k<sup>R</sup>。
     - 第五路是输出q<sup>N</sup>经过DynamicQuant后得到的量化参数。
@@ -64,7 +64,7 @@ torch_npu.npu_mla_prolog_v2(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 - **rope\_sin**（`Tensor`）：必选参数，表示用于计算旋转位置编码的正弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`torch.bfloat16`，数据格式支持ND。
 - **rope\_cos**（`Tensor`）：必选参数，表示用于计算旋转位置编码的余弦参数矩阵。shape支持2维和3维，格式为\(T, Dr\)和\(B, S, Dr\)，dtype支持`torch.bfloat16`，数据格式支持ND。
 - **cache\_index**（`Tensor`）：必选参数，表示写入`kv_cache`、`kr_cache`的页式线性槽位索引。shape支持1维和2维，格式为\(T\)和\(B, S\)，dtype支持`torch.int64`，数据格式支持ND。每个元素取值范围为[0, L)，其中 **L** 为`kv_cache`第0维与第1维长度之积（须与`kr_cache`前两维之积一致）。
-- **kv\_cache**（`Tensor`）：必选参数，表示用于cache索引的aclTensor。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`torch.bfloat16`和`torch.int8`，数据格式支持ND。
+- **kv\_cache**（`Tensor`）：必选参数，表示用于cache索引的Tensor。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Hckv\)，dtype支持`torch.bfloat16`和`torch.int8`，数据格式支持ND。
 - **kr\_cache**（`Tensor`）：必选参数，表示用于key位置编码的cache。shape支持4维，格式为\(BlockNum, BlockSize, Nkv, Dr\)，dtype支持`torch.bfloat16`和`torch.int8`，数据格式支持ND。
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **dequant\_scale\_x**（`Tensor`）：可选参数，输入`token_x`为`torch.int8`类型时下采样后进行反量化操作时的参数，`token_x`量化方式为pertoken。其shape支持2维，格式为\(T, 1\)和\(BS, 1\)，dtype支持`torch.float`，数据格式支持ND。

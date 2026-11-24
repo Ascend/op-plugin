@@ -6,7 +6,7 @@
 - <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
 - <term>Atlas A2系列产品</term>：支持
@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据不变。
+将Tensor updates中的值按指定的轴axis和索引indices更新Tensor data中的值，并将结果保存到输出Tensor，data本身的数据不变。
 
 ## 函数原型
 
@@ -27,7 +27,7 @@ torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
 
 ## 参数说明
 
-- **data** (`Tensor`)：必选参数。代表更新前的原数据，`data`只支持2-8维，且维度大小需要与`updates`一致；支持非连续的tensor；数据格式支持$ND$；不支持空Tensor。
+- **data** (`Tensor`)：必选参数。代表更新前的原数据，`data`只支持2-8维，且维度大小需要与`updates`一致；支持非连续的Tensor；数据格式支持$ND$；不支持空Tensor。
 
     <!-- npu="910b" id5 -->
     - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
@@ -42,8 +42,8 @@ torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.uint8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
     <!-- end id8 -->
 
-- **indices** (`Tensor`)：必选参数。代表索引，数据类型支持`torch.int32`、`torch.int64`；目前仅支持一维和二维；支持非连续的tensor；数据格式支持$ND$；不支持空Tensor。仅支持非负索引。indices中的索引数据不支持越界。
-- **updates** (`Tensor`)：必选参数。代表更新的数据，`updates`的维度大小需要与`data`一致；支持非连续的tensor；数据格式支持$ND$；不支持空Tensor。
+- **indices** (`Tensor`)：必选参数。代表索引，数据类型支持`torch.int32`、`torch.int64`；目前仅支持一维和二维；支持非连续的Tensor；数据格式支持$ND$；不支持空Tensor。仅支持非负索引。indices中的索引数据不支持越界。
+- **updates** (`Tensor`)：必选参数。代表更新的数据，`updates`的维度大小需要与`data`一致；支持非连续的Tensor；数据格式支持$ND$；不支持空Tensor。
 
     <!-- npu="910b" id9 -->
     - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
@@ -64,7 +64,7 @@ torch_npu.scatter_update(data, indices, updates, axis) -> Tensor
 
 `Tensor`
 
-计算输出，只支持2-8维，且维度大小需要与`data`一致；支持非连续的tensor；数据格式支持$ND$；不支持空Tensor。
+计算输出，只支持2-8维，且维度大小需要与`data`一致；支持非连续的Tensor；数据格式支持$ND$；不支持空Tensor。
 
 <!-- npu="910b" id13 -->
 - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。

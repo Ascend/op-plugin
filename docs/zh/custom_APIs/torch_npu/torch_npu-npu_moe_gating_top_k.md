@@ -282,7 +282,7 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
 
 - **k_group**（`int`）：可选参数，表示每个token组筛选过程中，选出的专家组个数，数据类型为`int64`，默认值为`1`。要求`1 <= k_group <= group_count`，并且`k_group * x_shape[-1] / group_count`的值要大于等于`k`。
 
-- **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求group_count > 0，x_shape[-1]能够被`group_count`整除且整除后的结果大于`group_select_mode`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
+- **group_count**（`int`）：可选参数，表示将全部专家划分的组数，数据类型为`int64`，默认值为`1`。要求`group_count > 0`，`x_shape[-1]`能够被`group_count`整除且整除后的结果大于`group_select_mode`，并且整除的结果按照32个数对齐后乘`group_count`的结果不大于`2048`。
 
 - **group_select_mode**（`int`）：可选参数，表示一个专家组的总得分计算方式。默认值为`0`，`0`表示组内取最大值，作为专家组得分；`1`表示取组内Top2的专家进行得分累加，作为专家组得分。
 
@@ -297,13 +297,13 @@ npu_moe_gating_top_k(x, k, *, bias=None, input_ids=None, tid2eid=None, k_group=1
     <!-- end id5 -->
 
 - **out_flag**（`bool`）：可选参数，是否输出norm函数中间结果。默认值为`False`。
-- **routed_scaling_factor**（`float`）：可选参数，表示计算`yOut`使用的`routed_scaling_factor`系数，默认值为`1.0`。
+- **routed_scaling_factor**（`float`）：可选参数，表示对归一化后的`yOut`做乘性缩放的系数，默认值为`1.0`。
 - **eps**（`float`）：可选参数，表示计算`yOut`使用的`eps`系数，默认值为`1e-20`。
 
 ## 返回值说明
 
-- **yOut**（`Tensor`）：表示对`x`做norm操作和分组排序topk后计算的结果。要求是一个2D的Tensor，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据类型与`x`需要保持一致，数据格式要求为ND，第一维的大小要求与`x`的第一维相同，最后一维的大小与`k`相同。不支持非连续Tensor。
-- **expertIdxOut**（`Tensor`）：表示对`x`做norm操作和分组排序topk后的索引，即专家的序号。shape要求与yOut一致，数据类型支持`torch.int32`，数据格式要求为ND。不支持非连续Tensor。
+- **yOut**（`Tensor`）：表示对`x`做norm操作和分组排序TopK后计算的结果。要求是一个2D的Tensor，数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，数据类型与`x`需要保持一致，数据格式要求为ND，第一维的大小要求与`x`的第一维相同，最后一维的大小与`k`相同。不支持非连续Tensor。
+- **expertIdxOut**（`Tensor`）：表示对`x`做norm操作和分组排序topk后的索引，即专家的序号。shape要求与`yOut`一致，数据类型支持`torch.int32`，数据格式要求为ND。不支持非连续Tensor。
 - **normOut**（`Tensor`）：表示norm计算的输出结果。shape要求与`x`保持一致，数据类型为`torch.float32`，数据格式要求为ND。不支持非连续Tensor。
 
 ## 约束说明

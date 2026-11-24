@@ -58,7 +58,7 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 - **key_cache**（`Tensor`）：必选参数，表示需要更新的`key_cache`，当前layer的`key_cache`，只支持4维，数据类型和数据格式与`key`保持一致。
 - **value_cache**（`Tensor`）：必选参数，表示需要更新的`value_cache`，当前layer的`value_cache`。只支持4维，数据类型和数据格式与`key`保持一致。
 - **slot_mapping**（`Tensor`）：必选参数，表示每个token key或value在cache中的存储偏移，数据类型支持`torch.int32`和`torch.int64`，数据格式支持$ND$。取值范围[0, num_blocks * block_size-1]，且元素值保证不重复，重复时不保证正确性。
-- \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
+- \*：代表其之前的变量是位置相关的，必须按照顺序输入。之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **compress_lens**（`Tensor`）：可选参数，表示压缩量，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
 - **compress_seq_offsets**（`Tensor`）：可选参数，表示每个batch每个head的压缩起点，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
 - **seq_lens**（`Tensor`）：可选参数，表示每个batch的实际seqLens，数据类型与`slot_mapping`一致，数据格式支持$ND$，默认值为None。
@@ -72,16 +72,16 @@ torch_npu.npu_scatter_pa_kv_cache(key, value, key_cache, value_cache, slot_mappi
 
 - 该接口支持推理、训练场景下使用。
 - 该接口支持单算子模式和TorchAir图模式。
-- 输入参数不支持非连续；
-- `key`、`value`、`key_cache`、`value_cache`的数据类型必须一致；
-- `slot_mapping`、`compress_lens`、`compress_seq_offsets`、`seq_lens`的数据类型必须一致；
-- `slot_mapping`的值范围[0, num_blocks * block_size-1]，且`slot_mapping`内的元素值保证不重复，重复时不保证正确性；
-- 当`key`和`value`都是3维，则`key`和`value`的前两维`shape`必须相同；
-- 当`key`和`value`都是4维，则`key`和`value`的前三维`shape`必须相同，且`key_cache`和`value_cache`的第三维必须是1；
-- 当`key`和`value`是4维时，`compress_lens`、`seq_lens`为必选参数；当`key`和`value`是3维时，`compress_lens`、`compress_seq_offsets`、`seq_lens`为可选参数；
-- 当`key`和`value`都是4维时，`slot_mapping`是二维，且`slot_mapping`的第一维值等于`key`的第一维为`batch`，`slot_mapping`的第二维值等于`key`的第三维为num_head(对应场景二)；
-- 当`key`和`value`都是4维时，`seq_lens`是一维，且`seq_lens`的值等于`key`的第一维为batch(对应场景二)；
-- `seq_lens`和`compress_lens`里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size(对应场景二)；
+- 输入参数不支持非连续。
+- `key`、`value`、`key_cache`、`value_cache`的数据类型必须一致。
+- `slot_mapping`、`compress_lens`、`compress_seq_offsets`、`seq_lens`的数据类型必须一致。
+- `slot_mapping`的值范围[0, num_blocks * block_size-1]，且`slot_mapping`内的元素值保证不重复，重复时不保证正确性。
+- 当`key`和`value`都是3维，则`key`和`value`的前两维`shape`必须相同。
+- 当`key`和`value`都是4维，则`key`和`value`的前三维`shape`必须相同，且`key_cache`和`value_cache`的第三维必须是1。
+- 当`key`和`value`是4维时，`compress_lens`、`seq_lens`为必选参数。当`key`和`value`是3维时，`compress_lens`、`compress_seq_offsets`、`seq_lens`为可选参数。
+- 当`key`和`value`都是4维时，`slot_mapping`是二维，且`slot_mapping`的第一维值等于`key`的第一维为`batch`，`slot_mapping`的第二维值等于`key`的第三维为num_head(对应场景二)。
+- 当`key`和`value`都是4维时，`seq_lens`是一维，且`seq_lens`的值等于`key`的第一维为batch(对应场景二)。
+- `seq_lens`和`compress_lens`里面的每个元素值必须满足公式：reduceSum(seq_lens[i] - compress_lens[i]) <= num_blocks * block_size（对应场景二）。
 
 ## 调用示例
 

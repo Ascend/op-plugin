@@ -42,7 +42,7 @@ torch_npu.npu_grouped_matmul_add_(self, x, weight, group_list, *, transpose_x=Tr
 
 `Tensor`
 
-返回`self`张量本身，表示groupedMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，支持的数据类型、shape、数据格式均与输入`self`保持一致。
+返回`self`张量本身，表示GroupedMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，支持的数据类型、shape、数据格式均与输入`self`保持一致。
 
 ## 约束说明
 

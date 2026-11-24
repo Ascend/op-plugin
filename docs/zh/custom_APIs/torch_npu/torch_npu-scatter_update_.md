@@ -6,7 +6,7 @@
 - <term>Ascend 950PR&950DT系列产品</term>：支持
 <!-- end id1 -->
 <!-- npu="A3" id2 -->
-- <term>Atlas A3系列产品</term>：支持
+- <term>Atlas A3训练系列产品</term>：支持
 <!-- end id2 -->
 <!-- npu="910b" id3 -->
 - <term>Atlas A2系列产品</term>：支持
@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-将tensor updates中的值按指定的轴axis和索引indices更新tensor data中的值，并将结果保存到输出tensor，data本身的数据被改变。
+将tensor`updates`中的值按指定的轴`axis`和索引`indices`更新tensor`data`中的值，并将结果保存到输出tensor，data本身的数据被改变。
 
 ## 函数原型
 
@@ -27,7 +27,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
 
 ## 参数说明
 
-- **data** (`Tensor`)：必选参数。代表更新前的原数据，`data`只支持2-8维，且维度大小需要与`updates`一致；支持非连续的tensor；数据格式支持$ND$；不支持空tensor。
+- **data** (`Tensor`)：必选参数。代表更新前的原数据，`data`只支持2-8维，且`data`与`updates`除axis轴和0轴外的其余轴的shape均相同；支持非连续的tensor；数据格式支持$ND$；不支持空tensor。
 
     <!-- npu="910b" id5 -->
     - <term>Atlas A2系列产品</term>：数据类型支持`torch.int8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
@@ -58,7 +58,7 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.int8`、`torch.uint8`、`torch.float16`、`torch.float32`、`torch.bfloat16`、`torch.int32`。
     <!-- end id12 -->
 
-- **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`int64`。取值范围为\(-data\_rank, data\_rank\)（data\_rank为data的维度数）且axis不能为0。
+- **axis** (`int`)：必选参数。代表轴，用来表示scatter的维度，数据类型为`int64`，取值范围为\(-data\_rank, data\_rank\)（data\_rank为data的维度数）且axis不能为0。
 
 ## 返回值说明
 
@@ -82,14 +82,14 @@ torch_npu.scatter_update_(data, indices, updates, axis) -> Tensor
 ## 约束说明
 
 - 该接口支持单算子模式和TorchAir图模式。
-- `data`与`updates`的秩一致。
+- `data`与`updates`的秩（维度数）一致。
 - 不支持索引越界，用户需自行确保索引合法，框架不进行越界检查。
 - 当操作为update，且indices有重复时，重复位置的结果不保证。
 - updates shape的0轴与indices shape的0轴一致。
-- indices为0维时，updates shape的0轴为1。
-- updates shape的0轴小于等于data shape的0轴。
+- `indices`为0维时，updates shape的0轴为1。
+- `updates` shape的0轴小于等于data shape的0轴。
 - `updates`与`data`的shape，除axis轴和0轴以外，其余轴的shape均相同。
-- 当indices shape为二维时，shape的1轴需要等于2。
+- 当`indices` shape为二维时，shape的1轴需要等于2。
 
 ## 调用示例
 

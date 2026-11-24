@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-aclgraph模式下，由于原生Python的print函数包含同步处理，在`torch.compile`时会触发断图，并且无法被aclgraph捕获，导致图模式下无法使用print接口观察aclgraph模式执行过程中的tensor数据。
+aclgraph模式下，由于原生Python的print函数包含同步处理，在`torch.compile`时会触发断图，并且无法被aclgraph捕获，导致aclgraph模式下无法使用print接口观察执行过程中的tensor数据。
 
 当前接口提供了类似原生Python的print接口特性且不影响aclgraph捕获、重放的tensor打印能力，允许将aclgraph中间节点的tensor数据、数据类型、shape信息直接打印出来，以便用户观察aclgraph的执行过程中的tensor数据，以快速定位问题。
 
@@ -23,7 +23,7 @@ torch_npu.print_npugraph_tensor(input, tensor_name=None) -> None
 
 ## 参数说明
 
-- **input** (`Tensor`)：必选参数，用于打印的tensor。
+- **input** (`Tensor`)：必选参数，用于打印的Tensor。
 - **tensor_name** (`str`)：可选参数，指定打印tensor的tensor name，用于区分不同的tensor，默认为None。
   - tensor_name为None时：直接输出tensor数据内容。
   - tensor_name不为None时：以`{tensor_name}:`格式作为前缀，后接tensor数据。
@@ -78,7 +78,7 @@ torch_npu.print_npugraph_tensor(input, tensor_name=None) -> None
         
         def forward(self, x):
             x = torch.add(x, x)
-            torch_npu.print_npugraph_tensor(x, tensor_name ="x")
+            torch_npu.print_npugraph_tensor(x, tensor_name="x")
             x = torch.add(x, 2)
             torch_npu.print_npugraph_tensor(x, tensor_name="added_x")
             return x
@@ -86,5 +86,5 @@ torch_npu.print_npugraph_tensor(input, tensor_name=None) -> None
     x = torch.randn([5, 5]).npu()
     model = Model()
     model = torch.compile(model, backend="npugraph_ex", dynamic=False, fullgraph=True)
-    model (x)
+    model(x)
     ```

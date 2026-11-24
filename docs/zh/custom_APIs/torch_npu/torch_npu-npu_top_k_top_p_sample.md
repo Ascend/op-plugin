@@ -14,7 +14,7 @@
 - API功能：
   根据输入词频`logits`、`top_k`/`top_p`/`min_ps`采样参数、随机采样权重分布`q`，进行topK-topP-minP-Sample采样计算，输出每个batch的最大词频`logits_select_idx`，以及topK-topP采样后的词频分布`logits_top_kp_select`。
 
-  算子包含4个可单独开启，但上下游处理关系保持不变的采样算法（从原始输入到最终输出）：topK采样、topP采样、minP显著性采样、不采样 / 指数采样 / 多项式随机采样 。目前支持以下12种计算场景。如下表所示：
+  算子包含4个可单独开启，但上下游处理关系保持不变的采样算法（从原始输入到最终输出）：topK采样、topP采样、minP显著性采样、不采样 / 指数采样 / 多项式随机采样。目前支持以下12种计算场景。如下表所示：
 
   | 计算场景 | topK采样 | topP采样 | minP采样 | 后继处理 |备注|
   | :-------:| :------:|:-------:|:-------:|:-------:|:-------:|
@@ -29,7 +29,7 @@
   |topP-qSample采样|×|√|×|qSample|无|
   |topK-topP-qSample采样|√|√|×|qSample|vLLM框架标准完整功能|
   |topK-topP-multiNomial采样|√|√|×|multiNomial|min_ps为无效值，但仍执行多项式采样|
-  |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|Sglang框架标准完整功能|
+  |topK-topP-minP-multiNomial采样|√|√|√|multiNomial|SGLang框架标准完整功能|
 
 - 计算公式：
   输入`logits`为大小为[batch, voc_size]的词频表，其中每个batch对应一条输入序列，而voc_size则是约定每个batch的统一长度。<br>
@@ -46,7 +46,7 @@
 
   | 参数类型 | ≤ | 有效域 | 无效域 |
   | :-------:| :------:|:-------:|:-------:|
-  |`top_k[b]`|跳过topK采样|1≤top_k≤min(voc_size,ks_max),执行topK采样|top_k>min(voc_size,ks_max),跳过topK采样|
+  |top_k[b]|跳过topK采样|1≤top_k≤min(voc_size,ks_max),执行topK采样|top_k>min(voc_size,ks_max),跳过topK采样|
 
   * 对当前batch分割为若干子段，滚动计算top_k_value[b]：
 
@@ -71,7 +71,7 @@
     top\_k\_mask = sorted\_value>top\_k\_value
     $$
 
-  * 将小于阈值的部分通过mask置为默认无效值defLogit:
+  * 将小于阈值的部分通过mask置为默认无效值defLogit：
 
     $$
     sorted\_value[b][v]=
@@ -81,7 +81,7 @@
     \end{cases}
     $$
 
-  * 其中defLogits取决于入参属性Attr.optional.Bool.input_is_logits，该属性控制输入logits和输出`logits_top_kp_select`的归一化：
+  * 其中defLogit取决于入参属性Attr.optional.Bool.input_is_logits，该属性控制输入logits和输出`logits_top_kp_select`的归一化：
     $$
     \text{defLogit} =
       \begin{cases}
@@ -102,7 +102,7 @@
     \end{cases}
     $$
 
-  * 根据输入`top_p[b]`的数值，本模块的处理策略如下：
+  * 根据输入top_p[b]的数值，本模块的处理策略如下：
 
   | 参数类型 | ≤ | 有效域 | 无效域 |
   | :-------:| :------:|:-------:|:-------:|
@@ -118,7 +118,7 @@
     \end{cases}
     $$
 
-  * 如果执行常规topP采样，但前序topK环节被跳过，则计算top-p的mask:
+  * 如果执行常规topP采样，但前序topK环节被跳过，则计算top-p的mask：
 
     $$
     topPMask[b] =
@@ -128,7 +128,7 @@
     \end{cases}
     $$
 
-  * 将需要过滤的位置设置为默认无效值defLogit，得到logits_sort，记为$sortedValue[b][v]$:
+  * 将需要过滤的位置设置为默认无效值defLogit，得到logits_sort，记为$sortedValue[b][v]$：
 
     $$
     sortedValue[b][v] =
@@ -138,7 +138,7 @@
     \end{cases}
     $$
 
-  * 取过滤后$sortedValue[b][v]$每行中前topK个元素，查找这些元素在输入中的原始索引，整合为logits_idx:
+  * 取过滤后$sortedValue[b][v]$每行中前topK个元素，查找这些元素在输入中的原始索引，整合为logits_idx：
 
     $$
     logitsIdx[b][v] = Index(sortedValue[b][v] \in Logits)
@@ -153,7 +153,7 @@
     \text{logitsSortMasked}[b, \text{Len}(\text{logitsIdx}[b][:])\text{:}] = \text{defLogit}
     $$
 
-  * （sglang框架支持更新）直接使用截断后的sortedValue作为logitsSortMasked：
+  * （SGLang框架支持更新）直接使用截断后的sortedValue作为logitsSortMasked：
 
     $$
     logitsSortMasked[b,:] = sortedValue[b]
@@ -197,7 +197,7 @@
 
   可选输出
 
-  * 如果​入参属性Attr.Bool.is_need_logits=True，则使用topK-topP-minP联合采样后的logitsIndexMasked，进行`logits_top_kp_select`输出。
+  * 如果入参属性Attr.Bool.is_need_logits=True，则使用topK-topP-minP联合采样后的logitsIndexMasked，进行`logits_top_kp_select`输出。
 
     $$
     \text{logitsIndex}[b][v] = \text{Index}(\text{logitsSortMasked}[b][v] \in \text{Logits})
@@ -234,7 +234,7 @@
     $$
     \text{probs}[b] = \text{logitsSortMasked}[b, :]
     $$
-    接下来有三种模式：None，qSample，multiNomial，通过入参约束属性attr.optional.Str.post_sample加以控制。
+    接下来有三种模式：None、qSample、multiNomial，通过入参约束属性attr.optional.Str.post_sample加以控制。
 
   * None
 
@@ -289,9 +289,9 @@
     \end{cases}
     $$
 
-  * 该采样过程以aclnnMultinomial为基准，可参见<https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md>。
+  * 该采样过程以aclnnMultinomial为基准，可参见[aclnnMultinomial](https://gitcode.com/cann/ops-math/blob/master/random/stateless_sample_multinomial/docs/aclnnMultinomial.md)。
 
-  * TorchNPU调用时，采样种子和偏移默认使用内建值，可参见<https://gitcode.com/Ascend/op-plugin/blob/master/op_plugin/ops/opapi/MultinomialKernelNpuOpApi.cpp>。
+  * `post_sample="multiNomial"`时，采样种子和偏移由NPU随机数生成器提供。未传入`generator`时，使用默认NPU随机数生成器。
 
 ## 函数原型
 
@@ -307,18 +307,18 @@ torch_npu.npu_top_k_top_p_sample(logits, top_k, top_p, q=None, eps=1e-8, is_need
     - 在任何情况下，topP对每个batch的输出都会保留至少1个token。
     - top_p[batch] ≤0时，对当前batch仅保留概率最大的1个token。
     - top_p[batch]处于合法值范围(0,1)时，对当前batch执行标准topP采样。
-    - p>=1时跳过相应batch的topP步骤，提取整个batch信息并生成ones掩模作为输出。
-- **q**（`Tensor`）：可选参数，topK-topP采样输出的随机采样权重分布矩阵，数据类型支持`torch.float32`，数据格式支持$ND$，支持非连续Tensor，默认值为None, 此时跳过后继采样，从probs计算logits_select_idx。
+    - p>=1时跳过相应batch的topP步骤，提取整个batch信息并生成ones掩码作为输出。
+- **q**（`Tensor`）：可选参数，topK-topP采样输出的随机采样权重分布矩阵，数据类型支持`torch.float32`，数据格式支持$ND$，支持非连续Tensor，默认值为None，此时跳过后继采样，从probs计算logits_select_idx。
     - 根据post_sample的模式不同，该参数约束如下：
-    - post_sample = qSample时, 尺寸约束为[batch, voc_size], 数据类型必须为`torch.float32`，指数分布采样矩阵，维度需与logits的一致。
-    - post_sample = multiNomial时, multiNomial随机采样参数矩阵，数据类型必须为`torch.int64`，用于为aclnnMultinomial采样提供控制参数。合法的尺寸为[q_row, 2]，其中q_row≥1：
+    - post_sample = qSample时，尺寸约束为[batch, voc_size]，数据类型必须为`torch.float32`，指数分布采样矩阵，维度需与logits的一致。
+    - post_sample = multiNomial时，multiNomial随机采样参数矩阵，数据类型必须为`torch.int64`，用于为aclnnMultinomial采样提供控制参数。合法的尺寸为[q_row, 2]，其中q_row≥1：
         - 第1列对应aclnnMultinomial.seed参数：对应当前batch的随机数种子。
         - 第2列对应aclnnMultinomial.offset参数：随机数生成器的偏移量，它影响生成的随机数序列的位置。设置偏移量后，生成的随机数序列会从指定位置开始。
         - 如果q_row \< batch，则默认使用最后一个batch的采样参数作为后续batch的multiNomial采样参数。
 - **eps**（`float`）：可选参数，在softmax和权重采样中防止除零，默认值为1e-8。
 - **is_need_logits**（`bool`）：可选参数，控制`logits_top_kp_select`的输出条件，默认值为False。
 - **top_k_guess**（`int`）：可选参数，仅在当前batch的top_k为无效值时开启，适用于跳过topK的top_k_guess-TopP加速采样。有效值范围top_k_guess>0，默认为32，用于TopP加速采样中基于top_k_guess的直接索引过滤。如果传入非正数，视为跳过top_k_guess环节，直接使用基于cumsum的标准topP实现，对当前batch做topP全排序采样，保持基准性能。
-- **ks_max**（`int`）：可选参数，约束topK采样中允许的topk[batch]合法值上限，影响跳过topK采样的条件，允许传入任意非零正整数。有效值范围[1,1024]之间的整数，传入超过1024的值会自动设为1024。
+- **ks_max**（`int`）：可选参数，约束topK采样中允许的top_k[batch]合法值上限，影响跳过topK采样的条件，允许传入任意非零正整数。有效值范围[1,1024]之间的整数，传入超过1024的值会自动设为1024。
 - **input_is_logits**（`bool`）：可选参数，该参数控制输入logits在topP及后续步骤之前，是否进行归一化处理，并决定可选输出logits_top_kp_select中的无效logits默认值类型。logits表示“未经归一化的原始值”，而相对地已经过归一化的则定义为“probs”。该参数的取值影响如下：
     - 若该参数取值为True，输入的logits中的数值不能确保在[0,1]区间内。由于logits未进行归一化，在进行top_p采样等后续步骤之前，先对输入进行softmax处理。logits_top_kp_select中的无效logits默认值defLogit=-inf。
     - 若该参数取值为False，输入logits中的所有元素都确保在[0,1]区间内。输入logits已经归一化，为避免梯度平滑化，top_p采样等后续步骤直接使用前级处理的结果。logits_top_kp_select中的无效logits默认值defLogit=0。

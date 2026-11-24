@@ -28,7 +28,7 @@
   \mathrm{out}=\operatorname{Softmax}_{\mathrm{dim}=-1}\left(\operatorname{Mask}(\mathrm{scale}\cdot x,\mathrm{mask})\right)
   $$
 
-其中，`x`为输入 logits，`scale`为缩放系数，`mask`为布尔掩码，`out`为计算结果。
+其中，`x`为输入logits，`scale`为缩放系数，`mask`为布尔掩码，`out`为计算结果。
 
 ## 函数原型
 
@@ -41,7 +41,7 @@ torch_npu.npu_scaled_masked_softmax(x, mask, scale=1.0, fixed_triu_mask=False) -
 - **x**（`Tensor`）：必选参数，输入的logits。支持数据类型：`torch.float16`、`torch.float32`、`torch.bfloat16`。支持格式：$[ND, FRACTAL\_NZ]$。
 - **mask**（`Tensor`）：必选参数，输入的掩码。支持数据类型：`torch.bool`。支持格式：$[ND, FRACTAL\_NZ]$。
 - **scale**（`float`）：可选参数，`x`的缩放系数，默认值为`1.0`，支持数据类型：`torch.float32`。
-- **fixed_triu_mask**（`bool`）：预留参数，功能未完成，默认值为`False`，当前只支持`False`。参数类型为 Python `bool`。该功能完成后可支持自动生成上三角`torch.bool`掩码。
+- **fixed_triu_mask**（`bool`）：预留参数，功能未完成，默认值为`False`，当前只支持`False`。参数类型为Python `bool`。该功能完成后可支持自动生成上三角`torch.bool`掩码。
 
 ## 返回值说明
 

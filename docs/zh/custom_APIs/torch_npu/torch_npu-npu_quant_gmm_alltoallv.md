@@ -21,7 +21,7 @@
         \end{aligned}
         $$
 
-        - gmm\_x指路由专家GroupedMatMul计算的左矩阵。
+        - gmm\_x指路由专家GroupedMatmul计算的左矩阵。
         - gmm\_x\_scale指路由专家左矩阵的量化参数。
         - gmm\_weight指路由专家GroupedMatMul计算的右矩阵。
         - gmm\_weight\_scale指路由专家右矩阵的量化参数。
@@ -52,7 +52,7 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **gmm\_x**（`Tensor`）：**必选参数**，表示GroupedMatmul计算的左矩阵Tensor。数据类型支持`torch_npu.hifloat8`、`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`。支持2维，shape为\(A, H1\)，数据格式支持$ND$，其中数据类型为float4时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
 - **gmm\_weight**（`Tensor`）：**必选参数**，GroupedMatmul的右矩阵。数据类型与`gmm_x`一致。支持3维，shape为\(e, H1, N1\)，数据格式支持$ND$，全量化场景下，当`gmm_x`、`gmm_weight`均为float4系列时，仅支持推理场景，此时输入`gmm_x`的H1需要为偶数，且当`gmm_weight`不转置时内轴N1需为偶数，转置时内轴H1需要为偶数，以保证8bits可以转换为2个float4。
 - **gmm\_x\_scale**（`Tensor`）：**必选参数**，表示左矩阵的量化缩放系数，数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(A, ceil\(H1/64\), 2\)。数据格式为$ND$。
-- **gmm\_weight\_scale**（`Tensor`）：**必选参数**，表示右矩阵的量化参数，数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持4维，shape为\(e, ceil\(H1/64\), N1, 2\)。数据格式为$ND$。
+- **gmm\_weight\_scale**（`Tensor`）：**必选参数**，表示右矩阵的量化缩放系数，数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持4维，shape为\(e, ceil\(H1/64\), N1, 2\)。数据格式为$ND$。
 - **hcom**（`str`）：**必选参数**，表示专家并行（EP）的通信域名称，字符串长度需在\(0,128\)范围内。
 - **ep\_world\_size**（`int`）：**必选参数**，表示EP通信域的size，取值支持2、4、8、16、32、64、128、256，CCU仅支持单机UB域内互联，AI CPU可支持跨机UB域内互联。
 - **send\_counts**（`List[int]`）：**必选参数**，表示发送给其他卡的token数列表，数据类型支持`torch.int64`，数组大小为e \* ep\_world\_size。
@@ -63,9 +63,9 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 - **recv\_counts\_tensor**（`Tensor`）：**可选参数**，默认值为`None`，当前仅支持输入None。
 - **mm\_x**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的左矩阵，数据类型与`gmm_x`一致。支持2维，Shape为\(BS, H2\)，数据格式为$ND$，其中数据类型为float4时内轴H2需为偶数，以保证8bits可以转换为2个float4。
 - **mm\_weight**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul计算中的右矩阵，数据类型与`gmm_x`一致。支持2维，shape为\(H2, N2\)。数据格式为$ND$。全量化场景下，当`mm_x`、`mm_weight`均为float4系列时，仅支持推理场景，此时输入`mm_x`的H2需要为偶数，且当`mm_weight`不转置时内轴N2需为偶数，转置时内轴H2需要为偶数，以保证8bits可以转换为2个float4。
-- **mm\_x\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul左矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(BS, ceil\(H2/64\), 2\)。数据格式为$ND$。
-- **mm\_weight\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul右矩阵的量化参数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(ceil\(H2/64\), N2, 2\)。数据格式为$ND$。
-- **comm\_quant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示低比特通信的量化参数，数据类型为`torch.float32`，维度为1，当前暂不支持。
+- **mm\_x\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul左矩阵的量化缩放系数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(BS, ceil\(H2/64\), 2\)。数据格式为$ND$。
+- **mm\_weight\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示共享专家MatMul右矩阵的量化缩放系数，数据类型为`torch.float32`。pertensor量化场景下支持1维，shape为\(1,\)。mx量化场景下支持3维，shape为\(ceil\(H2/64\), N2, 2\)。数据格式为$ND$。
+- **comm\_quant\_scale**（`Tensor`）：**可选参数**，默认值为`None`，表示低比特通信的量化缩放系数，数据类型为`torch.float32`，维度为1，当前暂不支持。
 - **gmm\_x\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示左矩阵量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。
 - **gmm\_weight\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示右矩阵量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。
 - **mm\_x\_quant\_mode**（`int`）：**可选参数**，默认值为`None`，表示共享专家左矩阵的量化模式，当前版本支持配置为1和6，分别表示pertensor量化和mx量化。
@@ -101,26 +101,26 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
 
 - 该接口支持单算子模式调用、T-T量化场景的图模式调用和MX量化场景的图模式调用。
 - 参数说明里shape使用的变量：
-    - BSK：本卡接收的token数，是recvCounts参数累加之和，取值范围\(0, 52428800\)。
+    - BSK：本卡接收的token数，是recv_counts参数累加之和，取值范围\(0, 52428800\)。
     - H1：表示路由专家hidden size隐藏层大小，取值范围\(0, 65536\)。
     - H2：表示共享专家hidden size隐藏层大小，取值范围\(0, 12288\]。
-    - e：表示单卡上专家个数，e<=32，e \* epWorldSize最大支持256。
+    - e：表示单卡上专家个数，e<=32，e \* ep_world_size最大支持256。
     - N1：表示路由专家的中间层维度，取值范围\(0, 65536\)。
     - N2：表示共享专家的中间层维度，取值范围\(0, 65536\)。
     - BS：batch sequence size。
     - K：表示选取TopK个专家，K的范围\[2,8\]。
-    - A：本卡发送的token数，是sendCounts参数累加之和。
+    - A：本卡发送的token数，是send_counts参数累加之和。
     - ep通信域内所有卡的A参数的累加和等于所有卡上的BSK参数的累加和。
 
 - `gmm_x_quant_mode`、`gmm_weight_quant_mode`、`mm_x_quant_mode`、`mm_weight_quant_mode`值与量化模式关系如下：
-    - 0：非量化
-    - 1：pertensor
-    - 2：perchannel
-    - 3：pertoken
-    - 4：pergroup
-    - 5：perblock
-    - 6：mx量化
-    - 7：pertoken动态量化
+    - 0：非量化。
+    - 1：pertensor。
+    - 2：perchannel。
+    - 3：pertoken。
+    - 4：pergroup。
+    - 5：perblock。
+    - 6：mx量化。
+    - 7：pertoken动态量化。
 
 - 当前gmm\_x\_quant\_mode、gmm\_weight\_quant\_mode的组合仅支持\[1, 1\]和\[6, 6\]，分别表示T-T量化和mx量化。
 - 当前mm\_x\_quant\_mode和mm\_weight\_quant\_mode的组合仅支持\[1, 1\]和\[6, 6\]，分别表示T-T量化和mx量化，且量化组合需与gmm\_x\_quant\_mode、gmm\_weight\_quant\_mode组合保持一致。
@@ -131,18 +131,18 @@ torch_npu.npu_quant_gmm_alltoallv(gmm_x, gmm_weight, gmm_x_scale, gmm_weight_sca
     - 如果满足重新设置条件，当gmm\_x\_scale、mm\_x\_scale、mm\_weight\_scale输入都是3维，gmm\_weight\_scale输入的是4维时，且数据类型都为`torch.float8_e8m0fnu`时，\[groupSizeM, groupSizeN, groupSizeK\]取值组合会推导为\[1, 1, 32\]。
     - 当存在某张卡的输出张量（y、mm\_y）均为空Tensor时，必须显式调用torch.distributed.barrier\(\)，确保这张卡进程同步等待其他卡完成通信与计算。若未添加同步，AlltoAllv通信将因进程不同步而阻塞。
 
-- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256M，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
+- 当走CCU通信时，AlltoAllv集合通信单次最大通信数据量不能超过256MB，数据总量不能超过16 \* 256MB。由于shape不同，算子内部实现可能存在差异，实际支持的总通信量可能略小于该值。
 
 - 各量化模式下输入输出数据类型详细约束如下表：
 
-    **表 1**  T-T量化数据类型约束
+    **表 1** T-T量化数据类型约束
 
     | gmm_x | gmm_weight | gmm_x_scale | gmm_weight_scale | gmm_x_quant_mode/gmm_weight_quant_mode | gmm_y | mm_x | mm_weight | mm_x_scale | mm_weight_scale | mm_x_quant_mode/mm_weight_quant_mode | mm_y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
     | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | [1, 1] | `torch.float16` | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | [1, 1] | `torch.float16` |
     | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | [1, 1] | `torch.bfloat16` | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | [1, 1] | `torch.bfloat16` |
 
-    **表 2**  mx量化数据类型约束
+    **表 2** mx量化数据类型约束
 
     | gmm_x | gmm_weight | gmm_x_scale | gmm_weight_scale | gmm_x_quant_mode/gmm_weight_quant_mode | gmm_y | mm_x | mm_weight | mm_x_scale | mm_weight_scale | mm_x_quant_mode/mm_weight_quant_mode | mm_y |
     | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

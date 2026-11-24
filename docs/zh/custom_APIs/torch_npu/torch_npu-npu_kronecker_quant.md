@@ -12,7 +12,7 @@
 
   pertoken量化支持`torch_npu.int4`输出类型，并以8个一组打包成`torch.int32`类型输出，同时也输出`torch.float32`的量化缩放系数。
 
-  pergroup量化支持输出`torch_npu.float4_e2m1fn_x2`量化结果和`torch.float8_e8m0fnu`量化系数，组内的元素共享一个量化参数。
+  pergroup量化支持输出`torch_npu.float4_e2m1fn_x2`量化结果和`torch.float8_e8m0fnu`量化缩放系数，组内的元素共享一个量化参数。
 
 - **pertoken计算公式**：
 

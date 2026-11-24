@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出tensor，`input`中的数据被改变。
+将`updates`中的值按指定的索引`indices`更新`input`中的值，并将结果保存到输出Tensor，`input`中的数据被改变。
 
 ## 函数原型
 
@@ -76,7 +76,7 @@ torch_npu.npu_scatter_nd_update_(input, indices, updates) -> Tensor(a!)
 ## 约束说明
 
 - 该接口支持单算子模式和TorchAir图模式。
-- `indices`至少是2维，其最后1维的大小不能超过`input`的维度大小。
+- `indices`至少是2维，其最后1维的大小不能超过`input`的维度数。
 - 假设`indices`最后1维的大小是a，则`updates`的shape等于`indices`除最后1维外的shape加上`input`除前a维外的shape。举例：`input`的shape是$(4, 5, 6)$，`indices`的shape是$(3, 2)$，则`updates`的shape必须是$(3, 6)$。
 
 ## 调用示例

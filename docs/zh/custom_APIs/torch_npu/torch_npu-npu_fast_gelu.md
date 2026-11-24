@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-- API功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`FastGelu`的前向结果。
+- API功能：快速高斯误差线性单元激活函数（Fast Gaussian Error Linear Units activation function），对输入的每个元素计算`npu_fast_gelu`的前向结果。
 - 计算公式：
 
   <!-- npu="910,310p" id6 -->

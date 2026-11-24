@@ -20,11 +20,11 @@
     $$
     \begin{cases}
     \text{groupnormOut} = \frac{x - E[x]}{\sqrt{Var[x] + eps}} * \gamma + \beta \\
-    \text{meanOut}  = E[x] \\
-    \text{rstdOut}  = \frac{1}{\sqrt{Var[x] + eps}}
+    \text{meanOut} = E[x] \\
+    \text{rstdOut} = \frac{1}{\sqrt{Var[x] + eps}}
     \end{cases}
     $$
-    - Silu：
+    - SiLU：
     $$
     \text{out} = \frac{\text{groupnormOut}}{1 + e^{-\text{groupnormOut}}}
     $$

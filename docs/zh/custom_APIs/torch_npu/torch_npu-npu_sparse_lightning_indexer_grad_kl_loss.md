@@ -23,8 +23,8 @@
         I_{t,:}=W_{t,:}@ReLU(\tilde{q}_{t,:}@\tilde{K}_{:t,:}^\top)
         $$
 
-        - $W_{t,:}$是第$t$个token对应的$weights$；
-        - $\tilde{q}_{t,:}$是$Q_{index}$矩阵第$t$个token对应的$G$个头合轴后的结果；
+        - $W_{t,:}$是第$t$个token对应的$weights$。
+        - $\tilde{q}_{t,:}$是$Q_{index}$矩阵第$t$个token对应的$G$个头合轴后的结果。
         - $\tilde{K}_{:t,:}$为$K_{index}$矩阵$t$行。
 
     2. 正向的Softmax对应公式：
@@ -33,16 +33,16 @@
         p_{t,:} = \text{Softmax}(q_{t,:} @ K_{:t,:}^\top/\sqrt{d})
         $$
 
-        - $p_{t,:}$是第$t$个token对应的Softmax结果；
-        - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果；
+        - $p_{t,:}$是第$t$个token对应的Softmax结果。
+        - $q_{t,:}$是$Q$矩阵第$t$个token对应的$G$个query头合轴后的结果。
         - $K$为$K$矩阵$t$行。
 
-    3. npu_lightning_indexer会单独训练，对应的loss function为：
+    3. npu_lightning_indexer会单独训练，对应的Loss function为：
         $$
         Loss{=}\sum_tD_{KL}(p_{t,:}||Softmax(I_{t,:}))
         $$
 
-        其中，$p_{t,:}$是target distribution，通过对main attention score 进行所有的head的求和，然后把求和结果沿着上下文方向进行sinks修正后的L1正则化得到。$D_{KL}$为KL散度，其表达式为：
+        其中，$p_{t,:}$是target distribution，通过对main attention score进行所有的head的求和，然后把求和结果沿着上下文方向进行sinks修正后的L1正则化得到。$D_{KL}$为KL散度，其表达式为：
 
         $$
         D_{KL}(a||b){=}\sum_ia_i\mathrm{log}{\left(\frac{a_i}{b_i}\right)}
@@ -94,9 +94,9 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 - **scale_value**(`float`)：必选参数，表示缩放系数，数据类型支持`float`。
 
-- **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的rope信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
+- **query_rope**(`Tensor`)：可选参数，表示MLA结构中的query的RoPE信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S1, N1, Dr)$、$(T1, N1, Dr)$。
 
-- **key_rope**(`Tensor`)：可选参数，表示MLA结构中的key的rope信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S2, N2, Dr)$、$(T2, N2, Dr)$。
+- **key_rope**(`Tensor`)：可选参数，表示MLA结构中的key的RoPE信息。数据格式支持$ND$，数据类型支持`torch.bfloat16`、`torch.float16`。shape支持$(B, S2, N2, Dr)$、$(T2, N2, Dr)$。
 
 - **actual_seq_qlen**(`list[int]`)：可选参数，TND场景时需传入此参数。表示query每个S的累加和长度，数据类型支持`torch.int64`，数据格式支持$ND$，默认值为`None`。
 
@@ -108,7 +108,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
 
 - **pre_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和前几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
-- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值2^63-1。
+- **next_tokens**(`int`)：可选参数，用于稀疏计算，表示Attention需要和后几个token计算关联。数据类型支持`int64`，默认值为2^63-1。
 
 - **sinks**(`Tensor`)：可选参数，表示attention结构中的sinks信息，不支持非连续，数据格式支持$ND$，数据类型支持`torch.float32`，shape为$(N1)$。
 
@@ -133,7 +133,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
   | 规格项     | 规格                                    | 规格说明                  |
   |---------|---------------------------------------|-----------------------|
   | B       | 1~256                                 | -                     |
-  | S1、S2   | S1支持1~8K，S2支持1~128K                   | S1、S2支持不等长            |
+  | S1、S2   | S1支持1~8k，S2支持1~128k                  | S1、S2支持不等长            |
   | N1      | 32、64、128                             | -                     |
   | N1index | 8、16、32、64                            | -                     |
   | N2      | 1                                       | -                     |
@@ -144,7 +144,7 @@ npu_sparse_lightning_indexer_grad_kl_loss(query, key, query_index, key_index, we
   | layout  | BSND/TND                              | -                     |
 
   <!-- npu="950" id5 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：N1额外支持48，N1index额外支持24，二者仅允许(48，24)组合，禁止其余数值配对；B,S1,S2均支持泛化。
+  - <term>Ascend 950PR&950DT系列产品</term>：N1额外支持48，N1index额外支持24，二者仅允许(48，24)组合，禁止其余数值配对；B、S1、S2均支持泛化。
   <!-- end id5 -->
 
 ## 调用示例

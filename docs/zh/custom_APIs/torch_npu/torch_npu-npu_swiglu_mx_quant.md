@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：在Swish门控线性单元（swiglu）激活函数后接DynamicMxQuant（动态MX量化）操作，对输入`x`完成swiglu激活后量化输出。接口支持MoE分组场景与多种swiglu计算模式。
+- API功能：在Swish门控线性单元（SwiGLU）激活函数后接DynamicMxQuant（动态MX量化）操作，对输入`x`完成swiglu激活后量化输出。接口支持MoE分组场景与多种swiglu计算模式。
 - 计算公式：
 
   设输入为$x$，首先对输入做swiglu激活，得到的结果为$swigluOut$：

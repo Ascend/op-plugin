@@ -38,7 +38,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **query**（`Tensor`）：必选参数，表示attention结构的Q输入，不支持非连续，数据格式支持$ND$，数据类型支持`torch.bfloat16`和`torch.float16`，query由相同dtype的q_nope和q_rope按D维度拼接得到。`layout_query`为BSND时shape为[B,S1,Q\_N,Q\_D]，当`layout_query`为TND时shape为[Q\_T,Q\_N,Q\_D]，其中Q\_N支持1/2/4/8/16/32/48/64/128，Q\_D值仅支持576，即nope\+rope=512\+64。
 
-- **key**（`Tensor`）：必选参数，表示attention结构的K输入，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`，k_nope、query相同dtype的k_rope和`torch.float32`的量化参数按D维度拼接得到，layout\_kv为PA\_BSND时shape为[block\_num, block\_size, KV\_N, KV\_D]，其中block\_num为PagedAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, KV\_D]，`layout_kv`为TND时shape为[KV\_T, KV\_N, KV\_D]，其中KV\_N只支持1；KV\_D值仅支持656，即nope\+rope\*2\+dequant\_scale\*4=512\+64\*2\+4\*4。
+- **key**（`Tensor`）：必选参数，表示attention结构的K输入，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`，k_nope、与query相同dtype的k_rope和`torch.float32`的量化参数按D维度拼接得到，layout\_kv为PA\_BSND时shape为[block\_num, block\_size, KV\_N, KV\_D]，其中block\_num为PagedAttention时block总数，block\_size为一个block的token数，block\_size取值为16的整数倍，最大支持到1024。`layout_kv`为BSND时shape为[B, S2, KV\_N, KV\_D]，`layout_kv`为TND时shape为[KV\_T, KV\_N, KV\_D]，其中KV\_N只支持1；KV\_D值仅支持656，即nope\+rope\*2\+dequant\_scale\*4=512\+64\*2\+4\*4。
 
 - **value**（`Tensor`）：必选参数，表示attention结构的V输入，在`layout_kv`为PA_BSND时支持0轴非连续，数据格式支持$ND$，数据类型支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`。value的N仅支持1。value的数据类型需与key保持一致。
 
@@ -60,7 +60,7 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - **actual\_seq\_lengths\_query**（`Tensor`）：可选参数，表示不同Batch中`query`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和`query`的shape的S长度相同。该参数中每个Batch的有效token数不超过`query`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_query`为TND时，该入参必须传入，且以该入参元素的数量作为B值，该入参中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
-- **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，当`layout_kv`为TND，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
+- **actual\_seq\_lengths\_kv**（`Tensor`）：可选参数，表示不同Batch中`key`和`value`的有效token数，数据类型支持`torch.int32`。如果不指定seqlen可传入None，表示和key的shape的S长度相同。该参数中每个Batch的有效token数不超过`key/value`中的维度S大小且不小于0。支持长度为B的一维tensor。<br>当`layout_kv`为TND或PA_BSND时，该入参必须传入，当`layout_kv`为TND时，该参数中每个元素的值表示当前batch与之前所有batch的token数总和，即前缀和，因此后一个元素的值必须大于等于前一个元素的值。
 
 - **sparse\_block\_size**（`int`）：可选参数，代表sparse阶段的block大小，在计算importance score时使用，数据类型支持`int64`。sparse\_block\_size为1时，为Token-wise稀疏化场景；sparse\_block\_size大于1且小于等于128时，为Block-wise稀疏化场景，块内token共享相同的稀疏化决策。
 
@@ -72,9 +72,9 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
     - sparse\_mode为0时，代表全部计算。
     - sparse\_mode为3时，代表rightDownCausal模式的mask，对应以右下顶点往左上为划分线的下三角场景。
 
-- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
+- **pre\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和前几个Token计算关联。数据类型支持`int64`，仅支持默认值2**63-1。
 
-- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`，仅支持默认值2^63-1。
+- **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示attention需要和后几个Token计算关联。数据类型支持`int64`，仅支持默认值2**63-1。
 
 - **attention\_mode**（`int`）：可选参数，表示attention的模式。数据类型支持`int64`，仅支持传入2，表示MLA-absorb模式，即QK的D包含rope和nope两部分，且KV是同一份，默认值为0。
 
@@ -96,18 +96,18 @@ torch_npu.npu_kv_quant_sparse_flash_attention(query, key, value, sparse_indices,
 
 - 该接口支持推理场景下使用。
 - 该接口支持图模式。
-- 非PagedAttention场景layout\_query和layout\_kv需要保持一致。
+- 非PagedAttention场景下layout\_query和layout\_kv需要保持一致。
 
 <!-- npu="950" id4 -->
 - Ascend 950PR&950DT系列产品：
-  - 参数key、value数据类型仅支持`torch.int8、torch_npu.hifloat8、torch.float8_e4m3fn`数据类型。
+  - 参数key、value数据类型仅支持`torch.int8`、`torch_npu.hifloat8`、`torch.float8_e4m3fn`数据类型。
   - 参数sparse\_block\_size仅支持1。
   - 仅在`layout_kv`为PA_BSND时，key支持0轴非连续。
 <!-- end id4 -->
 <!-- npu="A3,910b" id5 -->
 - Atlas A3系列产品、Atlas A2系列产品：
   - query Q\_N不支持48。
-  - 参数key、value数据类型仅支持`torch.int8`数据类型，不支持`torch_npu.hifloat8、torch.float8_e4m3fn`。
+  - 参数key、value数据类型仅支持`torch.int8`数据类型，不支持`torch_npu.hifloat8`、`torch.float8_e4m3fn`。
   - 参数sparse\_block\_size支持[1,16]，且要求是2的幂次方，在PagedAttention场景下要求sparse\_block\_size整除block\_size。
   - key不支持非连续。
 <!-- end id5 -->

@@ -26,8 +26,8 @@
   | gelu_tanh | $y = \operatorname{gelu\_tanh}(x1 @ x2)$ |
   | relu | $y = \operatorname{relu}(x1 @ x2 + bias)$ |
 
-  - `x1`是矩阵乘matmul的左矩阵。
-  - `x2`是矩阵乘matmul的右矩阵。
+  - `x1`是矩阵乘的左矩阵。
+  - `x2`是矩阵乘的右矩阵。
   - `x3`是向量计算的矩阵，当`fused_op_type`是`"add"`和`"mul"`时生效。
   - `bias`是矩阵乘的偏置。
   - `fused_op_type`是输入的string类型，支持`""`（表示不做融合）、`"16cast32"`（表示不做融合，并且输出为`torch.float32`，当输入`torch.float16`、`torch.bfloat16`时会把输出转成`torch.float32`）、`"mul"`、`"gelu_erf"`、`"gelu_tanh"`和`"relu"`。
@@ -40,13 +40,13 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
 
 ## 参数说明
 
-- **x1**(`Tensor`)：必选参数，即矩阵乘中的`x1`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(M,K)和三维(B,M,K)，其他情况支持输入维度为两维(M, K)，多维场景下不满足broadcast条件时batch维度需要保持一致。
+- **x1**(`Tensor`)：必选参数，即矩阵乘中的`x1`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(M, K)和三维(B, M, K)，其他情况支持输入维度为两维(M, K)，多维场景下不满足广播条件时batch维度需要保持一致。
 
   <!-- npu="950" id2 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`（HF32）。
   <!-- end id2 -->
 
-- **x2**(`Tensor`)：必选参数，即矩阵乘中的`x2`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(K,N)和三维(B,K,N)，其他情况支持输入维度为两维(K, N)，维度需与`x1`保持一致，多维场景下不满足broadcast条件时batch维度需要保持一致。
+- **x2**(`Tensor`)：必选参数，即矩阵乘中的`x2`。数据格式支持$ND$，支持非连续的Tensor，当`fused_op_type`为`"relu"`或`""`时，支持输入为两到六维，为`"add"`或`"mul"`时，支持输入为两维(K,N)和三维(B,K,N)，其他情况支持输入维度为两维(K, N)，维度需与`x1`保持一致，多维场景下不满足广播条件时batch维度需要保持一致。
 
   <!-- npu="950" id3 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型必须与输入的`x1`保持一致。
@@ -56,10 +56,10 @@ torch_npu.npu_fused_matmul(x1, x2, *, bias=None, x3=None, fused_op_type) -> Tens
 - **bias**(`Tensor`)：**可选参数**，即矩阵乘中的bias，默认值为None。数据格式支持$ND$，不支持非连续的Tensor，支持输入维度为两维(1, N)或一维(N, )。仅当`fused_op_type`为`""`、`"relu"`、`"add"`、`"mul"`时生效，其他情况请使用默认None。
 
   <!-- npu="950" id4 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。当`x1`数据类型为`torch.bfloat16`，bias可为`torch.float32`、`torch.bfloat16`；当`x1`数据类型为`torch.float16`，bias需为`torch.float16`。
+  - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。当`x1`数据类型为`torch.bfloat16`，`bias`可为`torch.float32`、`torch.bfloat16`；当`x1`数据类型为`torch.float16`，`bias`需为`torch.float16`。
   <!-- end id4 -->
 
-- **x3**(`Tensor`)：**可选参数**，即矩阵乘中的`x3`，默认值为None。数据格式支持$ND$，支持非连续的Tensor。如果`fused_op_type`为`"add"`或`"mul"`，则`x3`为必选，其他情况则`x3`必为None。`x3`的维度需与矩阵乘输出`y`的形状一致或满足batch维广播关系，若输出维度为两维(M,N)，`x3`支持两维(M,N)；若输出维度为三维(B,M,N)，`x3`支持(B,M,N)、(1,M,N)或(M,N)。输入维度为(1,M,N)和(M,N)时，`x3`需在batch维进行广播，必须和输出维度保持一致，不支持M或N维广播。
+- **x3**(`Tensor`)：**可选参数**，即矩阵乘中的`x3`，默认值为None。数据格式支持$ND$，支持非连续的Tensor。如果`fused_op_type`为`"add"`或`"mul"`，则`x3`为必选，其他情况则`x3`必须为None。`x3`的维度需与矩阵乘输出`y`的形状一致或满足batch维广播关系，若输出维度为两维(M,N)，`x3`支持两维(M,N)；若输出维度为三维(B,M,N)，`x3`支持(B,M,N)、(1,M,N)或(M,N)。输入维度为(1,M,N)和(M,N)时，`x3`需在batch维进行广播，必须和输出维度保持一致，不支持M或N维广播。
 
   <!-- npu="950" id5 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型必须和输入的`x1`保持一致。

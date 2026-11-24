@@ -40,7 +40,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 
 ## 参数说明
 
-- **x** (`Tensor`)：必选参数，输入张量，表示标准化过程中的源数据张量，对应公式中的$x$，数据格式支持$ND$，shape支持 1-8 维，支持非连续的Tensor，不支持空Tensor。
+- **x** (`Tensor`)：必选参数，输入张量，表示标准化过程中的源数据张量，对应公式中的$x$，数据格式支持$ND$，shape支持1-8维，支持非连续的Tensor，不支持空Tensor。
 
   <!-- npu="310p,310b" id6 -->
   - <term>Atlas推理系列产品</term>、<term>Atlas 200I/500 A2推理产品</term>：数据类型支持`torch.float16`。
@@ -76,7 +76,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`。
   <!-- end id14 -->
 
-- **scale** (`Tensor`)：必选参数，表示量化过程中得到y的scale张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持ND，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
+- **scale** (`Tensor`)：必选参数，表示量化过程中得到y的scale张量，对应公式中的$scale$。shape为1，维度为1。数据格式支持$ND$，支持非连续的Tensor，不支持空Tensor。该参数的值不能为0。
 
   <!-- npu="310p,310b" id15 -->
   - <term>Atlas推理系列产品</term>、<term>Atlas 200I/500 A2推理产品</term>：数据类型支持`torch.float16`。
@@ -98,7 +98,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
   <!-- end id19 -->
 
 - **epsilon** (`float`)：可选参数，对应公式中的$eps$，用于防止除零错误，默认值为1e-6。建议传入较小的正数。
-- **dst_dtype** (`int`): 可选参数，指定量化输出的类型，默认值为`torch.int8`。传None时当做`torch.int8`处理。
+- **dst_dtype** (`int`)：可选参数，指定量化输出的类型，默认值为`torch.int8`。传None时当做`torch.int8`处理。
 
   <!-- npu="A3,910b,310p,310b" id20 -->
   - <term>Atlas推理系列产品</term>、<term>Atlas 200I/500 A2推理产品</term>、<term>Atlas A3系列产品</term>、<term>Atlas A2系列产品</term>：支持取值 `torch.int8`、`torch.quint4x2`。
@@ -116,7 +116,7 @@ torch_npu.npu_rms_norm_quant(x, gamma, beta, scale, offset, epsilon=1e-06, dst_d
 ## 约束说明
 
 <!-- npu="310p" id22 -->
-- <term>Atlas推理系列产品</term>：x、y的尾轴长度，以及gamma的尾轴长度必须大于等于32 Bytes。
+- <term>Atlas推理系列产品</term>：x、y的尾轴长度，以及gamma的尾轴长度必须大于等于32字节。
 <!-- end id22 -->
 <!-- npu="910b" id23 -->
 - <term>Atlas A2系列产品</term>：当`dst_dtype`取`torch.quint4x2`时，`x`、`gamma`以及`beta`的最后一维必须为偶数，并且`x`最后一维必须能够被8整除。

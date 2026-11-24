@@ -296,7 +296,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     - 当`x`的数据类型为`torch.int32`时必须传入，表示每个输入token对应的缩放参数。要求为1维张量，shape为\(BS, \)，数据类型支持`torch.float32`，数据格式为$ND$，不支持非连续的Tensor。该参数随对应token一起通信。
 
     <!-- npu="A3,910b" id9 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)。数据类型支持`torch.float`，数据格式为$ND$，不支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：非量化场景不传，动态量化场景可传可不传。若传值要求为2维张量，如果有共享专家，shape为\(shared\_expert\_num+moe\_expert\_num, H\)，如果没有共享专家，shape为\(moe\_expert\_num, H\)。数据类型支持`torch.float32`，数据格式为$ND$，不支持非连续的Tensor。
     <!-- end id9 -->
     <!-- npu="950" id10 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`。
@@ -320,13 +320,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - **expert\_scales**（`Tensor`）：**可选参数**，表示每个token的topK个专家权重。
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id13 -->
     <!-- npu="A3" id14 -->
     - <term>Atlas A3系列产品</term>：暂不支持该参数，使用默认值即可。
     <!-- end id14 -->
     <!-- npu="950" id15 -->
-    - <term>Ascend 950DT系列产品</term>：支持传入None或2维张量，传入有效数据时shape为\(BS, K\)。数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Ascend 950DT系列产品</term>：支持传入None或2维张量，传入有效数据时shape为\(BS, K\)。数据类型支持`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id15 -->
 
 - **elastic\_info**（`Tensor`）：**可选参数**，预留参数，当前版本不支持，传默认值None即可。
@@ -410,7 +410,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     <!-- npu="910b" id33 -->
     - <term>Atlas A2系列产品</term>：当前版本支持""、"fullmesh"、"hierarchy"三种输入方式。推荐配置"hierarchy"并搭配25.0.RC1.1及以上版本驱动使用。
         - "": 配置HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0时，调用"hierarchy"算法，否则调用"fullmesh"算法。不推荐使用该方式。
-        - "fullmesh"：Token数据直接通过RDMA方式发往topk个目标专家所在的卡。
+        - "fullmesh"：Token数据直接通过RDMA方式发往topK个目标专家所在的卡。
         - "hierarchy"：Token数据经过跨机、机内两次发送，仅不同server同号卡之间使用RDMA通信，server内使用HCCS通信。
     <!-- end id33 -->
     <!-- npu="950,A3" id34 -->
@@ -483,7 +483,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - **dynamic\_scales**（`Tensor`）：表示计算得到的动态量化参数，或随数据类型为`torch.int32`的token通信的缩放参数。当`quant_mode`不为0或1时才有该输出；当`x`的数据类型为`torch.int32`且`quant_mode`为0时有该输出，其中前实际接收token数量个元素有效。数据格式为$ND$，支持非连续的Tensor。
 
     <!-- npu="A3,910b" id46 -->
-    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为1维张量，shape为\(A, \)，数据类型支持`torch.float`。
+    - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：要求为1维张量，shape为\(A, \)，数据类型支持`torch.float32`。
     <!-- end id46 -->
     <!-- npu="950" id47 -->
     - <term>Ascend 950DT系列产品</term>：数据类型支持`torch.float32`、`torch.float8_e8m0fnu`，不同场景下的shape要求详见[quant\_mode相关约束](#quant_mode相关约束)部分：
@@ -515,13 +515,13 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - **expand\_scales**（`Tensor`）：表示`expert_scales`与`x`一起进行alltoallv之后的输出。
 
     <!-- npu="910b" id52 -->
-    - <term>Atlas A2系列产品</term>：要求是1维张量，shape为\(A, \)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：要求是1维张量，shape为\(A, \)，数据类型支持`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id52 -->
     <!-- npu="A3" id53 -->
     - <term>Atlas A3系列产品</term>：暂不支持该输出，返回None。
     <!-- end id53 -->
     <!-- npu="950" id54 -->
-    - <term>Ascend 950DT系列产品</term>：仅`expert_scales`输入有效数据时有输出，要求是1维张量，shape为\(A, \)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Ascend 950DT系列产品</term>：仅`expert_scales`输入有效数据时有输出，要求是1维张量，shape为\(A, \)，数据类型支持`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id54 -->
 
 ## 约束说明
@@ -634,7 +634,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     <!-- npu="910b" id67 -->
     - <term>Atlas A2系列产品</term>：该场景支持通过环境变量HCCL\_BUFFSIZE配置。
         - `comm_alg`配置为"": 仅在此配置下HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE生效，依照HCCL\_INTRA\_PCIE\_ENABLE和HCCL\_INTRA\_ROCE\_ENABLE配置选择"fullmesh"或"hierarchy"公式。
-        - `comm_alg`配置为"fullmesh"且`x`的数据类型为`torch.int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*\(H\*sizeof\(`torch.int32`\)+32B\)+2MB\)。
+        - `comm_alg`配置为"fullmesh"且`x`的数据类型为`torch.int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*\(H\*sizeof\(`torch.int32`\)+32Byte\)+2MB\)。
         - `comm_alg`配置为"fullmesh"且`x`的数据类型不为`torch.int32`：设置大小要求\>=2\*\(BS\*ep\_world\_size\*min\(local\_expert\_num, K\)\*H\*sizeof\(`torch.uint16`\)+2MB\)。
         - `comm_alg`配置为"hierarchy"：设置大小要求=moe\_expert\_num\*BS\*\(H\*sizeof\(dtype\_x\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
     <!-- end id67 -->
@@ -670,7 +670,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 
 - 版本配套约束：
 
-    静态图模式下，从TorchNPU 8.0.0版本开始，TorchNPU框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch\_v2算子，若CANN版本落后于TorchNPU版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见[《TorchNPU版本说明》](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/release_notes.md)中“相关产品版本配套说明”。
+    静态图模式下，从TorchNPU 8.0.0版本开始，TorchNPU框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch\_v2算子，若CANN版本落后于TorchNPU版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[TorchNPU版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/release_notes.md)》中“相关产品版本配套说明”。
 
 - 公式中的“/”表示整除。
 

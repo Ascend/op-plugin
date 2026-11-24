@@ -21,7 +21,7 @@
 
     $$q_{\text{embed}} = q \cdot \cos + \text{RotateHalf}(q) \cdot \sin$$
 
-     其中：RotateHalf\(q\) 将张量 `q` 在最后一个维度 D 上执行如下变换：
+     其中：RotateHalf\(q\) 将张量 `q` 在最后一个维度D上执行如下变换：
 
      1. 将D维平分为前后两部分，前半部分长度为 $D/2$，后半部分长度也为 $D/2$。
      2. 后半部分元素整体前移并取相反数，前半部分元素整体后移，保持原始值。
@@ -51,7 +51,7 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
     - <term>Ascend 950PR&950DT系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`、`torch.float32`，支持非连续的Tensor。
     <!-- end id5 -->
 
-- **cos** (`Tensor`)：必选参数，表示RoPE旋转位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致。
+- **cos** (`Tensor`)：必选参数，表示RoPE位置编码的余弦分量。要求为4维张量，shape为\(B, N, S, D\)，S可以为1或与`x`的S相同，数据类型、数据格式与`x`一致。
 
     <!-- npu="A3,910b" id6 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.bfloat16`、`torch.float16`，不支持非连续的Tensor。
@@ -73,7 +73,7 @@ torch_npu.npu_interleave_rope(x, cos, sin) -> Tensor
 
 `Tensor`
 
-表示旋转编码后的结果。shape、数据类型、数据格式与输入`x`保持一致，不支持非连续的Tensor。
+表示旋转位置编码后的结果。shape、数据类型、数据格式与输入`x`保持一致，不支持非连续的Tensor。
 
 ## 约束说明
 

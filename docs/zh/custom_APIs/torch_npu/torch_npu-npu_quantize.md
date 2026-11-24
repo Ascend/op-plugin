@@ -107,19 +107,19 @@ torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) 
         - <term>Atlas推理系列产品</term>：类型支持`torch.qint8`、`torch.int8`。
         <!-- end id19 -->
         <!-- npu="A3,910b" id20 -->
-        - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：类型支持`torch.qint8`、`torch.int8`、`torch.quint4x2`。当`dtype`为`torch.quint4x2`时，输出tensor类型为`torch.int32`，由8个`torch_npu.int4`拼接。
+        - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：类型支持`torch.qint8`、`torch.int8`、`torch.quint4x2`。当`dtype`为`torch.quint4x2`时，输出Tensor类型为`torch.int32`，由8个`torch_npu.int4`拼接。
         <!-- end id20 -->
         <!-- npu="950" id21 -->
-        - <term>Ascend 950PR&950DT系列产品</term>：类型支持`torch.qint8`、`torch.int8`、`torch.quint4x2`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`。当`dtype`为`torch.quint4x2`时，输出tensor类型为`torch.int32`，由8个`torch_npu.int4`拼接。
+        - <term>Ascend 950PR&950DT系列产品</term>：类型支持`torch.qint8`、`torch.int8`、`torch.quint4x2`、`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`。当`dtype`为`torch.quint4x2`时，输出Tensor类型为`torch.int32`，由8个`torch_npu.int4`拼接。
         <!-- end id21 -->
 
 - **axis** (`int`)：可选参数，量化的element-wise轴，其他的轴做broadcast，默认值为`1`。
 
     - `div_mode`为`True`时，支持范围为小于输入`self`的维度数且大于等于`self`维度数的负值。当输入的`scales`和`zero_points`的size均为1时，该参数实际不使用。
 
-    - `div_mode` 为`False`时，`axis`取值范围是[-2, +∞)且指定的轴不能超过输入`self`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`self`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴（即`axis`>-2时，都指定-1轴）。
+    - `div_mode`为`False`时，`axis`取值范围是[-2, +∞)且指定的轴不能超过输入`self`的维度数。如果`axis`为-2，代表量化的element-wise轴是输入`self`的倒数第二根轴；如果`axis`大于-2，量化的element-wise轴是输入的最后一根轴（即`axis`>-2时，都指定-1轴）。
 
-- **div_mode** (`bool`)：可选参数，表示计算`scales`模式，对应公式中的`div_mode`。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
+- **div_mode** (`bool`)：可选参数，表示计算`scales`的模式，对应公式中的`div_mode`。当`div_mode`为`True`时，表示用除法计算`scales`；`div_mode`为`False`时，表示用乘法计算`scales`，默认值为`True`。
 
 ## 返回值说明
 
@@ -137,7 +137,7 @@ torch_npu.npu_quantize(self, scales, zero_points, dtype, axis=1, div_mode=True) 
 
 - 该接口支持推理场景下使用。
 - 该接口支持单算子模式和TorchAir图模式。
-- `self`数据格式为$NZ$时，`self`输入shape支持3维，形如\(e，k，n\)，k为256的倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`torch.quint4x2`。
+- `self`数据格式为$NZ$时，`self`输入shape支持3维，形如\(e,k,n\)，k为256的倍数，n为8的倍数，`scales`输入shape支持1维或3维，`zero_points`输入为None，`dtype`为`torch.quint4x2`。
 - `div_mode`为`False`时：
 
     <!-- npu="910b" id23 -->

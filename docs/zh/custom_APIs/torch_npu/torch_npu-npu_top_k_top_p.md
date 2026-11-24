@@ -72,7 +72,7 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 `Tensor`
 
-表示过滤后的数据。数据类型支持`torch.float32`、`torch.float16`和`torch.bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续Tensor，数据格式支持$ND$。
+表示过滤后的数据。数据类型支持`torch.float32`、`torch.float16`和`torch.bfloat16`，数据类型与`logits`一致，shape支持2维且需要与`logits`一致，支持非连续的Tensor，数据格式支持$ND$。
 
 ## 约束说明
 
@@ -80,7 +80,7 @@ torch_npu.npu_top_k_top_p(logits, p, k) -> torch.Tensor
 
 ## 调用示例
 
-单算子模式调用
+单算子模式调用：
 
   ```python
    >>> import torch

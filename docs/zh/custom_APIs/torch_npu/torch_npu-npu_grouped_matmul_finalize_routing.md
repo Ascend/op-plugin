@@ -17,7 +17,7 @@
 API功能：GroupedMatMul和MoeFinalizeRouting的融合算子，其中，GroupedMatMul负责分专家计算，MoeFinalizeRouting负责按路由关系回填并聚合GroupedMatMul结果，两者串联形成完整的MoE输出路径。
 
 - MoE: Mixture of Experts，混合专家模型。每个token按路由结果分配到一个或多个专家进行计算。
-- MoeFinalizeRouting: MoE路由最终化过程。将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。
+- MoEFinalizeRouting: MoE路由最终化过程，将各专家计算结果按路由索引回填到token原始顺序，并对同一token的多个专家结果进行聚合，得到最终输出。
 
 ## 函数原型
 
@@ -34,7 +34,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id4 -->
   <!-- npu="950" id5 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4内轴`K`需为偶数，以保证8bits可以转换为2个float4。
+    - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`x_dtype`为对应类型，此时`x`本身的`dtype`不再生效，但仍需保证`x`本身的`dtype`为8bit的数据类型，以保证shape正确；其中float4内轴`k`需为偶数，以保证8bits可以转换为2个float4。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。
     - x支持m为0，其他空Tensor场景不支持。
   <!-- end id5 -->
@@ -48,21 +48,21 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id6 -->
   <!-- npu="950" id7 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`w_dtype`为对应类型，此时`w`本身的`dtype`不再生效，但仍需保证`w`本身的`dtype`为8bit位的数据类型，以保证shape正确；其中float4场景，此时输入`x`的`K`需为大于2的偶数，且当`weight`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。维度为\(e, k, n\)。
+    - mx量化场景下，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.float4_e2m1fn_x2`，其中float4系列需配置可选参数`w_dtype`为对应类型，此时`w`本身的`dtype`不再生效，但仍需保证`w`本身的`dtype`为8bit的数据类型，以保证shape正确；其中float4场景，此时输入`x`的`K`需为大于2的偶数，且当`w`不转置时内轴`N`需为偶数，以保证8bits可以转换为2个float4。维度为\(e, k, n\)。
     - pertoken量化场景下，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`。数据格式支持`ND`和`FRACTAL_NZ`，可通过`torch_npu.npu_format_cast`接口实现$ND$转`FRACTAL_NZ`格式。
     - w支持n为0，其他空Tensor场景不支持。
   <!-- end id7 -->
 
 - <strong>*</strong>：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 - **`group_list`**（`Tensor`）：**必选参数**，GroupedMatMul的各分组大小，支持非连续的Tensor。数据类型支持`torch.int64`，数据格式支持$ND$，维度为\(e,\)，`e`与`w`的`e`一致。`group_list`的值总和要求≤`m`，`group_list`的长度不超过1024。
-- **`scale`**（`Tensor`）：**可选参数**，矩阵计算反量化参数，对应`weight`矩阵。数据格式支持$ND$。
+- **`scale`**（`Tensor`）：**可选参数**，矩阵计算反量化参数，对应`w`矩阵。数据格式支持$ND$。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：A8W8场景下支持per-channel量化方式，不支持非连续的Tensor，数据类型支持`torch.float32`，维度\(e, n\)，这里的n=n1\*n0；A8W4量化场景下，数据类型支持`torch.int64`，维度为\(e, 1, n\)。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit位的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
+    - mx量化场景下，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`scale`本身的`dtype`不再生效，但仍需保证`scale`本身的`dtype`为8bit的数据类型，以保证shape正确，`weight`非转置维度为\(e, k/64, n, 2\)，`weight`转置维度为\(e, n, k/64, 2\)。
     - pertoken量化场景下，数据类型支持`torch.float32`、`torch.bfloat16`。维度为\(e, 1, n\)，`e`、`n`与`w`的`e`、`n`一致。
   <!-- end id9 -->
 
@@ -91,12 +91,12 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- end id14 -->
   <!-- npu="950" id15 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
-    - mx量化场景下，**必选参数**，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`pertoken_scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit位的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
+    - mx量化场景下，**必选参数**，数据类型支持`torch.float8_e8m0fnu`，采用该格式时需将`pertoken_scale_dtype`设置为`torch_npu.float8_e8m0fnu`，此时`pertoken_scale`本身的`dtype`不再生效，但仍需保证`pertoken_scale`本身的`dtype`为8bit的数据类型，以保证shape正确。维度为\(m, k/64, 2\)。
     - pertoken量化场景下，**可选参数**，数据类型支持`torch.float32`。维度为\(m,\)。
   <!-- end id15 -->
 
 - **`shared_input`**（`Tensor`）：**可选参数**，MoE计算中共享专家的输出，需要与MoE专家的输出进行combine操作，支持非连续的Tensor。数据类型支持`torch.bfloat16`，数据格式支持$ND$，维度\(batch/dp, n\)，`n`与`scale`的`n`一致，`batch/dp`取值范围\[1, 2\*1024\]，`batch`取值范围\[1, 16\*1024\]。
-- **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后索引进行combine，支持非连续的Tensor。数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
+- **`logit`**（`Tensor`）：**可选参数**，MoE专家对各个token的logit大小，矩阵乘的计算输出与该logit做乘法，然后按索引进行combine，支持非连续的Tensor。数据格式支持$ND$，维度\(m,\)，`m`与`x`的`m`一致。
 
   <!-- npu="A3,910b" id16 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型支持`torch.float32`。
@@ -113,7 +113,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
   <!-- npu="950" id19 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
     - mx量化场景下，必选参数，输出为`torch.float32`时数据类型支持`torch.int64`；输出为`torch.bfloat16`时数据类型支持`torch.int32`。
-    - pertoken量化场景下，**必选参数**。当输入的`x`数据类型为`torch.int8`时，`row_index`数据类型支持`torch.int64`和`torch.int32`；当输入的`x`数据类型为`torch.float8_e4m3fn`或`torch_npu.hifloat8`时，`row_index`数据类型支持`torch.int64`；
+    - pertoken量化场景下，**必选参数**。当输入的`x`数据类型为`torch.int8`时，`row_index`数据类型支持`torch.int64`和`torch.int32`；当输入的`x`数据类型为`torch.float8_e4m3fn`或`torch_npu.hifloat8`时，`row_index`数据类型支持`torch.int64`。
   <!-- end id19 -->
 
 - **`dtype`**（`ScalarType`）：**可选参数**，指定GroupedMatMul计算的输出类型。当前接口仅支持`dtype`为0或2，不支持1。
@@ -222,7 +222,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     >
     > **MxA8W4场景说明**：
     > - `x`数据类型为`torch.float8_e4m3fn`，`w`数据类型为`torch_npu.float4_e2m1fn_x2`。`w`数据格式要求FRACTAL\_NZ格式，可通过torch\_npu.npu\_format\_cast接口实现ND转FRACTAL\_NZ格式。
-    > - `x`要求非转置，`w`要求转置，`w`的shape支持\(e, n, k\), 要求e<=1024、k和n满足32对齐。图模式场景下要求e不等于1，同时k\>64。
+    > - `x`要求非转置，`w`要求转置，`w`的shape支持\(e, n, k\)，要求e<=1024、k和n满足32对齐。图模式场景下要求e不等于1，同时k\>64。
   <!-- end id33 -->
 
 ## 调用示例
@@ -393,7 +393,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
         return out
 
     g, group_size, m, k, n = 4, 32, 128, 64, 512
-    group_list_type = 1  # 0: cumsun 1: count
+    group_list_type = 1  # 0: cumsum 1: count
     output_dtype = torch.float32
     shared_input_weight = 0.5
     shared_input_offset = 2
@@ -682,7 +682,7 @@ torch_npu.npu_grouped_matmul_finalize_routing(x, w, group_list, *, scale=None, b
     g, group_size, m, k, n, is_dynamic = 4, 32, 128, 256, 512, True
     # mode控制单算子/图模式，静态图 : 1 ; 动态图 ：2
     mode = 2
-    group_list_type = 1  # 0: cumsun 1: count
+    group_list_type = 1  # 0: cumsum 1: count
     output_dtype = torch.float32
     shared_input_weight = 0.5
     shared_input_offset = 2

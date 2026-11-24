@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：推理场景下将sin、cos以预计算cache形式传入，对`query`、`key`做旋转位置编码（RoPE）。支持普通**RoPE**（一维`positions`）与多模态**MRoPE**（二维`positions`，按`mrope_section`整合多段位置编码），`cache_mode='default'`为分段式拼接，`cache_mode='interleave'`为交错式拼接。
+- API功能：推理场景下将sin、cos以预计算cache形式传入，对`query`、`key`做旋转式位置嵌入（RoPE）。支持普通**RoPE**（一维`positions`）与多模态**MRoPE**（二维`positions`，按`mrope_section`整合多段位置编码），`cache_mode='default'`为分段式拼接，`cache_mode='interleave'`为交错式拼接。
 
 - 计算公式：
 
@@ -254,13 +254,13 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
 - **positions**（`Tensor`）：必选参数，位置索引，用于从cache中选取位置编码，对应公式中的$positions$。  
   - RoPE模式：1维张量，shape`(num_tokens)`，数据类型为`torch.int32`、`torch.int64`，格式$ND$，支持非连续张量。
   - MRoPE模式：2维张量，shape`(3, num_tokens)`或`(4, num_tokens)`，要求与`mrope_section`分段数一致。  
-  - 通过`positions`从`cos_sin_cache`中选取位置编码时，每个取值作为cache行索引，应均小于第0维长度`max_seq_len`。
+  - 通过`positions`从`cos_sin_cache`中选取位置编码时，每个取值作为cache行索引，均应小于第0维长度`max_seq_len`。
 - **query**（`Tensor`）：必选参数，待施加RoPE的Query，对应公式中的$query$。2维张量，shape`(num_tokens, num_q_heads * head_size)`，类型`torch.float16`、`torch.bfloat16`、`torch.float32`，格式$ND$，支持非连续张量。
 - **key**（`Tensor`）：必选参数，待施加RoPE的Key。2维张量，shape`(num_tokens, num_k_heads * head_size)`，类型与`query`一致，格式$ND$，支持非连续张量。
 - **cos_sin_cache**（`Tensor`）：必选参数，预计算的位置编码cache，对应公式中的$cosSinCache$。2维张量，shape`(max_seq_len, rotary_dim)`。最后一维经`chunk(2, dim=-1)`拆成cos、sin两半。`query`、`key`、`cos_sin_cache`的浮点类型须一致。
 - **head_size**（`int`）：必选参数，单头维度大小，即每个注意力头的特征维长度。
-- **mrope_section**（`int[]`）：可选参数，MRoPE各段在half旋转维度上的长度配置，对应公式中的$mropeSection$。不传或`[0, 0, 0]`表示RoPE模式；传`[16, 24, 24]`、`[24, 20, 20]`、`[8, 12, 12]`、`[16, 16, 16, 16]`表示MRoPE模式，MRoPE时需与`positions`的行数一致。
-- **rotary_mode**（`str`）：可选参数，`half`表示NeoX风格，`interleave`表示GPT-J风格。默认值为`half`。
+- **mrope_section**（`List[int]`）：可选参数，MRoPE各段在half旋转维度上的长度配置，对应公式中的$mropeSection$。不传或`[0, 0, 0]`表示RoPE模式；传`[16, 24, 24]`、`[24, 20, 20]`、`[8, 12, 12]`、`[16, 16, 16, 16]`表示MRoPE模式，MRoPE时需与`positions`的行数一致。
+- **rotary_mode**（`str`）：可选参数，`half`表示GPT-NeoX风格，`interleave`表示GPT-J风格。默认值为`half`。
 - **cache_mode**（`str`）：可选参数，`default`对应分段式cos/sin拼接；`interleave`对应交错式拼接。默认值为`default`。RoPE下仅支持`default`；MRoPE下支持`default`与`interleave`。
 
 ## 返回值说明
@@ -275,7 +275,7 @@ torch_npu.npu_mrope(positions, query, key, cos_sin_cache, head_size, *, mrope_se
   - `head_size`：`torch.float16`/`torch.bfloat16`时为**32**的倍数；`torch.float32`时为**16**的倍数。
   - `rotary_dim`：`torch.float16`/`torch.bfloat16`时为**32**的倍数；`torch.float32`时为**16**的倍数。
 - **MRoPE**：`mrope_section`各元素之和应等于**`rotary_dim / 2`**（与half维度的cos/sin分段一致）。
-- **cache_mode**：当`mrope_section`为**`[16, 16, 16, 16]`时，仅支持`cache_mode='default'`（即不支持交错拼接）。
+- **cache_mode**：当`mrope_section`为**`[16, 16, 16, 16]`**时，仅支持`cache_mode='default'`（即不支持交错拼接）。
 
 ## 调用示例
 

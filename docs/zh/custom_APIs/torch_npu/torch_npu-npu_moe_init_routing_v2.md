@@ -17,7 +17,7 @@
 
 ## 功能说明<a name="zh-cn_topic_0000002271534921_section1650913464367"></a>
 
-- API功能：MoE（Mixture of Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化、静态量化、MXFP8、HIF8、MXFP4、FP8 PerBlock和`torch_npu.int4`动态量化模式。
+- API功能：MoE（Mixture-of-Experts）的routing计算，根据[torch_npu.npu_moe_gating_top_k_softmax](torch_npu-npu_moe_gating_top_k_softmax.md)的计算结果做routing处理，支持不量化、动态量化、静态量化、MXFP8、HIF8、MXFP4、FP8 PerBlock和`torch_npu.int4`动态量化模式。
 - 计算公式：  
 
     1. 对输入expertIdx做排序，得出排序后的结果sortedExpertIdx和对应的序号sortedRowIdx：
@@ -27,11 +27,11 @@
         $$
 
     2. 以sortedRowIdx做位置映射得出expandedRowIdxOut：
-        - rowIdxType等于1时, 输出scatter索引
+        - rowIdxType等于1时，输出scatter索引
             $$
             expandedRowIdxOut[i]=sortedRowIdx[i]
             $$
-        - rowIdxType等于0时, 输出gather索引
+        - rowIdxType等于0时，输出gather索引
             $$
             expandedRowIdxOut[sortedRowIdx[i]]=i
             $$
@@ -42,7 +42,7 @@
         expertTokensCountOrCumsumOutOptional[i]=Histogram(sortedExpertIdx)
         $$
 
-    4. 如果quantMode不等于-1, 计算量化结果：
+    4. 如果quantMode不等于-1，计算量化结果：
         - 静态量化：
             $$
             quantResult=round((x∗scaleOptional)+offsetOptional)
@@ -57,7 +57,7 @@
                 $$
                 quantResult = round(x / dynamicQuantScaleOutOptional)
                 $$
-            - 若输入scale:
+            - 若输入scale：
                 $$
                 dynamicQuantScaleOutOptional = row\_max(abs(x * scaleOptional)) / 127
                 $$
@@ -652,7 +652,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
     - <term>Ascend 950PR&950DT系列产品</term>：支持取值-1、0、1、2、3、4、5、6、7、8、9、11、12、13、14、15、16、17。-1表示不量化；0表示静态量化；1表示`torch.int8`动态量化；2/3表示MXFP8 RoundScale动态量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；4/5表示FP8 PerGroup量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；6表示HIF8直转；7表示HIF8 per-tensor量化；8表示HIF8 per-token量化；9表示MXFP4动态量化；11/12表示FP8 PerBlock量化；13表示`torch_npu.int4`动态量化；14/15表示FP8 PerGroup量化并启用Amax下限，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；16/17表示MXFP8 RoundScale + Amax钳位量化，输出类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`。
     <!-- end id10 -->
 
-- **active_expert_range** (`List[int]`)：可选参数，默认为空, 表示活跃expert的范围。数组内值的范围为[expert_start, expert_end]，左闭右开，表示活跃的expert范围在expert_start到expert_end之间。要求值大于等于0，并且expert_end不大于`expert_num`。drop_pad场景下，expert_start等于0, expert_end等于`expert_num`。传入默认值时，视为活跃的expert范围在0到`expert_num`之间。
+- **active_expert_range** (`List[int]`)：可选参数，默认为空，表示活跃expert的范围。数组内值的范围为[expert_start, expert_end]，左闭右开，表示活跃的expert范围在expert_start到expert_end之间。要求值大于等于0，并且expert_end不大于`expert_num`。drop_pad场景下，expert_start等于0，expert_end等于`expert_num`。传入默认值时，视为活跃的expert范围在0到`expert_num`之间。
 - **row_idx_type** (`int`)：可选参数，默认为0，表示输出`expanded_row_idx`使用的索引类型，支持取值0和1。0表示gather类型的索引；1表示scatter类型的索引。
 
 <!-- npu="950" id11 -->
@@ -665,9 +665,9 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 ## 返回值说明<a name="zh-cn_topic_0000002271534921_section18510124618368"></a>
 
 - **expanded_x** (`Tensor`)：根据`expert_idx`进行扩展过的特征，Dropless场景shape为[NUM_ROWS \* K, H]。Active场景shape为[min(activeNum, NUM_ROWS * K), H]。Drop/Pad场景下要求是一个3D的Tensor，shape为[expertNum, expertCapacity, H]。非量化场景下数据类型同`x`；`quant_mode`为0/1时数据类型为`torch.int8`；为2/4/14/16时数据类型为`torch.float8_e5m2`；为3/5/15/17时数据类型为`torch.float8_e4m3fn`；为6/7/8时数据类型为`torch_npu.hifloat8`；为9时数据类型为`torch_npu.float4_e2m1fn_x2`；为11/12时数据类型分别为`torch.float8_e5m2`/`torch.float8_e4m3fn`；为13时数据类型为`torch_npu.int4`。数据格式要求为$ND$。量化场景下，当`x`的数据类型为`torch.int8`时，输出值无意义。
-- **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS \* K, )，数据类型支持`torch.int32`，数据格式要求为$ND$。当`row_idx_type`为1时， 前available_idx_num个元素为有效数据，无效数据未初始化；当`row_idx_type`为0时，无效数据由-1填充。
+- **expanded_row_idx** (`Tensor`)：`expanded_x`和`x`的映射关系，要求是1维张量，shape为(NUM_ROWS \* K, )，数据类型支持`torch.int32`，数据格式要求为$ND$。当`row_idx_type`为1时，前available_idx_num个元素为有效数据，无效数据未初始化；当`row_idx_type`为0时，无效数据由-1填充。
 - **expert_token_cumsum_or_count** (`Tensor`)：表示输出每个专家处理的token数量的统计结果或累加值。
-    - 在`expert_tokens_num_type`为0时，表示`active_expert_range`范围内expert在排序后处理token总数的前缀和。
+    - 在`expert_tokens_num_type`为0时，表示`active_expert_range`范围内expert在排序后处理token总数的前缀和；
     - 在`expert_tokens_num_type`为1的场景下，要求是1维张量，表示`active_expert_range`范围内expert对应的处理token的总数，shape为(expert_end-expert_start, )；
     - 在`expert_tokens_num_type`为2的场景下，要求是2维张量，shape为(expert_num, 2)，表示`active_expert_range`范围内token总数为非0的expert，以及对应expert处理token的总数；
 
@@ -676,9 +676,9 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
 
     <!-- npu="A3,910b" id12 -->
     - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：数据类型为`torch.float32`，输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。
-        - 非量化场景下，当`scale`输入时，前`available_idx_num`个元素为有效数据。
-        - 动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据。
-        - 静态量化场景下不输出。
+        - 非量化场景下，当`scale`输入时，前`available_idx_num`个元素为有效数据；
+        - 动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据；
+        - 静态量化场景下不输出；
     <!-- end id12 -->
     <!-- npu="950" id13 -->
     - <term>Ascend 950PR&950DT系列产品</term>：默认数据类型为`torch.float32`，默认输出shape为`expert_idx`的shape去掉最后一维之后所有维度的乘积。各量化模式下的数据类型和shape如下：
@@ -687,7 +687,7 @@ torch_npu.npu_moe_init_routing_v2(x, expert_idx, *, scale=None, offset=None, act
         - `quant_mode`为9时数据类型为`torch.float8_e8m0fnu`，shape为[有效输出行数, CeilDiv(H, 64), 2]；
         - `quant_mode`为11/12时数据类型为`torch.float32`，shape为[有效输出行数, CeilDiv(H, 256), 2]；
         - 非量化场景且`x`数据类型为`torch.float8_e5m2`、`torch.float8_e4m3fn`或`torch_npu.float4_e2m1fn_x2`（通过`x_dtype`指定）时，若输入`scale`，输出shape为[有效输出行数, CeilDiv(H, 64), 2]，数据类型为`torch.float8_e8m0fnu`；
-        - 非量化场景（其余数据类型）下，当`scale`输入时，前`available_idx_num`个元素为有效数据；动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据；静态量化场景下不输出。
+        - 非量化场景（其余数据类型）下，当`scale`输入时，前`available_idx_num`个元素为有效数据；动态量化场景下，输出量化计算过程中`scale`的中间值，前`available_idx_num`个元素为有效数据；静态量化场景下不输出；
     <!-- end id13 -->
     <!-- npu="310p" id14 -->
     - <term>Atlas推理系列产品</term>：此输出非`expanded_scale`，而是`expert_tokens_before_capacity`（Tensor，shape为(expert_num,)），表示drop之前每个专家处理的token数量的统计结果。
@@ -703,7 +703,7 @@ Atlas A2训练系列产品/Atlas A2推理系列产品/Atlas A3训练系列产品
 - 进入低时延性能模板需要同时满足以下条件：
     - `x`、`expert_idx`、`scale`输入Shape要求分别为：(1, 7168)、(1, 8)、(256, 7168)
     - `x`数据类型要求：`torch.bfloat16`
-    - 属性要求：active_expert_range=[0, 256]、 quant_mode=1、expert_tokens_num_type=2、expert_num=256
+    - 属性要求：active_expert_range=[0, 256]、quant_mode=1、expert_tokens_num_type=2、expert_num=256
 - 进入大batch性能模板需要同时满足以下条件：
     - NUM_ROWS范围为[384, 8192]
     - K=8
@@ -719,10 +719,10 @@ Atlas A2训练系列产品/Atlas A2推理系列产品/Atlas A3训练系列产品
 Ascend 950PR&950DT系列产品在该接口上有以下特殊约束：
 
 - **DropPad模式**（`drop_pad_mode=1`时）：
-    - `row_idx_type`仅支持取值为0（gather索引）。
-    - `active_expert_range`必须为[0, expert_num]。
-    - `expert_tokens_num_type`仅支持取值为1（count模式）。
-    - `quant_mode`仅支持-1（非量化），且`x`数据类型仅支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`、`torch_npu.hifloat8`。
+    - `row_idx_type`仅支持取值为0（gather索引）
+    - `active_expert_range`必须为[0, expert_num]
+    - `expert_tokens_num_type`仅支持取值为1（count模式）
+    - `quant_mode`仅支持-1（非量化），且`x`数据类型仅支持`torch.float16`、`torch.bfloat16`、`torch.float32`、`torch.int8`、`torch_npu.hifloat8`
 - **MXFP4/`torch_npu.int4`动态量化**（`quant_mode`为9或13时）：`x`的最后一维H要求为偶数。
 <!-- end id16 -->
 

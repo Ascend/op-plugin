@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- API功能：训练场景下，使用FlashAttention算法实现self-attention（自注意力）的融合计算，支持非varlen（BSH、SBH、BSND、BNSD）与varlen（TND）两种场景，支持query/key的RoPE扩展输入（`query_rope, key_rope`）、每个注意力头的偏置sink，以及GQA（grouped-query attention）等特性。
+- API功能：训练场景下，使用Flash Attention算法实现self-attention（自注意力）的融合计算，支持非varlen（BSH、SBH、BSND、BNSD）与varlen（TND）两种场景，支持query/key的RoPE扩展输入（`query_rope, key_rope`）、每个注意力头的偏置sink，以及GQA（grouped-query attention）等特性。
 - 计算公式：
   - pse\_type为1（默认值）时，注意力的正向计算公式如下：
 
@@ -96,8 +96,8 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 - **next\_tokens**（`int`）：可选参数，用于稀疏计算，表示sliding window的右边界，默认值为2147483647。`next_tokens`和`pre_tokens`取值与`atten_mask`的关系请参见`sparse_mode`参数，参数取值与`atten_mask`分布不一致会导致精度问题。
 - **inner\_precise**（`int`）：可选参数，用于提升精度，默认值为0。当前0、1为保留配置值，2为开启无效行计算，其功能是避免在计算过程中存在整行mask进而导致精度有损失，但是该配置会导致性能下降。如果算子可判断出存在无效行场景，会自动开启无效行计算，例如`sparse_mode`为3、Sq > Skv场景。
 - **prefix**（`List[int]`）：可选参数，代表prefix稀疏计算场景每个Batch的N值，默认值为None。数据类型支持`torch.int64`。当Sq > Skv时，prefix的N值取值范围\[0, Skv\]，当Sq <= Skv时，prefix的N值取值范围\[Skv-Sq, Skv\]。varlen场景不支持非压缩prefix（即不支持sparse\_mode=5）。
-- **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数，表示`query`每个S的累加和长度，默认值为None。数据类型支持`torch.int64`，长度取值范围为1\~2K，每个元素取值小于等于1M。比如真正的S长度列表为：\[2, 2, 2, 2, 2\]，则`actual_seq_qlen`传：\[2, 4, 6, 8, 10\]。
-- **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数，表示`key`/`value`每个S的累加和长度，默认值为None。数据类型支持`torch.int64`，长度取值范围为1\~2K，每个元素取值小于等于1M。比如真正的S长度列表为：\[2, 2, 2, 2, 2\]，则`actual_seq_kvlen`传：\[2, 4, 6, 8, 10\]。
+- **actual\_seq\_qlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数，表示`query`每个S的累加和长度，默认值为None。数据类型支持`torch.int64`，长度取值范围为1\~2k，每个元素取值小于等于1M。比如真正的S长度列表为：\[2, 2, 2, 2, 2\]，则`actual_seq_qlen`传：\[2, 4, 6, 8, 10\]。
+- **actual\_seq\_kvlen**（`List[int]`）：可选参数，varlen场景时需要传入此参数，表示`key`/`value`每个S的累加和长度，默认值为None。数据类型支持`torch.int64`，长度取值范围为1\~2k，每个元素取值小于等于1M。比如真正的S长度列表为：\[2, 2, 2, 2, 2\]，则`actual_seq_kvlen`传：\[2, 4, 6, 8, 10\]。
 - **sparse\_mode**（`int`）：可选参数，表示sparse的模式，默认值为0。当`atten_mask`输入为None时，`sparse_mode`、`pre_tokens`、`next_tokens`参数不生效，固定为全计算。不同模式的原理参见[参考资源](torch_npu-npu_fusion_attention.md#参考资源)。不同取值场景说明如下表：
 
   | sparse_mode | 含义 | 备注 |
@@ -192,15 +192,15 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
   
   | 场景 | B | N | S | T |
   | --- | --- | --- | --- | --- |
-  | 非varlen | 1\~2M（带prefix时最大2K） | 1\~256 | 1\~1M | - |
-  | varlen | 1\~20000（带prefix时最大1K）；<term>Ascend 950PR&950DT系列产品</term>为1\~2K | 1\~256 | 1\~1M | 1\~1M |
+  | 非varlen | 1\~2M（带prefix时最大2k） | 1\~256 | 1\~1M | - |
+  | varlen | 1\~20000（带prefix时最大1k）；<term>Ascend 950PR&950DT系列产品</term>为1\~2k | 1\~256 | 1\~1M | 1\~1M |
 
 - varlen场景（input\_layout为TND）：
   - 必须传入`actual_seq_qlen`和`actual_seq_kvlen`，且两者长度相等、不能为空。
   - `atten_mask`输入不支持补pad，即`atten_mask`中不能存在某一行全1的场景。
   - 支持`actual_seq_qlen`中某个Batch上的S长度为0，此时不支持`pse`输入。假设真实的S长度为\[2, 2, 0, 2, 2\]，则传入的`actual_seq_qlen`为\[2, 4, 4, 6, 8\]。
   - 支持尾部部分Batch不参与计算，此时`actual_seq_qlen`和`actual_seq_kvlen`尾部传入对应个数个0即可。假设真实的S长度为\[2, 3, 4, 5, 6\]，此时后两个Batch不参与计算，则传入的`actual_seq_qlen`为\[2, 5, 9, 0, 0\]。
-  - `actual_seq_qlen`、`actual_seq_kvlen`的长度取值范围为1\~2K，存在prefix输入时长度最大支持1K。
+  - `actual_seq_qlen`、`actual_seq_kvlen`的长度取值范围为1\~2k，存在prefix输入时长度最大支持1k。
 - 支持输入query的N和key/value的N不相等，但必须成比例关系，即Nq/Nkv必须是非0整数，Nq取值范围1\~256。当Nq/Nkv > 1时，即为GQA（grouped-query attention）；当Nq/Nkv = 1时，即为MHA（multi-head attention）。本文如无特殊说明，N表示的是Nq。
 - `keep_prob`取值范围为(0, 1\]。传入query\_rope/key\_rope时，`keep_prob`必须为1（不支持dropout）。
 - `sparse_mode`取值约束：
@@ -249,9 +249,9 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
     print(seed, offset, numels)
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     torch.Size([1, 8, 16, 64]) torch.float16
     tensor([ 0.6816, -0.0999, -0.5698,  0.2695, -0.4182,  0.1345,  0.5288,  0.4639],
            dtype=torch.float16)
@@ -280,9 +280,9 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
     print(numels)
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     torch.Size([8, 2, 64]) torch.float16
     tensor([[[ 0.2325, -1.2969, -0.8823,  0.2834],
              [ 0.5112, -0.1545,  0.9160, -0.2747]],
@@ -310,9 +310,9 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
     print(atten_out.shape)
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     torch.Size([1, 8, 16, 64])
     ```
 
@@ -337,8 +337,8 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
     print(atten_out.shape, atten_out.dtype)
     ```
 
-    输出如下所示
+    输出如下所示：
 
-    ```text
+    ```output
     torch.Size([8, 2, 64]) torch.bfloat16
     ```

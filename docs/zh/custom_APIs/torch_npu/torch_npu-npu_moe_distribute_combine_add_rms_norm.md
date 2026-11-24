@@ -90,11 +90,11 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 - **const\_expert\_alpha\_1**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
 - **const\_expert\_alpha\_2**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
 - **const\_expert\_v**（`Tensor`）：**可选参数**，表示const\_expert场景的计算系数。可选择传入有效数据或填None，当`const_expert_num`不为0时必须传入有效输入；当传入有效数据时，要求是一个2维张量，shape为\(const\_expert\_num, H\)，数据类型需跟`expand_x`保持一致；数据格式为$ND$，支持非连续的Tensor。
-- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。预留参数，当前版本不支持，传默认值""即可。
+- **group\_tp**（`str`）：**可选参数**，TP通信域名称，张量并行的通信域。预留参数，当前版本不支持，传默认值""即可。
 - **tp\_world\_size**（`int`）：**可选参数**，TP通信域size。预留参数，当前版本不支持，传默认值0即可。
 - **tp\_rank\_id**（`int`）：**可选参数**，TP通信域本卡ID。预留参数，当前版本不支持，传默认值0即可。
 - **expert\_shard\_type**（`int`）：**可选参数**，表示共享专家卡排布类型。当前仅支持0，表示共享专家卡排在MoE专家卡前面。
-- **shared\_expert\_num**（`int`）：**可选参数**，表示共享专家数量，一个共享专家可以复制部署到多个卡上。**预留参数，暂未使用，仅支持默认值0。**
+- **shared\_expert\_num**（`int`）：可选参数，表示共享专家数量。接口默认值为`1`。当前场景仅支持`0`，调用时请显式传入`shared_expert_num=0`。
 - **shared\_expert\_rank\_num**（`int`）：**可选参数**，表示共享专家卡数量。**预留参数，暂未使用，仅支持默认值0。**
 - **global\_bs**（`int`）：**可选参数**，表示EP域全局的batch size。当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中`max_bs`表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
 - **out\_dtype**（`int`）：**可选参数**，**预留参数，暂未使用，使用默认值即可。**
@@ -141,7 +141,7 @@ torch_npu.npu_moe_distribute_combine_add_rms_norm(expand_x, expert_ids, expand_i
 
 - HCCL通信域缓存区大小：
 
-    调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理，该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。该场景通信域缓存区大小支持通过环境变量HCCL\_BUFFSIZE配置，也支持通过hccl\_buffer\_size配置（参考[《PyTorch训练模型迁移调优》](https://hiascend.com/document/redirect/canncommercial-ptmigr)中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
+    调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理，该环境变量表示单个通信域占用内存大小，单位MB，不配置时默认为200MB。该场景通信域缓存区大小支持通过环境变量HCCL\_BUFFSIZE配置，也支持通过hccl\_buffer\_size配置（参考《[PyTorch训练模型迁移调优](https://hiascend.com/document/redirect/canncommercial-ptmigr)》中“性能调优\>性能调优方法\>通信优化\>优化方法\>hccl\_buffer\_size”章节）。
 
     - ep通信域内：设置大小要求\>=2且满足\>=2\*\(local\_expert\_num\*max\_bs\*ep\_world\_size\*Align512\(Align32\(2\*H\)+64\)+\(K+shared\_expert\_num\)\*max\_bs\*Align512\(2\*H\)\)，local\_expert\_num表示需使用MoE专家卡的本卡专家数。
     - 其中Align512(x) = ((x+512-1)/512)\*512，Align32(x) = ((x+32-1)/32)\*32。

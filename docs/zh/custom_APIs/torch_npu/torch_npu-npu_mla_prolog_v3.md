@@ -14,22 +14,22 @@
 
 ## 功能说明
 
-- 接口功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算操作。v3版本相比v2新增query_norm和dequant_scale_q_norm输出、pertoken-pergroup量化模式、尺度矫正因子、多种cache_mode格式支持及多个量化配置参数，并调整cache_index为可选参数。该算子实现四条并行的计算路径：
+- 接口功能：推理场景下，Multi-Head Latent Attention（MLA）前处理的计算操作。v3版本相比v2新增query_norm和dequant_scale_q_norm输出、pertoken-pergroup量化模式、尺度校正因子、多种cache_mode格式支持及多个量化配置参数，并调整cache_index为可选参数。该算子实现四条并行的计算路径：
     1. 标准Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{UQ}$上采样 → $W^{UK}$上采样 → $q^N$
     2. 位置编码Query路径：输入$x$ → $W^{DQ}$下采样 → RmsNorm → $W^{QR}$ → ROPE旋转位置编码 → $q^R$
     3. 标准Key路径：输入$x$ → $W^{DKV}$下采样 → RmsNorm → Cache存储 → $k^C$
     4. 位置编码Key路径：输入$x$ → $W^{KR}$ → ROPE旋转位置编码 → Cache存储 → $k^R$
 
 - 相比torch_npu.npu_mla_prolog_v2的主要差异如下：
-    - 新增输出`query_norm`和`dequant_scale_q_norm`，用于支持DeepSeekV3.2网络。
+    - 新增输出`query_norm`和`dequant_scale_q_norm`，用于支持DeepSeek V3.2网络。
     - 新增`kv_cache`的pertoken-pergroup量化模式。
-    - 新增query与key的尺度矫正因子，分别对应qc_qr_scale（$\alpha_q$）与kc_scale（$\alpha_{kv}$）。
+    - 新增query与key的尺度矫正因子，分别对应`qc_qr_scale`（$\alpha_q$）与`kc_scale`（$\alpha_{kv}$）。
     - 新增`cache_mode`对"PA_BLK_BSND"、"PA_BLK_NZ"、"BSND"和"TND"格式的支持。
     - 新增可选参数`weight_quant_mode`、`kv_cache_quant_mode`、`query_quant_mode`、`ckvkr_repo_mode`、`quant_scale_repo_mode`，用于配置量化场景。
     - 调整`cache_index`为可选参数。
 
 - 计算公式：
-    - RmsNorm公式
+    - RmsNorm公式。
         $$
         \text{RmsNorm}(x) = \gamma \cdot \frac{x_i}{\text{RMS}(x)}
         $$
@@ -38,7 +38,7 @@
         \text{RMS}(x) = \sqrt{\frac{1}{N} \sum_{i=1}^{N} x_i^2 + \epsilon}
         $$
 
-    - 路径1：标准Query计算
+    - 路径1：标准Query计算。
 
         包括下采样、RmsNorm和两次上采样：
 
@@ -54,15 +54,15 @@
         q^N = q^C \cdot W^{UK}
         $$
 
-    - 路径2：位置编码Query计算
+    - 路径2：位置编码Query计算。
 
-        对Query进行ROPE旋转位置编码：
+        对Query进行RoPE旋转位置编码：
 
         $$
         q^R = ROPE(c^Q \cdot W^{QR})
         $$
 
-    - 路径3：标准Key计算
+    - 路径3：标准Key计算。
 
         包括下采样、RmsNorm，将计算结果存入Cache：
 
@@ -74,7 +74,7 @@
         k^C = Cache(c^{KV})
         $$
 
-    - 路径4：位置编码Key计算
+    - 路径4：位置编码Key计算。
 
         对Key进行ROPE旋转位置编码，并将结果存入Cache：
 
@@ -136,13 +136,13 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **rope_cos**（`Tensor`）：必选参数，用于计算旋转位置编码的余弦参数矩阵。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`；BS合轴时，shape为[T, Dr]；BS非合轴时，shape为[B, S, Dr]。支持B=0,S=0,T=0的空Tensor。
 
-- **kv_cache**（`Tensor`）：必选参数，表示cache的索引，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor;当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
+- **kv_cache**（`Tensor`）：必选参数，表示key的标准cache，计算结果原地更新（对应公式中的$k^C$）。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dtile]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dtile]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dtile]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
 - **kr_cache**（`Tensor`）：必选参数，用于key位置编码的cache，计算结果原地更新（对应公式中的$k^R$）。不支持非连续，数据格式支持ND，数据类型支持`torch.bfloat16`、`torch.int8`，当cache_mode为"PA_BSND"、"PA_NZ"、"PA_BLK_BSND"、"PA_BLK_NZ"时shape为[BlockNum, BlockSize, Nkv, Dr]，支持B=0,Skv=0的空Tensor；当cache_mode为"BSND"时shape为[B, S, Nkv, Dr]，不支持空Tensor；当cache_mode为"TND"时shape为[T, Nkv, Dr]，不支持空Tensor；Nkv与N关联，N是超参，故不支持Nkv=0。
 
 - <strong>*</strong>：语法分隔符，用于区分位置参数和关键字参数。其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 
-- **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`torch.int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内; 当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
+- **cache_index**（`Tensor`）：可选参数，用于存储`kv_cache`和`kr_cache`的索引。不支持非连续，数据格式支持ND，数据类型支持`torch.int64`，当`cache_mode`为"PA_BSND"或"PA_NZ"：BS合轴时shape为[T]，BS非合轴时shape为[B, S]，取值范围需在[0, BlockNum*BlockSize)内；当`cache_mode`为"PA_BLK_BSND"或"PA_BLK_NZ"：BS合轴时shape为[Sum(Ceil(S_i/BlockSize))]（S_i表示第i个batch的序列长度），BS非合轴时shape为[B, Ceil(S/BlockSize)]，取值范围需在[0, BlockNum)内；当`cache_mode`为"BSND"或"TND"：`cache_index`无需传入。当前不会对传入值的合法性进行校验，需用户自行保证。
 
 - **dequant_scale_x**（`Tensor`）：可选参数，token_x的反量化参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`、`torch.float8_e8m0fnu`。weight_quant_mode=2/4/5时，shape为[T, 1]或[B\*S, 1]；weight_quant_mode=3时，shape为[T, He/32]或[B*S, He/32]；weight_quant_mode=1时无需赋值。支持B=0,S=0,T=0的空Tensor。
 
@@ -158,7 +158,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **smooth_scales_cq**（`Tensor`）：可选参数，用于对RmsNorm_cq输出做动态量化操作的参数。不支持非连续，数据格式支持ND，数据类型支持`torch.float`。weight_quant_mode=1/2/4/5时，shape为[1, Hcq]；weight_quant_mode=3时无需赋值。支持非空Tensor。
 
-- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式存储。不支持非连续，数据格式支持ND，数据类型支持`torch.int32`，shape为[B]，支持非空tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
+- **actual_seq_len**（`Tensor`）：可选参数，表示每个batch中的序列长度，以前缀和的形式存储。不支持非连续，数据格式支持ND，数据类型支持`torch.int32`，shape为[B]，支持非空Tensor（仅BS合轴且cache_mode为"PA_BLK_BSND"或"PA_BLK_NZ"时需要传入）。当前不会对传入值的合法性进行校验，需用户自行保证。
 
 - **k_nope_clip_alpha**（`Tensor`）：可选参数，表示kv_cache做clip操作时的缩放因子，在部分量化pertoken-pergroup场景和`torch.int8`全量化pertoken-pergroup场景下使用，其他场景无需赋值。不支持非连续，数据格式支持ND，数据类型支持`torch.float`，shape为[1]。
 
@@ -182,7 +182,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - **tile_size**（`int`）：可选参数，表示pertoken-pergroup量化时每个tile的大小，仅在kv_cache_quant_mode为3时有效，默认值为128；kv_cache_quant_mode=1/2时无需赋值。
 
-- **qc_qr_scale**（`double`）：可选参数，表示Query的尺度矫正系数，默认值为1.0。
+- **qc_qr_scale**（`double`）：可选参数，表示Query的尺度矫正因子，默认值为1.0。
 
 - **kc_scale**（`double`）：可选参数，表示Key的尺度矫正系数，默认值为1.0。
 
@@ -232,7 +232,7 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
 
 - 该接口支持单算子模式和图模式。
 
-- shape 格式字段含义说明
+- shape格式字段含义说明。
 
     | 字段名       | 英文全称/含义                  | 取值规则与说明                                                                 |
     |--------------|--------------------------------|------------------------------------------------------------------------------|
@@ -375,15 +375,15 @@ torch_npu.npu_mla_prolog_v3(token_x, weight_dq, weight_uq_qr, weight_uk, weight_
       <th>kv_cache非量化<br>dtype</th>
       <th>kv_cache量化<br>dtype</th>
       <th>kv_cache pertoken-pergroup量化<br>dtype</th>
-      <th>kvCache非量化<br>dtype</th>
-      <th>kvCache pertensor量化<br>dtype</th>
-      <th>kvCache pertoken-pergroup量化<br>dtype</th>
-      <th>kvCache非量化<br>dtype</th>
-      <th>kvCache pertensor量化<br>dtype</th>
-      <th>kvCache pertoken-pergroup量化<br>dtype</th>
-      <th>kvCache非量化<br>dtype</th>
-      <th>kvCache pertensor量化<br>dtype</th>
-      <th>kvCache pertoken-pergroup量化<br>dtype</th>
+      <th>kv_cache非量化<br>dtype</th>
+      <th>kv_cache pertensor量化<br>dtype</th>
+      <th>kv_cache pertoken-pergroup量化<br>dtype</th>
+      <th>kv_cache非量化<br>dtype</th>
+      <th>kv_cache pertensor量化<br>dtype</th>
+      <th>kv_cache pertoken-pergroup量化<br>dtype</th>
+      <th>kv_cache非量化<br>dtype</th>
+      <th>kv_cache pertensor量化<br>dtype</th>
+      <th>kv_cache pertoken-pergroup量化<br>dtype</th>
     </tr>
     <tr>
       <td>token_x</td>

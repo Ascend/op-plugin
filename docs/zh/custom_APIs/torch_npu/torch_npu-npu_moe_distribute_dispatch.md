@@ -132,13 +132,13 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 - **expert\_scales**（`Tensor`）：**可选参数**，表示每个token的topK个专家权重。
 
     <!-- npu="910b" id13 -->
-    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`torch.float`，数据格式为$ND$，支持非连续的Tensor。
+    - <term>Atlas A2系列产品</term>：要求为2维张量，shape为\(BS, K\)，数据类型支持`torch.float32`，数据格式为$ND$，支持非连续的Tensor。
     <!-- end id13 -->
     <!-- npu="950,A3" id14 -->
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：预留参数，当前版本不支持，传默认值即可。
     <!-- end id14 -->
 
-- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值即可。
+- **group\_tp**（`str`）：**可选参数**，TP通信域名称，张量并行的通信域。若有TP域通信需要传参，若无TP域通信，使用默认值即可。
 
     <!-- npu="910b" id15 -->
     - <term>Atlas A2系列产品</term>：不支持TP域通信，使用默认值即可。
@@ -214,7 +214,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：当每个rank的BS不同时，支持传入max\_bs\*ep\_world\_size，其中max\_bs表示单rank BS最大值；当每个rank的BS相同时，支持取值0或BS\*ep\_world\_size。
     <!-- end id32 -->
 
-- **expert\_token\_nums\_type**（`int`）：**可选参数**，表示输出`expert_token_nums`的值类型，取值范围\[0, 1\]，0表示每个专家收到token数量的前缀和，1表示每个专家收到的token数量（默认）。
+- **expert\_token\_nums\_type**（`int`）：**可选参数**，表示输出`expert_token_nums`的值类型，取值范围\[0, 1\]，0表示每个专家收到的token数量的前缀和，1表示每个专家收到的token数量（默认）。
 
 ## 返回值说明
 
@@ -317,7 +317,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
         - 对于共享专家卡，local\_expert\_num=1。
         - 对于MoE专家卡，local\_expert\_num=moe\_expert\_num/\(ep\_world\_size-shared\_expert\_rank\_num\)，当local\_expert\_num\>1时，不支持TP域通信。
 
-- HCCL通信域缓存区大小：
+- HCCL通信域缓冲区大小：
 
     调用本接口前需检查HCCL\_BUFFSIZE环境变量取值是否合理。
 
@@ -335,7 +335,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
     <!-- end id53 -->
 
 <!-- npu="910b" id54 -->
-- <term>Atlas A2系列产品</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB。并且，对于入参`moe_expert_num`，只要求moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
+- <term>Atlas A2系列产品</term>：配置环境变量HCCL\_INTRA\_PCIE\_ENABLE=1和HCCL\_INTRA\_ROCE\_ENABLE=0可以减少跨机通信数据量，提升算子性能。此时要求HCCL\_BUFFSIZE\>=moe\_expert\_num\*BS\*\(H\*sizeof\(dtypeX\)+4\*\(\(K+7\)/8\*8\)\*sizeof\(`torch.uint32`\)\)+4MB+100MB，并且，对于入参`moe_expert_num`，只要求moe\_expert\_num\%\(ep\_world\_size - shared\_expert\_rank\_num\)\=0，不要求moe\_expert\_num/\(ep\_world\_size - shared\_expert\_rank\_num\) <= 24。
 <!-- end id54 -->
 - 通信域使用约束：
     - 一个模型中的`npu_moe_distribute_dispatch`和`npu_moe_distribute_combine`算子仅支持相同EP通信域，且该通信域中不允许有其他算子。
@@ -352,7 +352,7 @@ torch_npu.npu_moe_distribute_dispatch(x, expert_ids, group_ep, ep_world_size, ep
 
 - 版本配套约束：
 
-    静态图模式下，从TorchNPU 7.1.0版本开始，框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于TorchNPU版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见[《TorchNPU版本说明》](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/release_notes.md)中“相关产品版本配套说明”。
+    静态图模式下，从TorchNPU 7.1.0版本开始，框架会对静态图中最后一个节点输出结果做Meta推导与inferShape推导的结果强校验。当图中只有一个Dispatch算子，若CANN版本落后于TorchNPU版本，会出现Shape不匹配报错，建议用户升级CANN版本，详细的版本配套关系参见《[TorchNPU版本说明](https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/release_notes.md)》中“相关产品版本配套说明”。
 
 - 公式中的“/”表示整除。
 

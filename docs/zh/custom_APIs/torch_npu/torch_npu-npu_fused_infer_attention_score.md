@@ -49,7 +49,7 @@ torch_npu.npu_fused_infer_attention_score(
 ```
 
   > [!NOTE]  
-  > `*`之前的`query, key, value`为位置参数（必须按顺序传入）；`*`之后的为关键字参数（键值对赋值，可选，不传使用默认值）。
+  > `*`之前的`query, key, value`为位置参数（必须按顺序传入）；`*`之后的为关键字参数（键值对赋值，可选，不传时使用默认值）。
 
 ## 参数说明
 
@@ -83,9 +83,9 @@ torch_npu.npu_fused_infer_attention_score(
 | B | Batch Size | ≤ 65536 | ≤ 65536 | — |
 | N (Q_N) | `query` head数 | ≤ 256 | ≤ 256 | — |
 | N (KV_N) | `key/value` head数 | ≤ 256 | ≤ 256 | — |
-| D | Head Dim | ≤ 512 | ≤ 512 | `torch.float16`/`torch.bfloat16`： 16字节对齐、 `torch.int8`： 32字节对齐、 `torch_npu.int4`： 64字节对齐 |
-| S (Q_S) | `query`序列长度 | ≤ 20971520 (20M) | = 1 | — |
-| S (KV_S) | `key/value`序列长度 | ≤ 20971520 (20M) | ≤ 262144 | — |
+| D | Head Dim | ≤ 512 | ≤ 512 | `torch.float16`/`torch.bfloat16`： 16字节对齐、`torch.int8`： 32字节对齐、 `torch_npu.int4`： 64字节对齐 |
+| S (Q_S) | `query`序列长度 | ≤ 20971520| = 1 | — |
+| S (KV_S) | `key/value`序列长度 | ≤ 20971520| ≤ 262144 | — |
 
 ### 详细参数说明
 
@@ -122,7 +122,7 @@ torch_npu.npu_fused_infer_attention_score(
 - **atten_mask** (`Tensor`,可选)：对Q×K结果做mask，指示Token间相关性是否计算。数据类型：`torch.bool`、`torch.int8`、`torch.uint8`，数据格式：$ND$，不支持非连续。默认值：None。
 
   <!-- npu="A3,910b" id8 -->
-  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`sparse_mode`=0/1时：支持shape (1, Q_S, KV_S)、(B, 1, Q_S, KV_S)、(1, 1, Q_S, KV_S)；当`input_layout`为BSH/BSND/BNSD/BNSD_BSND且不传rope时，Q_S=1支持(B, KV_S)，Q_S>1支持(Q_S, KV_S)。`sparse_mode`=2/3/4时：shape必须为(2048, 2048)或(1, 2048, 2048)或(1, 1, 2048, 2048)，需用户保证为下三角。
+  - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`sparse_mode`=0/1时：支持shape (1, Q_S, KV_S)、(B, 1, Q_S, KV_S)、(1, 1, Q_S, KV_S)；当`input_layout`为BSH/BSND/BNSD/BNSD_BSND且不传RoPE时，Q_S=1支持(B, KV_S)，Q_S>1支持(Q_S, KV_S)。`sparse_mode`=2/3/4时：shape必须为(2048, 2048)或(1, 2048, 2048)或(1, 1, 2048, 2048)，需用户保证为下三角。
   <!-- end id8 -->
   <!-- npu="950" id9 -->
   - <term>Ascend 950PR&950DT系列产品</term>：
@@ -182,12 +182,12 @@ torch_npu.npu_fused_infer_attention_score(
 
 #### PagedAttention参数
 
-- **block_table** (`Tensor`,可选)：PagedAttention中KV存储的block映射表。数据类型：`torch.int32`，数据格式：$ND$，必须为二维：[B, maxBlockNumPerSeq]，blockid合法性由用户保证，传入此参数即开启PagedAttention。默认值：None。
+- **block_table** (`Tensor`,可选)：PagedAttention中KV存储的block映射表。数据类型：`torch.int32`，数据格式：$ND$，必须为二维：[B, maxBlockNumPerSeq]，BlockID合法性由用户保证，传入此参数即开启PagedAttention。默认值：None。
 
-- **block_size** (`int`,可选)：PagedAttention中每个block最多token个数，以 Python `int` 传入。Q_S > 1：最小128，最大512，须为128倍数。 Q_S = 1： 非0值，最大512。`torch.float16`/`torch.bfloat16`需16字节对齐，`torch.int8`需32字节对齐，推荐128。默认值：0（不开启PagedAttention）。
+- **block_size** (`int`,可选)：PagedAttention中每个block最多token个数，以 Python `int` 传入。Q_S > 1：最小128，最大512，须为128倍数。Q_S = 1： 非0值，最大512。`torch.float16`/`torch.bfloat16`需16字节对齐，`torch.int8`需32字节对齐，推荐128。默认值：0（不开启PagedAttention）。
 
   <!-- npu="950" id16 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：Q_S = 1： key、value输入类型是`torch_npu.int4（torch.int32）`时需要64对齐。
+  - <term>Ascend 950PR&950DT系列产品</term>：Q_S = 1： key、value输入类型是`torch_npu.int4(torch.int32)`时需要64对齐。
   <!-- end id16 -->
 
 #### Padding参数
@@ -206,7 +206,7 @@ torch_npu.npu_fused_infer_attention_score(
 
 - **value_antiquant_offset** (`Tensor`,可选)：KV伪量化分离时`value`的反量化偏移。约束同`key_antiquant_scale`。默认值：None。
 
-- **key_antiquant_mode** (`int`,可选)：`key`伪量化方式。取值0~5,详见表格。默认值：0。
+- **key_antiquant_mode** (`int`,可选)：`key`伪量化方式。取值0~5，详见表格。默认值：0。
 
 - **value_antiquant_mode** (`int`,可选)：`value`伪量化方式。取值0~5，详见表格。默认值：0。
 
@@ -276,7 +276,7 @@ torch_npu.npu_fused_infer_attention_score(
 > - <term>Ascend 950PR&950DT系列产品</term>：支持BSH、BSND、BNSD、BNSD_BSND、TND（不支持左padding、tensorlist、pse）。
 <!-- end id46 -->
 
-- **scale** (`float`,可选)：缩放系数，通常为**1/√D**。 默认值为1.0，**大多数场景需手动设置，否则计算结果将不正确**。默认值：1.0。
+- **scale** (`float`,可选)：缩放系数，通常为**1/√D**。**大多数场景需手动设置，否则计算结果将不正确**。默认值：1.0。
 
 - **pre_tokens** (`int`,可选)：稀疏计算中attention与前几个token的关联范围。Q_S=1时无效。默认值：2147483647。
 
@@ -306,7 +306,7 @@ torch_npu.npu_fused_infer_attention_score(
   | 8 | block_local | **暂不支持** | — |
 
 > [!NOTE]  
-> Q_S = 1且不带rope输入时，`sparse_mode`参数无效。
+> Q_S = 1且不带RoPE输入时，`sparse_mode`参数无效。
 
 - **inner_precise** (`int`,可选)：精度/性能模式，详见表格，默认值：0。
 
@@ -436,10 +436,10 @@ torch_npu.npu_fused_infer_attention_score(
 <!-- end id24 -->
 <!-- npu="950" id25 -->
 - <term>Ascend 950PR&950DT系列产品</term>：
-  - sparse：Q_S等于1时只支持sparse=0且不传mask，Q_S大于1时支持sparse=0且不传mask或sparse=3且传入mask；
+  - sparse：Q_S等于1时只支持sparse=0且不传mask，Q_S大于1时支持sparse=0且不传mask或sparse=3且传入mask。
   - 支持`key、value`的`input_layout`格式为$ND$。
   - `input_layout`：BNSD、BSND、BSH、TND。
-  - 该场景下，`input_layout`形状为BNSD/BSH/BSND仅支持`actual_seq_lengths_kv`参数。`input_layout`形状为TND必须传入`actual_seq_lengths`和`actual_seq_lengths_kv`参数。
+  - 该场景下，`input_layout`为BNSD/BSH/BSND时仅支持`actual_seq_lengths_kv`参数。`input_layout`为TND时必须传入`actual_seq_lengths`和`actual_seq_lengths_kv`参数。
 <!-- end id25 -->
 
 **D = 128时**：
@@ -456,7 +456,7 @@ torch_npu.npu_fused_infer_attention_score(
   - `query_rope`配置时要求`query_rope`的shape中b、n、s与`query`一致，d为64。
   - `key_rope`配置时要求`key_rope`的shape中b、n、s与`key`一致，d为64。
   - `input_layout`：BSH、BSND、BNSD、BNSD_BSND、TND。
-  - 不支持page attention、prefix、伪量化、全量化、后量化。
+  - 不支持PagedAttention、prefix、伪量化、全量化、后量化。
   - 当kv为tensorlist时，`key_rope`的shape中b需要与tensorlist长度保持一致，n、s需要与tensorlist中每个tensor的n、s相等，d为64。
 <!-- end id27 -->
 
@@ -534,14 +534,14 @@ torch_npu.npu_fused_infer_attention_score(
 
 - **N轴**：≤ 256。
 - **D轴**：≤ 512。BSH/BSND时建议N×D < 65535。
-- **S轴**：≤ 20971520 (20M)。
+- **S轴**：≤ 20971520。
 - **D对齐**：
 
   <!-- npu="A3,910b" id33 -->
   - <term>Atlas A2系列产品</term>、<term>Atlas A3系列产品</term>：`torch.int8` 须32字节对齐，`torch_npu.int4` 须64字节对齐，`torch.float16`/`torch.bfloat16` 须16字节对齐。
   <!-- end id33 -->
   <!-- npu="950" id34 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：非量化场景：`query`，`key`，`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch_npu.int4`（`torch.int32`），其中当`key`、`value`类型为`torch_npu.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D轴8对齐）。
+  - <term>Ascend 950PR&950DT系列产品</term>：非量化场景：`query`、`key`、`value`的类型全部为`torch.float16`、`torch.bfloat16`，D轴1-512全部支持。伪量化场景：`query`类型为`torch.float16`、`torch.bfloat16`，`key`、`value`类型为`torch.int8`/`torch_npu.int4`（`torch.int32`），其中当`key`、`value`类型为`torch_npu.int4`（`torch.int32`）D轴仅支持64对齐（`torch.int32`仅支持D轴8对齐）。
   <!-- end id34 -->
 
 <!-- npu="950" id35 -->
@@ -556,10 +556,10 @@ torch_npu.npu_fused_infer_attention_score(
   - <term>Ascend 950PR&950DT系列产品</term>：该参数传入时应为非负数，在`input_layout`不同时，其含义与拦截条件不同：一般情况下，该入参为可选入参，该入参中每个Batch的有效seqlenKv应该不大于`key/value`中对应Batch的seqlenKv。当本参数的传入长度为1时，每个Batch使用相同seqlenKv；传入长度大于等于Batch时取seqlenKv的前Batch个数。其他长度不支持。当`key/value`的`input_layout`为TND时，该入参必须传入，且该入参元素的数量等于Batch值。该入参中每个元素的值表示当前Batch与之前所有Batch的seqlenKv和，因此后一个元素的值必须大于等于前一个元素的值，且不能出现负值。
 <!-- end id36 -->
 - **长序列超时风险**：B×N×S×D过大时可能超时（AI Core timeout/trap error），建议S切分。典型高风险场景：
-  - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
-  - B=1, Q_N=2, Q_S=20971520, D=256, KV_N=2, KV_S=20971520
-  - B=20, Q_N=1, Q_S=2097152, D=256, KV_N=1, KV_S=2097152
-  - B=1, Q_N=10, Q_S=2097152, D=512, KV_N=1, KV_S=2097152
+  - B=1, Q_N=20, Q_S=2097152, D=256, KV_N=1, KV_S=2097152。
+  - B=1, Q_N=2, Q_S=20971520, D=256, KV_N=2, KV_S=20971520。
+  - B=20, Q_N=1, Q_S=2097152, D=256, KV_N=1, KV_S=2097152。
+  - B=1, Q_N=10, Q_S=2097152, D=512, KV_N=1, KV_S=2097152。
 - **sparse_mode**：仅支持0/1/2/3/4，其他值报错。
   - 0：`atten_mask`=None或在左padding时忽略`pre_tokens`和`next_tokens`。
   - 2/3/4：mask shape必须为(S,S)或(1,S,S)或(1,1,S,S)，其中S=2048，且用户保证下三角。
@@ -575,7 +575,7 @@ torch_npu.npu_fused_infer_attention_score(
     - 仅PagedAttention（`block_size`=128或512）。
     - `key/value` NZ格式：[blockNum, KV_N, D/32, blockSize, 32]。
     - `key/value_antiquant_scale` dtype：perchannel 时为 `torch.bfloat16`，pertoken 时为 `torch.float32`。
-    - 仅KV分离模式，不支持offset、rope、左padding、tensorlist、pse、prefix、后量化。
+    - 仅KV分离模式，不支持offset、RoPE、左padding、tensorlist、pse、prefix、后量化。
     - `num_heads`与`num_key_value_heads`支持组合：(10,1)、(64,8)、(80,8)、(128,16)。
     - MTP=0：`sparse_mode`=0不传mask。MTP>0且<16：`sparse_mode`=3传优化mask (2048×2048)。
     - 仅高性能模式。
@@ -681,7 +681,7 @@ torch_npu.npu_fused_infer_attention_score(
 
 ### 示例1：MHA + Prefill（基础场景）
 
-最简单的全量计算调用：单batch、8 head、D=128、BNSD布局。
+最简单的全量计算调用：单batch、8个head、D=128、BNSD布局。
 
 ```python
 import torch

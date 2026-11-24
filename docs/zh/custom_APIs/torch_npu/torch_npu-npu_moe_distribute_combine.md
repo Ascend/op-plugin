@@ -14,7 +14,7 @@
 
 ## 功能说明
 
-- **API功能**：先进行reduce\_scatterv通信，再进行alltoallv通信，最后将接收的数据整合（乘权重再相加）。需与[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回。
+- **API功能**：先进行ReduceScatterV通信，再进行AlltoAllv通信，最后将接收的数据整合（乘权重再相加）。需与[torch\_npu.npu\_moe\_distribute\_dispatch](torch_npu-npu_moe_distribute_dispatch.md)配套使用，相当于按npu\_moe\_distribute\_dispatch算子收集数据的路径原路返回。
 
 - **计算公式**：
 
@@ -115,7 +115,7 @@ torch_npu.npu_moe_distribute_combine(expand_x, expert_ids, expand_idx, ep_send_c
     - <term>Atlas A3系列产品</term>：要求是一个2维或3维的张量，当张量为2维时，shape为\(BS, H\)；当张量为3维时，前两维的乘积需等于BS，第三维需等于H。
     <!-- end id17 -->
 
-- **group\_tp**（`str`）：**可选参数**，TP通信域名称，数据并行的通信域。有TP域通信才需要传参。
+- **group\_tp**（`str`）：**可选参数**，TP通信域名称，张量并行的通信域。有TP域通信才需要传参。
 
     <!-- npu="950,910b" id18 -->
     - <term>Atlas A2系列产品</term>、<term>Ascend 950DT系列产品</term>：不支持TP域通信，使用默认值即可。

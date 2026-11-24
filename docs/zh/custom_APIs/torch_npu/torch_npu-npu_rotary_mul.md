@@ -99,7 +99,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
 ```
 
 > [!NOTE]  
-> 在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`、`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备内存占用会有所增加。输入`rotate`参数时不支持反向传播。
+> 在模型训练场景中，正向算子的输入`input`将被保留以供反向计算时使用。在`r1`、`r2`不需要计算反向梯度场景下（`requires_grad=False`），使用该接口相较融合前小算子使用的设备存储占用会有所增加。输入`rotate`参数时不支持反向传播。
 
 ## 参数说明
 
@@ -141,16 +141,16 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
         - x为$TND$： $T1D、TND$。
 
             > [!NOTICE]  
-            > half模式下，当输入layout是$BNSD$，且$D$为非32Bytes对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
+            > half模式下，当输入layout是$BNSD$，且$D$为非32字节对齐时，建议不使用该融合算子（模型启动脚本中不开启`--use-fused-rotary-pos-emb`选项），否则可能出现性能下降。
 
     - interleave模式：
 
-        `input`：layout支持：$BNSD、BSND、SBND、TND； B*N < 1000； D < 896$, 且$D$为2的倍数；
+        `input`：layout支持：$BNSD、BSND、SBND、TND；B*N < 1000；D < 896$，且$D$为2的倍数。
 
         `r1、r2`：数据范围：[-1, 1]；对应`input` layout的支持情况：
 
-        - x为$BNSD: 11SD$;
-        - x为$BSND: 1S1D$;
+        - x为$BNSD: 11SD$；
+        - x为$BSND: 1S1D$；
         - x为$SBND: S11D$；
         - x为$TND: T1D$。
 <!-- end id11 -->
@@ -164,7 +164,7 @@ torch_npu.npu_rotary_mul(input, r1, r2, rotary_mode='half', rotate=None) -> Tens
      广播场景下，广播轴的总数据量不能超过1024。
 <!-- end id12 -->
 <!-- npu="950" id13 -->
-- <term>Ascend 950PR&950DT系列产品</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下。
+- <term>Ascend 950PR&950DT系列产品</term>：用\(B, S, N, D\)表示四维输入`input`的shape，各参数的详细约束如下：
     - 输入张量`input`、`r1`、`r2`及输出张量的D维度大小必须相同，且小于等于1024。half、interleave和interleave-half模式下，D必须能被2整除；quarter模式下，D必须能被4整除。
     - 输入张量`r1`和`r2`的shape必须完全相同，且必须满足下列条件之一：
         - shape为\(1, 1, 1, D\)；

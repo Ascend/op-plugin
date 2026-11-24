@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-- API功能：FFN算子提供MoeFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组（`expert_tokens`不为空）时是MoeFFN。
+- API功能：FFN算子提供MoEFFN和FFN的计算功能。在没有专家分组（`expert_tokens`为空）时是FFN，有专家分组（`expert_tokens`不为空）时是MoEFFN。
 - 计算公式：
 
      activation表示使用的激活函数，$W_1$和$W_2$对应输入参数的`weight1`和`weight2`，$b_1$和$b_2$对应输入参数的`bias1`和`bias2`。
@@ -32,7 +32,7 @@
         $$
 
 > [!NOTE]  
-> 激活层为geglu/swiglu/reglu时，性能优化需要满足门槛要求，即整网中FFN结构所对应的小算子里，vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试开启FFN，若性能劣化则不开启FFN。
+> 激活层为geglu/SwiGLU/reglu时，性能优化需要满足门槛要求，即整网中FFN结构所对应的小算子里，Vector耗时30us且占比10%以上的用例，方可尝试FFN融合算子；或在不知道小算子性能的情况下，尝试开启FFN，若性能劣化则不开启FFN。
 
 ## 函数原型
 
@@ -89,7 +89,7 @@ torch_npu.npu_ffn(x, weight1, weight2, activation, *, expert_tokens=None, expert
 - 该接口支持图模式。
 - 有专家时，专家数据的总数需要与`x`的$M$保持一致。
 - 激活层为`geglu/swiglu/reglu`时，仅支持无专家分组时的`torch.float16`高性能场景（`torch.float16`场景指类型为Tensor的必选参数数据类型都为`torch.float16`的场景），且$N1=2*K2$。
-- 激活层为`gelu/fastgelu/relu/silu`时，支持有专家或无专家分组的`torch.float16`高精度及高性能场景，`torch.bfloat16`场景，量化场景及伪量化场景，且$N1=K2$。
+- 激活层为`gelu/fastgelu/relu/silu`时，支持有专家或无专家分组的`torch.float16`高精度及高性能场景、`torch.bfloat16`场景、量化场景及伪量化场景，且$N1=K2$。
 - 所有场景下需满足通用维度约束：$K1=N2$、$K1<65536$、$K2<65536$、$M$轴在32Byte对齐后小于`torch.int32`的最大值。此外，$N1$与$K2$的对应关系由激活函数类型决定，`geglu/swiglu/reglu`要求$N1=2*K2$，`gelu/fastgelu/relu/silu`要求$N1=K2$。
 - 非量化场景不能输入量化参数和伪量化参数，量化场景不能输入伪量化参数，伪量化场景不能输入量化参数。
 - 量化场景参数类型：`x`为`torch.int8`、`weight`为`torch.int8`、`bias`为`torch.int32`、`scale`为`torch.float32`、`offset`为`torch.float32`，其余参数类型根据`y`不同分两种情况：

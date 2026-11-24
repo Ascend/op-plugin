@@ -16,7 +16,7 @@
 
 - API功能：计算输入`input`的组归一化结果`y`、均值`mean`、标准差的倒数`rstd`，以及swish的输出。
 - 计算公式：
-  - GroupNorm: 公式中的$x$代表`input`， $E[x] = \bar{x}$ 代表$x$的均值，$Var[x] = \frac{1}{n} * \sum_{i=1}^{n} (x_i - E[x])^2$ 代表$x$的方差，$\gamma$代表`weight`，$\beta$代表`bias`，则公式如下：
+  - GroupNorm: 公式中的$x$代表`input`，$E[x] = \bar{x}$ 代表$x$的均值，$Var[x] = \frac{1}{n} * \sum_{i=1}^{n} (x_i - E[x])^2$ 代表$x$的方差，$\gamma$代表`weight`，$\beta$代表`bias`，则公式如下：
   $$
   \begin{cases}
   y & = \frac{x - E[x]}{\sqrt{{Var[x]} + eps}} * \gamma + \beta \\ 
@@ -32,7 +32,7 @@
   
 > [!NOTE]
 > 
-> 正向默认确定性实现。<br>
+> 前向默认确定性实现。<br>
 > <!-- npu="A3,910b" id4 -->
 > 反向梯度在<term>Atlas A3训练系列产品</term>和<term>Atlas A2训练系列产品</term>上默认非确定性实现。
 > <!-- end id4 -->
@@ -49,7 +49,7 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
 
 ## 参数说明
 
-- **input**(`Tensor`)：必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`。
+- **input**(`Tensor`)：必选参数，表示需要进行组归一化的数据，支持2-8D张量，数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`。
 
 - **num_groups**(`int`)：必选参数，表示将`input`的第1维分为`num_groups`组，`input`的第1维必须能被`num_groups`整除。
   - `num_groups=1`：等价于LayerNorm（层归一化），对整个输入进行归一化，适用于序列建模、全连接层后等场景。
@@ -59,11 +59,11 @@ torch_npu.npu_group_norm_swish(input, num_groups, weight, bias, eps=1e-5, swish_
   > 
   > 当需要计算反向梯度时，`input.shape[1] / num_groups` 的结果不能超过4000。违反此约束可能导致训练时的错误。
 
-- **weight**(`Tensor`)：必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`，并且需要与`input`一致。
+- **weight**(`Tensor`)：必选参数，表示权重，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`，并且需要与`input`一致。
 
-- **bias**(`Tensor`)：必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`，`torch.float32`，`torch.bfloat16`，并且需要与`input`一致。
+- **bias**(`Tensor`)：必选参数，表示偏置，支持1D张量，并且第0维大小与`input`的第1维相同；数据类型支持`torch.float16`、`torch.float32`、`torch.bfloat16`，并且需要与`input`一致。
 
-- **eps**(`float`)：可选参数，计算组归一化时加到分母上的值，以保证数值的稳定性。默认值为1e-5。
+- **eps**(`float`)：可选参数，组归一化时加到方差上，用于提高数值稳定性。默认值为`1e-5`。
 
 - **swish_scale**(`float`)：可选参数，swish计算的缩放因子。默认值为1.0。
 
