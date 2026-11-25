@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-Profiler采集行为状态，枚举类型。由`torch_npu.profiler.schedule`在每个step返回，用于控制`torch_npu.profiler.profile`在该step执行的采集行为（无操作、预热、采集、采集并保存）。
+Profiler采集行为状态，枚举类型，由`torch_npu.profiler.schedule`在每个step返回，用于控制`torch_npu.profiler.profile`在该step执行的采集行为（无操作、预热、采集、采集并保存）。
 
 ## 类签名
 

@@ -27,7 +27,7 @@ torch_npu.profiler.dynamic_profile.start(config_path: str = None)
 
 ## 参数说明
 
-**config_path** (`str`)：可选参数，指定为profiler_config.json，需要用户手动创建profiler_config.json配置文件并根据场景需要配置参数。此处须指定具体文件名，例如start("./home/xx/start_config_path/profiler_config.json")。profiler_config_path和start_config_path路径格式仅支持由字母、数字、下划线和连字符组成的字符串，不支持软链接。
+**config_path** (`str`)：可选参数，指定本次采集使用的配置文件。传入时请填写包含文件名的路径，例如`start("/home/xx/start_config_path/profiler_config.json")`。未传入时，使用`init()`所配置目录下的`profiler_config.json`。请使用可读取的配置文件，避免使用软链接。
 
 profiler_config.json文件详细介绍请参见“<a href="https://gitcode.com/Ascend/pytorch/blob/v2.14.0-26.2.0/docs/zh/developer_notes/ascend_pytorch_profiler_user_guide.md">Ascend PyTorch调优工具</a>”。
 
@@ -44,7 +44,7 @@ profiler_config.json文件详细介绍请参见“<a href="https://gitcode.com/A
 from torch_npu.profiler import dynamic_profile as dp
 # 设置init接口Profiling配置文件路径
 dp.init("profiler_config_path")
-…
+...
 for step in steps:
     if step==5:
         # 设置start接口Profiling配置文件路径

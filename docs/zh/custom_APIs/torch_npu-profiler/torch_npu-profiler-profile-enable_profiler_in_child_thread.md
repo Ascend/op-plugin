@@ -38,7 +38,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
 ## 参数说明
 
-- **record_shapes**(`bool`)：可选参数，算子的InputShapes和InputTypes。取值为：
+- **record_shapes**(`bool`)：可选参数，记录算子的InputShapes和InputTypes。取值为：
 
   - True：开启。
   - False：关闭。
@@ -47,7 +47,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
   开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **profile_memory**(`bool`)：可选参数，算子的内存占用情况。取值为：
+- **profile_memory**(`bool`)：可选参数，记录算子的内存占用情况。取值为：
 
   - True：开启。
   - False：关闭。
@@ -57,7 +57,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
   > [!NOTE]  
   > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)，通过升级环境的glibc版本可解决此问题。
 
-- **with_stack**(`bool`)：可选参数，算子调用栈。包括框架层及CPU算子层的调用信息。取值为：
+- **with_stack**(`bool`)：可选参数，记录算子调用栈，包括框架层及CPU算子层的调用信息。取值为：
 
   - True：开启。
   - False：关闭。
@@ -66,7 +66,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
   开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **with_modules**(`bool`)：可选参数，modules层级的Python调用栈，即框架层的调用信息。取值为：
+- **with_modules**(`bool`)：可选参数，记录modules层级的Python调用栈，即框架层的调用信息。取值为：
 
   - True：开启。
   - False：关闭。
@@ -75,7 +75,7 @@ torch_npu.profiler.profile.enable_profiler_in_child_thread(record_shapes=False, 
 
   开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **with_flops**(`bool`)：可选参数，算子浮点操作（该参数暂不支持解析性能数据）。取值为：
+- **with_flops**(`bool`)：可选参数，记录算子浮点操作（该参数暂不支持解析性能数据）。取值为：
 
   - True：开启。
   - False：关闭。

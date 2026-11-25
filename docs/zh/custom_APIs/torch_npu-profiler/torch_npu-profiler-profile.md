@@ -52,7 +52,7 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
   > [!NOTE]
   > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)，通过升级环境的glibc版本可解决此问题。
 
-- **with_stack** (`bool`)：可选参数，记录算子调用栈。包括框架层及CPU算子层的调用信息。取值为：
+- **with_stack** (`bool`)：可选参数，记录算子调用栈，包括框架层及CPU算子层的调用信息。取值为：
 
   - True：开启。
   - False：关闭。
@@ -79,7 +79,7 @@ torch_npu.profiler.profile(activities=None, schedule=None, on_trace_ready=None, 
 
   开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md)。
+- **experimental_config**：可选参数，扩展参数，通过扩展配置性能分析工具常用的采集项。支持的采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](./torch_npu-profiler-_ExperimentalConfig.md)。
 
 - **execution_trace_observer** (`ExecutionTraceObserver`)：可选参数，PyTorch执行轨迹观测器对象。PyTorch执行轨迹以图的形式表示AI/ML工作负载，支持回放基准测试、模拟器和仿真器。当包含此参数时，观测器的start()和stop()方法将在与PyTorch剖析器相同的时间窗口内被调用，调用方式见下文示例。
 

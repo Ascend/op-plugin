@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-性能数据采集扩展参数。用于构造torch_npu.profiler.profile的experimental_config参数。
+性能数据采集扩展参数，用于构造torch_npu.profiler.profile的experimental_config参数。
 
 ## 函数原型
 
@@ -103,7 +103,7 @@ torch_npu.profiler._ExperimentalConfig(export_type=[torch_npu.profiler.ExportTyp
     - torch_npu.profiler.HostSystem.NETWORK：系统级别的网络I/O利用率。
     - torch_npu.profiler.HostSystem.OSRT：进程级别的syscall和pthreadcall。
 
-- **sys_io** (`bool`)：可选参数，NIC、ROCE、MAC采集开关。取值为：
+- **sys_io** (`bool`)：可选参数，NIC、RoCE、MAC采集开关。取值为：
 
     - True：开启。
     - False：关闭。
@@ -136,7 +136,7 @@ experimental_config = torch_npu.profiler._ExperimentalConfig(
         torch_npu.profiler.ExportType.Text
         ],
     profiler_level=torch_npu.profiler.ProfilerLevel.Level0,
-    msprof_tx=False,
+    mstx=False,
     aic_metrics=torch_npu.profiler.AiCMetrics.AiCoreNone,
     l2_cache=False,
     op_attr=False,

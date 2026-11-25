@@ -42,7 +42,7 @@ torch_npu.profiler.dynamic_profile.step()
 from torch_npu.profiler import dynamic_profile as dp
 # 设置Profiling配置文件的路径
 dp.init("profiler_config_path")
-…
+...
 for step in steps:
     train_one_step()
     # 划分step

@@ -46,7 +46,7 @@ torch_npu.profiler.profiler.analyse(profiler_path="", max_process_number=max_pro
 
 以下是关键步骤的代码示例，不可直接拷贝运行，仅供参考。
 
-创建_\{file_name\}_.py文件，_\{file_name\}_自定义，并编辑如下代码：
+创建`_{file_name}_.py`文件，`_{file_name}_`自定义，并编辑如下代码：
 
 ```python
 from torch_npu.profiler.profiler import analyse

@@ -44,7 +44,7 @@ profiler_config.json文件详细介绍请参见“<a href="https://gitcode.com/A
 from torch_npu.profiler import dynamic_profile as dp
 # 设置Profiling配置文件的路径
 dp.init("profiler_config_path")
-…
+...
 for step in steps:
     train_one_step()
     # 划分step

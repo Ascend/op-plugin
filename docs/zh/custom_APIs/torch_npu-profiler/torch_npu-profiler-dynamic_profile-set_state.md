@@ -44,7 +44,7 @@ dp.set_state({"cur_step": 10})
 dp.init("/data/test")
 for t in range(50):
     if t <= 10:    # 模拟训练断点时，训练已执行到的step步数
-       continue
+        continue
     train_one_step()
     # 划分step，需要进行profile的代码需在dp.start()接口和dp.step()接口之间
     dp.step()

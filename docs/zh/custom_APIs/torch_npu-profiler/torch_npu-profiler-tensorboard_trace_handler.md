@@ -33,7 +33,7 @@ torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, an
 - **analyse_flag** (`bool`)：可选参数，性能数据自动解析开关。取值为：
 
     - True：开启自动解析。
-    - False：关闭自动解析，采集完后的性能数据可以使用[离线解析](./torch_npu-profiler-profiler-analyse.md)。
+    - False：关闭自动解析，采集完成后的性能数据可以使用[离线解析](./torch_npu-profiler-profiler-analyse.md)。
 
     默认值为True。
 
@@ -51,7 +51,7 @@ torch_npu.profiler.tensorboard_trace_handler(dir_name=None, worker_name=None, an
 
     默认值为False。
 
-    开启后，生成的压缩包保存在dir_name参数指定的目录下，与采集目录同名。异步解析完成后才生成该压缩包，压缩完成后删除采集目录，仅保留压缩包。
+    开启use_gzip后，生成的压缩包保存在dir_name参数指定的目录下，与采集目录同名；待异步解析完成后才生成该压缩包，压缩完成后删除采集目录，仅保留压缩包。
 
 ## 返回值说明
 

@@ -1,6 +1,6 @@
 # torch_npu.profiler接口列表
 
-本章节包含采集profiling相关的自定义接口，提供性能优化所需要的数据。
+本文档汇总采集profiling相关的自定义接口，提供性能优化所需要的数据，适用于使用Ascend PyTorch Profiler进行性能调优的开发人员。
 
 | API名称                                                      | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -19,7 +19,7 @@
 | [torch_npu.profiler.supported_ai_core_metrics](./torch_npu-profiler-supported_ai_core_metrics.md) | 查询当前支持的torch_npu.profiler.AiCMetrics的AI Core性能指标采集项。 |
 | [torch_npu.profiler.supported_export_type](./torch_npu-profiler-supported_export_type.md) | 查询当前torch_npu.profiler.ExportType支持的性能数据结果文件类型。|
 | [torch_npu.profiler.dynamic_profile.init](./torch_npu-profiler-dynamic_profile-init.md) | 初始化dynamic_profile动态采集。                              |
-| [torch_npu.profiler.dynamic_profile.step](./torch_npu-profiler-dynamic_profile-step.md) | dynamic_profile动态采集划分step。                            |
+| [torch_npu.profiler.dynamic_profile.step](./torch_npu-profiler-dynamic_profile-step.md) | 在dynamic_profile动态采集时划分step。                            |
 | [torch_npu.profiler.dynamic_profile.start](./torch_npu-profiler-dynamic_profile-start.md) | 触发一次dynamic_profile动态采集。                            |
 | [torch_npu.profiler.dynamic_profile.set_state](./torch_npu-profiler-dynamic_profile-set_state.md) | 动态采集时，设置训练已执行到的step步数。                     |
 | [torch_npu.profiler.profiler.analyse](./torch_npu-profiler-profiler-analyse.md) | Ascend PyTorch Profiler性能数据离线解析。                    |

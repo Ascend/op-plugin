@@ -48,7 +48,7 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
      > [!NOTE]
      > 已知在安装有glibc<2.34的环境上采集memory数据，可能触发glibc的一个已知[Bug 19329](https://sourceware.org/bugzilla/show_bug.cgi?id=19329)，通过升级环境的glibc版本可解决此问题。
 
-- **with_stack** (`bool`)：可选参数，记录算子调用栈。包括框架层及CPU算子层的调用信息。取值为：
+- **with_stack** (`bool`)：可选参数，记录算子调用栈，包括框架层及CPU算子层的调用信息。取值为：
 
     - True：开启。
     - False：关闭。
@@ -75,9 +75,9 @@ torch_npu.profiler._KinetoProfile(activities=None, record_shapes=False, profile_
 
     开启torch_npu.profiler.ProfilerActivity.CPU时生效。
 
-- **experimental_config**：可选参数，性能数据采集扩展。支持采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
+- **experimental_config** (`_ExperimentalConfig`)：可选参数，性能数据采集扩展。支持的采集项和详细介绍请参见[torch_npu.profiler._ExperimentalConfig](torch_npu-profiler-_ExperimentalConfig.md)。
 
-- **custom_trace_id_callback** (`str`)：可选参数，为每一份Profiler数据生成一个trace_id进行标识。trace_id输出在profiler_metadata.json文件中。
+- **custom_trace_id_callback** (`Callable[[], str]`)：可选参数，为每一份Profiler数据生成一个trace_id进行标识。trace_id输出在profiler_metadata.json文件中。
 
 ## 返回值说明
 

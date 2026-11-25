@@ -17,12 +17,12 @@
 
 ## 功能说明
 
-设置不同step的行为。用于构造torch_npu.profiler.profile的schedule参数。默认不执行schedule操作。
+设置不同step的行为，用于构造torch_npu.profiler.profile的schedule参数。默认不执行schedule操作。
 
 ## 函数原型
 
 ```python
-torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 0, skip_first_wait = 0)
+torch_npu.profiler.schedule(wait, active, warmup = 0, repeat = 0, skip_first = 0, skip_first_wait = 0)
 ```
 
 ## 参数说明
@@ -42,7 +42,7 @@ torch_npu.profiler.schedule (wait, active, warmup = 0, repeat = 0, skip_first = 
 
 - **skip_first** (`int`)：可选参数，采集前先跳过的step轮数。默认值为0。动态Shape场景建议跳过前10轮保证性能数据稳定；对于其他场景，可以根据实际情况自行配置。
 
-- **skip_first_wait** (`int`)：可选参数，采集时跳过第一个wait。默认值为0，表示关闭该参数功能，配置为非0的int值时，表示开启该参数功能。<br>开启该参数功能时，会取消wait参数的第一次wait，即在第一个repeat中的第一个step直接执行下一步动作，但第二个repeat之后仍正常执行。可用于节省采集的时间。
+- **skip_first_wait** (`int`)：可选参数，默认值为0。设为非0整数时，跳过首轮采集的`wait`阶段。从第二轮开始，每轮仍等待`wait`个step。
 
 ## 返回值说明
 
