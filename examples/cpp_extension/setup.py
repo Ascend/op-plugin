@@ -114,6 +114,7 @@ class AscendBuildExtension(BuildExtension):
             f"-D_GLIBCXX_USE_CXX11_ABI={abi_value}",
             "-ltorch_npu", "-ltorch", "-lc10",
             *ext.sources,
+            "-ltorch_python",
             "-o", ext_fullpath,
         ]
 
