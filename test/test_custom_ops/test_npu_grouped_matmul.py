@@ -179,6 +179,91 @@ class TestGroupedMatmul(TestCase):
                                                 x_dtype=torch_npu.float4_e2m1fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
                                                 scale_dtype=torch_npu.float8_e8m0fnu, per_token_scale_dtype=torch_npu.float8_e8m0fnu)
 
+    FP4_E2M1_MAG = (0.0, 0.5, 1.0, 1.5, 2.0, 3.0, 4.0, 6.0)
+    def mxfp4_decode(self, codes):
+        signs = np.where((codes & 0x8) != 0, -1.0, 1.0)
+        mags = np.array(self.FP4_E2M1_MAG, dtype=np.float64)[codes & 0x7]
+        return signs * mags
+
+    def e8m0_decode(self, codes):
+        assert not np.any(codes == 255), "E8M0 code 255 is NaN"
+        return np.exp2((codes.astype(np.int64) - 127).astype(np.float64))
+
+    def pack_fp4(self, codes):
+        _, cols = codes.shape
+        assert cols % 2 == 0, "FP4 打包轴必须为偶数"
+        low = codes[:, 0::2].astype(np.uint8)
+        high = codes[:, 1::2].astype(np.uint8) << 4
+        return (low | high).astype(np.uint8)
+
+    def make_fp4_tensor(self, packed, transpose=False):
+        buf = torch.empty(packed.shape, dtype=torch.uint8).view(torch.float4_e2m1fn_x2)
+        buf.view(torch.uint8).copy_(torch.from_numpy(packed))
+        buf = buf.npu()
+        return buf.t() if transpose else buf
+
+    def mxfp4_splitk_golden(self, a_codes, b_codes, sa_codes, sb_codes, k_groups, m, n):
+        a_val = self.mxfp4_decode(a_codes)
+        b_val = self.mxfp4_decode(b_codes)
+        sa_val = self.e8m0_decode(sa_codes)
+        sb_val = self.e8m0_decode(sb_codes)
+        out = np.zeros((len(k_groups), m, n), dtype=np.float64)
+        p_g = 0
+        for g, k_g in enumerate(k_groups):
+            if k_g == 0:
+                continue
+            # 组 g 在 S 轴的起始行：s_g = floor(p_g/64) + g
+            s_g = p_g // 64 + g
+            a_g = a_val[p_g:p_g + k_g, :]
+            b_g = b_val[p_g:p_g + k_g, :]
+            acc = np.zeros((m, n), dtype=np.float64)
+            for blk in range((k_g + 31) // 32):
+                lo, hi = 32 * blk, min(32 * (blk + 1), k_g)
+                row, sub = s_g + blk // 2, blk % 2
+                acc += ((a_g[lo:hi, :].T @ b_g[lo:hi, :])
+                        * sa_val[row, :, sub][:, None] * sb_val[row, :, sub][None, :])
+            out[g] = acc
+            p_g += k_g
+        return out
+
+    def mxfp4_splitk_case(self, m, n, k_groups, seed):
+        g = len(k_groups)
+        k = int(sum(k_groups))
+        s = k // 64 + g
+        rng = np.random.RandomState(seed)
+        a_codes = rng.randint(0, 16, size=(k, m)).astype(np.uint8)
+        b_codes = rng.randint(0, 16, size=(k, n)).astype(np.uint8)
+        sa_codes = rng.randint(129, 136, size=(s, m, 2)).astype(np.uint8)
+        sb_codes = rng.randint(129, 136, size=(s, n, 2)).astype(np.uint8)
+        for gi in range(g):
+            p_g = int(sum(k_groups[:gi]))
+            sa_codes[p_g // 64 + gi] = 129 + gi % 7
+            sb_codes[p_g // 64 + gi] = 129 + (2 * gi) % 7
+
+        x = self.make_fp4_tensor(self.pack_fp4(a_codes), transpose=True)
+        weight = self.make_fp4_tensor(self.pack_fp4(b_codes), transpose=False)
+        sa = torch.from_numpy(sa_codes.copy()).view(torch.float8_e8m0fnu).npu().transpose(0, 1)
+        sb = torch.from_numpy(sb_codes.copy()).view(torch.float8_e8m0fnu).npu()
+        group_list = torch.tensor(np.cumsum(k_groups), dtype=torch.int64).npu()
+
+        golden = self.mxfp4_splitk_golden(a_codes, b_codes, sa_codes, sb_codes, k_groups, m, n)
+        golden_np = torch.from_numpy(golden).to(torch.bfloat16).to(torch.float32).numpy()
+
+        output = torch_npu.npu_grouped_matmul(
+            [x], [weight], bias=None, scale=[sb], offset=None,
+            antiquant_scale=None, antiquant_offset=None, per_token_scale=[sa],
+            group_list=group_list, split_item=3, group_type=2, group_list_type=0,
+            output_dtype=torch.bfloat16,
+            x_dtype=torch_npu.float4_e2m1fn_x2, weight_dtype=torch_npu.float4_e2m1fn_x2,
+            scale_dtype=torch_npu.float8_e8m0fnu,
+            per_token_scale_dtype=torch_npu.float8_e8m0fnu)[0]
+        actual = output.to(torch.float32).cpu().numpy()
+
+        for gi, k_g in enumerate(k_groups):
+            if k_g == 0:
+                self.assertTrue(np.all(actual[gi] == 0), f"空组 g={gi} 输出不全为 0")
+        self.assertRtolEqual(golden_np, actual, 0.01, 0.01)
+
     def get_group_list(self, m, g):
         step = (m - 0) // (g - 1)
         data = [i * step for i in range(g)]
@@ -1087,6 +1172,12 @@ class TestGroupedMatmul(TestCase):
                                                       group_type=group_type, output_dtype=output_dtype)
 
             self.assertRtolEqual(supported_output[0], custom_output[0].cpu().numpy(), 0.001)
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_grouped_matmul_quant_950_mxfp4_k_split(self): # 全量化 mx + K轴分组
+        torch.manual_seed(0)
+        self.mxfp4_splitk_case(128, 256, [64, 96], seed=1001) # k=[64,96]
+        self.mxfp4_splitk_case(64, 64, [0, 128], seed=1004) # 空组
 
     @SupportedDevices(['Ascend950'])
     def test_npu_grouped_matmul_quant_int8_nz(self): # 全量化 NZ
