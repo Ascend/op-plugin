@@ -27,7 +27,7 @@ class TestAdd(TestCase):
                 torch.add(cpu.npu(), cpu.npu(), alpha=alpha, out=result)
                 self.assertEqual(result.cpu(), expected)
         for scalar in (1, 2.5):
-            with self.assertRaises(RuntimeError):
+            with self.assertRaisesRegex(RuntimeError, "can't be cast to"):
                 torch.tensor([True], device="npu").add_(scalar, alpha=0)
         for alpha in (0.5, 1.0):
             for kind in ("add", "out", "inplace", "scalar"):
@@ -37,10 +37,25 @@ class TestAdd(TestCase):
             with self.assertRaises(RuntimeError):
                 self._bool_add_validation(kind, cpu_other=True)
         for kind in ("out", "inplace"):
-            for other in (torch.ones(3, dtype=torch.bool, device="npu"),
-                          torch.ones(2, dtype=torch.int32, device="npu")):
-                with self.assertRaises(RuntimeError):
-                    self._bool_add_validation(kind, other=other)
+            with self.assertRaises(RuntimeError):
+                self._bool_add_validation(
+                    kind, other=torch.ones(3, dtype=torch.bool, device="npu"))
+            with self.assertRaisesRegex(RuntimeError, "can't be cast to"):
+                self._bool_add_validation(
+                    kind, other=torch.ones(2, dtype=torch.int32, device="npu"))
+
+    def test_bool_add_cast_error_matches_cpu(self):
+        # A rejected cast has to report the upstream TensorIterator wording, not
+        # just raise: pytorch's test_type_promotion.py::test_inplace matches the
+        # message with the regex below and runs the same assertion on cpu and
+        # npu. Asserting the type alone lets the wording drift unnoticed.
+        for other in (torch.ones(3, dtype=torch.uint8),
+                      torch.ones(3, dtype=torch.int32),
+                      torch.ones(3, dtype=torch.float32)):
+            with self.assertRaisesRegex(RuntimeError, "can't be cast to"):
+                torch.ones(3, dtype=torch.bool).add_(other)
+            with self.assertRaisesRegex(RuntimeError, "can't be cast to"):
+                torch.ones(3, dtype=torch.bool, device="npu").add_(other.npu())
 
     def test_bool_add_alpha_zero_broadcast(self):
         left = torch.tensor([[True], [False]])

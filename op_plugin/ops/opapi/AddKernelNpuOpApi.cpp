@@ -138,12 +138,22 @@ static inline at::Tensor add_bool_operand(
   return operand;
 }
 
+// The wording follows the upstream TensorIterator cast check
+// (aten/src/ATen/TensorIterator.cpp, enforce_safe_casting_to_output) so a
+// rejected in-place bool add reports the same message on npu as on cpu.
+template <typename T>
+static inline void add_bool_cast_check(const at::Tensor& self, const T& other) {
+  const auto result_type = at::native::result_type(self, other);
+  TORCH_CHECK(at::canCast(result_type, at::kBool),
+      "result type ", result_type,
+      " can't be cast to the desired output type Bool", OPS_ERROR(ErrCode::TYPE));
+}
+
 static void add_bool_check(
     const at::Tensor& self,
     const at::Tensor& other,
     const at::Tensor& result) {
-  TORCH_CHECK(at::canCast(at::native::result_type(self, other), at::kBool),
-      "result type cannot be cast to Bool" + OPS_ERROR(ErrCode::TYPE));
+  add_bool_cast_check(self, other);
   TORCH_CHECK(
       (self.device() == result.device() || npu_preparation::IsCPUScalar(self)) &&
       (other.device() == result.device() || npu_preparation::IsCPUScalar(other)),
@@ -191,8 +201,7 @@ static at::Tensor& add_bool_apply(
     const at::Scalar& alpha,
     at::Tensor& result) {
   // Checked against the raw scalar: a non-bool scalar does not promote to Bool.
-  TORCH_CHECK(at::canCast(at::native::result_type(self, other), at::kBool),
-      "result type cannot be cast to Bool" + OPS_ERROR(ErrCode::TYPE));
+  add_bool_cast_check(self, other);
   at::Tensor other_b = npu_preparation::copy_scalar_to_device(
       other, at::kBool, result.device());
   return add_bool_apply(self, other_b, alpha, result);
@@ -264,25 +273,11 @@ static at::Tensor& add_bool_(
 // goes to the aclop logical or instead of acl_op::add. logical_or takes no
 // alpha; alpha=0 reuses the checked add_bool paths so broadcast, device and
 // out= validation still run without depending on aclnnLogicalOr.
-static inline void add_bool_fallback_check(
-    const at::Tensor& self,
-    const at::Tensor& other) {
-  TORCH_CHECK(at::canCast(at::native::result_type(self, other), at::kBool),
-      "result type cannot be cast to Bool" + OPS_ERROR(ErrCode::TYPE));
-}
-
-static inline void add_bool_fallback_check(
-    const at::Tensor& self,
-    const at::Scalar& other) {
-  TORCH_CHECK(at::canCast(at::native::result_type(self, other), at::kBool),
-      "result type cannot be cast to Bool" + OPS_ERROR(ErrCode::TYPE));
-}
-
 static at::Tensor add_bool_fallback(
     const at::Tensor& self,
     const at::Tensor& other,
     const at::Scalar& alpha) {
-  add_bool_fallback_check(self, other);
+  add_bool_cast_check(self, other);
   if (add_bool_alpha_is_zero(alpha)) {
     return add_bool(self, other, alpha);
   }
@@ -293,7 +288,7 @@ static at::Tensor add_bool_fallback(
     const at::Tensor& self,
     const at::Scalar& other,
     const at::Scalar& alpha) {
-  add_bool_fallback_check(self, other);
+  add_bool_cast_check(self, other);
   if (add_bool_alpha_is_zero(alpha)) {
     return add_bool(self, other, alpha);
   }
@@ -307,7 +302,7 @@ static at::Tensor& add_bool_fallback_out(
     const at::Tensor& other,
     const at::Scalar& alpha,
     at::Tensor& result) {
-  add_bool_fallback_check(self, other);
+  add_bool_cast_check(self, other);
   if (add_bool_alpha_is_zero(alpha)) {
     return add_bool_out(self, other, alpha, result);
   }
@@ -327,7 +322,7 @@ static at::Tensor& add_bool_fallback_(
     at::Tensor& self,
     const at::Tensor& other,
     const at::Scalar& alpha) {
-  add_bool_fallback_check(self, other);
+  add_bool_cast_check(self, other);
   if (add_bool_alpha_is_zero(alpha)) {
     return add_bool_(self, other, alpha);
   }
@@ -338,7 +333,7 @@ static at::Tensor& add_bool_fallback_(
     at::Tensor& self,
     const at::Scalar& other,
     const at::Scalar& alpha) {
-  add_bool_fallback_check(self, other);
+  add_bool_cast_check(self, other);
   if (add_bool_alpha_is_zero(alpha)) {
     return add_bool_(self, other, alpha);
   }
