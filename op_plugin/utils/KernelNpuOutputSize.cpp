@@ -39,8 +39,8 @@ static inline T div_rtn(T x, T y) {
   if (y == 0) {
     AT_ERROR("div_rtn: Division by zero!");
   }
-  int q = x / y;
-  int r = x % y;
+  T q = x / y;
+  T r = x % y;
   if ((r != 0) && ((r < 0) != (y < 0))) {
     --q;
   }
@@ -246,8 +246,8 @@ c10::SmallVector<int64_t, SIZE> avg_pool2d_npu_output_size(
   TORCH_CHECK(stride[0] * stride[1] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(padding.size() == 2, "padding length should be 2", OPS_ERROR(ErrCode::PARAM));
 
-  int self_h = self.size(-2);
-  int self_w = self.size(-1);
+  int64_t self_h = self.size(-2);
+  int64_t self_w = self.size(-1);
   int64_t kernel_h =
       div_rtn<int64_t>(
           self_h + 2 * padding[0] - (kernel_size[0] - 1) - 1 + (ceil_mode ? stride[0] - 1 : 0), stride[0]) +
@@ -305,9 +305,9 @@ c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(
   TORCH_CHECK(stride[0] * stride[1] * stride[2] != 0, "stride should not contain zero", OPS_ERROR(ErrCode::PARAM));
   TORCH_CHECK(padding.size() == 3, "padding length should be 3", OPS_ERROR(ErrCode::PARAM));
 
-  int self_d = self.size(-3);
-  int self_h = self.size(-2);
-  int self_w = self.size(-1);
+  int64_t self_d = self.size(-3);
+  int64_t self_h = self.size(-2);
+  int64_t self_w = self.size(-1);
 
   int64_t kernel_d = ceil_mode ? (CeilDiv(self_d + 2 * padding[0] - kernel_size[0], stride[0]) + 1)
                                : ((self_d + 2 * padding[0] - kernel_size[0]) / stride[0] + 1);
@@ -337,6 +337,28 @@ c10::SmallVector<int64_t, SIZE> avg_pool3d_npu_output_size(
     output_size = {self.size(0), self.size(1), kernel_d, kernel_h, kernel_w};
   }
 
+  TORCH_CHECK(
+      kernel_d >= 1 && kernel_h >= 1 && kernel_w >= 1,
+      "Given input size: (",
+      self.size(-4),
+      "x",
+      self.size(-3),
+      "x",
+      self.size(-2),
+      "x",
+      self.size(-1),
+      "). ",
+      "Calculated output size: (",
+      self.size(-4),
+      "x",
+      kernel_d,
+      "x",
+      kernel_h,
+      "x",
+      kernel_w,
+      "). ",
+      "Output size is too small",
+      OPS_ERROR(ErrCode::VALUE));
   return output_size;
 }
 
