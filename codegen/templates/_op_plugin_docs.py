@@ -17036,21 +17036,21 @@ _add_torch_npu_docstr(
 torch_npu.npu_add_quant_gmm_(self, x1, x2, x2_scale, group_list, *, x1_scale=None, group_list_type=0, group_sizes=None, x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None) -> Tensor
 
 功能描述
-在micro-batch训练场景，需要做micro-batch的梯度累计，会存在大量GroupedMatMul后接InplaceAdd的融合场景。本算子（QuantGroupedMatmulInplaceAdd）将上述算子融合起来，提高网络性能。实现分组矩阵乘计算和加法计算，基本功能为矩阵乘和加法的组合，如T-C量化场景下y_i[m,n]=(x1_i[m,k_i] x x2_i[k_i,n]) * scale2_i[n] * scale1_i + y_i[m,n], i=1...g，其中g为分组个数。仅支持量化场景（1.mx量化；2.T-C量化；3.T-T量化）。仅支持x1、x2是FLOAT8_E5M2、FLOAT8_E4M3FN、HIFLOAT8的输入。本接口为原地版本，直接在self上累加并返回self。另有非原地版本torch_npu.npu_add_quant_gmm，参数一致，区别为非原地版本不修改self，返回新结果。
+在micro-batch训练场景，需要做micro-batch的梯度累计，会存在大量GroupedMatMul后接InplaceAdd的融合场景。本算子（QuantGroupedMatmulInplaceAdd）将上述算子融合起来，提高网络性能。实现分组矩阵乘计算和加法计算，基本功能为矩阵乘和加法的组合，如T-C量化场景下y_i[m,n]=(x1_i[m,k_i] x x2_i[k_i,n]) * scale2_i[n] * scale1_i + y_i[m,n], i=1...g，其中g为分组个数。仅支持量化场景（1.mx量化；2.T-C量化；3.T-T量化）。仅支持x1、x2是FLOAT8_E5M2、FLOAT8_E4M3FN、HIFLOAT8、FLOAT4_E2M1的输入。本接口为原地版本，直接在self上累加并返回self。另有非原地版本torch_npu.npu_add_quant_gmm，参数一致，区别为非原地版本不修改self，返回新结果。
 
 
 参数说明:
 self(torch.Tensor)：必选输入，待累加矩阵，原地累加后作为结果返回，数据类型支持float32，tensor支持3维，shape为(g, M, N)，数据格式支持ND。当x1的M轴或者x2的N轴为0时，self为空tensor。
-x1(torch.Tensor)：必选输入，矩阵乘法中的左矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8，tensor支持2维，shape为(K, M)，数据格式支持ND，支持非连续Tensor。
-x2(torch.Tensor)：必选输入，矩阵乘法中的右矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8，tensor支持2维，shape为(K, N)，数据格式支持ND，支持非连续Tensor。
+x1(torch.Tensor)：必选输入，矩阵乘法中的左矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8、float4_e2m1fn_x2，tensor支持2维，shape为(K, M)，数据格式支持ND，支持非连续Tensor。
+x2(torch.Tensor)：必选输入，矩阵乘法中的右矩阵，数据类型支持float8_e5m2、float8_e4m3fn、hifloat8、float4_e2m1fn_x2，tensor支持2维，shape为(K, N)，数据格式支持ND，支持非连续Tensor。
 x2_scale(torch.Tensor)：必选输入，由x2量化引入的缩放因子，数据类型支持float32、float8_e8m0fnu，数据格式支持ND。float8_e8m0fnu需配置可选参数x2_scale_dtype为对应类型，此时x2_scale本身的dtype不再生效，但仍需保证x2_scale本身的dtype为8bit位的数据类型，以保证shape正确。
 group_list(torch.Tensor)：必选输入，输入和输出分组轴方向的matmul大小分布，数据类型支持int64，tensor支持1维，shape为(g,)，数据格式支持ND。group_list_type为0时要求为非负单调非递减数列且最后一个值不大于x1的第一维（M轴）；group_list_type为1时要求为非负数列且数值总和不大于x1的第一维（M轴）。group_list中的值约束了输出数据的有效部分，未指定的部分将不会参与更新。第1维最大支持1024。
 *(位置参数与关键字参数的分隔符)：其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
 x1_scale(torch.Tensor, optional)：可选输入，默认值为None，表示由x1量化引入的缩放因子，数据类型支持float32、float8_e8m0fnu，数据格式支持ND。float8_e8m0fnu需配置可选参数x1_scale_dtype为对应类型。
 group_list_type(int, optional)：可选输入，默认值为0，表示group_list中数值的含义，只支持0和1两个取值。0：group_list中数值为分组轴大小的cumsum结果（累积和）；1：group_list中数值为分组轴上每组大小。
 group_sizes(int[], optional)：可选输入，默认值为None，表示m、n、k方向上的量化分组大小。当前仅支持None。
-x1_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x1的dtype相同。用于在x1无法用torch原生数据类型表示时显式指定x1的数据类型，当前仅支持torch_npu.hifloat8。
-x2_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x2的dtype相同。用于在x2无法用torch原生数据类型表示时显式指定x2的数据类型，当前仅支持torch_npu.hifloat8。
+x1_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x1的dtype相同。用于在x1无法用torch原生数据类型表示时显式指定x1的数据类型，当前仅支持torch_npu.hifloat8、torch.float4_e2m1fn_x2。
+x2_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x2的dtype相同。用于在x2无法用torch原生数据类型表示时显式指定x2的数据类型，当前仅支持torch_npu.hifloat8、torch.float4_e2m1fn_x2。
 x1_scale_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x1_scale的dtype相同。用于在x1_scale无法用torch原生数据类型表示时显式指定x1_scale的数据类型，当前仅支持torch_npu.float8_e8m0fnu。
 x2_scale_dtype(int, optional)：可选输入，默认值为None，表示输入真实数据类型与输入x2_scale的dtype相同。用于在x2_scale无法用torch原生数据类型表示时显式指定x2_scale的数据类型，当前仅支持torch_npu.float8_e8m0fnu。
 
@@ -17064,7 +17064,7 @@ self(torch.Tensor)：GroupedMatMul计算完成后与待累加矩阵相加得到�
 x1和x2的每一维大小在32字节对齐后都应小于int32的最大值2147483647，且内轴（K轴）大小需小于2097152。
 group_list第1维最大支持1024，即最多支持1024个group。
 group_sizes当前仅支持None。
-mx量化场景：x1、x2为float8_e4m3fn/float8_e5m2，x1_scale、x2_scale为float8_e8m0fnu，self为float32，x1_scale的shape为((K/64)+g, M, 2)，x2_scale的shape为((K/64)+g, N, 2)。
+MX量化场景：x1、x2为float8_e4m3fn/float8_e5m2/float4_e2m1fn_x2，x1_scale、x2_scale为float8_e8m0fnu，self为float32，x1_scale的shape为((K/64)+g, M, 2)，x2_scale的shape为((K/64)+g, N, 2)。MXFP4场景下x1和x2的数据类型必须同时为float4_e2m1fn_x2，且x1的M轴、x2的N轴必须为偶数。
 动态量化（T-T/T-C量化）场景：x1、x2为hifloat8，x1_scale、x2_scale为float32，self为float32，x1_scale的shape为(g, 1)或(g,)，x2_scale的shape为(g, 1)或(g,)或(g, N)。
 
 支持版本:
