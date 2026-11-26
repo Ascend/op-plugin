@@ -4497,12 +4497,6 @@ fmax:
   - float64
   test_non_standard_bool_values:
   - bool
-  test_out:
-  - float32
-  test_variant_consistency_eager:
-  - float32
-  test_backward:
-  - float32
 fmin:
   test_neg_view:
   - float64

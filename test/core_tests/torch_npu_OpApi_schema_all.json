@@ -2669,6 +2669,9 @@
   "func: floor_divide_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)": {
     "version": ["all_version"]
   },
+  "func: fmax.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
   "func: fmod.Scalar(Tensor self, Scalar other) -> Tensor": {
     "version": ["all_version"]
   },
