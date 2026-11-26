@@ -101,7 +101,7 @@ def get_include_dirs():
 
 
 def get_compile_args():
-    compile_args = ["-std=c++17"]
+    compile_args = ["-std=c++20"]
     compile_args.append(current_version_macro)
     # for Windows
     if sys.platform == "win32":
