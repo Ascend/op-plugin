@@ -128,8 +128,16 @@ at::Tensor npu_quantize(
     int64_t axis,
     bool div_mode) {
   if (div_mode) {
+    TORCH_CHECK(
+        axis >= -self.dim() && axis <= self.dim() - 1,
+        "Axis should be in range [-rank(x), rank(x) - 1], but got: " + std::to_string(axis) +
+            OPS_ERROR(ErrCode::PARAM));
     return npu_quantize_by_kernel(self, scales, zero_points_opt, dtype, axis);
   }
+  TORCH_CHECK(
+      axis >= -2,
+      "Axis should be greater than or equal to -2 when div_mode is false, but got: " + std::to_string(axis) +
+          OPS_ERROR(ErrCode::PARAM));
   return npu_quantize_by_ascend_quant(self, scales, zero_points_opt, dtype, axis);
 }
 } // namespace op_api
