@@ -24,6 +24,78 @@ TORCH_NATIVE_FP4_SCALAR = 45
 m = Library("npu", "IMPL", "Meta")
 m_aten = Library("aten", "IMPL", "Meta")
 
+def _lstm_npu_meta_sizes(input, hx, params, num_layers, bidirectional,
+                         batch_first, batch_sizes):
+    """Infer time, batch, hidden width, and layer count times directions."""
+    # Each row block of the first input weight belongs to one of the four LSTM gates.
+    hidden_size = params[0].size(0) // 4
+    layer_directions = num_layers * (2 if bidirectional else 1)
+    if batch_sizes is not None:
+        # NPU packing stores T * B rows. Recover the two dimensions from
+        # their metadata so both can remain symbolic during capture.
+        time_step = batch_sizes.size(0)
+        batch_size = hx[0].size(1)
+    else:
+        time_step = input.size(1) if batch_first else input.size(0)
+        batch_size = input.size(0) if batch_first else input.size(1)
+    return time_step, batch_size, hidden_size, layer_directions
+
+
+@impl(m, "_lstm_npu")
+def _lstm_npu_meta(input, hx, params, has_biases, num_layers, dropout,
+                   train, bidirectional, *, batch_first=False, batch_sizes=None):
+    """Describe the sequence, final states, and saved tensors for LSTM forward."""
+    time_step, batch_size, hidden_size, layer_directions = _lstm_npu_meta_sizes(
+        input, hx, params, num_layers, bidirectional, batch_first, batch_sizes,
+    )
+    # Bidirectional output concatenates the two directions along the feature axis.
+    output_size = hidden_size * (2 if bidirectional else 1)
+    output_shape = (
+        (batch_size, time_step, output_size)
+        if batch_first else (time_step, batch_size, output_size)
+    )
+    state_shape = (layer_directions, batch_size, hidden_size)
+    output = input.new_empty(output_shape)
+    hy = input.new_empty(state_shape)
+    cy = input.new_empty(state_shape)
+    if train:
+        # Training saves i, j, f, o, h, c, and tanhc in time-major order.
+        saved_shape = (layer_directions, time_step, batch_size, hidden_size)
+        saved = tuple(input.new_empty(saved_shape) for _ in range(7))
+    else:
+        # Inference returns undefined gates and stacked scalar h/c tensors.
+        saved = (
+            None, None, None, None,
+            input.new_empty((layer_directions,)),
+            input.new_empty((layer_directions,)),
+            None,
+        )
+    return (output, hy, cy, *saved)
+
+
+@impl(m, "_lstm_npu_backward")
+def _lstm_npu_backward_meta(grad_y, grad_hy, grad_cy, input, hx, params,
+                            i, j, f, o, h, c, tanhc, has_biases, num_layers,
+                            dropout, train, bidirectional, *, batch_first=False,
+                            batch_sizes=None):
+    """Describe the input, initial-state, and parameter gradients."""
+    # Match the native shape helper: nonempty packing yields a 2-D input gradient.
+    packed = batch_sizes is not None and batch_sizes.numel() > 0
+    _, batch_size, hidden_size, layer_directions = _lstm_npu_meta_sizes(
+        input, hx, params, num_layers, bidirectional, batch_first,
+        batch_sizes if packed else None,
+    )
+    input_shape = (
+        (input.size(0), input.size(1))
+        if packed else (input.size(0), input.size(1), input.size(2))
+    )
+    state_shape = (layer_directions, batch_size, hidden_size)
+    grad_input = input.new_empty(input_shape)
+    grad_hx = [input.new_empty(state_shape), input.new_empty(state_shape)]
+    # Match each parameter's shape and use the input options like the NPU kernel.
+    grad_params = [input.new_empty(param.shape) for param in params]
+    return grad_input, grad_hx, grad_params
+
 TORCH_DTYPE_MAP = {
     torch.float16: 5,
     torch.bfloat16: 15,
