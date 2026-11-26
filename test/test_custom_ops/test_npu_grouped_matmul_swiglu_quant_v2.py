@@ -6,6 +6,7 @@ import torch_npu
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import create_common_tensor, SupportedDevices
 import math
+from torch._subclasses.fake_tensor import FakeTensorMode
 
 
 class TestNpuGroupedMatmulSwigluQuant(TestCase):
@@ -669,6 +670,69 @@ class TestNpuGroupedMatmulSwigluQuant(TestCase):
                 x.npu(), [weight.npu()], [weightScale.npu()], xScale.npu(), groupList.npu(),
                 dequant_dtype=torch.float32, dequant_mode=0, quant_mode=2,
                 quant_dtype=torch.float8_e5m2)
+
+
+@unittest.skipIf(torch.__version__ < "2.7", "MXFP8 Meta tests require PyTorch >= 2.7")
+class TestNpuGroupedMatmulSwigluQuantV2Meta(unittest.TestCase):
+    def _call_mxfp8(self, m, k, n, e, group_type, transpose, dtype, device):
+        blocks = (k + 63) // 64
+        x = torch.empty((m, k), dtype=torch.float8_e4m3fn, device=device)
+        weight_shape = (e, n, k) if transpose else (e, k, n)
+        scale_shape = (e, n, blocks, 2) if transpose else (e, blocks, n, 2)
+        weight = torch.empty(weight_shape, dtype=torch.float8_e4m3fn, device=device)
+        weight_scale = torch.empty(scale_shape, dtype=torch.uint8, device=device)
+        if transpose:
+            weight = weight.transpose(1, 2)
+            weight_scale = weight_scale.transpose(1, 2)
+        x_scale = torch.empty((m, blocks, 2), dtype=torch.uint8, device=device)
+        group_list = torch.empty((e,), dtype=torch.int64, device=device)
+        return torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+            x, [weight], [weight_scale], x_scale, group_list,
+            dequant_mode=2, dequant_dtype=torch.float32, quant_mode=2, quant_dtype=dtype,
+            group_list_type=group_type, weight_scale_dtype=torch_npu.float8_e8m0fnu,
+            x_scale_dtype=torch_npu.float8_e8m0fnu)
+
+    def _check_mxfp8_shapes(self, device):
+        cases = ((87, 28, 0, 1, 1, False), (15, 1, 0, 4, 0, True),
+                 (4, 64, 2, 1, 0, False), (4, 64, 258, 1, 0, False))
+        for case, dtype in itertools.product(cases, (torch.float8_e4m3fn, torch.float8_e5m2)):
+            with self.subTest(case=case, dtype=dtype, device=device):
+                y, scale = self._call_mxfp8(*case, dtype, device)
+                m, _, n, _, _, _ = case
+                self.assertEqual(tuple(y.shape), (m, n // 2))
+                self.assertEqual(tuple(scale.shape), (m, (n // 2 + 63) // 64, 2))
+                self.assertEqual(y.dtype, dtype)
+                self.assertEqual(scale.dtype, torch.uint8)
+
+    def test_mxfp8_meta_shapes(self):
+        self._check_mxfp8_shapes("meta")
+
+    def test_mxfp8_fake_tensor_shapes(self):
+        with FakeTensorMode():
+            self._check_mxfp8_shapes("npu:0")
+
+    def test_pertoken_meta_empty_m(self):
+        for k in (0, 7):
+            with self.subTest(k=k):
+                x = torch.empty((0, k), dtype=torch.float8_e4m3fn, device="meta")
+                weight = torch.empty((8, k, 8), dtype=torch.float8_e4m3fn, device="meta")
+                weight_scale = torch.empty((8, 8), dtype=torch.float32, device="meta")
+                x_scale = torch.empty((0,), dtype=torch.float32, device="meta")
+                group_list = torch.empty((8,), dtype=torch.int64, device="meta")
+                y, scale = torch_npu.npu_grouped_matmul_swiglu_quant_v2(
+                    x, [weight], [weight_scale], x_scale, group_list,
+                    dequant_mode=0, dequant_dtype=torch.float32, quant_mode=0,
+                    quant_dtype=torch.float8_e4m3fn)
+                self.assertEqual(tuple(y.shape), (0, 4))
+                self.assertEqual(tuple(scale.shape), (0,))
+                self.assertEqual(y.dtype, torch.float8_e4m3fn)
+                self.assertEqual(scale.dtype, torch.float32)
+
+    def test_mxfp8_meta_rejects_odd_n(self):
+        for n in (1, 3):
+            with self.subTest(n=n), self.assertRaisesRegex(RuntimeError, "logical N must be even"):
+                self._call_mxfp8(4, 64, n, 1, 0, False, torch.float8_e4m3fn, "meta")
+
 
 if __name__ == "__main__":
     run_tests()

@@ -6601,9 +6601,10 @@ def npu_grouped_matmul_swiglu_quant_v2_meta(x, weight, weight_scale, x_scale, gr
     output_scale_n = n // mxfp_multi_base_size / mxfp_divisor_size
     output_shape = None
     output_scale_shape = None
+    # SwiGLU splits logical N into equal halves; N=0 produces empty outputs.
     torch._check(
-        output_n > 0,
-        lambda: f"output_n is half of n. it must be greater than 0, but currently it is {output_n}.",
+        n % mxfp_multi_base_size == 0,
+        lambda: f"The logical N must be even, but currently it is {n}.",
     )
     if weight[0].dtype == torch.int8:
         output_shape = torch.empty([batch_size, n // mxfp_multi_base_size], dtype=torch.int8, device=x.device)
