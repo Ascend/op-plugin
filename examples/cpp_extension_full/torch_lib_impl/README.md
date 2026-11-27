@@ -1,6 +1,6 @@
 # 适配开发及调用（完整样例-TORCH_LIBRARY_IMPL）
 
-基于C++ extensions方式，通过TorchNPU来调用单算子API的适配开发过程，其中前反向绑定通过PyTorch中`TORCH_LIBRARY_IMPL`注册实现。
+本样例演示如何使用TorchNPU单算子API实现自定义算子，通过`TORCH_LIBRARY_IMPL`注册前向和反向实现，并在Python中调用。
 
 ## 算子适配开发
 

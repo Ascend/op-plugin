@@ -2,7 +2,7 @@
 
 ## 概述
 
-本样例展示了自定义算子通过torch原生提供的cppextension方式注册eager模式与torch.compile模式的注册样例，eager模式与torch.compile模式的介绍参考：[Link](https://docs.pytorch.ac.cn/docs/stable/generated/torch.compile.html)。
+本样例演示如何通过PyTorch的C++扩展注册自定义算子，并在eager和`torch.compile`模式下调用。图编译接口请参见[`torch.compile`文档](https://docs.pytorch.org/docs/stable/generated/torch.compile.html)。
 
 ## 目录结构介绍
 

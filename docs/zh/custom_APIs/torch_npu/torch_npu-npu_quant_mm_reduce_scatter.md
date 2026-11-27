@@ -245,7 +245,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 
     输出如下所示
 
-    ```output
+    ```text
     torch.Size([64, 64]) torch.float16
     torch.Size([64, 64]) torch.float16
     ```
@@ -296,7 +296,7 @@ torch_npu.npu_quant_mm_reduce_scatter(self, x2, hcom, world_size, *, reduce_op='
 
     输出如下所示
 
-    ```output
+    ```text
     torch.Size([64, 64]) torch.float16
     torch.Size([64, 64]) torch.float16
     ```
@@ -361,7 +361,7 @@ if __name__ == "__main__":
 
 输出如下所示
 
-```output
+```text
 torch.Size([64, 64]) torch.float16
 torch.Size([64, 64]) torch.float16
 ```

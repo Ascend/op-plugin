@@ -2,7 +2,7 @@
 
 ## 概述
 
-本样例展示了如何使用PyTorch的torch.library注册自定义算子，通过<<<>>>内核调用符调用核函数，并适配aclgraph使用该自定义算子，以简单的Add算子和三角函数计算的原地算子为例，实现aclgraph下自定义算子的调用。
+本样例通过C++的`TORCH_LIBRARY_FRAGMENT`和`TORCH_LIBRARY_IMPL`注册Ascend C算子。示例演示如何在ACLGraph中通过torch.ops调用加法算子和原地三角函数算子。
 
 ## 支持的产品
 

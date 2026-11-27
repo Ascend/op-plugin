@@ -90,7 +90,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 
     输出为
 
-    ```output
+    ```text
     torch.Size([2, 256, 256]), torch.float32
     tensor([-14.8446,  -4.4171,   7.6527,  10.9340, -22.6788, -15.8647], device='npu:0')
     tensor([5.2137, 8.1306, 1.2067, 2.9381], device='npu:0')
@@ -113,7 +113,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 
     输出为
 
-    ```output
+    ```text
     tensor([-14.3446,  -3.9171,   8.1527], device='npu:0')
     ```
 
@@ -135,7 +135,7 @@ torch_npu.npu_grouped_matmul_add(self, x, weight, group_list, *, transpose_x=Tru
 
     输出为：
 
-    ```output
+    ```text
     True
     tensor([-14.8446,  -4.4171,   7.6527], device='npu:0')
     ```

@@ -145,7 +145,7 @@
   | 静态量化（T-T、T-C） | 公式2 | `scale` | [静态量化（T-T、T-C）场景约束](#静态量化t-tt-c场景约束) | [全量化weightnz示例](#全量化weightnz示例)<br>[图模式全量化示例](#图模式全量化示例)、[图模式全量化weightnz示例](#图模式全量化weightnz示例) |
   | 动态量化（K-T、K-C、T-T、T-C） | 公式3 | `scale`、`per_token_scale` | [动态量化（K-T、K-C、T-T、T-C）场景约束](#动态量化k-tk-ct-tt-c场景约束) | [K-T动态量化示例](#k-t动态量化示例) |
   | 伪量化（perchannel、pergroup） | 公式4 | `antiquant_scale`、`antiquant_offset` | [伪量化（perchannel、pergroup）场景约束](#伪量化perchannelpergroup场景约束) | [pergroup伪量化示例](#pergroup伪量化示例) |
-  | 动态量化（G-B、MX） | 公式5 | `scale`、`per_token_scale` | [动态量化（G-B、MX）场景约束](#动态量化g-bmx场景约束) | [MX量化示例](#MX量化示例)<br>[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MxA4W4全量化示例](#图模式MX-a4w4全量化示例) |
+  | 动态量化（G-B、MX） | 公式5 | `scale`、`per_token_scale` | [动态量化（G-B、MX）场景约束](#动态量化g-bmx场景约束) | [MX量化示例](#MX量化示例)<br>[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MXA4W4全量化示例](#图模式MX-a4w4全量化示例) |
   | 伪量化（MX） | 公式6 | `antiquant_scale`、`per_token_scale` | [伪量化（MX）场景约束](#伪量化mx场景约束) | [MX伪量化示例](#MX伪量化示例)<br>[图模式MX伪量化示例](#图模式MX伪量化示例) |
   | 伪量化（K-CG） | 公式7 | `antiquant_scale`、`scale`、`per_token_scale` | [伪量化（K-CG）场景约束](#伪量化k-cg场景约束) | - |
 <!-- end id8 -->
@@ -213,7 +213,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - <term>Atlas推理系列产品</term>：`torch.float16`。
     <!-- end id16 -->
     <!-- npu="950" id17 -->
-    - <term>Ascend 950PR&950DT系列产品</term>：支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.int8`、`torch_npu.hifloat8`、`torch.bfloat16`、`torch.float16`、`torch.float32`、`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int32`、`torch_npu.int4`。其中`torch_npu.int4`实际上是用`torch.int8`或者`torch.int32`承载，保持[-8,7]值域；`torch_npu.hifloat8`/float4系列需配置可选参数`weight_dtype`为对应类型，此时`weight`本身的`dtype`不再生效，但仍需保证`weight`本身的`dtype`为8bit的数据类型，以保证shape正确；`torch_npu.float4_e1m2fn_x2`数据类型仅在`weight`为$FRACTAL\_NZ$时支持。各场景下`weight`的数据格式（$ND$/$FRACTAL\_NZ$）、承载方式（如`torch.float32`/`torch.int32`承载float4/int4、`torch.uint8`承载MxA8W4）及转置要求详见[约束说明](#约束说明)；$FRACTAL\_NZ$格式可通过`torch_npu.npu_format_cast`接口实现$ND$转$FRACTAL\_NZ$格式。
+    - <term>Ascend 950PR&950DT系列产品</term>：支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch.int8`、`torch_npu.hifloat8`、`torch.bfloat16`、`torch.float16`、`torch.float32`、`torch.float4_e2m1fn_x2`、`torch_npu.float4_e1m2fn_x2`、`torch.int32`、`torch_npu.int4`。其中`torch_npu.int4`实际上是用`torch.int8`或者`torch.int32`承载，保持[-8,7]值域；`torch_npu.hifloat8`/float4系列需配置可选参数`weight_dtype`为对应类型，此时`weight`本身的`dtype`不再生效，但仍需保证`weight`本身的`dtype`为8bit的数据类型，以保证shape正确；`torch_npu.float4_e1m2fn_x2`数据类型仅在`weight`为$FRACTAL\_NZ$时支持。各场景下`weight`的数据格式（$ND$/$FRACTAL\_NZ$）、承载方式（如`torch.float32`/`torch.int32`承载float4/int4、`torch.uint8`承载MXA8W4）及转置要求详见[约束说明](#约束说明)；$FRACTAL\_NZ$格式可通过`torch_npu.npu_format_cast`接口实现$ND$转$FRACTAL\_NZ$格式。
     <!-- end id17 -->
 
   - 列表最大长度支持如下：
@@ -801,7 +801,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - `group_type`支持取-1、0，不支持激活函数计算（`act_type`仅支持传入0）。
   - `offset`仅S8S4 K-C支持`torch.float32`。
   - 当`weight`为`torch.float32`/`torch.int32`类型时，可通过[torch\_npu.npu\_convert\_weight\_to\_int4pack](torch_npu-npu_convert_weight_to_int4pack.md)实现1个`torch.float32`承载8个`torch.float4_e2m1fn_x2`、1个`torch.int32`承载8个`torch_npu.int4`的输入，此时不传入`weight_dtype`；`weight`为`torch_npu.int4`时也需进行pack操作。
-  - MxA8W4数据流支持`weight`使用`torch.uint8`承载`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`（1个`torch.uint8`承载两个float4），该场景下静态图/动态图不支持E=1或K=64（E表示Group大小）。
+  - MXA8W4数据流支持`weight`使用`torch.uint8`承载`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`（1个`torch.uint8`承载两个float4），该场景下静态图/动态图不支持E=1或K=64（E表示Group大小）。
   - pergroup场景，`weight`最后一维需为偶数，K为`group_size`整数倍；多多多场景下不支持`weight`非转置。
   - 图模式场景约束：
     - `offset`、`activation_input`、`activation_quant_scale`、`activation_quant_offset`只支持传入None。
@@ -848,8 +848,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
 
     | 场景 | x | weight | bias | scale | per_token_scale | output_dtype | y |
     | --- | --- | --- | --- | --- | --- | --- | --- |
-    | MxA8W8（全量化） | $ND$支持`torch.float8_e4m3fn`/`torch.float8_e5m2`，$FRACTAL\_NZ$支持`torch.float8_e4m3fn` | $ND$支持`torch.float8_e4m3fn`/`torch.float8_e5m2`，$FRACTAL\_NZ$支持`torch.float8_e4m3fn` | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
-    | MxA4W4（全量化） | $ND$支持`torch.float4_e2m1fn_x2`，$FRACTAL\_NZ$支持`torch_npu.float4_e1m2fn_x2` | $ND$支持`torch.float4_e2m1fn_x2`，$FRACTAL\_NZ$支持`torch_npu.float4_e1m2fn_x2` | `torch.float32`/None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
+    | MXA8W8（全量化） | $ND$支持`torch.float8_e4m3fn`/`torch.float8_e5m2`，$FRACTAL\_NZ$支持`torch.float8_e4m3fn` | $ND$支持`torch.float8_e4m3fn`/`torch.float8_e5m2`，$FRACTAL\_NZ$支持`torch.float8_e4m3fn` | None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
+    | MXA4W4（全量化） | $ND$支持`torch.float4_e2m1fn_x2`，$FRACTAL\_NZ$支持`torch_npu.float4_e1m2fn_x2` | $ND$支持`torch.float4_e2m1fn_x2`，$FRACTAL\_NZ$支持`torch_npu.float4_e1m2fn_x2` | `torch.float32`/None | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
     | G-B动态量化 | `torch_npu.hifloat8` | `torch_npu.hifloat8` | None | `torch.float32` | `torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
     | G-B动态量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | None | `torch.float32` | `torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` | `torch.float16`/`torch.bfloat16`/`torch.float32` |
 
@@ -875,10 +875,10 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     - 仅支持`group_type`为0，即M轴分组。
     - 不支持图模式，仅支持单算子模式。
     - 单tensor场景下，scale NZ亲和格式的storage shape为$[E, \lceil N/16 \rceil, \lceil K/64 \rceil, 16, 2]$；多tensor场景下，每个scale tensor的storage shape为$[\lceil N_i/16 \rceil, \lceil K_i/64 \rceil, 16, 2]$。
-  - 示例：[MX量化示例](#MX量化示例)、[G-B动态量化示例](#g-b动态量化示例)、[MxA4W4全量化示例](#MX-a4w4全量化示例)
+  - 示例：[MX量化示例](#MX量化示例)、[G-B动态量化示例](#g-b动态量化示例)、[MXA4W4全量化示例](#MX-a4w4全量化示例)
   - 图模式场景约束：
     - MX全量化且`weight`输入格式为$FRACTAL\_NZ$格式，若`weight`多tensor输入，则不支持图模式运行。
-    - 示例：[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MxA4W4全量化示例](#图模式MX-a4w4全量化示例)
+    - 示例：[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MXA4W4全量化示例](#图模式MX-a4w4全量化示例)
 <!-- end id81 -->
 
 <!-- npu="A3,910b" id82 -->
@@ -921,7 +921,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - `x`为`torch.float8_e4m3fn`、`weight`为`torch.uint8`/`torch.int8`（承载`torch.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2`）：必须显式传入`output_dtype`，`bias`的数据类型须与`output_dtype`一致。
   - `weight`的最后2维需要满足32B对齐；`weight`为`torch.float32`/`torch.int32`类型时需按[伪量化场景约束](#伪量化perchannelpergroup场景约束)进行pack操作。
   - 全量化MX量化且输入`w`为$FRACTAL\_NZ$格式时，支持单多单场景，此时不支持传入`bias`。
-  - 示例：[MX伪量化示例](#MX伪量化示例)、[MxA8W4伪量化单多单示例](#MXa8w4伪量化单多单示例)
+  - 示例：[MX伪量化示例](#MX伪量化示例)、[MXA8W4伪量化单多单示例](#MXa8w4伪量化单多单示例)
   - 图模式示例见[图模式MX伪量化示例](#图模式MX伪量化示例)，其约束与本节一致。
 <!-- end id84 -->
 
@@ -975,9 +975,9 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   - 静态量化（T-T、T-C）：[全量化weightnz示例](#全量化weightnz示例)
   - 动态量化（K-T、K-C、T-T、T-C）：[k-t动态量化示例](#k-t动态量化示例)、[全量化int8-动态k-c示例](#全量化int8-动态k-c示例)、[全量化int4-perchannel示例](#全量化int4-perchannel示例)
   - 伪量化（perchannel、pergroup）：[a16w4伪量化示例](#a16w4伪量化示例)、[pergroup伪量化示例](#pergroup伪量化示例)、[s8s4-k-c伪量化示例](#s8s4-k-c伪量化示例)
-  - 动态量化（G-B、MX）：[MX量化示例](#MX量化示例)、[G-B动态量化示例](#g-b动态量化示例)、[MxA4W4全量化示例](#MX-a4w4全量化示例)
-  - 伪量化（MX）：[MX伪量化示例](#MX伪量化示例)、[MX伪量化MxA8W4单多单示例](#MXa8w4伪量化单多单示例)
-  - 图模式（各场景）：[图模式全量化示例](#图模式全量化示例)、[图模式全量化weightnz示例](#图模式全量化weightnz示例)、[图模式MX伪量化示例](#图模式MX伪量化示例)、[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MxA4W4全量化示例](#图模式MX-a4w4全量化示例)
+  - 动态量化（G-B、MX）：[MX量化示例](#MX量化示例)、[G-B动态量化示例](#g-b动态量化示例)、[MXA4W4全量化示例](#MX-a4w4全量化示例)
+  - 伪量化（MX）：[MX伪量化示例](#MX伪量化示例)、[MX伪量化MXA8W4单多单示例](#MXa8w4伪量化单多单示例)
+  - 图模式（各场景）：[图模式全量化示例](#图模式全量化示例)、[图模式全量化weightnz示例](#图模式全量化weightnz示例)、[图模式MX伪量化示例](#图模式MX伪量化示例)、[图模式G-B动态量化示例](#图模式g-b动态量化示例)、[图模式MXA4W4全量化示例](#图模式MX-a4w4全量化示例)
   <!-- end id90 -->
 
 - 单算子模式调用
@@ -1117,7 +1117,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     N = 128
     K = 128
     g = 1
-    #使用uint8代替两个mxfp4，此处uint8的内轴需要扩展2倍才是真实的mxfp4的内轴
+    #使用uint8代替两个MXFP4，此处uint8的内轴需要扩展2倍才是真实的MXFP4的内轴
     x = torch.randint(1, 3, (M, int(K/2)), dtype=torch.uint8).npu()
 
     weight = torch.randint(1, 3, (g, K, int(N/2)), dtype=torch.uint8).npu()
@@ -1133,7 +1133,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id96 -->
   <!-- npu="950" id114 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：mx（A4W4）全量化K轴分组场景示例-mxfp4（`group_type`=2，TN，`x`物理排布为\[K, M/2\]的转置视图，`per_token_scale`物理排布为\[K//64+g, M, 2\]的转置视图）
+  - <term>Ascend 950PR&950DT系列产品</term>：MX（A4W4）全量化K轴分组场景示例-MXFP4（`group_type`=2，TN，`x`物理排布为\[K, M/2\]的转置视图，`per_token_scale`物理排布为\[K//64+g, M, 2\]的转置视图）
 
     ```python
     import torch
@@ -1143,7 +1143,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     K = 160            # 各组K长度之和，此处两组分别为64和96
     g = 2
     S = K // 64 + g    # scale/per_token_scale的K轴行数
-    # 使用uint8承载mxfp4（1字节承载2个float4），物理排布[K, M/2]，转置视图为[M/2, K]
+    # 使用uint8承载MXFP4（1字节承载2个float4），物理排布[K, M/2]，转置视图为[M/2, K]
     x = torch.randint(1, 3, (K, M // 2), dtype=torch.uint8).npu().view(torch.float4_e2m1fn_x2).t()
     weight = torch.randint(1, 3, (K, N // 2), dtype=torch.uint8).npu().view(torch.float4_e2m1fn_x2)
     scale = torch.randint(124, 130, (S, N, 2), dtype=torch.uint8).npu().view(torch.float8_e8m0fnu)
@@ -1427,7 +1427,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     ```
   <!-- end id102 -->
   <!-- npu="950" id103 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：伪量化MxA8W4，单多单场景<a id="MXa8w4伪量化单多单示例"></a>
+  - <term>Ascend 950PR&950DT系列产品</term>：伪量化MXA8W4，单多单场景<a id="MXa8w4伪量化单多单示例"></a>
 
     ```python
     import torch
@@ -1721,7 +1721,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
       ```
   <!-- end id107 -->
   <!-- npu="950" id108 -->
-  - <term>Ascend 950PR&950DT系列产品</term>：MxA4W4全量化场景示例（约束见[动态量化（G-B、MX）场景约束](#动态量化g-bmx场景约束)）<a id="图模式MX-a4w4全量化示例"></a>
+  - <term>Ascend 950PR&950DT系列产品</term>：MXA4W4全量化场景示例（约束见[动态量化（G-B、MX）场景约束](#动态量化g-bmx场景约束)）<a id="图模式MX-a4w4全量化示例"></a>
 
       ```python
       import math

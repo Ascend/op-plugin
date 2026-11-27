@@ -1,6 +1,6 @@
-# 自定义算子 C++ 扩展开发示例
+# 自定义算子C++ 扩展开发示例
 
-本示例演示如何使用 Ascend C 实现自定义算子 Kernel，并通过 C++ 扩展（`cpp_extension`）方式集成到 PyTorch，最终在 Python 侧调用。涵盖工程结构、编译、安装、测试全流程。
+本样例演示如何用Ascend C编写算子内核，通过pybind11提供Python调用接口，并对比不同的内核启动方式。示例包含扩展包的编译、安装和测试步骤。
 
 ## 目录结构
 
@@ -10,7 +10,7 @@
 |   │   ├── csrc
 |   │   │   ├── add_custom.asc          # Add算子实现（含 5 种正确启动方式对比）
 |   │   │   ├── trig_inplace_custom.asc # 原地三角函数算子实现
-|   │   │   └── pybind11.asc            # pybind绑定自定义算子
+|   │   │   └── pybind11.asc            # 通过pybind11绑定自定义算子
 |   |   ├── op_extension/
 |   |   │   ├── __init__.py             # 扩展加载逻辑
 |   |   │   └── ops/

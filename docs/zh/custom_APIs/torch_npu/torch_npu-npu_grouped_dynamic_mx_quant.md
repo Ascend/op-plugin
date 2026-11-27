@@ -168,7 +168,7 @@ torch_npu.npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst
 
     输出如下所示：
 
-    ```output
+    ```text
     tensor([[  0.],
             [  4.],
             [ 32.],
@@ -211,7 +211,7 @@ torch_npu.npu_grouped_dynamic_mx_quant(x, group_index, *, round_mode="rint", dst
 
     输出如下所示：
 
-    ```output
+    ```text
     tensor([[-128.0000,  208.0000, -160.0000,  ...,  -32.0000, -112.0000,
               128.0000],
             [-144.0000,  104.0000, -208.0000,  ...,  112.0000,  288.0000,

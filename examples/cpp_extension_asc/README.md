@@ -1,6 +1,6 @@
 # 适配开发及调用（Ascend C）
 
-基于C++ extensions方式，通过TorchNPU框架调用Ascend C自定义算子的完整适配开发流程。本样例展示了如何将Ascend C算子集成到Ascend for PyTorch生态中，实现高效的NPU加速计算。
+本样例演示如何通过C++扩展将Ascend C实现的自定义算子接入TorchNPU，并在Python中调用。
 
 ## 算子适配开发
 
@@ -235,7 +235,7 @@
 
   该算子入参为x、out_sin和out_cos。算子调用后，out_sin会被原地修改为sin(x)计算结果，out_cos会被原地修改为cos(x)计算结果，并返回tan(x)计算结果。对应的算子原型为：
   
-  ```python
+  ```text
   ascendc_trig(Tensor x, Tensor(a!) out_sin, Tensor(b!) out_cos) -> Tensor
   ```
 

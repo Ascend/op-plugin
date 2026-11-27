@@ -251,7 +251,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 
     输出如下所示：
 
-    ```output
+    ```text
     torch.Size([1, 8, 16, 64]) torch.float16
     tensor([ 0.6816, -0.0999, -0.5698,  0.2695, -0.4182,  0.1345,  0.5288,  0.4639],
            dtype=torch.float16)
@@ -282,7 +282,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 
     输出如下所示：
 
-    ```output
+    ```text
     torch.Size([8, 2, 64]) torch.float16
     tensor([[[ 0.2325, -1.2969, -0.8823,  0.2834],
              [ 0.5112, -0.1545,  0.9160, -0.2747]],
@@ -312,7 +312,7 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 
     输出如下所示：
 
-    ```output
+    ```text
     torch.Size([1, 8, 16, 64])
     ```
 
@@ -339,6 +339,6 @@ torch_npu.npu_fusion_attention_v2(query, key, value, head_num, input_layout, *, 
 
     输出如下所示：
 
-    ```output
+    ```text
     torch.Size([8, 2, 64]) torch.bfloat16
     ```

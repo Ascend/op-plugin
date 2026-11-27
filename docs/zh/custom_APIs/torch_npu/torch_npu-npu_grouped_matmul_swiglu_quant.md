@@ -292,7 +292,7 @@ torch_npu.npu_grouped_matmul_swiglu_quant(x, weight, group_list, weight_scale, x
 
     输出为
 
-    ```output
+    ```text
     torch.Size([512, 2048]) torch.int8
     torch.Size([512]) torch.float32
     torch.Size([])
