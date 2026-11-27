@@ -255,5 +255,11 @@
 <td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131719"></a><a name="p169771352131719"></a>该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，不建议使用该接口。</p>
 </td>
 </tr>
+<tr><td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.1 "><p id="p11977252111718"><a name="p11977252111718"></a><a name="p11977252111718"></a><a href="./torch_npu-contrib/（beta）torch_npu-contrib-npu_fused_attention.md">torch_npu.contrib.npu_fused_attention
+</a></p>
+</td>
+<td class="cellrowborder" valign="top" width="50%" headers="mcps1.2.3.1.2 "><p><a name="p169771352131720"></a><a name="p169771352131720"></a>该接口已废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障，建议组合使用torch_npu.npu_linear和torch_npu.npu_fusion_attention。</p>
+</td>
+</tr>
 </tbody>
 </table>

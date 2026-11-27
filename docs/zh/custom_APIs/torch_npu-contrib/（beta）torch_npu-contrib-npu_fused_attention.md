@@ -1,5 +1,8 @@
 # （beta）torch_npu.contrib.npu_fused_attention
 
+> [!NOTICE]  
+> 该接口已废弃，底层算子kernel实现不再维护，性能、精度等指标无法保障，建议组合使用torch_npu.npu_linear和torch_npu.npu_fusion_attention。
+
 ## 产品支持情况
 
 <!-- npu="A3" id1 -->
