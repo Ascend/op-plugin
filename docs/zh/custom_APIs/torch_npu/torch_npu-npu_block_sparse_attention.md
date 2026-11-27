@@ -92,6 +92,9 @@ torch_npu.npu_block_sparse_attention(query, key, value, block_sparse_mask, block
 - 序列长度不需要被`block_shape`整除，分块数按向上取整计算。
 - 正向路径当前支持headDim=64或128；反向路径当前支持headDim=128。
 - 反向路径支持`q_input_layout`和`kv_input_layout`同为`"BNSD"`或同为`"TND"`，并支持MHA/GQA场景。MHA场景下$N1 = N2$，GQA场景下需满足$N1 > N2$且$N1 \% N2 = 0$，其中$N1$为`query`的head数，$N2$为`key`/`value`的head数。
+<!-- npu="950" id10 -->
+- 在<term>Ascend 950DT系列产品</term>上，反向路径要求`query`、`key`、`value`的序列长度保持一致：`"BNSD"`布局下三者的序列长度相等；`"TND"`布局下三者的总token数相等。
+<!-- end id10 -->
 
 ## 调用示例
 
