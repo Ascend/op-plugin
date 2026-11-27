@@ -5747,26 +5747,141 @@ class TestNpuRepeatInterleave(TestCase):
 
 
 class TestQuantMatmulInplaceAdd(TestCase):
+    @staticmethod
+    def _inputs(m, n, k=128, mode="mx8"):
+        fp4 = mode == "mx4"
+        per_tensor = mode == "hif8"
+        dtype = torch.uint8 if fp4 or per_tensor else torch.float8_e4m3fn
+        rows = m // 2 if fp4 else m
+        cols = n // 2 if fp4 else n
+        y = torch.empty((m, n), dtype=torch.float32, device="npu")
+        x1 = torch.empty_strided((rows, k), (1, rows), dtype=dtype, device="npu")
+        x2 = torch.empty((k, cols), dtype=torch.float8_e5m2 if mode == "mx8" else dtype, device="npu")
+        groups = (k + 63) // 64
+        if per_tensor:
+            scale = torch.empty((1,), dtype=torch.float32, device="npu")
+            return y, dict(x1=x1, x2=x2, x2_scale=scale, x1_scale=scale,
+                           x1_dtype=torch_npu.hifloat8, x2_dtype=torch_npu.hifloat8)
+        kwargs = dict(x1=x1, x2=x2, x1_scale=torch.empty((groups, m, 2), dtype=torch.uint8, device="npu"),
+                      x2_scale=torch.empty((groups, n, 2), dtype=torch.uint8, device="npu"),
+                      x1_scale_dtype=torch_npu.float8_e8m0fnu, x2_scale_dtype=torch_npu.float8_e8m0fnu,
+                      group_sizes=[1, 1, 32])
+        if fp4:
+            kwargs.update(x1_dtype=torch_npu.float4_e2m1fn_x2, x2_dtype=torch_npu.float4_e2m1fn_x2)
+        return y, kwargs
+
     def test_npu_quant_batch_matmul_inplace_add(self):
-        M = 7168
-        N = 576
-        K = 512
         with FakeTensorMode():
-            y = torch.randint(-1, 1, (M, N), dtype=torch.float32).npu()
-            x1 = torch.randint(-1, 1, (M, math.ceil(K/64)), dtype=torch.int8).npu()
-            x2 = torch.randint(-1, 1, (K, N), dtype=torch.int8).npu()
-            x2_scale = torch.randint(-1, 1, (M, math.ceil(K/64), 2), dtype=torch.float32).npu()
-            x1_scale = torch.randint(-1, 1, (math.ceil(K/64), 576, 2), dtype=torch.float32).npu()
-            res_1 = torch_npu.npu_add_quant_matmul_(y, x1, x2, x2_scale, x1_scale=x1_scale, group_sizes=None)
-            self.assertTrue(len(res_1.shape) == 2)
-            self.assertTrue(x1.shape[0] == res_1.shape[0])
-            self.assertTrue(x2.shape[1] == res_1.shape[1])
-            self.assertTrue(res_1.dtype == torch.float32)
-            res_2 = torch_npu.npu_add_quant_matmul(y, x1, x2, x2_scale, x1_scale=x1_scale, group_sizes=None)
-            self.assertTrue(len(res_1.shape) == 2)
-            self.assertTrue(x1.shape[0] == res_1.shape[0])
-            self.assertTrue(x2.shape[1] == res_1.shape[1])
-            self.assertTrue(res_1.dtype == torch.float32)
+            for mode in ("mx8", "mx4", "hif8"):
+                for m, k, n in ((8, 128, 16), (0, 65, 8), (8, 128, 0), (0, 128, 0)):
+                    with self.subTest(mode=mode, m=m, k=k, n=n):
+                        y, kwargs = self._inputs(m, n, k, mode)
+                        if m and mode != "hif8":
+                            kwargs["x1_scale"] = kwargs["x1_scale"].transpose(0, 1)
+                        if not m and n and mode != "hif8":
+                            kwargs["x2_scale"] = kwargs["x2_scale"].transpose(0, 1)
+                        if m == n == 0:
+                            kwargs["group_sizes"] = None
+                        self.assertIs(torch_npu.npu_add_quant_matmul_(y, **kwargs), y)
+                        result = torch_npu.npu_add_quant_matmul(y, **kwargs)
+                        self.assertEqual(result.shape, y.shape)
+                        self.assertEqual(result.dtype, y.dtype)
+                        self.assertFalse(torch._C._is_alias_of(result, y))
+
+    def test_empty_mxfp4_symbolic_stride(self):
+        shape_env = ShapeEnv()
+        with FakeTensorMode(shape_env=shape_env):
+            stride = shape_env.create_unbacked_symint()
+            torch._check(stride >= 1)
+            y, kwargs = self._inputs(8, 0, mode="mx4")
+            x2 = kwargs["x2"]
+            kwargs["x2"] = x2.as_strided(x2.shape, (stride, 1))
+            for op in (torch_npu.npu_add_quant_matmul_, torch_npu.npu_add_quant_matmul):
+                self.assertEqual(op(y, **kwargs).shape, y.shape)
+
+    def test_empty_hif8_symbolic_scale_lengths(self):
+        for op in (torch_npu.npu_add_quant_matmul_, torch_npu.npu_add_quant_matmul):
+            shape_env = ShapeEnv()
+            with self.subTest(op=op), FakeTensorMode(shape_env=shape_env):
+                y, kwargs = self._inputs(8, 0, mode="hif8")
+                for name in ("x1_scale", "x2_scale"):
+                    length = shape_env.create_unbacked_symint()
+                    torch._check_is_size(length)
+                    kwargs[name] = y.new_empty((length,))
+                self.assertEqual(op(y, **kwargs).shape, y.shape)
+
+    def test_empty_uses_eager_dtype_overrides_and_group_encoding(self):
+        with FakeTensorMode():
+            y, kwargs = self._inputs(0, 8, mode="mx4")
+            x1 = kwargs["x1"]
+            fp32_storage = torch.empty_strided(x1.shape, x1.stride(), dtype=torch.float32, device="npu")
+            for changes in (dict(x1=fp32_storage), dict(x2_scale=kwargs["x2_scale"].float()),
+                            dict(group_sizes=[65537, 1, 32]), dict(group_sizes=[0, 65537, 32])):
+                for op in (torch_npu.npu_add_quant_matmul_, torch_npu.npu_add_quant_matmul):
+                    self.assertEqual(op(y, **dict(kwargs, **changes)).shape, y.shape)
+
+    @unittest.skipIf(not RUN_NPU, "requires npu")
+    @SupportedDevices(['Ascend950'])
+    def test_empty_int8_inputs_with_and_without_dtype_overrides(self):
+        scale_dtypes = (torch.float32, torch.uint64) if hasattr(torch, "uint64") else (torch.float32,)
+        for execution, mode in (("eager", contextlib.nullcontext()), ("fake", FakeTensorMode())):
+            with self.subTest(execution=execution), mode:
+                y, mx = self._inputs(0, 8)
+                x1 = mx["x1"].view(torch.int8)
+                x2 = mx["x2"].view(torch.int8)
+                mx.update(x1=x1, x2=x2, x1_dtype=torch_npu.float8_e4m3fn, x2_dtype=torch_npu.float8_e5m2)
+                for op in (torch_npu.npu_add_quant_matmul_, torch_npu.npu_add_quant_matmul):
+                    with self.subTest(op=op):
+                        for scale_dtype in scale_dtypes:
+                            scale = y.new_empty((1,), dtype=scale_dtype)
+                            with self.subTest(scale_dtype=scale_dtype), self.assertRaisesRegex(
+                                RuntimeError, "dtype combination"
+                            ):
+                                op(y, x1, x2, scale, x1_scale=scale)
+                        result = op(y, **mx)
+                        self.assertEqual(result.shape, y.shape)
+                        self.assertEqual(result.dtype, y.dtype)
+                        self.assertEqual(torch._C._is_alias_of(result, y), op is torch_npu.npu_add_quant_matmul_)
+
+    def test_empty_rejects_invalid_inputs(self):
+        with FakeTensorMode():
+            y, mx = self._inputs(0, 8)
+            _, hif8 = self._inputs(0, 8, mode="hif8")
+            _, original = self._inputs(912, 2348, 464)
+            _, zero_k = self._inputs(0, 8, 0)
+            _, tail = self._inputs(0, 8, 65)
+            x1, x2, scale = mx["x1"], mx["x2"], mx["x2_scale"]
+            cases = (
+                (y.new_empty((0, 2348)), dict(original, x2_scale=scale.new_empty((8, 0, 2))), "y shape"),
+                (y.new_empty((0, 9)), mx, "y shape"),
+                (y.unsqueeze(0), mx, "2-D"),
+                (y.half(), mx, "y must have dtype"),
+                (y, dict(mx, x1=x1.unsqueeze(0)), "2-D"),
+                (y, dict(mx, x1=x1.new_empty((128, 0)).T), "x1 must be transposed"),
+                (y, dict(mx, x2=x2.new_empty((8, 128)).T), "x2 must be untransposed"),
+                (y, zero_k, "positive K"),
+                (y, dict(mx, x2=x2[:64]), "positive K"),
+                (y, dict(mx, x2=x2.to(torch.int8)), "dtype combination"),
+                (y, dict(mx, x1_scale=None), "x1_scale is required"),
+                (y, dict(mx, x2_scale_dtype=None), "x2_scale must use"),
+                (y, dict(mx, x1_scale=scale.new_empty((2, 1, 2))), "x1_scale must have shape"),
+                (y, dict(mx, x2_scale=scale.new_empty((2, 7, 2))), "x2_scale must have shape"),
+                (y, dict(mx, x2_scale=scale.new_empty((8, 2, 2))), "x2_scale must have shape"),
+                (y, dict(mx, x1_scale=scale.new_empty((2, 0, 1))), "x1_scale must have shape"),
+                (y, dict(mx, group_sizes=[1, 1]), "three elements"),
+                (y, dict(mx, group_sizes=[2, 1, 32]), "MX group_sizes"),
+                (y, dict(mx, group_sizes=[1, 65537, 32]), "MX group_sizes"),
+                (y, dict(tail, group_sizes=None), "cannot infer MX group size"),
+                (y, dict(hif8, x1_scale=y.new_empty((2,))), "both have shape"),
+                (y, dict(hif8, x2_scale=y.new_empty(())), "both have shape"),
+                (y, dict(hif8, x1_scale=y.new_empty((1, 1))), "both have shape"),
+                (y, dict(hif8, group_sizes=[1, 1, 32]), "HiFloat8 group_sizes"),
+            )
+            for op in (torch_npu.npu_add_quant_matmul_, torch_npu.npu_add_quant_matmul):
+                for invalid_y, kwargs, error in cases:
+                    with self.subTest(op=op, error=error), self.assertRaisesRegex(RuntimeError, error):
+                        op(invalid_y, **kwargs)
+
 
 class TestNpuDeformableConv2d(TestCase):
     def test_npu_deformable_conv2d(self):

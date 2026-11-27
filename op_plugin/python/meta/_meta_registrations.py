@@ -19,6 +19,7 @@ ATTR_DIM_LIMIT_QUANTCONV2D = 2
 FP8_E4M3_BLOCK_SIZE = 32
 MX_A8W4_K_GROUP_SIZE = 32
 # PyTorch converts a native dtype argument passed through a custom-op schema to its scalar enum.
+TORCH_NATIVE_E8M0_SCALAR = 44
 TORCH_NATIVE_FP4_SCALAR = 45
 #meta register implementation
 m = Library("npu", "IMPL", "Meta")
@@ -4048,15 +4049,113 @@ def npu_add_quant_gmm_meta(y, x1, x2, x2_scale, group_list, *, x1_scale=None, gr
     return torch.empty_like(y)
 
 
+def _add_quant_matmul_dtype(tensor, override):
+    dtype = tensor.dtype if override is None else override
+    if dtype in (getattr(torch, "float4_e2m1fn_x2", None), TORCH_NATIVE_FP4_SCALAR, torch_npu.float4_e2m1fn_x2):
+        return torch_npu.float4_e2m1fn_x2
+    if dtype in (getattr(torch, "float8_e8m0fnu", None), TORCH_NATIVE_E8M0_SCALAR, torch_npu.float8_e8m0fnu):
+        return torch_npu.float8_e8m0fnu
+    if dtype == torch_npu.hifloat8:
+        return dtype
+    if dtype == torch_npu.float32:
+        return torch.float32
+    return TORCH_DTYPE_ENUM_VALUE_TO_SCALAR_TYPE_MAP.get(dtype, dtype)
+
+
+def _add_quant_matmul_transposed(tensor):
+    rows, cols = tensor.shape
+    row_stride, col_stride = tensor.stride()
+    # Packing a transposed matrix doubles rows and col_stride together.
+    return (row_stride == 1) & (col_stride == rows) & ((rows != 1) | (cols != 1))
+
+
+def _check_add_quant_matmul_mx_scale(scale, name, groups, axis):
+    torch._check(scale.dim() == 3, lambda: f"{name} must be 3-D for MX quantization")
+    first, second, pair = scale.shape
+    torch._check(pair == 2, lambda: f"{name} must have shape ({groups}, {axis}, 2) after resolving its strides")
+    # ACLNN accepts [groups, axis, 2] and its strided transpose of the first two dimensions.
+    transposed = (scale.stride(0) == 2) & (scale.stride(1) == 2 * first)
+    direct = (first == groups) & (second == axis)
+    swapped = (first == axis) & (second == groups)
+    torch._check((torch.sym_not(transposed) & direct) | (transposed & swapped),
+                 lambda: f"{name} must have shape ({groups}, {axis}, 2) after resolving its strides, "
+                         f"got {tuple(scale.shape)} with strides {scale.stride()}")
+
+
+def _check_add_quant_matmul_empty(y, x1, x2, x2_scale, x1_scale, group_sizes,
+                                  x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype):
+    # TorchAir can replace a statically empty result before calling the GE converter.
+    if not any(isinstance(dim, int) and dim == 0 for dim in y.shape):
+        return
+    torch._check(y.dim() == 2 and x1.dim() == 2 and x2.dim() == 2, lambda: "y, x1 and x2 must be 2-D")
+    torch._check(y.dtype == torch.float32, lambda: "y must have dtype float32")
+    torch._check(x1_scale is not None, lambda: "x1_scale is required")
+    x1_type = _add_quant_matmul_dtype(x1, x1_dtype)
+    x2_type = _add_quant_matmul_dtype(x2, x2_dtype)
+    fp8 = (torch.float8_e4m3fn, torch.float8_e5m2)
+    packed = x1_type == x2_type == torch_npu.float4_e2m1fn_x2
+    per_tensor = x1_type == x2_type == torch_npu.hifloat8
+    torch._check((x1_type in fp8 and x2_type in fp8) or packed or per_tensor,
+                 lambda: f"unsupported x1 and x2 dtype combination: {x1_type}, {x2_type}")
+    torch._check(_add_quant_matmul_transposed(x1) & torch.sym_not(_add_quant_matmul_transposed(x2)),
+                 lambda: f"x1 must be transposed and x2 must be untransposed, got strides {x1.stride()}, {x2.stride()}")
+    m, k = x1.shape
+    k2, n = x2.shape
+    if packed:
+        m = m * 2
+        # Match CollectB4ShapeInfo, including its priority when both strides are one.
+        row_stride, col_stride = x2.stride()
+        pack_cols = (col_stride == 1) & ((row_stride != 1) | (n == 1))
+        pack_rows = (row_stride == 1) & ((col_stride != 1) | ((k2 == 1) & (n != 1)))
+        k2 = torch.sym_ite(pack_rows, 2 * k2, k2)
+        n = torch.sym_ite(pack_cols, 2 * n, n)
+    torch._check((k > 0) & (k == k2), lambda: f"x1 and x2 must have the same positive K, got {k} and {k2}")
+    torch._check((m == y.size(0)) & (n == y.size(1)),
+                 lambda: f"y shape must match (M, N) = ({m}, {n}), got {tuple(y.shape)}")
+    if packed:
+        torch._check(y.size(1) % 2 == 0, lambda: "MXFP4 requires even M and N")
+
+    torch._check(group_sizes is None or len(group_sizes) in (0, 3),
+                 lambda: "group_sizes must be empty or contain three elements")
+    group_m, group_n, group_k = group_sizes or (0, 0, 0)
+    # The eager wrapper adds these fields in uint64 before ACLNN extracts the 16-bit group sizes.
+    group_size = ((group_m << 32) + (group_n << 16) + group_k) & 0xFFFFFFFFFFFFFFFF
+    scale_dtype = torch.float32 if per_tensor else torch_npu.float8_e8m0fnu
+    for scale, override, name in ((x1_scale, x1_scale_dtype, "x1_scale"), (x2_scale, x2_scale_dtype, "x2_scale")):
+        torch._check(_add_quant_matmul_dtype(scale, override) == scale_dtype,
+                     lambda name=name: f"{name} must use {'float32' if per_tensor else 'float8_e8m0fnu'} scales")
+    if per_tensor:
+        torch._check(group_size == 0, lambda: "HiFloat8 group_sizes must encode zero")
+        for scale in (x1_scale, x2_scale):
+            torch._check(scale.dim() == 1 and scale.size(0) == 1,
+                         lambda: "HiFloat8 x1_scale and x2_scale must both have shape (1,)")
+        return
+
+    group_m = (group_size >> 32) & 0xFFFF
+    group_n = (group_size >> 16) & 0xFFFF
+    group_k = group_size & 0xFFFF
+    torch._check(group_m in (0, 1) and group_n in (0, 1) and group_k in (0, 32),
+                 lambda: "MX group_sizes must resolve to (1, 1, 32)")
+    groups = (k + 63) // 64
+    _check_add_quant_matmul_mx_scale(x1_scale, "x1_scale", groups, y.size(0))
+    _check_add_quant_matmul_mx_scale(x2_scale, "x2_scale", groups, y.size(1))
+    if group_k == 0:
+        torch._check(k == groups * 64, lambda: "cannot infer MX group size 32 from K and the scale shape")
+
+
 @impl(m, "npu_add_quant_matmul_")
 def npu_add_quant_matmul__meta(y, x1, x2, x2_scale, *, x1_scale=None, group_sizes=None,
                                x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    _check_add_quant_matmul_empty(y, x1, x2, x2_scale, x1_scale, group_sizes,
+                                  x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
     return y
 
 
 @impl(m, "npu_add_quant_matmul")
 def npu_add_quant_matmul_meta(y, x1, x2, x2_scale, *, x1_scale=None, group_sizes=None,
                               x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None):
+    _check_add_quant_matmul_empty(y, x1, x2, x2_scale, x1_scale, group_sizes,
+                                  x1_dtype, x2_dtype, x1_scale_dtype, x2_scale_dtype)
     return torch.empty_like(y)
 
 
