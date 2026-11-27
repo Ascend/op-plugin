@@ -27,7 +27,7 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 - **self** \(`Tensor`)：必选参数，输入框的Tensor，包含batch大小，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, q, 4\]，其中q=1或q=num\_classes。
 - **scores** \(`Tensor`)：必选参数，输入分数tensor，数据类型为`torch.float16`，输入示例：\[batch\_size, num\_anchors, num\_classes\]。
 - **score\_threshold** \(`float`)：必选参数，指定评分过滤器的阈值，用于筛选框，去除得分较低的框，数据类型为`float32`。
-- **iou\_threshold** \(`float`)：必选参数，指定nms的iou\_threshold，用于设定阈值，去除高于阈值的框，数据类型为`float32`。
+- **iou\_threshold** \(`float`)：必选参数，交并比阈值。候选框与已保留框的IoU超过该阈值时被抑制，数据类型为`float32`。
 - **max\_size\_per\_class** \(`int`)：必选参数，指定每个类别的最大可选的框数。
 - **max\_total\_size** \(`int`)：必选参数，指定每个batch最大可选的框数。
 - **change\_coordinate\_frame** \(`bool`)：可选参数，是否归一化输出框坐标矩阵，默认值为False。
@@ -42,9 +42,11 @@ torch_npu.npu_batch_nms(self, scores, score_threshold, iou_threshold, max_size_p
 
 ## 调用示例
 
+示例按类别执行批量非极大值抑制。返回保留框、分数、类别及各批次的有效结果数。
+
 ```python
->>> import torch, torch_npu
->>> boxes = torch.randn(8, 2, 4, 4, dtype = torch.float16).to("npu")
->>> scores = torch.randn(8, 2, 4, dtype = torch.float16).to("npu")
->>> nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = torch_npu.npu_batch_nms(boxes, scores, 0.3, 0.5, 3, 4)
+import torch, torch_npu
+boxes = torch.randn(8, 2, 4, 4, dtype = torch.float16).to("npu")
+scores = torch.randn(8, 2, 4, dtype = torch.float16).to("npu")
+nmsed_boxes, nmsed_scores, nmsed_classes, nmsed_num = torch_npu.npu_batch_nms(boxes, scores, 0.3, 0.5, 3, 4)
 ```

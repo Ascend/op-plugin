@@ -52,12 +52,16 @@ at::Tensor empty_with_swapped_memory(c10::IntArrayRef size, c10::optional<at::Sc
 
 ## 调用示例
 
+构建独立程序时链接LibTorch和`libtorch_npu`，并在创建NPU张量前初始化NPU运行时。
+
 ```cpp
 #include <iostream>
-#include <torch/extension.h>
+#include <ATen/ATen.h>
+#include <torch_npu/csrc/libs/init_npu.h>
 #include <torch_npu/csrc/core/npu/NPUFormat.h>
  
 int main() {
+    torch_npu::init_npu(0);
     // 创建指定shape和dtype的特殊Tensor（swapped memory格式）
     at::Tensor tensor = at_npu::native::empty_with_swapped_memory({2, 3}, at::kFloat, c10::nullopt);
     tensor.fill_(3.14);

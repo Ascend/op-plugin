@@ -64,7 +64,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
     - <term>Atlas推理系列产品</term>：数据类型支持`torch.int8`，需要调用`torchair.experimental.inference.use_internal_format_weight`或`torch_npu.npu_format_cast`完成weight（batch, n, k）高性能数据排布功能。
     <!-- end id9 -->
     <!-- npu="A3,910b" id10 -->
-    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`和`torch.int32`（同`x1`，表示`torch_npu.int4`的数据计算），需要调用torch_npu.npu_format_cast完成weight（batch, n, k）高性能数据排布功能，但不推荐使用该module方式，推荐torch_npu.npu_quant_matmul。
+    - <term>Atlas A2系列产品</term>/<term>Atlas A3系列产品</term>：数据类型支持`torch.int8`和`torch.int32`（同`x1`，表示`torch_npu.int4`的数据计算），单算子模式可使用示例中的ND权重。需要高性能排布时，可调用`torch_npu.npu_format_cast`进行转换。推荐使用`torch_npu.npu_quant_matmul`。
     <!-- end id10 -->
 
 - scale（`Tensor`）：量化计算的scale。数据格式支持$ND$，shape需要是1维(t,)，t=1或n，其中n与`weight`的n一致。如需传入`torch.int64`数据类型的scale，需要提前调用torch_npu.npu_trans_quant_param接口来获取`torch.int64`数据类型的scale。
@@ -303,7 +303,7 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
 ## 调用示例
 
 - 单算子模式调用
-    - `torch.int8`类型输入场景，示例代码如下：
+    - `torch.int8`输入场景。示例使用形状为 `(1, 512)`的输入和 `(128, 512)`的权重，绑定量化系数、偏移和偏置，得到形状为 `(1, 128)`的int8输出。
 
         ```python
         import torch
@@ -334,13 +334,14 @@ torch_npu.contrib.module.LinearQuant(in_features, out_features, *, bias=True, of
         - <term>Atlas A2系列产品</term> 
         - <term>Atlas A3系列产品</term>
 
+        示例用每个int32元素打包8个int4值。逻辑输入和权重分别为 `(1, 512)`和 `(128, 512)`，对应的打包形状为 `(1, 64)`和 `(128, 64)`。输出为 `(1, 128)`的float16张量。
+
         ```python
         import torch
         import torch_npu
         import logging
         import os
         from torch_npu.contrib.module import LinearQuant
-        # 用int32类型承载int4数据，实际int4 shape为x1：(1, 512) x2： (128, 512)
         x1 = torch.randint(-1, 1, (1, 64), dtype=torch.int32).npu()
         x2 = torch.randint(-1, 1, (128, 64), dtype=torch.int32).npu()
         scale = torch.randn(1, dtype=torch.float32).npu()

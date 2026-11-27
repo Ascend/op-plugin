@@ -33,4 +33,4 @@ void c10_npu::NPUStreamGuard::reset_stream(c10::Stream stream)
 
 ## 约束说明
 
-`stream`必须是NPU流（即由NPU设备创建的`c10::Stream`），否则行为未定义。
+`stream`必须是NPU流（即由NPU设备创建的`c10::Stream`），传入其他设备类型的流会报错。

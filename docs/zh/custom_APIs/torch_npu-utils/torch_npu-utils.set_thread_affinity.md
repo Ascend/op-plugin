@@ -51,17 +51,18 @@ torch_npu.utils.set_thread_affinity(core_range: list[int] | list[list[int]] | No
 
 ## 调用示例
 
+以下示例设置子线程继承的CPU核区间。可用 `[[0, 10], [12, 19]]`替换示例中的 `[12, 19]`以指定多个区间。请按实际设备选择CPU核编号。
+
 ```python
->>> import torch_npu
->>> import threading
->>>
->>> def run_thread():
-...     print("This is a child thread.")
->>>
->>> torch_npu.utils.set_thread_affinity([12, 19]) # 设置单个绑核区间：[12, 19]
->>> torch_npu.utils.set_thread_affinity([[0, 10], [12, 19]]) # 设置多个绑核区间：[0, 10]和[12, 19]
->>> child_thread = threading.Thread(target=run_thread)
->>> child_thread.start()
->>> torch_npu.utils.reset_thread_affinity()
->>> child_thread.join()
+import torch_npu
+import threading
+
+def run_thread():
+    print("This is a child thread.")
+
+torch_npu.utils.set_thread_affinity([12, 19])
+child_thread = threading.Thread(target=run_thread)
+child_thread.start()
+torch_npu.utils.reset_thread_affinity()
+child_thread.join()
 ```

@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）损失。
+基于NPU的CIoU操作，计算预测边界框与真实边界框之间的CIoU（Complete Intersection over Union）分数。可在损失函数中使用该分数。
 
 ## 函数原型
 
@@ -33,30 +33,32 @@ torch_npu.contrib.function.npu_ciou(boxes1, boxes2, trans=True, is_cross=False, 
 - **boxes1**（`Tensor`）：格式为xywh、shape为(4, n)的预测边界框。
 - **boxes2**（`Tensor`）：相应的真实边界框，shape为(4, n)。
 - **trans**（`bool`）：是否有偏移，默认值为True。
-- **is_cross**（`bool`）：boxes1和boxes2之间是否有交叉操作，默认值为False。
-- **mode**（`int`）：选择CIoU的计算方式，默认值为0。
+- **is_cross**（`bool`）：控制两组框的比较方式。默认值为`False`，按对应位置逐对计算。
+- **mode**（`int`）：选择CIoU的计算方式。`0`（默认值）基于交并比（IoU），`1`基于前景交叠比（IoF）。
 
 ## 返回值说明
 
-`Tensor` 
-
- IoU，size为[1,n]。
+`Tensor`。在默认的一一对应模式下，形状为 `(1, n)`，每项为一对框的CIoU分数。
 
 ## 约束说明
 
-到目前为止，CIoU反向只支持当前版本中的trans==True、is_cross==False、mode==0('iou')。如果需要反向传播，确保参数正确。
+- 反向计算要求`trans=True`、`is_cross=False`、`mode=0`。
 
 ## 调用示例
 
+示例为32对预测框和真值框计算CIoU分数，再用分数之和验证反向传播。
+
 ```python
->>> import torch
->>> import torch_npu
->>> from torch_npu.contrib.function import npu_ciou
->>> box1 = torch.randn(4, 32).npu()
->>> box1.requires_grad = True
->>> box2 = torch.randn(4, 32).npu()
->>> box2.requires_grad = True
->>> ciou = npu_ciou(box1, box2) 
->>> l = ciou.sum()
->>> l.backward()
+import torch
+import torch_npu
+from torch_npu.contrib.function import npu_ciou
+box1 = torch.randn(4, 32).npu()
+box1.requires_grad = True
+box2 = torch.randn(4, 32).npu()
+box2.requires_grad = True
+ciou = npu_ciou(box1, box2)
+l = ciou.sum()
+l.backward()
 ```
+
+输出含32个得分，形状为 `(1, 32)`。对其求和后得到标量，`backward()`计算两个输入张量的梯度。

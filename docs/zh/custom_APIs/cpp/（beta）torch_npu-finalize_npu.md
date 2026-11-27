@@ -26,5 +26,5 @@ torch_npu/csrc/libs/init_npu.h
 ## 函数原型
 
 ```cpp
-void torch_npu::finalize_npu()
+void torch_npu::finalize_npu();
 ```

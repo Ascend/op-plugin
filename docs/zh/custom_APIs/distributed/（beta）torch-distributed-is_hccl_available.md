@@ -39,6 +39,10 @@ import torch
 import torch_npu
 
 print(torch.distributed.is_hccl_available())
+```
 
+示例输出如下。
+
+```text
 True
 ```

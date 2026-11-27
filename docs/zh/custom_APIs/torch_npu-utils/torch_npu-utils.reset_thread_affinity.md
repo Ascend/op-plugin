@@ -44,20 +44,26 @@ torch_npu.utils.reset_thread_affinity()
 
 ## 约束说明
 
-该接口需要环境变量`CPU_AFFINITY_CONF`的mode设置为1或2时才生效，一般在拉起子线程的位置后使用，恢复当前线程的绑核区间为主线程区间。推荐和[torch_npu.utils.set_thread_affinity](torch_npu-utils.set_thread_affinity.md)配套使用。
+运行脚本前设置`CPU_AFFINITY_CONF=1`或`CPU_AFFINITY_CONF=2`，使绑核功能生效，一般在拉起子线程的位置后使用，恢复当前线程的绑核区间为主线程区间。推荐和[torch_npu.utils.set_thread_affinity](torch_npu-utils.set_thread_affinity.md)配套使用。
 
 ## 调用示例
 
+使用`CPU_AFFINITY_CONF=1 python affinity_example.py`运行保存后的示例脚本。
+
+以下示例先设置绑核区间并启动子线程，再将当前线程的绑核范围恢复为主线程区间。
+
 ```python
->>> import torch_npu
->>> import threading
->>>
->>> def run_thread():
-...     print("This is a child thread.")
->>>
->>> torch_npu.utils.set_thread_affinity([12, 19])
->>> child_thread = threading.Thread(target=run_thread)
->>> child_thread.start()
->>> torch_npu.utils.reset_thread_affinity()
->>> child_thread.join()
+import torch_npu
+import threading
+
+def run_thread():
+    print("This is a child thread.")
+
+torch_npu.utils.set_thread_affinity([12, 19])
+child_thread = threading.Thread(target=run_thread)
+child_thread.start()
+torch_npu.utils.reset_thread_affinity()
+child_thread.join()
 ```
+
+子线程运行时打印`This is a child thread.`。

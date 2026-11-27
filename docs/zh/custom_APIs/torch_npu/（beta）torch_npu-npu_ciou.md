@@ -38,7 +38,7 @@ torch_npu.npu_ciou(boxes1, boxes2, trans=False, is_cross=True, mode=0, atan_sub_
 - **trans** (`bool`)：可选参数，是否有偏移。默认值为False。
 - **is_cross** (`bool`)：可选参数，boxes1和boxes2之间是否有交叉操作。默认值为True。
 - **mode** (`int`)：可选参数，选择CIoU的计算方式。0表示IoU，1表示IoF。默认值为0。
-- **atan_sub_flag** (`bool`)：可选参数，是否将正向的第二个值传递给反向。默认值为False。
+- **atan_sub_flag** (`bool`)：控制是否生成供反向计算使用的内部中间量atan_sub。需要反向传播时设为True，并遵循下文的反向约束。Python接口只返回CIoU得分。
 
 ## 返回值说明
 
@@ -57,7 +57,11 @@ CIoU计算结果。
 
 ## 调用示例
 
+示例计算两个NPU边界框张量的CIoU得分，并将得分求和后调用反向传播。
+
 ```python
+>>> import torch
+>>> import torch_npu
 >>> box1 = torch.randn(4, 32).npu()
 >>> box1.requires_grad = True
 >>> box2 = torch.randn(4, 32).npu()

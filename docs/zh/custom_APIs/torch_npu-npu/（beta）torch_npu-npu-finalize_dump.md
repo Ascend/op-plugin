@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-结束dump：关闭dump开关，停止采集dump数据。
+结束模型数据Dump，关闭Dump开关并停止采集。通常在所需的模型执行结束后调用。
 
 ## 函数原型
 
@@ -29,6 +29,8 @@ torch_npu.npu.finalize_dump()
 ```
 
 ## 调用示例
+
+将路径替换为本机已有的Dump JSON配置文件。配置文件要求参见 [set_dump](（beta）torch_npu-npu-set_dump.md)。
 
 ```python
 >>> import torch

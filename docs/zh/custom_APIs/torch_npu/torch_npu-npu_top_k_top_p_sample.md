@@ -95,7 +95,7 @@
   * 根据入参约束属性Attr.optional.Bool.input_is_logits(false)，如果该属性为True，则对排序后结果进行归一化：
 
     $$
-    \text{logit\_sortProb} =
+    \text{logits\_sortProb} =
     \begin{cases}
     \text{softmax}(\text{logits\_sort}), & \text{inputIsLogits} = \text{True} \\
     \text{logits\_sort}, & \text{inputIsLogits} = \text{False}
@@ -134,7 +134,7 @@
     sortedValue[b][v] =
     \begin{cases}
     defLogit & \quad \text{topPMask}[b][v] = \text{false} \\
-    logit\_sortProb[b][v] & \quad \text{topPMask}[b][v] = \text{true}
+    logits\_sortProb[b][v] & \quad \text{topPMask}[b][v] = \text{true}
     \end{cases}
     $$
 

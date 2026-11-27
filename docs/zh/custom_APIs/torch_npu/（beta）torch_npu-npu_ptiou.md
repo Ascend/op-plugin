@@ -30,24 +30,31 @@ torch_npu.npu_ptiou(bboxes, gtboxes, mode=0) -> Tensor
 
 ## 参数说明
 
-- **bboxes**（`Tensor`）：输入张量。
-- **gtboxes**（`Tensor`）：输入张量。
+- **bboxes**（`Tensor`）：必选参数，形状为 (N, 4)，各列顺序为 (x1, y1, x2, y2)。
+- **gtboxes**（`Tensor`）：必选参数，形状为 (M, 4)，数据类型与bboxes相同。
 - **mode**（`int`）：默认值为0。0为IoU模式，1为IoF模式。
 
 ## 调用示例
 
+示例计算第一组与第二组边界框两两之间的IoU。
+
 ```python
->>> import torch
->>> import torch_npu
->>> bboxes = torch.tensor([[0, 0, 10, 10],
+import torch
+import torch_npu
+bboxes = torch.tensor([[0, 0, 10, 10],
                            [10, 10, 20, 20],
                            [32, 32, 38, 42]], dtype=torch.float16).to("npu")
->>> gtboxes = torch.tensor([[0, 0, 10, 20],
+gtboxes = torch.tensor([[0, 0, 10, 20],
                             [0, 10, 10, 10],
                             [10, 10, 20, 20]], dtype=torch.float16).to("npu")
->>> output_iou = torch_npu.npu_ptiou(bboxes, gtboxes, 0)
->>> print(output_iou)
+output_iou = torch_npu.npu_ptiou(bboxes, gtboxes, 0)
+print(output_iou)
+```
+
+一次运行的输出：
+
+```text
 tensor([[0.4985, 0.0000, 0.0000],
-        [0.0000, 0.0000, 0.0000], 
+        [0.0000, 0.0000, 0.0000],
        [0.0000, 0.9961, 0.0000]], device='npu:0', dtype=torch.float16)
 ```

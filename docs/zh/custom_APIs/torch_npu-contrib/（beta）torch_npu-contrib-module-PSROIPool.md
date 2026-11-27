@@ -17,12 +17,12 @@
 
 ## 功能说明
 
-使用NPU API进行PSROIPool。
+对输入特征图中的感兴趣区域执行位置敏感池化，得到固定空间尺寸的特征。可用于目标检测中从不同大小的候选区域提取特征。
 
 ## 函数原型
 
 ```python
-torch_npu.contrib.module.PSROIPool(nn.Module)
+torch_npu.contrib.module.PSROIPool(pooled_height=7, pooled_width=7, spatial_scale=0.0625, group_size=7, output_dim=22)
 ```
 
 ## 参数说明
@@ -37,8 +37,8 @@ torch_npu.contrib.module.PSROIPool(nn.Module)
 
 **计算输入**
 
-- **features** (`Tensor`) - 输入特征图。
-- **rois** (`Tensor`) - ROI信息张量，维度不少于3，其中第1维大小为5。
+- **features** (`Tensor`) - 形状为 `(N, C, H, W)`的特征图，其中`C = output_dim * group_size * group_size`。
+- **rois** (`Tensor`) - ROI信息张量，至少三维，第二维大小为5，依次为批次索引和`x1, y1, x2, y2`坐标。形状为 `(N, 5, R)`时，`R`为每张图像的ROI数量。
 
 ## 返回值说明
 
@@ -52,7 +52,21 @@ PSROIPool计算结果，shape为(`rois.size(0) * rois.size(2)`, `output_dim`, `p
 
 ## 调用示例
 
+示例对一张包含8个通道的特征图执行位置敏感池化。池化高、宽和组大小均为2，输出通道数为2。使用`spatial_scale=1.0`，因为ROI坐标已在特征图尺度上。
+
 ```python
->>> from torch_npu.contrib.module import PSROIPool
->>> model = PSROIPool(pooled_height=7, pooled_width=7, spatial_scale=1 / 16.0, group_size=7, output_dim=22)
+import torch
+import torch_npu
+from torch_npu.contrib.module import PSROIPool
+
+features = torch.ones((1, 8, 4, 4), device="npu")
+rois = torch.tensor([[[0.], [0.], [0.], [3.], [3.]]], device="npu")
+model = PSROIPool(pooled_height=2, pooled_width=2, spatial_scale=1.0, group_size=2, output_dim=2).npu()
+print(model(features, rois).shape)
+```
+
+示例输出如下。
+
+```text
+torch.Size([1, 2, 2, 2])
 ```

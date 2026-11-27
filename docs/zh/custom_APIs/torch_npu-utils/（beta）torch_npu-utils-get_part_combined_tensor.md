@@ -20,26 +20,24 @@
 
 ## 功能说明
 
-根据地址偏移及内存大小，从经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor中获取局部Tensor。
+根据元素偏移和元素数量，从经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor中获取局部Tensor。
 
 ## 函数原型
 
 ```python
-torch_npu.utils.get_part_combined_tensor(combined_tensor, index, size) -> Tensor
+torch_npu.utils.get_part_combined_tensor(combined_tensor, index, size) -> Optional[Tensor]
 ```
 
 ## 参数说明
 
 - **combined_tensor** (`Tensor`)：经过`torch_npu.utils.npu_combine_tensors`融合后的融合Tensor。
-- **index** (`Long`)：需获取的局部Tensor相对于融合Tensor的偏移地址。
-- **size** (`Long`)：需获取的局部Tensor的大小。
+- **index** (`int`)：必选参数，从融合Tensor的第几个元素开始截取，起始元素为`0`。
+- **size** (`int`)：必选参数，要截取的元素数量，须为非负整数。
 
 ## 返回值说明
 
-`Tensor`
-
-代表从融合Tensor中获取的局部Tensor。
+`Tensor`或`None`。返回的局部Tensor与融合Tensor共享存储。`combined_tensor`为`None`或`size`为`0`时返回`None`。
 
 ## 约束说明
 
-`index`+`size`不超过`combined_tensor`的内存大小。
+`index`和`size`均以元素为单位，其和不得超过`torch_npu.get_storage_size(combined_tensor)`。例如，`get_part_combined_tensor(combined_tensor, 2, 3)`返回从索引`2`开始的`3`个元素。

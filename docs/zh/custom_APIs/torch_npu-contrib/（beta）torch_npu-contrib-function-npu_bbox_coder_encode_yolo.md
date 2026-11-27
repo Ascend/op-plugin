@@ -27,9 +27,9 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 
 ## 参数说明
 
-- **bboxes** (`Tensor`)：源框，例如锚点框。支持的数据类型为`torch.float`、`torch.half`。
-- **gt_bboxes** (`Tensor`)：目标框，例如真值框。支持的数据类型为`torch.float`、`torch.half`。
-- **stride** (`Tensor`)：bbox步长。仅支持`torch.int`张量。
+- **bboxes** (`Tensor`)：必选参数，形状为 `(N, 4)`的源框，例如锚点框，支持`torch.float32`和`torch.float16`。
+- **gt_bboxes** (`Tensor`)：必选参数，转换目标框，例如真值框，形状和数据类型须与`bboxes`一致。
+- **stride** (`Tensor`)：必选参数，形状为 `(N,)`的步长张量，每个框对应一个步长。算子接收`torch.int32`，封装会将输入步长转为`torch.int32`。
 
 ## 返回值说明
 
@@ -39,15 +39,22 @@ torch_npu.contrib.function.npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
 
 ## 调用示例
 
+示例为1024对边界框各提供一个步长，并计算每对框的四个编码增量。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.function import npu_bbox_coder_encode_yolo
->>> A = 1024
->>> bboxes = torch.randn((A, 4), dtype=torch.float32).npu()
->>> gt_bboxes = torch.randn((A, 4), dtype=torch.float32).npu()
->>> stride = torch.randint(0, 32, size=(A,)).npu()
->>> out = npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
->>> torch.npu.synchronize()
->>> print('npu_bbox_coder_encode_yolo done. output shape is ', out.shape)
-npu_bbox_coder_encode_yolo done. output shape is torch.Size([1024, 4])
+import torch, torch_npu
+from torch_npu.contrib.function import npu_bbox_coder_encode_yolo
+A = 1024
+bboxes = torch.randn((A, 4), dtype=torch.float32).npu()
+gt_bboxes = torch.randn((A, 4), dtype=torch.float32).npu()
+stride = torch.randint(1, 32, size=(A,), dtype=torch.int32).npu()
+out = npu_bbox_coder_encode_yolo(bboxes, gt_bboxes, stride)
+torch.npu.synchronize()
+print(out.shape)
+```
+
+示例输出如下。
+
+```text
+torch.Size([1024, 4])
 ```

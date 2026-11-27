@@ -36,16 +36,24 @@ torch_npu.contrib.NpuFairseqDropout(p, module_name=None)
 
 ## 调用示例
 
+`enable_dropout_ensemble(model)`为模型注册用于生成和缓存随机掩码的钩子。示例先用相同形状的输入运行一次前向，准备下一次前向使用的掩码。
+
 ```python
->>> import torch
->>> import torch.nn as nn
->>> import torch_npu
->>> from torch_npu.contrib import NpuFairseqDropout
->>> dropout = NpuFairseqDropout(0.5)
->>> model = nn.Sequential(dropout).npu()
->>> NpuFairseqDropout.enable_dropout_ensemble(model)
->>> x = torch.randn(2, 3, 4, 4).npu()
->>> _ = model(x)
->>> output = model(x)
->>> print(output.shape)
+import torch
+import torch.nn as nn
+import torch_npu
+from torch_npu.contrib import NpuFairseqDropout
+dropout = NpuFairseqDropout(0.5)
+model = nn.Sequential(dropout).npu()
+NpuFairseqDropout.enable_dropout_ensemble(model)
+x = torch.randn(2, 3, 4, 4).npu()
+_ = model(x)
+output = model(x)
+print(output.shape)
+```
+
+示例输出如下。
+
+```text
+torch.Size([2, 3, 4, 4])
 ```

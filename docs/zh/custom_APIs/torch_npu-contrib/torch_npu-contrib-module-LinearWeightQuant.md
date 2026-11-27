@@ -23,7 +23,7 @@ LinearWeightQuant是对torch_npu.npu_weight_quant_batchmatmul接口的封装类�
 ## 函数原型
 
 ```python
-torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True, device=None, dtype=None, antiquant_offset=False, quant_scale=False, quant_offset=False, antiquant_group_size=0, inner_precise=0)
+torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True, device=None, dtype=None, antiquant_offset=False, quant_scale=False, quant_offset=False, antiquant_group_size=0, inner_precise=0, weight_dtype=None)
 ```
 
 ## 参数说明
@@ -33,8 +33,8 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 - **in_features**（`int`）：伪量化matmul计算中的k轴的值。
 - **out_features**（`int`）：伪量化matmul计算中的n轴的值。
 - **bias**（`bool`）：可选参数，默认为True，代表是否需要bias计算参数。如果设置成False，则bias不会加入伪量化matmul的计算。
-- **device**（`string`）：可选参数，用于执行model的device名称，默认为None。
-- **dtype**（`torch.dtype`）：伪量化matmul运算中的输入`x`的dtype，可选参数，默认为None。
+- **device**（`str`或`torch.device`）：可选参数，用于执行model的设备，默认为None。
+- **dtype**（`torch.dtype`）：可选的预留参数，默认值为None。前向计算使用实际输入张量`x`的数据类型。
 - **antiquant_offset**（`bool`）：可选参数，默认为False，代表是否需要antiquant_offset计算参数。如果设置成False，则weight矩阵反量化时无需设置offset。
 - **quant_scale**（`bool`）：可选参数，默认为False，代表是否需要quant_scale计算参数。如果设置成False，则伪量化输出不会进行量化计算。
 - **quant_offset**（`bool`）：可选参数，默认为False，代表是否需要quant_offset计算参数。如果设置成False，则对伪量化输出进行量化计算时无需设置offset。
@@ -54,6 +54,8 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 <!-- npu="310p" id6 -->
 - <term>Atlas推理系列产品</term> ：数据类型仅支持`torch.float16`。
 <!-- end id6 -->
+
+- **weight_dtype**（`torch.dtype`）：可选参数，默认值为None。指定`npu_weight_quant_batchmatmul`解释权重时的数据类型。
 
 ## 变量说明
 
@@ -119,6 +121,8 @@ torch_npu.contrib.module.LinearWeightQuant(in_features, out_features, bias=True,
 ## 调用示例<a name="section00001"></a>
 
 - 单算子模式调用
+
+    示例将形状为 `(8192, 320)`的float16输入与int8权重相乘。将权重由 `(320, 256)`转置为模块保存的 `(256, 320)`，并用`npu_trans_quant_param`将量化系数和偏移转换为内核接收的参数。输出是形状为 `(8192, 256)`的int8张量。
 
     ```python
     import torch

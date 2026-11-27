@@ -32,7 +32,7 @@ torch_npu.contrib.function.npu_multiclass_nms(multi_bboxes, multi_scores, score_
 - **score_thr** (`float`): 可选参数，默认值为0.05。候选框分数阈值，分数低于它的候选框将不被考虑。
 - **nms_thr** (`float`): 可选参数，默认值为0.45。NMS IoU阈值，取值范围为0到1；两个候选框的IoU大于该阈值时，保留分数较高的候选框。
 - **max_num** (`int`): 可选参数，默认值为50。如果NMS后的bbox数超过max_num值，则只保留max_num个；如果NMS后的bbox数小于max_num值，则输出将零填充到max_num值，其中无效框的bboxes全为0、labels为0，可通过bboxes全0识别。
-- **score_factors** (`Tensor`): 可选参数，默认值为None。NMS应用前用来乘分数的因子。
+- **score_factors** (`Tensor`): 可选参数，默认值为`None`。传入时，使用形状为 `(n,)`的张量，每个值用于缩放对应候选框的所有前景类别得分，与`multi_scores`的第0维逐行对应。
 
 ## 返回值说明
 
@@ -46,14 +46,21 @@ torch_npu.contrib.function.npu_multiclass_nms(multi_bboxes, multi_scores, score_
 
 ## 调用示例
 
+示例为1000个候选框提供20个前景类别的分数。最后一列为背景类别分数。NMS后最多保留3个结果，输出包括边界框和分数，以及对应的类别标签。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.function import npu_multiclass_nms
->>> boxes = torch.randint(1, 255, size=(1000, 4)).npu().half()
->>> scores = torch.randn(1000, 21).npu().half()
->>> det_bboxes, det_labels = npu_multiclass_nms(boxes, scores, score_thr=0.3, nms_thr=0.5, max_num=3)
->>> print(det_bboxes.shape)
+import torch, torch_npu
+from torch_npu.contrib.function import npu_multiclass_nms
+boxes = torch.randint(1, 255, size=(1000, 4)).npu().half()
+scores = torch.randn(1000, 21).npu().half()
+det_bboxes, det_labels = npu_multiclass_nms(boxes, scores, score_thr=0.3, nms_thr=0.5, max_num=3)
+print(det_bboxes.shape)
+print(det_labels.shape)
+```
+
+示例输出如下。
+
+```text
 torch.Size([3, 5])
->>> print(det_labels.shape)
 torch.Size([3])
 ```

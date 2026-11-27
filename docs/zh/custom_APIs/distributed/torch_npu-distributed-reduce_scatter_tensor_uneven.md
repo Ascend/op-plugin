@@ -24,22 +24,18 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 
 ## 参数说明
 
-- **output** (`Tensor`)：必选参数，输出Tensor，用于接收计算数据。
-- **input** (`Tensor`)：必选参数，输入Tensor，用于提供计算数据，`input`的shape为所有卡上`output`的shape拼接后的大小。
-- **input_split_sizes** (`List[int]`)：可选参数，输入Tensor的0维分割数组，默认值None；元素个数需要与当前调用的group的size一致；元素之和需要与input的0维大小一致。
+- **output** (`Tensor`)：必选参数，接收本rank规约后的数据。第0维大小须为`input_split_sizes[rank]`，其余维度与`input`一致。等长切分时，第0维大小为`input.size(0) // world_size`。
+- **input** (`Tensor`)：必选参数，输入Tensor，用于提供计算数据，`input`的shape为所有卡上`output`的shape拼接大小。
+- **input_split_sizes** (`List[int]`)：可选参数，输入Tensor的第0维切分大小。默认值`None`表示等长切分，此时第0维大小须能被组内进程数整除。显式提供时，数组长度须等于组内进程数，各项之和等于`input.size(0)`。
     - `input_split_sizes`元素之和与`input`的0维不一致时报错：RuntimeError: Split sizes doesn't match total dim 0 size。
     - `input_split_sizes`元素个数与`group`的size不一致时报错：RuntimeError: Number of tensor splits not equal to group size。
-- **op** (`torch._C._distributed_c10d.ReduceOp.ReduceOpType`)：可选参数，Reduce算子，用于控制计算逻辑，默认值dist.ReduceOp.SUM。
+- **op** (`torch._C._distributed_c10d.ReduceOp.ReduceOpType`)：可选参数，规约方式。可用`dist.ReduceOp.SUM`（求和，默认值）、`MIN`（最小值）、`MAX`（最大值）和`AVG`（平均值，使用浮点Tensor）。
 - **group** (`torch.distributed.distributed_c10d.ProcessGroup`)：可选参数，分布式进程组，默认值None。
 - **async_op** (`bool`)：可选参数，是否异步调用，默认值False。
 
 ## 返回值说明
 
-- 当`async_op=True`时，返回`torch.distributed.distributed_c10d.Work`句柄，可调用其`wait()`方法等待通信完成。
-- 当`async_op=False`（默认值）时，等待通信完成后返回`None`。
-
-计算结果写入传入的`output`张量。`output`的shape与`input`除第0维外的各维大小一致；指定`input_split_sizes`时，第0维大小为当前进程在通信组中的rank对应的`input_split_sizes`元素值；未指定时，第0维大小为`input`第0维大小除以通信组内的进程数，且需能够整除。
-
+`async_op=True`时返回工作句柄，可调用`wait()`等待通信完成。`async_op=False`时等待通信完成后返回`None`。结果写入`output`。
 
 ## 约束说明
 
@@ -54,6 +50,8 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(output, input, input_split_si
 ## 调用示例
 
 创建以下文件test.py并保存。
+
+两个rank分别为长度为2和3的结果分配输出Tensor。每个rank提供同样形状的输入，使用默认的求和操作。
 
 ```python
 import os
@@ -73,6 +71,8 @@ torch_npu.distributed.reduce_scatter_tensor_uneven(
     async_op=False
 )
 ```
+
+通信完成后，rank 0的输出为 `[2, 2]`，rank 1的输出为 `[2, 2, 2]`。
 
 执行如下命令。
 

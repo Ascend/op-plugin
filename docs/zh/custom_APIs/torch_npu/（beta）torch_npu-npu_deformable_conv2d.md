@@ -24,14 +24,14 @@
 
 - 计算公式：
 
-  假定输入（self）的shape是[N, inC, inH, inW]，输出（out）的shape为[N, outC, outH, outW]，根据已有参数计算outH、outW：
+  假定输入（self）的shape是[N, in_channels, in_height, in_width]，输出（out）的shape为[N, out_channels, out_height, out_width]，根据已有参数计算out_height、out_width：
 
   $$
-  outH = (inH + padding[0] + padding[1] - ((K\_H - 1) * dilation[2] + 1)) // stride[2] + 1
+  out_height = (in_height + padding[0] + padding[1] - ((K\_H - 1) * dilation[2] + 1)) // stride[2] + 1
   $$
 
   $$
-  outW = (inW + padding[2] + padding[3] - ((K\_W - 1) * dilation[3] + 1)) // stride[3] + 1
+  out_width = (in_width + padding[2] + padding[3] - ((K\_W - 1) * dilation[3] + 1)) // stride[3] + 1
   $$
 
   标准卷积计算采样点下标：
@@ -68,10 +68,12 @@
   deformOut(x, y) = weight_{00} * self(x_{0}, y_{0}) + weight_{01} * self(x_{0}, y_{1}) + weight_{10} * self(x_{1}, y_{0}) + weight_{11} * self(x_{1}, y_{1})
   $$
 
-  进行卷积计算得到最终输出：
+  调制模式下，将每个插值结果与对应的掩码相乘，再存入`deformOut`。关闭调制时，掩码等效于1。
+
+  按普通卷积的`groups`分组计算输出。设每组输入通道数 $C_g=C_{\text{in}}/\text{groups}$，输出通道 $j$ 属于分组 $g=\lfloor j/(C_{\text{out}}/\text{groups})\rfloor$：
 
   $$
-  \text{out}(N_i, C_{\text{out}_j}) = \text{bias}(C_{\text{out}_j}) + \sum_{k = 0}^{C_{\text{in}} - 1} \text{weight}(C_{\text{out}_j}, k) \star \text{deformOut}(N_i, k)
+  \text{out}(N_i, C_{\text{out}_j}) = \text{bias}(C_{\text{out}_j}) + \sum_{k = 0}^{C_g - 1} \text{weight}(C_{\text{out}_j}, k) \star \text{deformOut}(N_i, gC_g+k)
   $$
 
 ## 函数原型
@@ -84,11 +86,11 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 
 - **self** (`Tensor`): 必选参数，表示输入图像的4D张量，对应公式中的`self`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据按以下顺序存储：`[batch, in_channels, in_height, in_width]`。其中in_height * in_width不能超过2147483647。
 - **weight** (`Tensor`): 必选参数，可学习卷积核的4D张量，对应公式中的`weight`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。数据按以下顺序存储：`[out_channels, in_channels / groups, filter_height, filter_width]`。其中，`filter_height`表示卷积核的高度，`filter_width`表示卷积核的宽度。
-- **offset** (`Tensor`): 必选参数，x-y坐标偏移和掩码的4D张量，对应公式中的`offset`。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。当`modulated`为True时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 3, out_height, out_width]`；当`modulated`为False时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 2, out_height, out_width]`。
+- **offset** (`Tensor`): 必选参数，坐标偏移和掩码的4D张量。对每个采样点，offsetX和offsetY分别表示水平与垂直偏移量，单位为输入像素。设K = deformable_groups × filter_height × filter_width，通道 [0, K) 存放offsetX，通道 [K, 2K) 存放offsetY。启用调制时，最后K个通道存放掩码。不支持空Tensor，支持非连续的Tensor。数据格式为$NCHW$、$ND$，数据格式需与`self`相同。当`modulated`为True时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 3, out_height, out_width]`；当`modulated`为False时，数据按以下顺序存储：`[batch, deformable_groups * filter_height * filter_width * 2, out_height, out_width]`。
 - **bias** (`Tensor`): 可选参数，过滤器输出附加偏置（additive bias）的1D张量，对应公式中的`bias`。不支持空Tensor，支持非连续的Tensor。数据格式为$ND$。可传入`None`表示不使用偏置；若不为`None`，数据按`[out_channels]`的顺序存储。
 - **kernel_size** (`List[int]`): 必选参数，卷积核大小，对应公式中的`K_H`、`K_W`。2个整数的元组/列表(K_H, K_W)，各元素均大于零，K_H \* K_W不能超过2048，K_H \* K_W \* in_channels/groups不能超过65535。
 - **stride** (`List[int]`): 必选参数，4个整数的列表，表示每个输入维度的滑动窗口步长，对应公式中的`stride`。维度顺序根据`self`的数据格式解释。各元素均大于零，N维和C维必须设置为1。
-- **padding** (`List[int]`): 必选参数，4个整数的列表，表示要添加到输入每侧（顶部、底部、左侧、右侧）的像素数，对应公式中的`padding`。
+- **padding** (`List[int]`): 必选参数，4个整数的列表，按 [top, bottom, left, right] 顺序指定输入四侧的非负像素填充量，对应公式中的`padding`。
 - **dilation** (`List[int]`): 可选参数，4个整数的列表，表示输入每个维度的膨胀系数（dilation factor），对应公式中的`dilation`。维度顺序根据`self`的数据格式解释。各元素均大于零，N维和C维必须设置为1。默认值为`[1, 1, 1, 1]`。
 - **groups** (`int`): 可选参数，`int32`类型，表示从输入通道到输出通道的分组数。`in_channels`和`out_channels`需都可被`groups`数整除，且`groups`的值大于零。默认值为1。
 - **deformable_groups** (`int`): 可选参数，`int32`类型，表示可变形组分区的数量。`in_channels`需可被`deformable_groups`数整除，且`deformable_groups`的值大于零。默认值为1。
@@ -112,14 +114,21 @@ torch_npu.npu_deformable_conv2d(self, weight, offset, bias, kernel_size, stride,
 
 ## 调用示例
 
+示例使用5×5卷积核和1个可变形分组。每个采样位置对应水平偏移、垂直偏移和一个调制掩码，因此`offset`的通道数为75。
+
 ```python
->>> import torch, torch_npu
->>> x = torch.rand(16, 32, 32, 32).npu()
->>> weight = torch.rand(32, 32, 5, 5).npu()
->>> offset = torch.rand(16, 75, 32, 32).npu()
->>> output, deform_offset = torch_npu.npu_deformable_conv2d(x, weight, offset, None, kernel_size=[5, 5], stride = [1, 1, 1, 1], padding = [2, 2, 2, 2])
->>> print(output.shape)
+import torch, torch_npu
+x = torch.rand(16, 32, 32, 32).npu()
+weight = torch.rand(32, 32, 5, 5).npu()
+offset = torch.rand(16, 75, 32, 32).npu()
+output, deformable_offset = torch_npu.npu_deformable_conv2d(x, weight, offset, None, kernel_size=[5, 5], stride = [1, 1, 1, 1], padding = [2, 2, 2, 2])
+print(output.shape)
+print(deformable_offset.shape)
+```
+
+一次运行的输出：
+
+```text
 torch.Size([16, 32, 32, 32])
->>> print(deform_offset.shape)
 torch.Size([16, 32, 160, 160])
 ```

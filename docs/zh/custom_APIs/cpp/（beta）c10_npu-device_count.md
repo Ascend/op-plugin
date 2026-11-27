@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-获取可使用的NPU数量，返回值类型DeviceIndex。
+获取当前进程可见的NPU设备数量。
 
 ## 定义文件
 
@@ -28,3 +28,7 @@ torch_npu\csrc\core\npu\NPUFunctions.h
 ```cpp
 c10::DeviceIndex c10_npu::device_count()
 ```
+
+## 返回值说明
+
+`c10::DeviceIndex`，表示可见NPU设备的数量。没有可见NPU时返回`0`。当返回值为`count > 0`时，有效设备ID为`0`到`count - 1`。

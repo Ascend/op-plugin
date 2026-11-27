@@ -33,4 +33,4 @@ c10_npu::NPUStreamGuard::NPUStreamGuard(c10::Stream stream)
 
 ## 约束说明
 
-无
+构造函数要求传入NPU流，传入其他设备类型的流会报错。

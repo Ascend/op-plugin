@@ -33,11 +33,11 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 - **self** (`Tensor`)：必选参数，`torch.float16`或`torch.float32`类型的张量，shape为(n, )，对应调用示例中的`assigned_gt_inds`。
 - **overlaps** (`Tensor`)：必选参数，数据类型与`self`相同，表示gt_bboxes和bboxes之间的IoU，shape为(k,n)。
 - **box_responsible_flags** (`Tensor`)：必选参数，支持`torch.uint8`数据类型，表示框是否responsible的标志。
-- **max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
-- **argmax_overlaps** (`Tensor`)：必选参数，支持`torch.int32`数据类型。
-- **gt_max_overlaps** (`Tensor`)：必选参数，数据类型与`self`相同。
-- **gt_argmax_overlaps** (`Tensor`)：必选参数，支持`torch.int32`数据类型。
-- **num_gts** (`int`)：必选参数，表示真实GT数量，以Python`int`传入。
+- **max_overlaps** (`Tensor`)：必选参数，每个候选框和所有真值框之间的最大IoU，形状为 (候选框数,)。数据类型与self相同。
+- **argmax_overlaps** (`Tensor`)：必选参数，每个候选框的最大IoU对应的真值框索引，形状为 (候选框数,)。数据类型为torch.int32。
+- **gt_max_overlaps** (`Tensor`)：必选参数，每个真值框和所有候选框之间的最大IoU，形状为 (真值框数,)。数据类型与self相同。
+- **gt_argmax_overlaps** (`Tensor`)：必选参数，每个真值框的最大IoU对应的候选框索引，形状为 (真值框数,)。数据类型为torch.int32。
+- **num_gts** (`int`)：必选参数，表示真实GT数量，以Python `int`传入。
 - **pos_iou_thr** (`float`)：必选参数，正检测框的IoU阈值。
 - **min_pos_iou** (`float`)：必选参数，检测框被视为正检测框的最小IoU。
 - **gt_max_assign_all** (`bool`)：必选参数，是否将与某个gt有相同最高重叠的所有检测框分配给该gt。
@@ -50,17 +50,24 @@ torch_npu.npu_grid_assign_positive(self, overlaps, box_responsible_flags, max_ov
 
 ## 调用示例
 
+示例为4个候选框分配2个真值框。`overlaps`的行对应真值框，列对应候选框。
+
 ```python
->>> import torch, torch_npu
->>> assigned_gt_inds = torch.rand(4).npu()
->>> overlaps = torch.rand(2,4).npu()
->>> box_responsible_flags = torch.tensor([1, 1, 1, 0], dtype=torch.uint8).npu()
->>> max_overlaps = torch.rand(4).npu()
->>> argmax_overlaps = torch.tensor([1, 0, 1, 0], dtype=torch.int32).npu()
->>> gt_max_overlaps = torch.rand(2).npu()
->>> gt_argmax_overlaps = torch.tensor([1, 0],dtype=torch.int32).npu()
->>> num_gts = torch.tensor([128], dtype=torch.int32).npu()
->>> output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlaps, argmax_overlaps, gt_max_overlaps, gt_argmax_overlaps, num_gts, 0.5, 0., True)
->>> print(output.shape)
+import torch, torch_npu
+assigned_gt_inds = torch.rand(4).npu()
+overlaps = torch.rand(2,4).npu()
+box_responsible_flags = torch.tensor([1, 1, 1, 0], dtype=torch.uint8).npu()
+max_overlaps = torch.rand(4).npu()
+argmax_overlaps = torch.tensor([1, 0, 1, 0], dtype=torch.int32).npu()
+gt_max_overlaps = torch.rand(2).npu()
+gt_argmax_overlaps = torch.tensor([1, 0],dtype=torch.int32).npu()
+num_gts = overlaps.size(0)
+output = torch_npu.npu_grid_assign_positive(assigned_gt_inds, overlaps, box_responsible_flags, max_overlaps, argmax_overlaps, gt_max_overlaps, gt_argmax_overlaps, num_gts, 0.5, 0., True)
+print(output.shape)
+```
+
+一次运行的输出：
+
+```text
 torch.Size([4])
 ```

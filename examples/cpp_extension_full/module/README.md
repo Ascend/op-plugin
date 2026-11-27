@@ -52,7 +52,7 @@
         std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor& grad)
         {
             const c10::OptionalDeviceGuard device_guard(device_of(grad));
-            at::Tensor result = grad; // 创建输出内存
+            at::Tensor result = grad; // 复用上游梯度
 
             return {result, result};
         }
@@ -104,8 +104,8 @@
         so_files = list(so_dir.glob('custom_ops_lib*.so'))
         if not so_files:
             raise FileNotFoundError(f"not find custom_ops_lib*.so in {so_dir}")
-        atb_so_path = str(so_files[0])
-        torch.ops.load_library(atb_so_path)
+        custom_ops_so_path = str(so_files[0])
+        torch.ops.load_library(custom_ops_so_path)
     _load_opextension_so()
 
     # ops.py
@@ -119,6 +119,8 @@
 3. 在测试脚本`test_add_custom.py`中实现前反向绑定，可通过Python中的`forward`和`backward`定义算子的前向计算与反向梯度计算逻辑。具体示例如下：
 
     ```Python
+    import torch
+
     class AddCustomFunction(torch.autograd.Function):
         @staticmethod
         def forward(ctx, x, y):
@@ -157,7 +159,7 @@
 
     得到结果如下即为执行成功。
     
-    ```bash
+    ```text
     Ran xx tests in xx s
     OK
     ```

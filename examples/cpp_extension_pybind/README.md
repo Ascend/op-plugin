@@ -55,7 +55,7 @@
     }
     ```
 
-2. 在`cpp_extension_base`目录下的`__init__.py`及`ops/__init__.py`文件中，添加ops调用及so读取。
+2. 在`cpp_extension_pybind`目录下的`__init__.py`及`ops/__init__.py`文件中，添加ops调用及so读取。
 
     ```Python
     # __init__.py
@@ -92,7 +92,7 @@
 
     得到结果如下即为执行成功。
 
-    ```bash
+    ```text
     Ran xx tests in xx s
     OK
     ```

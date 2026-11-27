@@ -30,19 +30,21 @@ torch_npu.contrib.npu_giou(boxes1, boxes2, is_permuted=True)
 
 ## 参数说明
 
-- **boxes1**（`Tensor`）：格式为xywh、shape为(n, 4)的预测检测框。
-- **boxes2**（`Tensor`）：相应的gt检测框，shape为(n, 4)。
-- **is_permuted**（`bool`）：坐标值是否已经置换。默认为True。
+- **boxes1** (`Tensor`)：必选参数，预测框，建议用`torch.float32`。每行依次为中心坐标 `(x, y)`和宽、高 `(w, h)`。
+- **boxes2** (`Tensor`)：必选参数，真值框，与`boxes1`一一对应，形状相同。
+- **is_permuted** (`bool`)：可选参数，默认值为`True`，两组输入均为 `(N, 4)`，接口将其转置为算子使用的 `(4, N)`。如果输入已经是 `(4, N)`，请传入`False`。
 
 ## 调用示例
 
+计算两对预测框与真值框的GIoU。第一对框相同，得分为1。
+
 ```python
->>> import torch, torch_npu
->>> box1 = torch.randn(32, 4).npu()
->>> box1.requires_grad = True      
->>> box2 = torch.randn(32, 4).npu()
->>> box2.requires_grad = True
->>> iou = torch_npu.contrib.npu_giou(box1, box2)
->>> l = iou.sum()
->>> l.backward()
+import torch
+import torch_npu
+from torch_npu.contrib import npu_giou
+
+boxes1 = torch.tensor([[10., 10., 4., 2.], [20., 20., 4., 4.]], device="npu")
+boxes2 = torch.tensor([[10., 10., 4., 2.], [21., 20., 4., 4.]], device="npu")
+scores = npu_giou(boxes1, boxes2)
+print(scores)
 ```

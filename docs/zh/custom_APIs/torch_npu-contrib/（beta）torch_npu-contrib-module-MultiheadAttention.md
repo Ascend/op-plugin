@@ -37,41 +37,52 @@ torch_npu.contrib.module.MultiheadAttention(embed_dim, num_heads, kdim=None, vdi
 - **add_zero_attn** (`bool`)：可选参数，如果指定此参数，则在dim=1处向键值序列新加一批零。默认值为False。
 - **self_attention** (`bool`)：可选参数，表示是否为自注意力层，若取值为True，要求`embed_dim`、`kdim`、`vdim`取值相等。默认值为False。
 - **encoder_decoder_attention** (`bool`)：可选参数，输入为编码器输出和解码器自注意力输出，其中编码器self-attention用作key和value，解码器self-attention用作查询。默认值为False。
-- **q_noise** (`float`)：可选参数，量化噪声量。
-- **qn_block_size** (`int`)：可选参数，用于后续iPQ量化的块大小。
+- **q_noise** (`float`)：可选参数，量化噪声量，默认值为0.0。
+- **qn_block_size** (`int`)：可选参数，用于后续iPQ量化的块大小，默认值为8。
+
+**前向计算的参数**
+
+- **query** (`Tensor`)：查询，形状为 `(bsz * tgt_len, embed_dim)`。
+- **key** (`Tensor`)：键，形状为 `(bsz * s_len, kdim)`，未指定`kdim`时使用`embed_dim`。
+- **value** (`Tensor`)：值，形状为 `(bsz * s_len, vdim)`，未指定`vdim`时使用`embed_dim`。
+- **bsz**、**tgt_len**、**s_len** (`int`)：批大小、查询序列长度和键值序列长度。
+- **key_padding_mask** (`Tensor | None`)：可选参数，注意力计算使用的加性掩码。示例使用形状为 `(bsz * tgt_len, s_len * num_heads)`的掩码。
 
 ## 返回值说明
 
-`Tensor` 
-
-Multi-head attention的计算结果。
+返回 `(attn, None)`，其中`attn`是注意力输出Tensor，形状为 `(bsz * tgt_len, embed_dim)`。使用前调用 `_MHAConfig.set_fussion()`启用融合实现。
 
 ## 调用示例
 
+本例将批维度与序列维度展平，令批大小为16，查询和键值序列长度均为64。启用融合实现后，在NPU上执行前向计算。
+
 ```python
->>> from torch_npu.testing.common_utils import create_common_tensor
->>> from torch_npu.contrib.module import MultiheadAttention
->>> import numpy as np
->>> from torch_npu.contrib.module.multihead_attention import _MHAConfig
->>> _MHAConfig.set_fussion()
->>> model = MultiheadAttention(embed_dim=1024,num_heads=16,dropout=0.1,kdim=1024,vdim=1024,self_attention=True,encoder_decoder_attention=True)
->>> _, query = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)
->>> _, key = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)
->>> _, value = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)
->>> _, key_padding_mask = create_common_tensor([np.float16, 29, (1024,1024)], -1, 1)
->>> bsz = 16
->>> tgt_len = 64
->>> s_len=64
->>> model = model.to("npu")
->>> output = model(query, key, value, bsz, tgt_len, s_len, key_padding_mask)
->>> print(output)
-(tensor([[-0.0385,  0.0441,  0.2432,  ...,  0.0627,  0.0254,  0.0400],
-        [-0.0999, -0.0258,  0.1002,  ...,  0.0632,  0.0344,  0.0573],
-        [-0.0830,  0.0405,  0.1694,  ...,  0.0787, -0.0089,  0.0544],
-        ...,
-        [-0.0146, -0.0303, -0.1011,  ...,  0.0689,  0.1722, -0.1125],
-        [-0.0305, -0.1129, -0.0944,  ...,  0.0280,  0.1777,  0.0410],
-        [-0.0035, -0.1030, -0.0957,  ...,  0.0093,  0.1171,  0.0009]],
-       device='npu:0', dtype=torch.float16,
-       grad_fn=<NpuMultiHeadAttentionBackward0>), None)
+import torch
+import torch_npu
+from torch_npu.contrib.module import MultiheadAttention
+from torch_npu.contrib.module.multihead_attention import _MHAConfig
+
+_MHAConfig.set_fussion()
+torch.npu.config.allow_internal_format = True
+model = MultiheadAttention(embed_dim=1024, num_heads=16, dropout=0.1,
+                           kdim=1024, vdim=1024, self_attention=True,
+                           encoder_decoder_attention=True).npu()
+bsz, tgt_len, s_len = 16, 64, 64
+query, key, value = [
+    torch_npu.npu_format_cast(torch.rand(1024, 1024, device="npu", dtype=torch.float16), 29)
+    for _ in range(3)
+]
+key_padding_mask = torch_npu.npu_format_cast(
+    torch.zeros((bsz * tgt_len, s_len * 16), device="npu", dtype=torch.float16), 29
+)
+output, weights = model(query, key, value, bsz, tgt_len, s_len, key_padding_mask)
+print(output.shape)
+print(weights)
+```
+
+示例输出如下。
+
+```text
+torch.Size([1024, 1024])
+None
 ```

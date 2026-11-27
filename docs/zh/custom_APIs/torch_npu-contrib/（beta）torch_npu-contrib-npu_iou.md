@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-提供NPU版本的IoU计算操作。计算时会在并集面积（分母）上添加极小值0.001以避免除零，mode取"iou"时重叠面积同样添加0.001。
+计算两组检测框之间的交并比。
 
 ## 函数原型
 
@@ -32,20 +32,24 @@ torch_npu.contrib.npu_iou(boxes1, boxes2, mode="ptiou", is_normalized=False, nor
 
 - **boxes1**（`Tensor`）：shape为(n, 4)的预测检测框。
 - **boxes2**（`Tensor`）：shape为(m, 4)的预测检测框。
-- **mode**（`str`）：选择IoU的计算方式，取值为"iou"、"ptiou"。"iou"=（重叠面积+0.001）/（并集面积+0.001），"ptiou"=重叠面积/（并集面积+0.001）。默认值为"ptiou"。
+- **mode**（`str`）：选择IoU的计算方式，取值为"iou"、"ptiou"。`"iou"`调用`torch_npu.npu_iou`，`"ptiou"`调用`torch_npu.npu_ptiou`。默认值为`"ptiou"`。
 - **is_normalized**（`bool`）：坐标值是否已经归一化。默认为False。
 - **normalized_scale**（`float`）：设置恢复坐标的标准化比例，坐标恢复方式为归一化坐标乘以该比例，取值需大于0，需与is_normalized配合使用，默认为100。
 
 ## 约束说明
 
-该函数常用于bbox和anchor匹配。到目前为止，这个函数还没有对应的后向运算符，所以不能用在IoU_Loss中。由于计算公式中分母加上了0.001以避免除以0，当输入框是归一化数据时，0.001的占比太大。此时需要放大输入值，避免0.001影响过大。
+该函数常用于bbox和anchor匹配。到目前为止，这个函数还没有对应的后向运算符，所以不能用在IoU_Loss中。对归一化的坐标，可设置`is_normalized=True`，以指定的`normalized_scale`放大坐标。具体计算由所选算子及其设备实现决定。
 
 ## 调用示例
 
+示例计算32个预测框和16个候选框之间的两两重叠分数。
+
 ```python
->>> import torch
->>> import torch_npu.contrib
->>> box1 = torch.randint(0, 256, size=(32, 4)).npu()
->>> box2 = torch.randint(0, 256, size=(16, 4)).npu()
->>> iou = torch_npu.contrib.npu_iou(box1, box2)
+import torch
+import torch_npu.contrib
+box1 = torch.randint(0, 256, size=(32, 4)).npu()
+box2 = torch.randint(0, 256, size=(16, 4)).npu()
+iou = torch_npu.contrib.npu_iou(box1, box2)
 ```
+
+结果包含32×16个配对分数。

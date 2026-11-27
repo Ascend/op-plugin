@@ -104,7 +104,7 @@ cpp_extension_structured/
 
     得到结果如下即为执行成功。
 
-    ```bash
+    ```text
     Ran xx tests in xx s
     OK
     ```

@@ -20,7 +20,8 @@ torch_npu/csrc/distributed/ProcessGroupHCCL.hpp
 ## 函数原型
 
 ```cpp
-class c10d_npu::ProcessGroupHCCL : public c10d::Backend {
+namespace c10d_npu {
+class ProcessGroupHCCL : public c10d::Backend {
 public:
     struct Options : c10d::Backend::Options {
         explicit Options(bool is_high_priority_stream = false);
@@ -61,7 +62,18 @@ public:
         std::vector<int64_t>& outputSplitSizes, std::vector<int64_t>& inputSplitSizes,
         const c10d::AllToAllOptions& opts = c10d::AllToAllOptions()) override;
 };
+} // namespace c10d_npu
 ```
+
+## 参数说明
+
+- **store** (`c10::intrusive_ptr<c10d::Store>`)：必选参数，进程组用于交换通信初始化信息的Store。
+- **rank** (`int`)：必选参数，当前进程在组内的编号，满足`0 <= rank < size`。
+- **size** (`int`)：必选参数，组内进程数，为正整数。
+- **options** (`c10::intrusive_ptr<Options>`)：可选参数，默认值为`Options::create()`。
+- **is_high_priority_stream** (`bool`)：是否使用高优先级流，默认值为`false`。
+- **timeout** (`std::chrono::milliseconds`)：`Options::create`的保留参数，默认值为`kNoTimeout`。当前实现通过`options->timeout`设置进程组超时。
+- **opTimeout** (`std::chrono::milliseconds`)：`Options`的成员，表示通信操作超时时间，初始值为`10000`毫秒。
 
 ## 约束说明
 
@@ -77,10 +89,9 @@ allgather_into_tensor_coalesced<br>
 reduce_scatter<br>
 reduce_scatter_tensor_coalesced<br>
 barrier<br>
-gather<br>
 scatter<br>
 send<br>
 recv<br>
-recv_anysource<br>
+recvAnysource<br>
 alltoall_base<br>
 alltoall<br>

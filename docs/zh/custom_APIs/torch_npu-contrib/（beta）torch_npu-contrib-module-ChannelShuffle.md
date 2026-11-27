@@ -19,28 +19,19 @@
 
 - API功能：应用NPU兼容的通道Shuffle操作。
 
-- 等价计算逻辑：
-  
-    split_shuffle=False场景可使用`cpu_channel_shuffle`等价替换`torch_npu.contrib.module.ChannelShuffle`，两者计算逻辑一致。
+- `split_shuffle=False`时，计算逻辑如下。
 
-  ```python
-  import torch
-  def cpu_channel_shuffle(x, groups, split_shuffle):
-      # cpu仅支持 split_shuffle=False场景
-      batchsize, num_channels, height, width = x.size()
-      channels_per_group = num_channels // groups
-      x.requires_grad_(True)
-      # reshape
-      x = x.view(batchsize, groups, channels_per_group, height, width)
-    
-      x = torch.transpose(x, 1, 2).contiguous()
-    
-      # flatten
-      x = x.view(batchsize, -1, height, width)
-      output = x.view(batchsize, -1, height, width)
-      return output
-  ```
-  
+    ```python
+    import torch
+
+    def cpu_channel_shuffle(x1, x2, groups=2):
+        x = torch.cat((x1, x2), dim=1)
+        batchsize, channels, height, width = x.shape
+        x = x.reshape(batchsize, groups, channels // groups, height, width)
+        x = x.transpose(1, 2).contiguous()
+        return x.reshape(batchsize, channels, height, width)
+    ```
+
 ## 函数原型
 
 ```python
@@ -62,27 +53,33 @@ torch_npu.contrib.module.ChannelShuffle(in_channels, groups=2, split_shuffle=Tru
 
 ## 返回值说明
 
-- **out1** (`Tensor`)：输出张量。
-  - 当`split_shuffle=True`（默认值）时，返回由两个Tensor组成的元组`(out1, out2)`，每个Tensor的shape为`(N, in_channels / 2, *)`。
-  - 当`split_shuffle=False`时，返回一个Tensor，其shape为`(N, in_channels, *)`。
+- `split_shuffle=True`时返回两个Tensor组成的元组。第一个输出的通道数为`in_channels // groups`，第二个输出包含其余通道。
+- `split_shuffle=False`时返回一个Tensor，其通道数为`in_channels`。
 
-- **out2** (`Tensor`)：输出张量。shape为$(N, C_{out}, *)$。
+输出保持输入的批维度和空间维度。
 
 ## 约束说明
 
-只实现了groups为2的场景，请自行修改其他groups场景。
+`groups`须为能整除总通道数的正整数。
 
 ## 调用示例
 
+两路输入各有32个通道，因此`in_channels=64`。`split_shuffle=True`使模块在重排通道后将结果均分为两路。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.module import ChannelShuffle
->>> x1 = torch.randn(2, 32, 7, 7).npu()
->>> x2 = torch.randn(2, 32, 7, 7).npu()
->>> m = ChannelShuffle(64, split_shuffle=True)
->>> out1, out2 = m(x1, x2)
->>> print(out1.shape)
+import torch, torch_npu
+from torch_npu.contrib.module import ChannelShuffle
+x1 = torch.randn(2, 32, 7, 7).npu()
+x2 = torch.randn(2, 32, 7, 7).npu()
+m = ChannelShuffle(64, split_shuffle=True)
+out1, out2 = m(x1, x2)
+print(out1.shape)
+print(out2.shape)
+```
+
+示例输出如下。
+
+```text
 torch.Size([2, 32, 7, 7])
->>> print(out2.shape)
 torch.Size([2, 32, 7, 7])
 ```

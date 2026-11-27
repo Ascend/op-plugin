@@ -63,7 +63,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     OpCommand空输入，返回值类型为OpCommand。
 
-- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const at::Tensor& input, const string& descName = "", const c10::optional& sensitive_format = c10::nullopt, const string& realData = "")**
+- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const at::Tensor& input, const string& descName = "", const c10::optional\<aclFormat>& sensitive_format = c10::nullopt, const string& realData = "")**
 
     OpCommand输入Tensor，要求连续，返回值类型为OpCommand。
 
@@ -85,7 +85,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     realData：string类型，实际数据类型。
 
-- **template at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRef& dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "", const string& descName = "")**
+- **template \<typename T> at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRef\<T>& dimListRef, at::IntArrayRef realShape, at::ScalarType toType, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "", const string& descName = "")**
 
     OpCommand输入数组，通常输入在CPU端，会在实现中进行H2D，返回值类型为OpCommand。
 
@@ -115,7 +115,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     descName：string类型，名称描述。
 
-- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRef& dimListRef, at::IntArrayRef realShape, at::ScalarType toType = at::kDouble, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "")**
+- **at_npu::native::OpCommand& at_npu::native::OpCommand::Input(const c10::ArrayRef\<double>& dimListRef, at::IntArrayRef realShape, at::ScalarType toType = at::kDouble, CompileType compileType = CompileType::MEMORY_HOST_COMPILE_DEPENDENT, const string& realDtype = "")**
 
     OpCommand输入浮点型数组，通常输入在CPU端，会在实现中进行H2D，返回值类型为OpCommand。
 
@@ -153,7 +153,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     type：ScalarType类型，目标类型。
 
-- **at_npu::native::OpCommand& at_npu::native::OpCommand::Output(at::Tensor& output, const string& descName = "", const c10::optional& sensitive_format = c10::nullopt, const string& realType = "")**
+- **at_npu::native::OpCommand& at_npu::native::OpCommand::Output(at::Tensor& output, const string& descName = "", const c10::optional\<aclFormat>& sensitive_format = c10::nullopt, const string& realType = "")**
 
     OpCommand输出Tensor，返回值类型为OpCommand。
 
@@ -165,7 +165,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     realType：string类型，实际数据类型。
 
-- **template at_npu::native::OpCommand& at_npu::native::OpCommand::Attr(const string& name, dataType value)**
+- **template \<typename dataType> at_npu::native::OpCommand& at_npu::native::OpCommand::Attr(const string& name, dataType value)**
 
     OpCommand设置属性，返回值类型为OpCommand。
 
@@ -173,7 +173,7 @@ torch_npu/csrc/framework/OpCommand.h
 
     value：dataType类型，属性值。
 
-- **template at_npu::native::OpCommand& at_npu::native::OpCommand::Attr(const string& name, dataType value, bool cond)**
+- **template \<typename dataType> at_npu::native::OpCommand& at_npu::native::OpCommand::Attr(const string& name, dataType value, bool cond)**
 
     OpCommand根据条件设置属性，返回值类型为OpCommand。
 

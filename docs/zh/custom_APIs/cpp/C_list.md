@@ -76,7 +76,7 @@
 </tr>
 <tr id="row6822103772114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2455402378"><a name="p2455402378"></a><a name="p2455402378"></a><a href="（beta）c10_npu-getCurrentNPUStream.md">（beta）c10_npu::getCurrentNPUStream</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>通过设备ID获取当前NPU流，返回值类型为NPUStream，其功能和使用方式与c10::cuda::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex _device_index_ = -1)相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p104551505370"><a name="p104551505370"></a><a name="p104551505370"></a>通过设备ID获取当前NPU流，返回值类型为NPUStream，其功能和使用方式与c10::cuda::CUDAStream c10::cuda::getCurrentCUDAStream(c10::DeviceIndex <code>device_index</code> = -1)相同。</p>
 </td>
 </tr>
 <tr id="row1324644442114"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p10455150143713"><a name="p10455150143713"></a><a name="p10455150143713"></a><a href="（beta）c10_npu-setCurrentNPUStream.md">（beta）c10_npu::setCurrentNPUStream</a></p>
@@ -126,7 +126,7 @@
 </tr>
 <tr id="row14242145315620"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p2024245305610"><a name="p2024245305610"></a><a name="p2024245305610"></a><a href="（beta）c10_npu-warning_state.md">（beta）c10_npu::warning_state</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p142421953125611"><a name="p142421953125611"></a><a name="p142421953125611"></a>获取当前同步时警告等级，返回值类型WarningState为枚举类，包含无警告L_DISABLED、警告L_WARN和报错L_ERROR，与WarningState&amp; c10::cuda::warning_state()相同。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p142421953125611"><a name="p142421953125611"></a><a name="p142421953125611"></a>返回当前同步调试状态对象的引用，类型为WarningState&amp;。警告等级由SyncDebugMode枚举表示，包含L_DISABLED、L_WARN和L_ERROR。</p>
 </td>
 </tr>
 <tr id="row0199201317247"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p719931392415"><a name="p719931392415"></a><a name="p719931392415"></a><a href="（beta）c10_npu-warn_or_error_on_sync.md">（beta）c10_npu::warn_or_error_on_sync</a></p>
@@ -156,7 +156,7 @@
 </tr>
 <tr id="row15172411122412"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p1317211162415"><a name="p1317211162415"></a><a name="p1317211162415"></a><a href="（beta）c10_npu-c10_npu_get_error_message.md">（beta）c10_npu::c10_npu_get_error_message</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p61725119244"><a name="p61725119244"></a><a name="p61725119244"></a>获取报错信息，返回值类型char *，表示获取到的报错信息字符串。</p>
+<td class="cellrowborder" valign="top" width="63.870000000000005%" headers="mcps1.2.3.1.2 "><p id="p61725119244"><a name="p61725119244"></a><a name="p61725119244"></a>获取报错信息，返回值类型为<code>const char*</code>，表示获取到的报错信息字符串。</p>
 </td>
 </tr>
 <tr id="row55131018125916"><td class="cellrowborder" valign="top" width="36.13%" headers="mcps1.2.3.1.1 "><p id="p75141718135919"><a name="p75141718135919"></a><a name="p75141718135919"></a><a href="（beta）at_npu-native-npu_dropout_gen_mask.md">（beta）at_npu::native::npu_dropout_gen_mask</a></p>

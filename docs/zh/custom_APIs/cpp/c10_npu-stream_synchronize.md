@@ -25,7 +25,7 @@ void stream_synchronize(aclrtStream stream)
 
 ## 参数说明
 
-**stream** (`aclrtStream`)：必选参数，表示需要同步的流。
+**stream** (`aclrtStream`)：必选参数，传入需要同步的有效NPU流句柄。例如，可通过`c10_npu::getCurrentNPUStream().stream()`获取当前设备的流句柄。
 
 ## 返回值说明
 
@@ -34,3 +34,10 @@ void stream_synchronize(aclrtStream stream)
 ## 约束说明
 
 无
+
+## 调用示例
+
+```cpp
+auto stream = c10_npu::getCurrentNPUStream();
+c10_npu::stream_synchronize(stream.stream());
+```

@@ -26,9 +26,9 @@ torch_npu/csrc/core/npu/NPUFunctions.h
 ## 函数原型
 
 ```cpp
-aclError c10_npu::GetDevice(c10::DeviceIndex* device)
+aclError c10_npu::GetDevice(int32_t* device)
 ```
 
 ## 参数说明
 
-device：DeviceIndex类型的指针，输出参数，调用前需预分配用于存储设备ID的内存空间，返回获取到的设备ID。
+device：int32_t类型的指针，输出参数，调用前需预分配用于存储设备ID的内存空间，返回获取到的设备ID。

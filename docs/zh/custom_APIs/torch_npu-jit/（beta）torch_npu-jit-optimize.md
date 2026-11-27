@@ -34,6 +34,8 @@ torch_npu.jit.optimize(jit_mod)
 
 ## 调用示例
 
+示例先用两个形状为 `(1, 3)`的输入将模型追踪为`ScriptModule`，随后在该模块上应用TorchNPU的JIT优化。
+
 ```python
 import torch
 import torch_npu
@@ -48,5 +50,4 @@ model = SimpleModel().eval()
 traced_model = torch.jit.trace(model, (torch.rand(1, 3), torch.rand(1, 3)))
 
 torch_npu.jit.optimize(traced_model)
-
 ```

@@ -31,43 +31,23 @@ torch_npu.utils.save_async(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT
 ## 参数说明
 
 - **obj** (`object`)：必选参数，要保存的对象。
-- **f** (`Union[str, PathLike, BinaryIO, IO[bytes]]`)：必选参数，保存的目标文件路径或文件句柄。
+- **f** (`Union[str, BinaryIO, IO[bytes]]`)：必选参数，保存的目标文件路径或支持写入二进制数据的文件对象。传入`pathlib.Path`时，先用`str(f)`转为字符串。
 - **pickle_module** (`Any`)：可选参数，用于Pickle序列化的模块，默认值为pickle。
 - **pickle_protocol** (`int`)：可选参数，Pickle协议版本，默认值为DEFAULT\_PROTOCOL。
-- **_use_new_zipfile_serialization** (`bool`)：可选参数，是否使用新的ZIP文件序列化，默认值为True。
+- **_use_new_zipfile_serialization** (`bool`)：可选参数，默认值为True。异步保存要求使用ZIP序列化，传入False会抛出`RuntimeError`。
 - **_disable_byteorder_record** (`bool`)：可选参数，是否禁用字节顺序记录，默认值为False。
 - **model** (`torch.nn.Module`)：可选参数，模型对象，默认值为None；传入torch.nn.Module时，接口会在首次为当前设备创建异步保存流时注册反向hook。
 
 ## 调用示例
 
+以下示例把模型的参数状态异步保存到指定路径。请在当前设备首次调用时传入模型，以注册反向钩子。
+
 ```python
 import torch
-import torch.nn as nn
-import os
 import torch_npu
 
-input = torch.tensor([1.,2.,3.,4.]).npu()
-torch_npu.utils.save_async(input, "save_tensor.pt")
-model = nn.Sequential(
-    nn.Linear(100, 50),
-    nn.ReLU(),
-    nn.Linear(50, 20),
-    nn.ReLU(),
-    nn.Linear(20, 5),
-    nn.ReLU()
-)
-model = model.npu()
-criterion = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
-for epoch in range(3):
-    for step in range(3):
-        input_data = torch.ones(6400, 100).npu()
-        labels = torch.randint(0, 5, (6400,)).npu()
-        outputs = model(input_data)
-        loss = criterion(outputs, labels)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        save_path = os.path.join(f"model_{epoch}_{step}.path")
-        torch_npu.utils.save_async(model, save_path, model=model)
+model = torch.nn.Linear(4, 2).npu()
+torch_npu.utils.save_async(model.state_dict(), "model.pt", model=model)
 ```
+
+示例在后台生成`model.pt`。该接口启动保存线程后即返回。

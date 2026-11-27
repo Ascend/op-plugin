@@ -1,7 +1,7 @@
 # （beta）torch_npu.npu_slice
 
 > [!NOTICE]  
-> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障。建议使用PyTorch张量切片或`torch.narrow`。
+> 该接口计划废弃，底层算子Kernel实现不再维护，性能、精度等指标无法保障。建议使用PyTorch张量切片或`torch.narrow`，根据`offsets`和`size`指定各维的起点和长度。
 
 ## 产品支持情况
 

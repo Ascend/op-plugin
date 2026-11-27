@@ -27,9 +27,9 @@ torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 
 ## 参数说明
 
-- **x** (`Tensor`)：输入张量。
-- **condition** (`BoolTensor`)：判断条件。
-- **value** (`int`/`float`)：满足条件时用于替换的值。
+- **x** (`Tensor`)：必选参数，输入张量。
+- **condition** (`torch.bool`类型的Tensor)：必选参数，替换条件，须与`x`在同一设备且形状可广播。
+- **value** (`int | float`)：必选参数，条件为`True`的位置使用的标量替换值。其类型按PyTorch标量提升规则与输入张量共同参与计算。
 
 ## 返回值说明
 
@@ -39,26 +39,25 @@ torch_npu.contrib.function.npu_fast_condition_index_put(x, condition, value)
 
 ## 调用示例
 
-```python
->>> import torch
->>> from torch_npu.contrib.function import npu_fast_condition_index_put
->>> import copy
->>> x = torch.randn(128, 8192).npu()
->>> condition = x < 0.5
->>> value = 0.
->>> x1 = copy.deepcopy(x)
->>> x1[condition] = value
->>> x1_opt = npu_fast_condition_index_put(x, condition, value)
->>> print(x1_opt)
-tensor([[0.9661, 1.6750, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
-        [0.0000, 0.0000, 0.0000,  ..., 0.0000, 0.0000, 0.0000],
-        [1.3621, 0.0000, 0.9606,  ..., 1.4324, 0.0000, 0.0000],
-        ...,
-        [0.0000, 0.0000, 0.0000,  ..., 1.4605, 0.7734, 1.9721],
-        [0.0000, 0.9325, 0.7112,  ..., 0.0000, 0.9814, 1.4227],
-        [1.0037, 0.0000, 0.0000,  ..., 0.0000, 1.6497, 0.0000]],
-       device='npu:0')
->>> print(x1_opt.shape)
-torch.Size([128, 8192])
+示例把输入中小于0.5的元素替换为0，并与同形状布尔掩码的索引赋值写法比较。
 
+```python
+import torch
+from torch_npu.contrib.function import npu_fast_condition_index_put
+import copy
+x = torch.randn(128, 8192).npu()
+condition = x < 0.5
+value = 0.
+x1 = copy.deepcopy(x)
+x1[condition] = value
+x1_opt = npu_fast_condition_index_put(x, condition, value)
+print(torch.equal(x1, x1_opt))
+print(x1_opt.shape)
+```
+
+示例输出如下。
+
+```text
+True
+torch.Size([128, 8192])
 ```

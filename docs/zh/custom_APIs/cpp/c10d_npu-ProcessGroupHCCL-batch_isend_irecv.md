@@ -20,20 +20,20 @@ torch_npu/csrc/distributed/ProcessGroupHCCL.hpp
 ## 函数原型
 
 ```cpp
-c10::intrusive_ptr<c10d::Work> batch_isend_irecv(std::vector<std::string>& op_type, std::vector<at::Tensor>& tensors, std::vector<uint32_t>& remote_rank_list)
+c10::intrusive_ptr<c10d::Work> batch_isend_irecv(std::vector<std::string>& op_type, std::vector<at::Tensor>& tensors, std::vector<int64_t> remote_rank_list)
 ```
 
 ## 参数说明
 
 - **op_type** (`std::vector<std::string>&`)：必选参数，表示操作序列，向量中每个元素为isend或irecv，用于指定对应tensor的通信操作类型。
 - **tensors** (`std::vector<at::Tensor>&`)：必选参数，表示用于发送或接收的tensor本身，数量与op_type保持一致。
-- **remote_rank_list** (`std::vector<uint32_t>`)：必选参数，表示对端的rank ID，这里指全局的rank ID，数量与op_type保持一致。
+- **remote_rank_list** (`std::vector<int64_t>`)：必选参数，表示对端的rank ID，这里指全局的rank ID，数量与op_type保持一致。
 
 ## 返回值说明
 
 `c10::intrusive_ptr<c10d::Work>`
 
-表示所有的isend和irecv任务，因为是异步操作的，所以将work返回，当进行tensor读取时，需要先执行work.wait()，保证batch_isend_irecv完成。
+表示所有的isend和irecv任务，因为是异步操作的，所以将work返回，当进行tensor读取时，需要先执行`work->wait()`，保证batch_isend_irecv完成。
 
 ## 约束说明
 

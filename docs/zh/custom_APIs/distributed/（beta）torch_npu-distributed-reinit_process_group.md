@@ -19,17 +19,17 @@
 ## 函数原型
 
 ```python
-torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None, rebuild_link: bool = True) -> None
+torch_npu.distributed.reinit_process_group(group: Optional[ProcessGroup] = None, rebuild_link: bool = True) -> Optional[ProcessGroup]
 ```
 
 ## 参数说明
 
-- **group** (`Optional[ProcessGroup]`)：可选参数，指定要重新构建的ProcessGroup对象，默认值为None；默认None时重建默认ProcessGroup。
-- **rebuild_link** (`bool`)：可选参数，当传入参数为True时，会销毁当前的ProcessGroup中由HCCL建立的通信连接，然后进行重建；如果传入参数为False，则表示继续使用原有的通信连接，默认值为True。
+- **group** (`Optional[ProcessGroup]`)：可选参数，指定已初始化的进程组。默认值`None`表示使用默认进程组。
+- **rebuild_link** (`bool`)：可选参数，默认值为`True`，销毁指定HCCL进程组的旧通信链接以便重建。取值为`False`时，恢复当前设备上已注册HCCL进程组的通信链接。
 
 ## 返回值说明
 
-无
+`rebuild_link=True`时返回指定进程组，`rebuild_link=False`时返回`None`。
 
 ## 约束说明
 

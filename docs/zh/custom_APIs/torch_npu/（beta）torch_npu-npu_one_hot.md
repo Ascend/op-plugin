@@ -38,12 +38,19 @@ torch_npu.npu_one_hot(input, num_classes=-1, depth=1, on_value=1, off_value=0) -
 
 ## 调用示例
 
+构造4个整数类别索引。`depth=5`在末尾增加长度为5的one-hot维度。
+
 ```python
->>> a=torch.IntTensor([5, 3, 2, 1]).npu()
->>> b=torch_npu.npu_one_hot(a, depth=5)
->>> print(b)
-tensor([[0., 0., 0., 0., 0.],
-        [0., 0., 0., 1., 0.],
-        [0., 0., 1., 0., 0.],
-        [0., 1., 0., 0., 0.]], device='npu:0')
+import torch
+import torch_npu
+
+indices = torch.tensor([4, 3, 2, 1], dtype=torch.int32, device="npu")
+output = torch_npu.npu_one_hot(indices, depth=5)
+print(output.shape)
+```
+
+输出：
+
+```text
+torch.Size([4, 5])
 ```

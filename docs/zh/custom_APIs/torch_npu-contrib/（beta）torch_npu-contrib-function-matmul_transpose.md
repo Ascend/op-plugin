@@ -42,16 +42,23 @@ torch_npu.contrib.function.matmul_transpose(tensor1, tensor2)
 
 ## 调用示例
 
+两个输入张量的最后两个维度均为 `(75, 16)`。接口先转置第二个输入的最后两个维度，再执行矩阵乘法。示例还对输出求和并计算输入梯度。
+
 ```python
->>> import torch
->>> import torch_npu
->>> from torch_npu.contrib.function import matmul_transpose
->>> tensor1 = torch.randn(68, 5, 75, 16).npu()
->>> tensor1.requires_grad = True
->>> tensor2 = torch.randn(68, 5, 75, 16).npu()
->>> tensor2.requires_grad = True
->>> output = matmul_transpose(tensor1, tensor2)
->>> output.sum().backward()
->>> print(output.shape)
+import torch
+import torch_npu
+from torch_npu.contrib.function import matmul_transpose
+tensor1 = torch.randn(68, 5, 75, 16).npu()
+tensor1.requires_grad = True
+tensor2 = torch.randn(68, 5, 75, 16).npu()
+tensor2.requires_grad = True
+output = matmul_transpose(tensor1, tensor2)
+output.sum().backward()
+print(output.shape)
+```
+
+示例输出如下。
+
+```text
 torch.Size([68, 5, 75, 75])
 ```

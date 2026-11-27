@@ -36,7 +36,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
   - <term>Ascend 950PR&950DT系列产品</term>：数据维度支持2、3维，数据类型支持`torch.int8`、`torch.float8_e4m3fn`、`torch.int32`、`torch.float16`、`torch.bfloat16`。
   <!-- end id6 -->
 
-- **src**（`Tensor`/`int`/`Format`）：必选参数，目标格式。可输入张量、整数或torch_npu.Format类型。
+- **src**（`Tensor`/`int`/`torch_npu.Format`）：必选参数，目标格式。可传格式枚举、格式编号或提供目标布局的参考张量。FRACTAL_NZ等私有格式用于设备内部的数据排布。
 
   - 若输入张量，则将`input`的数据格式修改为此张量的格式。例如将`input`的数据格式转换为ND格式时，此处可以输入*ND格式的张量*。
   - 若输入整数，则将`input`的数据格式修改为整数值对应的torch_npu.Format。例如将`input`的数据格式转换为ND格式时，此处可以输入`2`。
@@ -69,7 +69,7 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">数据排布格式</a>”章节。
 
 <!-- npu="950,A3,910b" id14 -->
-- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。
+- **customize_dtype**（`int` / `torch.dtype`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(`torch.int32`)）时，FRACTAL_NZ格式的C0值为8。
@@ -139,8 +139,8 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
 
   - $ND$转$FRACTAL\_NZ$时，若`input`的数据类型与`customize_dtype`指定的类型一致且为`torch.float16`或`torch.bfloat16`，则在`input`形状为`[k, n]`时暂不支持`k=1`。
   - 调用本接口转为$FRACTAL\_NZ$格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
-  - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
-  - $FRACTAL\_NZ$转$ND$场景，不支持输入`srcTensor`非连续。
+  - `input`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
+  - $FRACTAL\_NZ$转$ND$场景，不支持输入`input`非连续。
 <!-- end id12 -->
 
 ## 调用示例
@@ -169,13 +169,13 @@ torch_npu.npu_format_cast_(input, src, *, customize_dtype=None, input_dtype=None
     ```
 
 <!-- npu="950" id13 -->
-- 使用`input_dtype`（仅<term>Ascend 950PR&950DT系列产品</term>）：
+- int8输入转换为FRACTAL_NZ（仅<term>Ascend 950PR&950DT系列产品</term>）：
 
     ```python
     >>> import torch
     >>> import torch_npu
     >>> x = torch.randint(-5, 5, (1,64), dtype=torch.int8).npu()
-    >>> y = torch_npu.npu_format_cast(x, 29, customize_dtype=torch.int8, input_dtype=torch.int8)
+    >>> y = torch_npu.npu_format_cast_(x, 29, customize_dtype=torch.int8)
     >>> torch_npu.get_npu_format(y)
     29
     ```

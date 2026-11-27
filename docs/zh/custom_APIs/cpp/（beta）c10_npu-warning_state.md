@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-获取当前运行时警告等级，返回值类型WarningState为枚举类，包含无警告L_DISABLED、警告L_WARN和报错L_ERROR，与1.11.0版本中WarningState& c10::cuda::warning_state()相同。
+返回同步调试状态对象的引用，类型为`c10_npu::WarningState&`。调用该对象的`get_sync_debug_mode()`可获取当前警告等级，类型为`SyncDebugMode`，取值为`L_DISABLED`、`L_WARN`或`L_ERROR`。
 
 ## 定义文件
 

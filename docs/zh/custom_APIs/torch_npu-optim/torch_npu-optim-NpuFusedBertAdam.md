@@ -22,21 +22,21 @@
 ## 函数原型
 
 ```python
-class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, schedule="warmup_linear", b1=0.9, b2=0.999, e=1e-6, weight_decay=0.01, max_grad_norm=1.0)
+class torch_npu.optim.NpuFusedBertAdam(params, lr=required, warmup=-1, t_total=-1, schedule="warmup_linear", b1=0.9, b2=0.999, e=1e-6, weight_decay=0.01, max_grad_norm=1.0)
 ```
 
 ## 参数说明
 
 - **params** (`iterable`)：必选参数，模型参数或模型参数组。
-- **lr** (`float`)：可选参数，学习率，默认值为1e-3。`lr`的值小于0时，抛出“ValueError”异常信息。
-- **warmup** (`float`)：`t_total`的warmup比例，默认值为-1，表示不进行warmup。`warmup`的值小于0且`warmup`不等于-1，或者`warmup`大于等于1，抛出“ValueError”异常信息。
-- **t_total** (`float`)：学习率调整的步数，默认值为-1，表示固定学习率。
-- **schedule** (`str`)：学习率warmup策略，默认值为warmup_linear。`schedule`为字符串，其值必须为warmup_cosine、warmup_constant、warmup_linear、warmup_poly中的一个。
-- **b1** (`float`)：Adam b1，默认值为0.9。`b1`的值小于0或大于等于1时，抛出“ValueError”异常信息。
-- **b2** (`float`)：Adam b2，默认值为0.999。`b2`的值小于0或大于等于1时，抛出“ValueError”异常信息。
-- **e** (`float`)：Adam epsilon，默认值为1e-6。`e`的值小于0时，抛出“ValueError”异常信息。
+- **lr** (`float`)：可选参数，指定各参数组的默认学习率。省略此参数时，每个参数组都必须指定`lr`。传入负值时抛出`ValueError`。
+- **warmup** (`float`)：可选参数，`t_total`的warmup比例，默认值为-1，表示不进行warmup。`warmup`的值小于0且`warmup`不等于-1，或者`warmup`大于等于1，抛出“ValueError”异常信息。
+- **t_total** (`float`)：可选参数，学习率调整的总步数。默认值为-1，表示固定学习率。
+- **schedule** (`str`)：可选参数，学习率warmup策略，默认值为warmup_linear。`schedule`为字符串，其值必须为warmup_cosine、warmup_constant、warmup_linear、warmup_poly中的一个。
+- **b1** (`float`)：可选参数，Adam b1，默认值为0.9。`b1`的值小于0或大于等于1时，抛出“ValueError”异常信息。
+- **b2** (`float`)：可选参数，Adam b2，默认值为0.999。`b2`的值小于0或大于等于1时，抛出“ValueError”异常信息。
+- **e** (`float`)：可选参数，Adam epsilon，默认值为1e-6。`e`的值小于0时，抛出“ValueError”异常信息。
 - **weight_decay** (`float`)：可选参数，权重衰减，默认值为0.01。
-- **max_grad_norm** (`float`)：最大梯度范数，默认值为1.0，-1表示不做裁剪。
+- **max_grad_norm** (`float`)：可选参数，最大梯度范数，默认值为1.0，小于或等于0时不做裁剪。
 
 ## 返回值说明
 
@@ -54,32 +54,16 @@ class torch_npu.optim.NpuFusedBertAdam(params, lr=1e-3, warmup=-1, t_total=-1, s
 
 ## 调用示例
 
+构造一个NPU参数及其模拟梯度，执行一次优化器更新。
+
 ```python
 import torch
-from torch_npu.npu.amp import GradScaler, autocast
-from torch_npu.optim import NpuFusedBertAdam 
+from torch_npu.optim import NpuFusedBertAdam
 
-def _create_simple_params_and_grads():
-    params = [
-        torch.arange(6).reshape(2, 3).float().npu(),
-        torch.arange(12).reshape(4, 3).float().npu(),
-        torch.arange(6).reshape(2, 3).half().npu(),
-        torch.arange(12).reshape(4, 3).half().npu(),
-        torch.arange(15).reshape(5, 3).float().npu(),
-        torch.arange(18).reshape(6, 3).half().npu(),
-        torch.arange(6).reshape(2, 3).float().npu()
-    ]
+param = torch.nn.Parameter(torch.tensor([1.0, 2.0], device="npu"))
+param.grad = torch.tensor([0.01, -0.02], device="npu")
 
-    for i, p in enumerate(params):
-        if i < len(params) - 1:
-            p.requires_grad = True
-            p.grad = p.clone().detach() / 100.
-
-    return params
-
-opt_kwargs = dict(lr=0.01, warmup=0.1, t_total=20, max_grad_norm=-1)
-params = _create_simple_params_and_grads()
-fused_opt = NpuFusedBertAdam(params, **opt_kwargs)
-with torch.no_grad():
-    fused_opt.step()
+optimizer = NpuFusedBertAdam([param], lr=0.01, warmup=0.1, t_total=20, max_grad_norm=-1)
+optimizer.step()
+# 启用 warmup 后，首次 step 的调度学习率可能为 0。
 ```

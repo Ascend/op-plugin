@@ -8,7 +8,7 @@
 
 ## 功能说明
 
-- API功能：目的数据类型为float4、float8的动态MX量化。在给定的轴`axis`上，根据每`block_size`个数，计算出这组数对应的量化尺度`mxscale`，然后对这组数每一个除以`mxscale`，根据`round_mode`转换到对应的`dst_type`，得到量化结果`y`。在`dst_type`为`torch.float8_e5m2`、`torch.float8_e4m3fn`时，根据`scale_alg`的取值来指定计算`mxscale`的不同算法。
+- API功能：目的数据类型为float4、float8的动态MX量化。在给定的轴`axis`上，根据每`block_size`个数，计算出这组数对应的量化尺度`mxscale`，然后对这组数每一个除以`mxscale`，根据`round_mode`转换到对应的`dst_type`，得到量化结果`y`。通过`scale_alg`选择`mxscale`的计算算法。各算法支持的目标类型见下文。
 
 - 计算公式：
 
@@ -74,7 +74,7 @@
       $$
       Amax(D_{fp32}^b)=max(\{|d_{i}|\}_{i=1}^{k})
       $$
-      - 将FP32映射到目标数据类型可表示的范围内，其中当`dst_type_max`为0时$Amax(DType)$为目标精度能表示的最大值，当`dst_type_max`不为0时$Amax(DType)$为`dst_type_max`传入值：
+      - 将FP32映射到目标数据类型可表示的范围内，其中$Amax(DType)$取`dst_type_max`的传入值：
       $$
       S_{fp32}^b = \frac{Amax(D_{fp32}^b)}{Amax(DType)}
       $$
@@ -121,7 +121,7 @@ torch_npu.npu_dynamic_mx_quant(input, *, axis=-1, round_mode="rint", dst_type=to
 ## 返回值说明
 
 - **y** (`Tensor`)：量化后的输出张量。当`dst_type`为`torch.float8_e4m3fn`或`torch.float8_e5m2`时，y的数据类型与`dst_type`对应，shape与输入`input`一致。当`dst_type`为`torch_npu.float4_e2m1fn_x2`或`torch_npu.float4_e1m2fn_x2`时，y的实际数据类型为`torch.uint8`，shape的最后一维为`input`最后一维的一半（每两个FP4数据打包为一个`torch.uint8`），查看具体值需自行解包。
-- **mxscale** (`Tensor`)：每个分组对应的量化尺度，当`scale_alg`为3时逻辑数据类型为`torch.float8_e4m3fn`，其他模式为`torch.float8_e8m0fnu`，实际返回的数据类型均为`torch.uint8`。`mxscale`的shape比输入`input`多一维，最后一维为2，`axis`轴的大小为`input`对应轴的值除以`block_size`向上取整并偶数pad（pad填充值为0），当`axis`为非尾轴时，`mxscale`输出需要对每两行数据进行交织处理。
+- **mxscale** (`Tensor`)：每个分组对应的量化尺度，当`scale_alg`为3时逻辑数据类型为`torch.float8_e4m3fn`，其他模式为`torch.float8_e8m0fnu`，实际返回的数据类型均为`torch.uint8`。`mxscale`的shape比输入`input`多一维，最后一维为2，`axis`轴的大小为分组对数`ceil(ceil(input.shape[axis] / block_size) / 2)`。分组数为奇数时补一个值为0的位置，当`axis`为非尾轴时，`mxscale`输出需要对每两行数据进行交织处理。
 
 ## 约束说明
 
@@ -132,7 +132,7 @@ torch_npu.npu_dynamic_mx_quant(input, *, axis=-1, round_mode="rint", dst_type=to
 - 输入`input`和输出`mxscale`的shape约束关系：
   - rank(mxscale) = rank(x) + 1
   - axis_change = axis if axis >= 0 else axis + rank(x)
-  - mxscale.shape[axis_change] = (ceil(x.shape[axis] / block_size) + 2 - 1) / 2
+  - mxscale.shape[axis_change] = ceil(ceil(x.shape[axis] / block_size) / 2)
   - mxscale.shape[-1] = 2
   - 其他维度与输入x一致
 

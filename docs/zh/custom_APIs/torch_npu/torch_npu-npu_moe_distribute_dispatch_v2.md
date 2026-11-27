@@ -497,7 +497,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
 - **ep\_recv\_counts**（`Tensor`）：表示EP通信域各卡收到的token数（token数以前缀和的形式表示），要求为1维张量。数据类型支持`torch.int32`，数据格式为$ND$，支持非连续的Tensor。对应[torch\_npu.npu\_moe\_distribute\_combine\_v2](torch_npu-npu_moe_distribute_combine_v2.md)的`ep_send_counts`输入。
 
     <!-- npu="910b" id48 -->
-    - <term>Atlas A2系列产品</term>：要求shape为\(moe\_expert\_num+2\*global\_bs\*K\*server\_num, \)，前`moe_expert_num`个数表示在EP通信域内，该卡上每个专家收到来自其他各卡的token数（以前缀和的形式表示），2\*global\_bs\*K\*server\_num用于存储机间和机内通信前，combine可提前做reduce操作的token个数和通信区偏移量，`global_bs`传入0时此处按照bs\*ep\_world\_size计算。
+    - <term>Atlas A2系列产品</term>：输出长度取决于EP通信算法和参与设备的数量。分层方案可在token计数后附加供combine使用的规约和通信偏移信息。将该张量直接传给配套combine接口的`ep_send_counts`。
     <!-- end id48 -->
     <!-- npu="950,A3" id49 -->
     - <term>Atlas A3系列产品</term>、<term>Ascend 950DT系列产品</term>：要求shape为\(ep\_world\_size\*max\(tp\_world\_size, 1\)\*local\_expert\_num, \)。
@@ -623,7 +623,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         | 1 | 静态量化 | `torch_npu.hifloat8` | 非空，shape为(1, )，数据类型为`torch.float32`。 | 不输出有效值。 |
         | 2 | pertoken动态量化 | `torch.int8`/`torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, )。数据类型为`torch.float32`。 |
         | 3 | pergroup动态量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | 支持None或者非空。非空时，有共享专家卡情况下shape为(sharedExpertNum+moeExpertNum, H)，无共享专家卡情况下为(moeExpertNum, H)，数据类型为`torch.float32`。 | 输出有效值。shape为(A, Ceil(H, 128))。数据类型为`torch.float32`。 |
-        | 4 | mx量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch.float8_e8m0fnu`。 |
+        | 4 | mxfp量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2`/`torch_npu.float4_e2m1fn_x2`/`torch_npu.float4_e1m2fn_x2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch.float8_e8m0fnu`。 |
         | 5 | mxfp8量化clip实现 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | None。 | 输出有效值。shape为(A, Ceil(H, 32))且ceil(H/32) % 2 == 0。数据类型为`torch.float8_e8m0fnu`。 |
     <!-- end id66 -->
 
@@ -712,9 +712,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     globalBS = bs * ep_world_size
     is_shared = (shared_expert_rank_num > 0)
     is_quant = (quant_mode > 0)
-    zero_expert_num = 1
-    copy_expert_num = 1
-    const_expert_num = 1
+    # 默认只使用普通专家。启用扩展专家前请核对设备支持情况。
+    zero_expert_num = 0
+    copy_expert_num = 0
+    const_expert_num = 0
 
     def gen_const_expert_alpha_1():
         const_expert_alpha_1 = torch.empty(size=[const_expert_num, h], dtype=input_dtype).uniform_(-1, 1)
@@ -764,10 +765,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             tp_rank_id=rank % tp_world_size,
         )
         (
-            expand_x, dynamic_scales, expand_idx,
+            expand_x, dynamic_scales, assist_info_for_combine,
             expert_token_nums, ep_recv_counts, tp_recv_counts, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
         x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
@@ -819,9 +820,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         else:
             scales = None
 
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = gen_const_expert_alpha_1().npu() if const_expert_num else None
+        const_expert_alpha_2 = gen_const_expert_alpha_2().npu() if const_expert_num else None
+        const_expert_v = gen_const_expert_v().npu() if const_expert_num else None
 
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 
@@ -863,7 +864,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                                                 shared_expert_rank_num=shared_expert_rank_num,
                                                 moe_expert_num=moe_expert_num,
                                                 global_bs=globalBS,
-                                                ori_x=x,
+                                                ori_x=x if copy_expert_num or const_expert_num else None,
                                                 const_expert_alpha_1=const_expert_alpha_1,
                                                 const_expert_alpha_2=const_expert_alpha_2,
                                                 const_expert_v=const_expert_v,
@@ -904,7 +905,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             p.start()
         for p in p_list:
             p.join()
-
+        failed = [(rank, p.exitcode) for rank, p in enumerate(p_list) if p.exitcode != 0]
+        if failed:
+            raise RuntimeError(f"NPU workers failed (rank, exit code): {failed}")
         print("run npu success.")
     ```
 
@@ -948,9 +951,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
     is_shared = (shared_expert_rank_num > 0)
     is_quant = (quant_mode > 0)
 
-    zero_expert_num = 1
-    copy_expert_num = 1
-    const_expert_num = 1
+    # 默认只使用普通专家。启用扩展专家前请核对设备支持情况。
+    zero_expert_num = 0
+    copy_expert_num = 0
+    const_expert_num = 0
 
     class MOE_DISTRIBUTE_GRAPH_Model(torch.nn.Module):
         def __init__(self):
@@ -1001,7 +1005,7 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
                 moe_expert_num=moe_expert_num,
                 global_bs=global_bs,
                 elastic_info=elastic_info,
-                ori_x=x,
+                ori_x=x if copy_expert_num or const_expert_num else None,
                 const_expert_alpha_1=const_expert_alpha_1,
                 const_expert_alpha_2=const_expert_alpha_2,
                 const_expert_v=const_expert_v,
@@ -1061,10 +1065,10 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
         )
 
         (
-            expand_x, dynamic_scales, expand_idx,
+            expand_x, dynamic_scales, assist_info_for_combine,
             expert_token_nums, ep_recv_counts, tp_recv_counts, _
         ) = torch_npu.npu_moe_distribute_dispatch_v2(**dispatch_kwargs_before)
-        return expand_x, dynamic_scales, expand_idx, expert_token_nums, ep_recv_counts, tp_recv_counts
+        return expand_x, dynamic_scales, assist_info_for_combine, expert_token_nums, ep_recv_counts, tp_recv_counts
 
     def get_dispatch_kwargs_warmup(
         x_warm_up, expert_ids_warm_up, group_ep, group_tp, ep_rank_id, tp_rank_id,
@@ -1125,9 +1129,9 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             scales = None
 
         elastic_info = None
-        const_expert_alpha_1 = gen_const_expert_alpha_1().npu()
-        const_expert_alpha_2 = gen_const_expert_alpha_2().npu()
-        const_expert_v = gen_const_expert_v().npu()
+        const_expert_alpha_1 = gen_const_expert_alpha_1().npu() if const_expert_num else None
+        const_expert_alpha_2 = gen_const_expert_alpha_2().npu() if const_expert_num else None
+        const_expert_v = gen_const_expert_v().npu() if const_expert_num else None
         out = warm_up_dispatch(rank, ep_hcomm_info, tp_hcomm_info)
 
         model = MOE_DISTRIBUTE_GRAPH_Model()
@@ -1181,6 +1185,8 @@ torch_npu.npu_moe_distribute_dispatch_v2(x, expert_ids, group_ep, ep_world_size,
             p.start()
         for p in p_list:
             p.join()
-
+        failed = [(rank, p.exitcode) for rank, p in enumerate(p_list) if p.exitcode != 0]
+        if failed:
+            raise RuntimeError(f"NPU workers failed (rank, exit code): {failed}")
         print("run npu success.")
     ```

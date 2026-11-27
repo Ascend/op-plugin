@@ -40,6 +40,8 @@ torch_npu.npu_swiglu(Tensor input, int dim=-1) -> (Tensor)
 
 ## 调用示例
 
+示例沿末维把输入等分，再对其中一半应用SiLU并相乘。输出的末维为输入的一半。
+
 - 单算子模式调用
 
   ```python

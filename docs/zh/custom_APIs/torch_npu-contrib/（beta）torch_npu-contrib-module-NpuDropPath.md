@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-使用NPU亲和写法替换swin_transformer.py中的原生DropPath，丢弃每个样本（应用于residual blocks的主路径）的路径（随机深度）。
+用于在NPU上实现随机深度。在训练前通过`NpuDropPath.enable_droppath_ensemble(model)`注册随机张量生成钩子。模块预热时先记录输入形状，随机张量队列就绪后按样本丢弃主路径输出。
 
 ## 函数原型
 
@@ -29,7 +29,7 @@ torch_npu.contrib.module.NpuDropPath(drop_prob=None)
 
 **计算参数**
 
-- **drop_prob** (`float`)：可选参数，DropPath概率（路径丢弃概率），取值范围为[0, 1]，默认值为None，取0时不丢弃任何路径。
+- **drop_prob** (`float`)：调用时须显式给出，表示路径丢弃概率，取值范围为 [0, 1)。设为0时直接返回输入。
 
 **计算输入**
 
@@ -43,14 +43,18 @@ DropPath的计算结果。
 
 ## 调用示例
 
+示例将`input1`用作残差分支，将`input2`用作主路径。将丢弃概率设为`0`后，两条分支的输出直接相加。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.module import NpuDropPath
->>> input1 = torch.randn(68, 5).npu()
->>> input1.requires_grad_(True)
->>> input2 = torch.randn(68, 5).npu()
->>> input2.requires_grad_(True)
->>> fast_drop_path = NpuDropPath(0).npu()
->>> output = input1 + fast_drop_path(input2)
->>> output.sum().backward()
+import torch, torch_npu
+from torch_npu.contrib.module import NpuDropPath
+input1 = torch.randn(68, 5).npu()
+input1.requires_grad_(True)
+input2 = torch.randn(68, 5).npu()
+input2.requires_grad_(True)
+fast_drop_path = NpuDropPath(0).npu()
+output = input1 + fast_drop_path(input2)
+output.sum().backward()
 ```
+
+输出保持 `(68, 5)`形状，`backward()`会计算两条分支的梯度。

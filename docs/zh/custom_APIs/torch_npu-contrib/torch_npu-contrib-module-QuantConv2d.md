@@ -23,7 +23,7 @@
 ## 函数原型
 
 ```python
-torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, output_dtype, stride=1, padding=0, dilation=1, groups=1, bias=True, offset=False, offset_x=0, round_mode="rint", device=None, dtype=None)
+torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, output_dtype, stride=1, padding=0, dilation=1, groups=1, bias=True, offset=False, offset_x=0, round_mode="rint", input_dtype=None, weight_dtype=None, device=None, dtype=None)
 ```
 
 ## 参数说明
@@ -48,6 +48,8 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 - **round_mode**（`string`）：可选参数，默认值为"rint"。**预留参数，暂未使用**。
 - **device**（`torch.device`）：可选参数，默认值为None。**预留参数，暂未使用**。
+- **input_dtype**（`torch.dtype`）：可选参数，传给`torch_npu.npu_quant_conv2d`的输入数据类型。默认值为None，由算子根据输入张量类型处理。
+- **weight_dtype**（`torch.dtype`）：可选参数，传给底层算子的权重数据类型。默认值为None，由算子根据权重张量类型处理。
 - **dtype**（`torch.dtype`）：可选参数，默认值为None。**预留参数，暂未使用**。
 
 **计算输入**
@@ -82,6 +84,8 @@ torch_npu.contrib.module.QuantConv2d(in_channels, out_channels, kernel_size, out
 
 图模式调用：
 
+示例使用TorchAir后端编译静态图，输入是一个64×64的单通道int8特征图。将3×3权重、量化系数和偏置绑定到模块后执行推理。
+
 ```python
 import torch
 import torch_npu
@@ -110,3 +114,5 @@ with torch.no_grad():
     output = static_graph_model(fmap)
 print("static graph result: ", output)
 ```
+
+输出是形状为 `(1, 1, 62, 62)`的float16张量。

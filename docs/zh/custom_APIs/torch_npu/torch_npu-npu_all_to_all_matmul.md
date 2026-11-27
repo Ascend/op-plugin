@@ -102,7 +102,7 @@ torch_npu.npu_all_to_all_matmul(x1, x2, hcom, world_size, bias=None, all2all_axe
 
 
     if __name__ == "__main__":
-        worksize = 2
+        world_size = 2
         master_ip = "127.0.0.1"
         master_port = "50001"
         x1_shape = [1024, 256]
@@ -110,8 +110,8 @@ torch_npu.npu_all_to_all_matmul(x1, x2, hcom, world_size, bias=None, all2all_axe
 
         mp.spawn(
             run_all_to_all_matmul,
-            args=(worksize, master_ip, master_port, x1_shape, x2_shape),
-            nprocs=worksize,
+            args=(world_size, master_ip, master_port, x1_shape, x2_shape),
+            nprocs=world_size,
         )
     ```
 

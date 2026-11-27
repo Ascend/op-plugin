@@ -148,7 +148,7 @@
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-ExternalEvent().wait().md">torch_npu.npu.ExternalEvent().wait()</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>阻塞指定Stream的运行，直到指定的Event完成，支持多个Stream等待同一个Event的场景。</p>
+<td class="cellrowborder" valign="top" width="61.39%" headers="mcps1.2.3.1.2 "><p>阻塞指定Stream的运行，直到指定的Event完成，仅支持单个流等待单个事件。</p>
 </td>
 </tr>
 <tr><td class="cellrowborder" valign="top" width="38.61%" headers="mcps1.2.3.1.1 "><p><a href="torch_npu-npu-graph_task_group_begin.md">torch_npu.npu.graph_task_group_begin</a></p>
@@ -188,7 +188,7 @@
 </tr>
 <tr id="row1085193319387"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p9851103393810"><a name="p9851103393810"></a><a name="p9851103393810"></a><a href="（beta）torch_npu-npu-aclnn-version.md">（beta）torch_npu.npu.aclnn.version</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>查询aclnn算子版本信息。</p>
+<td class="cellrowborder" valign="top" width="61.78%" headers="mcps1.2.3.1.2 "><p id="p1218213753310"><a name="p1218213753310"></a><a name="p1218213753310"></a>预留的aclnn算子版本查询接口，当前暂不可用。</p>
 </td>
 </tr>
 <tr id="row285193313382"><td class="cellrowborder" valign="top" width="38.22%" headers="mcps1.2.3.1.1 "><p id="p2851433193819"><a name="p2851433193819"></a><a name="p2851433193819"></a><a href="torch_npu-npu-aclnn-allow_hf32.md">torch_npu.npu.aclnn.allow_hf32</a></p>
@@ -427,7 +427,7 @@
 </tr>
 <tr id="zh-cn_topic_0000001863035964_row10860101635518"><td class="cellrowborder" width="63.61%" valign="top" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p1486012165556"><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a name="zh-cn_topic_0000001863035964_p1486012165556"></a><a href="torch_npu-npu-empty_virt_addr_cache.md">torch_npu.npu.empty_virt_addr_cache</a></p>
 </td>
-<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>轻量化empty_cache，只释放虚拟内存，调用方式与torch_npu.npu.empty_cache类似。</p>
+<td class="cellrowborder" valign="top" width="36.39%" headers="mcps1.2.3.1.2 "><p id="p26648741511"><a name="p26648741511"></a><a name="p26648741511"></a>解除空闲段的虚拟地址映射并保留可复用的物理内存句柄。需启用 <code>expandable_segments</code>。</p>
 </td>
 </tr>
 <tr id="zh-cn_topic_0000001863035964_row1933424017243"><td class="cellrowborder" valign="top" width="63.61%" headers="mcps1.2.3.1.1 "><p id="zh-cn_topic_0000001863035964_p7819165411224"><a name="zh-cn_topic_0000001863035964_p7819165411224"></a><a name="zh-cn_topic_0000001863035964_p7819165411224"></a>torch_npu.npu.NPUPluggableAllocator</p>

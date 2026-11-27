@@ -38,20 +38,23 @@ torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale, group_size, output_dim) -> 
 
 ## 调用示例
 
+输入包含2张特征图。分别为批索引0和1指定一个ROI。分组数和输出通道数均为2，对应输入通道数为2×2×2。
+
 ```python
->>> import torch
->>> import torch_npu
+import torch
+import torch_npu
 
->>> x = torch.ones((2, 8, 4, 4), dtype=torch.float16)
->>> x[1] = 2
->>> x = x.npu()
+x = torch.arange(1, 65, dtype=torch.float16, device="npu").reshape(2, 8, 2, 2)
+rois = torch.tensor(
+    [[[0.], [0.], [0.], [2.], [2.]], [[1.], [0.], [0.], [2.], [2.]]],
+    dtype=torch.float16, device="npu",
+)
+output = torch_npu.npu_ps_roi_pooling(x, rois, 0.5, 2, 2)
+print(output.shape)
+```
 
->>> # rois 的形状为 (2, 5, 1)，每个 ROI 依次包含 batch_id、x1、y1、x2、y2。
->>> rois = torch.tensor(
-    [[[0], [0], [0], [3], [3]], [[1], [0], [0], [3], [3]]],
-    dtype=torch.float16,
-    ).npu()
+输出：
 
->>> out = torch_npu.npu_ps_roi_pooling(x, rois, spatial_scale=1.0, group_size=2, output_dim=2)
->>> print(out.shape)  # torch.Size([2, 2, 2, 2])
+```text
+torch.Size([2, 2, 2, 2])
 ```

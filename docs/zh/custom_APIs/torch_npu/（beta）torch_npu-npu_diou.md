@@ -33,7 +33,7 @@ torch_npu.npu_diou(self, gtboxes, trans=False, is_cross=False, mode=0) -> Tensor
 - **self** (`Tensor`)：格式为xywh，shape为(4, n)的预测检测框。
 - **gtboxes** (`Tensor`)：相应的gt检测框，shape为(4, n)。
 - **trans** (`bool`)：是否有偏移，默认值为False。
-- **is_cross** (`bool`)：box1和box2之间是否有交叉操作，默认值为False。
+- **is_cross** (`bool`)：`self`和`gtboxes`是否两两计算。默认值为False，此时按对应位置逐对计算。
 - **mode** (`int`)：选择DIoU的计算方式。0表示IoU，1表示IoF。默认值为0。
 
 ## 返回值说明
@@ -48,14 +48,16 @@ DIoU计算结果。`is_cross`为False时，shape为(1, n)；`is_cross`为True时
 
 ## 调用示例
 
+示例对两组边界框计算DIoU。将得分求和为标量后调用`backward()`获取输入梯度。
+
 ```python
-    >>> import torch
-    >>> import torch_npu
-    >>> box1 = torch.randn(4, 32).npu()
-    >>> box1.requires_grad = True
-    >>> box2 = torch.randn(4, 32).npu()
-    >>> box2.requires_grad = True
-    >>> diou = torch_npu.npu_diou(box1, box2, trans=True)
-    >>> l = diou.sum()
-    >>> l.backward()
+import torch
+import torch_npu
+box1 = torch.randn(4, 32).npu()
+box1.requires_grad = True
+box2 = torch.randn(4, 32).npu()
+box2.requires_grad = True
+diou = torch_npu.npu_diou(box1, box2, trans=True)
+l = diou.sum()
+l.backward()
 ```

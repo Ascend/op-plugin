@@ -31,15 +31,17 @@ torch_npu.contrib.function.dropout_with_byte_mask(input1, p=0.5, training=True, 
 ## 参数说明
 
 - **input1** (`Tensor`)：必选参数，输入张量。
-- **p** (`float`)：可选参数，dropout概率，取值范围为[0,1)，默认值为0.5。
+- **p** (`float`)：可选参数，dropout概率，取值范围为[0,1]，默认值为0.5。
 - **training** (`bool`)：可选参数，是否启用dropout，当设置为True时启用，False时不启用。默认值为True。
-- **inplace** (`bool`)：可选参数，是否原地生效，当设置为True时将原地修改入参包含的值。默认值为False。
+- **inplace** (`bool`)：可选参数，默认值为False。仅支持False，传入True会抛出`ValueError`。
 
 ## 约束说明
 
 仅在32核设备场景下性能提升。
 
 ## 使用示例
+
+示例将输入放到NPU，并用`2`（`ACL_FORMAT_ND`）指定ND格式。训练模式下，`p=0.2`表示每个元素有20%的概率被置零。
 
 ```python
 import torch, torch_npu
@@ -49,3 +51,5 @@ input = torch_npu.npu_format_cast(input, 2)
 output = F.dropout_with_byte_mask(input, p=0.2, training=True)
 print(output)
 ```
+
+输出保持 `(4, 4)`形状。实际置零的元素由随机掩码决定。

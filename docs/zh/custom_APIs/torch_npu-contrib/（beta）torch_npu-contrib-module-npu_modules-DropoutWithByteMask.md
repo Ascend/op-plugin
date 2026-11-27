@@ -33,7 +33,7 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 **计算参数**
 
 - **p** (`float`)：元素归零的概率，取值范围为[0, 1]。默认值为0.5。
-- **inplace** (`bool`)：如果设置为True，原地执行此操作。默认值为False。
+- **inplace** (`bool`)：默认值为False。仅支持False，使用True进行前向计算会抛出`ValueError`。
 - **max_seed** (`int`)：预留参数，暂未使用。默认值为2 ** 10 - 1（即1023）。
 
 **计算输入**
@@ -48,12 +48,15 @@ torch_npu.contrib.module.npu_modules.DropoutWithByteMask(p=0.5, inplace=False, m
 
 ## 调用示例
 
+示例在训练模式下对一个16×16的NPU张量应用dropout。丢弃概率由构造参数`p`指定。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.module.npu_modules import DropoutWithByteMask
->>> m = DropoutWithByteMask(p=0.5)
->>> input = torch.randn(16, 16).npu()
->>> output = m(input)
->>> print(output.shape)
-torch.Size([16, 16])
+import torch, torch_npu
+from torch_npu.contrib.module.npu_modules import DropoutWithByteMask
+m = DropoutWithByteMask(p=0.5)
+input = torch.randn(16, 16).npu()
+output = m(input)
+print(output.shape)
 ```
+
+结果保持16×16的形状。

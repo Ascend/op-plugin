@@ -30,19 +30,11 @@
 
 2. 验证设置是否成功。
 
-    1. 执行如下命令查询接口设置：
+    ```python
+    print(torch.are_deterministic_algorithms_enabled())
+    ```
 
-        ```python
-        torch.are_deterministic_algorithms_enabled()
-        ```
-
-    2. 回显如下：
-
-        ```python
-        print(torch.are_deterministic_algorithms_enabled())
-        ```
-
-    执行训练时，打印此接口的返回值为True表示当前已开启确定性计算开关，返回False则表示未开启。
+    输出`True`表示已开启确定性计算，输出`False`表示未开启。
 
 <!-- npu="950,A3,910b" id3 -->
 ## API清单

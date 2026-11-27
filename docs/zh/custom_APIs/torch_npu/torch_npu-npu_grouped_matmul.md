@@ -1075,10 +1075,11 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     g = 2
     x = torch.randint(-1, 1, (M, K), dtype=torch.int8).npu()
     weight1 = torch.randint(-1, 1, (g, K, N), dtype=torch.int8).npu()
+    torch.npu.config.allow_internal_format = True
     weightnz = torch_npu.npu_format_cast(weight1, 29)
     scale = torch.randint(-1, 1, (g, N), dtype=torch.bfloat16).npu()
     pertoken = torch.randint(-1, 1, (M,), dtype=torch.float32).npu()
-    group_list = torch.Tensor([2, 2]).to(torch.int64).npu()
+    group_list = torch.tensor([2, 4], dtype=torch.int64, device="npu")  # 两组的累计结束位置
     split_item = 3
     bias = torch.randint(-1, 1, (g, N), dtype=torch.int32).npu()
 
@@ -1418,7 +1419,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
     weight1 = torch.randint(-1, 1, (2, 4, 5), dtype=torch.int8).npu()
     scale = torch.randint(-1, 1, (2, 5), dtype=torch.float32).npu()
     pertoken = torch.randint(-1, 1, (4,), dtype=torch.float32).npu()
-    group_list = torch.Tensor([2, 2]).to(torch.int64).npu()
+    group_list = torch.tensor([2, 4], dtype=torch.int64, device="npu")  # 两组的累计结束位置
     split_item = 3
     bias = torch.randint(-1, 1, (2, 5), dtype=torch.int32).npu()
     npu_out = torch_npu.npu_grouped_matmul([x], [weight1], scale=[scale], bias = [bias],    per_token_scale = [pertoken],group_list=group_list, split_item=split_item, group_type=0, output_dtype=torch.bfloat16, group_list_type=0, act_type=1)
@@ -1556,7 +1557,7 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
           scale = [scale1]
           pertoken1 = torch.ones(M, dtype=torch.float32).npu()
           pertoken = [pertoken1]
-          group_list = torch.Tensor([2, 2]).to(torch.int64).npu()
+          group_list = torch.tensor([2, 4], dtype=torch.int64, device="npu")  # 两组的累计结束位置
           split_item = 3
 
           model = GMMModel().npu()
@@ -1596,13 +1597,14 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
           x = [x1.npu()]
 
           weight3 = torch.ones(g, K, N, dtype=torch.int8).npu().transpose(1,2)
+          torch.npu.config.allow_internal_format = True
           weight = torch_npu.npu_format_cast(weight3, 29) # 将weight转为nz格式
 
           scale1 = torch.ones(g, N, dtype=torch.bfloat16).npu()
           scale = [scale1]
           pertoken1 = torch.ones(M, dtype=torch.float32).npu()
           pertoken = [pertoken1]
-          group_list = torch.Tensor([2, 2]).to(torch.int64).npu()
+          group_list = torch.tensor([2, 4], dtype=torch.int64, device="npu")  # 两组的累计结束位置
           split_item = 3
           model = GMMModel().npu()
           model = torch.compile(model, backend=npu_backend, dynamic=False)
@@ -1615,6 +1617,8 @@ torch_npu.npu_grouped_matmul(x, weight, *, bias=None, scale=None, offset=None, a
   <!-- end id105 -->
   <!-- npu="950" id106 -->
   - <term>Ascend 950PR&950DT系列产品</term>：MX伪量化场景示例（x为`torch.float16`，weight为`torch.float32`（`torch.float4_e2m1fn_x2`），antiquant\_scale使用`torch.uint8`承载`torch.float8_e8m0fnu`）（约束见[伪量化（MX）场景约束](#伪量化mx场景约束)）<a id="图模式MX伪量化示例"></a>
+
+      运行前安装提供`float4_e2m1fn`的`ml_dtypes`，例如`python -m pip install "ml_dtypes>=0.5.0"`。
 
       ```python
       import numpy as np

@@ -53,32 +53,17 @@ class torch_npu.optim.NpuFusedRMSprop(params, lr=1e-2, alpha=0.99, eps=1e-8, wei
 
 ## 调用示例
 
+构造一个NPU参数及其模拟梯度，执行一次优化器更新。
+
 ```python
 import torch
-from torch_npu.npu.amp import GradScaler, autocast
-from torch_npu.optim import NpuFusedRMSprop 
+from torch_npu.optim import NpuFusedRMSprop
 
-def _create_simple_params_and_grads():
-    params = [
-        torch.arange(6).reshape(2, 3).float().npu(),
-        torch.arange(12).reshape(4, 3).float().npu(),
-        torch.arange(6).reshape(2, 3).half().npu(),
-        torch.arange(12).reshape(4, 3).half().npu(),
-        torch.arange(15).reshape(5, 3).float().npu(),
-        torch.arange(18).reshape(6, 3).half().npu(),
-        torch.arange(6).reshape(2, 3).float().npu()
-    ]
+param = torch.nn.Parameter(torch.tensor([1.0, 2.0], device="npu"))
+param.grad = torch.tensor([0.01, -0.02], device="npu")
+before = param.detach().clone()
 
-    for i, p in enumerate(params):
-        if i < len(params) - 1:
-            p.requires_grad = True
-            p.grad = p.clone().detach() / 100.
-
-    return params
-
-opt_kwargs = dict(eps=0.001, lr=0.01, weight_decay=1e-5)
-params = _create_simple_params_and_grads()
-fused_opt = NpuFusedRMSprop(params, **opt_kwargs)
-with torch.no_grad():
-    fused_opt.step()
+optimizer = NpuFusedRMSprop([param], eps=0.001, lr=0.01, weight_decay=1e-5)
+optimizer.step()
+assert not torch.equal(before, param.detach())
 ```

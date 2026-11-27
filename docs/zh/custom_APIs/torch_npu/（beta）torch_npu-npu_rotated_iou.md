@@ -30,23 +30,38 @@ torch_npu.npu_rotated_iou(self, query_boxes, trans=False, mode=0, is_cross=True,
 
 ## 参数说明
 
-- **self** (`Tensor`)：必选参数，第一组旋转框数据，shape为(B, 5, N)，数据类型为`torch.float32`的3D张量。
-- **query_boxes** (`Tensor`)：必选参数，标注框，shape为(B, 5, K)，数据类型为`torch.float32`的3D张量，其中K值不大于1600。
-- **trans** (`bool`)：可选参数，值为True表示“xyxyt”（每个旋转框为x1、y1、x2、y2与旋转角度五个值），值为False表示“xywht”（每个旋转框为x、y、宽w、高h与旋转角度五个值）。默认值为False。
+- **self** (`Tensor`)：必选参数，第一组旋转框数据，shape为(B, N, 5)，数据类型为`torch.float32`的3D张量。
+- **query_boxes** (`Tensor`)：必选参数，标注框，shape为(B, K, 5)，数据类型为`torch.float32`的3D张量，其中K值不大于1600。
+- **trans** (`bool`)：可选参数，指定最后一维的框参数顺序。True时为 (x1, y1, x2, y2, θ)，前四项为未旋转框的两个对角顶点坐标。False时为 (x, y, w, h, θ)，前四项为中心坐标、宽和高。θ为旋转角度，单位为度。默认值为False。
 - **is_cross** (`bool`)：可选参数，值为True时表示交叉计算，为False时表示一对一计算。默认值为True。
 - **mode** (`int`)：可选参数，计算模式，取值为0或1。0表示IoU，1表示IoF。默认值为0。
 - **v_threshold** (`float`)：可选参数，旋转框的高度阈值。默认值为0.0。
 - **e_threshold** (`float`)：可选参数，旋转框的角度阈值。默认值为0.0。
 
+## 返回值说明
+
+Tensor。is_cross=True时输出形状为 (B, N, K)，每个元素对应一对框的IoU或IoF。B为批大小，N和K分别为两组框的数量。
+
 ## 调用示例
 
+计算两组旋转框两两之间的IoU。
+
 ```python
->>> import torch
->>> import torch_npu
->>> import numpy as np
->>> a=np.random.uniform(0,1,(2,2,5)).astype(np.float32)
->>> b=np.random.uniform(0,1,(2,3,5)).astype(np.float32)
->>> box1=torch.from_numpy(a).to("npu")
->>> box2=torch.from_numpy(b).to("npu")
->>> output = torch_npu.npu_rotated_iou(box1, box2, trans=False, mode=0, is_cross=True)
+import torch
+import torch_npu
+
+# 一个批次中分别有 2 个和 3 个旋转框。每行依次为中心坐标、宽、高和角度。
+boxes = torch.tensor([[[10., 10., 4., 2., 0.], [30., 30., 2., 2., 0.]]], device="npu")
+query_boxes = torch.tensor(
+    [[[10., 10., 4., 2., 0.], [10., 10., 4., 2., 90.], [50., 50., 4., 2., 0.]]],
+    device="npu",
+)
+output = torch_npu.npu_rotated_iou(boxes, query_boxes, trans=False)
+print(output.shape)
+```
+
+输出：
+
+```text
+torch.Size([1, 2, 3])
 ```

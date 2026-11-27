@@ -33,8 +33,8 @@ torch_npu.npu_iou(bboxes, gtboxes, mode=0) -> Tensor
 
 ## 参数说明
 
-- **bboxes** (`Tensor`)：必选参数，输入张量。
-- **gtboxes** (`Tensor`)：必选参数，输入张量。
+- **bboxes** (`Tensor`)：必选参数，形状为 (N, 4) 的浮点张量，依次存放每个框的 (x1, y1, x2, y2)。
+- **gtboxes** (`Tensor`)：必选参数，形状为 (M, 4) 的浮点张量，与bboxes的数据类型相同。
 - **mode** (`int`)：可选参数，0为IoU模式，1为IoF模式。默认值为0。
 
 <!-- npu="950" id6 -->
@@ -45,18 +45,25 @@ Ascend 950DT系列产品：该API暂不支持反向计算。
 
 ## 调用示例
 
+计算两组候选框的交并比，输出位置与计算的框对对应。
+
 ```python
->>> import torch
->>> import torch_npu
->>> bboxes = torch.tensor([[0, 0, 10, 10],
+import torch
+import torch_npu
+bboxes = torch.tensor([[0, 0, 10, 10],
                            [10, 10, 20, 20],
                            [32, 32, 38, 42]], dtype=torch.float16).to("npu")
->>> gtboxes = torch.tensor([[0, 0, 10, 20],
+gtboxes = torch.tensor([[0, 0, 10, 20],
                             [0, 10, 10, 10],
                             [10, 10, 20, 20]], dtype=torch.float16).to("npu")
->>> output_iou = torch_npu.npu_iou(bboxes, gtboxes, 0)
->>> print(output_iou)
+output_iou = torch_npu.npu_iou(bboxes, gtboxes, 0)
+print(output_iou)
+```
+
+一次运行的输出：
+
+```text
 tensor([[0.4985, 0.0000, 0.0000],
-        [0.0000, 0.0000, 0.0000], 
+        [0.0000, 0.0000, 0.0000],
        [0.0000, 0.9961, 0.0000]], device='npu:0', dtype=torch.float16)
 ```

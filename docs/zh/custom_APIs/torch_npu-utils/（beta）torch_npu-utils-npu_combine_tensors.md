@@ -25,7 +25,7 @@
 ## 函数原型
 
 ```python
-torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> Tensor
+torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> Tensor | None
 ```
 
 ## 参数说明
@@ -35,6 +35,7 @@ torch_npu.utils.npu_combine_tensors(list_of_tensor, require_copy_value=True) -> 
 
 ## 返回值说明
 
+输入列表为空，或输入张量的总存储大小为0时，返回`None`。
 `Tensor`
 
 代表融合后的新Tensor。

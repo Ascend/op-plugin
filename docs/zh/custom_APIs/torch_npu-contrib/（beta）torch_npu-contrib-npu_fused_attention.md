@@ -35,11 +35,35 @@ torch_npu.contrib.npu_fused_attention(hidden_states, attention_mask, query_kerne
 - **query_bias** (`Tensor`)：必选参数，query的偏置值。数据格式支持ND。
 - **key_bias** (`Tensor`)：必选参数，key的偏置值。数据格式支持ND。
 - **value_bias** (`Tensor`)：必选参数，value的偏置值。数据格式支持ND。
-- **scale** (`double`)：可选参数，计算score的缩放系数，默认值为1。
-- **keep_prob** (`float`)：可选参数，计算中保留数据的概率，值等于1 - drop rate，默认值为0。
+- **scale** (`float`)：可选参数，应用于注意力分数的缩放系数，默认值为`1`。算子以`float16`传入该系数。缩放点积注意力通常取`1 / sqrt(head_dim)`，其中`head_dim`为注意力头的维度。
+- **keep_prob** (`float`)：表示dropout中保留元素的概率，等于`1 - drop_rate`。默认值为`0`。
 
 ## 返回值说明
 
 `Tensor`
 
 自注意力的结果。
+
+## 调用示例
+
+下例构造长度为32的一个序列、768维隐藏状态、全零掩码和Q/K/V投影所需的张量。
+
+```python
+import torch
+import torch_npu
+
+torch.npu.config.allow_internal_format = True
+batch, seq_len, hidden_size = 1, 32, 768
+options = {"device": "npu", "dtype": torch.float16}
+
+hidden = torch_npu.npu_format_cast(
+    torch.randn(batch * seq_len, hidden_size, **options), 29
+)
+mask = torch_npu.npu_format_cast(
+    torch.zeros(batch, 1, seq_len, seq_len, **options), 29
+)
+weight = torch_npu.npu_format_cast(torch.eye(hidden_size, **options), 29)
+bias = torch.zeros(hidden_size, **options)
+```
+
+调用时，Q/K/V分别传入对应的权重和偏置。上述示例可以将`weight`和`bias`各传入三次。头维是64，因此缩放系数可传`0.125`。无需dropout时，最后一个位置参数传`1.0`。

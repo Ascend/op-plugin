@@ -17,22 +17,9 @@
 
 ## 功能说明
 
-* API功能：融合了add、softmax和dropout的计算逻辑，以提高在NPU上计算的性能。
+先将原始注意力分数乘以`1 / sqrt(attn_head_size)`，再与掩码相加，沿最后一维计算softmax并应用dropout。
 
-* 等价计算逻辑：
-
-    可使用`npu_fuse_add_softmax_dropout`等价替换`torch_npu.contrib.function.fuse_add_softmax_dropout`，两者计算逻辑一致。
-
-    ```python
-    import torch
-    import math
-    import torch.nn.functional as F
-    def npu_fuse_add_softmax_dropout(dropout, attn_mask, attn_scores, attn_head_size):
-        attn_scores = torch.add(attn_mask, attn_scores, alpha=(1 / math.sqrt(attn_head_size)))
-        attn_probs = F.softmax(attn_scores, dim=-1)
-        attn_probs = dropout(attn_probs)
-        return attn_probs
-    ```
+对于形状为 `(N, C, H, W)`的分数张量，当`H`为128、256、384或512且`N * C`是32的倍数时，接口使用融合算子。融合路径在训练时采用`p`，推理时将丢弃概率设为0。其他形状使用逐步计算路径，由传入的`dropout`模块决定丢弃行为。
 
 ## 函数原型
 
@@ -42,13 +29,13 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 
 ## 参数说明
 
-- **training** (`bool`)：必选参数，是否为训练模式。
-- **dropout** (`nn.Module`)：必选参数，dropout层。
-- **attn_mask** (`Tensor`)：必选参数，注意力掩码。
-- **attn_scores** (`Tensor`)：必选参数，原始attention分数。
-- **attn_head_size** (`float`)：必选参数，head size。
-- **p** (`float`)：可选参数，元素被归零的概率，默认值为0.5。
-- **dim** (`int`)：可选参数，待计算softmax的维度，默认值为-1。
+- **training** (`bool`)：必选参数。控制融合路径是否启用dropout。
+- **dropout** (`nn.Module`)：必选参数。逐步计算路径使用的dropout层。按需要为该模块设置概率及训练或推理模式。
+- **attn_mask** (`Tensor`)：必选参数，加到注意力分数上的掩码。建议与`attn_scores`使用相同的形状、数据类型和NPU设备。
+- **attn_scores** (`Tensor`)：必选参数，形状为 `(N, C, H, W)`的原始注意力分数。
+- **attn_head_size** (`float`)：必选参数，每个注意力头的维度，须为正数，用于计算缩放系数。
+- **p** (`float`)：可选参数，融合路径在训练时的元素丢弃概率，范围为 `[0, 1]`，默认值为`0.5`。
+- **dim** (`int`)：可选参数，默认值为 `-1`。当前实现固定沿最后一维计算softmax。
 
 ## 返回值说明
 
@@ -58,16 +45,25 @@ torch_npu.contrib.function.fuse_add_softmax_dropout(training, dropout, attn_mask
 
 ## 调用示例
 
+示例使用形状为 `(96, 12, 30, 30)`的注意力掩码与分数。此形状使用逐步计算路径，由传入模块以0.1的概率丢弃元素。
+
 ```python
->>> import torch
->>> from torch_npu.contrib.function import fuse_add_softmax_dropout
->>> training = True
->>> dropout = torch.nn.DropoutWithByteMask(0.1)
->>> npu_input1 = torch.rand(96, 12, 30, 30).half().npu()
->>> npu_input2 = torch.rand(96, 12, 30, 30).half().npu()
->>> attn_head_size = 64
->>> axis = -1
->>> output = fuse_add_softmax_dropout(training, dropout, npu_input1, npu_input2, attn_head_size, p=0.1, dim=axis)
->>> print(output.shape)
+import torch
+import torch_npu
+from torch_npu.contrib.module import DropoutWithByteMask
+from torch_npu.contrib.function import fuse_add_softmax_dropout
+training = True
+dropout = DropoutWithByteMask(0.1)
+attn_mask = torch.rand(96, 12, 30, 30).half().npu()
+attn_scores = torch.rand(96, 12, 30, 30).half().npu()
+attn_head_size = 64
+axis = -1
+output = fuse_add_softmax_dropout(training, dropout, attn_mask, attn_scores, attn_head_size, p=0.1, dim=axis)
+print(output.shape)
+```
+
+示例输出如下。
+
+```text
 torch.Size([96, 12, 30, 30])
 ```

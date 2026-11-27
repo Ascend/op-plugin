@@ -32,14 +32,14 @@ torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_o
 
 - **dets**（`Tensor`）：shape为[num_boxes, 5]的2D浮点张量。
 - **scores**（`Tensor`）：shape为[num_boxes]的1D浮点张量，表示每个框对应的一个分数。
-- **iou_threshold**（`float`）：表示框间IoU重叠阈值的标量。
+- **iou_threshold**（`float`）：必选参数，框之间的IoU抑制阈值。
 - **scores_threshold**（`float`）：表示决定何时删除框的分数阈值的标量，默认值为0。
 - **max_output_size**（`int`）：表示非最大抑制下要选择的最大框数。默认值为-1，即不施加任何约束。
 - **mode**（`int`）：指定dets布局类型，默认值为0。如果mode设置为0，则dets的输入值为x、y、w、h和角度。如果mode设置为1，则dets的输入值为x1、y1、x2、y2和角度。
 
 ## 返回值说明
 
-- **selected_index**（`Tensor`）：shape为[M]的1D整数张量，表示从`dets`张量中选定的index，其中M <= max_output_size。
+- **selected_index**（`Tensor`）：shape为[M]的1D整数张量，表示从`dets`张量中选定的index，当max_output_size非负时，M不超过max_output_size。默认值 -1表示不限制输出框数。
 - **selected_num**（`Tensor`）：1D整数张量，表示`selected_index`中有效元素的数量。
 
 ## 约束说明
@@ -48,19 +48,26 @@ torch_npu.npu_nms_rotated(dets, scores, iou_threshold, scores_threshold=0, max_o
 
 ## 调用示例
 
+根据各旋转框的分数进行筛选。返回选中的输入索引及有效索引数量。
+
 ```python
->>> import torch
->>> import torch_npu
->>> dets=torch.randn(100,5).npu()
->>> scores=torch.randn(100).npu()
->>> dets.uniform_(0,100)
->>> scores.uniform_(0,1)
->>> output1, output2 = torch_npu.npu_nms_rotated(dets, scores, 0.2, 0, -1, 0)
->>> print(output1)
+import torch
+import torch_npu
+dets=torch.randn(100,5).npu()
+scores=torch.randn(100).npu()
+dets.uniform_(0,100)
+scores.uniform_(0,1)
+output1, output2 = torch_npu.npu_nms_rotated(dets, scores, 0.2, 0, -1, 0)
+print(output1)
+print(output2)
+```
+
+一次运行的输出：
+
+```text
 tensor([76, 48, 15, 65, 91, 82, 21, 96, 62, 90, 13, 59,  0, 18, 47, 23,  8, 56,
         55, 63, 72, 39, 97, 81, 16, 38, 17, 25, 74, 33, 79, 44, 36, 88, 83, 37,
         64, 45, 54, 41, 22, 28, 98, 40, 30, 20,  1, 86, 69, 57, 43,  9, 42, 27,
         71, 46, 19, 26, 78, 66,  3, 52], device='npu:0', dtype=torch.int32)
->>> print(output2)
 tensor([62], device='npu:0', dtype=torch.int32)
 ```

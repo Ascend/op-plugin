@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-NPUHooksArgs是一个Hook参数类，提供了NPU Hook的相关参数。
+`NPUHooksArgs`继承自`at::PrivateUse1HooksArgs`，用于注册NPU Hook。该结构体不声明额外的数据成员。
 
 ## 定义文件
 

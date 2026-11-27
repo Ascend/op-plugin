@@ -26,8 +26,8 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 - **query_layer**（`Tensor`）：必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, head_dim]`。
 - **key_layer**（`Tensor`）：必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, k_seq_len, head_dim]`。
-- **value_layer**（`Tensor`）：必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, v_seq_len, head_dim]`。
-- **attention_mask**（`Tensor`）：必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, k_seq_len]`。
+- **value_layer**（`Tensor`）：必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, v_seq_len, head_dim]`，其中v_seq_len须等于k_seq_len。
+- **attention_mask**（`Tensor`）：注意力掩码，用于控制各查询位置可以关注的键位置。必选参数，仅支持`torch.float16`。不考虑转置参数的情况下，形状为`[batch_size, num_heads, q_seq_len, k_seq_len]`。
 - **scale**（`Scalar`）：必选参数，缩放系数，浮点数标量。
 - **keep_prob**（`float`）：必选参数，不做dropout的概率，0-1之间，浮点数。
 - **query_transpose**（`bool`）：可选参数，query是否做转置，默认值为False。
@@ -49,17 +49,24 @@ torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attenti
 
 ## 调用示例
 
+构造注意力输入和掩码，执行融合注意力计算。主要输出为注意力上下文。
+
 ```python
->>> import torch
->>> import torch_npu
->>> query_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
->>> key_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
->>> value_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
->>> attention_mask = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 512).npu(), 29).half()
->>> scale = 0.125
->>> keep_prob = 0.5
->>> context_layer = torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob)
->>> print(context_layer)
+import torch
+import torch_npu
+query_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
+key_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
+value_layer = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 64).npu(), 29).half()
+attention_mask = torch_npu.npu_format_cast(torch.rand(24, 16, 512, 512).npu(), 29).half()
+scale = 0.125
+keep_prob = 0.5
+context_layer = torch_npu.npu_fused_attention_score(query_layer, key_layer, value_layer, attention_mask, scale, keep_prob)
+print(context_layer)
+```
+
+一次运行的输出：
+
+```text
 tensor([[0.5010, 0.4709, 0.4841,  ..., 0.4321, 0.4448, 0.4834],
         [0.5107, 0.5049, 0.5239,  ..., 0.4436, 0.4375, 0.4651],
         [0.5308, 0.4944, 0.5005,  ..., 0.5010, 0.5103, 0.5303],

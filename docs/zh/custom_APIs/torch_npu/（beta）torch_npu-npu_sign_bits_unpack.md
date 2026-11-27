@@ -47,7 +47,7 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 
 - **x** (`Tensor`)：必选参数，1D `torch.uint8`张量。
 - **size** (`int`)：必选参数，用于reshape输出张量的第一个维度。
-- **dtype** (`torch.dtype`)：必选参数，值为`torch.float16`设置输出类型为`torch.float16`，值为`torch.float32`设置输出类型为`torch.float32`。
+- **dtype** (`torch.dtype`)：必选参数，值为`torch.float16`时设置输出类型为`torch.float16`，值为`torch.float32`时设置输出类型为`torch.float32`。
 
 ## 返回值说明
 
@@ -60,6 +60,8 @@ torch_npu.npu_sign_bits_unpack(x, size, dtype) -> Tensor
 `x`的`torch.uint8`拆包输出大小应能被`size`整除。`x`的`torch.uint8`拆包输出大小为(size of x) * 8。
 
 ## 调用示例
+
+示例将uint8张量中的符号位展开，再按size重排输出并转换为所选浮点类型。
 
 ```python
 >>> import torch, torch_npu

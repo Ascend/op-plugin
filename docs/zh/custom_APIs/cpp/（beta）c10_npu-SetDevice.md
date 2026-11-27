@@ -31,4 +31,4 @@ aclError c10_npu::SetDevice(c10::DeviceIndex device)
 
 ## 参数说明
 
-device：DeviceIndex类型，必选参数，待设置的NPU设备ID，取值范围为0~NPU设备总数-1；设备未初始化或传入非法设备ID时返回非零aclError。
+device：DeviceIndex类型，必选参数，待设置的NPU设备ID，取值范围为0~NPU设备总数-1。成功时返回ACL_ERROR_NONE。负设备号会触发参数异常，运行时设置设备失败时返回对应的aclError。

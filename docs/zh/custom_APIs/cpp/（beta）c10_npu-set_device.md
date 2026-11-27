@@ -21,7 +21,7 @@ NPU设备设置，与PyTorch的1.11.0版本中void c10::cuda::set_device(c10::De
 
 ## 定义文件
 
-torch_npu\csrc\core\npu\NPUFunctions.h
+torch_npu/csrc/core/npu/NPUFunctions.h
 
 ## 函数原型
 
@@ -31,4 +31,4 @@ void c10_npu::set_device(c10::DeviceIndex device)
 
 ## 参数说明
 
-device：DeviceIndex类型，待设置的NPU设备ID。
+**device** (`c10::DeviceIndex`)：必选参数，指定待设置的NPU设备ID，须满足`0 <= device < c10_npu::device_count()`。例如，`c10_npu::set_device(0)`将第0个可见NPU设为当前设备。

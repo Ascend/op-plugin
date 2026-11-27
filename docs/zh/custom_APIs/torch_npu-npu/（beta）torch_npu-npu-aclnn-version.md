@@ -25,7 +25,7 @@
 ## 函数原型
 
 ```python
-torch_npu.npu.aclnn.version(): -> None
+torch_npu.npu.aclnn.version()
 ```
 
 ## 约束说明

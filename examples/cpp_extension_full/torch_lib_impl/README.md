@@ -52,7 +52,7 @@
     std::tuple<at::Tensor, at::Tensor> add_custom_backward_impl_npu(const at::Tensor& grad)
     {
         const c10::OptionalDeviceGuard device_guard(device_of(grad));
-        at::Tensor result = grad; // 创建输出内存
+        at::Tensor result = grad; // 复用上游梯度
 
         return {result, result};
     }
@@ -152,7 +152,7 @@
 
     得到结果如下即为执行成功。
 
-    ```bash
+    ```text
     Ran xx tests in xx s
     OK
     ```

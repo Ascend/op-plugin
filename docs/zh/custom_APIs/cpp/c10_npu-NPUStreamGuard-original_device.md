@@ -11,7 +11,7 @@
 
 ## 功能说明
 
-返回NPUStreamGuard构造时的NPU设备。
+返回最近一次`reset_stream()`设置的NPU设备。尚未调用时，返回构造时的设备。
 
 ## 定义文件
 
@@ -31,7 +31,7 @@ c10::Device c10_npu::NPUStreamGuard::original_device() const
 
 `c10::Device`
 
-表示NPUStreamGuard构造时的设备。
+表示最近一次`reset_stream()`设置的设备，或在未调用时表示构造时的设备。
 
 ## 约束说明
 

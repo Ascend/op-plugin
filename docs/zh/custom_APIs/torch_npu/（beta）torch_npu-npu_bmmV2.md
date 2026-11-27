@@ -31,8 +31,8 @@ torch_npu.npu_bmmV2(self, mat2, output_sizes) -> Tensor
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，维数至少为1。一维输入按行向量`(1, K)`参与计算。矩阵乘法的内积维度需相等，批次维度按广播规则对齐。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
-- **mat2**（`Tensor`）：必选参数，维数至少为1。一维输入按列向量`(K, 1)`参与计算。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$
-- **output_sizes**（`List[int]`）：默认值为[]，输出的形状，用于matmul的反向传播。
+- **mat2**（`Tensor`）：必选参数，维数至少为1。一维输入按列向量`(K, 1)`参与计算。数据类型支持`torch.float16`、`torch.float32`、`torch.int32`。格式支持$[ND, NHWC, FRACTAL\_NZ]$。
+- **output_sizes**（`List[int]`）：必选参数。可显式传入空列表 [] 以使用默认推导的输出形状。非空时指定与矩阵乘法结果兼容的输出形状。
 
 ## 调用示例
 

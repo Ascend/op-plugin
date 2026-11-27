@@ -54,8 +54,8 @@ tensor([[[[-1.8135,  0.2078],
 
           [[ 0.6669,  0.1876],
           [ 0.1160, -0.1061]]]], device='npu:0')
->>> outputs, indices = torch_npu.npu_max(input, 2)
->>> print(outputs)
+>>> values, indices = torch_npu.npu_max(input, 2)
+>>> print(values)
 tensor([[[-0.6678,  0.7846],
         [ 0.6458, -0.0923]],
 

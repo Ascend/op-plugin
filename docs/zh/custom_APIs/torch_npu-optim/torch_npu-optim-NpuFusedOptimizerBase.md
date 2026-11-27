@@ -28,7 +28,7 @@ class torch_npu.optim.NpuFusedOptimizerBase(params, default)
 ## 参数说明
 
 - **params** (`iterable`)：必选参数，模型参数或模型参数组。
-- **default** (`dict`)：包含其他所有参数的字典。
+- **default** (`dict`)：必选参数。键为参数组选项名，值为选项的默认值，例如 {"lr": 0.01, "momentum": 0.0}。各参数组可覆盖默认值。
 
 ## 返回值说明
 
@@ -39,6 +39,8 @@ class torch_npu.optim.NpuFusedOptimizerBase(params, default)
 `NpuFusedOptimizerBase`为基类，无法单独使用，需通过继承子类实现特定功能的融合优化器。
 
 ## 调用示例
+
+以融合SGD为例，构造函数验证学习率和动量等参数后，将默认值交给基类管理。加载状态时，__setstate__ 为旧参数组补齐nesterov选项。
 
 ```python
 import math

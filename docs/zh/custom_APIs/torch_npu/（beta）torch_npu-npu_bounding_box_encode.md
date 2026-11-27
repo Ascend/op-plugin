@@ -20,7 +20,7 @@
 
 ## 功能说明
 
-计算锚点框和真值框之间的坐标变化。自定义Faster R-CNN算子。
+计算锚点框到对应真值框的中心位置和大小偏移。自定义Faster R-CNN算子。
 
 ## 函数原型
 
@@ -32,29 +32,39 @@ torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, means0, means1, 
 
 - **anchor_box** (`Tensor`)：锚点框张量，数据类型为`torch.float32`，形状为`(N, 4)`。`N`为锚点框数量，每个框按`(x0, y0, x1, y1)`排列。
 - **ground_truth_box** (`Tensor`)：真值框张量，数据类型为`torch.float32`，形状为`(N, 4)`。`N`为真值框数量，每个框按`(x0, y0, x1, y1)`排列。
-- **means0** (`float`)：“dx”的偏差值。
-- **means1** (`float`)：“dy”的偏差值。
-- **means2** (`float`)：“dw”的偏差值。
-- **means3** (`float`)：“dh”的偏差值。
-- **stds0** (`float`)：“dx”的缩放值。
-- **stds1** (`float`)：“dy”的缩放值。
-- **stds2** (`float`)：“dw”的缩放值。
-- **stds3** (`float`)：“dh”的缩放值。
+- **means0** (`float`)：必选参数，归一化水平中心偏移时减去的均值。
+- **means1** (`float`)：必选参数，归一化垂直中心偏移时减去的均值。
+- **means2** (`float`)：必选参数，归一化宽度对数缩放量时减去的均值。
+- **means3** (`float`)：必选参数，归一化高度对数缩放量时减去的均值。
+- **stds0** (`float`)：必选参数，归一化水平中心偏移时除以的标准差。
+- **stds1** (`float`)：必选参数，归一化垂直中心偏移时除以的标准差。
+- **stds2** (`float`)：必选参数，归一化宽度对数缩放量时除以的标准差。
+- **stds3** (`float`)：必选参数，归一化高度对数缩放量时除以的标准差。
 
 ## 返回值说明
 
 `Tensor`
 
-返回形状为`(N, 4)`、数据类型为`torch.float32`的边界框变换量张量，每行依次为`(dx, dy, dw, dh)`。
+返回形状为 `(N, 4)`、数据类型为`torch.float32`的边界框变换量张量。每行的 `(dx, dy, dw, dh)`依次表示归一化后的水平中心偏移、垂直中心偏移、宽度对数缩放量和高度对数缩放量。
 
 ## 调用示例
 
+为两对边界框编码偏移量。第一对框相同，对应的四列偏移量均为0。均值及标准差按输出列顺序传入。
+
 ```python
->>> import torch
->>> import torch_npu
->>> anchor_box = torch.tensor([[1., 2., 3., 4.]], dtype = torch.float32).to("npu")
->>> ground_truth_box = torch.tensor([[5., 6., 7., 8.]], dtype = torch.float32).to("npu")
->>> output = torch_npu.npu_bounding_box_encode(anchor_box, ground_truth_box, 0, 0, 0, 0, 0.1, 0.1, 0.2, 0.2)
->>> print(output)
-tensor([[13.3281, 13.3281,  0.0000,  0.0000]], device='npu:0')
+import torch
+import torch_npu
+
+anchors = torch.tensor([[0., 0., 10., 10.], [5., 5., 20., 20.]], device="npu")
+boxes = torch.tensor([[0., 0., 10., 10.], [6., 7., 21., 22.]], device="npu")
+means = (0., 0., 0., 0.)
+stds = (0.1, 0.1, 0.2, 0.2)
+output = torch_npu.npu_bounding_box_encode(anchors, boxes, *means, *stds)
+print(output.shape)
+```
+
+输出：
+
+```text
+torch.Size([2, 4])
 ```

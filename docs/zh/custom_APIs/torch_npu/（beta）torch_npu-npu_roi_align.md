@@ -33,7 +33,7 @@ torch_npu.npu_roi_align(features, rois, spatial_scale, pooled_height, pooled_wid
 - **pooled_height** (`int`)：必选参数，指定输出图像的高度。数据类型支持`int32`。
 - **pooled_width** (`int`)：必选参数，指定输出图像的宽度。数据类型支持`int32`。
 - **sample_num** (`int`)：必选参数，指定每个池化单元在高、宽两个方向上的采样点数。取值为`0`时，根据缩放后的ROI尺寸和池化输出尺寸自适应确定采样点数。数据类型支持`int32`。
-- **roi_end_mode** (`int`)：必选参数。数据类型支持`int32`。
+- **roi_end_mode** (`int`)：必选参数，指定ROI结束边界的坐标处理方式。数据类型支持`int32`。
 
 ## 约束说明
 

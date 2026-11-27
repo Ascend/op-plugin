@@ -27,10 +27,10 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 
 ## 参数说明
 
-- **lr** (`Scalar`)：必选参数，数据类型与`var`相同。
-- **beta1** (`Scalar`)：必选参数，数据类型与`var`相同。
-- **beta2** (`Scalar`)：必选参数，数据类型与`var`相同。
-- **epsilon** (`Scalar`)：必选参数，数据类型与`var`相同。
+- **lr** (`Scalar`)：必选参数，学习率。数据类型与`var`相同。
+- **beta1** (`Scalar`)：必选参数，梯度一阶矩的指数衰减系数。数据类型与`var`相同。
+- **beta2** (`Scalar`)：必选参数，梯度二阶矩的指数衰减系数。数据类型与`var`相同。
+- **epsilon** (`Scalar`)：必选参数，加到分母的数值稳定项。数据类型与`var`相同。
 - **grad** (`Tensor`)：必选参数，数据类型和shape与`var`相同。
 - **max\_grad\_norm** (`Scalar`)：必选参数，数据类型与`var`相同。
 - **global\_grad\_norm** (`Scalar`)：必选参数，数据类型与`var`相同。
@@ -47,22 +47,29 @@ torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, gl
 
 ## 调用示例
 
+以一组参数、一阶矩和二阶矩为输入执行融合Adam更新。示例学习率为0，可观察优化器状态更新。
+
 ```python
->>> import torch
->>> import torch_npu
->>> var_in = torch.rand(321538).uniform_(-32., 21.).npu()
->>> m_in = torch.zeros(321538).npu()
->>> v_in = torch.zeros(321538).npu()
->>> grad = torch.rand(321538).uniform_(-0.05, 0.03).npu()
->>> max_grad_norm = -1.
->>> beta1 = 0.9
->>> beta2 = 0.99
->>> weight_decay = 0.
->>> lr = 0.
->>> epsilon = 1e-06
->>> global_grad_norm = 0.
->>> var_out, m_out, v_out = torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, global_grad_norm, weight_decay, out=(var_in, m_in, v_in))
->>> print(var_out)
+import torch
+import torch_npu
+var_in = torch.rand(321538).uniform_(-32., 21.).npu()
+m_in = torch.zeros(321538).npu()
+v_in = torch.zeros(321538).npu()
+grad = torch.rand(321538).uniform_(-0.05, 0.03).npu()
+max_grad_norm = -1.
+beta1 = 0.9
+beta2 = 0.99
+weight_decay = 0.
+lr = 0.
+epsilon = 1e-06
+global_grad_norm = 0.
+var_out, m_out, v_out = torch_npu.npu_bert_apply_adam(lr, beta1, beta2, epsilon, grad, max_grad_norm, global_grad_norm, weight_decay, out=(var_in, m_in, v_in))
+print(var_out)
+```
+
+一次运行的输出：
+
+```text
 tensor([ 14.7733, -30.1218,  -1.3647,  ..., -16.6840,   7.1518,   8.4872],
       device='npu:0')
 ```

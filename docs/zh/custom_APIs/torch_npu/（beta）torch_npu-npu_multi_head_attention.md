@@ -30,25 +30,27 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 
 ## 参数说明
 
-- **query**（`Tensor`）：仅支持`torch.float16`。
-- **key**（`Tensor`）：仅支持`torch.float16`。
-- **value**（`Tensor`）：仅支持`torch.float16`。
-- **query_weight**（`Tensor`）：仅支持`torch.float16`。
-- **key_weight**（`Tensor`）：仅支持`torch.float16`。
-- **value_weight**（`Tensor`）：仅支持`torch.float16`。
-- **attn_mask**（`Tensor`）：仅支持`torch.float16`。
-- **out_proj_weight**（`Tensor`）：仅支持`torch.float16`。
-- **query_bias**（`Tensor`）：仅支持`torch.float16`。
-- **key_bias**（`Tensor`）：仅支持`torch.float16`。
-- **value_bias**（`Tensor`）：仅支持`torch.float16`。
-- **out_proj_bias**（`Tensor`）：仅支持`torch.float16`。
+下文的E为`attn_head_num * attn_dim_per_head`，batch为批大小。
+
+- **query**（`Tensor`）：必选参数，形状为 (batch × tgt_len, attn_head_num × attn_dim_per_head)。仅支持`torch.float16`。
+- **key**（`Tensor`）：必选参数，形状为 (batch × src_len, attn_head_num × attn_dim_per_head)。仅支持`torch.float16`。
+- **value**（`Tensor`）：必选参数，形状为 (batch × src_len, attn_head_num × attn_dim_per_head)。仅支持`torch.float16`。
+- **query_weight**（`Tensor`）：必选参数，查询投影权重，形状为 (E, E)。仅支持`torch.float16`。
+- **key_weight**（`Tensor`）：必选参数，键投影权重，形状为 (E, E)。仅支持`torch.float16`。
+- **value_weight**（`Tensor`）：必选参数，值投影权重，形状为 (E, E)。仅支持`torch.float16`。
+- **attn_mask**（`Tensor`）：必选参数，形状为 (batch, attn_head_num, tgt_len, src_len) 的注意力掩码。仅支持`torch.float16`。
+- **out_proj_weight**（`Tensor`）：必选参数，输出投影权重，形状为 (E, E)。仅支持`torch.float16`。
+- **query_bias**（`Tensor`）：查询投影偏置。允许传None，传入张量时其形状为 (E,)。仅支持`torch.float16`。
+- **key_bias**（`Tensor`）：键投影偏置。允许传None，传入张量时其形状为 (E,)。仅支持`torch.float16`。
+- **value_bias**（`Tensor`）：值投影偏置。允许传None，传入张量时其形状为 (E,)。仅支持`torch.float16`。
+- **out_proj_bias**（`Tensor`）：输出投影偏置。允许传None，传入张量时其形状为 (E,)。仅支持`torch.float16`。
 - **dropout_mask**（`Tensor`）：仅支持`torch.float16`。
-- **attn_head_num**（`int`）：Attention Head numbers。
-- **attn_dim_per_head**（`int`）：Attention dim of a Head。
-- **src_len**（`int`）：source length。
-- **tgt_len**（`int`）：target length。
-- **dropout_prob**（`float`）：dropout probability。
-- **softmax_use_float**（`bool`）：SoftMax Use `torch.float32` to keep precision。
+- **attn_head_num**（`int`）：注意力头数量。
+- **attn_dim_per_head**（`int`）：每个注意力头的特征维度。
+- **src_len**（`int`）：源序列长度。
+- **tgt_len**（`int`）：目标序列长度。
+- **dropout_prob**（`float`）：必选参数，注意力权重的丢弃概率。常规推理取`0`。
+- **softmax_use_float**（`bool`）：是否以float32精度计算softmax。
 
 ## 返回值说明
 
@@ -69,6 +71,8 @@ torch_npu.npu_multi_head_attention(query, key, value, query_weight, key_weight, 
 `tgt_len`：需16整数倍对齐。
 
 ## 调用示例
+
+以8个样本、16个注意力头的张量演示一次前向计算。示例使用相同的源序列和目标序列长度，每个注意力头包含64维。主要输出为投影后的注意力结果，其他返回值的含义见上文。
 
 ```python
 import torch
@@ -104,6 +108,11 @@ print(npu_result)
  
  
  
+```
+
+一次运行的输出：
+
+```text
 tensor([[ 623.5000,   75.5000,  307.0000,  ...,   25.3125, -418.7500,
            35.9688],
         [-254.2500, -165.6250,  176.2500,  ...,   87.3750,   78.0000,

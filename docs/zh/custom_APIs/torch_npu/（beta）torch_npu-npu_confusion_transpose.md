@@ -31,20 +31,30 @@ torch_npu.npu_confusion_transpose(self, perm, shape, transpose_first) -> Tensor
 ## 参数说明
 
 - **self**（`Tensor`）：数据类型支持`torch.float16`、`torch.float32`、`torch.int8`、`torch.int16`、`torch.int32`、`torch.int64`、`torch.uint8`、`torch.uint16`、`torch.uint32`、`torch.uint64`。
-- **perm**（`List[int]`）：`self`张量的维度排列。
+- **perm**（`List[int]`）：必选参数，指定转置前张量的维度排列。先转置时按输入秩排列，先变形时按目标形状的秩排列。每个维度索引恰好出现一次。
 - **shape**（`List[int]`）：reshape操作后的目标shape，各元素乘积需与`self`的元素总数一致。
 - **transpose_first**（`bool`）：如果值为`True`，首先执行transpose，否则先执行reshape。
 
 ## 调用示例
 
+以下示例演示先转置后变形，以及先变形后转置的两种操作顺序。
+
 ```python
->>> x = torch.rand(2, 3, 4, 6).npu()
->>> print(x.shape)
+import torch
+import torch_npu
+
+x = torch.rand(2, 3, 4, 6).npu()
+print(x.shape)
+y = torch_npu.npu_confusion_transpose(x, (0, 2, 1, 3), (2, 4, 18), True)
+print(y.shape)
+y2 = torch_npu.npu_confusion_transpose(x, (0, 2, 1), (2, 12, 6), False)
+print(y2.shape)
+```
+
+一次运行的输出：
+
+```text
 torch.Size([2, 3, 4, 6])
->>> y = torch_npu.npu_confusion_transpose(x, (0, 2, 1, 3), (2, 4, 18), True)
->>> print(y.shape)
 torch.Size([2, 4, 18])
->>> y2 = torch_npu.npu_confusion_transpose(x, (0, 2, 1), (2, 12, 6), False)
->>> print(y2.shape)
 torch.Size([2, 6, 12])
 ```

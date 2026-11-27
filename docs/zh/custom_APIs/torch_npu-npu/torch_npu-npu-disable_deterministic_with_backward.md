@@ -52,13 +52,9 @@ import unittest
 import torch
 import torch.nn as nn
 import torch_npu
-import torchair as tng
-from torchair.configs.compiler_config import CompilerConfig
 
-config = CompilerConfig()
-npu_backend = tng.get_npu_backend(compiler_config=config)
 
-class TorchairSt(unittest.TestCase):
+class DeterministicBackwardTest(unittest.TestCase):
     def test_enable_to_disable_deterministic_algorithms(self):
         target_dtype = torch.float16        
         class DeterministicModel(torch.nn.Module):
@@ -69,7 +65,7 @@ class TorchairSt(unittest.TestCase):
                 x = x + 1
                 x = torch_npu.npu.enable_deterministic_with_backward(x)
                 add4 = x + y
-                add1 = sum(add4)
+                add1 = add4.sum(dim=0)
                 add1 = torch_npu.npu.disable_deterministic_with_backward(add1)
                 add6 = add1 + add1
                 return add6
@@ -84,17 +80,11 @@ class TorchairSt(unittest.TestCase):
         self.assertEqual(False, torch.are_deterministic_algorithms_enabled())
 
         loss_fn = nn.MSELoss()
-        target_data = torch.randn((1, 2), requires_grad=True).to(target_dtype).npu()
+        target_data = torch.randn_like(output_data)
         loss = loss_fn(output_data, target_data)
         loss.backward()
         self.assertEqual(False, torch.are_deterministic_algorithms_enabled())
 
-if __name__ == '__main__':    
+if __name__ == '__main__':
     unittest.main()
-
-# 执行上述代码的输出类似如下：
-----------------------------------------------------------------------
-Ran 1 test in 4.636s
-
-OK
 ```

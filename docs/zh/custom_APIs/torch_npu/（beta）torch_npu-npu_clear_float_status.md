@@ -40,9 +40,16 @@ torch_npu.npu_clear_float_status(self) -> Tensor
 
 ## 调用示例
 
+清除设备浮点溢出状态。示例使用状态缓冲区调用该接口。
+
 ```python
->>> import torch, torch_npu
->>> x = torch.rand(2).npu()
->>> torch_npu.npu_clear_float_status(x)
+import torch, torch_npu
+x = torch.rand(2).npu()
+torch_npu.npu_clear_float_status(x)
+```
+
+一次运行的输出：
+
+```text
 tensor([0., 0., 0., 0., 0., 0., 0., 0.], device='npu:0')
 ```

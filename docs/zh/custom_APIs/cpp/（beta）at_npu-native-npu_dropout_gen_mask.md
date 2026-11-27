@@ -32,9 +32,9 @@ at::Tensor npu_dropout_gen_mask(const at::Tensor &self, at::IntArrayRef size, do
 ## 参数说明
 
 - self：Tensor类型，输入的张量。
-- size：IntArrayRef类型，指定生成mask的size。
-- p：double类型，元素置零的概率。
+- size：IntArrayRef类型，待应用掩码的张量形状。按各维度乘积计算元素数，向上对齐到128位后，每8位打包为一个uint8元素。
+- p：double类型，元素置零的概率，取值范围为 [0, 1]。
 - seed：int64_t类型，随机数的种子，影响生成的随机数序列。
 - offset：int64_t类型，随机数的偏移量，影响生成的随机数序列的位置。
-- parallel：可选参数bool类型，是否并行计算。
-- sync：可选参数bool类型，是否同步。
+- parallel：可选bool参数，未指定时按True处理。True时在二级流生成掩码，False时使用当前流。
+- sync：可选bool参数，未指定时按False处理。parallel为True且sync为True时，同步原计算流。

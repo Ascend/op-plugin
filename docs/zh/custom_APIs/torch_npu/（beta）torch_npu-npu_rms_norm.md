@@ -40,8 +40,8 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 ## 参数说明
 
 - **self**（`Tensor`）：必选参数，表示进行归一化计算的输入，对应计算公式中的$x$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持2-8维度，数据格式支持$ND$。支持非连续Tensor，支持空Tensor。
-- **gamma**（`Tensor`）：必选参数，表示进行归一化计算的缩放因子（权重），对应计算公式中的$g$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，shape支持2-8维度，数据格式支持$ND$。shape需要满足gamma_shape = self_shape\[n:\], n < self_shape.dims()，通常为`self`的最后一维。支持非连续Tensor，支持空Tensor。
-- **epsilon**（`float`）：可选参数，用于防止除0错误，对应计算公式中的`eps`。数据类型为`float`，默认值为1e-6，取值范围为大于0的浮点数。
+- **gamma**（`Tensor`）：必选参数，表示进行归一化计算的缩放因子（权重），对应计算公式中的$g$。数据类型支持`torch.float16`、`torch.bfloat16`、`torch.float32`，形状支持1～8维，数据格式支持$ND$。shape需要满足gamma_shape = self_shape\[n:\], n < self_shape.dims()，通常为`self`的最后一维。支持非连续Tensor，支持空Tensor。
+- **epsilon**（`float`）：可选参数，用于防止除零，对应计算公式中的`eps`，默认值为`1e-6`。
 
 ## 返回值说明
 
@@ -91,6 +91,8 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
 
 ## 调用示例
 
+示例沿输入的最后一维归一化。`gamma`的长度与输入最后一维一致。算子返回缩放后的结果和归一化使用的中间统计量。
+
 - 单算子调用
 
     ```python
@@ -109,7 +111,6 @@ torch_npu.npu_rms_norm(self, gamma, epsilon=1e-06) -> (Tensor, Tensor)
     import torch
     import torch_npu
     import torchair
-    import numpy as np
 
 
     class NetModel(torch.nn.Module):

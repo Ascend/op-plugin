@@ -22,14 +22,14 @@
 ## 函数原型
 
 ```python
-torch_npu.contrib.function.roll(input1, shifts, dims)
+torch_npu.contrib.function.roll(x, shifts, dims)
 ```
 
 ## 参数说明
 
-- **input1** (`Tensor`)：输入张量。
-- **shifts** (`Tuple` of `ints`)：每个维度滚动的位移量。
-- **dims** (`Tuple` of `ints`)：要滚动的维度。
+- **x** (`Tensor`)：输入张量。
+- **shifts** (`Tuple` of `ints`)：两个整数，分别表示第1维和第2维上的环形位移。负值反向滚动，位移超过该维度大小时按维度大小取模。
+- **dims** (`Tuple` of `ints`)：请传入 `(1, 2)`。当前实现固定在第1、2维上滚动。
 
 ## 返回值说明
 
@@ -39,7 +39,7 @@ torch_npu.contrib.function.roll(input1, shifts, dims)
 
 ## 约束说明
 
-`input1`是4维张量，`shifts`和`dims`的长度为2。
+`input1`为按 `(N, H, W, C)`排列的4维张量。`shifts`和`dims`的长度均为2。
 
 ## 调用示例
 

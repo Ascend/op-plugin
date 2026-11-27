@@ -33,6 +33,6 @@ void torch_npu::init_npu(const at::Device& device)
 
 ## 参数说明
 
-- device_index：DeviceIndex类型，指定初始化的NPU设备ID，默认0。
-- device_str：string类型，指定初始化的设备名称。
-- device：Device类型，指定初始化的NPU设备。
+- **device_index** (`c10::DeviceIndex`)：索引重载的可选参数，默认值为`0`。显式指定的NPU设备ID须满足`0 <= device_index < c10_npu::device_count()`。
+- **device_str** (`const std::string&`)：字符串重载的必选参数，例如`torch_npu::init_npu("npu:0")`。
+- **device** (`const at::Device&`)：设备对象重载的必选参数，设备类型须为NPU，例如`torch_npu::init_npu(at::Device("npu:0"))`。

@@ -49,14 +49,17 @@ Focus计算结果。
 
 ## 调用示例
 
+示例输入有8个通道。Focus从四组间隔位置取样并拼接，再用卷积生成13个输出通道。输入允许计算梯度，以便验证反向传播。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.module import Focus
->>> input = torch.randn(4, 8, 300, 40).npu()
->>> input.requires_grad_(True)
->>> fast_focus = Focus(8, 13).npu()
->>> output = fast_focus(input)
->>> output.sum().backward()
->>> print(output.shape)
-torch.Size([4, 13, 150, 20])
+import torch, torch_npu
+from torch_npu.contrib.module import Focus
+input = torch.randn(4, 8, 300, 40).npu()
+input.requires_grad_(True)
+fast_focus = Focus(8, 13).npu()
+output = fast_focus(input)
+output.sum().backward()
+print(output.shape)
 ```
+
+输出形状为 `(4, 13, 150, 20)`。

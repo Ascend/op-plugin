@@ -42,12 +42,19 @@ torch_npu.npu_random_choice_with_mask(x, count=256, seed=0, seed2=0) -> (Tensor,
 
 ## 调用示例
 
+从输入布尔张量的True位置采样。`count`指定采样数量，种子用于控制随机选择，返回坐标与有效位置掩码。
+
 ```python
->>> import torch, torch_npu
->>> x = torch.tensor([1, 0, 1, 0], dtype=torch.bool).to("npu")
->>> result, mask = torch_npu.npu_random_choice_with_mask(x, 2, 1, 0)
->>> print(result)
+import torch, torch_npu
+x = torch.tensor([1, 0, 1, 0], dtype=torch.bool).to("npu")
+result, mask = torch_npu.npu_random_choice_with_mask(x, 2, 1, 0)
+print(result)
+print(mask)
+```
+
+一次运行的输出：
+
+```text
 tensor([[0],[2]], device='npu:0', dtype=torch.int32)
->>> print(mask)
 tensor([True, True], device='npu:0')
 ```

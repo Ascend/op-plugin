@@ -31,7 +31,7 @@
 
     > [!NOTE]
     > 
-    > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(Tensor))`保障跨device访问。
+    > 多卡场景必须在适配代码中加`const c10::OptionalDeviceGuard device_guard(device_of(self))`保障跨device访问。
 
     ```cpp
     // 为NPU设备注册前向实现
@@ -107,7 +107,7 @@
 
     得到结果如下即为执行成功。
 
-    ```bash
+    ```text
     Ran xx tests in xx s
     OK
     ```

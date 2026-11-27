@@ -35,13 +35,20 @@ torch_npu.npu_pad(input, paddings) -> Tensor
 
 ## 调用示例
 
+对形状为 (1, 4) 的输入四周各补1行或列的零，得到形状 (3, 6) 的张量。
+
 ```python
->>> import torch
->>> import torch_npu
->>> input = torch.tensor([[20, 20, 10, 10]], dtype=torch.float16).to("npu")
->>> paddings = [1, 1, 1, 1]
->>> output = torch_npu.npu_pad(input, paddings)
->>> print(output)
+import torch
+import torch_npu
+input = torch.tensor([[20, 20, 10, 10]], dtype=torch.float16).to("npu")
+paddings = [1, 1, 1, 1]
+output = torch_npu.npu_pad(input, paddings)
+print(output)
+```
+
+一次运行的输出：
+
+```text
 tensor([[ 0.,  0.,  0.,  0.,  0.,  0.],
         [ 0., 20., 20., 10., 10.,  0.],
         [ 0.,  0.,  0.,  0.,  0.,  0.]], device='npu:0', dtype=torch.float16)

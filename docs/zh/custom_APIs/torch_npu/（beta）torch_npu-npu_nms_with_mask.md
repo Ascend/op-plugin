@@ -31,13 +31,13 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 ## 参数说明
 
 - **input** \(`Tensor`\)：输入张量。
-- **iou\_threshold** \(`Scalar`\)：阈值。如果超过此阈值，则值为1，否则值为0。
+- **iou\_threshold** \(`Scalar`\)：必选参数，框间IoU阈值。候选框与已保留框的IoU超过阈值时会被抑制。结果掩码指示哪些候选框被保留。
 
 ## 返回值说明
 
-- **selected\_boxes**\(`Tensor`\)：shape为\[N,5\]的2D张量，表示filtered box，包括建议框和相应的置信度分数。
-- **selected\_idx** \(`Tensor`\)：shape为\[N\]的1D张量，表示输入建议框的index。
-- **selected\_mask** \(`Tensor`\)：shape为\[N\]的1D张量，判断输出建议框是否有效。
+- **selected\_boxes**\(`Tensor`\)：shape为\[N,5\]的2D张量，表示筛选后的候选框，包含框坐标及对应的置信度分数。
+- **selected\_idx** \(`Tensor`\)：shape为\[N\]的1D张量，表示输入候选框的index。
+- **selected\_mask** \(`Tensor`\)：shape为\[N\]的1D张量，判断保留的候选框是否有效。
 
 ## 约束说明
 
@@ -45,18 +45,25 @@ torch_npu.npu_nms_with_mask(input, iou_threshold) -> (Tensor, Tensor, Tensor)
 
 ## 调用示例
 
+按IoU阈值筛选候选框，输出候选框、索引和用于区分保留位置的掩码。
+
 ```python
->>> import torch
->>> import torch_npu
->>> input = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6, 0.5, 0.4, 0.3], [6.0, 7.0, 8.0, 9.0, 0.4, 0.5, 0.6, 0.7]], dtype=torch.float16).to("npu")
->>> iou_threshold = 0.5
->>> output1, output2, output3, = torch_npu.npu_nms_with_mask(input, iou_threshold)
->>> print(output1)
+import torch
+import torch_npu
+input = torch.tensor([[0.0, 1.0, 2.0, 3.0, 0.6, 0.5, 0.4, 0.3], [6.0, 7.0, 8.0, 9.0, 0.4, 0.5, 0.6, 0.7]], dtype=torch.float16).to("npu")
+iou_threshold = 0.5
+output1, output2, output3, = torch_npu.npu_nms_with_mask(input, iou_threshold)
+print(output1)
+print(output2)
+print(output3)
+```
+
+一次运行的输出：
+
+```text
 tensor([[0.0000, 1.0000, 2.0000, 3.0000, 0.6001],
         [6.0000, 7.0000, 8.0000, 9.0000, 0.3999]], device='npu:0',      
         dtype=torch.float16)
->>> print(output2)
 tensor([0, 1], device='npu:0', dtype=torch.int32)
->>> print(output3)
 tensor([1, 1], device='npu:0', dtype=torch.uint8)
 ```

@@ -1,7 +1,7 @@
 # （beta）torch_npu.contrib.BiLSTM
 
 > [!NOTICE]  
->该接口计划废弃，可以参考[小算子拼接方案](https://gitee.com/ascend/ModelZoo-PyTorch/blob/732cb7fc5ab59249ae62a905c0d43400a8250da7/PyTorch/contrib/audio/deepspeech/deepspeech_pytorch/bidirectional_lstm.py#L18)进行替换。
+>该接口计划废弃，可以参考[小算子拼接方案](https://gitee.com/ascend/ModelZoo-PyTorch/blob/732cb7fc5ab59249ae62a905c0d43400a8250da7/PyTorch/contrib/audio/deepspeech/deepspeech_pytorch/bidirectional_lstm.py#L18)进行替换。底层算子内核已停止维护，性能和精度无法保证，建议使用替代方案。
 
 ## 产品支持情况
 
@@ -30,15 +30,19 @@ torch_npu.contrib.BiLSTM(input_size, hidden_size)
 
 ## 参数说明
 
-- **input_size**：输入期望的特征数量。
-- **hidden_size**：hidden state中的特征数量。
+- **input_size** (`int`)：必选参数，输入每个时间步的特征数，为正整数，须等于输入末维大小。
+- **hidden_size** (`int`)：必选参数，每个方向的隐藏状态特征数，为正整数。
 
 ## 调用示例
 
+输入形状按序列长度、批大小、特征数排列。示例的输入特征数为512，每个方向的隐藏状态特征数为256。
+
 ```python
->>> import torch
->>> import torch_npu
->>> r = torch_npu.contrib.BiLSTM(512, 256).npu()
->>> input_tensor = torch.randn(26, 2560, 512).npu()
->>> output = r(input_tensor)
+import torch
+import torch_npu
+r = torch_npu.contrib.BiLSTM(512, 256).npu()
+input_tensor = torch.randn(26, 2560, 512).npu()
+output = r(input_tensor)
 ```
+
+双向输出在最后一维拼接，得到形状 `(26, 2560, 512)`的张量。

@@ -22,7 +22,7 @@
 
 初始化dump配置，是dump流程的起始接口。
 
-调用顺序为`init_dump()` → `set_dump(cfg_file)` → 执行模型 → `finalize_dump()`。
+按`init_dump()` → `set_dump(cfg_file)` → 执行模型 → `finalize_dump()`的顺序调用。`init_dump()`初始化模型数据Dump。
 
 ## 函数原型
 

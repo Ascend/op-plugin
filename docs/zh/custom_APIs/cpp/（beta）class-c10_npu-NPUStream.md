@@ -109,16 +109,24 @@ torch_npu/csrc/core/npu/NPUStream.h
 
 - **void c10_npu::NPUStream::setDataPreprocessStream(bool is_data_preprocess_stream)**
 
-    设置NPUStream为数据预处理流。
+    设置调用线程在当前设备上的当前NPU流的数据预处理标志。
 
-    is_data_preprocess_stream：bool类型，true表示将该流设置为数据预处理流，false表示将该流恢复为非数据预处理流。
+    is_data_preprocess_stream：bool类型，true表示将当前流设置为数据预处理流，false表示清除此标志。
 
 - **bool c10_npu::NPUStream::isDataPreprocessStream()**
 
-    NPUStream数据预处理流查询，返回值类型bool，返回true表示是数据预处理流。
+    查询调用线程在当前设备上的当前NPU流的数据预处理标志。返回true表示当前流标记为数据预处理流。
 
 - **aclrtStream c10_npu::NPUStream::stream(const bool need_empty)**
 
     NPUStream aclrtStream流查询，返回值类型aclrtStream，允许输入参数need_empty。
 
     need_empty：bool类型，false表示直接返回当前流；true表示确保当前stream关联的任务队列清空后，再返回当前stream。
+
+- **bool c10_npu::NPUStream::getRepoStopFlag()**
+
+    返回调用线程在当前设备上的当前NPU流的任务队列停止标志。
+
+- **bool c10_npu::NPUStream::isSyncLaunchStream() const**
+
+    返回本流是否采用同步下发。外部流返回false。

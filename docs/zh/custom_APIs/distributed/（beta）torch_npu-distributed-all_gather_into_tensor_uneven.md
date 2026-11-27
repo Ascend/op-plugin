@@ -50,20 +50,22 @@ torch_npu.distributed.all_gather_into_tensor_uneven(output, input, output_split_
 
 创建以下文件test.py并保存。
 
+两个rank分别提供长度为2和3的一维Tensor。所有rank用同一份切分大小分配输出。
+
 ```python
 import os
 import torch
 import torch_npu
 import torch.distributed as dist
- 
+
 dist.init_process_group(backend="hccl")
 rank = int(os.getenv('LOCAL_RANK'))
 torch.npu.set_device(rank)
- 
+
 output_split_sizes = [2, 3]
 input_tensors = [torch.tensor([1, 2], dtype=torch.int32).npu(), torch.tensor([4, 5, 6], dtype=torch.int32).npu()]
 output_tensor = torch.zeros(sum(output_split_sizes), dtype=torch.int32).npu()
- 
+
 torch_npu.distributed.all_gather_into_tensor_uneven(
     output_tensor,
     input_tensors[rank],
@@ -71,6 +73,8 @@ torch_npu.distributed.all_gather_into_tensor_uneven(
     async_op=False
 )
 ```
+
+通信完成后，两个rank的`output_tensor`均包含 `[1, 2, 4, 5, 6]`。
 
 执行如下命令。
 

@@ -52,32 +52,17 @@ class torch_npu.optim.NpuFusedSGD(params, lr, momentum=0, dampening=0, weight_de
 
 ## 调用示例
 
+构造一个NPU参数及其模拟梯度，执行一次优化器更新。
+
 ```python
 import torch
-from torch_npu.npu.amp import GradScaler, autocast
 from torch_npu.optim import NpuFusedSGD
 
-def _create_simple_params_and_grads():
-    params = [
-        torch.arange(6).reshape(2, 3).float().npu(),
-        torch.arange(12).reshape(4, 3).float().npu(),
-        torch.arange(6).reshape(2, 3).half().npu(),
-        torch.arange(12).reshape(4, 3).half().npu(),
-        torch.arange(15).reshape(5, 3).float().npu(),
-        torch.arange(18).reshape(6, 3).half().npu(),
-        torch.arange(6).reshape(2, 3).float().npu()
-    ]
+param = torch.nn.Parameter(torch.tensor([1.0, 2.0], device="npu"))
+param.grad = torch.tensor([0.01, -0.02], device="npu")
+before = param.detach().clone()
 
-    for i, p in enumerate(params):
-        if i < len(params) - 1:
-            p.requires_grad = True
-            p.grad = p.clone().detach() / 100.
-
-    return params
-
-opt_kwargs = dict(lr=0.01, momentum=0.9, weight_decay=0.001)
-params = _create_simple_params_and_grads()
-fused_opt = NpuFusedSGD(params, **opt_kwargs)
-with torch.no_grad():
-    fused_opt.step()
+optimizer = NpuFusedSGD([param], lr=0.01, momentum=0.9, weight_decay=0.001)
+optimizer.step()
+assert not torch.equal(before, param.detach())
 ```

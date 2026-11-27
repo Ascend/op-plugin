@@ -34,13 +34,3 @@ torch_npu.npu.restart_device(device_id, rebuild_all_resources=False, disable_ten
 ## 约束说明
 
 要确保是一个有效的device，这个device可以是被stop过的也可以是没有被stop的。
-
-## 调用示例
-
- ```python
->>> import torch
->>> import torch_npu  
->>> torch.npu.set_device(0) 
->>> torch_npu.npu.stop_device(0)
->>> torch_npu.npu.restart_device(0)
- ```

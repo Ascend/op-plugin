@@ -34,24 +34,34 @@ torch_npu.fast_gelu(self) -> Tensor
 示例一：
 
 ```python
->>> import torch
->>> import torch_npu
->>> x = torch.rand(2).npu()
->>> print(x)
+import torch
+import torch_npu
+x = torch.rand(2).npu()
+print(x)
+print(torch_npu.fast_gelu(x))
+```
+
+一次运行的输出：
+
+```text
 tensor([0.5991, 0.4094], device='npu:0')
->>> print(torch_npu.fast_gelu(x))
 tensor([0.4403, 0.2733], device='npu:0')
 ```
 
 示例二：
 
 ```python
->>> import torch
->>> import torch_npu
+import torch
+import torch_npu
+from torch._subclasses.fake_tensor import FakeTensorMode
+with FakeTensorMode():
+    x = torch.rand(2).npu()
+    torch_npu.fast_gelu(x)
+```
+
+一次运行的输出：
+
+```text
 # FakeTensor模式
->>> from torch._subclasses.fake_tensor import FakeTensorMode
->>> with FakeTensorMode():
-...     x = torch.rand(2).npu()
-...     torch_npu.fast_gelu(x)
->>> FakeTensor(..., device='npu:0', size=(2,))
+FakeTensor(..., device='npu:0', size=(2,))
 ```

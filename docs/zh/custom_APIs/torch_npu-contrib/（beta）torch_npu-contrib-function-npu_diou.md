@@ -34,13 +34,11 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 - **boxes2**（`Tensor`）：相应的真实框，shape为(4, n)。
 - **trans**（`bool`）：是否有偏移，默认值为True。
 - **is_cross**（`bool`）：boxes1和boxes2之间是否有交叉操作，默认值为False。
-- **mode**（`int`）：选择DIoU的计算方式，默认值为0。
+- **mode**（`int`）：选择DIoU的计算方式。`0`（默认值）基于交并比（IoU），`1`基于前景交叠比（IoF）。
 
 ## 返回值说明
 
-`Tensor`
- 
- DIoU，size为[1,n]。
+返回DIoU得分张量。设第一组有N个框、第二组有M个框。`is_cross=False`时输出形状为 (1, N)，每两个位置对应的框一一计算。`is_cross=True`时输出形状为 (M, N)。
 
 ## 约束说明
 
@@ -48,13 +46,19 @@ torch_npu.contrib.function.npu_diou(boxes1, boxes2, trans=True, is_cross=False, 
 
 ## 调用示例
 
+示例为32对预测框和真值框计算DIoU分数，再用分数之和验证反向传播。
+
 ```python
->>> from torch_npu.contrib.function import npu_diou
->>> box1 = torch.randn(4, 32).npu()
->>> box1.requires_grad = True
->>> box2 = torch.randn(4, 32).npu()
->>> box2.requires_grad = True
->>> diou = npu_diou(box1, box2) 
->>> l = diou.sum()
->>> l.backward()
+import torch
+import torch_npu
+from torch_npu.contrib.function import npu_diou
+box1 = torch.randn(4, 32).npu()
+box1.requires_grad = True
+box2 = torch.randn(4, 32).npu()
+box2.requires_grad = True
+diou = npu_diou(box1, box2)
+l = diou.sum()
+l.backward()
 ```
+
+输出含32个得分，形状为 `(1, 32)`。对其求和后得到标量，`backward()`计算两个输入张量的梯度。

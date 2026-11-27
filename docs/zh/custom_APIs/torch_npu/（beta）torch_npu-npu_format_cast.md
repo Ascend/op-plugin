@@ -65,7 +65,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     > 数据排布格式具体可参考《CANN Ascend C算子开发》中的“<a href="https://gitcode.com/cann/asc-devkit/blob/9.2.0/docs/zh/guide/technical_appendix/concepts_and_terms/neural_networks_and_operators/data_layout.md">数据排布格式</a>”章节。
 
 <!-- npu="950,A3,910b" id15 -->
-- **customize_dtype**（`int`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。
+- **customize_dtype**（`int` / `torch.dtype`）：可选参数，用于指定格式转换时的目标数据类型。该参数可控制C0值，默认值为`None`，`torch.float32`和`torch.int32`数据类型的默认C0值为16，`torch.int8`数据类型的默认C0值为32。
 
   <!-- npu="A3,910b" id8 -->
   - <term>Atlas A2训练系列产品</term>、<term>Atlas A3训练系列产品</term>：传入`3`（对应int(`torch.int32`)）时，FRACTAL_NZ格式的C0值为8。
@@ -141,10 +141,10 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
   当前不支持的特殊场景：
 
   - `input`的真实数据类型为`torch.float8_e8m0fnu`时，MX scale格式转换不支持图模式，仅支持单算子模式。
-  - $ND$转$FRACTAL\_NZ$场景，当`srcTensor.dtype`和`additionalDtype`相同且类型为`torch.float16`、`torch.bfloat16`时，若维度表示为\[k, n\]，则k为1场景暂不支持。
+  - $ND$转$FRACTAL\_NZ$场景，当格式转换使用的源数据类型与目标数据类型相同，且为`torch.float16`或`torch.bfloat16`时，若维度表示为\[k, n\]，则k为1场景暂不支持。
   - 调用本接口转为$FRACTAL\_NZ$格式后，不支持进行任何能修改Tensor的操作，包括contiguous、pad、view、slice等。
-  - `srcTensor`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
-  - $FRACTAL\_NZ$转$ND$场景，不支持输入`srcTensor`非连续。
+  - `input`的shape后两维任意一维度shape等于1场景，不允许转$FRACTAL\_NZ$后进行任何能修改Tensor的操作，包括transpose等。
+  - $FRACTAL\_NZ$转$ND$场景，不支持输入`input`非连续。
 <!-- end id12 -->
 
 ## 调用示例
@@ -174,7 +174,7 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     ```
 
 <!-- npu="A3,910b" id13 -->
-- 使用customize_dtype指定C0=8（仅<term>Atlas A2训练系列产品</term>及<term>Atlas A3训练系列产品</term>且CANN >= 9.1.0）：
+- 使用`customize_dtype=3`（ACL_INT32）指定C0=8（仅<term>Atlas A2训练系列产品</term>及<term>Atlas A3训练系列产品</term>且CANN >= 9.1.0）：
 
     ```python
     >>> import torch
@@ -182,20 +182,19 @@ torch_npu.npu_format_cast(input, acl_format, *, customize_dtype=None, input_dtyp
     >>> # Atlas A2/A3系列上allow_internal_format默认为False，需先开启私有格式开关，否则FRACTAL_NZ目标会被降级为ND
     >>> torch_npu.npu.config.allow_internal_format = True
     >>> t = torch.randint(0, 100, (32, 32), dtype=torch.int32).npu()
-    >>> # customize_dtype=3 即 ACL_INT32，此时 C0=8
-    >>> out = torch_npu.npu_format_cast(t, 29, customize_dtype=3)
+        >>> out = torch_npu.npu_format_cast(t, 29, customize_dtype=3)
     >>> torch_npu.get_npu_format(out)
     29
     ```
 <!-- end id13 -->
 <!-- npu="950" id14 -->
-- 使用 `input_dtype` （仅<term>Ascend 950PR&950DT系列产品</term>）：
+- int8输入转换为FRACTAL_NZ（仅<term>Ascend 950PR&950DT系列产品</term>）：
 
     ```python
     >>> import torch
     >>> import torch_npu
     >>> x = torch.randint(-5, 5, (1,64), dtype=torch.int8).npu()
-    >>> y = torch_npu.npu_format_cast(x, 29, customize_dtype=torch.int8, input_dtype=torch.int8)
+    >>> y = torch_npu.npu_format_cast(x, 29, customize_dtype=torch.int8)
     >>> torch_npu.get_npu_format(y)
     29
     ```

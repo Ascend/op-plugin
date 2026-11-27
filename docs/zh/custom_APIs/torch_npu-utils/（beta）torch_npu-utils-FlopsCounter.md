@@ -25,12 +25,12 @@ torch_npu.utils.FlopsCounter()
 
 ## 参数说明
 
-以下为该类的内部状态参数说明，用户可通过成员函数对参数进行修改。
+构造函数无参数。以下状态由成员函数维护。
 
-- 开关标志位（isEnabled_）：默认值False。
-- 暂停标志位（isPaused_）：默认值False。
-- 含重计算的Flops（traversedCount）：默认不统计含重计算的Flops，且值为0。含重计算的Flops一般用于计算硬件算力利用率(Hardware FLOPs Utilization, HFU)。
-- 不含重计算的Flops（recordedCount）：默认不统计不含重计算的Flops，且值为0。不含重计算的Flops一般用于计算模型算力利用率(Model FLOPs Utilization, MFU)。
+- 开关标志位（`isEnabled_`，`bool`）：初始值为`False`。
+- 暂停标志位（`isPaused_`，`bool`）：初始值为`False`。
+- 含重计算的Flops（`traversedCount`，`int64_t`）：默认不统计含重计算的Flops，且值为0。含重计算的Flops一般用于计算硬件算力利用率(Hardware FLOPs Utilization, HFU)。
+- 不含重计算的Flops（`recordedCount`，`int64_t`）：默认不统计不含重计算的Flops，且值为0。不含重计算的Flops一般用于计算模型算力利用率(Model FLOPs Utilization, MFU)。
 
 首次创建（初始化）时的参数状态，或通过成员函数对参数进行修改后，参数的状态如[图1](#fig1515653134316)所示。
 

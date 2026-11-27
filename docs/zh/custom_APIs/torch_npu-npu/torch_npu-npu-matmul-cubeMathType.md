@@ -60,9 +60,9 @@ torch_npu.npu.matmul.cube_math_type = CubeMathType
 None
 
 >>>torch_npu.npu.matmul.cube_math_type = CubeMathType.USE_HF32
->>>print(torch_npu.npu.matmul.cube_math_type)
-_CubeMathType.USE_HF32
->>>torch_npu.npu.matmul.cube_math_type = torch_npu.npu.CubeMathType.KEEP_DTYPE
->>>print(torch_npu.npu.matmul.cube_math_type)
-_CubeMathType.KEEP_DTYPE
+>>>print(int(torch_npu.npu.matmul.cube_math_type))
+3
+>>>torch_npu.npu.matmul.cube_math_type = CubeMathType.KEEP_DTYPE
+>>>print(int(torch_npu.npu.matmul.cube_math_type))
+0
 ```

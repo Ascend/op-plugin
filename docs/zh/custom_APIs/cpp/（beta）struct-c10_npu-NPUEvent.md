@@ -31,7 +31,7 @@ torch_npu/csrc/core/npu/NPUEvent.h
 
 - **c10_npu::NPUEvent::NPUEvent(unsigned int flags)**
 
-    NPUEvent带flags的构造函数，与at::cuda::CUDAEvent(unsigned int _flags_)相同。
+    NPUEvent带flags的构造函数，与at::cuda::CUDAEvent::CUDAEvent(unsigned int _flags_)相同。
 
     flags：unsigned int类型，指定构造的事件类型。
 
@@ -87,9 +87,9 @@ torch_npu/csrc/core/npu/NPUEvent.h
 
 - **void c10_npu::NPUEvent::block(const c10_npu::NPUStream& stream)**
 
-    NPUEvent事件阻塞，阻塞指定流的事件，与void at::cuda::CUDAEvent::block(const c10::cuda::CUDAStream& _stream_)相同。
+    让指定的流等待该NPUEvent完成，与void at::cuda::CUDAEvent::block(const c10::cuda::CUDAStream& _stream_)相同。
 
-    stream：NPUStream类型，指定阻塞事件的流。
+    stream：NPUStream类型，指定等待事件完成的流。
 
 - **float c10_npu::NPUEvent::elapsed_time(const c10_npu::NPUEvent& other)**
 

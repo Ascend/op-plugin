@@ -65,7 +65,7 @@ torch_npu/csrc/aten/NPUGeneratorImpl.h
 
     new_state：TensorImpl类型，待设置的状态，需要通过at::detail::check_rng_state检测。
 
-- **c10::intrusive_ptr\<c10::TensorImpl> c10::TensorImpl at_npu::NPUGeneratorImpl::get_state()**
+- **c10::intrusive_ptr\<c10::TensorImpl> at_npu::NPUGeneratorImpl::get_state() const**
 
     NPUGeneratorImpl状态获取，返回值类型intrusive_ptr\<c10::TensorImpl>，返回生成器状态，与c10::intrusive_ptr\<c10::TensorImpl> at::CUDAGeneratorImpl::get_state()相同。
 
@@ -97,9 +97,9 @@ torch_npu/csrc/aten/NPUGeneratorImpl.h
 
 PyTorch2.5.1及以上版本，移除以下成员函数，PyTorch2.5.1之前版本以下成员函数仍旧存在：
 
-- **void at_npu::NPUGeneratorImpl::capture_prologue()**
+- **void at_npu::NPUGeneratorImpl::capture_prologue(int64_t* offset_extragraph)**
 
-    NPUGeneratorImpl设置offset_extragraph，用于NPUGraph预留图捕获区域，支持图捕获，与void at::CUDAGeneratorImpl::capture_prologue()相同。
+    为NPUGraph开始图捕获并设置图外偏移量。`offset_extragraph`指向保存图外偏移量的`int64_t`值。
 
 - **uint64_t at_npu::NPUGeneratorImpl::capture_epilogue()**
 
@@ -107,19 +107,19 @@ PyTorch2.5.1及以上版本，移除以下成员函数，PyTorch2.5.1之前版�
 
 PyTorch2.5.1及以上版本，新增以下成员函数：
 
-- **void graphsafe_set_state(const c10::intrusive_ptr& state)**
+- **void at_npu::NPUGeneratorImpl::graphsafe_set_state(const c10::intrusive_ptr\<c10::GeneratorImpl>& state)**
 
-    在capture状态下为aclgraph设置期望的随机数生成状态，与at::CUDAGeneratorImpl::graphsafe_set_state(const c10::intrusive_ptr& state)功能相同。
+    在capture状态下为aclgraph设置期望的随机数生成状态，与`at::CUDAGeneratorImpl::graphsafe_set_state`功能相同。
     
     state：c10::intrusive_ptr类型，待设置的随机数生成器状态。
-- **c10::intrusive_ptr\<c10::GeneratorImpl> graphsafe_get_state()**
+- **c10::intrusive_ptr\<c10::GeneratorImpl> at_npu::NPUGeneratorImpl::graphsafe_get_state() const**
 
     在capture状态下为aclgraph查询随机数生成对象，与c10::intrusive_ptr\<c10::GeneratorImpl> at::CUDAGeneratorImpl::graphsafe_get_state()功能相同。
     
     返回值为c10::GeneratorImpl对象。
-- **void register_graph(c10_npu::NPUGraph\* graph)**
+- **void at_npu::NPUGeneratorImpl::register_graph(c10_npu::NPUGraph\* graph)**
 
     为NPUGeneratorImpl对象注册aclgraph图对象，进行统一管理，与void at::CUDAGeneratorImpl::register_graph(CUDAGraph* graph)功能相同。
-- **void unregister_graph(c10_npu::NPUGraph\* graph)**
+- **void at_npu::NPUGeneratorImpl::unregister_graph(c10_npu::NPUGraph\* graph)**
 
     为NPUGeneratorImpl对象移除aclgraph图对象，在图对象的析构时会调用，与void at::CUDAGeneratorImpl::unregister_graph(CUDAGraph* graph)功能相同。

@@ -30,8 +30,8 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 
 ## 参数说明
 
-- **rois** (`Tensor`)：区域候选网络（RPN）生成的regions of interest（ROIs）。shape为(N,4)，数据类型为`torch.float32`或`torch.float16`的2D张量。"N"表示ROI的数量，"4"表示"x0"、"y0"、"x1"和"y1"。
-- **deltas** (`Tensor`)：与`rois`逐一对应的边界框变换量，形状为`(N, 4)`，每行依次为`(dx, dy, dw, dh)`，分别表示中心位置偏移和宽高的尺度变换。
+- **rois** (`Tensor`)：区域候选网络（RPN）生成的regions of interest（ROIs）。shape为(N,4)，数据类型为`torch.float32`或`torch.float16`的2D张量。“N”表示ROI的数量，各列依次为 (x0, y0, x1, y1)。
+- **deltas** (`Tensor`)：与`rois`逐一对应的边界框变换量。形状为 `(N, 4)`，数据类型支持`torch.float32`和`torch.float16`。每行依次为 `(dx, dy, dw, dh)`，分别表示中心位置偏移和宽高的尺度变换。
 - **means0** (`float`)：“x0”的偏差值。默认值为0。
 - **means1** (`float`)：“y0”的偏差值。默认值为0。
 - **means2** (`float`)：“x1”的偏差值。默认值为0。
@@ -51,11 +51,21 @@ torch_npu.npu_bounding_box_decode(rois, deltas, means0, means1, means2, means3, 
 
 ## 调用示例
 
+将预测偏移量应用到基础框，打印解码后的边界框坐标。
+
 ```python
->>> rois = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
->>> deltas = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
->>> output = torch_npu.npu_bounding_box_decode(rois, deltas, 0, 0, 0, 0, 1, 1, 1, 1, (10, 10), 0.1)
->>> print(output)
+import torch
+import torch_npu
+
+rois = torch.tensor([[1., 2., 3., 4.], [3.,4., 5., 6.]], dtype = torch.float32).to("npu")
+deltas = torch.tensor([[5., 6., 7., 8.], [7.,8., 9., 6.]], dtype = torch.float32).to("npu")
+output = torch_npu.npu_bounding_box_decode(rois, deltas, 0, 0, 0, 0, 1, 1, 1, 1, (10, 10), 0.1)
+print(output)
+```
+
+一次运行的输出：
+
+```text
 tensor([[2.5000, 6.5000, 9.0000, 9.0000],
         [9.0000, 9.0000, 9.0000, 9.0000]], device='npu:0')
 ```

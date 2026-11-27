@@ -52,32 +52,17 @@ class torch_npu.optim.NpuFusedAdamW(params, lr=1e-3, betas=(0.9, 0.999), eps=1e-
 
 ## 调用示例
 
+构造一个NPU参数及其模拟梯度，执行一次优化器更新。
+
 ```python
 import torch
-from torch_npu.npu.amp import GradScaler, autocast
-from torch_npu.optim import NpuFusedAdamW 
+from torch_npu.optim import NpuFusedAdamW
 
-def _create_simple_params_and_grads():
-    params = [
-        torch.arange(6).reshape(2, 3).float().npu(),
-        torch.arange(12).reshape(4, 3).float().npu(),
-        torch.arange(6).reshape(2, 3).half().npu(),
-        torch.arange(12).reshape(4, 3).half().npu(),
-        torch.arange(15).reshape(5, 3).float().npu(),
-        torch.arange(18).reshape(6, 3).half().npu(),
-        torch.arange(6).reshape(2, 3).float().npu()
-    ]
+param = torch.nn.Parameter(torch.tensor([1.0, 2.0], device="npu"))
+param.grad = torch.tensor([0.01, -0.02], device="npu")
+before = param.detach().clone()
 
-    for i, p in enumerate(params):
-        if i < len(params) - 1:
-            p.requires_grad = True
-            p.grad = p.clone().detach() / 100.
-
-    return params
-
-opt_kwargs = dict(eps=1e-8, betas=(0.9, 0.999), lr=2e-3, weight_decay=0.05)
-params = _create_simple_params_and_grads()
-fused_opt = NpuFusedAdamW(params, **opt_kwargs)
-with torch.no_grad():
-    fused_opt.step()
+optimizer = NpuFusedAdamW([param], eps=1e-8, betas=(0.9, 0.999), lr=2e-3, weight_decay=0.05)
+optimizer.step()
+assert not torch.equal(before, param.detach())
 ```

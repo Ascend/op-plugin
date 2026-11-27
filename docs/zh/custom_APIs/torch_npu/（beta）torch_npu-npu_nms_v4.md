@@ -33,8 +33,8 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 - **boxes** (`Tensor`)：必选参数，shape为[num_boxes, 4]的2维浮点张量。
 - **scores** (`Tensor`)：必选参数，shape为[num_boxes]的1维浮点张量，表示每个框对应的一个分数。
 - **max_output_size** (`Scalar`)：必选参数，表示non-max suppression下要选择的最大框数的标量。
-- **iou_threshold** (`Tensor`)：必选参数，0维浮点张量，表示框间IoU阈值上限。
-- **scores_threshold** (`Tensor`)：必选参数，0维浮点张量，表示决定何时删除框的分数阈值。
+- **iou_threshold** (`Tensor`)：必选参数，0维浮点张量，框间IoU阈值。
+- **scores_threshold** (`Tensor`)：必选参数，0维浮点张量，候选框的最低分数阈值。取值应与输入scores使用的尺度一致。
 - **pad_to_max_output_size** (`bool`)：可选参数，如果为True，则输出的selected_indices将填充为max_output_size长度。默认值为False。
 
 ## 返回值说明
@@ -44,18 +44,25 @@ torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_thres
 
 ## 调用示例
 
+从输入框与对应分数中选择候选框，返回选中索引及其有效数量。
+
 ```python
->>> import torch
->>> import torch_npu
->>> boxes=torch.randn(100,4).npu()
->>> scores=torch.randn(100).npu()
->>> boxes.uniform_(0,100)
->>> scores.uniform_(0,1)
->>> max_output_size = 20
->>> iou_threshold = torch.tensor(0.5).npu()
->>> scores_threshold = torch.tensor(0.3).npu()
->>> npu_output = torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_threshold)
->>> print(npu_output)
+import torch
+import torch_npu
+boxes=torch.randn(100,4).npu()
+scores=torch.randn(100).npu()
+boxes.uniform_(0,100)
+scores.uniform_(0,1)
+max_output_size = 20
+iou_threshold = torch.tensor(0.5).npu()
+scores_threshold = torch.tensor(0.3).npu()
+npu_output = torch_npu.npu_nms_v4(boxes, scores, max_output_size, iou_threshold, scores_threshold)
+print(npu_output)
+```
+
+一次运行的输出：
+
+```text
 (tensor([57, 65, 25, 45, 43, 12, 52, 91, 23, 78, 53, 11, 24, 62, 22, 67,  9, 94,
         54, 92], device='npu:0', dtype=torch.int32), tensor(20, device='npu:0', dtype=torch.int32))
 ```

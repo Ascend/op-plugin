@@ -25,8 +25,10 @@ torch_npu/csrc/core/npu/NPUHooksInterface.h
 
 ## 成员函数
 
-- **const at::Generator& c10_npu::NPUHooksInterface::getDefaultGenerator(c10::DeviceIndex device_index)**
+完整声明见定义文件`torch_npu/csrc/core/npu/NPUHooksInterface.h`。
 
-NPUHooksInterface获取默认随机数生成器，与const at::Generator& at::CUDAHooksInterface::getDefaultCUDAGenerator(c10::DeviceIndex _device_index_ = -1)相同。
+- **const at::Generator& c10_npu::NPUHooksInterface::getDefaultGenerator(c10::DeviceIndex device_index) const**
 
-device_index：DeviceIndex类型，指定NPU设备ID。
+获取指定NPU设备的默认随机数生成器。
+
+**device_index** (`c10::DeviceIndex`)：必选参数。传入 `-1`时使用当前NPU设备。若显式指定设备ID，则须满足`0 <= device_index < c10_npu::device_count()`。

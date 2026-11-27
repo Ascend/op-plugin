@@ -17,7 +17,7 @@
 
 ## 功能说明
 
-获取报错信息，返回值类型const char \*，表示获取到的报错信息字符串。
+获取CANN运行时的报错信息。
 
 ## 定义文件
 
@@ -28,3 +28,7 @@ torch_npu/csrc/core/npu/NPUException.h
 ```cpp
 const char* c10_npu::c10_npu_get_error_message()
 ```
+
+## 返回值说明
+
+`const char*`，指向由运行时维护的错误消息字符串。调用者无需释放该指针。如需保留消息，请在调用线程中及时将其复制到`std::string`。

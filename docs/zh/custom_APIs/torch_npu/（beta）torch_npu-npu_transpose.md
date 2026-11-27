@@ -31,19 +31,26 @@ torch_npu.npu_transpose(self, perm, require_contiguous=True) -> Tensor
 ## 参数说明
 
 - **self** (`Tensor`)：输入张量。
-- **perm** (`List[int]`)：对应维度排列。
+- **perm** (`List[int]`)：必选参数，维度的排列。长度等于输入张量的秩，每个维度索引恰好出现一次。
 - **require_contiguous** (`bool`)：可选参数，默认值为`True`，由算子按需将输入转为连续张量。确认输入是连续张量或转置视图时，可设置为`False`，跳过输入连续化。
 
 ## 调用示例
 
+将形状为 (2, 3, 5) 的张量按 (2, 0, 1) 重排，得到形状 (5, 2, 3)。
+
 ```python
->>> x = torch.randn(2, 3, 5).npu()
->>> print(x.shape)
+import torch
+import torch_npu
+
+x = torch.randn(2, 3, 5).npu()
+print(x.shape)
+x1 = torch_npu.npu_transpose(x, (2, 0, 1))
+print(x1.shape)
+```
+
+一次运行的输出：
+
+```text
 torch.Size([2, 3, 5])
->>> x1 = torch_npu.npu_transpose(x, (2, 0, 1))
->>> print(x1.shape)
-torch.Size([5, 2, 3])
->>> x2 = torch_npu.npu_transpose(x, (2, 0, 1))
->>> print(x2.shape)
 torch.Size([5, 2, 3])
 ```

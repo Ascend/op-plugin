@@ -29,8 +29,8 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 - **bboxes** (`Tensor`)：待转换的框，shape为\(N, 4\)。支持的数据类型为`torch.float`，`torch.half`。
 - **gt_bboxes** (`Tensor`)：用作基准的gt\_bboxes，shape为\(N, 4\)。支持的数据类型为`torch.float`、`torch.half`。
-- **means** (`List[float]`)：对delta坐标的目标去归一化的均值，默认值为None。
-- **stds** (`List[float]`)：对delta坐标的目标去归一化的标准差，默认值为None。
+- **means** (`List[float]`)：四个delta分量的去归一化均值。提供列表时使用前四项。默认值为None，对应四个0。
+- **stds** (`List[float]`)：四个delta分量的去归一化标准差。提供列表时使用前四项。默认值为None，对应四个1。
 - **is_normalized** (`bool`)：坐标值是否已归一化，默认值为False。
 - **normalized_scale** (`float`)：设置坐标恢复的归一化比例，默认值为10000.。
 
@@ -42,18 +42,27 @@ torch_npu.contrib.function.npu_bbox_coder_encode_xyxy2xywh(bboxes,gt_bboxes, mea
 
 ## 约束说明
 
-不支持动态shape。由于算子语义限制，仅支持二维\(n, 4\)场景。`bboxes`和`gt_bboxes`的shape和dtype必须相同，dtype只可为`torch.float`和`torch.half`。第三个输入（均值）仅支持1D，且第一个维度与第一个输入（`bboxes`）相同。
+此接口调用的`torch_npu.npu_bounding_box_encode`已标记为废弃，运行时可能发出弃用警告。
+
+不支持动态shape。由于算子语义限制，仅支持二维\(n, 4\)场景。`bboxes`和`gt_bboxes`的shape和dtype必须相同，dtype只可为`torch.float16`和`torch.float32`。
 
 ## 调用示例
 
+示例将每对源框和真值框编码为四个回归增量。两组输入各包含1024个框。
+
 ```python
->>> import torch, torch_npu
->>> from torch_npu.contrib.function import npu_bbox_coder_encode_xyxy2xywh
->>> A = 1024
->>> bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
->>> gt_bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
->>> out = npu_bbox_coder_encode_xyxy2xywh(bboxes, gt_bboxes)
->>> torch.npu.synchronize()
->>> print('npu_bbox_coder_encode_xyxy2xywh done. output shape is ', out.shape)
-npu_bbox_coder_encode_xyxy2xywh done. output shape is torch.Size([1024, 4])
+import torch, torch_npu
+from torch_npu.contrib.function import npu_bbox_coder_encode_xyxy2xywh
+A = 1024
+bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
+gt_bboxes = torch.randint(0, 512, size=(A, 4)).float().npu()
+out = npu_bbox_coder_encode_xyxy2xywh(bboxes, gt_bboxes)
+torch.npu.synchronize()
+print(out.shape)
+```
+
+示例输出如下。
+
+```text
+torch.Size([1024, 4])
 ```

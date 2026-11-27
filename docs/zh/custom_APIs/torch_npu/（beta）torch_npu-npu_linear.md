@@ -30,7 +30,7 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 
 ## 参数说明
 
-- **input**(`Tensor`)：必选参数，2D矩阵张量。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
+- **input**(`Tensor`)：必选参数，形状为 (N, in_features) 的2D张量。权重的第2维等于in_features。传入偏置时，其长度等于权重的第1维。数据类型支持`torch.float32`、`torch.float16`、`torch.int32`、`torch.int8`。数据格式支持$ND$、$NHWC$、$FRACTAL\_NZ$。
 
   <!-- npu="950" id6 -->
   - <term>Ascend 950PR&950DT系列产品</term>：数据类型不支持`torch.int32`、`torch.int8`。
@@ -57,6 +57,8 @@ torch_npu.npu_linear(input, weight, bias=None) -> Tensor
 - 该接口仅支持单算子模式。
 
 ## 调用示例
+
+示例构造二维输入与转置前的权重。输入和权重的最后一维相同，输出形状由输入行数和权重行数决定。传入偏置时，偏置长度等于输出列数。
 
 单算子模式调用如下：
 

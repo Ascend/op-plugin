@@ -52,6 +52,8 @@ torch.distributed.distributed_c10d._world.default_pg._get_backend(torch.device("
 
 ## 调用示例<a name="section14459801435"></a>
 
+以下示例为两个rank初始化HCCL进程组。每个rank选择对应的NPU，按PyTorch版本获取HCCL通信域名称。
+
 ```python
 import torch
 import torch_npu
@@ -63,7 +65,7 @@ def example(rank, world_size):
     torch.npu.set_device("npu:" + str(rank))
     dist.init_process_group("hccl", rank=rank, world_size=world_size)
     default_pg = _get_default_group()
-    if torch.__version__ > '2.0':
+    if torch.__version__ >= torch.torch_version.TorchVersion("2.1.0"):
         hcomm_info = default_pg._get_backend(torch.device("npu")).get_hccl_comm_name(rank)
     else:
         hcomm_info = default_pg.get_hccl_comm_name(rank)
@@ -78,7 +80,6 @@ if __name__ == "__main__":
     os.environ["MASTER_ADDR"] = "localhost"
     os.environ["MASTER_PORT"] = "29505"
     main()
-
-group_name_0
-group_name_0
 ```
+
+两个rank打印同一通信域的名称，例如`group_name_0`。实际名称由运行环境分配。
