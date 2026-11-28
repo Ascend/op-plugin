@@ -26,7 +26,7 @@ namespace lazy_fusion {
 //   kO2 — kO1 plus the heavier ops (matmul / mm / bmm / addmm / sum /
 //         native_batch_norm_backward / npu_swiglu) whose payoff depends on
 //         workload. Same as historical "level 2".
-// `TORCH_NPU_LAZY_FUSION=True` defaults to kO2 (enable everything). Setting
+// `TORCH_NPU_LAZY_FUSION=True` defaults to kO2; per-op defaults still apply. Setting
 // `level=O1` / `level=O2` via the env flag list is internal-debug only.
 enum class Level : int {
   kO1 = 1,

@@ -16,11 +16,22 @@
 #include "op_plugin/DvmOpsInterface.h"
 #include "op_plugin/OpApiInterface.h"
 #include "op_plugin/ops/dvm/lazy_fusion_kernel.h"
+#include "torch_npu/csrc/core/npu/NpuVariables.h"
 #include "torch_npu/csrc/framework/utils/OpPreparation.h"
 
 namespace lazy_fusion {
 namespace {
 using ShapeVector = std::vector<int64_t>;
+
+bool IsMatMulFusionEnabled(const std::string& op) {
+  const auto& flags = g_lazy_fusion_manager.flags_;
+  if (flags.enable_ops_only.empty() &&
+      std::find(flags.enable_ops.begin(), flags.enable_ops.end(), op) == flags.enable_ops.end() &&
+      c10_npu::GetSocVersion() == c10_npu::SocVersion::Ascend950) {
+    return false;
+  }
+  return IsEnabled(op, Level::kO2);
+}
 
 // aclnn rounds the scalar argument of add_scalar/sub_scalar to the input dtype
 // (bf16/fp16) before the op; for mul/div the scalar stays fp32. Mirror that
@@ -2064,7 +2075,7 @@ at::Tensor& sum_out(
 
 // ===================== MatMul =====================
 at::Tensor matmul(const at::Tensor& self, const at::Tensor& other) {
-  static auto enable = IsEnabled("matmul", Level::kO2);
+  static auto enable = IsMatMulFusionEnabled("matmul");
   if (!enable) {
     return op_api::matmul(self, other);
   }
@@ -2077,7 +2088,7 @@ at::Tensor matmul(const at::Tensor& self, const at::Tensor& other) {
 }
 
 at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
-  static auto enable = IsEnabled("mm", Level::kO2);
+  static auto enable = IsMatMulFusionEnabled("mm");
   if (!enable) {
     return op_api::mm(self, mat2);
   }
@@ -2090,7 +2101,7 @@ at::Tensor mm(const at::Tensor& self, const at::Tensor& mat2) {
 }
 
 at::Tensor bmm(const at::Tensor& self, const at::Tensor& mat2) {
-  static auto enable = IsEnabled("bmm", Level::kO2);
+  static auto enable = IsMatMulFusionEnabled("bmm");
   if (!enable) {
     return op_api::bmm(self, mat2);
   }
@@ -2108,7 +2119,7 @@ at::Tensor addmm(
     const at::Tensor& mat2,
     const at::Scalar& beta,
     const at::Scalar& alpha) {
-  static auto enable = IsEnabled("addmm", Level::kO2);
+  static auto enable = IsMatMulFusionEnabled("addmm");
   float beta_value = 1.0f;
   float alpha_value = 1.0f;
   if (!enable || !GetScalarValue(beta, &beta_value) || !GetScalarValue(alpha, &alpha_value)) {
