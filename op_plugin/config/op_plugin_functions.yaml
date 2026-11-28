@@ -1894,6 +1894,18 @@ official:
     gen_opapi:
       exec: aclnnInplaceCosh
 
+  - func: copysign.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)
+    op_api: all_version
+    structured: true
+
+  - func: copysign.Tensor(Tensor self, Tensor other) -> Tensor
+    op_api: all_version
+    structured_delegate: copysign.out
+
+  - func: copysign_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)
+    op_api: all_version
+    structured_delegate: copysign.out
+
   - func: count_nonzero(Tensor self, int? dim=None) -> Tensor
     acl_op: all_version
     op_api: all_version

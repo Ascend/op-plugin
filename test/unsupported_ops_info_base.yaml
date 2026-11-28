@@ -3643,10 +3643,6 @@ copysign:
   - bool
   test_out:
   - float32
-  test_variant_consistency_eager:
-  - float32
-  test_backward:
-  - float32
 count_nonzero:
   test_conj_view:
   - complex64

@@ -2447,6 +2447,15 @@
   "func: convolution_overrideable(Tensor input, Tensor weight, Tensor? bias, int[] stride, int[] padding, int[] dilation, bool transposed, int[] output_padding, int groups) -> Tensor": {
     "version": ["all_version"]
   },
+  "func: copysign.Tensor(Tensor self, Tensor other) -> Tensor": {
+    "version": ["all_version"]
+  },
+  "func: copysign.out(Tensor self, Tensor other, *, Tensor(a!) out) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
+  "func: copysign_.Tensor(Tensor(a!) self, Tensor other) -> Tensor(a!)": {
+    "version": ["all_version"]
+  },
   "func: count_nonzero(Tensor self, int? dim=None) -> Tensor": {
     "version": ["all_version"]
   },
