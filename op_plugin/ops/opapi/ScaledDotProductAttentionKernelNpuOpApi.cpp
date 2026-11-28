@@ -318,17 +318,10 @@ at::Tensor scaled_dot_product_attention(const at::Tensor &query, const at::Tenso
         c10::optional<at::Tensor> nulltensor = c10::nullopt;
         c10::OptionalArrayRef<c10::SymInt> nullsymlen = c10::nullopt;
         int64_t inner_precise = calculate_inner_precise_for_fa(query, attn_mask, is_causal);
-        if (op_plugin::utils::is_lt_soc_version_950()) {
-            auto outputv3 = at_npu::native::custom_ops::npu_fusion_attention_v3(query, key, value, head_num,
-                input_layout, nulltensor, nulltensor, atten_mask, input_scale.as_float_unchecked(), keep_prob,
-                TOKEN_MAX, next_tockens, inner_precise, nullsymlen, nulltensor, nulltensor, sparse_mode, true, false);
-            return std::get<0>(outputv3);
-        }
-        c10::OptionalIntArrayRef nulllen = c10::nullopt;
-        auto output = at_npu::native::custom_ops::npu_fusion_attention(query, key, value, head_num, input_layout,
-            nulltensor, nulltensor, atten_mask, input_scale.as_float_unchecked(), keep_prob, TOKEN_MAX, next_tockens,
-            inner_precise, nulllen, nulllen, nulllen, sparse_mode, true, false);
-        return std::get<0>(output);
+        auto outputv3 = at_npu::native::custom_ops::npu_fusion_attention_v3(query, key, value, head_num,
+            input_layout, nulltensor, nulltensor, atten_mask, input_scale.as_float_unchecked(), keep_prob,
+            TOKEN_MAX, next_tockens, inner_precise, nullsymlen, nulltensor, nulltensor, sparse_mode, true, false);
+        return std::get<0>(outputv3);
     } else if (!force_math && (!query.requires_grad() && !key.requires_grad() && !value.requires_grad()) &&
         (query.dim() == BNSD_DIM && key.dim() == BNSD_DIM && value.dim() == BNSD_DIM) &&
         (query.size(0) != 0 && query.size(1) != 0 && query.size(2) != 0 && query.size(3) != 0) &&

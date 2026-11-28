@@ -163,6 +163,27 @@ int64_t extract_value(const at::Tensor& cpu_tensor)
     return cpu_tensor.item().to<int64_t>();
 }
 
+void extract_scalar_seed_offset(
+    const c10::optional<at::Tensor> &seed,
+    const c10::optional<at::Tensor> &offset,
+    c10_npu::CaptureStatus is_capture,
+    const char *op_name,
+    int64_t &seed_val,
+    int64_t &offset_val)
+{
+    TORCH_CHECK(
+        is_capture == c10_npu::CaptureStatus::None,
+        op_name, " does not support dropout during graph capture on current SoC",
+        OPS_ERROR(ErrCode::NOT_SUPPORT));
+    TORCH_CHECK(
+        seed.has_value() && seed->defined() && seed->is_cpu() &&
+        offset.has_value() && offset->defined() && offset->is_cpu(),
+        op_name, " requires CPU scalar seed/offset tensors on current SoC",
+        OPS_ERROR(ErrCode::PARAM));
+    seed_val = extract_value(seed.value());
+    offset_val = extract_value(offset.value());
+}
+
 at::IntArrayRef ToIntArrayRef(const c10::optional<at::Tensor>& opt_tensor, std::vector<int64_t>& buffer)
 {
     // 如果是 nullopt，返回空 IntArrayRef
@@ -217,7 +238,7 @@ at::Tensor dropout_gen_mask_tensor_impl(const at::Tensor &query, double keep_pro
     at::Scalar probScalar = at::Scalar(float(1.0) - float(keep_prob));
     prob = probScalar.toDouble();
     aclDataType probDataType = at_npu::native::OpPreparation::convert_to_acl_data_type(query.scalar_type());
-    if (is_capture == c10_npu::CaptureStatus::None) {
+    if (is_capture == c10_npu::CaptureStatus::None && seed.is_cpu() && offset.is_cpu()) {
         int64_t seedValue = extract_value(seed);
         int64_t offsetValue = extract_value(offset);
         DO_COMPATIBILITY(aclnnDropoutGenMaskV2,
@@ -261,8 +282,11 @@ at::Tensor dropout_gen_mask_tensor_dispatch(const at::Tensor &query, double keep
             // secondary stream, and tasks are distributed to the secondary stream. At the
             // same time, according to the one-stream-one-pool principle, memory is also
             // alloced from the pool of the secondary stream.
-            c10_npu::SecondaryStreamGuard guard(secondary_stream);
-            mask = dropout_gen_mask_tensor_impl(query, keep_prob, seed, offset, numels, is_capture, offset_intragraph);
+            {
+                c10_npu::SecondaryStreamGuard guard(secondary_stream);
+                mask = dropout_gen_mask_tensor_impl(query, keep_prob, seed, offset, numels, is_capture, offset_intragraph);
+            }
+            c10_npu::NPUCachingAllocator::recordStream(mask.storage().data_ptr(), original_stream);
             if (!gen_state_.secondary_stream_capture_state_) {
                 ASCEND_LOGI("Event: record and block in fa dropout op capture end is successfully executed");
                 at::check_generator<at_npu::NPUGeneratorImpl>(gen)->set_secondary_stream_capture_state(true);
@@ -1757,7 +1781,7 @@ at::Tensor dropout_gen_mask_tensor(const at::Tensor &query, const at::Tensor &ke
             offset.add_(gen_state_.offset_intragraph_);
         }
 
-        if (op_plugin::utils::is_lt_soc_version_950()) {
+        if (op_plugin::utils::is_lt_soc_version_950() || is_capture != c10_npu::CaptureStatus::None) {
             drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed, offset, numels,
                 gen_mask_parallel, sync, is_capture, offset_intragraph);
         }
@@ -1767,8 +1791,8 @@ at::Tensor dropout_gen_mask_tensor(const at::Tensor &query, const at::Tensor &ke
     if (get_dropout_status(keep_prob) != DropOutStatus::DROPOUT_NORMAL) {
         if (is_capture == c10_npu::CaptureStatus::None) {
             auto options = at::TensorOptions().device(at::kCPU).dtype(at::kLong);
-            seed = at::empty({1}, options);
-            offset = at::empty({1}, options);
+            seed = at::zeros({1}, options);
+            offset = at::zeros({1}, options);
         } else {
             seed = npu_preparation::apply_tensor_without_format({1}, query.options().dtype(at::kLong));
             offset = npu_preparation::apply_tensor_without_format({1}, query.options().dtype(at::kLong));
@@ -1927,8 +1951,33 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
                     inner_precise, sparse_mode, dq, dk, dv, dpse);
             }
         }
-    } else { // Ascend950
-        // TO BE DONE
+    } else { // Ascend950 and later
+        c10::optional<at::Tensor> empty_optional_tensor;
+        at::Tensor empty_out_tensor;
+        int64_t seed_val = 0;
+        int64_t offset_val = 0;
+        if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL && !format_drop_mask.defined()) {
+            c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
+            extract_scalar_seed_offset(
+                seed, offset, is_capture, "npu_fusion_attention_grad_v3", seed_val, offset_val);
+        }
+
+        std::string softmax_layout_str = std::string(softmax_layout);
+        softmax_layout_str = (softmax_layout_str == "TND") ? "same_as_input" : softmax_layout_str;
+        char softmax_layout_char[LAYOUT_MAX_LENGTH];
+        strncpy(softmax_layout_char, softmax_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
+        softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
+
+        EXEC_NPU_CMD(
+            aclnnFlashAttentionScoreGradV4, format_query, format_key, format_value, format_dy,
+            format_pse, format_drop_mask, format_padding_mask, format_atten_mask, format_softmax_max,
+            format_softmax_sum, format_softmax, format_attention, format_sink, empty_optional_tensor,
+            empty_optional_tensor, empty_optional_tensor, empty_optional_tensor, empty_optional_tensor,
+            empty_optional_tensor, empty_optional_tensor, prefixN, ac_seq_qlen, ac_seq_kvlen,
+            DEFAULT_START_IDX, DEFAULT_START_IDX, scale_value, keep_prob, pre_tockens, next_tockens, head_num,
+            input_layout_char, softmax_layout_char, inner_precise, sparse_mode, DEFAULT_PSE_TYPE,
+            seed_val, offset_val, DEFAULT_OUT_DTYPE,
+            dq, dk, dv, empty_out_tensor, empty_out_tensor, dpse, dsink);
     }
     FLOP_COUNT(FlopCounter::flash_attention_backward_flop, query, key, value,
         dy, head_num, input_layout, ac_seq_qlen, ac_seq_kvlen);
@@ -1971,8 +2020,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     std::string_view softmax_layout,
     const c10::optional<at::Tensor> &sink)
 {
-
-    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(), "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     TORCH_CHECK(query.dim() == DIMENSION_3D || query.dim() == DIMENSION_4D,
         "The shapes of the input query should be 3 or 4 dimensional, but got ",
@@ -2035,13 +2082,13 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
             accum += ((ac_seq_qlen[i] - ac_seq_qlen[i - 1]) * (ac_seq_kvlen[i] - ac_seq_kvlen[i - 1]));
         }
         numels *= accum;
-    } else if (input_layout == "BSH") {
+    } else if (input_layout_str == "BSH") {
         numels = query.size(0) * head_num * query.size(1) * key.size(1); // [B,N,S,S]
-    } else if (input_layout == "SBH") {
+    } else if (input_layout_str == "SBH") {
         numels = query.size(1) * head_num * query.size(0) * key.size(0); // [B,N,S,S]
-    } else if (input_layout == "BNSD") {
+    } else if (input_layout_str == "BNSD") {
         numels = query.size(0) * query.size(1) * query.size(THIRD_ELEMENT) * key.size(THIRD_ELEMENT); // [B,N,S,S]
-    } else if (input_layout == "BSND") {
+    } else if (input_layout_str == "BSND") {
         numels = query.size(0) * query.size(THIRD_ELEMENT) * query.size(1) * key.size(1); // [B,N,S,S]
     }
 
@@ -2049,9 +2096,17 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor> npu_fusio
     length += LENGTH_BIAS;
     at::Tensor drop_mask;
     c10_npu::CaptureStatus is_capture = c10_npu::currentStreamCaptureStatusMayInitCtx();
-    if (op_plugin::utils::is_lt_soc_version_950() && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
+    bool has_device_seed_offset = seed.has_value() && seed->defined() && !seed->is_cpu() &&
+        offset.has_value() && offset->defined() && !offset->is_cpu();
+    bool need_drop_mask = op_plugin::utils::is_lt_soc_version_950() ||
+        is_capture != c10_npu::CaptureStatus::None ||
+        has_device_seed_offset;
+    if (need_drop_mask && get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL) {
         const at::Tensor &seed_const = seed.value_or(at::Tensor());
         const at::Tensor &offset_const = offset.value_or(at::Tensor());
+        TORCH_CHECK(seed_const.defined() && offset_const.defined(),
+            "npu_fusion_attention_grad_v3 requires defined seed and offset tensors when keep_prob < 1.0",
+            OPS_ERROR(ErrCode::PARAM));
         drop_mask = dropout_gen_mask_tensor_dispatch(query, keep_prob, seed_const, offset_const, numels, gen_mask_parallel, sync, is_capture);
     } else if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_ALL) {
         drop_mask = at::zeros(at::IntArrayRef{length}, query.options().dtype(at::kByte));
@@ -2080,8 +2135,6 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
     std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
-
-    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(), "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
 
     std::string input_layout_str1(input_layout);
     std::string softmax_layout_str1(softmax_layout);
@@ -2249,6 +2302,7 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
     softmax_out = at::empty({0}, query.options());
     char input_layout_char[LAYOUT_MAX_LENGTH];
     strncpy(input_layout_char, input_layout_str.c_str(), LAYOUT_MAX_LENGTH - 1);
+    input_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
     static const bool is_fa_V4_available = check_aclnn_kernel_available("aclnnFlashAttentionVarLenScoreV4");
     if (op_plugin::utils::is_lt_soc_version_950()) {
         if (format_sink.defined()) { // sink is defined
@@ -2318,8 +2372,34 @@ std::tuple<at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tensor, at::Tenso
                     inner_precise, sparse_mode, softmax_max, softmax_sum, softmax_out, attention_score);
             }
         }
-    } else { // Ascend950
-        // TO BE DONE, not support
+    } else { // Ascend950 and later
+        TORCH_CHECK(!format_sink.defined(),
+            "The param sink is not supported in npu_fusion_attention_v3 on current SoC",
+            OPS_ERROR(ErrCode::NOT_SUPPORT));
+        c10::optional<at::Tensor> empty_optional_tensor;
+        int64_t seed_val = 0;
+        int64_t offset_val = 0;
+        if (get_dropout_status(keep_prob) == DropOutStatus::DROPOUT_NORMAL && !format_drop_mask.defined()) {
+            extract_scalar_seed_offset(
+                seed, offset, is_capture, "npu_fusion_attention_v3", seed_val, offset_val);
+        }
+
+        std::string softmax_layout_a5 = softmax_layout_str;
+        softmax_layout_a5 = (softmax_layout_a5 == "TND") ? "same_as_input" : softmax_layout_a5;
+        char softmax_layout_char[LAYOUT_MAX_LENGTH];
+        strncpy(softmax_layout_char, softmax_layout_a5.c_str(), LAYOUT_MAX_LENGTH - 1);
+        softmax_layout_char[LAYOUT_MAX_LENGTH - 1] = '\0';
+
+        EXEC_NPU_CMD(
+            aclnnFlashAttentionScoreV4, format_query, format_key, format_value,
+            format_pse, format_drop_mask, format_padding_mask, format_atten_mask,
+            empty_optional_tensor, empty_optional_tensor, empty_optional_tensor,
+            empty_optional_tensor, empty_optional_tensor, empty_optional_tensor,
+            prefixN, ac_seq_qlen, ac_seq_kvlen,
+            DEFAULT_START_IDX, DEFAULT_START_IDX, scale, keep_prob, pre_tockens, next_tockens, head_num,
+            input_layout_char, inner_precise, sparse_mode, DEFAULT_OUT_DTYPE, DEFAULT_PSE_TYPE,
+            softmax_layout_char, seed_val, offset_val, softmax_max, softmax_sum,
+            softmax_out, attention_score);
     }
     FLOP_COUNT(FlopCounter::flash_attention_forward_flop, query, key, value, head_num,
                input_layout_str, ac_seq_qlen, ac_seq_kvlen);
@@ -2692,6 +2772,8 @@ at::Tensor _npu_fusion_attention_v3_get_max_workspace(
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
     std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(),
+        "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);
@@ -2812,6 +2894,8 @@ at::Tensor _npu_fusion_attention_grad_v3_get_max_workspace(
     const c10::optional<at::Tensor> &actual_seq_kvlen, int64_t sparse_mode, bool gen_mask_parallel, bool sync,
     std::string_view softmax_layout, const c10::optional<at::Tensor> &sink)
 {
+    TORCH_CHECK(op_plugin::utils::is_lt_soc_version_950(),
+        "Ascend950 not support", OPS_ERROR(ErrCode::NOT_SUPPORT));
     std::string input_layout_str = std::string(input_layout);
     for (auto &c : input_layout_str) {
         c = toupper(c);

@@ -1,11 +1,23 @@
+from functools import wraps
 import math
 import unittest
 import numpy as np
 import torch
 import torch_npu
+from torch_npu.npu._backends import get_soc_version
 from torch_npu.testing.testcase import TestCase, run_tests
 from torch_npu.testing.common_utils import SupportedDevices
 from einops import rearrange
+
+
+def _skip_if_lt_soc_950(fn):
+    @wraps(fn)
+    def dep_fn(slf, *args, **kwargs):
+        if get_soc_version() < 260:
+            raise unittest.SkipTest("Only run on Ascend950 and later.")
+        return fn(slf, *args, **kwargs)
+
+    return dep_fn
 
 
 def get_cu_seqlens(seqlens_list):
@@ -835,6 +847,238 @@ class TestNPUFlashAttention(TestCase):
         self.assertEqual(result[0], result1)
         g.replay()
         self.assertEqual(result[0], result2)
+
+    @_skip_if_lt_soc_950
+    def test_npu_flash_attention_v3(self, device="npu"):
+        for dtype in (torch.float16, torch.bfloat16):
+            query = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            key = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            value = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            scale = 1.0 / math.sqrt(64)
+
+            ref_q = query.detach().float().cpu().requires_grad_(True)
+            ref_k = key.detach().float().cpu().requires_grad_(True)
+            ref_v = value.detach().float().cpu().requires_grad_(True)
+            ref_out = torch.nn.functional.scaled_dot_product_attention(ref_q, ref_k, ref_v, scale=scale)
+            ref_out.sum().backward()
+
+            out_v3 = torch_npu.npu_fusion_attention_v3(
+                query, key, value, head_num=8, input_layout="BNSD", scale=scale, keep_prob=1.0
+            )
+            self.assertEqual(tuple(out_v3[4].shape), (1,))
+            self.assertEqual(tuple(out_v3[5].shape), (1,))
+            self.assertEqual(out_v3[4].item(), 0)
+            self.assertEqual(out_v3[5].item(), 0)
+            out_v3[0].sum().backward()
+
+            atol = 2e-2 if dtype == torch.bfloat16 else 5e-3
+            self.assertTrue(torch.allclose(out_v3[0].float().cpu(), ref_out, rtol=atol, atol=atol))
+            self.assertTrue(torch.allclose(query.grad.float().cpu(), ref_q.grad, rtol=atol, atol=atol))
+            self.assertTrue(torch.allclose(key.grad.float().cpu(), ref_k.grad, rtol=atol, atol=atol))
+            self.assertTrue(torch.allclose(value.grad.float().cpu(), ref_v.grad, rtol=atol, atol=atol))
+
+            # Dropout training path via Tensor seed/offset.
+            rng_state = torch.npu.get_rng_state()
+            q_d = query.detach().clone().requires_grad_(True)
+            k_d = key.detach().clone().requires_grad_(True)
+            v_d = value.detach().clone().requires_grad_(True)
+            out_drop = torch_npu.npu_fusion_attention_v3(
+                q_d, k_d, v_d, head_num=8, input_layout="BNSD", scale=scale, keep_prob=0.9
+            )
+            self.assertFalse(torch.equal(out_drop[0], out_v3[0]))
+            out_drop[0].sum().backward()
+            self.assertTrue(torch.isfinite(q_d.grad).all())
+            self.assertTrue(torch.isfinite(k_d.grad).all())
+            self.assertTrue(torch.isfinite(v_d.grad).all())
+
+            # Determinism under the same RNG state.
+            torch.npu.set_rng_state(rng_state)
+            q_d2 = query.detach().clone().requires_grad_(True)
+            k_d2 = key.detach().clone().requires_grad_(True)
+            v_d2 = value.detach().clone().requires_grad_(True)
+            out_drop2 = torch_npu.npu_fusion_attention_v3(
+                q_d2, k_d2, v_d2, head_num=8, input_layout="BNSD", scale=scale, keep_prob=0.9
+            )
+            out_drop2[0].sum().backward()
+            self.assertTrue(torch.equal(out_drop[4], out_drop2[4]))
+            self.assertTrue(torch.equal(out_drop[5], out_drop2[5]))
+            self.assertTrue(torch.equal(out_drop[0], out_drop2[0]))
+            self.assertTrue(torch.equal(q_d.grad, q_d2.grad))
+            self.assertTrue(torch.equal(k_d.grad, k_d2.grad))
+            self.assertTrue(torch.equal(v_d.grad, v_d2.grad))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_flash_attention_v3_scalar_rng_contract_ascend950(self, device="npu"):
+        for dtype in (torch.float16, torch.bfloat16):
+            query = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            key = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            value = torch.randn(2, 8, 64, 64, dtype=dtype, device="npu", requires_grad=True)
+            scale = 1.0 / math.sqrt(64)
+
+            out_nodrop = torch_npu.npu_fusion_attention_v3(
+                query, key, value, head_num=8, input_layout="BNSD", scale=scale, keep_prob=1.0
+            )
+            self.assertEqual(out_nodrop[4].device.type, "cpu")
+            self.assertEqual(out_nodrop[5].device.type, "cpu")
+
+            rng_state = torch.npu.get_rng_state()
+            q_v3 = query.detach().clone().requires_grad_(True)
+            k_v3 = key.detach().clone().requires_grad_(True)
+            v_v3 = value.detach().clone().requires_grad_(True)
+            out_v3 = torch_npu.npu_fusion_attention_v3(
+                q_v3, k_v3, v_v3, head_num=8, input_layout="BNSD", scale=scale, keep_prob=0.9
+            )
+            self.assertEqual(out_v3[4].device.type, "cpu")
+            self.assertEqual(out_v3[5].device.type, "cpu")
+            out_v3[0].sum().backward()
+
+            torch.npu.set_rng_state(rng_state)
+            q_v1 = query.detach().clone().requires_grad_(True)
+            k_v1 = key.detach().clone().requires_grad_(True)
+            v_v1 = value.detach().clone().requires_grad_(True)
+            out_v1 = torch_npu.npu_fusion_attention(
+                q_v1, k_v1, v_v1, head_num=8, input_layout="BNSD", scale=scale, keep_prob=0.9
+            )
+            out_v1[0].sum().backward()
+            self.assertEqual(out_v3[4].item(), out_v1[4])
+            self.assertEqual(out_v3[5].item(), out_v1[5])
+            self.assertTrue(torch.equal(out_v3[0], out_v1[0]))
+            self.assertTrue(torch.equal(q_v3.grad, q_v1.grad))
+            self.assertTrue(torch.equal(k_v3.grad, k_v1.grad))
+            self.assertTrue(torch.equal(v_v3.grad, v_v1.grad))
+
+    @_skip_if_lt_soc_950
+    def test_sdpa_dropout_backward(self, device="npu"):
+        q = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu", requires_grad=True)
+        k = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu", requires_grad=True)
+        v = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu", requires_grad=True)
+        rng_state = torch.npu.get_rng_state()
+        out = torch.nn.functional.scaled_dot_product_attention(q, k, v, dropout_p=0.1, is_causal=True)
+        out.sum().backward()
+        self.assertTrue(torch.isfinite(out).all())
+        self.assertTrue(torch.isfinite(q.grad).all())
+        self.assertTrue(torch.isfinite(k.grad).all())
+        self.assertTrue(torch.isfinite(v.grad).all())
+
+        torch.npu.set_rng_state(rng_state)
+        q2 = q.detach().clone().requires_grad_(True)
+        k2 = k.detach().clone().requires_grad_(True)
+        v2 = v.detach().clone().requires_grad_(True)
+        out2 = torch.nn.functional.scaled_dot_product_attention(q2, k2, v2, dropout_p=0.1, is_causal=True)
+        out2.sum().backward()
+        self.assertTrue(torch.equal(out, out2))
+        self.assertTrue(torch.equal(q.grad, q2.grad))
+        self.assertTrue(torch.equal(k.grad, k2.grad))
+        self.assertTrue(torch.equal(v.grad, v2.grad))
+
+        with torch.no_grad():
+            out_nodrop = torch.nn.functional.scaled_dot_product_attention(q, k, v, dropout_p=0.0, is_causal=True)
+        self.assertFalse(torch.equal(out.detach(), out_nodrop))
+
+    @SupportedDevices(['Ascend950'])
+    def test_npu_flash_attention_v3_capture_dropout_ascend950(self, device="npu"):
+        def _run_graph_case(fn, q0, k0, v0, dy, extra_args=(), nodrop_fn=None):
+            q = q0.detach().clone().requires_grad_(True)
+            k = k0.detach().clone().requires_grad_(True)
+            v = v0.detach().clone().requires_grad_(True)
+            s = torch_npu.npu.Stream()
+            s.wait_stream(torch_npu.npu.current_stream())
+            with torch_npu.npu.stream(s):
+                fn(q, k, v, *extra_args).backward(dy)
+            torch_npu.npu.current_stream().wait_stream(s)
+            torch_npu.npu.synchronize()
+            q.grad.zero_()
+            k.grad.zero_()
+            v.grad.zero_()
+
+            g = torch_npu.npu.NPUGraph()
+            with torch_npu.npu.graph(g):
+                out = fn(q, k, v, *extra_args)
+                out.backward(dy)
+            torch_npu.npu.synchronize()
+
+            # Determinism under same seed
+            torch.npu.manual_seed(777)
+            q.grad.zero_()
+            k.grad.zero_()
+            v.grad.zero_()
+            g.replay()
+            torch_npu.npu.synchronize()
+            o1, dq1, dk1, dv1 = out.detach().clone(), q.grad.clone(), k.grad.clone(), v.grad.clone()
+
+            # Adjoint linearity check: <dy, out> == <dv, v> proves fwd & bwd share identical drop_mask
+            lhs = float((o1.float() * dy.float()).sum().item())
+            rhs = float((v.detach().float() * dv1.float()).sum().item())
+            self.assertLess(abs(lhs - rhs) / max(abs(lhs), 1e-6), 0.02)
+
+            torch.npu.manual_seed(777)
+            q.grad.zero_()
+            k.grad.zero_()
+            v.grad.zero_()
+            g.replay()
+            torch_npu.npu.synchronize()
+            self.assertTrue(torch.equal(o1, out.detach()))
+            self.assertTrue(torch.equal(dq1, q.grad))
+            self.assertTrue(torch.equal(dk1, k.grad))
+            self.assertTrue(torch.equal(dv1, v.grad))
+
+            # Consecutive replay without reseed must advance RNG
+            q.grad.zero_()
+            k.grad.zero_()
+            v.grad.zero_()
+            g.replay()
+            torch_npu.npu.synchronize()
+            self.assertFalse(torch.equal(o1, out.detach()))
+            self.assertFalse(torch.equal(dq1, q.grad))
+
+            if nodrop_fn is not None:
+                with torch.no_grad():
+                    o_nodrop = nodrop_fn(q0, k0, v0, *extra_args)
+                self.assertFalse(torch.equal(o1, o_nodrop))
+
+        scale = 1.0 / math.sqrt(64)
+        # 1. FAV3 BNSD + 2. SDPA BNSD
+        q_b = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu")
+        k_b = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu")
+        v_b = torch.randn(2, 8, 64, 64, dtype=torch.bfloat16, device="npu")
+        dy_b = torch.randn_like(q_b)
+        _run_graph_case(
+            lambda q, k, v: torch_npu.npu_fusion_attention_v3(
+                q, k, v, head_num=8, input_layout="BNSD", scale=scale, keep_prob=0.9
+            )[0],
+            q_b, k_b, v_b, dy_b,
+            nodrop_fn=lambda q, k, v: torch_npu.npu_fusion_attention_v3(
+                q, k, v, head_num=8, input_layout="BNSD", scale=scale, keep_prob=1.0
+            )[0],
+        )
+        _run_graph_case(
+            lambda q, k, v: torch.nn.functional.scaled_dot_product_attention(
+                q, k, v, dropout_p=0.1, scale=scale
+            ),
+            q_b, k_b, v_b, dy_b,
+            nodrop_fn=lambda q, k, v: torch.nn.functional.scaled_dot_product_attention(
+                q, k, v, dropout_p=0.0, scale=scale
+            ),
+        )
+
+        # 3. FAV3 TND
+        q_t = torch.randn(64, 8, 64, dtype=torch.bfloat16, device="npu")
+        k_t = torch.randn(64, 8, 64, dtype=torch.bfloat16, device="npu")
+        v_t = torch.randn(64, 8, 64, dtype=torch.bfloat16, device="npu")
+        dy_t = torch.randn_like(q_t)
+        seq = torch.tensor([16, 40, 64], dtype=torch.int64, device="cpu")
+        _run_graph_case(
+            lambda q, k, v, s: torch_npu.npu_fusion_attention_v3(
+                q, k, v, head_num=8, input_layout="TND", scale=scale, keep_prob=0.9,
+                actual_seq_qlen=s, actual_seq_kvlen=s,
+            )[0],
+            q_t, k_t, v_t, dy_t,
+            extra_args=(seq,),
+            nodrop_fn=lambda q, k, v, s: torch_npu.npu_fusion_attention_v3(
+                q, k, v, head_num=8, input_layout="TND", scale=scale, keep_prob=1.0,
+                actual_seq_qlen=s, actual_seq_kvlen=s,
+            )[0],
+        )
 
 
 if __name__ == "__main__":
