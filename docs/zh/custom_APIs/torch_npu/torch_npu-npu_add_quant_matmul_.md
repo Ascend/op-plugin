@@ -1,4 +1,4 @@
-# torch\_npu.npu\_add\_quant\_matmul\_
+# torch_npu.npu_add_quant_matmul_
 
 ## 产品支持情况
 
@@ -14,15 +14,21 @@
 
 - 计算公式：
 
-    mx量化场景公式如下，更多关于量化技术的介绍参见《CANN 算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/zh/context/quant_mode_introduction.md)。
+    MX量化场景公式如下，更多关于量化技术的介绍参见《CANN 算子库》中的[量化介绍](https://gitcode.com/cann/ops-math/blob/9.2.0/docs/zh/context/quant_mode_introduction.md)。
 
-    ![](../../figures/zh-cn_formulaimage_0000002521244910.png)
+    $$
+    Y_{\mathrm{out}}[m,n]=Y_{\mathrm{in}}[m,n]+\sum_{j=0}^{L-1}\left(\sum_{t=0}^{g_j-1}X_1[m,jg_K+t]X_2[jg_K+t,n]\right)S_1[m,j]S_2[j,n]
+    $$
 
-    其中gsk代表K轴的mx量化的block size即32，x1\_slice<sub>i</sub>代表x1<sub>i</sub>第m行长度为gsk的向量，x2\_slice<sub>i</sub>代表x2<sub>i</sub>第n列长度为gsk的向量，K轴均从j\*gsk起始切片，j的取值范围\[0, k\_loops\)，k\_loops=ceil\(K<sub>i</sub>/gsk\)，支持最后的切片长度不足gsk。
+    其中，$X_1$、$X_2$表示应用转置属性后的矩阵，shape分别为$(M,K)$、$(K,N)$；$Y_{\mathrm{in}}$为调用前的`self`，$Y_{\mathrm{out}}$为原地更新后的`self`，两者的shape均为$(M,N)$；$S_1$、$S_2$分别为`x1_scale`、`x2_scale`中对应分组的缩放因子；$g_K=32$，$L=\lceil K/g_K \rceil$，$g_j=\min(g_K, K-jg_K)$，支持尾组（最后一个分组）长度不足$g_K$。
 
-    T-T量化场景计算公式如下：
+    T-T量化场景计算公式如下。
 
-    ![](../../figures/zh-cn_formulaimage_0000002594063675.png)
+    $$
+    Y_{\mathrm{out}}[m,n]=Y_{\mathrm{in}}[m,n]+\left(\sum_{k=0}^{K-1}X_1[m,k]X_2[k,n]\right)s_1s_2
+    $$
+
+    其中，$s_1$、$s_2$分别对应`x1_scale`、`x2_scale`，shape均为$(1,)$。
 
 ## 函数原型
 
@@ -30,35 +36,33 @@
 torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_sizes=None, x1_dtype=None, x2_dtype=None, x1_scale_dtype=None, x2_scale_dtype=None) -> torch.Tensor
 ```
 
+`*`为语法分隔符：其后的参数（`x1_scale`、`group_sizes`、`x1_dtype`等）仅支持关键字（键值对）传参；其前的参数（`self`、`x1`、`x2`、`x2_scale`）为位置参数，也可按名称传入。
+
 ## 参数说明
 
-- **self**（`Tensor`）：必选参数，待累加矩阵，数据类型支持`torch.float32`，tensor支持2维，shape为\(M, N\)，数据格式支持ND。
-- **x1**（`Tensor`）：必选参数，表示矩阵乘法中的左矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，tensor支持2维，具体shape约束参见“约束说明”，数据格式支持ND。
-- **x2**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵，数据类型支持`torch.float8_e5m2`、`torch.float8_e4m3fn`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`，tensor支持2维，具体shape约束参见“约束说明”，数据格式支持ND。
-- **x2\_scale**（`Tensor`）：必选参数，表示矩阵乘法中的右矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x2_scale_dtype`为对应类型，此时`x2_scale`本身的dtype不再生效，但仍需保证`x2_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
-- \*：代表其之前的变量是位置相关的，必须按照顺序输入；之后的变量是可选参数，位置无关，需要使用键值对赋值，不赋值会使用默认值。
-- **x1\_scale**（`Tensor`）：可选参数，表示矩阵乘法中的左矩阵的缩放因子，数据类型支持`torch.float8_e8m0fnu`、`torch.float32`，shape支持3维，其中`torch.float8_e8m0fnu`需配置可选参数`x1_scale_dtype`为对应类型，此时`x1_scale`本身的dtype不再生效，但仍需保证`x1_scale`本身的dtype为8位的数据类型，以保证shape正确。数据格式支持ND。
-- **group\_sizes**（`List[int]`）：可选参数。默认值为None。
-  - 非None时，仅支持三维列表，形如\[group\_m, group\_n, group\_k\]，分别表示在m、n、k维度上的量化分组情况。以group\_m为例，表示在m维度上group\_m个数对应一个量化参数。
-  - 当\[group\_m, group\_n, group\_k\]中有1个或多个为0时，接口会根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新设置该值。计算原理：假设group\_m=0，表示m方向量化分组值由接口推断，推断公式为group\_m=m/scale\_m（保证m能被scale\_m整除），m与x1 shape中的m一致，scale\_m与x1\_scale shape中的m一致。
-  - 目前\[group\_m, group\_n, group\_k\]mx量化支持的取值仅为\[1,1,32\]，T-T量化仅支持取值\[0,0,0\]。
-
-- **x1\_dtype**（`int`）：可选参数，用于显式指定`x1`的逻辑数据类型。默认值为`None`，表示使用`x1`自身的dtype。支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
-
-- **x2\_dtype**（`int`）：可选参数，用于显式指定`x2`的逻辑数据类型。默认值为`None`，表示使用`x2`自身的dtype。支持`torch.float8_e4m3fn`、`torch.float8_e5m2`、`torch_npu.hifloat8`、`torch_npu.float4_e2m1fn_x2`。
-
-- **x1\_scale\_dtype**（`int`）：可选参数，用于显式指定`x1_scale`的逻辑数据类型。None：默认值，表示输入真实数据类型与输入`x1_scale`的dtype相同。当前仅支持`torch.float8_e8m0fnu`。
-
-- **x2\_scale\_dtype**（`int`）：可选参数，用于显式指定`x2_scale`的逻辑数据类型。None：默认值，表示输入真实数据类型与输入`x2_scale`的dtype相同。当前仅支持`torch.float8_e8m0fnu`。
+| 参数名 | 参数类型 | 可选/必选 | 描述 | 数据类型 | 维度(shape) |
+| --- | --- | --- | --- | --- | --- |
+| self | Tensor | 必选 | 表示待累加矩阵，对应计算公式中的加法输入矩阵$Y_{\mathrm{in}}$，须以连续布局传入（非连续Tensor会在参数校验阶段报错）。数据格式支持ND。 | torch.float32 | (M, N) |
+| x1 | Tensor | 必选 | 表示矩阵乘法中的左矩阵，对应逻辑矩阵shape为(M, K)，须通过shape为(K, M)的连续Tensor执行`transpose(0, 1)`传入，传入后`x1.shape`为(M, K)，如[调用示例](#调用示例)所示；MXFP4量化场景下打包Tensor的shape为(K, M/2)，执行`transpose(0, 1)`后`x1.shape`为(M/2, K)，逻辑矩阵shape仍为(M, K)。数据格式支持ND。 | torch.float8_e5m2、torch.float8_e4m3fn、torch_npu.hifloat8、torch_npu.float4_e2m1fn_x2 | (M, K)（MXFP4量化场景为(M/2, K)） |
+| x2 | Tensor | 必选 | 表示矩阵乘法中的右矩阵，`x2.shape`须为(K, N)（对应逻辑矩阵(K, N)），不支持前两维转置的输入；MXFP4量化场景下打包Tensor的`x2.shape`为(K, N/2)。数据格式支持ND。 | torch.float8_e5m2、torch.float8_e4m3fn、torch_npu.hifloat8、torch_npu.float4_e2m1fn_x2 | (K, N)（MXFP4量化场景为(K, N/2)） |
+| x2_scale | Tensor | 必选 | 表示矩阵乘法中的右矩阵的缩放因子。MX量化场景数据类型为`torch.float8_e8m0fnu`：传入原生dtype为`torch.float8_e8m0fnu`的Tensor时，`x2_scale_dtype`可保留默认值None；使用`torch.uint8`或`torch.int8`承载E8M0编码时，需配置可选参数`x2_scale_dtype`为`torch_npu.float8_e8m0fnu`，此时`x2_scale`本身的dtype不再生效，但仍需保证`x2_scale`本身的dtype为8bit数据类型，以保证shape正确。T-T量化场景数据类型为`torch.float32`。数据格式支持ND。 | torch.float8_e8m0fnu、torch.float32 | MX量化场景为(ceil(K/64), N, 2)；T-T量化场景为(1, ) |
+| x1_scale | Tensor | 可选 | 表示矩阵乘法中的左矩阵的缩放因子，默认值为None。当前支持的MX量化与T-T量化场景均必须提供该参数，不能传入None。MX量化场景数据类型为`torch.float8_e8m0fnu`：传入原生dtype为`torch.float8_e8m0fnu`的Tensor时，`x1_scale_dtype`可保留默认值None；使用`torch.uint8`或`torch.int8`承载E8M0编码时，需配置可选参数`x1_scale_dtype`为`torch_npu.float8_e8m0fnu`，此时`x1_scale`本身的dtype不再生效，但仍需保证`x1_scale`本身的dtype为8bit数据类型，以保证shape正确。T-T量化场景数据类型为`torch.float32`。数据格式支持ND。 | torch.float8_e8m0fnu、torch.float32 | MX量化场景为(ceil(K/64), M, 2)；T-T量化场景为(1, ) |
+| group_sizes | List[int] | 可选 | 表示在m、n、k维度上的量化分组情况，默认值为None。非None时，仅支持含3个整数的一维列表，形如[group_m, group_n, group_k]，前两项可填0（0表示由接口根据`x1`、`x2`、`x1_scale`、`x2_scale`输入shape重新推导，假设group_m=0，表示m方向量化分组值由接口推断，推断公式为group_m=m/scale_m，m与x1 shape中的m一致，scale_m与x1_scale shape中的m一致）。MX量化场景要求推导后的分组为[1,1,32]：eager模式下group_k在K为64的整数倍时可由shape推导（如K=64时传入None即可推导为[1,1,32]），K非64的整数倍时（如K=96会推导为24）须显式传入32；T-T量化场景可传入None或[0,0,0]。 | int | - |
+| x1_dtype | int | 可选 | 用于显式指定`x1`的实际数据类型。传入值时表示忽略x1本身的dtype，将x1中的数据视为x1_dtype传入的类型进行计算，不传入时则直接取x1的dtype进行计算；传入时仍需保证x1本身的dtype为8bit数据类型，以保证shape正确。默认值为None。 | torch.float8_e4m3fn、torch.float8_e5m2、torch_npu.hifloat8、torch_npu.float4_e2m1fn_x2 | - |
+| x2_dtype | int | 可选 | 用于显式指定`x2`的实际数据类型，使用方式同`x1_dtype`。默认值为None。 | torch.float8_e4m3fn、torch.float8_e5m2、torch_npu.hifloat8、torch_npu.float4_e2m1fn_x2 | - |
+| x1_scale_dtype | int | 可选 | 用于显式指定`x1_scale`的逻辑数据类型。None：默认值，表示输入真实数据类型与输入`x1_scale`的dtype相同。MX量化场景下当前仅支持传入`torch_npu.float8_e8m0fnu`（`x1_scale`张量本身的dtype可为`torch.float8_e8m0fnu`，或以`torch.uint8`/`torch.int8`承载E8M0编码）；T-T量化场景下两路scale直接传入原生`torch.float32` Tensor即可，无需传入该参数。 | torch_npu.float8_e8m0fnu（MX量化场景） | - |
+| x2_scale_dtype | int | 可选 | 用于显式指定`x2_scale`的逻辑数据类型。默认值为`None`，其余用法同`x1_scale_dtype`。 | torch_npu.float8_e8m0fnu（MX量化场景） | - |
 
 > [!NOTE]
 >
 > - PyTorch 2.7及之前版本：使用8bit Tensor存储已打包的FP4数据，并通过`x1_dtype`、`x2_dtype`指定逻辑数据类型为`torch_npu.float4_e2m1fn_x2`。
-> - PyTorch 2.8及以上版本：还可使用原生数据类型`torch.float4_e2m1fn_x2`构造输入Tensor，此时`x1_dtype`、`x2_dtype`可使用默认值`None`。
+> - PyTorch 2.8及以上版本：单算子（eager）模式下还可使用原生数据类型`torch.float4_e2m1fn_x2`构造输入Tensor，此时`x1_dtype`、`x2_dtype`可使用默认值`None`；图模式下须显式传入`torch_npu.float4_e2m1fn_x2`。
 
 ## 返回值说明
 
-**self**（`Tensor`）：QuantBatchMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，数据类型、shape、数据格式均与输入self保持一致。
+| 参数名 | 参数类型 | 可选/必选 | 描述 | 数据类型 | 维度(shape) |
+| --- | --- | --- | --- | --- | --- |
+| self | Tensor | 必选 | 表示QuantBatchMatmul计算完成后与待累加矩阵相加得到的最后结果矩阵，原地更新到self并返回，数据类型、shape、数据格式均与输入self保持一致。 | torch.float32 | (M, N) |
 
 ## 约束说明
 
@@ -70,19 +74,28 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
     | --- | --- | --- | --- | --- | --- |
     | MXFP8量化 | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e4m3fn`/`torch.float8_e5m2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
     | MXFP4量化 | `torch.float4_e2m1fn_x2` | `torch.float4_e2m1fn_x2` | `torch.float8_e8m0fnu` | `torch.float8_e8m0fnu` | `torch.float32` |
-    | T-T量化 | `torch_npu.hifloat8` | `torch_npu.hifloat8` | `torch.float32` | `torch.float32` | `torch.float32` |
+    | T-T量化 | `torch_npu.hifloat8`（通过`x1_dtype`指定） | `torch_npu.hifloat8`（通过`x2_dtype`指定） | `torch.float32` | `torch.float32` | `torch.float32` |
 
 - shape约束：
 
-    | 场景 | x1 | x2 | x2_scale | x1_scale | self |
+    | 场景 | x1（存储shape/实参shape） | x2（实参shape） | x2_scale | x1_scale | self |
     | --- | --- | --- | --- | --- | --- |
-    | MX量化 | (K,M) | (K,N) | (ceil(K/64),N,2) | (ceil(K/64),M, 2) | (M,N) |
-    | T-T量化 | (K,M) | (K,N) | (1) | (1) | (M,N) |
+    | MX量化 | (K, M)/(M, K) | (K, N) | (ceil(K/64), N, 2) | (ceil(K/64), M, 2) | (M, N) |
+    | T-T量化 | (K, M)/(M, K) | (K, N) | (1, ) | (1, ) | (M, N) |
 
+    上表中x1为“转置前的连续存储shape/传入接口的实参shape”，对应逻辑矩阵shape为(M, K)；MXFP4量化场景下，x1的存储shape为(K, M/2)、实参shape为(M/2, K)，x2的实参shape为(K, N/2)，逻辑矩阵shape不变。
+
+- M、N须为非负整数，K须为正整数（K=0时即使输出为空Tensor也会被拒绝）。
+- `x1`须通过shape为(K, M)的Tensor执行`transpose(0, 1)`后传入（底层为(K, M)排布，即传入转置视图），不支持直接传入连续Tensor；图模式下`transpose(0, 1)`应写在图内，如[调用示例](#调用示例)所示。
+- MX量化场景下，`x1_scale`须为(ceil(K/64), M, 2)排布，支持shape为(ceil(K/64), M, 2)的连续Tensor或其前两维转置后的视图（如调用示例所示）；`x2_scale`须为(ceil(K/64), N, 2)排布：单算子（eager）模式下支持shape为(ceil(K/64), N, 2)的连续Tensor或其前两维转置后的视图；TorchAir图模式下，转置融合仅消除`x1`与`x1_scale`前的转置节点，会保留`x2_scale`前的转置节点，图中传给算子的`x2_scale`最终轴序须满足(ceil(K/64), N, 2)（R=ceil(K/64)，例如转置前数据按(N, R, 2)排布时，图内执行`transpose(0, 1)`后即满足要求），最终轴序不满足该要求时会在形状校验阶段报错，或导致分组轴与通道轴对应的缩放因子交换、计算结果错误。
 - MXFP4量化约束：
   - MXFP4量化场景下，每个字节存放两个FP4编码，`x1`、`x2`打包后的原始存储shape会变为(K,M/2)、(K,N/2)。
   - 每个字节的低4 bit对应原始存储最后一轴的偶数索引元素，高4 bit对应奇数索引元素。M、N必须为偶数。
   - 当M、N、K均大于0时，必须同时满足M × K > 2、N × K > 2。
+
+## 确定性计算
+
+- 确定性说明：默认支持确定性计算。
 
 ## 调用示例
 
@@ -185,7 +198,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
         model = torch.compile(model, backend=npu_backend)
         y = model(y, x1, x2, x2_scale, x1_scale, torch_npu.float8_e8m0fnu, torch_npu.float8_e8m0fnu)
         print(y.cpu())
-     
+
     if __name__ == '__main__':
         main()
     ```
@@ -221,7 +234,7 @@ torch_npu.npu_add_quant_matmul_(self, x1, x2, x2_scale, *, x1_scale=None, group_
         model = torch.compile(model, backend=npu_backend)
         y = model(y, x1, x2, x2_scale, x1_scale, None, None)
         print(y.cpu())
-    
+
     if __name__ == '__main__':
         main()
     ```
